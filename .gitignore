@@ -1,14 +1,2 @@
-.gradle
-.idea/libraries
-.idea/dictionaries
-.idea/workspace.xml
 build
-dist
-out
-logs
-replicator.jar
-replicator.log
-convert.log
-errors.log
-failures.log
-successes.log
+target

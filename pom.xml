@@ -5,8 +5,21 @@
     <artifactId>ExecuteQuery</artifactId>
     <version>4.3</version>
     <packaging>jar</packaging>
+	
+	<repositories>
+		<repository>
+			<id>nexus-releases</id>
+			<url>http://nexus.red-soft.biz/nexus/content/repositories/releases</url>
+		</repository>
+	</repositories>
 
     <dependencies>
+		<dependency>
+			<groupId>biz.redsoft.customlib</groupId>
+			<artifactId>jaybird</artifactId>
+			<version>2.2.2</version>
+		</dependency>
+		
         <dependency>
             <groupId>batik</groupId>
             <artifactId>batik</artifactId>

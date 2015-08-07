@@ -12,15 +12,22 @@
 -->
 
 <jdbcdrivers>
-
-   <databasedrivers>
-      <id>9999999999999</id>
-      <name>ODBC Driver</name>
-      <description>Sun ODBC Driver</description>
-      <type>8</type>
-      <path/>
-      <classname>sun.jdbc.odbc.JdbcOdbcDriver</classname>
-      <url>jdbc:odbc:[source]</url>
-   </databasedrivers>
-
+    <databasedrivers>
+        <id>1111111</id>
+        <name>Firebird Driver</name>
+        <description>Firebird JDBC Driver</description>
+        <type>16</type>
+        <path>./lib/jaybird-full-2.2.2.jar</path>
+        <classname>org.firebirdsql.jdbc.FBDriver</classname>
+        <url>jdbc:firebirdsql://[host]:[port]/[source]</url>
+    </databasedrivers>
+    <databasedrivers>
+        <id>9999999999999</id>
+        <name>ODBC Driver</name>
+        <description>Sun ODBC Driver</description>
+        <type>8</type>
+        <path/>
+        <classname>sun.jdbc.odbc.JdbcOdbcDriver</classname>
+        <url>jdbc:odbc:[source]</url>
+    </databasedrivers>
 </jdbcdrivers>

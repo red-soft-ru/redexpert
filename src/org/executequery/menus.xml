@@ -343,6 +343,9 @@
                          index="1"/>
 
           </menu>
+		  
+		  <menu-item id="create-database-command"
+                     class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
           <menu-item id="database-disconnect-command"
                      class="org.underworldlabs.swing.menu.MainMenuItem"/>

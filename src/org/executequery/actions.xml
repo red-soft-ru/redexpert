@@ -270,6 +270,14 @@
           description="Displays the open connection's properties"
           execute-class="org.executequery.actions.databasecommands.DatabasePropertiesCommand"/>
 -->
+  <action id="create-database-command"
+          name="Create Database"
+          mnemonic="control C"
+          accel-editable="true"
+          small-icon="/org/executequery/icons/create_database16.png"
+          large-icon="/org/executequery/icons/create_database32.png"
+          description="Create Database"
+          execute-class="org.executequery.actions.databasecommands.CreateDatabaseCommand"/>
 
   <action id="database-disconnect-command"
           name="Close Connection"

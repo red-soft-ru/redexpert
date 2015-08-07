@@ -251,24 +251,29 @@
         </button>
         -->
 
-        <button id="21" action-id="create-table-command">
+        <button id="20" action-id="create-database-command">
           <visible>true</visible>
           <order>2</order>
         </button>
 
-        <button id="23" action-id="create-index-command">
+        <button id="21" action-id="create-table-command">
           <visible>true</visible>
           <order>3</order>
         </button>
 
-        <button id="22" action-id="generate-scripts-command">
+        <button id="23" action-id="create-index-command">
           <visible>true</visible>
           <order>4</order>
         </button>
 
-        <button id="41" action-id="execute-object">
+        <button id="22" action-id="generate-scripts-command">
           <visible>true</visible>
           <order>5</order>
+        </button>
+
+        <button id="41" action-id="execute-object">
+          <visible>true</visible>
+          <order>6</order>
         </button>
 
         <button id="42" action-id="compare-data-types">

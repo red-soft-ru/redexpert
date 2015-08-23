@@ -794,8 +794,9 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     
     /**
      * Creates a new folder and adds it to the bottom of the list.
+     * @return 
      */
-    public void newFolder() {
+    public ConnectionsFolder newFolder() {
 
         String name = GUIUtilities.displayInputMessage("New Folder", "Folder Name:");
         if (!JOptionPane.UNINITIALIZED_VALUE.equals(name)) {
@@ -830,8 +831,10 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
             tree.nodesWereInserted(root, new int[]{insertIndex});
             
             folderAdded(folder);
+            return folder;
         }
-        
+
+        return null;
     }
 
     /**
@@ -985,6 +988,22 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
         return node.getDatabaseObject();
     }
 
+    protected List<ConnectionsFolderNode> getFolderNodes() {
+        
+        List<ConnectionsFolderNode> folders = new ArrayList<ConnectionsFolderNode>();
+        Enumeration<?> children = tree.getRootNode().children();
+        while (children.hasMoreElements()) {
+            
+            Object child = children.nextElement();
+            if (isAConnectionsFolderNode(child)) {
+                
+                folders.add((ConnectionsFolderNode) child);
+            }
+            
+        }
+        return folders;
+    }
+    
     protected ConnectionsFolderNode getSelectedFolderNode() {
 
         if (tree.isSelectionEmpty()) {
@@ -1157,6 +1176,25 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
         return null;
     }
 
+    protected ConnectionsFolderNode getFolderNode(ConnectionsFolder folder) {
+
+        for (Enumeration<?> i = tree.getConnectionsBranchNode().children(); i.hasMoreElements();) {
+
+            Object object = i.nextElement();
+            if (isAConnectionsFolderNode(object)) {
+
+                ConnectionsFolderNode folderNode = (ConnectionsFolderNode) object;
+                if (folderNode.getConnectionsFolder() == folder) {
+                    
+                    return folderNode;
+                }
+            }
+            
+        }
+        
+        return null;
+    }
+    
     protected DatabaseObjectNode getHostNode(DatabaseConnection dc) {
 
         for (Enumeration<?> i = tree.getConnectionsBranchNode().children(); i.hasMoreElements();) {
@@ -1847,7 +1885,30 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
         controller.connectionNameChanged(name);
     }
 
+    public void moveToFolder(DatabaseConnection databaseConnection) {
+
+        new MoveConnectionToFolderDialog(databaseConnection, this);
+    }
+
+    public void moveToFolder(DatabaseConnection databaseConnection, ConnectionsFolderNode folder) {
+
+        ConnectionsFolder connectionsFolder = folder.getConnectionsFolder();
+        databaseConnection.setFolderId(connectionsFolder.getId());
+        connectionsFolder.addConnection(databaseConnection.getId());
+
+        DatabaseObjectNode node = getHostNode(databaseConnection);
+        tree.removeNode(node);
+        folder.add(node);
+        tree.nodeStructureChanged(folder);        
+        tree.expandPath(new TreePath(folder.getPath()));
+
+        EventMediator.fireEvent(
+                new DefaultConnectionRepositoryEvent(
+                        this, ConnectionRepositoryEvent.CONNECTION_MODIFIED, databaseConnection));
+
+        EventMediator.fireEvent(
+                new DefaultConnectionsFolderRepositoryEvent(
+                        this, ConnectionsFolderRepositoryEvent.FOLDER_MODIFIED, connectionsFolder));
+    }
+    
 }
-
-
-

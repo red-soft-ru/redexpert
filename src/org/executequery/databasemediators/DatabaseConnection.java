@@ -137,5 +137,29 @@ public interface DatabaseConnection extends Serializable {
     DatabaseConnection withName(String name);
 
     DatabaseConnection withSource(String source);
+
+    void setSshPasswordStored(boolean sshPasswordStored);
+
+    void setSshTunnel(boolean sshTunnel);
+
+    void setSshPort(int sshPort);
+
+    void setSshUserName(String sshUserName);
+
+    void setSshPassword(String sshPassword);
+
+    boolean isSshPasswordStored();
+
+    int getSshPort();
+
+    String getSshPassword();
+
+    String getSshUserName();
+
+    boolean isSshTunnel();
+
+    String getUnencryptedSshPassword();
+
+    void setEncryptedSshPassword(String sshPassword);
     
 }

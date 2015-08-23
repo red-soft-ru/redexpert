@@ -102,6 +102,16 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     
     private ConnectionsFolder folder;
     
+    private boolean sshTunnel;
+    
+    private String sshUserName;
+    
+    private String sshPassword;
+
+    private int sshPort;
+    
+    private boolean sshPasswordStored;
+    
     /** the commit mode */
     private transient boolean autoCommit = true;
     
@@ -400,9 +410,91 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
             copy.setPassword(getPassword());
         }
 
+        copy.setSshTunnel(isSshTunnel());
+        copy.setSshUserName(getSshUserName());
+        copy.setSshPort(getSshPort());
+        copy.setEncryptedSshPassword(getSshPassword());
+        copy.setSshPasswordStored(isSshPasswordStored());
+        
         return copy;
     }
 
+    @Override
+    public boolean isSshTunnel() {
+
+        return sshTunnel;
+    }
+
+    @Override
+    public String getSshUserName() {
+        
+        return sshUserName;
+    }
+
+    public String getUnencryptedSshPassword() {
+        String _password = sshPassword;
+        if (!MiscUtils.isNull(sshPassword)) {
+            _password = decrypt(sshPassword);
+        }
+        return _password;
+    }    
+
+    @Override
+    public String getSshPassword() {
+        
+        return sshPassword;
+    }
+
+    @Override
+    public int getSshPort() {
+        
+        return sshPort;
+    }
+
+    @Override
+    public boolean isSshPasswordStored() {
+        
+        return sshPasswordStored;
+    }
+
+    @Override
+    public void setSshPassword(String sshPassword) {
+
+        if (!MiscUtils.isNull(sshPassword)) {
+
+            this.sshPassword = encrypt(sshPassword);
+        }
+    }
+
+    public void setEncryptedSshPassword(String sshPassword) {
+
+        this.sshPassword = sshPassword;
+    }
+    
+    @Override
+    public void setSshUserName(String sshUserName) {
+     
+        this.sshUserName = sshUserName;
+    }
+    
+    @Override
+    public void setSshPort(int sshPort) {
+    
+        this.sshPort = sshPort;
+    }
+    
+    @Override
+    public void setSshTunnel(boolean sshTunnel) {
+     
+        this.sshTunnel = sshTunnel;
+    }
+    
+    @Override
+    public void setSshPasswordStored(boolean sshPasswordStored) {
+     
+        this.sshPasswordStored = sshPasswordStored;
+    }
+    
     private DatabaseDriver driverById(long driverId) {
 
         return ((DatabaseDriverRepository) RepositoryCache.load(DatabaseDriverRepository.REPOSITORY_ID)).findById(driverId);

@@ -1,5 +1,5 @@
 /*
- * ExportResultsTableCommand.java
+ * ToUpperCaseCommand.java
  *
  * Copyright (C) 2002-2013 Takis Diakoumis
  *
@@ -18,55 +18,33 @@
  *
  */
 
-package org.executequery.actions.othercommands;
+package org.executequery.actions.editcommands;
 
 import java.awt.event.ActionEvent;
-
-import javax.swing.JPanel;
-
 import org.executequery.GUIUtilities;
-import org.executequery.gui.editor.QueryEditor;
-import org.executequery.gui.editor.VisibleResultSetColumnsDialog;
+import org.underworldlabs.swing.actions.BaseCommand;
+import org.executequery.gui.text.TextEditor;
 
-
-/** 
+/**
+ * To Camel Case command execution.
  *
  * @author   Takis Diakoumis
  * @version  $Revision$
  * @date     $Date$
  */
-public class ShowHideResultSetColumnsCommand extends AbstractBaseCommand {
+public class ToCamelCaseCommand implements BaseCommand {
     
+    /**
+     * Executes the to-camel-case command on the <code>TextEditor</code>.
+     * 
+     * @param the originating event
+     */
     public void execute(ActionEvent e) {
-
-        JPanel panel = GUIUtilities.getSelectedCentralPane();
-        if (panel instanceof QueryEditor) {
-        
-            QueryEditor editor = (QueryEditor) panel;
-            if (editor.isResultSetSelected()) {
-            
-                new VisibleResultSetColumnsDialog(editor.getResultSetTable());
-            
-            } else {
-              
-                GUIUtilities.displayErrorMessage(
-                        "The required result set tab panel must be selected to proceed.");
-            }
-
-        }        
+        TextEditor textFunction = (TextEditor)GUIUtilities.getTextEditorInFocus();
+        if (textFunction != null) {
+            textFunction.changeSelectionToCamelCase();
+        }
+        textFunction = null;
     }
-    
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

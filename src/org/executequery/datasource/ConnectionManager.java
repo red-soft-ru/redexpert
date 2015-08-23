@@ -20,6 +20,15 @@
 
 package org.executequery.datasource;
 
+import java.sql.Connection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Vector;
+
+import javax.sql.DataSource;
+
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.log.Log;
@@ -27,13 +36,6 @@ import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SystemProperties;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Vector;
 
 /**
  * Manages all data source connections across multiple
@@ -45,11 +47,7 @@ import java.util.Vector;
  */
 public final class ConnectionManager {
 
-    /** the connection 'container' */
-    private static Map<DatabaseConnection, ConnectionPool> connectionPools;
-    static {
-        connectionPools = new HashMap<DatabaseConnection, ConnectionPool>();
-    }
+    private static Map<DatabaseConnection, ConnectionPool> connectionPools = Collections.synchronizedMap(new HashMap<DatabaseConnection, ConnectionPool>());
 
     /**
      * Creates a stored data source for the specified database
@@ -176,8 +174,8 @@ public final class ConnectionManager {
      * @return the data source object
      */
     public static DataSource getDataSource(DatabaseConnection databaseConnection) {
-        if (connectionPools == null ||
-                !connectionPools.containsKey(databaseConnection)) {
+        if (connectionPools == null || !connectionPools.containsKey(databaseConnection)) {
+        
             return null;
         }
         return connectionPools.get(databaseConnection).getDataSource();
@@ -190,13 +188,14 @@ public final class ConnectionManager {
      * @param the isolation level
      * @see java.sql.Connection for possible values
      */
-    public static void setTransactionIsolationLevel(
-                    DatabaseConnection databaseConnection, int isolationLevel) {
-        if (connectionPools == null ||
-                connectionPools.containsKey(databaseConnection)) {
+    public static void setTransactionIsolationLevel(DatabaseConnection databaseConnection, int isolationLevel) {
+
+        if (connectionPools == null || connectionPools.containsKey(databaseConnection)) {
+        
             ConnectionPool pool = connectionPools.get(databaseConnection);
             pool.setTransactionIsolationLevel(isolationLevel);
         }
+
     }
 
     /**

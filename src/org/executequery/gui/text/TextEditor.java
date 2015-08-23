@@ -4,16 +4,16 @@
  * Copyright (C) 2002-2013 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
+ * modify it under the terms of the GNU General License
  * as published by the Free Software Foundation; either version 3
  * of the License, or any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU General License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
@@ -33,37 +33,36 @@ import org.executequery.gui.SaveFunction;
  * @version  $Revision$
  * @date     $Date$
  */
-public interface TextEditor extends PrintFunction,
-                                    SaveFunction {
+public interface TextEditor extends PrintFunction, SaveFunction {
     
     /**
      * Returns the text component's text.
      *
      * @return the text component text
      */
-    public String getEditorText();
+    String getEditorText();
 
     /**
      * Returns the actual text component.
      *
      * @return the text component
      */
-    public JTextComponent getEditorTextComponent();
+    JTextComponent getEditorTextComponent();
     
     /**
      * Cuts the selected text from the text component.
      */
-    public void cut();
+    void cut();
 
     /**
      * Copies the selected text from the text component.
      */
-    public void copy();
+    void copy();
     
     /**
      * Pastes text into the text component at the cursor position.
      */
-    public void paste();
+    void paste();
     
     /**
      * Disables/enables updates on the text component. This is designed
@@ -72,7 +71,7 @@ public interface TextEditor extends PrintFunction,
      *
      * @param disable - true | false
      */
-    public void disableUpdates(boolean disable);
+    void disableUpdates(boolean disable);
     
     /**
      * Return whether the text component defined by this interface
@@ -80,29 +79,29 @@ public interface TextEditor extends PrintFunction,
      *
      * @return true | false
      */
-    public boolean canSearch();
+    boolean canSearch();
+
+    void changeSelectionCase(boolean upper);
     
-    public void changeSelectionCase(boolean upper);
+    void changeSelectionToCamelCase();
     
-    public void deleteLine();
+    void changeSelectionToUnderscore();
     
-    public void deleteWord();
+    void deleteLine();
     
-    public void deleteSelection();
+    void deleteWord();
     
-    public void insertFromFile();
+    void deleteSelection();
     
-    public void insertLineAfter();
+    void insertFromFile();
     
-    public void insertLineBefore();
+    void insertLineAfter();
     
-    public void selectAll();
+    void insertLineBefore();
     
-    public void selectNone();
+    void selectAll();
     
-    
+    void selectNone();
+
 }
-
-
-
 

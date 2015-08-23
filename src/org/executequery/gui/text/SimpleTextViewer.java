@@ -46,8 +46,7 @@ import org.executequery.print.TextPrinter;
  * @version  $Revision$
  * @date     $Date$
  */
-public class SimpleTextViewer extends JPanel 
-                              implements TextEditor {
+public class SimpleTextViewer extends JPanel implements TextEditor {
     
     /** The text area displaying the text */
     private JTextArea textArea;
@@ -151,6 +150,14 @@ public class SimpleTextViewer extends JPanel
     
     public int save(boolean saveAs) {
         return TextUtilities.save(textArea);
+    }
+
+    public void changeSelectionToUnderscore() {
+        TextUtilities.changeSelectionToUnderscore(textArea);
+    }
+    
+    public void changeSelectionToCamelCase() {
+        TextUtilities.changeSelectionToCamelCase(textArea);
     }
     
     public void changeSelectionCase(boolean upper) {

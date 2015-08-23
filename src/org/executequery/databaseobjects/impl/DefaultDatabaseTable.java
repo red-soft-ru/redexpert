@@ -371,7 +371,8 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
                 }
 
             }
-
+            constraints.removeAll(Collections.singleton(null));
+            
             return constraints;
 
         } else {

@@ -52,7 +52,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.Constants;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.base.DefaultTabView;
@@ -1387,6 +1386,14 @@ public class QueryEditor extends DefaultTabView
         editorPanel.changeSelectionCase(upper);
     }
 
+    public void changeSelectionToUnderscore() {
+        editorPanel.changeSelectionToUnderscore();
+    }
+    
+    public void changeSelectionToCamelCase() {
+        editorPanel.changeSelectionToCamelCase();
+    }
+    
     // ---------------------------------------------
 
     // ---------------------------------------------
@@ -1402,7 +1409,7 @@ public class QueryEditor extends DefaultTabView
     }
 
     public int save(boolean saveAs) {
-
+        
         String text = editorPanel.getQueryAreaText();
 
         QueryEditorFileWriter writer = new QueryEditorFileWriter();

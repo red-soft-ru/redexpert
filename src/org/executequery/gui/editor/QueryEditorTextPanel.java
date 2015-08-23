@@ -692,6 +692,16 @@ public class QueryEditorTextPanel extends JPanel {
         queryPane.cut();
     }
 
+    public void changeSelectionToCamelCase() {
+
+        TextUtilities.changeSelectionToCamelCase(queryPane);
+    }
+
+    public void changeSelectionToUnderscore() {
+        
+        TextUtilities.changeSelectionToUnderscore(queryPane);
+    }
+    
     public void changeSelectionCase(boolean upper) {
 
         TextUtilities.changeSelectionCase(queryPane, upper);
@@ -775,10 +785,4 @@ public class QueryEditorTextPanel extends JPanel {
     }
 
 }
-
-
-
-
-
-
 

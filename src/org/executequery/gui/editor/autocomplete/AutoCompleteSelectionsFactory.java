@@ -243,8 +243,9 @@ public class AutoCompleteSelectionsFactory {
         trace("Building autocomplete object list using [ " + databaseHost.getName() + " ] for type - " + type);
         
         ResultSet rs = null;
-        DatabaseMetaData databaseMetaData = databaseHost.getDatabaseMetaData();
         try {
+
+            DatabaseMetaData databaseMetaData = databaseHost.getDatabaseMetaData();
             String catalog = databaseHost.getCatalogNameForQueries(defaultCatalogForHost(databaseHost));
             String schema = databaseHost.getSchemaNameForQueries(defaultSchemaForHost(databaseHost));
 

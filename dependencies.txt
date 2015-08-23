@@ -91,3 +91,12 @@ URL: https://code.google.com/p/juniversalchardet/
 Used in: File encoding detection.
 Licence: Mozilla Public License 1.1
 
+JSch - Java Secure Channel
+-----------------------
+Lib jar file: jsch-0.1.53.jar
+Version: 0.1.53
+URL: http://jcraft.com/jsch/
+Used in: SSH tunnel creation.
+Licence: BSD
+
+

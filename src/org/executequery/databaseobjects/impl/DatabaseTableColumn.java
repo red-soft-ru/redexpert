@@ -126,6 +126,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
      * @return the column constraints
      */
     public List<ColumnConstraint> getConstraints() {
+
         return constraints;
     }
     

@@ -38,7 +38,6 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -47,6 +46,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -74,7 +75,6 @@ import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.ActionPanel;
 import org.underworldlabs.swing.DefaultFieldLabel;
 import org.underworldlabs.swing.DefaultTextField;
 import org.underworldlabs.swing.DynamicComboBoxModel;
@@ -89,8 +89,9 @@ import org.underworldlabs.util.MiscUtils;
  * @version  $Revision$
  * @date     $Date$
  */
-public class ConnectionPanel extends ActionPanel 
-                             implements DatabaseDriverListener {
+public class ConnectionPanel extends AbstractConnectionPanel 
+                             implements DatabaseDriverListener,
+                                        ChangeListener {
     
     // -------------------------------
     // text fields and combos
@@ -143,6 +144,8 @@ public class ConnectionPanel extends ActionPanel
     /** the browser's control object */
     private BrowserController controller;
 
+    private SSHTunnelConnectionPanel sshTunnelConnectionPanel;
+    
     /** Creates a new instance of ConnectionPanel */
     public ConnectionPanel(BrowserController controller) {
         super(new BorderLayout());
@@ -356,15 +359,31 @@ public class ConnectionPanel extends ActionPanel
         JScrollPane scrollPane = new JScrollPane(mainPanel);
         scrollPane.setBorder(null);
 
+        sshTunnelConnectionPanel = new SSHTunnelConnectionPanel();
+        
         tabPane = new JTabbedPane(JTabbedPane.BOTTOM);
         tabPane.addTab("Basic", scrollPane);
         tabPane.addTab("Advanced", advancedPanel);
+        tabPane.addTab("SSH Tunnel", sshTunnelConnectionPanel);
 
+        tabPane.addChangeListener(this);
+        
         add(tabPane, BorderLayout.CENTER);
         
         EventMediator.registerListener(this);
     }
 
+    @Override
+    public void stateChanged(ChangeEvent e) {
+
+        if (tabPane.getSelectedIndex() == 2) {
+            
+            populateConnectionObject();
+            sshTunnelConnectionPanel.setValues(databaseConnection);
+        }
+        
+    }
+    
     private NumberTextField createNumberTextField() {
         
         NumberTextField textField = WidgetFactory.createNumberTextField();
@@ -576,7 +595,6 @@ public class ConnectionPanel extends ActionPanel
         if (StringUtils.isBlank(urlField.getText())) {
 
             String port = portField.getText();
-            
             if (!StringUtils.isNumeric(port)) {
                     
                 GUIUtilities.displayErrorMessage("Invalid port number");
@@ -585,6 +603,11 @@ public class ConnectionPanel extends ActionPanel
 
         }
 
+        if (!sshTunnelConnectionPanel.canConnect()) {
+            
+            return;
+        }
+        
         // otherwise - good to proceed
         
         // populate the object with field values
@@ -676,8 +699,10 @@ public class ConnectionPanel extends ActionPanel
     public boolean tabViewSelected() {
 
         panelSelected = true;
-        enableFields(databaseConnection.isConnected());
-
+        if (databaseConnection != null) {
+            
+            enableFields(databaseConnection.isConnected());
+        }
         return true;
     }
 
@@ -976,6 +1001,10 @@ public class ConnectionPanel extends ActionPanel
         
         // enable/disable fields
         enableFields(databaseConnection.isConnected());
+        
+        // shh tunnel where applicable
+        sshTunnelConnectionPanel.setValues(databaseConnection);
+        
     }
     
     /**
@@ -1024,6 +1053,8 @@ public class ConnectionPanel extends ActionPanel
             databaseConnection.setDatabaseType(null);
         }
 
+        sshTunnelConnectionPanel.update(databaseConnection);
+
         // retrieve the jdbc properties
         storeJdbcProperties();
 
@@ -1054,7 +1085,7 @@ public class ConnectionPanel extends ActionPanel
         this.host = host;
 
         populateConnectionFields(host.getDatabaseConnection());
-
+        
         // set the focus field
         focusNameField();
 
@@ -1134,73 +1165,6 @@ public class ConnectionPanel extends ActionPanel
         
     } // AdvConnTableModel
 
-    private void addComponents(JPanel panel, 
-                               ComponentToolTipPair...components) {
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.insets.bottom = 10;
-
-        int count = 0;
-        for (ComponentToolTipPair pair : components) {
-
-            pair.component.setToolTipText(pair.toolTip);
-            
-            gbc.gridx++;
-            gbc.gridwidth = 1;
-            gbc.insets.top = 0;
-            gbc.weightx = 0;
-
-            if (count > 0) {
-                
-                gbc.insets.left = 15;     
-            }
-
-            count++;
-            if (count == components.length) {
-                
-                gbc.weightx = 1.0;
-                gbc.insets.right = 5;
-            }
-            
-            panel.add(pair.component, gbc);
-        }
-        
-    }
-
-    private void addLabelFieldPair(JPanel panel, String label, 
-            JComponent field, String toolTip, GridBagConstraints gbc) {
-
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.gridwidth = 1;
-        gbc.insets.top = 10;
-
-        if (panel.getComponentCount() > 0) {
-         
-            gbc.insets.top = 0;
-        }
-
-        gbc.insets.left = 10;
-        gbc.weightx = 0;
-        panel.add(new DefaultFieldLabel(label), gbc);
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.gridx = 1;
-        gbc.insets.left = 5;
-        gbc.weightx = 1.0;
-        panel.add(field, gbc);
-        
-        if (toolTip != null) {
-            
-            field.setToolTipText(toolTip);
-        }
-
-    }
-
     private void addDriverFields(JPanel panel, GridBagConstraints gbc) {
 
         gbc.gridy++;
@@ -1251,17 +1215,6 @@ public class ConnectionPanel extends ActionPanel
         return (event instanceof DatabaseDriverEvent);
     }
     
-    class ComponentToolTipPair {
-        
-        final JComponent component;
-        final String toolTip;
-
-        public ComponentToolTipPair(JComponent component, String toolTip) {
-            this.component = component;
-            this.toolTip = toolTip;
-        }
-        
-    }
     
     
     class DeleteButtonEditor extends DefaultCellEditor {

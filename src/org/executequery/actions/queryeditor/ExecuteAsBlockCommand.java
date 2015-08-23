@@ -26,8 +26,8 @@ import java.awt.event.ActionEvent;
  * The Query Editor's execute as block command.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1094 $
- * @date     $Date: 2012-02-20 23:51:20 +1100 (Mon, 20 Feb 2012) $
+ * @version  $Revision$
+ * @date     $Date$
  */
 public class ExecuteAsBlockCommand extends AbstractQueryEditorCommand {
 

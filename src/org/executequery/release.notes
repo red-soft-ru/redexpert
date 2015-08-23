@@ -1,8 +1,8 @@
 --- Execute Query - RELEASE NOTES ---
 
-Date: 15 January 2015
+Date: 24 August 2015
 
-Summary of changes - v4.3.1 Build 5431:
+Summary of changes - v4.3.1 Build 5443:
 ----------------------------------------
 
 - Added view menu to table references tab in the Browser. 
@@ -13,6 +13,14 @@ Summary of changes - v4.3.1 Build 5431:
   to render the selection details.
 - Fixed possible concurrency issue with connection pool.
 - Modified to restore new connections XML on failed file load.
+- Added SSH tunnel support to enable database connections over SSH.
+- Upgraded to Liquibase 3.4.1
+- Fixed possible error on table selection from the Browser tree nodes where 
+  no constraints are available for that table.
+- Fixed possible concurrency issue on open connections when applying the 
+  transaction isolation level.
+- Added 'Move to folder' menu item and dialog for a database connections. 
+- Added edit text case to support underscore and camel
 
 
 Summary of changes - v4.3.0 Build 5427:
@@ -490,4 +498,4 @@ Thank you for trying Execute Query.
 
 Takis Diakoumis
 takisd@executequery.org
-15 January 2015
+24 August 2015

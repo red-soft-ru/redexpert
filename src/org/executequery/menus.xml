@@ -139,6 +139,12 @@
               <menu-item id="to-lower-case-command"
                          class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
+              <menu-item id="to-camel-case-command"
+                         class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+              <menu-item id="to-underscore-command"
+                         class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
           </menu>
           
           <menu-item id="separator"/>

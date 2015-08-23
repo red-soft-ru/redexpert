@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 
+import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseConnectionFactory;
@@ -72,13 +73,18 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLRepository<Datab
 
     public DatabaseConnection findByName(String name) {
 
-        for (DatabaseConnection connection : connections()) {
+        List<DatabaseConnection> _connections = connections();
+        synchronized (_connections) {
 
-            if (connection.getName().equals(name)) {
-
-                return connection;
+            for (DatabaseConnection connection : _connections) {
+                
+                if (connection.getName().equals(name)) {
+                    
+                    return connection;
+                }
+                
             }
-
+            
         }
 
         return null;
@@ -197,6 +203,11 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLRepository<Datab
     private static final String KEY = "key";
     private static final String VALUE = "value";
     private static final String STORE_PASSWORD = "storepassword";
+    private static final String SSH_TUNNEL = "sshtunnel";
+    private static final String SSH_USER_NAME = "sshusername";
+    private static final String SSH_PASSWORD = "sshpassword";
+    private static final String SSH_PORT = "sshport";
+    private static final String SSH_STORE_PASSWORD = "sshstorepassword";
 
     class DatabaseConnectionHandler extends AbstractXMLRepositoryHandler<DatabaseConnection> {
 
@@ -249,77 +260,115 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLRepository<Datab
 
         }
 
-        public void endElement(String nameSpaceURI, String localName,
-                               String qName) {
+        public void endElement(String nameSpaceURI, String localName, String qName) {
 
+            // this could be better... o_O
+            
+            String contentsAsString = contentsAsString();
+            DatabaseConnection databaseConnection = connection();
             if (localNameIsKey(localName, NAME)) {
 
-                connection().setName(contentsAsString());
+                databaseConnection.setName(contentsAsString);
 
             } else if (localNameIsKey(localName, ID)) {
 
-                connection().setId(contentsAsString());
+                databaseConnection.setId(contentsAsString);
 
             } else if (localNameIsKey(localName, USER)) {
 
-                connection().setUserName(contentsAsString());
+                databaseConnection.setUserName(contentsAsString);
 
             } else if (localNameIsKey(localName, PASSWORD)) {
 
                 if (hasContents()) {
 
-                    String value = contentsAsString();
+                    String value = contentsAsString;
+                    if (databaseConnection.isPasswordEncrypted()) {
 
-                    if (connection().isPasswordEncrypted()) {
-
-                        connection().setEncryptedPassword(value);
+                        databaseConnection.setEncryptedPassword(value);
 
                     } else {
 
-                        connection().setPassword(value);
+                        databaseConnection.setPassword(value);
                     }
 
-                    connection().setPasswordStored(true);
+                    databaseConnection.setPasswordStored(true);
 
                 } else {
 
-                    connection().setPasswordStored(false);
+                    databaseConnection.setPasswordStored(false);
                 }
 
             } else if (localNameIsKey(localName, HOST)) {
 
-                connection().setHost(contentsAsString());
+                databaseConnection.setHost(contentsAsString);
 
             } else if (localNameIsKey(localName, DATA_SOURCE)) {
 
-                connection().setSourceName(contentsAsString());
+                databaseConnection.setSourceName(contentsAsString);
 
             } else if (localNameIsKey(localName, PORT)) {
 
-                connection().setPort(contentsAsString());
+                databaseConnection.setPort(contentsAsString);
 
             } else if (localNameIsKey(localName, URL)) {
 
-                connection().setURL(contentsAsString());
+                databaseConnection.setURL(contentsAsString);
 
             } else if (localNameIsKey(localName, DRIVER_ID)) {
 
-                connection().setDriverId(contentsAsLong());
+                databaseConnection.setDriverId(contentsAsLong());
 
             } else if (localNameIsKey(localName, FOLDER_ID)) {
                 
-                connection().setFolderId(contentsAsString());
+                databaseConnection.setFolderId(contentsAsString);
                 
             } else if (localNameIsKey(localName, DRIVER_NAME)) {
 
-                connection().setDriverName(contentsAsString());
+                databaseConnection.setDriverName(contentsAsString);
 
-            }
-            else if (localNameIsKey(localName, AUTO_COMMIT)) {
+            } else if (localNameIsKey(localName, SSH_STORE_PASSWORD)) {
+                
+                if (hasContents()) {
+                
+                    databaseConnection.setSshPasswordStored(Boolean.valueOf(contentsAsString));
+                
+                } else {
+
+                    databaseConnection.setSshPasswordStored(false);
+                }
+                
+            } else if (localNameIsKey(localName, SSH_TUNNEL)) {
+                
+                if (hasContents()) {
+                    
+                    databaseConnection.setSshTunnel(Boolean.valueOf(contentsAsString));
+                    
+                } else {
+                    
+                    databaseConnection.setSshTunnel(false);
+                }
+                
+            } else if (localNameIsKey(localName, SSH_USER_NAME)) {
+                
+                databaseConnection.setSshUserName(contentsAsString);
+                
+            } else if (localNameIsKey(localName, SSH_PASSWORD)) {
+                
+                databaseConnection.setEncryptedSshPassword(contentsAsString);
+                
+            } else if (localNameIsKey(localName, SSH_PORT)) {
+                
+                if (hasContents()) {
+                 
+                    databaseConnection.setSshPort(contentsAsInt());
+                }
+                
+            } else if (localNameIsKey(localName, AUTO_COMMIT)) {
 
                 if (hasContents()) {
 
-                    connection().setAutoCommit(contentsAsBoolean());
+                    databaseConnection.setAutoCommit(contentsAsBoolean());
                 }
 
             }
@@ -327,11 +376,11 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLRepository<Datab
 
                 if (hasContents()) {
 
-                    connection().setTransactionIsolation(contentsAsInt());
+                    databaseConnection.setTransactionIsolation(contentsAsInt());
 
                 } else {
 
-                    connection().setTransactionIsolation(-1);
+                    databaseConnection.setTransactionIsolation(-1);
                 }
 
             }
@@ -339,13 +388,13 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLRepository<Datab
 
                 if (advancedProperties != null && advancedProperties.size() > 0) {
 
-                    connection().setJdbcProperties(advancedProperties);
+                    databaseConnection.setJdbcProperties(advancedProperties);
                 }
 
             }
             else if (localNameIsKey(localName, CONNECTION)) {
 
-                if (connection() != null) {
+                if (databaseConnection != null) {
 
                     connections.add(connection);
 
@@ -493,6 +542,22 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLRepository<Datab
 
                 writeXML(TX_ISOLATION,
                         valueToString(connection.getTransactionIsolation()), INDENT_TWO);
+
+                writeXML(SSH_TUNNEL,
+                        valueToString(connection.isSshTunnel()), INDENT_TWO);
+                
+                writeXML(SSH_USER_NAME, connection.getSshUserName(), INDENT_TWO);
+
+                writeXML(SSH_STORE_PASSWORD, 
+                        valueToString(connection.isSshPasswordStored()), INDENT_TWO);
+                
+                writeXML(SSH_PORT, 
+                        valueToString(connection.getSshPort()), INDENT_TWO);
+                
+                if (connection.isSshPasswordStored()) {
+                 
+                    writeXML(SSH_PASSWORD, connection.getSshPassword(), INDENT_TWO);
+                }
 
                 if (connection.hasAdvancedProperties()) {
 

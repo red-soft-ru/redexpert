@@ -588,12 +588,3 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
     }
 
 }
-
-
-
-
-
-
-
-
-

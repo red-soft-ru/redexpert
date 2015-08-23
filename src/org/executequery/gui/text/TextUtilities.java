@@ -29,6 +29,7 @@ import java.io.InputStreamReader;
 import javax.swing.JFileChooser;
 import javax.swing.text.JTextComponent;
 
+import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 
@@ -56,20 +57,103 @@ public class TextUtilities {
     public static void selectNone(JTextComponent textComponent) {
         textComponent.setCaretPosition(0);
     }
-    
-    public static void changeSelectionCase(JTextComponent textComponent,
-    boolean upper) {
+
+    public static void changeSelectionToCamelCase(JTextComponent textComponent) {
         
         String selectedText = textComponent.getSelectedText();
-        
-        if (selectedText == null || selectedText.length() == 0)
+        if (StringUtils.isBlank(selectedText)) {
+            
             return;
+        }
+
+        String breakChars = "-_ \t"; 
+
+        boolean nextIsUpper = false;
+        StringBuilder sb = new StringBuilder();
+        char[] chars = selectedText.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+
+            char _char = chars[i];           
+            if (breakChars.indexOf(_char) != -1) {
+                
+                if (i > 0) {
+                 
+                    nextIsUpper = true;
+                }
+            
+            } else {                
+                
+                if (nextIsUpper) {
+                 
+                    sb.append(Character.toUpperCase(_char));
+                    nextIsUpper = false;
+    
+                } else {
+                 
+                    sb.append(Character.toLowerCase(_char));
+                }
+            }            
+        }
+
+        textComponent.replaceSelection(sb.toString());
+    }
+    
+    public static void changeSelectionToUnderscore(JTextComponent textComponent) {
         
-        if (upper)
+        String selectedText = textComponent.getSelectedText();
+        if (StringUtils.isBlank(selectedText)) {
+            
+            return;
+        }
+        
+        String breakChars = "-_ \t"; 
+
+        boolean lastCharWasUnderscore = false;
+        StringBuilder sb = new StringBuilder();
+        char[] chars = selectedText.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            
+            char _char = chars[i];
+            if (breakChars.indexOf(_char) != -1) {
+
+                sb.append("_");
+                lastCharWasUnderscore = true;
+
+            } else if (Character.isUpperCase(_char)) {
+                
+                if (!lastCharWasUnderscore) {
+                    
+                    sb.append("_");  
+                }
+                sb.append(_char);
+                lastCharWasUnderscore = false;
+
+            } else {
+                
+                sb.append(_char);
+                lastCharWasUnderscore = false;
+            }
+
+        }
+        
+        textComponent.replaceSelection(sb.toString().toLowerCase());
+    }
+    
+    public static void changeSelectionCase(JTextComponent textComponent, boolean upper) {
+        
+        String selectedText = textComponent.getSelectedText();
+        if (StringUtils.isBlank(selectedText)) {
+         
+            return;
+        }
+        
+        if (upper) {
             selectedText = selectedText.toUpperCase();
-        else
+
+        } else {
+
             selectedText = selectedText.toLowerCase();
-        
+        }
         textComponent.replaceSelection(selectedText);
         
     }

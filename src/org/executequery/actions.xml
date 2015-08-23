@@ -149,6 +149,18 @@
           accel-editable="true"
           execute-class="org.executequery.actions.editcommands.ToUpperCaseCommand"/>
 
+  <action id="to-camel-case-command"
+          name="Camel Case"
+          mnemonic="C"
+          accel-editable="false"
+          execute-class="org.executequery.actions.editcommands.ToCamelCaseCommand"/>
+
+  <action id="to-underscore-command"
+          name="Underscore"
+          mnemonic="s"
+          accel-editable="false"
+          execute-class="org.executequery.actions.editcommands.ToUnderscoreCommand"/>
+
   <action id="to-lower-case-command"
           name="Lower Case"
           mnemonic="L"

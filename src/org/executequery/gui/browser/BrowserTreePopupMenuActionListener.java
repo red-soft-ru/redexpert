@@ -173,11 +173,15 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         }
     }
 
+    public void moveToFolder(ActionEvent e) {
+        treePanel.moveToFolder(currentSelection);
+    }
+
     public void properties(ActionEvent e) {
         //reloadView = true;
         treePanel.setSelectedConnection(currentSelection);
     }
-
+    
     public void connect(ActionEvent e) {
         treePanel.connect(currentSelection);
     }

@@ -28,8 +28,8 @@ import org.underworldlabs.swing.plaf.smoothgradient.SmoothGradientLookAndFeel;
  * Themed extension to SmoothGradientLookAndFeel.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1205 $
- * @date     $Date: 2013-02-24 22:08:58 +1100 (Sun, 24 Feb 2013) $
+ * @version  $Revision$
+ * @date     $Date$
  */
 public class UnderworldLabsFlatLookAndFeel extends SmoothGradientLookAndFeel {
     

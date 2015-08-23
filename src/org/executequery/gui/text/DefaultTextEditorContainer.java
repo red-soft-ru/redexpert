@@ -23,6 +23,7 @@ package org.executequery.gui.text;
 import java.awt.Component;
 import java.awt.LayoutManager;
 import java.awt.print.Printable;
+
 import javax.swing.JPanel;
 import javax.swing.text.JTextComponent;
 
@@ -133,6 +134,14 @@ public class DefaultTextEditorContainer extends JPanel
     
     public String getEditorText() {
         return textComponent.getText();
+    }
+    
+    public void changeSelectionToUnderscore() {
+        TextUtilities.changeSelectionToUnderscore(textComponent);
+    }
+    
+    public void changeSelectionToCamelCase() {
+        TextUtilities.changeSelectionToCamelCase(textComponent);
     }
     
     public void changeSelectionCase(boolean upper) {

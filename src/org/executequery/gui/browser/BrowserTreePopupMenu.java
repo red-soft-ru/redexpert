@@ -108,6 +108,7 @@ class BrowserTreePopupMenu extends JPopupMenu {
         createImportMenu(listener);
 
         addSeparator();
+        add(createMenuItem("Move to folder...", "moveToFolder", listener));
         add(createMenuItem("Connection Properties", "properties", listener));
     }
 

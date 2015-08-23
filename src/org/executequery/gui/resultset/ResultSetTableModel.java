@@ -324,7 +324,15 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     private boolean isOpenAndValid(ResultSet resultSet) {
 
-        return (resultSet != null);
+        try {
+        
+            return (resultSet != null && !resultSet.isClosed());
+        
+        } catch (SQLException e) {
+            
+            Log.debug("Error checking if result set is open and valid - " + e.getMessage());            
+            return false;
+        }
     }
 
     private void resetMetaData() {

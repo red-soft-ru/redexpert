@@ -25,8 +25,8 @@ import java.awt.event.ActionEvent;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1185 $
- * @date     $Date: 2013-02-08 22:16:55 +1100 (Fri, 08 Feb 2013) $
+ * @version  $Revision$
+ * @date     $Date$
  */
 public class RefreshAutocompleteListCommand extends AbstractQueryEditorCommand {
 

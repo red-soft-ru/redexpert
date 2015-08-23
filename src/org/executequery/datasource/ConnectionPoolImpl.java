@@ -20,6 +20,7 @@
 
 package org.executequery.datasource;
 
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -57,6 +59,8 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
     private boolean supportsTransactions;
 
     private DataSource dataSource;
+    
+    private SshTunnel sshTunnel;
     
     public ConnectionPoolImpl(DatabaseConnection databaseConnection) {
 
@@ -114,12 +118,17 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
             pooledConnection.destroy();
         }
 
+        destroySshTunnel();
         activeConnections.clear();
         openConnections.clear();
-//        ((SimpleDataSource) dataSource).deregister();
     }
 
     public synchronized Connection getConnection() {
+
+        if (databaseConnection.isSshTunnel() && sshTunnel == null) {
+
+            createSshTunnel();            
+        }
 
         if (openConnections.size() < minimumConnections) {
             
@@ -157,6 +166,21 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
         }
 
         return connection;
+    }
+
+    private void destroySshTunnel() {
+    
+        if (sshTunnel != null) {
+            
+            sshTunnel.disconnect(databaseConnection);
+            sshTunnel = null;
+        }
+    }
+    
+    private void createSshTunnel() {
+
+        sshTunnel = new JschSshTunnel();
+        sshTunnel.connect(databaseConnection);        
     }
 
     private void ensureCapacity(int capacity) {
@@ -204,12 +228,26 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
 
             if (dataSource == null) {
                 
-                dataSource = new SimpleDataSource(databaseConnection);
+                DatabaseConnection _databaseConnection = databaseConnection;
+                if (databaseConnection.isSshTunnel()) {
+                    
+                    if (sshTunnel == null) {
+
+                        createSshTunnel();
+                    }
+                    
+                    _databaseConnection = databaseConnection.copy();
+                    _databaseConnection.setHost("localhost");
+                    _databaseConnection.setPort(String.valueOf(sshTunnel.getTunnelPort()));
+                }
+
+                dataSource = new SimpleDataSource(_databaseConnection);
             }
 
             Connection realConnection = dataSource.getConnection();
             if (realConnection == null) {
                 
+                destroySshTunnel();
                 throw new DataSourceException(
                         "A connection to the database could not be " +
                 		"established.\nPlease ensure that the details " +
@@ -239,6 +277,7 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
             
         } catch (SQLException e) {
 
+            destroySshTunnel();
             rethrowAsDataSourceException(e);
         }
 
@@ -381,15 +420,22 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
             isolationLevelToApply = defaultTxIsolation;
         }
 
+        Log.debug("Setting transaction isolation level to open connections as [ " 
+                + nameForTransactionIsolationLevel(isolationLevelToApply) + " ]");
+        
         try {
         
-            for (Connection connection : openConnections) {
+            synchronized (openConnections) {
 
-                if (!connection.isClosed()) {
-                
-                    connection.setTransactionIsolation(isolationLevelToApply);
+                for (Connection connection : openConnections) {
+    
+                    if (!connection.isClosed()) {
+                    
+                        connection.setTransactionIsolation(isolationLevelToApply);
+                    }
+    
                 }
-
+                
             }
 
         } catch (SQLException e) {
@@ -397,6 +443,27 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
             throw new DataSourceException(e);
         }
         
+    }
+
+    private String nameForTransactionIsolationLevel(int isolationLevel) {
+
+        for (Field field : Connection.class.getFields()) {
+            
+            String name = field.getName();
+            if (StringUtils.startsWith(name, "TRANSACTION_")) {
+                
+                try {
+                    if (isolationLevel == field.getInt(null)) {
+                        
+                        return name;
+                    }
+                } catch (IllegalArgumentException | IllegalAccessException e) {}
+
+            }
+            
+        }
+        
+        return String.valueOf(isolationLevel);
     }
 
 }

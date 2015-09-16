@@ -86,11 +86,6 @@ public class CreateDatabasePanel extends ActionPanel
     private JButton connectButton;
 
     /**
-     * disconnect button
-     */
-    private JButton disconnectButton;
-
-    /**
      * the saved jdbc drivers
      */
     private java.util.List<DatabaseDriver> jdbcDrivers;
@@ -207,7 +202,6 @@ public class CreateDatabasePanel extends ActionPanel
         addDriverFields(mainPanel, gbc);
 
         connectButton = createButton("Create", CREATE_ACTION_COMMAND, 'T');
-        disconnectButton = createButton("Disconnect", "disconnect", 'D');
 
         JPanel buttons = new JPanel(new GridBagLayout());
         gbc.gridy++;
@@ -223,7 +217,6 @@ public class CreateDatabasePanel extends ActionPanel
         buttons.add(connectButton, gbc);
         gbc.gridx++;
         gbc.weightx = 0;
-        buttons.add(disconnectButton, gbc);
 
         gbc.insets.right = 0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -799,7 +792,6 @@ public class CreateDatabasePanel extends ActionPanel
 
         txApplyButton.setEnabled(enable);
         connectButton.setEnabled(!enable);
-        disconnectButton.setEnabled(enable);
 
         if (enable) {
 
@@ -1041,7 +1033,6 @@ public class CreateDatabasePanel extends ActionPanel
     public void setConnectionValue(DatabaseHost host) {
 
         connectButton.setEnabled(false);
-        disconnectButton.setEnabled(false);
 
         if (databaseConnection != null) {
 

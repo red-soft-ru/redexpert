@@ -1,7 +1,7 @@
 /*
  * DriverListPanel.java
  *
- * Copyright (C) 2002-2013 Takis Diakoumis
+ * Copyright (C) 2002-2015 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -54,8 +54,8 @@ import org.executequery.repository.RepositoryCache;
  * Driver root node view panel.
  *
  * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+ * @version  $Revision: 1487 $
+ * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
  */
 public class DriverListPanel extends AbstractFormObjectViewPanel
                                   implements MouseListener,
@@ -254,6 +254,7 @@ public class DriverListPanel extends AbstractFormObjectViewPanel
     }
 
 }
+
 
 
 

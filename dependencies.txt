@@ -69,8 +69,8 @@ Licence: GPL
 
 Liquibase
 -----------------------
-Lib jar file: liquibase-3.3.0.jar
-Version: 3.3.0
+Lib jar file: liquibase-3.4.1.jar
+Version: 3.4.1
 URL: http://www.liquibase.org/
 Used in: Selected SQL statement generation
 Licence: LGPL

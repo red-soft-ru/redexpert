@@ -1,7 +1,7 @@
 /*
  * ResultSetTableModel.java
  *
- * Copyright (C) 2002-2013 Takis Diakoumis
+ * Copyright (C) 2002-2015 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -44,8 +44,8 @@ import org.underworldlabs.util.MiscUtils;
  * The sql result set table model.
  * 
  * @author Takis Diakoumis
- * @version $Revision$
- * @date $Date$
+ * @version $Revision: 1494 $
+ * @date $Date: 2015-09-11 16:56:32 +1000 (Fri, 11 Sep 2015) $
  */
 public class ResultSetTableModel extends AbstractSortableTableModel {
 
@@ -228,8 +228,42 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                             case Types.BLOB:
                                 value.setValue(resultSet.getBlob(i));
                                 break;
-                            default:
+                            case Types.BIT:
+                            case Types.TINYINT:
+                            case Types.SMALLINT:
+                            case Types.INTEGER:
+                            case Types.BIGINT:
+                            case Types.FLOAT:
+                            case Types.REAL:
+                            case Types.DOUBLE:
+                            case Types.NUMERIC:
+                            case Types.DECIMAL:
+                            case Types.NULL:
+                            case Types.OTHER:
+                            case Types.JAVA_OBJECT:
+                            case Types.DISTINCT:
+                            case Types.STRUCT:
+                            case Types.ARRAY:
+                            case Types.REF:
+                            case Types.DATALINK:
+                            case Types.BOOLEAN:
+                            case Types.ROWID:
+                            case Types.NCHAR:
+                            case Types.NVARCHAR:
+                            case Types.LONGNVARCHAR:
+                            case Types.NCLOB:
+                            case Types.SQLXML:
+
+                                // use getObject for all other known types
+                                
                                 value.setValue(resultSet.getObject(i));
+                                break;
+
+                            default:
+                                
+                                // otherwise try as string
+                                
+                                asStringOrObject(value, resultSet, i);
                                 break;
                         }
 
@@ -320,6 +354,27 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             }
         }
 
+    }
+
+    private void asStringOrObject(RecordDataItem value, ResultSet resultSet, int column) throws SQLException {
+
+        // often getString returns a more useful representation
+        // return using getString where object.toString is the default impl 
+        
+        Object valueAsObject = resultSet.getObject(column); 
+        String valueAsString = resultSet.getString(column);
+        
+        if (valueAsObject != null) {
+            
+            String valueAsObjectToString = valueAsObject.toString();
+            String toString = valueAsObject.getClass().getName() + "@" + Integer.toHexString(valueAsObject.hashCode());
+            if (!StringUtils.equals(valueAsObjectToString, toString)) {
+
+                valueAsString = valueAsObjectToString;
+            }
+        }
+
+        value.setValue(valueAsString);
     }
 
     private boolean isOpenAndValid(ResultSet resultSet) {
@@ -716,3 +771,4 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     }
 
 }
+

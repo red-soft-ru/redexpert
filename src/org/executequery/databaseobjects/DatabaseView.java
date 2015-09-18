@@ -1,7 +1,7 @@
 /*
  * DatabaseView.java
  *
- * Copyright (C) 2002-2013 Takis Diakoumis
+ * Copyright (C) 2002-2015 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,5 +24,6 @@ package org.executequery.databaseobjects;
 public interface DatabaseView extends DatabaseObject {
 
 }
+
 
 

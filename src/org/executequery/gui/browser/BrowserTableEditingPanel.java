@@ -86,8 +86,8 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1497 $
+ * @date     $Date: 2015-09-18 00:15:39 +1000 (Fri, 18 Sep 2015) $
  */
 public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                                       implements ActionListener,
@@ -201,14 +201,12 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         
         // alter sql text panel
         alterSqlText = new SimpleSqlTextPanel();
-        alterSqlText.setSQLTextBackground(Color.WHITE);
         alterSqlText.setBorder(BorderFactory.createTitledBorder("Alter Table"));
         alterSqlText.setPreferredSize(new Dimension(100, 100));
         alterSqlText.getEditorTextComponent().addFocusListener(this);
 
         // create sql text panel
         createSqlText = new SimpleSqlTextPanel();
-        createSqlText.setSQLTextBackground(Color.WHITE);
         createSqlText.setBorder(BorderFactory.createTitledBorder("Create Table"));
         createSqlText.getEditorTextComponent().addFocusListener(this);
         

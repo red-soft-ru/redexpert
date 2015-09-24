@@ -21,6 +21,7 @@
 package org.underworldlabs.swing.menu;
 
 import java.awt.Dimension;
+import java.awt.Insets;
 
 import javax.swing.JMenu;
 
@@ -38,6 +39,12 @@ public class MainMenu extends JMenu {
         super(text);
     }
 
+    @Override
+    public Insets getInsets() {
+
+        return new Insets(0, 0, 0, 10);
+    }
+    
     public Dimension getPreferredSize() {
 
         Dimension preferredSize = super.getPreferredSize();
@@ -47,8 +54,3 @@ public class MainMenu extends JMenu {
     }
     
 }
-
-
-
-
-

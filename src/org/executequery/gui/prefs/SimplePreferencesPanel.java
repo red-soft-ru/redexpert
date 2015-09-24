@@ -35,6 +35,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
+import javax.swing.UIManager;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -58,8 +59,8 @@ import org.underworldlabs.util.SystemProperties;
  * Properties panel base.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1503 $
+ * @date     $Date: 2015-09-22 07:40:15 +1000 (Tue, 22 Sep 2015) $
  */
 public class SimplePreferencesPanel extends JPanel 
                                     implements MouseListener {
@@ -86,7 +87,7 @@ public class SimplePreferencesPanel extends JPanel
     private PreferencesTableModel tableModel;
 
     static {
-        GRID_COLOR = Color.LIGHT_GRAY;
+        GRID_COLOR = UIManager.getColor("Table.gridColor");// Color.LIGHT_GRAY;
         GUTTER_WIDTH = 10;
     }
     
@@ -276,18 +277,31 @@ public class SimplePreferencesPanel extends JPanel
             }
 
         }
+        fireTableDataChanged();
+    }
+    
+    protected void fireTableDataChanged() {
+        
         tableModel.fireTableDataChanged();
         
+        /*
         // reset the row heights
-        for (int i = 0; i < preferences.length; i++) {
+        for (int i = 1; i < preferences.length; i++) {
+            
             int type = preferences[i].getType();
             if (type == UserPreference.CATEGORY_TYPE) {
+            
                 table.setRowHeight(i, CATEGORY_ROW_HEIGHT);
+
             } else {
+            
                 table.setRowHeight(i, VALUE_ROW_HEIGHT);
             }
+        
         }
         
+        */
+
     }
     
     public UserPreference[] getPreferences() {
@@ -403,6 +417,7 @@ public class SimplePreferencesPanel extends JPanel
 
     } // class DisplayViewport
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     class TableComboBox extends JComboBox {
 
         public TableComboBox(Object[] values) {

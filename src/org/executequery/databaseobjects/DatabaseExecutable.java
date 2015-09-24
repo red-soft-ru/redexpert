@@ -28,8 +28,8 @@ import org.underworldlabs.jdbc.DataSourceException;
  * stored database procedure.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1504 $
+ * @date     $Date: 2015-09-23 11:09:23 +1000 (Wed, 23 Sep 2015) $
  */
 public interface DatabaseExecutable extends DatabaseObject {
     
@@ -50,7 +50,7 @@ public interface DatabaseExecutable extends DatabaseObject {
     /**
      * Adds the specified values as a single parameter to this object.
      */
-    void addParameter(String name, int type, int dataType, String sqlType, int size);
+    ProcedureParameter addParameter(String name, int type, int dataType, String sqlType, int size);
     
     /**
      * Returns this object's parameters.

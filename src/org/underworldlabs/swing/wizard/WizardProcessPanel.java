@@ -52,8 +52,8 @@ import org.underworldlabs.swing.plaf.UIUtils;
  * Base wizard process panel.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1496 $
+ * @date     $Date: 2015-09-17 17:09:08 +1000 (Thu, 17 Sep 2015) $
  */
 public abstract class WizardProcessPanel extends JPanel 
                                          implements ActionListener {
@@ -115,7 +115,7 @@ public abstract class WizardProcessPanel extends JPanel
     
     private void init() throws Exception {
         buttonsEnabled = true;
-        Border labelBorder = BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK);
+        Border labelBorder = BorderFactory.createMatteBorder(0, 0, 1, 0, UIUtils.getDefaultBorderColour());
 
         // setup the title label and right panel
         cardLayout = new CardLayout();

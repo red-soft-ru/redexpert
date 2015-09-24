@@ -40,8 +40,8 @@ import org.underworldlabs.util.FileUtils;
  * Used to display generated SQL CREATE TABLE statements.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1497 $
+ * @date     $Date: 2015-09-18 00:15:39 +1000 (Fri, 18 Sep 2015) $
  */
 public class GeneratedScriptViewer extends SimpleSqlTextPanel
                                    implements ActiveComponent,
@@ -101,7 +101,6 @@ public class GeneratedScriptViewer extends SimpleSqlTextPanel
     private void jbInit() throws Exception {
         setDefaultBorder();
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        setSQLTextBackground(Color.WHITE);
         EventMediator.registerListener(this);
     }
     

@@ -63,8 +63,8 @@ import org.underworldlabs.swing.plaf.UIUtils;
  * Central tab pane with scroll and menu buttons.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1498 $
+ * @date     $Date: 2015-09-18 10:16:35 +1000 (Fri, 18 Sep 2015) $
  */
 public class ScrollingTabPane extends AbstractTabPane 
                               implements SwingConstants {
@@ -1197,7 +1197,15 @@ public class ScrollingTabPane extends AbstractTabPane
             foreground = getTabForeground();
             activeColor = getSelectedTabBackground();
 
-            controlShadow = UIManager.getColor("controlShadow");
+            Color color = UIManager.getColor("executequery.TabbedPane.border");
+            if (color != null) {
+                
+                controlShadow = color;
+
+            } else {
+                
+                controlShadow = UIManager.getColor("controlShadow");                
+            }
 
             textIconGap = UIManager.getInt("TabbedPane.textIconGap");
             if (textIconGap == 0) {
@@ -1379,17 +1387,3 @@ public class ScrollingTabPane extends AbstractTabPane
     }
     
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

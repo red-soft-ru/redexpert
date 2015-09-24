@@ -24,14 +24,16 @@ import java.io.Serializable;
 import java.sql.Types;
 import java.util.Vector;
 
+import org.apache.commons.lang.StringUtils;
+
 /** 
  * This class represents a single table
  * column definition. This includes data types
  * sizes, scales and key referencing meta data.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1499 $
+ * @date     $Date: 2015-09-18 17:04:59 +1000 (Fri, 18 Sep 2015) $
  */
 public class ColumnData implements Serializable {
     
@@ -338,6 +340,11 @@ public class ColumnData implements Serializable {
     public String getFormattedDataType() {
 
         String typeString = getColumnType();
+        if (StringUtils.isBlank(typeString)) {
+            
+            return "";
+        }
+
         StringBuilder sb = new StringBuilder(typeString);
 
         // if the type doesn't end with a digit or it

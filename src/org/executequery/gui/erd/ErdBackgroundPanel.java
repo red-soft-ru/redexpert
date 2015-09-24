@@ -33,12 +33,13 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 
 import org.executequery.print.PrintingSupport;
+import org.underworldlabs.swing.plaf.UIUtils;
 
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1498 $
+ * @date     $Date: 2015-09-18 10:16:35 +1000 (Fri, 18 Sep 2015) $
  */
 public class ErdBackgroundPanel extends JComponent {
     
@@ -68,12 +69,12 @@ public class ErdBackgroundPanel extends JComponent {
      */
     public ErdBackgroundPanel(boolean displayGrid) {
         setDoubleBuffered(true);
-        setToDisplayGrid(displayGrid);
+        setDisplayGrid(displayGrid);
         
         //setToDisplayGrid(false);
         
         displayMargin = false;
-        backgroundColour = Color.WHITE;
+        backgroundColour = UIUtils.getColour("executequery.Erd.background", Color.WHITE);
         
         float dash2[] = {10f, 3.0f};
         dashedStroke = new BasicStroke(1.0f, 0, 0, 10f, dash2, 0.0f);
@@ -90,6 +91,9 @@ public class ErdBackgroundPanel extends JComponent {
         
         Graphics2D g = (Graphics2D)_g;
         
+        g.setColor(backgroundColour);
+        g.fillRect(0, 0, getWidth(), getHeight());
+
         // draw the background grid
         if (displayGrid) {
             int width = getWidth();
@@ -99,7 +103,8 @@ public class ErdBackgroundPanel extends JComponent {
             int gridSize = 25;
 
             if (gridColour == null) {
-                gridColour = new Color(-3158040);
+
+                gridColour = UIUtils.getColour("executequery.Erd.grid", new Color(-3158040));
             }
             g.setColor(gridColour);
 
@@ -171,11 +176,11 @@ public class ErdBackgroundPanel extends JComponent {
     
     public void setBackground(Color c) {
         
-        if (c != null)
+        if (c != null) {
             backgroundColour = c;
-        else
-            backgroundColour = Color.WHITE;
-        
+        } else {
+            UIUtils.getColour("executequery.Erd.background", Color.WHITE);
+        }
         displayGrid = false;
         gridImage = null;
     }
@@ -189,10 +194,10 @@ public class ErdBackgroundPanel extends JComponent {
     }
     
     public void swapBackground() {
-        setToDisplayGrid(!displayGrid);
+        setDisplayGrid(!displayGrid);
     }
     
-    private void setToDisplayGrid(boolean displayGrid) {
+    protected void setDisplayGrid(boolean displayGrid) {
         this.displayGrid = displayGrid;
         
         if (displayGrid) {

@@ -76,12 +76,17 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
     /**
      * Adds the specified values as a single parameter to this object.
      */
-    public void addParameter(String name, int type, int dataType,
+    public ProcedureParameter addParameter(String name, int type, int dataType,
                              String sqlType, int size) {
         if (parameters == null) {
+        
             parameters = new ArrayList<ProcedureParameter>();
         }
-        parameters.add(new ProcedureParameter(name, type, dataType, sqlType, size));
+
+        ProcedureParameter parameter = new ProcedureParameter(name, type, dataType, sqlType, size);
+        parameters.add(parameter);
+        
+        return parameter;
     }
     
     /**

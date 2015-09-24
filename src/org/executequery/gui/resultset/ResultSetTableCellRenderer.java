@@ -44,8 +44,8 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1499 $
+ * @date     $Date: 2015-09-18 17:04:59 +1000 (Fri, 18 Sep 2015) $
  */
 class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
@@ -224,7 +224,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     private void formatForDataItem(RecordDataItem recordDataItem, boolean isSelected) {
 
         boolean isDateValue = false;
-        Color color = Color.WHITE;
+        Color color = tableBackground;
         int sqlType = recordDataItem.getDataType();
         
         switch (sqlType) {
@@ -293,10 +293,11 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         if (!isSelected) {
 
-            if (color.getRGB() != Color.WHITE.getRGB()) {
+//            if (color.getRGB() != Color.WHITE.getRGB()) {
+            if (color.getRGB() != tableBackground.getRGB()) {
 
-                // if its not white, apply the bg otherwise run with 
-                // alternating bg alreday set - which may also be white
+                // if its not the bg, apply the bg otherwise run 
+                // with alternating bg alreday set 
                 
                 setBackground(color);
             }

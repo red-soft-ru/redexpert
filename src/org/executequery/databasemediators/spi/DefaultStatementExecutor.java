@@ -67,8 +67,8 @@ import org.underworldlabs.util.MiscUtils;
  * so as to maintain the correct rollback segment.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1504 $
+ * @date     $Date: 2015-09-23 11:09:23 +1000 (Wed, 23 Sep 2015) $
  */
 public class DefaultStatementExecutor implements StatementExecutor {
 
@@ -802,21 +802,35 @@ public class DefaultStatementExecutor implements StatementExecutor {
                 if (!MiscUtils.isNull(params)) {
 
                     // check that the proc accepts params
-                    if (!procedure.hasParameters()) {
-                        statementResult.setSqlException(
-                                new SQLException("Procedure call was invalid"));
-                        return statementResult;
-                    }
+//                    if (!procedure.hasParameters()) {
+//                    
+//                        statementResult.setSqlException(new SQLException("Procedure call was invalid"));
+//                        return statementResult;
+//                    }
 
                     int paramIndex = 0;
                     ProcedureParameter[] parameters = procedure.getParametersArray();
 
                     // extract the parameters
                     StringTokenizer st = new StringTokenizer(params, ",");
+                    
+                    // no defined params from the meta data but params supplied ??
+                    // attempt to execute as supplied and bubble up db error if an issue
+                    if (parameters.length == 0) {
+                        
+                        parameters = new ProcedureParameter[st.countTokens()];
+                        for (int i = 0, n = st.countTokens(); i < n; i++) {
+                            
+                            procedure.addParameter("UNKNOWN", DatabaseMetaData.procedureColumnIn, Types.VARCHAR, "VARCHAR", -1);
+                        }
+                        
+                        parameters = procedure.getParametersArray();
+                    }
+                    
                     while (st.hasMoreTokens()) {
 
                         String value = st.nextToken().trim();
-
+                        
                         // check applicable param
                         for (int i = paramIndex; i < parameters.length; i++) {
                             paramIndex++;

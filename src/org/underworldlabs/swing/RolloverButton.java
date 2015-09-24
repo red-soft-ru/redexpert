@@ -29,6 +29,9 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JToolTip;
+import javax.swing.UIManager;
+import javax.swing.plaf.ButtonUI;
+import javax.swing.plaf.InsetsUIResource;
 
 import org.underworldlabs.swing.plaf.base.AcceleratorToolTipUI;
 
@@ -39,8 +42,8 @@ import org.underworldlabs.swing.plaf.base.AcceleratorToolTipUI;
  * When the mouse pointer is moved away from the button, the borders are removed.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1497 $
+ * @date     $Date: 2015-09-18 00:15:39 +1000 (Fri, 18 Sep 2015) $
  */
 public class RolloverButton extends JButton
                            implements MouseListener {
@@ -144,6 +147,7 @@ public class RolloverButton extends JButton
      * Initialises the state of the button. 
      */
     private void init() {
+        
         selectionEnabled = true;
         setMargin(buttonInsets);
         setToolTipText(toolTip);
@@ -152,10 +156,17 @@ public class RolloverButton extends JButton
         addMouseListener(this);
     }
 
+//    @Override
+//    public void updateUI() {
+//
+//        setUI(new javax.swing.plaf.metal.MetalButtonUI());
+//    }
+    
     /**
      * Resets the buttons rollover state.
      */
     public void reset() {
+        
         setBorderPainted(false);
         setContentAreaFilled(false);
     }

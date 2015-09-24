@@ -54,8 +54,8 @@ import org.underworldlabs.swing.table.ComboBoxCellRenderer;
 /** <p>Query Editor syntax highlighting preferences panel.
  *
  *  @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1497 $
+ * @date     $Date: 2015-09-18 00:15:39 +1000 (Fri, 18 Sep 2015) $
  */
 public class PropertiesEditorSyntax extends PropertiesBasePanel
                                     implements Constants {
@@ -197,7 +197,6 @@ public class PropertiesEditorSyntax extends PropertiesBasePanel
         public SamplePanel() {
             size = 12;
             fontName = "monospaced";
-//            dim = new Dimension(363, 115);
         }
         
         public void paintComponent(Graphics g) {
@@ -209,7 +208,7 @@ public class PropertiesEditorSyntax extends PropertiesBasePanel
             int row = size + 5;
             int width = getWidth();
             
-            g.setColor(Color.WHITE);
+            g.setColor(SystemProperties.getColourProperty("user", "editor.text.background.colour"));
             g.fillRect(0, 0, width, (size + 5) * labels.length);
             
             for (int i = 0; i < labels.length; i++) {

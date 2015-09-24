@@ -21,7 +21,6 @@
 package org.executequery.gui.browser;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.print.Printable;
 import java.util.List;
 
@@ -33,8 +32,8 @@ import org.executequery.gui.erd.ErdViewerPanel;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1497 $
+ * @date     $Date: 2015-09-18 00:15:39 +1000 (Fri, 18 Sep 2015) $
  */
 public class ReferencesDiagramPanel extends JPanel {
     
@@ -43,8 +42,8 @@ public class ReferencesDiagramPanel extends JPanel {
     public ReferencesDiagramPanel() {
         super(new BorderLayout());
         viewerPanel = new ErdViewerPanel(false, false);
-        viewerPanel.setCanvasBackground(Color.WHITE);
         viewerPanel.setDefaultScaledView(0.85d);
+        viewerPanel.setDisplayGrid(false);
         setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
         add(viewerPanel, BorderLayout.CENTER);
     }

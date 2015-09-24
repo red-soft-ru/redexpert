@@ -52,12 +52,13 @@ import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.print.PrintFunction;
 import org.executequery.util.UserProperties;
+import org.underworldlabs.swing.plaf.UIUtils;
 
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1498 $
+ * @date     $Date: 2015-09-18 10:16:35 +1000 (Fri, 18 Sep 2015) $
  */
 @SuppressWarnings({"unchecked","rawtypes"})
 public class ErdViewerPanel extends DefaultTabView
@@ -569,6 +570,10 @@ public class ErdViewerPanel extends DefaultTabView
         
     }
     
+    public void setDisplayGrid(boolean displayGrid) {
+        bgPanel.setDisplayGrid(displayGrid);
+    }
+    
     /**
      * Sets the canvas background to the specified colour.
      */
@@ -580,7 +585,7 @@ public class ErdViewerPanel extends DefaultTabView
     
     protected Color getTableBackground() {
         if (tables.size() == 0) {
-            return Color.WHITE;
+            return UIUtils.getColour("executequery.Erd.tableBackground", Color.WHITE);
         } else {
             return ((ErdTable)tables.elementAt(0)).getTableBackground();
         }

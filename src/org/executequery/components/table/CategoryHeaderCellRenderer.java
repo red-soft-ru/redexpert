@@ -30,12 +30,13 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
 import org.executequery.Constants;
+import org.underworldlabs.swing.plaf.UIUtils;
 
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1498 $
+ * @date     $Date: 2015-09-18 10:16:35 +1000 (Fri, 18 Sep 2015) $
  */
 public class CategoryHeaderCellRenderer extends JLabel
                                         implements TableCellRenderer {
@@ -56,7 +57,7 @@ public class CategoryHeaderCellRenderer extends JLabel
 
         if (background == null) {
             background = table.getGridColor();
-            foreground = background.darker().darker();
+            foreground = UIUtils.getColour("executequery.PreferencesHeader.foreground", background.darker().darker());
         }
         
         setBackground(background);
@@ -68,7 +69,7 @@ public class CategoryHeaderCellRenderer extends JLabel
 
         if (font == null) {
             Font _font = table.getFont();
-            font = new Font(_font.getName(), Font.BOLD, _font.getSize());
+            font = new Font(_font.getName(), Font.BOLD, _font.getSize() + 1);
         }
 
         setFont(font);
@@ -86,17 +87,4 @@ public class CategoryHeaderCellRenderer extends JLabel
     }
     
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 

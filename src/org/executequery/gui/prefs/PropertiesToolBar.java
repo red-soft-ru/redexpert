@@ -20,7 +20,6 @@
 
 package org.executequery.gui.prefs;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -53,8 +52,8 @@ import org.underworldlabs.swing.toolbar.ToolBarWrapper;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1497 $
+ * @date     $Date: 2015-09-18 00:15:39 +1000 (Fri, 18 Sep 2015) $
  */
 public class PropertiesToolBar extends PropertiesBasePanel {
     
@@ -132,7 +131,7 @@ public class PropertiesToolBar extends PropertiesBasePanel {
         
         JScrollPane scroller = new JScrollPane(table);
         scroller.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scroller.getViewport().setBackground(Color.WHITE);
+        scroller.getViewport().setBackground(table.getBackground());
         
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();

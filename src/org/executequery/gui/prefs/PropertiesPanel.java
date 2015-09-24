@@ -22,7 +22,6 @@ package org.executequery.gui.prefs;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -58,8 +57,8 @@ import org.underworldlabs.swing.tree.DynamicTree;
  * Main system preferences panel.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1500 $
+ * @date     $Date: 2015-09-20 21:20:04 +1000 (Sun, 20 Sep 2015) $
  */
 public class PropertiesPanel extends JPanel
                              implements ActiveComponent,
@@ -107,7 +106,6 @@ public class PropertiesPanel extends JPanel
         if (openRow != -1) {
 
             selectOpenRow(openRow);
-//            tree.setSelectionRow(6);
         }
     }
 
@@ -117,7 +115,7 @@ public class PropertiesPanel extends JPanel
         splitPane.setDividerSize(6);
 
         int panelWidth = 900;
-        int panelHeight = 550;
+        int panelHeight = 700;
         setPreferredSize(new Dimension(panelWidth, panelHeight));
 
         JPanel mainPanel = new JPanel(new BorderLayout());
@@ -155,9 +153,10 @@ public class PropertiesPanel extends JPanel
         branches.add(node);
 
         node = new PropertyNode(PropertyTypes.EDITOR_GENERAL, "Editor");
-        node.addChild(new PropertyNode(PropertyTypes.EDITOR_BACKGROUND, "Colours"));
         node.addChild(new PropertyNode(PropertyTypes.EDITOR_FONTS, "Fonts"));
-        node.addChild(new PropertyNode(PropertyTypes.EDITOR_SYNTAX, "Syntax Colours"));
+//        node.addChild(new PropertyNode(PropertyTypes.EDITOR_BACKGROUND, "Colours"));
+        node.addChild(new PropertyNode(PropertyTypes.EDITOR_COLOURS, "Colours"));
+//        node.addChild(new PropertyNode(PropertyTypes.EDITOR_SYNTAX, "Syntax Colours"));
         branches.add(node);
 
         node = new PropertyNode(PropertyTypes.RESULTS, "Result Set Table");
@@ -210,7 +209,7 @@ public class PropertiesPanel extends JPanel
         js.setPreferredSize(leftPanelDim);
 
         JPanel leftPanel = new JPanel(new BorderLayout());
-        leftPanel.setBackground(Color.white);
+//        leftPanel.setBackground(Color.white);
         leftPanel.setMinimumSize(leftPanelDim);
         leftPanel.setMaximumSize(leftPanelDim);
         leftPanel.add(js, BorderLayout.CENTER);
@@ -329,20 +328,18 @@ public class PropertiesPanel extends JPanel
             case PropertyTypes.EDITOR_GENERAL:
                 panel = new PropertiesEditorGeneral();
                 break;
-            case PropertyTypes.EDITOR_BACKGROUND:
-                panel = new PropertiesEditorBackground();
+//            case PropertyTypes.EDITOR_BACKGROUND:
+//                panel = new PropertiesEditorBackground();
+//                break;
+            case PropertyTypes.EDITOR_COLOURS:
+                panel = new PropertiesEditorColours();
                 break;
-/*
-            case PropertyTypes.EDITOR_DISPLAY:
-                panel = new PropertiesEditorDisplay();
-                break;
-*/
             case PropertyTypes.EDITOR_FONTS:
                 panel = new PropertiesEditorFonts();
                 break;
-            case PropertyTypes.EDITOR_SYNTAX:
-                panel = new PropertiesEditorSyntax();
-                break;
+//            case PropertyTypes.EDITOR_SYNTAX:
+//                panel = new PropertiesEditorSyntax();
+//                break;
             case PropertyTypes.RESULTS:
                 panel = new PropertiesResultSetTableGeneral();
                 break;

@@ -24,6 +24,7 @@ package org.executequery.plaf;
 public enum LookAndFeelType {
 
     EXECUTE_QUERY("Execute Query Default"),
+    EXECUTE_QUERY_DARK("Execute Query Dark Theme"),
     EXECUTE_QUERY_GRADIENT("Execute Query Default 3D"),
     SMOOTH_GRADIENT("Smooth Gradient"),
     BUMPY_GRADIENT("Bumpy Gradient"),
@@ -59,6 +60,7 @@ public enum LookAndFeelType {
         return (this == SMOOTH_GRADIENT ||
                 this == EXECUTE_QUERY_THEME ||
                 this == EXECUTE_QUERY ||
+                this == EXECUTE_QUERY_DARK ||
                 this == EXECUTE_QUERY_GRADIENT);
     }
     

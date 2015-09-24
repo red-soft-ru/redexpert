@@ -31,11 +31,13 @@ import java.util.Vector;
 
 import javax.swing.JLayeredPane;
 
+import org.underworldlabs.swing.plaf.UIUtils;
+
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1499 $
+ * @date     $Date: 2015-09-18 17:04:59 +1000 (Fri, 18 Sep 2015) $
  */
 @SuppressWarnings({"rawtypes"})
 public class ErdLayeredPane extends JLayeredPane
@@ -153,7 +155,7 @@ public class ErdLayeredPane extends JLayeredPane
     }
     
     public Color getBackground() {
-        return Color.WHITE;
+        return UIUtils.getColour("executequery.Erd.background", Color.WHITE);
     }
     
     public void mouseDragged(MouseEvent e) {

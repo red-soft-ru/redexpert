@@ -23,6 +23,7 @@ package org.executequery.gui.prefs;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.underworldlabs.util.SystemProperties;
 
@@ -30,10 +31,10 @@ import org.underworldlabs.util.SystemProperties;
  * The properties for the editor's results panel cell colours
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1503 $
+ * @date     $Date: 2015-09-22 07:40:15 +1000 (Tue, 22 Sep 2015) $
  */
-public class PropertiesResultSetTableColours extends PropertiesBasePanel {
+public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
 
     private SimplePreferencesPanel preferencesPanel;
 
@@ -119,15 +120,26 @@ public class PropertiesResultSetTableColours extends PropertiesBasePanel {
                 "Alternating row background",
                 SystemProperties.getColourProperty("user", key)));
         
-        UserPreference[] preferences =
-                (UserPreference[])list.toArray(new UserPreference[list.size()]);
+        UserPreference[] preferences = (UserPreference[])list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
 
     }
 
     public void restoreDefaults() {
-        preferencesPanel.restoreDefaults();
+        
+        Properties defaults = defaultsForTheme();
+        UserPreference[] preferences = preferencesPanel.getPreferences();
+        for (UserPreference userPreference : preferences) {
+            
+            if (userPreference.getType() == UserPreference.COLOUR_TYPE) {
+             
+                userPreference.reset(asColour(defaults.getProperty(userPreference.getKey())));
+            }
+            
+        }
+        
+        preferencesPanel.fireTableDataChanged();
     }
 
     public void save() {
@@ -135,9 +147,4 @@ public class PropertiesResultSetTableColours extends PropertiesBasePanel {
     }
 
 }
-
-
-
-
-
 

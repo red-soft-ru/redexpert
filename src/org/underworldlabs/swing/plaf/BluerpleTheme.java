@@ -34,8 +34,8 @@ import javax.swing.plaf.metal.DefaultMetalTheme;
  * Metal Look and feel theme extension using SmoothGradient.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1498 $
+ * @date     $Date: 2015-09-18 10:16:35 +1000 (Fri, 18 Sep 2015) $
  */
 public class BluerpleTheme extends DefaultMetalTheme {
     
@@ -123,6 +123,11 @@ public class BluerpleTheme extends DefaultMetalTheme {
             "TabbedPane.tabAreaBackground", getSecondary3(),
             "TabbedPane.tabAreaInsets", new Insets(4, 2, 0, 6),
             "TabbedPane.unselectedBackground", cccccc,
+            
+            "executequery.TabbedPane.border", new ColorUIResource(153,153,153),
+            "executequery.TabbedPane.icon", new ColorUIResource(153,153,153).darker().darker(),            
+            "executequery.GradientLabel.foreground", new ColorUIResource(0x333333),
+            "executequery.Border.colour", new ColorUIResource(153,153,153),
             
             "ToolTip.border", new BluerpleBorder(),
             

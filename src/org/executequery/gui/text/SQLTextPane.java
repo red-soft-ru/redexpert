@@ -45,8 +45,8 @@ import org.executequery.repository.RepositoryCache;
  * Base SQL text pane object.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1497 $
+ * @date     $Date: 2015-09-18 00:15:39 +1000 (Fri, 18 Sep 2015) $
  */
 public class SQLTextPane extends JTextPane
                          implements CaretListener {
@@ -132,6 +132,7 @@ public class SQLTextPane extends JTextPane
 
         setSelectionColor(QueryEditorSettings.getSelectionColour());
         setSelectedTextColor(QueryEditorSettings.getSelectedTextColour());
+        setBackground(QueryEditorSettings.getEditorBackground());
 
         Font font = QueryEditorSettings.getEditorFont();
         setFont(font);

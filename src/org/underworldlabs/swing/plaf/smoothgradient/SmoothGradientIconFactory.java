@@ -41,8 +41,8 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1496 $
+ * @date     $Date: 2015-09-17 17:09:08 +1000 (Thu, 17 Sep 2015) $
  */
 final class SmoothGradientIconFactory {
     
@@ -460,7 +460,7 @@ final class SmoothGradientIconFactory {
             g.fillRect(x, y, SIZE - 1, SIZE - 1);
             g.setColor(Color.gray);
             g.drawRect(x, y, SIZE - 1, SIZE - 1);
-            g.setColor(Color.black);
+            g.setColor(Color.gray);
             g.drawLine(x + 2, y + HALF_SIZE, x + (SIZE - 3), y + HALF_SIZE);
         }
         

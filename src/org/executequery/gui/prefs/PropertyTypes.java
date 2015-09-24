@@ -23,8 +23,8 @@ package org.executequery.gui.prefs;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1500 $
+ * @date     $Date: 2015-09-20 21:20:04 +1000 (Sun, 20 Sep 2015) $
  */
 public class PropertyTypes {
 
@@ -55,6 +55,7 @@ public class PropertyTypes {
     public static final int TOOLBAR_BROWSER = 24;
     public static final int RESULT_SET_CELL_COLOURS = 25;
     public static final int BROWSER_DATA_TAB = 26;
+    public static final int EDITOR_COLOURS = 27;
 
     /** Creates a new instance of PropertyTypes */
     private PropertyTypes() {}

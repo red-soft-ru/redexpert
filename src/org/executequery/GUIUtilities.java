@@ -105,6 +105,7 @@ import org.underworldlabs.swing.ExceptionErrorDialog;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.actions.BaseActionCommand;
+import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.toolbar.ToolBarProperties;
 import org.underworldlabs.swing.util.IconUtilities;
 import org.underworldlabs.util.SystemProperties;
@@ -123,8 +124,8 @@ import org.underworldlabs.util.SystemProperties;
  * buttons as may apply) from here.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1497 $
+ * @date     $Date: 2015-09-18 00:15:39 +1000 (Fri, 18 Sep 2015) $
  */
 public final class GUIUtilities {
 
@@ -1053,7 +1054,7 @@ public final class GUIUtilities {
      * @return the system default border colour
      */
     public static Color getDefaultBorderColour() {
-        return UIManager.getColor("controlShadow");
+        return UIUtils.getDefaultBorderColour();
     }
 
     /**

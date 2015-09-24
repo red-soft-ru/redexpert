@@ -30,16 +30,14 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
-import javax.swing.plaf.ColorUIResource;
 
 import org.underworldlabs.swing.GradientLabel;
-import org.underworldlabs.swing.plaf.UIUtils;
 
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1496 $
+ * @date     $Date: 2015-09-17 17:09:08 +1000 (Thu, 17 Sep 2015) $
  */
 public abstract class AbstractFormObjectViewPanel extends JPanel
                                                   implements FormObjectView {
@@ -64,9 +62,9 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
         super(new BorderLayout());
         
         gradientLabel = new GradientLabel();
-        if (!UIUtils.isNativeMacLookAndFeel()) {
-        	gradientLabel.setForeground(new ColorUIResource(0x333333));
-        }
+//        if (!UIUtils.isNativeMacLookAndFeel()) {
+//        	gradientLabel.setForeground(new ColorUIResource(0x333333));
+//        }
         add(gradientLabel, BorderLayout.NORTH);
     }
 
@@ -127,9 +125,3 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
     }
     
 }
-
-
-
-
-
-

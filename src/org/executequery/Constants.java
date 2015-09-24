@@ -26,8 +26,8 @@ import java.awt.Insets;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1500 $
+ * @date     $Date: 2015-09-20 21:20:04 +1000 (Sun, 20 Sep 2015) $
  */
 public interface Constants {
 
@@ -43,16 +43,16 @@ public interface Constants {
     
     /** Recognised syntax types */
     String[] SYNTAX_TYPES = {"normal", 
-                                                 "keyword", 
-                                                 "quote",
-                                                 "singlecomment", 
-                                                 "multicomment", 
-                                                 "number",
-                                                 "operator", 
-                                                 "braces", 
-                                                 "literal", 
-                                                 "braces.match1",
-                                                 "braces.error"};
+                             "keyword", 
+                             "quote",
+                             "singlecomment", 
+                             "multicomment", 
+                             "number",
+                             "operator", 
+                             "braces", 
+                             "literal", 
+                             "braces.match1",
+                             "braces.error"};
 
     /** The properties file style name prefix */
     String STYLE_NAME_PREFIX = "sqlsyntax.style.";

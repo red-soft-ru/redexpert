@@ -35,8 +35,8 @@ public class JMenuItemFactory {
 
     public JMenuItem createJMenuItem(JMenuItem parent, MenuItem menuItem) {
         
-        JMenuItem jMenuItem = createMenuItemForImpl(
-                menuItem.getImplementingClass());
+        JMenuItem jMenuItem = createMenuItemForImpl(menuItem.getImplementingClass());
+
         try {
         if (jMenuItem instanceof JMenu) {
 
@@ -95,8 +95,7 @@ public class JMenuItemFactory {
         return jMenuItem;
     }
 
-    private void addMenuItemToParent(JMenuItem parent, MenuItem menuItem,
-            JMenuItem jMenuItem) {
+    private void addMenuItemToParent(JMenuItem parent, MenuItem menuItem, JMenuItem jMenuItem) {
 
         if (menuItem.hasIndex()) {
 
@@ -141,9 +140,7 @@ public class JMenuItemFactory {
         
         try {
 
-            Class<?> _class = Class.forName(implClass, true,
-                    ClassLoader.getSystemClassLoader());
-            
+            Class<?> _class = Class.forName(implClass, true, ClassLoader.getSystemClassLoader());            
             Object object = _class.newInstance();
             
             return (JMenuItem) object;

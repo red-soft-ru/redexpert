@@ -68,7 +68,6 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
     protected byte[] readLob() {
     	
         Object value = getValue();
-
         if (value instanceof String) {
 
             return ((String) value).getBytes();

@@ -52,8 +52,8 @@ import org.underworldlabs.swing.plaf.UIUtils;
  * Left, right and bottom docked tab pane.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1498 $
+ * @date     $Date: 2015-09-18 10:16:35 +1000 (Fri, 18 Sep 2015) $
  */
 public class DockedTabPane extends AbstractTabPane {
     
@@ -690,7 +690,16 @@ public class DockedTabPane extends AbstractTabPane {
             activeColor = UIUtils.getDefaultActiveBackgroundColour();
             */
 
-            controlShadow = UIManager.getColor("controlShadow");
+//            controlShadow = UIManager.getColor("controlShadow");
+            Color color = UIManager.getColor("executequery.TabbedPane.border");
+            if (color != null) {
+                
+                controlShadow = color;
+
+            } else {
+                
+                controlShadow = UIManager.getColor("controlShadow");                
+            }
 
             textIconGap = 2;
             tabInsets = tabInsets();

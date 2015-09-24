@@ -50,8 +50,8 @@ import org.underworldlabs.swing.plaf.UIUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1496 $
+ * @date     $Date: 2015-09-17 17:09:08 +1000 (Thu, 17 Sep 2015) $
  */
 public class ToolBar extends AbstractToolBarPanel
                      implements MouseListener,
@@ -444,7 +444,7 @@ public class ToolBar extends AbstractToolBarPanel
             }
 
             if (foreground == null) {
-                foreground = Color.WHITE;
+                foreground = UIManager.getDefaults().getColor("controlLtHighlight");
             }
 
         }
@@ -528,7 +528,7 @@ public class ToolBar extends AbstractToolBarPanel
             }
             else {
                 Shape clip = g.getClip();
-                g.setClip(1, 1, getWidth() - 2, height - 4);
+                g.setClip(1, 1, getWidth() - 3, height - 3);
 
                 g.setColor(foreground);
                 for (int x = 1; x <= height; x += 4) {

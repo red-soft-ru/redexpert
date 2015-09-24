@@ -36,12 +36,13 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.executequery.gui.browser.ColumnData;
+import org.underworldlabs.swing.plaf.UIUtils;
 
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1498 $
+ * @date     $Date: 2015-09-18 10:16:35 +1000 (Fri, 18 Sep 2015) $
  */
 @SuppressWarnings({"unchecked","rawtypes"})
 public class ErdTable extends ErdMoveableComponent
@@ -113,7 +114,7 @@ public class ErdTable extends ErdMoveableComponent
         newTable = false;
         editable = false;
         displayReferencedKeysOnly = parent.isDisplayKeysOnly();
-        tableBackground = Color.WHITE;
+        tableBackground = UIUtils.getColour("executequery.Erd.tableBackground", Color.WHITE);
         
         try {
             jbInit();

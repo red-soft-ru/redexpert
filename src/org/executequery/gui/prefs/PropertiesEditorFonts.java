@@ -43,8 +43,8 @@ import org.underworldlabs.swing.GUIUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1497 $
+ * @date     $Date: 2015-09-18 00:15:39 +1000 (Fri, 18 Sep 2015) $
  */
 public class PropertiesEditorFonts extends PropertiesBasePanel
                                    implements ListSelectionListener {
@@ -134,7 +134,7 @@ public class PropertiesEditorFonts extends PropertiesBasePanel
         samplePanel.add(italicSample);
         samplePanel.add(boldSample);
         samplePanel.add(italicBoldSample);
-        samplePanel.setBackground(Color.white);
+        samplePanel.setBackground(SystemProperties.getColourProperty("user", "editor.text.background.colour"));
         
         gbc.gridx = 0;
         gbc.gridy++;

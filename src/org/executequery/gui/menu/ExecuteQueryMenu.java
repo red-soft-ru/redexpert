@@ -20,6 +20,7 @@
 
 package org.executequery.gui.menu;
 
+import java.awt.Insets;
 import java.util.List;
 
 import javax.swing.JMenu;
@@ -35,8 +36,8 @@ import org.executequery.repository.spi.MenuItemXMLRepository;
  * Application main menu.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1496 $
+ * @date     $Date: 2015-09-17 17:09:08 +1000 (Thu, 17 Sep 2015) $
  */
 public class ExecuteQueryMenu extends JMenuBar {
    
@@ -57,7 +58,6 @@ public class ExecuteQueryMenu extends JMenuBar {
     private void init() throws Exception {
         
         setBorder(null);
-        
         createMenus();
     }
 
@@ -65,8 +65,7 @@ public class ExecuteQueryMenu extends JMenuBar {
         
         jMenuItemFactory = new JMenuItemFactory();
         
-        MenuItemRepository menuItemRepository = new MenuItemXMLRepository();
-        
+        MenuItemRepository menuItemRepository = new MenuItemXMLRepository();        
         List<MenuItem> menuItems = menuItemRepository.getMenuItems();
         
         construct(menuItems);

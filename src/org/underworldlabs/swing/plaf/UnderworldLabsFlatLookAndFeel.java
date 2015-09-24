@@ -35,7 +35,11 @@ public class UnderworldLabsFlatLookAndFeel extends SmoothGradientLookAndFeel {
     
     public UnderworldLabsFlatLookAndFeel() {
         
-        setCurrentTheme(new BluerpleTheme() {
+        setCurrentTheme(bluerpleTheme());        
+    }
+
+    private BluerpleTheme bluerpleTheme() {
+        return new BluerpleTheme() {
             @Override
             public void addCustomEntriesToTable(UIDefaults table) {
 
@@ -47,7 +51,7 @@ public class UnderworldLabsFlatLookAndFeel extends SmoothGradientLookAndFeel {
 
                 return 13;
             }
-        });
+        };
     }
     
     public String getName() {

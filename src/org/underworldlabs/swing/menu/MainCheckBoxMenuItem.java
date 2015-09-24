@@ -58,8 +58,3 @@ public class MainCheckBoxMenuItem extends JCheckBoxMenuItem {
     }
 
 }
-
-
-
-
-

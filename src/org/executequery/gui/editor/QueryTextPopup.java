@@ -42,7 +42,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
@@ -51,13 +50,14 @@ import org.executequery.sql.SqlMessages;
 import org.underworldlabs.swing.ActionPanel;
 import org.underworldlabs.swing.LinkButton;
 import org.underworldlabs.swing.RolloverButton;
+import org.underworldlabs.swing.plaf.UIUtils;
 
 /**
  * Popup panel for the results panel tab rollovers.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1498 $
+ * @date     $Date: 2015-09-18 10:16:35 +1000 (Fri, 18 Sep 2015) $
  */
 class QueryTextPopup extends JPanel
                      implements MouseListener,
@@ -114,14 +114,11 @@ class QueryTextPopup extends JPanel
         this.parent = parent;
 
         header = new QueryTextPopupToolbar();
-        Color shadow = UIManager.getColor("controlDkShadow");
-        if (shadow == null) {
-            shadow = Color.DARK_GRAY;
-        }
+        Color shadow = UIUtils.getColour("controlDkShadow", Color.DARK_GRAY);
         header.setBorder(BorderFactory.createMatteBorder(0,0,1,0,shadow));
         
         textPane = new SQLTextPane();
-        textPane.setBackground(new Color(255,255,235));
+        textPane.setBackground(UIUtils.getColour("executequery.QueryEditor.queryTooltipBackground", new Color(255,255,235)));
         textPane.setEditable(false);
         
         header.addMouseListener(this);

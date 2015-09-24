@@ -30,8 +30,8 @@ import org.executequery.gui.prefs.PropertiesPanel;
 /** <p>Executes the Tools | Preferences command.
  *
  *  @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ *  @version  $Revision: 1500 $
+ *  @date     $Date: 2015-09-20 21:20:04 +1000 (Sun, 20 Sep 2015) $
  */
 public class PreferencesCommand extends OpenFrameCommand
                                 implements BaseCommand {
@@ -39,8 +39,7 @@ public class PreferencesCommand extends OpenFrameCommand
     public void execute(ActionEvent e) {
         try {
             GUIUtilities.showWaitCursor();
-            BaseDialog dialog = 
-                    createDialog(PropertiesPanel.TITLE, true);
+            BaseDialog dialog = createDialog(PropertiesPanel.TITLE, true);
             PropertiesPanel panel = new PropertiesPanel(dialog);
             dialog.addDisplayComponentWithEmptyBorder(panel);
             dialog.display();
@@ -49,46 +48,7 @@ public class PreferencesCommand extends OpenFrameCommand
             GUIUtilities.showNormalCursor();
         }
 
-        /*
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                new ExecuteQueryDialog(PropertiesPanel.TITLE,
-                                       new PropertiesPanel(), 
-                                       true);
-            }
-        });
-        */
-        /*
-        if (!isFrameOpen(PropertiesFrame.TITLE)) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    GUIUtilities.addInternalFrame(PropertiesFrame.TITLE,
-                                                  PropertiesFrame.FRAME_ICON,
-                                                  new PropertiesFrame(),
-                                                  true, false, false, false);
-                }
-            });
-        }
-         */
     }
     
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

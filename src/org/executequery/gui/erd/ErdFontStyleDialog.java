@@ -42,6 +42,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -54,8 +55,8 @@ import org.underworldlabs.swing.GUIUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1499 $
+ * @date     $Date: 2015-09-18 17:04:59 +1000 (Fri, 18 Sep 2015) $
  */
 public class ErdFontStyleDialog extends AbstractBaseDialog 
                                 implements ActionListener {
@@ -231,7 +232,7 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
         samplePanel.add(italicSample);
         samplePanel.add(boldSample);
         samplePanel.add(italicBoldSample);
-        samplePanel.setBackground(Color.white);
+        samplePanel.setBackground(UIManager.getColor("TextPane.background"));
         
         JScrollPane sampleScroll = new JScrollPane(samplePanel);
         sampleScroll.setPreferredSize(new Dimension(315, 62));

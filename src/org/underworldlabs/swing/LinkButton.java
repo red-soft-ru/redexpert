@@ -31,19 +31,18 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.border.Border;
 
+import org.underworldlabs.swing.plaf.UIUtils;
+
 /**
  * Simple button behaving/looking like a hyperlink item.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1498 $
+ * @date     $Date: 2015-09-18 10:16:35 +1000 (Fri, 18 Sep 2015) $
  */
 public class LinkButton extends JButton {
     
-//    private static final Color LINK_COLOR = new Color(0, 124, 165);// Color.blue;//new Color(-16485995); 
-//    private static final Color LINK_COLOR = new Color(-16622374);// Color.blue;//new Color(-16485995);
-
-    private static final Color LINK_COLOR = new Color(-15641140);// Color.blue;//new Color(-16485995); 
+    private static final Color LINK_COLOR = UIUtils.getColour("executequery.LinkButton.foreground", new Color(0x1155CC)); 
     private static final Border LINK_BORDER = BorderFactory.createEmptyBorder(0, 0, 1, 0); 
     private static final Border HOVER_BORDER = BorderFactory.createMatteBorder(0, 0, 1, 0, LINK_COLOR); 
     

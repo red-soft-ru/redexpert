@@ -70,8 +70,3 @@ public class DefaultFieldLabel extends JLabel {
     }
     
 }
-
-
-
-
-

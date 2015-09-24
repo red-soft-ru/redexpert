@@ -50,12 +50,13 @@ import org.executequery.components.ColourChooserButton;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.WidgetFactory;
 import org.underworldlabs.swing.AbstractBaseDialog;
+import org.underworldlabs.swing.plaf.UIUtils;
 
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1499 $
+ * @date     $Date: 2015-09-18 17:04:59 +1000 (Fri, 18 Sep 2015) $
  */
 public class ErdLineStyleDialog extends AbstractBaseDialog {
     
@@ -315,7 +316,7 @@ class ArrowStyleIcon extends ImageIcon {
     public void paintIcon(Component c, Graphics g, int x, int y) {
         
         // fill the background
-        g.setColor(Color.WHITE);
+        g.setColor(UIUtils.getColour("executequery.Erd.background", Color.WHITE));
         g.fillRect(0, 0, 290, 20);
         // draw the line
         g.setColor(Color.BLACK);
@@ -422,7 +423,7 @@ class LineWeightIcon extends ImageIcon {
         }
         
         // fill the background
-        g2d.setColor(Color.WHITE);
+        g2d.setColor(UIUtils.getColour("executequery.Erd.background", Color.WHITE));
         g2d.fillRect(0, 0, 290, 20);
         
         FontMetrics fm = g2d.getFontMetrics();
@@ -483,7 +484,7 @@ class LineStyleIcon extends ImageIcon {
         }
         
         // fill the background
-        g2d.setColor(Color.WHITE);
+        g2d.setColor(UIUtils.getColour("executequery.Erd.background", Color.WHITE));
         g2d.fillRect(0, 0, 290, 20);
         
         // draw the line style

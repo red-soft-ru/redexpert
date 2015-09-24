@@ -45,8 +45,8 @@ import org.executequery.sql.SqlMessages;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1497 $
+ * @date     $Date: 2015-09-18 00:15:39 +1000 (Fri, 18 Sep 2015) $
  */
 public class SQLSyntaxDocument extends DefaultStyledDocument 
                                implements TokenTypes {
@@ -132,7 +132,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
                                                 matcher(Constants.EMPTY));
 
         char PIPE = '|';
-        StringBuffer sb = new StringBuffer("\\b(");
+        StringBuilder sb = new StringBuilder("\\b(");
         String[] literals = {Constants.TRUE_LITERAL,
                              Constants.FALSE_LITERAL,
                              Constants.NULL_LITERAL};

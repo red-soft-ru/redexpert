@@ -1,5 +1,5 @@
 /*
- * GUIConstants.java
+ * SimpleMenuBorder.java
  *
  * Copyright (C) 2002-2015 Takis Diakoumis
  *
@@ -18,25 +18,16 @@
  *
  */
 
-package org.executequery.gui;
+package org.underworldlabs.swing.plaf;
 
-import java.awt.Insets;
+import javax.swing.plaf.BorderUIResource;
+import javax.swing.plaf.ColorUIResource;
 
-public class GUIConstants {
-
-    public static final int DEFAULT_FONT_SIZE = 12;
+public class SimpleMenuBorder extends BorderUIResource.LineBorderUIResource {
     
-    public static final int DEFAULT_FIELD_HEIGHT = 24;
-
-    public static final int DEFAULT_BUTTON_HEIGHT = 30;
-
-    public static final Insets DEFAULT_FIELD_MARGIN = new Insets(2, 2, 2, 2);
-
-    public static final int DEFAULT_MENU_HEIGHT = 24;
+    public SimpleMenuBorder(ColorUIResource borderColour) {
     
+        super(borderColour);
+    }
+
 }
-
-
-
-
-

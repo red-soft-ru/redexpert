@@ -49,8 +49,8 @@ import org.underworldlabs.swing.menu.SimpleTextComponentPopUpMenu;
  * executable SQL.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1497 $
+ * @date     $Date: 2015-09-18 00:15:39 +1000 (Fri, 18 Sep 2015) $
  */
 public class SimpleSqlTextPanel extends DefaultTextEditorContainer
                                 implements KeywordListener {
@@ -95,7 +95,7 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
         
         textPane = new SQLTextPane();
         textPane.setFont(new Font("monospaced", Font.PLAIN, 12));
-        textPane.setBackground(null);
+//        textPane.setBackground(null);
         textPane.setDragEnabled(true);
         textComponent = textPane;
         

@@ -44,8 +44,8 @@ import org.underworldlabs.swing.plaf.smoothgradient.SmoothGradientLookAndFeel;
  * colours, icons etc.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1501 $
+ * @date     $Date: 2015-09-21 17:57:11 +1000 (Mon, 21 Sep 2015) $
  */
 public class UIUtils {
            
@@ -76,9 +76,38 @@ public class UIUtils {
      * @return the system default border colour
      */
     public static Color getDefaultBorderColour() {
-        return UIManager.getColor("controlShadow");
+        
+        return getColour("executequery.Border.colour", "controlDkShadow");
     }
 
+    public static Color getColour(String key, String defaultKey) {
+        
+        Color color = UIManager.getColor(key);
+        if (color != null) {
+            
+            return color;
+
+        } else {
+            
+            return UIManager.getColor(defaultKey);       
+        }        
+        
+    }
+    
+    public static Color getColour(String key, Color defaultColour) {
+        
+        Color color = UIManager.getColor(key);
+        if (color != null) {
+            
+            return color;
+            
+        } else {
+            
+            return defaultColour;       
+        }        
+        
+    }
+    
     public static Border getDefaultLineBorder() {
         
         return BorderFactory.createLineBorder(getDefaultBorderColour());
@@ -144,6 +173,12 @@ public class UIUtils {
     public static boolean is3DLookAndFeel() {
         LookAndFeel lookAndFeel = UIManager.getLookAndFeel();
         return (lookAndFeel instanceof SmoothGradientLookAndFeel && !(lookAndFeel instanceof UnderworldLabsFlatLookAndFeel));
+    }
+    
+    public static boolean isDarkLookAndFeel() {
+        
+        LookAndFeel lookAndFeel = UIManager.getLookAndFeel();
+        return (lookAndFeel instanceof UnderworldLabsDarkFlatLookAndFeel);
     }
     
     /**

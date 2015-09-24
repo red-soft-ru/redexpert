@@ -35,11 +35,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.underworldlabs.swing.plaf.UIUtils;
+
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1499 $
+ * @date     $Date: 2015-09-18 17:04:59 +1000 (Fri, 18 Sep 2015) $
  */
 public class ErdTitlePanel extends ErdMoveableComponent implements Serializable {
     
@@ -175,7 +177,7 @@ public class ErdTitlePanel extends ErdMoveableComponent implements Serializable 
         g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
         RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         
-        g.setColor(Color.WHITE);
+        g.setColor(UIUtils.getColour("executequery.Erd.background", Color.WHITE));
         g.fillRect(1 + offsetX, 1 + offsetY, width + offsetX, height + offsetY);
         
         int row = 0;

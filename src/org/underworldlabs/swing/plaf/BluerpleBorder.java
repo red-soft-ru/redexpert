@@ -32,9 +32,14 @@ public class BluerpleBorder extends LineBorder {
     
     public BluerpleBorder() {
 
-        super(Color.GRAY);
+        this(Color.GRAY);
     }
 
+    public BluerpleBorder(Color colour) {
+        
+        super(colour);
+    }
+    
     @Override
     public Insets getBorderInsets(Component c) {
 
@@ -52,7 +57,3 @@ public class BluerpleBorder extends LineBorder {
     }
     
 }
-
-
-
-

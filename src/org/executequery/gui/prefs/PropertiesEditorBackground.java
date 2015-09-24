@@ -41,12 +41,13 @@ import java.util.TimerTask;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.executequery.Constants;
+import org.executequery.GUIUtilities;
 
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1497 $
+ * @date     $Date: 2015-09-18 00:15:39 +1000 (Fri, 18 Sep 2015) $
  */
 public class PropertiesEditorBackground extends PropertiesBasePanel 
                                         implements PropertyChangeListener {
@@ -250,6 +251,9 @@ public class PropertiesEditorBackground extends PropertiesBasePanel
             g.setColor(color);
             g.fillRect(1, 1, lineGutter, height - 2);
             
+            g.setColor(GUIUtilities.getDefaultBorderColour());
+            g.drawLine(lineGutter + 1, 1, lineGutter + 1, height - 2);
+            
             color = (Color)preferences[3].getValue();
             g.setColor(color);
 
@@ -259,10 +263,10 @@ public class PropertiesEditorBackground extends PropertiesBasePanel
 
             color = (Color)preferences[4].getValue();
             g.setColor(color);
-            g.fillRect(lineGutter, 1, width - lineGutter - 1, height - 2);
+            g.fillRect(lineGutter + 1, 1, width - lineGutter - 1, height - 2);
             
             g.setColor(Color.BLACK);
-            g.drawString(TEXT_PLAIN, lineGutter + 4, 15);
+            g.drawString(TEXT_PLAIN, lineGutter + 5, 15);
             
             color = (Color)preferences[7].getValue();
             g.setColor(color);
@@ -270,14 +274,14 @@ public class PropertiesEditorBackground extends PropertiesBasePanel
             
             color = (Color)preferences[6].getValue();
             g.setColor(color);
-            g.drawString(TEXT_NO_HIGHLIGHT, lineGutter + 4, lineHeight + 15);
+            g.drawString(TEXT_NO_HIGHLIGHT, lineGutter + 5, lineHeight + 15);
             
             color = (Color)preferences[8].getValue();
             g.setColor(color);
             g.fillRect(lineGutter, lineHeight * 2, width - lineGutter - 1, lineHeight);
             
             g.setColor(Color.BLACK);
-            g.drawString(TEXT_HIGHLIGHT, lineGutter + 4, (lineHeight * 2) + 15);
+            g.drawString(TEXT_HIGHLIGHT, lineGutter + 5, (lineHeight * 2) + 15);
             
             if (showCaret) {
                 color = (Color)preferences[1].getValue();

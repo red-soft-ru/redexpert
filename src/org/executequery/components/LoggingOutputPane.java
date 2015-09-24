@@ -33,12 +33,13 @@ import javax.swing.text.StyleConstants;
 import org.executequery.Constants;
 import org.executequery.sql.SqlMessages;
 import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.swing.plaf.UIUtils;
 
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1498 $
+ * @date     $Date: 2015-09-18 10:16:35 +1000 (Fri, 18 Sep 2015) $
  */
 public class LoggingOutputPane extends JTextPane {
         
@@ -146,16 +147,16 @@ public class LoggingOutputPane extends JTextPane {
         protected void initStyles() {
             // normal font styles
             plain = new SimpleAttributeSet();
-            StyleConstants.setForeground(plain, Color.BLACK);
+            StyleConstants.setForeground(plain, UIUtils.getColour("executequery.LoggingOutputPanel.plain", Color.BLACK));
 
             error = new SimpleAttributeSet();
-            StyleConstants.setForeground(error, Color.RED.darker());
+            StyleConstants.setForeground(error, UIUtils.getColour("executequery.LoggingOutputPanel.error", Color.RED.darker()));
 
             warning = new SimpleAttributeSet();
-            StyleConstants.setForeground(warning, new Color(222,136,8));
+            StyleConstants.setForeground(warning, UIUtils.getColour("executequery.LoggingOutputPanel.warning", new Color(222,136,8)));
 
             action = new SimpleAttributeSet();
-            StyleConstants.setForeground(action, Color.BLUE.darker());
+            StyleConstants.setForeground(action, UIUtils.getColour("executequery.LoggingOutputPanel.action", Color.BLUE.darker()));
             
             // fixed width font styles
             String fixedWidthFontName = "monospaced";

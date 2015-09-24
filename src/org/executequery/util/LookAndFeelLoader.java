@@ -26,6 +26,7 @@ import javax.swing.InputMap;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.KeyStroke;
+import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.plaf.metal.MetalLookAndFeel;
@@ -61,6 +62,9 @@ public final class LookAndFeelLoader {
             switch (lookAndFeelType) {
                 case EXECUTE_QUERY:
                     loadDefaultLookAndFeel();
+                    break;
+                case EXECUTE_QUERY_DARK:
+                    loadDarkEQLookAndFeel();
                     break;
                 case SMOOTH_GRADIENT:                    
                     UIManager.setLookAndFeel(new SmoothGradientLookAndFeel());
@@ -198,14 +202,43 @@ public final class LookAndFeelLoader {
     /**
      * Sets the default 'Execute Query' look and feel.
      */
-    public void loadDefaultLookAndFeel() {
+    private void loadDefaultLookAndFeel() {
 
         try {
-            org.underworldlabs.swing.plaf.UnderworldLabsFlatLookAndFeel metal =
-                    new org.underworldlabs.swing.plaf.UnderworldLabsFlatLookAndFeel();
 
-            UIManager.setLookAndFeel(metal);
+            LookAndFeel laf = new org.underworldlabs.swing.plaf.UnderworldLabsFlatLookAndFeel();
+            UIManager.setLookAndFeel(laf);
 
+/*
+            List<String> values = new ArrayList<String>();
+            UIDefaults defaults = (UIDefaults) laf.getDefaults();
+            Enumeration<Object> i = defaults.keys();
+            while (i.hasMoreElements()) { 
+                
+                Object key = i.nextElement();
+                Object value = defaults.get(key);
+                
+                values.add(key + " :: " + value);
+                
+                /*
+                if (value instanceof ColorUIResource) {
+
+                    ColorUIResource color = (ColorUIResource) value;                    
+                    values.add("\"" + key + "\", new ColorUIResource(" + 
+                            color.getRed() + "," +
+                            color.getGreen() + "," +
+                            color.getBlue() +
+                            "),");
+                }
+                * /
+            }
+
+            Collections.sort(values);
+            for (String value : values) {
+                System.out.println(value);
+            }
+            */
+            
         } catch (UnsupportedLookAndFeelException e) {
 
             throw new ApplicationException(e);
@@ -213,6 +246,20 @@ public final class LookAndFeelLoader {
 
     }
 
+    private void loadDarkEQLookAndFeel() {
+        
+        try {
+
+            LookAndFeel laf = new org.underworldlabs.swing.plaf.UnderworldLabsDarkFlatLookAndFeel();
+            UIManager.setLookAndFeel(laf);
+            
+        } catch (UnsupportedLookAndFeelException e) {
+            
+            throw new ApplicationException(e);
+        }
+        
+    }
+    
     /**
      * Sets the default OLD 'Execute Query' look and feel.
      */

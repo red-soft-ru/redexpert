@@ -33,7 +33,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -46,6 +45,7 @@ import org.executequery.components.TextFieldPanel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.WidgetFactory;
 import org.underworldlabs.swing.ComponentTitledPanel;
+import org.underworldlabs.swing.DefaultFieldLabel;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.LinkButton;
 import org.underworldlabs.swing.NumberTextField;
@@ -91,7 +91,7 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
         gbc.insets.bottom = 5;
         
         gbc.gridwidth = GridBagConstraints.REMAINDER;
-        mainPanel.add(new JLabel(
+        mainPanel.add(new DefaultFieldLabel(
                 FileUtils.loadResource("org/executequery/gui/browser/resource/ssh-tunnel.html")), gbc);
         
         addLabelFieldPair(mainPanel, "SSH Host:", hostField,

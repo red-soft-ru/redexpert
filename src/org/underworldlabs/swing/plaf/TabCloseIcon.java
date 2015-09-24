@@ -24,20 +24,13 @@ import java.awt.Graphics;
 import javax.swing.Icon;
 import javax.swing.UIManager;
 
-/* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
- *           resetting of CVS revision numbers.
- * ----------------------------------------------------------
- */
-
 /**
  * Simple icon drawing the close button
  * for a closeable tab on the CloseTabbedPane.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1498 $
+ * @date     $Date: 2015-09-18 10:16:35 +1000 (Fri, 18 Sep 2015) $
  */
 public class TabCloseIcon implements Icon {
     
@@ -46,9 +39,6 @@ public class TabCloseIcon implements Icon {
     
     /** the icon height */
     protected static final int ICON_HEIGHT = 6;
-    
-    /** Creates a new instance of TabCloseButtonIcon */
-    public TabCloseIcon() {}
     
     /**
      * Returns the icon's height.
@@ -77,23 +67,9 @@ public class TabCloseIcon implements Icon {
      * @param y coordinate
      */
     public void paintIcon(Component c, Graphics g, int x, int y) {
-        g.setColor(UIManager.getColor("controlShadow").darker().darker());
+        g.setColor(UIManager.getColor("controlShadow").darker());
         g.drawLine(x, y, x + ICON_WIDTH - 1, y + ICON_HEIGHT - 1);
         g.drawLine(x + ICON_WIDTH - 1, y, x, y + ICON_HEIGHT - 1);
     }
     
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

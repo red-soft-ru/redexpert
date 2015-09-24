@@ -41,8 +41,8 @@ import org.underworldlabs.swing.plaf.UIUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1498 $
+ * @date     $Date: 2015-09-18 10:16:35 +1000 (Fri, 18 Sep 2015) $
  */
 public class GradientLabel extends JComponent {
     
@@ -108,28 +108,18 @@ public class GradientLabel extends JComponent {
         if (foregroundColor == null) {
 
             foregroundColor = determineForegroundColour();
-
-            /*
-            if (!UIUtils.isWindowsLookAndFeel()) {
-                foregroundColor = Color.WHITE;
-            } else {
-                if (leftGradientColor == null) {
-                    leftGradientColor = getLeftGradientColor();
-                }
-                foregroundColor = UIUtils.getInverse(leftGradientColor).darker();
-            }
-            */
-
         }
 
         setForeground(foregroundColor);
     }
     
     private Color determineForegroundColour() {
-    	if (UIUtils.isNativeMacLookAndFeel()) {
-    		return UIManager.getColor("text");
-    	}
-        return UIManager.getColor("controlText");
+
+        if (UIUtils.isNativeMacLookAndFeel()) {
+    	
+            return UIManager.getColor("text");
+    	}    	
+    	return UIUtils.getColour("executequery.GradientLabel.foreground", "controlText");
     }
 
     /** 
@@ -250,7 +240,7 @@ public class GradientLabel extends JComponent {
      * @return the top-line separator colour
      */
     public Color getSeparatorColour() {
-        return UIManager.getColor("controlShadow");
+        return UIUtils.getDefaultBorderColour();
     }
     
     public Dimension getPreferredSize() {
@@ -379,9 +369,3 @@ public class GradientLabel extends JComponent {
     }
     
 }
-
-
-
-
-
-

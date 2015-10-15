@@ -83,6 +83,8 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         cellOpensDialog.setActionCommand("cellOpensDialog");
 
         add(create("Copy Selected Cell(s)", "copySelectedCells"));
+        add(create("Copy Selected Cells Comma-Separated", "copySelectedCellsAsCSV"));
+        add(create("Copy Selected Cells Comma-Separated and Quoted", "copySelectedCellsAsCSVQuoted"));
         addSeparator();
         add(create("Select Row", "selectRow"));
         add(create("Select Column", "selectColumn"));
@@ -246,6 +248,16 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         table.copySelectedCells();
     }
     
+    public void copySelectedCellsAsCSV(ActionEvent e) {
+        
+        table.copySelectedCellsAsCSV();
+    }
+    
+    public void copySelectedCellsAsCSVQuoted(ActionEvent e) {
+        
+        table.copySelectedCellsAsCSVQuoted();
+    }
+
     public void exportTable(ActionEvent e) {
 
         new QueryEditorResultsExporter(resultSetTableModel());

@@ -55,6 +55,11 @@ public enum LookAndFeelType {
         return getDescription();
     }
     
+    public boolean isDarkTheme() {
+        
+        return (this == LookAndFeelType.EXECUTE_QUERY_DARK);
+    }
+    
     public boolean isExecuteQueryLookCompatible() {
         
         return (this == SMOOTH_GRADIENT ||

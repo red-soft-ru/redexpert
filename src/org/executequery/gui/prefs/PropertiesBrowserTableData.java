@@ -31,7 +31,7 @@ import org.underworldlabs.util.SystemProperties;
  * @version  $Revision$
  * @date     $Date$
  */
-public class PropertiesBrowserTableData extends PropertiesBasePanel {
+public class PropertiesBrowserTableData extends AbstractPropertiesBasePanel {
     
     private SimplePreferencesPanel preferencesPanel;
     

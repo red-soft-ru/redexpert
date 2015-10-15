@@ -31,15 +31,17 @@ import org.underworldlabs.util.SystemProperties;
  * The properties for the editor's results panel cell colours
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1503 $
- * @date     $Date: 2015-09-22 07:40:15 +1000 (Tue, 22 Sep 2015) $
+ * @version  $Revision: 1512 $
+ * @date     $Date: 2015-09-27 21:23:07 +1000 (Sun, 27 Sep 2015) $
  */
 public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
 
     private SimplePreferencesPanel preferencesPanel;
 
     public PropertiesResultSetTableColours() {
-        try  {
+        
+        super();
+        try {
             init();
         }
         catch (Exception e) {
@@ -143,6 +145,7 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
     }
 
     public void save() {
+
         preferencesPanel.savePreferences();
     }
 

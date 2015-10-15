@@ -24,6 +24,8 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Vector;
 
@@ -41,10 +43,10 @@ import org.underworldlabs.swing.util.IconUtilities;
  * List selection panel base.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1530 $
+ * @date     $Date: 2015-10-13 11:02:42 +1100 (Tue, 13 Oct 2015) $
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class ListSelectionPanel extends ActionPanel
                                 implements ListSelection {
 
@@ -102,7 +104,8 @@ public class ListSelectionPanel extends ActionPanel
         JButton selectOneButton = ActionUtilities.createButton(
                     this, 
                     "selectOneAction",
-                    IconUtilities.loadDefaultIconResource("SelectOne16.png", true),
+//                    IconUtilities.loadDefaultIconResource("SelectOne16.png", true),
+                    IconUtilities.loadDefaultIconResource("Forward16.png", true),
                     "Select one");
 
         JButton selectAllButton = ActionUtilities.createButton(
@@ -114,7 +117,8 @@ public class ListSelectionPanel extends ActionPanel
         JButton removeOneButton = ActionUtilities.createButton(
                     this, 
                     "removeOneAction",
-                    IconUtilities.loadDefaultIconResource("RemoveOne16.png", true),
+//                    IconUtilities.loadDefaultIconResource("RemoveOne16.png", true),
+                    IconUtilities.loadDefaultIconResource("Previous16.png", true),
                     "Remove one");
 
         JButton removeAllButton = ActionUtilities.createButton(
@@ -240,6 +244,9 @@ public class ListSelectionPanel extends ActionPanel
         gbc.gridheight = GridBagConstraints.REMAINDER;
         add(buttonMovePanel, gbc);
 
+        ListMouseSelectionListener mouseSelectionListener = new ListMouseSelectionListener();
+        availableList.addMouseListener(mouseSelectionListener);
+        selectedList.addMouseListener(mouseSelectionListener);
     }
     
     public void setLabelText(String avail, String select) {
@@ -303,10 +310,10 @@ public class ListSelectionPanel extends ActionPanel
         }
 
         int index = selectedList.getSelectedIndex();
-        Object[] selectedObjects = selectedList.getSelectedValues();
-        for (int i = 0; i < selectedObjects.length; i++) {
-            available.add(selectedObjects[i]);
-            selections.remove(selectedObjects[i]);
+        List selectedObjects = selectedList.getSelectedValuesList();
+        for (Object selection : selectedObjects) {
+            available.add(selection);
+            selections.remove(selection);
         }
 
         selectedList.setListData(selections);
@@ -331,13 +338,11 @@ public class ListSelectionPanel extends ActionPanel
             return;
         }
         
-        Object[] selectedObjects = availableList.getSelectedValues();
-        
         int index = availableList.getSelectedIndex();
-        
-        for (int i = 0; i < selectedObjects.length; i++) {
-            selections.add(selectedObjects[i]);
-            available.remove(selectedObjects[i]);
+        List selectedObjects = availableList.getSelectedValuesList();
+        for (Object selection : selectedObjects) {
+            selections.add(selection);
+            available.remove(selection);
         }
         
         availableList.setListData(available);
@@ -380,11 +385,28 @@ public class ListSelectionPanel extends ActionPanel
         selectedList.setListData(selections);
         selectedList.setSelectedIndex(index - 1);
     }
+
+    
+    class ListMouseSelectionListener extends MouseAdapter {
+        
+        public void mouseClicked(MouseEvent e) {
+            
+            if (e.getClickCount() == 2) {
+                
+                Object source = e.getSource();
+                if (source == availableList) {
+                    
+                    selectOneAction();
+                
+                } else if (source == selectedList) {
+                    
+                    removeOneAction();
+                }
+                
+            }
+
+        }
+        
+    }
     
 }
-
-
-
-
-
-

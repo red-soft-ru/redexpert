@@ -20,11 +20,9 @@
 
 package org.executequery.gui.prefs;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-
 import java.util.Vector;
 
 import javax.swing.BoxLayout;
@@ -35,18 +33,19 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.underworldlabs.util.SystemProperties;
+
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.util.SystemProperties;
 
 
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1497 $
- * @date     $Date: 2015-09-18 00:15:39 +1000 (Fri, 18 Sep 2015) $
+ * @version  $Revision: 1512 $
+ * @date     $Date: 2015-09-27 21:23:07 +1000 (Sun, 27 Sep 2015) $
  */
-public class PropertiesEditorFonts extends PropertiesBasePanel
+public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
                                    implements ListSelectionListener {
     
     private JLabel normalSample;

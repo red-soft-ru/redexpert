@@ -104,7 +104,6 @@ public class DefaultPanelButton extends JButton {
             
             defaultWidth = DEFAULT_WIDTH;
         }
-
         return defaultWidth;
     }
 
@@ -118,7 +117,6 @@ public class DefaultPanelButton extends JButton {
             
             defaultHeight = DEFAULT_HEIGHT;
         }
-        
         return defaultHeight;
     }
 
@@ -127,9 +125,3 @@ public class DefaultPanelButton extends JButton {
     }
 
 }
-
-
-
-
-
-

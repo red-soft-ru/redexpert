@@ -52,8 +52,8 @@ import javax.swing.KeyStroke;
  *
  * @author   Takis Diakoumis
  * @author   Dragan Vasic
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1530 $
+ * @date     $Date: 2015-10-13 11:02:42 +1100 (Tue, 13 Oct 2015) $
  */
 public final class MiscUtils {
 
@@ -663,14 +663,14 @@ public final class MiscUtils {
         return UUID.randomUUID().toString();
     }
 
+    public static void printThreadStack(StackTraceElement[] stackTrace) {
+        
+        for (StackTraceElement stackTraceElement : stackTrace) {
+            
+            System.err.println(stackTraceElement);
+        }
+
+    }
+    
+    
 }
-
-
-
-
-
-
-
-
-
-

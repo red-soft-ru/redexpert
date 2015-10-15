@@ -46,10 +46,10 @@ import org.executequery.GUIUtilities;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1497 $
- * @date     $Date: 2015-09-18 00:15:39 +1000 (Fri, 18 Sep 2015) $
+ * @version  $Revision: 1512 $
+ * @date     $Date: 2015-09-27 21:23:07 +1000 (Sun, 27 Sep 2015) $
  */
-public class PropertiesEditorBackground extends PropertiesBasePanel 
+public class PropertiesEditorBackground extends AbstractPropertiesBasePanel 
                                         implements PropertyChangeListener {
 
     private SimplePreferencesPanel preferencesPanel;

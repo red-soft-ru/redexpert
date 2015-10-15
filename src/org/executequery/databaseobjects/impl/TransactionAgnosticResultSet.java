@@ -25,6 +25,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.executequery.log.Log;
+
 public class TransactionAgnosticResultSet extends DelegatingResultSet {
 
     public TransactionAgnosticResultSet(Connection connection, Statement statement, ResultSet resultSet) {
@@ -37,23 +39,40 @@ public class TransactionAgnosticResultSet extends DelegatingResultSet {
 
         try {
 
+            Log.trace("Closing transaction agnostic result set...");
+            
             super.close();
 
             Statement statement = getStatement();
             if (statement != null) {
                 try {
+
                     statement.close();
-                } catch (SQLException e) {} 
+
+                } catch (SQLException e) {
+                    
+                    Log.trace("Error closing transaction agnostic statement: " + e.getMessage(), e);
+                } 
             }
 
         } finally {
 
+            Log.trace("Closing transaction agnostic connection attached to result set...");
+            
             Connection connection = getConnection();
             if (connection != null) {
                 try {
-                    connection.commit();
+
+                    if (!connection.getAutoCommit()) {
+
+                        connection.commit();
+                    }
                     connection.close();
-                } catch (SQLException e) {}
+                    
+                } catch (SQLException e) {
+                    
+                    Log.trace("Error closing transaction agnostic connection: " + e.getMessage(), e);
+                }
             }
 
         }
@@ -61,7 +80,3 @@ public class TransactionAgnosticResultSet extends DelegatingResultSet {
     }
     
 }
-
-
-
-

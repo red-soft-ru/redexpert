@@ -74,8 +74,10 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
     
     private SyntaxColorTableModel syntaxColoursTableModel;
     private EditorColourPreferencesTableModel editorColoursPreferencesTableModel;
-    
+
     public PropertiesEditorColours() {
+        
+        super();
         try  {
             init();
         }
@@ -115,7 +117,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         editorColoursPreferencesTable.addMouseListener(new MouseHandler(editorColoursPreferencesTable));        
 
         ColourTableCellRenderer colourRenderer = new ColourTableCellRenderer();
-        colourRenderer.setFont(PropertiesBasePanel.panelFont);
+        colourRenderer.setFont(AbstractPropertiesBasePanel.panelFont);
 
         TableColumnModel tcm = editorColoursPreferencesTable.getColumnModel();
 
@@ -146,7 +148,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         column.setPreferredWidth(70);
         
         ComboBoxCellEditor comboEditor = new ComboBoxCellEditor(new String[]{PLAIN, ITALIC, BOLD});
-        comboEditor.setFont(PropertiesBasePanel.panelFont);
+        comboEditor.setFont(AbstractPropertiesBasePanel.panelFont);
         tcm.getColumn(2).setCellEditor(comboEditor);
 
         samplePanel = new SamplePanel();
@@ -201,7 +203,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         table.setRowSelectionAllowed(false);
         table.getTableHeader().setResizingAllowed(false);
         table.getTableHeader().setReorderingAllowed(false);
-        table.setFont(PropertiesBasePanel.panelFont);
+        table.setFont(AbstractPropertiesBasePanel.panelFont);
         
         return table;
     }

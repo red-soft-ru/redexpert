@@ -53,8 +53,8 @@ import org.underworldlabs.swing.DynamicComboBoxModel;
  * selection combo boxes.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1533 $
+ * @date     $Date: 2015-10-13 17:43:25 +1100 (Tue, 13 Oct 2015) $
  */
 public class TableSelectionCombosGroup implements ItemListener {
 
@@ -451,7 +451,6 @@ public class TableSelectionCombosGroup implements ItemListener {
             if (host != null && schemasCombo != null) {
 
                 List<DatabaseSchema> schemas = host.getSchemas();
-
                 if (schemas != null && schemas.size() > 0) {
 
                     populateModelForCombo(schemasCombo, schemas);
@@ -459,7 +458,6 @@ public class TableSelectionCombosGroup implements ItemListener {
                 } else {
 
                     List<DatabaseCatalog> catalogs = host.getCatalogs();
-                    
                     if (catalogs != null && catalogs.size() > 0) {
                         
                         populateModelForCombo(schemasCombo, catalogs);

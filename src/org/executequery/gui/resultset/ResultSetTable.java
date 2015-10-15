@@ -48,8 +48,8 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1531 $
+ * @date     $Date: 2015-10-13 12:13:37 +1100 (Tue, 13 Oct 2015) $
  */
 @SuppressWarnings({"unchecked","rawtypes"})
 public class ResultSetTable extends JTable implements StandardTable {
@@ -189,6 +189,10 @@ public class ResultSetTable extends JTable implements StandardTable {
 
     public void copySelectedCells() {
 
+        copySelectedCells('\t', false);
+        
+        /*
+        
         StringBuilder sb = new StringBuilder();
 
         int cols = getSelectedColumnCount();
@@ -223,8 +227,67 @@ public class ResultSetTable extends JTable implements StandardTable {
         }
 
         GUIUtilities.copyToClipBoard(sb.toString());
+        
+        */
     }
 
+    public void copySelectedCellsAsCSV() {
+        
+        copySelectedCells(',', false);
+    }
+    
+    public void copySelectedCellsAsCSVQuoted() {
+        
+        copySelectedCells(',', true);
+    }
+    
+    private void copySelectedCells(char delimiter, boolean quoted) {
+        
+        StringBuilder sb = new StringBuilder();
+        
+        int cols = getSelectedColumnCount();
+        int rows = getSelectedRowCount();
+        
+        if (cols == 0 && rows == 0) {
+            
+            return;
+        }
+        
+        int[] selectedRows = getSelectedRows();
+        int[] selectedCols = getSelectedColumns();
+        
+        String quote = quoted ? "'" : "";
+        for (int i = 0; i < rows; i++) {
+            
+            for (int j = 0; j < cols; j++) {
+
+                sb.append(quote);
+                sb.append(getValueAt(selectedRows[i], selectedCols[j]));
+                sb.append(quote);
+                sb.append(delimiter);
+            }
+            
+            if (cols > 1) {
+             
+                sb.deleteCharAt(sb.length() - 1);
+            }
+
+            if (i < rows - 1) {
+                
+                sb.append('\n');
+            
+            }
+
+        }
+
+        if (cols == 1) {
+            
+            sb.deleteCharAt(sb.length() - 1);            
+        }
+        
+        GUIUtilities.copyToClipBoard(sb.toString());
+    }
+    
     public Object valueAtPoint(Point point) {
 
         int row = rowAtPoint(point);

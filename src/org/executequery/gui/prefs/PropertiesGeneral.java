@@ -34,10 +34,10 @@ import org.underworldlabs.util.SystemProperties;
  * System preferences general panel.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1512 $
+ * @date     $Date: 2015-09-27 21:23:07 +1000 (Sun, 27 Sep 2015) $
  */
-public class PropertiesGeneral extends PropertiesBasePanel {
+public class PropertiesGeneral extends AbstractPropertiesBasePanel {
     
     private SimplePreferencesPanel preferencesPanel;
     

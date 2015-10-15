@@ -20,9 +20,14 @@
 
 package org.executequery.gui.prefs;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JComboBox;
+
+import org.executequery.GUIUtilities;
 import org.executequery.plaf.LookAndFeelType;
 import org.underworldlabs.util.LabelValuePair;
 import org.underworldlabs.util.SystemProperties;
@@ -31,14 +36,13 @@ import org.underworldlabs.util.SystemProperties;
  * System preferences appearance panel.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1512 $
+ * @date     $Date: 2015-09-27 21:23:07 +1000 (Sun, 27 Sep 2015) $
  */
-public class PropertiesAppearance extends PropertiesBasePanel {
+public class PropertiesAppearance extends AbstractPropertiesBasePanel implements ItemListener {
 
     private SimplePreferencesPanel preferencesPanel;
 
-    /** <p>Constructs a new instance. */
     public PropertiesAppearance() {
         try  {
             init();
@@ -154,8 +158,59 @@ public class PropertiesAppearance extends PropertiesBasePanel {
                 (UserPreference[])list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
-
+        
+        lookAndFeelCombBox().addItemListener(this);
     }
+
+    @SuppressWarnings("rawtypes")
+    private JComboBox lookAndFeelCombBox() {
+
+        return (JComboBox) preferencesPanel.getComponentEditorForKey("startup.display.lookandfeel");
+    }
+
+    private boolean lafChangeWarningShown = false;
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+
+        if (!lafChangeWarningShown && e.getStateChange() == ItemEvent.DESELECTED) {
+
+            GUIUtilities.displayInformationMessage("Changing the look and feel may also change "
+                    + "the colours applied to syntax\nhighlighting and the results set "
+                    + "table views to better suit the selected look");
+            lafChangeWarningShown = true;
+        }
+        
+        /*
+        
+        LabelValuePair labelValuePair = (LabelValuePair) e.getItem();
+        LookAndFeelType lookAndFeelType = (LookAndFeelType) labelValuePair.getValue();
+        if (e.getStateChange() == ItemEvent.DESELECTED) {
+            
+            lastLookAndFeelSelection = labelValuePair;
+
+            if (UIUtils.isDarkLookAndFeel() && !isDarkTheme(lookAndFeelType) && !lafChangeWarningShown) {
+                
+                showColoursWarning();
+            }
+        
+        } else if (e.getStateChange() == ItemEvent.SELECTED) {
+            
+            if (isDarkTheme(lookAndFeelType) && !UIUtils.isDarkLookAndFeel() && !lafChangeWarningShown) {
+
+                showColoursWarning();
+            }
+
+        }
+        */
+    }
+
+    /*
+    private boolean isDarkTheme(LookAndFeelType lookAndFeelType) {
+
+        return lookAndFeelType == LookAndFeelType.EXECUTE_QUERY_DARK;
+    }
+    */
 
     private Object[] lookAndFeelValuePairs() {
 
@@ -170,6 +225,11 @@ public class PropertiesAppearance extends PropertiesBasePanel {
         return values;
     }
 
+    public LookAndFeelType getSelectedLookAndFeel() {
+        
+        return (LookAndFeelType) lookAndFeelCombBox().getSelectedItem();
+    }
+    
     public void restoreDefaults() {
         preferencesPanel.savePreferences();
     }
@@ -179,10 +239,3 @@ public class PropertiesAppearance extends PropertiesBasePanel {
     }
 
 }
-
-
-
-
-
-
-

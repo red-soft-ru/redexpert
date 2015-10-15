@@ -86,9 +86,6 @@ public class AddQueryBookmarkPanel extends DefaultActionButtonsPanel
         textPane = new SQLTextPane();
         textPane.setText(queryText);
         
-        addActionButton(createSaveButton());
-        addActionButton(createCancelButton());
-
         JPanel panel = new JPanel(new GridBagLayout());
         
         GridBagConstraints gbc = new GridBagConstraints();
@@ -115,12 +112,15 @@ public class AddQueryBookmarkPanel extends DefaultActionButtonsPanel
 
         addContentPanel(panel);
 
-        setPreferredSize(new Dimension(450, 250));
+        addActionButton(createSaveButton());
+        addActionButton(createCancelButton());
+        
+        setPreferredSize(new Dimension(650, 400));
     }
 
     private JButton createCancelButton() {
 
-        JButton button = new JButton(bundleString("cancelButton"));
+        JButton button = new DefaultPanelButton(bundleString("cancelButton"));
         
         button.setActionCommand(CANCEL_COMMAND_NAME);
         button.addActionListener(this);

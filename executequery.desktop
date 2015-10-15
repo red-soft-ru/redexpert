@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Exec=eq.sh
+Icon=eq.png
+Terminal=false
+Name=Execute Query
+Categories=Application;Development;

@@ -44,8 +44,8 @@ import org.underworldlabs.swing.plaf.smoothgradient.SmoothGradientLookAndFeel;
  * colours, icons etc.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1501 $
- * @date     $Date: 2015-09-21 17:57:11 +1000 (Mon, 21 Sep 2015) $
+ * @version  $Revision: 1505 $
+ * @date     $Date: 2015-09-23 23:17:34 +1000 (Wed, 23 Sep 2015) $
  */
 public class UIUtils {
            

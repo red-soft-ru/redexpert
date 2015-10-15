@@ -20,37 +20,18 @@
 
 package org.executequery.gui.prefs;
 
-/* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
- *           resetting of CVS revision numbers.
- * ----------------------------------------------------------
- */
-
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1512 $
+ * @date     $Date: 2015-09-27 21:23:07 +1000 (Sun, 27 Sep 2015) $
  */
-public interface UserPreferenceFunction {
-    
-    public void restoreDefaults();
+public interface UserPreferenceFunction extends PreferenceChangeListener {
 
-    public void save();
+    void save();
     
+    void restoreDefaults();
+    
+    void addPreferenceChangeListener(PreferenceChangeListener preferenceChangeListener);
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

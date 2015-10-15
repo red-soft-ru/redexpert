@@ -25,28 +25,92 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.executequery.ApplicationException;
-import org.underworldlabs.swing.plaf.UIUtils;
+import org.executequery.Constants;
+import org.executequery.plaf.LookAndFeelType;
 import org.underworldlabs.util.FileUtils;
+import org.underworldlabs.util.SystemProperties;
 
-public abstract class AbstractPropertiesColours extends PropertiesBasePanel {
+public abstract class AbstractPropertiesColours extends AbstractPropertiesBasePanel {
 
+    private static final String LOOK_AND_FEEL_KEY = "startup.display.lookandfeel";
+    
+    private LookAndFeelType selectedLookAndFeel;
+    private LookAndFeelType lastSelectedLookAndFeel;
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent e) {
+
+        if (LOOK_AND_FEEL_KEY.equals(e.getKey())) {
+            
+            lastSelectedLookAndFeel = selectedLookAndFeel;
+            selectedLookAndFeel = (LookAndFeelType) e.getValue();            
+            if (lastSelectedLookAndFeel != selectedLookAndFeel) {
+
+                lookAndFeelSelectionChanged();
+            }
+
+        }
+        
+        super.preferenceChange(e);
+    }
+
+    private void lookAndFeelSelectionChanged() {
+
+        if ( ((currentlySavedLookAndFeel().isDarkTheme() && !selectedLookAndFeel.isDarkTheme()) 
+                || (!currentlySavedLookAndFeel().isDarkTheme() && selectedLookAndFeel.isDarkTheme()))
+                || ((lastSelectionIsDark() && !currentSelectionIsDark()) 
+                        || (!lastSelectionIsDark() && currentSelectionIsDark())) ) {
+            
+            restoreDefaults();
+        }
+        
+    }
+
+    private boolean currentSelectionIsDark() {
+
+        return selectedLookAndFeel != null && selectedLookAndFeel.isDarkTheme();
+    }
+    
+    private boolean lastSelectionIsDark() {
+        
+        return lastSelectedLookAndFeel != null && lastSelectedLookAndFeel.isDarkTheme();
+    }
+    
     protected Properties defaultsForTheme() {
 
         try {
-        
+
             Properties defaults = FileUtils.loadPropertiesResource("org/executequery/gui/editor/resource/sql-syntax.default.profile");
-            if (UIUtils.isDarkLookAndFeel()) {
+            if (selectedLookAndFeel().isDarkTheme()) {
    
-                // catering only for the built-in dark theme
+                // catering only for the built-in dark theme 
                 
                 defaults = FileUtils.loadPropertiesResource("org/executequery/gui/editor/resource/sql-syntax.dark.profile");
             }
+            
             return defaults;
 
         } catch (IOException e) {
             
             throw new ApplicationException(e);
         }
+    }
+
+    private LookAndFeelType selectedLookAndFeel() {
+
+        if (selectedLookAndFeel == null) {
+            
+            selectedLookAndFeel = currentlySavedLookAndFeel();
+            lastSelectedLookAndFeel = selectedLookAndFeel;
+        }
+        
+        return selectedLookAndFeel;
+    }
+
+    private LookAndFeelType currentlySavedLookAndFeel() {
+
+        String lookAndFeel = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "startup.display.lookandfeel");
+        return LookAndFeelType.valueOf(lookAndFeel);
     }
 
     protected Color asColour(String rgb) {

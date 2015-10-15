@@ -20,6 +20,7 @@
 
 package org.underworldlabs.swing;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -34,11 +35,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
+import org.underworldlabs.swing.plaf.UIUtils;
+
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1506 $
+ * @date     $Date: 2015-09-24 08:34:32 +1000 (Thu, 24 Sep 2015) $
  */
 public class HeapMemoryPanel extends JPanel 
                              implements ActionListener {
@@ -47,10 +50,10 @@ public class HeapMemoryPanel extends JPanel
     private java.util.Timer progTimer;
     
     /** progress bar model */
-    private ProgressModel progModel;
+    private ProgressModel progressBarModel;
     
     /** the progress bar */
-    private JProgressBar memProgress;
+    private JProgressBar progressBar;
     
     /** Indicates the timer has started */
     private boolean timerStarted;
@@ -72,9 +75,14 @@ public class HeapMemoryPanel extends JPanel
         JLabel line1 = new JLabel("Measures the size of the");
         JLabel line2 = new JLabel("Java Virtual Machine\'s object heap.");
         
-        progModel = new ProgressModel();
-        memProgress = new JProgressBar(progModel);
-        memProgress.setPreferredSize(new Dimension(265, 25));
+        progressBarModel = new ProgressModel();
+        progressBar = new JProgressBar(progressBarModel);
+        progressBar.setPreferredSize(new Dimension(265, 25));
+        progressBar.setBorderPainted(false);
+        
+        JPanel progressBarPanel = new JPanel(new BorderLayout());
+        progressBarPanel.add(progressBar, BorderLayout.CENTER);
+        progressBarPanel.setBorder(UIUtils.getDefaultLineBorder());
         
         JButton gcButton = new JButton("Run Garbage Collector");
         gcButton.addActionListener(this);
@@ -97,7 +105,7 @@ public class HeapMemoryPanel extends JPanel
         gbc.insets.right = 0;
         gbc.insets.bottom = 10;
         gbc.fill = GridBagConstraints.BOTH;
-        base.add(memProgress, gbc);
+        base.add(progressBarPanel, gbc);
         gbc.gridy++;
         gbc.insets.top = 5;
         gbc.insets.left = 0;
@@ -107,7 +115,7 @@ public class HeapMemoryPanel extends JPanel
         gbc.fill = GridBagConstraints.NONE;
         base.add(gcButton, gbc);
         
-        startMeasure(progModel, memProgress);
+        startMeasure(progressBarModel, progressBar);
         
         setPreferredSize(new Dimension(339, 168));
         add(base, new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
@@ -148,7 +156,7 @@ public class HeapMemoryPanel extends JPanel
     public void startTimer() {
         if (!timerStarted) {
             if (progTimer != null) {
-                startMeasure(progModel, memProgress);
+                startMeasure(progressBarModel, progressBar);
             }
         }
     }
@@ -183,6 +191,7 @@ public class HeapMemoryPanel extends JPanel
     }
     
     
+    @SuppressWarnings("unused")
     static class ProgressModel extends DefaultBoundedRangeModel {
         
         private int max;

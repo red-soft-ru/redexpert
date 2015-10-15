@@ -97,8 +97,8 @@ import org.underworldlabs.swing.util.SwingWorker;
  * @author Parwinder Sekhon
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1518 $
+ * @date     $Date: 2015-10-05 23:15:20 +1100 (Mon, 05 Oct 2015) $
  */
 @SuppressWarnings({"rawtypes","unchecked"})
 public class TableSorter extends AbstractTableModel {
@@ -472,115 +472,106 @@ public class TableSorter extends AbstractTableModel {
 
             if (type.getSuperclass() == java.lang.Number.class) {
 
-                Number n1 = (Number)o1;
-                double d1 = n1.doubleValue();
-                Number n2 = (Number)o2;
-                double d2 = n2.doubleValue();
+                return compareAsNumber(o1, o2);
                 
-                if (d1 < d2)
-                    return -1;
-                else if (d1 > d2)
-                    return 1;
-                else
-                    return 0;
-                
-            }
-            
-            else if (type == java.util.Date.class) {
+            } else if (type == java.util.Date.class) {
 
-                long n1 = -1;
-                try {
-                    Date d1 = (Date)o1;
-                    n1 = d1.getTime();
-                } catch (ClassCastException e) {}
+                return compareAsDate(o1, o2);
+                
+            } else if (type == String.class) {
+                
+                return compareAsString(o1, o2);
 
-                long n2 = -1;
-                try {
-                    Date d2 = (Date)o2;
-                    n2 = d2.getTime();
-                } catch (ClassCastException e) {}
+            } else if (type == Boolean.class) {
+
+                return compareAsBoolean(o1, o2);
                 
-                if (n1 < n2)
-                    return -1;
-                else if (n1 > n2)
-                    return 1;
-                else
-                    return 0;
-                
-            }
-            
-            else if (type == String.class) {
+            } else {
                 
                 try {
-                
-                    String s1 = (String)o1;
-                    String s2 = (String)o2;
-                    int result = s1.compareTo(s2);
+                  
+                    return compareAsNumber(o1, o2);
                     
-                    if (result < 0)
-                        return -1;
-                    else if (result > 0)
-                        return 1;
-                    else
-                        return 0;
-                
                 } catch (ClassCastException e) {
-                    
-                    return 0;
-                }
 
+                    return compareAsString(o1, o2);
+                }
+                
             }
             
-            else if (type == Boolean.class) {
-                Boolean bool1 = (Boolean)o1;
-                boolean b1 = bool1.booleanValue();
-                Boolean bool2 = (Boolean)o2;
-                boolean b2 = bool2.booleanValue();
+        }
+
+        private int compareAsNumber(Object o1, Object o2) {
+            
+            Number n1 = (Number)o1;
+            double d1 = n1.doubleValue();
+            Number n2 = (Number)o2;
+            double d2 = n2.doubleValue();
+            
+            if (d1 < d2)
+                return -1;
+            else if (d1 > d2)
+                return 1;
+            else
+                return 0;
+        }
+
+        private int compareAsDate(Object o1, Object o2) {
+            
+            long n1 = -1;
+            try {
+                Date d1 = (Date)o1;
+                n1 = d1.getTime();
+            } catch (ClassCastException e) {}
+
+            long n2 = -1;
+            try {
+                Date d2 = (Date)o2;
+                n2 = d2.getTime();
+            } catch (ClassCastException e) {}
+            
+            if (n1 < n2)
+                return -1;
+            else if (n1 > n2)
+                return 1;
+            else
+                return 0;
+        }
+
+        private int compareAsString(Object o1, Object o2) {
+            
+            try {
+            
+                String s1 = o1.toString();
+                String s2 = o2.toString();
+                int result = s1.compareTo(s2);
                 
-                if (b1 == b2)
-                    return 0;
-                else if (b1) // Define false < true
+                if (result < 0)
+                    return -1;
+                else if (result > 0)
                     return 1;
                 else
-                    return -1;
-                
-            }
+                    return 0;
             
-            else {
+            } catch (ClassCastException e) {
                 
-                try {
-                    Number n1 = (Number)o1;
-                    double d1 = n1.doubleValue();
-                    Number n2 = (Number)o2;
-                    double d2 = n2.doubleValue();
-                    
-                    if (d1 < d2)
-                        return -1;
-                    else if (d1 > d2)
-                        return 1;
-                    else
-                        return 0;
-                    
-                }
-                
-                catch (ClassCastException cExc) {
-                    Object v1 = o1;
-                    String s1 = v1.toString();
-                    Object v2 = o2;
-                    String s2 = v2.toString();
-                    int result = s1.compareTo(s2);
-                    
-                    if (result < 0)
-                        return -1;
-                    else if (result > 0)
-                        return 1;
-                    else
-                        return 0;
-                    
-                }
-                
+                return 0;
             }
+        }
+
+        private int compareAsBoolean(Object o1, Object o2) {
             
+            Boolean bool1 = (Boolean)o1;
+            boolean b1 = bool1.booleanValue();
+            Boolean bool2 = (Boolean)o2;
+            boolean b2 = bool2.booleanValue();
+            
+            if (b1 == b2)
+                return 0;
+            else if (b1) // Define false < true
+                return 1;
+            else
+                return -1;
         }
         
         private Object valueToCompareFromModel(int row, int column) {
@@ -820,16 +811,3 @@ public class TableSorter extends AbstractTableModel {
     } // class Directive
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

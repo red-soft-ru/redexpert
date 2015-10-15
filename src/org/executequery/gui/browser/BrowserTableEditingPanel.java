@@ -21,7 +21,6 @@
 package org.executequery.gui.browser;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -38,6 +37,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -86,8 +87,8 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1497 $
- * @date     $Date: 2015-09-18 00:15:39 +1000 (Fri, 18 Sep 2015) $
+ * @version  $Revision: 1522 $
+ * @date     $Date: 2015-10-06 16:38:24 +1100 (Tue, 06 Oct 2015) $
  */
 public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                                       implements ActionListener,
@@ -733,8 +734,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     public void setValues(DatabaseTable table) {
 
         this.table = table;
-        
-        reloadView();                
+
+        reloadView();
         if (SystemProperties.getBooleanProperty("user", "browser.query.row.count")) {
 
             reloadDataRowCount();                    
@@ -791,8 +792,28 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     
     private boolean loadingRowCount; 
     private SwingWorker worker;
+    private Timer timer;
+
+    private void reloadDataRowCount() {
+
+        if (timer != null) {
+            
+            timer.cancel();
+        }
+        
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+
+            @Override
+            public void run() {
+
+                updateDataRowCount();
+            }
+        }, 600);
+        
+    }
     
-    protected void reloadDataRowCount() {
+    private void updateDataRowCount() {
         
         if (worker != null) {
 
@@ -807,11 +828,11 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             public Object construct() {
                 try {
 
+                    loadingRowCount = true;
                     try {
                         Thread.sleep(200);
                     } catch (InterruptedException e) {}
 
-                    loadingRowCount = true;
                     Log.debug("Retrieving data row count for table - " + table.getName());
                     return String.valueOf(table.getDataRowCount());
                     
@@ -826,7 +847,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             }
             public void finished() {
 
-                updateRowCount(get().toString());                
+                updateRowCount(get().toString());
             }
         };
         worker.start();

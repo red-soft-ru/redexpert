@@ -57,12 +57,13 @@ import org.underworldlabs.swing.tree.DynamicTree;
  * Main system preferences panel.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1500 $
- * @date     $Date: 2015-09-20 21:20:04 +1000 (Sun, 20 Sep 2015) $
+ * @version  $Revision: 1512 $
+ * @date     $Date: 2015-09-27 21:23:07 +1000 (Sun, 27 Sep 2015) $
  */
 public class PropertiesPanel extends JPanel
                              implements ActiveComponent,
                                         ActionListener,
+                                        PreferenceChangeListener,
                                         TreeSelectionListener {
 
     public static final String TITLE = "Preferences";
@@ -82,9 +83,12 @@ public class PropertiesPanel extends JPanel
 
     /** the parent container */
     private ActionContainer parent;
+    
+    private Map<String, PreferenceChangeEvent> preferenceChangeEvents; 
 
     /** Constructs a new instance. */
     public PropertiesPanel(ActionContainer parent) {
+        
         this(parent, -1);
     }
 
@@ -94,8 +98,11 @@ public class PropertiesPanel extends JPanel
      * @param the node to select
      */
     public PropertiesPanel(ActionContainer parent, int openRow) {
+        
         super(new BorderLayout());
         this.parent = parent;
+        this.preferenceChangeEvents = new HashMap<>();
+        
         try  {
             init();
         }
@@ -266,7 +273,8 @@ public class PropertiesPanel extends JPanel
     }
 
     private void getProperties(Object[] selection) {
-        DefaultMutableTreeNode n = (DefaultMutableTreeNode)selection[selection.length-1];
+        
+        DefaultMutableTreeNode n = (DefaultMutableTreeNode)selection[selection.length - 1];
         PropertyNode node = (PropertyNode)n.getUserObject();
 
         JPanel panel = null;
@@ -287,11 +295,6 @@ public class PropertiesPanel extends JPanel
             case PropertyTypes.LOCALE:
                 panel = new PropertiesLocales();
                 break;
-/*
-            case PropertyTypes.VIEW:
-                panel = new PropertiesView();
-                break;
-*/
             case PropertyTypes.SHORTCUTS:
                 panel = new PropertiesKeyShortcuts();
                 break;
@@ -328,18 +331,12 @@ public class PropertiesPanel extends JPanel
             case PropertyTypes.EDITOR_GENERAL:
                 panel = new PropertiesEditorGeneral();
                 break;
-//            case PropertyTypes.EDITOR_BACKGROUND:
-//                panel = new PropertiesEditorBackground();
-//                break;
             case PropertyTypes.EDITOR_COLOURS:
                 panel = new PropertiesEditorColours();
                 break;
             case PropertyTypes.EDITOR_FONTS:
                 panel = new PropertiesEditorFonts();
                 break;
-//            case PropertyTypes.EDITOR_SYNTAX:
-//                panel = new PropertiesEditorSyntax();
-//                break;
             case PropertyTypes.RESULTS:
                 panel = new PropertiesResultSetTableGeneral();
                 break;
@@ -357,12 +354,30 @@ public class PropertiesPanel extends JPanel
                 break;
         }
 
-        panelMap.put(id, (UserPreferenceFunction)panel);
+        UserPreferenceFunction userPreferenceFunction = (UserPreferenceFunction) panel;
+        userPreferenceFunction.addPreferenceChangeListener(this);
+        panelMap.put(id, userPreferenceFunction);
+        
+        // apply all previosuly applied prefs that the new panel might be interested in
+        for (Map.Entry<String, PreferenceChangeEvent> event : preferenceChangeEvents.entrySet()) {
+
+            userPreferenceFunction.preferenceChange(event.getValue());
+        }
+        
         rightPanel.add(panel, String.valueOf(id));
         cardLayout.show(rightPanel, String.valueOf(id));
-
     }
 
+    @Override
+    public void preferenceChange(PreferenceChangeEvent e) {
+
+        for (Map.Entry<Integer, UserPreferenceFunction> entry : panelMap.entrySet()) {
+            
+            entry.getValue().preferenceChange(e);
+        }
+        preferenceChangeEvents.put(e.getKey(), e);        
+    }
+    
     public void actionPerformed(ActionEvent e) {
 
         try {

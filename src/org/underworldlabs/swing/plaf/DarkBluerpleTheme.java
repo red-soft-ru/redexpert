@@ -25,7 +25,6 @@ import java.awt.Font;
 import java.awt.Insets;
 
 import javax.swing.UIDefaults;
-import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.plaf.metal.DefaultMetalTheme;
@@ -73,14 +72,6 @@ public class DarkBluerpleTheme extends DefaultMetalTheme {
     // --- panel/frame, normal background ---
     private final ColorUIResource secondary3 = new ColorUIResource(60, 63, 65);
     
-    public DarkBluerpleTheme() {
-
-        // ------------------------------
-        // toggle button selected colour to primary3
-        UIManager.put("ToggleButton.select", primary3);
-
-    }
-
     /**
      * Add this theme's custom entries to the defaults table.
      *
@@ -320,7 +311,7 @@ public class DarkBluerpleTheme extends DefaultMetalTheme {
                 "ToggleButton.foreground", new ColorUIResource(187,187,187),
                 "ToggleButton.highlight", new ColorUIResource(108,111,113),
                 "ToggleButton.light", new ColorUIResource(108,111,113),
-                "ToggleButton.select", new ColorUIResource(153,153,153),
+                "ToggleButton.select", new ColorUIResource(153,153,153), // primary3
                 "ToggleButton.shadow", new ColorUIResource(153,153,153),
                 "ToolBar.background", new ColorUIResource(60,63,65),
                 "ToolBar.darkShadow", new ColorUIResource(39,42,44),
@@ -394,12 +385,12 @@ public class DarkBluerpleTheme extends DefaultMetalTheme {
                 "executequery.QueryEditor.queryTooltipBackground", new ColorUIResource(0x212020),
 //                "executequery.ScrollingTabPane.closeButtonFocus", new ColorUIResource(0x212020),
 
-                
                 "ComboBoxUI", "javax.swing.plaf.metal.MetalComboBoxUI",
 
                 "MenuItem.border", new org.underworldlabs.swing.plaf.SimpleMenuItemBorder(),
                 "CheckBoxMenuItem.border", new org.underworldlabs.swing.plaf.SimpleMenuItemBorder(),
                 "Menu.border", new org.underworldlabs.swing.plaf.SimpleMenuItemBorder(),
+                "PopupMenu.border", new org.underworldlabs.swing.plaf.SimpleMenuBorder(new ColorUIResource(39,42,44)),
 
                 
 //            "TabbedPane.borderHightlightColor", getSecondary1(),
@@ -580,36 +571,36 @@ public class DarkBluerpleTheme extends DefaultMetalTheme {
       public ColorUIResource getControlHighlight() {
         return myControlHighlightColor;
       }
-
+    
       @Override
       public ColorUIResource getControlDarkShadow() {
         return myControlDarkShadowColor;
       }
-
+    
       public ColorUIResource getSeparatorBackground() {
         return getControl();
       }
-
+    
       public ColorUIResource getSeparatorForeground() {
         return mySeparatorForeground;
       }
-
+    
       public ColorUIResource getMenuBackground() {
         return lightGray;
       }
-
+    
       public ColorUIResource getMenuSelectedBackground() {
         return darkBlue;
       }
-
+    
       public ColorUIResource getMenuSelectedForeground() {
         return white;
       }
-
+    
       public ColorUIResource getAcceleratorSelectedForeground() {
         return white;
       }
-
+    
       public ColorUIResource getFocusColor() {
         return new ColorUIResource(Color.black);
       }

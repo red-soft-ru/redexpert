@@ -35,8 +35,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.ProcedureParameterSorter;
 import org.executequery.databasemediators.QueryTypes;
@@ -67,8 +69,8 @@ import org.underworldlabs.util.MiscUtils;
  * so as to maintain the correct rollback segment.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1504 $
- * @date     $Date: 2015-09-23 11:09:23 +1000 (Wed, 23 Sep 2015) $
+ * @version  $Revision: 1515 $
+ * @date     $Date: 2015-10-05 17:25:21 +1100 (Mon, 05 Oct 2015) $
  */
 public class DefaultStatementExecutor implements StatementExecutor {
 
@@ -521,9 +523,27 @@ public class DefaultStatementExecutor implements StatementExecutor {
                 // register the in params
                 for (int i = 0, n = ins.size(); i < n; i++) {
                     
-                    value = ins.get(i).getValue();
-                    dataType = ins.get(i).getDataType();
+                    ProcedureParameter procedureParameter = ins.get(i);
+                    value = procedureParameter.getValue();
+                    dataType = procedureParameter.getDataType();
 
+                    // try infer a type if OTHER
+                    if (dataType == Types.OTHER) {
+                        
+                        // checking only for bit/bool for now
+                        
+                        if (isTrueFalse(value)) {
+                            
+                            dataType = Types.BOOLEAN;
+                        
+                        } else if (isBit(value)) {
+                            
+                            dataType = Types.BIT;
+                            value = value.substring(2, value.length() - 1);
+                        }
+
+                    }
+                    
                     if (MiscUtils.isNull(value) || value.equalsIgnoreCase(NULL)) {
 
                         cstmnt.setNull(index, dataType);
@@ -550,7 +570,21 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
                             case Types.BIT:
                             case Types.BOOLEAN:
-                                boolean _boolean = Boolean.valueOf(value).booleanValue();
+                                
+                                boolean _boolean = false;
+                                if (NumberUtils.isNumber(value)) {
+                                    
+                                    int number = Integer.valueOf(value);
+                                    if (number > 0) {
+                                        
+                                        _boolean = true;
+                                    }
+                                
+                                } else {
+                                    
+                                    _boolean = Boolean.valueOf(value).booleanValue();
+                                }
+                                
                                 cstmnt.setBoolean(index, _boolean);
                                 break;
 
@@ -585,6 +619,9 @@ public class DefaultStatementExecutor implements StatementExecutor {
                                 cstmnt.setDouble(index, _double);
                                 break;
 
+                            default:
+                                cstmnt.setObject(index, value);
+                                
                         }
 
                     }
@@ -595,8 +632,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
             } catch (Exception e) {
               
-                statementResult.setOtherErrorMessage(
-                        e.getClass().getName() + ": " + e.getMessage());
+                statementResult.setOtherErrorMessage(e.getClass().getName() + ": " + e.getMessage());
                 return statementResult;
             }
 
@@ -717,7 +753,6 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
         } catch (SQLException e) {
 
-            handleException(e);
             statementResult.setSqlException(e);
 
         } catch (Exception e) {
@@ -728,6 +763,18 @@ public class DefaultStatementExecutor implements StatementExecutor {
         return statementResult;
     }
 
+    private boolean isBit(String value) {
+
+        String toLower = value.toLowerCase();
+        return Pattern.compile("b'\\d+'").matcher(toLower).find();
+    }
+
+    private boolean isTrueFalse(String value) {
+        
+        String toLower = value.toLowerCase();
+        return "true".equals(toLower) || "false".equals(toLower);
+    }
+    
     /** <p>Executes the specified procedure and returns
      *  a <code>ResultSet</code> object from this query.
      *  <p>If an exception occurs, null is returned and
@@ -821,7 +868,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
                         parameters = new ProcedureParameter[st.countTokens()];
                         for (int i = 0, n = st.countTokens(); i < n; i++) {
                             
-                            procedure.addParameter("UNKNOWN", DatabaseMetaData.procedureColumnIn, Types.VARCHAR, "VARCHAR", -1);
+                            procedure.addParameter("UNKNOWN", DatabaseMetaData.procedureColumnIn, Types.OTHER, "OTHER", -1);
                         }
                         
                         parameters = procedure.getParametersArray();

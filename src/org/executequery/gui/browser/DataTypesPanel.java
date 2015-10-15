@@ -20,68 +20,113 @@
 
 package org.executequery.gui.browser;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.sql.ResultSet;
 
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
 import org.executequery.gui.SortableColumnsTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
+import org.underworldlabs.swing.plaf.UIUtils;
 
 /**
  * Displays data types from the current connection.
  * 
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1514 $
+ * @date     $Date: 2015-09-28 21:34:48 +1000 (Mon, 28 Sep 2015) $
  */
 public class DataTypesPanel extends ConnectionPropertiesPanel {
     
-    private JTable table;
-    
-    /** the data type table model from the result set */
     private ResultSetTableModel model;
+
+    private JScrollPane scrollPane;
     
     public DataTypesPanel() {
 
         super(new GridBagLayout());
-
         init();
     }
     
     private void init() {
         
         model = new ResultSetTableModel();
-        table = new SortableColumnsTable(model);
+        JTable table = new SortableColumnsTable(model);
         
         setTableProperties(table);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        GridBagConstraints gbc = new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                                        GridBagConstraints.SOUTHEAST, 
-                                        GridBagConstraints.BOTH,
-                                        new Insets(5, 5, 5, 5), 0, 0);
+        scrollPane = new JScrollPane(table);
+        addScrollPane();
+    }
 
-        add(new JScrollPane(table), gbc); 
+    public void setDataTypeError(String message) {
+        
+        remove(scrollPane);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><body><p><center>Error populating data types from the current connection.");
+        sb.append("</center></p><p><center>");
+        sb.append(message);
+        sb.append("</center></p></body></html>");
+
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(0, 20, 10, 20);
+        panel.add(new JLabel(sb.toString()), gbc);
+        panel.setBorder(UIUtils.getDefaultLineBorder());
+
+        add(panel, new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
+                GridBagConstraints.CENTER,
+                GridBagConstraints.BOTH,
+                new Insets(5, 5, 5, 5), 0, 0));
+        
+        validate();
+        repaint();
     }
     
     public void setDataTypes(ResultSet rs) {
 
+        addScrollPane();
         model.createTable(rs);
         model.fireTableStructureChanged();
+        
+        validate();
+        repaint();
+    }
+    
+    private void addScrollPane() {
+        
+        if (!contains(scrollPane)) {
+
+            removeAll();
+            add(scrollPane, new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
+                    GridBagConstraints.SOUTHEAST, 
+                    GridBagConstraints.BOTH,
+                    new Insets(5, 5, 5, 5), 0, 0));
+        }
+    
+    }
+
+    private boolean contains(Component component) {
+
+        for (Component c : getComponents()) {
+            
+            if (c == component) {
+                
+                return true;
+            }
+        }
+        
+        return false;
     }
     
 }
-
-
-
-
-
-
-
-
-
 

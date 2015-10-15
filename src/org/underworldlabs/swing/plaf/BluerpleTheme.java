@@ -24,8 +24,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
 import java.util.Arrays;
+
 import javax.swing.UIDefaults;
-import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.plaf.metal.DefaultMetalTheme;
@@ -34,8 +34,8 @@ import javax.swing.plaf.metal.DefaultMetalTheme;
  * Metal Look and feel theme extension using SmoothGradient.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1498 $
- * @date     $Date: 2015-09-18 10:16:35 +1000 (Fri, 18 Sep 2015) $
+ * @version  $Revision: 1507 $
+ * @date     $Date: 2015-09-24 11:13:39 +1000 (Thu, 24 Sep 2015) $
  */
 public class BluerpleTheme extends DefaultMetalTheme {
     
@@ -85,23 +85,6 @@ public class BluerpleTheme extends DefaultMetalTheme {
     // --- panel/frame, normal background ---
     private final ColorUIResource secondary3 = new ColorUIResource(240, 240, 240);
     
-    public BluerpleTheme() {
-
-        // ------------------------------
-        // add some further l&f settings
-        // ------------------------------
-        
-        // black text for labels
-        UIManager.put("Label.foreground", new ColorUIResource(0, 0, 0));
-        
-        // black text for title border
-        UIManager.put("TitledBorder.titleColor", new ColorUIResource(0, 0, 0));
-        
-        // toggle button selected colour to primary3
-        UIManager.put("ToggleButton.select", primary3);
-
-    }
-
     /**
      * Add this theme's custom entries to the defaults table.
      *
@@ -137,9 +120,14 @@ public class BluerpleTheme extends DefaultMetalTheme {
                      getWhite(), dadada, 
                      new ColorUIResource(dadada) }),
             "MenuBar.borderColor", cccccc,
-            "MenuBarUI", "javax.swing.plaf.metal.MetalMenuBarUI"
+            "MenuBarUI", "javax.swing.plaf.metal.MetalMenuBarUI",
+            
+            "Label.foreground", new ColorUIResource(0, 0, 0),
+            "TitledBorder.titleColor", new ColorUIResource(0, 0, 0),
+            "ToggleButton.select", primary3
 
         };
+        
         table.putDefaults(defaults);
     }
     

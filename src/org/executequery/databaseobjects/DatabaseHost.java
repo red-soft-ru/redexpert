@@ -35,8 +35,8 @@ import org.underworldlabs.jdbc.DataSourceException;
  * This is the top-level object for a particular database connection.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1521 $
+ * @date     $Date: 2015-10-06 16:24:41 +1100 (Tue, 06 Oct 2015) $
  */
 public interface DatabaseHost extends NamedObject {
 
@@ -280,4 +280,3 @@ public interface DatabaseHost extends NamedObject {
     Connection getTemporaryConnection();
 
 }
-

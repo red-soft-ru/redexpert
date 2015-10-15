@@ -54,10 +54,10 @@ import org.underworldlabs.swing.table.ComboBoxCellRenderer;
 /** <p>Query Editor syntax highlighting preferences panel.
  *
  *  @author   Takis Diakoumis
- * @version  $Revision: 1497 $
- * @date     $Date: 2015-09-18 00:15:39 +1000 (Fri, 18 Sep 2015) $
+ * @version  $Revision: 1512 $
+ * @date     $Date: 2015-09-27 21:23:07 +1000 (Sun, 27 Sep 2015) $
  */
-public class PropertiesEditorSyntax extends PropertiesBasePanel
+public class PropertiesEditorSyntax extends AbstractPropertiesBasePanel
                                     implements Constants {
     
     private JTable table;
@@ -76,12 +76,12 @@ public class PropertiesEditorSyntax extends PropertiesBasePanel
     private void init() throws Exception {
         tableModel = new ColorTableModel();
         table = new JTable(tableModel);
-        table.setFont(PropertiesBasePanel.panelFont);
+        table.setFont(AbstractPropertiesBasePanel.panelFont);
         table.addMouseListener(new MouseHandler());
 
         TableColumnModel tcm = table.getColumnModel();
         ColourTableCellRenderer colourRenderer = new ColourTableCellRenderer();
-        colourRenderer.setFont(PropertiesBasePanel.panelFont);
+        colourRenderer.setFont(AbstractPropertiesBasePanel.panelFont);
         
         tcm.getColumn(1).setCellRenderer(colourRenderer);
         tcm.getColumn(2).setCellRenderer(new ComboBoxCellRenderer());
@@ -99,7 +99,7 @@ public class PropertiesEditorSyntax extends PropertiesBasePanel
         
         ComboBoxCellEditor comboEditor = new ComboBoxCellEditor(
                                             new String[]{PLAIN, ITALIC, BOLD});
-        comboEditor.setFont(PropertiesBasePanel.panelFont);
+        comboEditor.setFont(AbstractPropertiesBasePanel.panelFont);
         tcm.getColumn(2).setCellEditor(comboEditor);
 
         JScrollPane tableScroller = new JScrollPane();

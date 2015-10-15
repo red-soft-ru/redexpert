@@ -39,8 +39,8 @@ import org.underworldlabs.swing.wizard.WizardProcessPanel;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1530 $
+ * @date     $Date: 2015-10-13 11:02:42 +1100 (Tue, 13 Oct 2015) $
  */
 public class ImportExportExcelPanel extends WizardProcessPanel
                                     implements ImportExportProcess,
@@ -134,7 +134,7 @@ public class ImportExportExcelPanel extends WizardProcessPanel
     
     private void jbInit() throws Exception {
         metaData = new MetaDataValues();
-        childDim = new Dimension(525, 340);
+        childDim = new Dimension(525, 360);
         
         // set the help action
         setHelpAction(ActionBuilder.get("help-command"), "export-excel");

@@ -52,8 +52,8 @@ import org.underworldlabs.util.MiscUtils;
  * Default database host object implementation.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1533 $
+ * @date     $Date: 2015-10-13 17:43:25 +1100 (Tue, 13 Oct 2015) $
  */
 public class DefaultDatabaseHost extends AbstractNamedObject
                                  implements DatabaseHost {
@@ -257,7 +257,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             schemas = new ArrayList<DatabaseSchema>();
 
             rs = getDatabaseMetaData().getSchemas();
-
             if (rs != null) {
 
                 while (rs.next()) {
@@ -1182,7 +1181,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                     getDatabaseMetaData().getSQLKeywords(), ",");
         }
         catch (SQLException e) {
-            throw new DataSourceException(e);
+            Log.error("Error attempting to retrieve database SQL keywords: " + e.getMessage());
+            return new String[0];
         }
     }
 

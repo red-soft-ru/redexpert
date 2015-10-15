@@ -37,8 +37,8 @@ import org.underworldlabs.jdbc.DataSourceException;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1521 $
+ * @date     $Date: 2015-10-06 16:24:41 +1100 (Tue, 06 Oct 2015) $
  */
 public class ConnectionPoolImpl extends AbstractConnectionPool implements PooledConnectionListener {
 
@@ -125,12 +125,19 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
 
     public synchronized Connection getConnection() {
 
+        int size = openConnections.size();
+        if (Log.isTraceEnabled()) {
+            
+            Log.trace("Retrieving new connection from the pool with current size: [ " 
+                    + size + " ] from maximum pool capacity [ " + maximumConnections + " ]"); 
+        }
+        
         if (databaseConnection.isSshTunnel() && sshTunnel == null) {
 
             createSshTunnel();            
         }
 
-        if (openConnections.size() < minimumConnections) {
+        if (size < minimumConnections) {
             
             ensureCapacity(minimumConnections);
         }
@@ -150,7 +157,7 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
             connection.setInUse(true);
             activeConnections.add(connection);
 
-        } else if (openConnections.size() < maximumConnections) {
+        } else if (size < maximumConnections) {
 
             createConnection();
             return getConnection();
@@ -261,8 +268,15 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
             
             int transactionIsolation = databaseConnection.getTransactionIsolation();
             if (transactionIsolation != -1) {
-            
-                realConnection.setTransactionIsolation(databaseConnection.getTransactionIsolation());
+
+                try {
+                
+                    realConnection.setTransactionIsolation(databaseConnection.getTransactionIsolation());
+
+                } catch (SQLException e) {
+                    
+                    Log.warning("Error setting transaction isolation level: " + e.getMessage());
+                }
             }
 
             connection = new PooledConnection(realConnection);

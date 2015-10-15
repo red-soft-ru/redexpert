@@ -36,19 +36,19 @@ import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.GUIUtils;
-import org.underworldlabs.swing.util.SwingWorker;
 
 /**
  * Database connection host panel.
  * Displays connection/host info and database properties once connected.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1514 $
+ * @date     $Date: 2015-09-28 21:34:48 +1000 (Mon, 28 Sep 2015) $
  */
 public class HostPanel extends AbstractFormObjectViewPanel implements ConnectionListener {
     
@@ -224,18 +224,22 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
     protected void updateDatabaseTypeInfo() {
         
         if (!host.getDatabaseConnection().isConnected()) {
+
             return;
         }
 
         try {
+
             dataTypesPanel.setDataTypes(host.getDataTypeInfo());
+            
         } catch (DataSourceException e) {
-            controller.handleException(e);
+
+            dataTypesPanel.setDataTypeError(e.getExtendedMessage());
+            Log.warning("Error retriving type info for host: " + e.getExtendedMessage());
+//            controller.handleException(e);
         }        
     }
 
-    private SwingWorker worker;
-    
     private void changePanelData() {
         
         // notify the database properties

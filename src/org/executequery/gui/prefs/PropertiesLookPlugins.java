@@ -63,8 +63,8 @@ import org.underworldlabs.util.MiscUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1512 $
+ * @date     $Date: 2015-09-27 21:23:07 +1000 (Sun, 27 Sep 2015) $
  */
 public class PropertiesLookPlugins extends JPanel
                                    implements ListSelectionListener,
@@ -289,6 +289,12 @@ public class PropertiesLookPlugins extends JPanel
         
     }
 
+    @Override
+    public void preferenceChange(PreferenceChangeEvent e) {}
+    
+    @Override
+    public void addPreferenceChangeListener(PreferenceChangeListener preferenceChangeListener) {}
+    
     public void actionPerformed(ActionEvent e) {
         Object obj = e.getSource();
         if (obj == newButton)

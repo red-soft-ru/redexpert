@@ -22,9 +22,14 @@ package org.executequery.gui.prefs;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
@@ -36,6 +41,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.UIManager;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -59,8 +66,8 @@ import org.underworldlabs.util.SystemProperties;
  * Properties panel base.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1503 $
- * @date     $Date: 2015-09-22 07:40:15 +1000 (Tue, 22 Sep 2015) $
+ * @version  $Revision: 1512 $
+ * @date     $Date: 2015-09-27 21:23:07 +1000 (Sun, 27 Sep 2015) $
  */
 public class SimplePreferencesPanel extends JPanel 
                                     implements MouseListener {
@@ -85,23 +92,30 @@ public class SimplePreferencesPanel extends JPanel
     
     /** the table model */
     private PreferencesTableModel tableModel;
+    
+    private Map<String, DefaultCellEditor> cellEditors;
 
+    private List<PreferenceTableModelListener> listeners;
+    
     static {
+    
         GRID_COLOR = UIManager.getColor("Table.gridColor");// Color.LIGHT_GRAY;
         GUTTER_WIDTH = 10;
     }
     
     /** Creates a new instance of SimplePreferencesPanel */
     public SimplePreferencesPanel(UserPreference[] preferences) {
+
         super(new BorderLayout());
         this.preferences = preferences;
 
+        listeners = new ArrayList<>();
+        
         try {
             init();
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     private void init() throws Exception {
@@ -112,7 +126,7 @@ public class SimplePreferencesPanel extends JPanel
         table.setCellSelectionEnabled(true);
         table.setColumnSelectionAllowed(false);
         table.setRowSelectionAllowed(false);
-        table.setFont(PropertiesBasePanel.panelFont);
+        table.setFont(AbstractPropertiesBasePanel.panelFont);
         table.setTableHeader(null);
 
         EachRowEditor rowEditor = new EachRowEditor(table);
@@ -128,6 +142,8 @@ public class SimplePreferencesPanel extends JPanel
         EachRowRenderer rowRendererKeys = null;
         EachRowRenderer rowRendererValues = new EachRowRenderer();
 
+        cellEditors = new HashMap<String, DefaultCellEditor>();
+        
         for (int i = 0; i < preferences.length; i++) {
             int type = preferences[i].getType();
             DefaultCellEditor editor = null;
@@ -164,7 +180,7 @@ public class SimplePreferencesPanel extends JPanel
                 case UserPreference.INTEGER_TYPE:
                     final NumberCellEditor numEditor = 
                             new NumberCellEditor(preferences[i].getMaxLength(), true);
-                    numEditor.setFont(PropertiesBasePanel.panelFont);
+                    numEditor.setFont(AbstractPropertiesBasePanel.panelFont);
 
                     editor = new DefaultCellEditor(numEditor) {
                         public Object getCellEditorValue() {
@@ -188,7 +204,7 @@ public class SimplePreferencesPanel extends JPanel
                     
                     if (colourRenderer == null) {
                         colourRenderer = new ColourTableCellRenderer();
-                        colourRenderer.setFont(PropertiesBasePanel.panelFont);
+                        colourRenderer.setFont(AbstractPropertiesBasePanel.panelFont);
                         table.addMouseListener(this);
                     }
 
@@ -210,7 +226,7 @@ public class SimplePreferencesPanel extends JPanel
                     
                     if (fileRenderer == null) {
                         fileRenderer = new FileSelectionTableCell();
-                        fileRenderer.setFont(PropertiesBasePanel.panelFont);
+                        fileRenderer.setFont(AbstractPropertiesBasePanel.panelFont);
                     }
 
                     rowRendererValues.add(i, fileRenderer);
@@ -219,6 +235,8 @@ public class SimplePreferencesPanel extends JPanel
 
             }
 
+            cellEditors.put(preferences[i].getKey(), editor);
+            
             if (type == UserPreference.CATEGORY_TYPE) {
                 table.setRowHeight(i, CATEGORY_ROW_HEIGHT);
             } else {
@@ -252,7 +270,34 @@ public class SimplePreferencesPanel extends JPanel
         JScrollPane scroller = new JScrollPane();
         scroller.setViewport(viewport);
         add(scroller, BorderLayout.CENTER);
+        
+        tableModel.addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
 
+                tableValueChangedForRow(e.getFirstRow());
+            }
+        });
+
+    }
+
+    private void tableValueChangedForRow(int row) {
+        
+        firePreferenceTableModelChange(new PreferenceTableModelChangeEvent(preferences[row]));
+    }
+    
+    private void firePreferenceTableModelChange(PreferenceTableModelChangeEvent e) {
+        
+        for (PreferenceTableModelListener listener : listeners) {
+            
+            listener.preferenceTableModelChange(e);
+        }
+        
+    }
+
+    public void addPreferenceTableModelListener(PreferenceTableModelListener listener) {
+        
+        listeners.add(listener);
     }
     
     protected void restoreDefaults() {
@@ -283,29 +328,29 @@ public class SimplePreferencesPanel extends JPanel
     protected void fireTableDataChanged() {
         
         tableModel.fireTableDataChanged();
-        
-        /*
-        // reset the row heights
-        for (int i = 1; i < preferences.length; i++) {
-            
-            int type = preferences[i].getType();
-            if (type == UserPreference.CATEGORY_TYPE) {
-            
-                table.setRowHeight(i, CATEGORY_ROW_HEIGHT);
-
-            } else {
-            
-                table.setRowHeight(i, VALUE_ROW_HEIGHT);
-            }
-        
-        }
-        
-        */
-
+    }
+    
+    public Component getComponentEditorForKey(String key) {
+     
+        return cellEditors.get(key).getComponent();
     }
     
     public UserPreference[] getPreferences() {
+
         return preferences;
+    }
+    
+    public Object getValue(String key) {
+        
+        for (UserPreference userPreference : preferences) {
+            
+            if (key.equals(userPreference.getKey())) {
+                
+                return userPreference.getValue();
+            }
+        }
+        
+        return null; 
     }
     
     protected void savePreferences() {
@@ -368,6 +413,7 @@ public class SimplePreferencesPanel extends JPanel
         public void setValueAt(Object value, int row, int column) {
             UserPreference preference = preferences[row];
             preference.setValue(value);
+            fireTableCellUpdated(row, column);
         }
 
         public int getRowCount() {
@@ -423,9 +469,9 @@ public class SimplePreferencesPanel extends JPanel
         public TableComboBox(Object[] values) {
             
             super(values);
-            setFont(PropertiesBasePanel.panelFont);
+            setFont(AbstractPropertiesBasePanel.panelFont);
         }
-
+        
     } // class TableComboBox
 
 }

@@ -32,6 +32,8 @@ import java.awt.image.BufferedImage;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -65,6 +67,7 @@ import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.log.Log;
+import org.executequery.util.ThreadUtils;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.LinkButton;
@@ -80,8 +83,8 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1524 $
+ * @date     $Date: 2015-10-07 08:06:57 +1100 (Wed, 07 Oct 2015) $
  */
 public class TableDataTab extends JPanel 
     implements ResultSetTableContainer, TableModelListener, UserPreferenceListener {
@@ -107,10 +110,6 @@ public class TableDataTab extends JPanel
     private GridBagConstraints rowCountPanelConstraints;
 
     private GridBagConstraints canEditTableNoteConstraints;
-    
-//    private GridBagConstraints toolBarConstraints;
-    
-//    private TableDataTabToolBar toolBar;
     
     private DisabledField rowCountField;
 
@@ -150,13 +149,6 @@ public class TableDataTab extends JPanel
             
             initRowCountPanel();
         }
-        
-//        toolBarConstraints = new GridBagConstraints(0, 0, 
-//                GridBagConstraints.REMAINDER, 1, 1.0, 0,
-//                GridBagConstraints.NORTHWEST,
-//                GridBagConstraints.HORIZONTAL,
-//                new Insets(5, 5, 1, 5), 0, 0);
-//        toolBar = new TableDataTabToolBar();
         
         canEditTableNotePanel = createCanEditTableNotePanel();
         canEditTableNoteConstraints = new GridBagConstraints(1, 1, 1, 1, 1.0, 0,
@@ -237,7 +229,30 @@ public class TableDataTab extends JPanel
         return panel;
     }
 
-    public synchronized void loadDataForTable(final DatabaseObject databaseObject) {
+    private Timer timer;
+    
+    public void loadDataForTable(final DatabaseObject databaseObject) {
+
+        addInProgressPanel();
+
+        if (timer != null) {
+            
+            timer.cancel();
+        }
+
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+
+            @Override
+            public void run() {
+
+                load(databaseObject);
+            }
+        }, 600);
+        
+    }
+    
+    private void load(final DatabaseObject databaseObject) {
 
         if (worker != null) {
 
@@ -249,13 +264,7 @@ public class TableDataTab extends JPanel
             public Object construct() {
                 try {
 
-                    removeAll();
-                    add(cancelPanel, scrollerConstraints);
-                    
-                    repaint();
-                    cancelPanel.start();                    
                     executing = true;
-                    
                     return setTableResultsPanel(databaseObject);
 
                 } catch (Exception e) {
@@ -272,6 +281,23 @@ public class TableDataTab extends JPanel
 
         };
         worker.start();
+    }
+
+    private void addInProgressPanel() {
+
+        ThreadUtils.invokeLater(new Runnable() {
+            
+            @Override
+            public void run() {
+
+                removeAll();
+                add(cancelPanel, scrollerConstraints);
+                
+                repaint();
+                cancelPanel.start();
+            }
+        });
+        
     }
 
     private void cancel() {
@@ -298,8 +324,6 @@ public class TableDataTab extends JPanel
         tableDataChanges.clear();
         primaryKeyColumns.clear();
         foreignKeyColumns.clear();
-        
-//        GUIUtilities.showWaitCursor();
         
         this.databaseObject = databaseObject;
         try {
@@ -335,6 +359,8 @@ public class TableDataTab extends JPanel
                 canEditTableNotePanel.setVisible(false);
             }
 
+            Log.debug("Retrieving data for table - " + databaseObject.getName());
+            
             ResultSet resultSet = databaseObject.getData(true);
             tableModel.createTable(resultSet);
             if (table == null) {
@@ -416,7 +442,6 @@ public class TableDataTab extends JPanel
             scroller.getViewport().add(table);
             removeAll();
 
-//            add(toolBar, toolBarConstraints);
             add(canEditTableNotePanel, canEditTableNoteConstraints);
             add(scroller, scrollerConstraints);
             
@@ -439,7 +464,6 @@ public class TableDataTab extends JPanel
 
         } finally {
 
-//            GUIUtilities.showNormalCursor();
             tableModel.addTableModelListener(this);
         }
 
@@ -574,18 +598,6 @@ public class TableDataTab extends JPanel
         tableModel.setMaxRecords(SystemProperties.getIntProperty("user", "browser.max.records"));
     }
 
-    /*
-    private void showNormalCursor() {
-
-        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-    }
-
-    private void showWaitCursor() {
-
-        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-    }
-    */
-
     public JTable getTable() {
 
         return table;
@@ -696,6 +708,6 @@ public class TableDataTab extends JPanel
         
     }
 
-    
+
 }
 

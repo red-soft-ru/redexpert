@@ -28,7 +28,6 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.executequery.components.BaseActionPanel;
@@ -47,7 +46,6 @@ public abstract class DefaultActionButtonsPanel extends BaseActionPanel {
     public DefaultActionButtonsPanel() {
 
         super(new GridBagLayout());
-        
         init();
     }
 
@@ -126,6 +124,7 @@ public abstract class DefaultActionButtonsPanel extends BaseActionPanel {
                 gbc.weightx = 1.0;
             }
 
+            buttons.get(i).getPreferredSize();
             buttonPanel.add(buttons.get(i), gbc);
         }
 
@@ -140,6 +139,7 @@ public abstract class DefaultActionButtonsPanel extends BaseActionPanel {
             buttonPanel.add(helpButton, gbc);
         }
 
+        buttonPanel.revalidate();
     }
     
     private Border createContentBorder() {

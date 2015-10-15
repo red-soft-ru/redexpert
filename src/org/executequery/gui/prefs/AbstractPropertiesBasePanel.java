@@ -1,5 +1,5 @@
 /*
- * PropertiesBasePanel.java
+ * AbstractPropertiesBasePanel.java
  *
  * Copyright (C) 2002-2015 Takis Diakoumis
  *
@@ -25,6 +25,8 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -39,17 +41,21 @@ import org.underworldlabs.util.SystemProperties;
  * User preferences base panel.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1512 $
+ * @date     $Date: 2015-09-27 21:23:07 +1000 (Sun, 27 Sep 2015) $
  */
-abstract class PropertiesBasePanel extends JPanel
-                                     implements UserPreferenceFunction {
+abstract class AbstractPropertiesBasePanel extends JPanel
+                                     implements UserPreferenceFunction, 
+                                     PreferenceChangeListener,
+                                     PreferenceTableModelListener {
 
     /** common font used across props panels */
     protected static Font panelFont;
     
     /** common layout constraints acroos props panels */
     protected static GridBagConstraints contentPanelConstraints;
+
+    private List<PreferenceChangeListener> listeners;
 
     static {
         panelFont = new Font("dialog", Font.PLAIN, 12);
@@ -60,27 +66,44 @@ abstract class PropertiesBasePanel extends JPanel
                                             new Insets(5, 5, 0, 5), 0, 0);
     }
     
-    public PropertiesBasePanel() {
+    public AbstractPropertiesBasePanel() {
 
-        super(new GridBagLayout());        
+        super(new GridBagLayout());
+        listeners = new ArrayList<>();
         setBorder(BorderFactory.createLineBorder(GUIUtilities.getDefaultBorderColour()));
-        
-        try {
+        init();
+    }
 
-            init();
-
-        } catch (Exception e) {
+    public void addPreferenceChangeListener(PreferenceChangeListener listener) {
         
-            e.printStackTrace();
+        listeners.add(listener);
+    }
+    
+    @Override
+    public void preferenceChange(PreferenceChangeEvent e) {}
+    
+    @Override
+    public void preferenceTableModelChange(PreferenceTableModelChangeEvent e) {
+
+        for (PreferenceChangeListener listener : listeners) {
+
+            listener.preferenceChange(new PreferenceChangeEvent(this, e.getKey(), e.getValue()));
         }
         
     }
-
+    
     protected void addContent(JPanel panel) {
+        
         add(panel, contentPanelConstraints);
+        if (panel instanceof SimplePreferencesPanel) {
+            
+            ((SimplePreferencesPanel) panel).addPreferenceTableModelListener(this);
+        }
+        
     }
     
-    private void init() throws Exception {
+    private void init() {
+
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         panel.add(new DefaultButton(new RestoreDefaultsCommand(this)));
         add(panel, new GridBagConstraints(

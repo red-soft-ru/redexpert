@@ -31,8 +31,8 @@ import javax.swing.JPanel;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1512 $
+ * @date     $Date: 2015-09-27 21:23:07 +1000 (Sun, 27 Sep 2015) $
  */
 public class PropertiesRootPanel extends JPanel 
                                  implements UserPreferenceFunction {
@@ -43,9 +43,6 @@ public class PropertiesRootPanel extends JPanel
     private Image textImage;
 
     public PropertiesRootPanel() {
-
-//        darkColour = new Color(151,155,235);
-//        lightColour = new Color(181,184,241);
 
         darkColour = new Color(107,165,237);
         lightColour = new Color(187,209,236);
@@ -80,19 +77,8 @@ public class PropertiesRootPanel extends JPanel
     
     public void save() {}
     public void restoreDefaults() {}
+    public void preferenceChange(PreferenceChangeEvent e) {}
+    public void addPreferenceChangeListener(PreferenceChangeListener preferenceChangeListener) {}
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -54,7 +54,7 @@ Alternatively, simply start as follows:
   $ java -jar eq.jar
 ```
 
-### Alternative Maven Build
+## Alternative experimental maven build
 
 To build a ExecuteQuery:
 

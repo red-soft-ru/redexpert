@@ -38,7 +38,7 @@ import org.underworldlabs.util.InterruptedException;
  */
 public class QueryTokenizer {
 
-    private static final String QUERY_DELIMITER = ";";
+    private /*static final*/ String QUERY_DELIMITER = ";";
 
     private List<Token> stringTokens;
     
@@ -52,7 +52,7 @@ public class QueryTokenizer {
     
     private Matcher multiLineCommentMatcher;
     
-    private static final String QUOTE_REGEX = "'((?>[^']*+)(?>'{2}[^']*+)*+)'|'.*";
+    private static final String QUOTE_REGEX = "'((\\?>[^']*\\+)(\\?>'{2}[^']*\\+)*\\+)'|'.*'";//"'((?>[^']*+)(?>'{2}[^']*+)*+)'|'.*";
     
     private static final String MULTILINE_COMMENT_REGEX = "/\\*(?:.|[\\n\\r])*?\\*/|/\\*.*"; 
 //                                                        "/\\*((?>[^\\*/]*+)*+)\\*/|/\\*.*";
@@ -79,7 +79,7 @@ public class QueryTokenizer {
     }
     
     public List<DerivedQuery> tokenize(String query) {
-        
+
         extractQuotedStringTokens(query);
         extractSingleLineCommentTokens(query);
         extractMultiLineCommentTokens(query);
@@ -134,8 +134,19 @@ public class QueryTokenizer {
 
                 String substring = query.substring(lastIndex, index);
 
+                // if substring includes a set term command
+                Pattern p = Pattern.compile("Set(.\\s?)term(.+?)", Pattern.CASE_INSENSITIVE);
+
+                Matcher m = p.matcher(substring);
+
+                if (m.find()) {
+                    QUERY_DELIMITER = substring.substring(m.end(), substring.length()).trim();
+                    lastIndex = index + (substring.length() - m.end());
+                    continue;
+                }
+
                 queries.add(new DerivedQuery(substring));
-                lastIndex = index + 1;
+                lastIndex = index + QUERY_DELIMITER.length();/*1;*/
             }
 
         }

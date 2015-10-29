@@ -167,6 +167,7 @@
 					<include>**/*.codes</include>
 					<include>**/*.keywords</include>
 					<include>**/*.license</include>
+					<include>**/*.html</include>
 				</includes>
 			</resource>
 		</resources>

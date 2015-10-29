@@ -41,8 +41,10 @@ public final class ApplicationVersion {
 
     public boolean isNewerThan(String anotherVersion) {
 
-        if (anotherVersion != null && build != null) {
-            return (anotherVersion.compareTo(build) < 0);    
+        if (anotherVersion != null && version != null) {
+            int newVersion = Integer.valueOf(version.replaceAll("\\.", ""));
+            int currentVersion = Integer.valueOf(anotherVersion.replaceAll("\\.", ""));
+            return (newVersion > currentVersion);
         }
         
         return false;

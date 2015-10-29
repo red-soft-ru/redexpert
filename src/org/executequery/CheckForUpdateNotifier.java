@@ -22,6 +22,8 @@ package org.executequery;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -192,7 +194,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         progressDialog = new InterruptibleProgressDialog(
             GUIUtilities.getParentFrame(),
             "Check for update", 
-            "Checking for updated version from http://executequery.org",
+            "Checking for updated version from https://github.com/redsoftbiz/executequery/releases",
             this);
     }
 
@@ -259,15 +261,14 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
 
     private boolean isNewVersion(ApplicationVersion version) {
-        
-        String currentBuild = getCurrentBuild();
+        String currentVersion =  System.getProperty("executequery.minor.version");
 
-        return version.isNewerThan(currentBuild);
+        return version.isNewerThan(currentVersion);
     }
     
     private ApplicationVersion getVersionInfo() {
         
-        Log.info("Checking for new version update from http://executequery.org ...");
+        Log.info("Checking for new version update from https://github.com/redsoftbiz/executequery/releases ...");
         
         return repository().getLatestVersion();
     }
@@ -291,14 +292,25 @@ public class CheckForUpdateNotifier implements Interruptible {
 
             createProgressDialogForReleaseNotesLoad();
 
-            final String releaseNotes = repository().getReleaseNotes();
+            String apiInfo = repository().getReleaseNotes();
+
+            Pattern p = Pattern.compile("\"body\":\"(.*?)\"", Pattern.CASE_INSENSITIVE);
+
+            Matcher m = p.matcher(apiInfo);
+
+            String releaseNotes = "";
+
+            if (m.find()) {
+                releaseNotes = m.group(1).replaceAll("\\\\r\\\\n", "\n");//.split("\\\\r\\\\n");//responseTextLines.substring(m.start(), m.end()).trim();
+            }
 
             closeProgressDialog();
 
+            final String finalReleaseNotes = releaseNotes;
             GUIUtils.invokeAndWait(new Runnable() {
                 public void run() {
-                    new InformationDialog("Latest Version Info", 
-                        releaseNotes, InformationDialog.TEXT_CONTENT_VALUE);
+                    new InformationDialog("Latest Version Info",
+                            finalReleaseNotes, InformationDialog.TEXT_CONTENT_VALUE);
                 }
             });
 
@@ -326,7 +338,7 @@ public class CheckForUpdateNotifier implements Interruptible {
                 progressDialog = new InterruptibleProgressDialog(
                     GUIUtilities.getParentFrame(),
                     "Check for update", 
-                    "Retrieving new version release notes from http://executequery.org",
+                    "Retrieving new version release notes from https://github.com/redsoftbiz/executequery/releases/latest",
                     CheckForUpdateNotifier.this);
 
                 progressDialog.run();
@@ -345,16 +357,15 @@ public class CheckForUpdateNotifier implements Interruptible {
     private String genericIOError() {
 
         return "An error occured trying to communicate " +
-            " with the server at http://executequery.org.";
+            " with the server at https://github.com/redsoftbiz/executequery/releases.";
     }
 
     private String newVersionMessage(ApplicationVersion version) {
 
-        return "New version " + version.getVersion() + 
-            " (Build " + version.getBuild() + ") " +
+        return "New version " + version.getVersion() +
             " is available for download at " +
-            "<a href=\"http://executequery.org\">http://executequery.org</a>." +
-            "\nClick <a href=\"http://executequery.org/download.jsp\">here</a>" +
+            "<a href=\"https://github.com/redsoftbiz/executequery/releases\">https://github.com/redsoftbiz/executequery/releases</a>." +
+            "\nClick <a href=\"https://github.com/redsoftbiz/executequery/releases/latest\">here</a>" +
             " to go to the download page.\n\nDo you wish to view the " +
             "version notes for this release?";
     }

@@ -22,6 +22,8 @@ package org.executequery.repository.spi;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.executequery.ApplicationException;
 import org.executequery.ApplicationVersion;
@@ -42,7 +44,7 @@ import org.underworldlabs.util.SystemProperties;
  */
 public class LatestVersionRepositoryImpl implements LatestVersionRepository {
 
-    private static final String ADDRESS = "www.executequery.org";
+    private static final String ADDRESS = "api.github.com";
     
     public String getId() {
 
@@ -59,21 +61,21 @@ public class LatestVersionRepositoryImpl implements LatestVersionRepository {
                 String build = null;
 
                 RemoteHttpClient httpClient = remoteHttpClient();
-                RemoteHttpResponse response = httpClient.httpGetRequest(ADDRESS, versionUrl().getPath());
+                RemoteHttpResponse response = httpClient.httpGetRequest("api.github.com", versionUrl().getPath());
 
-                String[] responseTextLines = response.getResponse().split("\n");
-                for (String line : responseTextLines) {
-                    
-                    if (line.startsWith("version")) {
+                String responseTextLines = response.getResponse();
+                Pattern p = Pattern.compile("\"tag_name\":\"(.*?)\"", Pattern.CASE_INSENSITIVE);
 
-                        version = line.substring(8).trim();
+                Matcher m = p.matcher(responseTextLines);
 
-                    } else if(line.startsWith("build")) {
+                if (m.find()) {
+                    version = m.group(1);//responseTextLines.substring(m.start(), m.end()).trim();
+                }
 
-                        build = line.substring(6).trim();
-                    }
-
-                } 
+                if(!version.isEmpty()){
+                    if(version.substring(0, 1).equals("v"))
+                        version = version.substring(1, version.length());
+                }
 
                 return new ApplicationVersion(version, build);
                 
@@ -98,7 +100,7 @@ public class LatestVersionRepositoryImpl implements LatestVersionRepository {
     
     private String ioErrorMessage() {
 
-        return "The version file at http://executequery.org " +
+        return "The version file at https://github.com/redsoftbiz/executequery/releases/latest " +
             "could not be opened.\nThis feature requires an " +
             "active internet connection.\nIf using a proxy server, " +
             "please configure this through the user preferences " +
@@ -142,7 +144,7 @@ public class LatestVersionRepositoryImpl implements LatestVersionRepository {
 
         if (siteAvailable()) {
 
-            Log.info("Downloading latest release notes from http://executequery.org");
+            Log.info("Downloading latest release notes from https://github.com/redsoftbiz/executequery/releases/latest");
             
             try {
 

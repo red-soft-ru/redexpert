@@ -54,9 +54,9 @@ import org.underworldlabs.util.SystemProperties;
  */
 public class DefaultRemoteHttpClient implements RemoteHttpClient {
 
-    private static final String HTTP = "http";
+    private static final String HTTP = "https";
 
-    private static final int HTTP_PORT = 80;
+    private static final int HTTP_PORT = 443;
 
     public boolean hostReachable(String host) {
 

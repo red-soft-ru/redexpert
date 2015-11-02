@@ -401,7 +401,8 @@ public class AboutPanel extends BaseDialog
         protected AboutImagePanel() {
 
             versionText = "version " +
-                          System.getProperty("executequery.minor.version");
+                    System.getProperty("executequery.minor.version") +
+                    ". Red Soft 2006-2015. http://www.red-soft.biz";
             versionFont = new Font("dialog", Font.BOLD, 12);
 
             forkText = "Fork of Execute Query: http://executequery.org";

@@ -383,13 +383,13 @@ public class ApplicationLauncher {
                         "/org/executequery/images/SplashImage.png",
                         versionString(),
                         versionTextColour(),
-                        110, 210);
+                        210, 220);
 //        5, 15); // top-left
     }
 
     private Color versionTextColour() {
 
-        return new Color(60, 60, 60);
+        return new Color(255, 255, 255);
     }
 
     private String versionString() {
@@ -405,7 +405,7 @@ public class ApplicationLauncher {
     private Color progressBarColour() {
 
 //        return new Color(120, 120, 180);
-        return new Color(107, 148, 200);
+        return new Color(255, 255, 255);
     }
 
     public ExecuteQueryFrame createFrame() {

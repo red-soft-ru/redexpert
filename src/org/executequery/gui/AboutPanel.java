@@ -376,7 +376,7 @@ public class AboutPanel extends BaseDialog
         private static final int HEIGHT = 206;
         private static final int WIDTH = 400;
 
-        private final Color FOREGROUND_COLOUR = new Color(60, 60, 60);
+        private final Color FOREGROUND_COLOUR = new Color(255, 255, 255);
 
         private Timer timer;
         private Image eqImage;
@@ -384,6 +384,7 @@ public class AboutPanel extends BaseDialog
 
         private Font versionFont;
         private String versionText;
+        private String forkText;
 
         // background and logo fade
         boolean stageOneComplete;
@@ -401,6 +402,9 @@ public class AboutPanel extends BaseDialog
 
             versionText = "version " +
                           System.getProperty("executequery.minor.version");
+            versionFont = new Font("dialog", Font.BOLD, 12);
+
+            forkText = "Fork of Execute Query: http://executequery.org";
             versionFont = new Font("dialog", Font.BOLD, 12);
 
             ImageIcon icon = GUIUtilities.loadImage("AboutText.png");
@@ -434,7 +438,7 @@ public class AboutPanel extends BaseDialog
 
                     if (stageOneComplete && !stageTwoComplete) {
 
-                        if (bottomOffsetVersion >= 45) {
+                        if (bottomOffsetVersion >= 30) {
 
                             stageTwoComplete = true;
 
@@ -508,6 +512,12 @@ public class AboutPanel extends BaseDialog
 
                 g2d.setClip(imageX, 100, textLength, HEIGHT - 100);
                 g2d.drawString(versionText, imageX, HEIGHT - bottomOffsetVersion);
+
+                textLength = fm.stringWidth(forkText);
+                imageX = (WIDTH - imageWidth) / 2 + ((imageWidth - textLength) / 2);
+
+                g2d.setClip(imageX, 100, textLength, HEIGHT + 20 - 100);
+                g2d.drawString(forkText, imageX, HEIGHT + 20 - bottomOffsetVersion);
             }
 
             g2d.setClip(0, 0, WIDTH, HEIGHT);

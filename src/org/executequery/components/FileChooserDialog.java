@@ -195,7 +195,7 @@ public class FileChooserDialog extends JFileChooser {
             SQL_ICON = GUIUtilities.loadIcon("DBImage16.png", true);
             JAR_ICON = GUIUtilities.loadIcon("Jar16.png", true);
             LOG_ICON = GUIUtilities.loadIcon("LogFile16.png", true);
-            EQ_ICON = GUIUtilities.loadIcon("ApplicationIcon16.png", true);
+            EQ_ICON = GUIUtilities.loadIcon("ApplicationIcon48.png", true);
 
             if (isEQLookAndFeel()) {
                 ZIP_ICON = GUIUtilities.loadIcon("ZipFile16.png", true);

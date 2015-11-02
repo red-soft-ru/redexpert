@@ -50,7 +50,7 @@ public class ExecuteQueryFrame extends JFrame
 
 	public static final String TITLE = "Execute Query";
 
-    private static final String APPLICATION_ICON = "ApplicationIcon128.png";
+    private static final String APPLICATION_ICON = "ApplicationIcon48.png";
 
     private static final String WINDOW_POSITION_KEY = "window.position";
 

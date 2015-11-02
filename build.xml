@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="ExecuteQuery" default="make" basedir=".">
+<project name="RedExpert" default="make" basedir=".">
 
 	<property name="compile.outdir" value="classes" />
 	<property name="src.path" value="src" />
@@ -8,6 +8,7 @@
 	<property name="lib.dir" value="${dist.outdir}/lib" />
 	<property name="docs.dir" value="${dist.outdir}/docs" />
 	<property name="main.class" value="org.executequery.ExecuteQuery" />
+	<property name="version" value="4.3" />
 
 	<path id="classpath">
 		<pathelement location="${lib.dir}" />
@@ -49,11 +50,11 @@
 	<target name="jar" depends="compile" description="generate the jar file">
 		
         <manifestclasspath property="manifest.classpath"
-                           jarfile="${dist.outdir}/eq.jar">
+                           jarfile="${dist.outdir}/RedExpert-${version}.jar">
             <classpath refid="classpath" />
         </manifestclasspath>
 
-        <jar jarfile="${dist.outdir}/eq.jar" 
+        <jar jarfile="${dist.outdir}/RedExpert-${version}.jar" 
             basedir="${compile.outdir}"
             compress="false" includes="org/**">
 

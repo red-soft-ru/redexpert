@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.executequery</groupId>
-	<artifactId>ExecuteQuery</artifactId>
+	<artifactId>RedExpert</artifactId>
 	<version>4.3</version>
 	<packaging>jar</packaging>
 

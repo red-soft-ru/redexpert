@@ -214,7 +214,7 @@ public class ExecuteQueryTheme2 extends OceanTheme {
     }
     
     public String getName() {
-        return "Execute Query";
+        return "Red Expert";
     }
     
     private static final int DEFAULT_FONT_SIZE = 11;

@@ -199,7 +199,7 @@ public class DefaultTextEditorContainer extends JPanel
     }
 
     public String getPrintJobName() {
-        return "Execute Query";
+        return "Red Expert";
     }
     
     public String getDisplayName() {

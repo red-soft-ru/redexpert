@@ -133,7 +133,7 @@ public class SimpleTextViewer extends JPanel implements TextEditor {
     }
     
     public String getPrintJobName() {
-        return "Execute Query";
+        return "Red Expert";
     }
     
     public void paste() {

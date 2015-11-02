@@ -75,7 +75,7 @@ public class SmoothGradientLookAndFeel extends MetalLookAndFeel {
     }
     
     public String getDescription() {
-        return "The Execute Query Smooth Gradient Look and Feel - modified from " +
+        return "The Red Expert Smooth Gradient Look and Feel - modified from " +
                 "The JGoodies Plastic Look and Feel";
     }
     

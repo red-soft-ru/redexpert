@@ -176,7 +176,7 @@ public class BrowserViewPanel extends FormObjectViewContainer
      * @return the print job's name
      */
     public String getPrintJobName() {
-        return "Execute Query - Database Browser";
+        return "Red Expert - Database Browser";
     }
     
     /** 

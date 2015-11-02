@@ -167,7 +167,7 @@ public class PrintSelectDialog extends JPanel {
         PrintingSupport printingSupport = new PrintingSupport();
 
         return printingSupport.print(queryEditor.getPrintableForQueryArea(), 
-                "Execute Query - editor");
+                "Red Expert - editor");
     }
     
     private String printText() {
@@ -175,7 +175,7 @@ public class PrintSelectDialog extends JPanel {
         PrintingSupport printingSupport = new PrintingSupport();
 
         return printingSupport.print(queryEditor.getPrintableForQueryArea(), 
-                "Execute Query - editor", true);
+                "Red Expert - editor", true);
     }
     
     private void printButtons_actionPerformed(ActionEvent e) {

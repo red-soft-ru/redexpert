@@ -309,7 +309,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         }
 
         Printable printable = new TablePrinter(printTable, null);
-        new PrintingSupport().print(printable, "Execute Query - table");
+        new PrintingSupport().print(printable, "Red Expert - table");
     }
     
     public void mousePressed(MouseEvent e) {

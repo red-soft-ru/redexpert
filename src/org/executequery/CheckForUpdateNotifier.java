@@ -90,7 +90,7 @@ public class CheckForUpdateNotifier implements Interruptible {
                 
             } else {
                 
-                Log.info("Execute Query is up to date.");
+                Log.info("Red Expert is up to date.");
             }
 
         } catch (ApplicationException e) {
@@ -218,7 +218,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
             } else {
 
-                Log.info("Execute Query is up to date.");
+                Log.info("Red Expert is up to date.");
                 
                 if (monitorProgress) {
 
@@ -247,7 +247,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         
         return GUIUtilities.displayYesNoDialog(
                 new SimpleHtmlContentPane(newVersionMessage(version)), 
-                "Execute Query Update");
+                "Red Expert Update");
     }
 
     private void logNewVersonInfo() {
@@ -372,7 +372,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     private String noUpdateMessage() {
         return "No update available.\n" +
-            "This version of Execute Query is up to date.\n" +
+            "This version of Red Expert is up to date.\n" +
             "Please check back here periodically to ensure you have " +
             "the latest version.";
     }

@@ -357,7 +357,7 @@ public class ApplicationLauncher {
 
         Log.info("Using Java version " +
                 System.getProperty("java.version"));
-        Log.info("Execute Query version: " +
+        Log.info("Red Expert version: " +
                 System.getProperty("executequery.minor.version") +
                 "-" + System.getProperty("executequery.build"));
         Log.info("Operating System: " +

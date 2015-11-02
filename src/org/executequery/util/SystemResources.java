@@ -147,7 +147,7 @@ public class SystemResources {
     public static void setUserActionShortcuts(Properties properties) {
         try {
             FileUtils.storeProperties(userActionShortcutsPath(), properties, 
-                    "Execute Query - User Defined System Shortcuts");
+                    "Red Expert - User Defined System Shortcuts");
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -162,7 +162,7 @@ public class SystemResources {
             String path = userSettingsDirectoryForCurrentBuild() + "eq.user.properties";
 
             FileUtils.storeProperties(path, properties, 
-                    "Execute Query - User Defined System Properties");
+                    "Red Expert - User Defined System Properties");
 
         } catch (IOException e) {
 

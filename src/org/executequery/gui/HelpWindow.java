@@ -191,7 +191,7 @@ public class HelpWindow {
 
     private JFrame createFrame() {
 
-        JFrame frame = new JFrame("Execute Query Help");    
+        JFrame frame = new JFrame("Red Expert Help");
 
         ImageIcon frameIcon = IconUtilities.loadIcon(
                         "/org/executequery/icons/Help16.png");

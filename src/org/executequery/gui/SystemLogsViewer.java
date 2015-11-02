@@ -85,9 +85,9 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
     /** <p>Initializes the state of this instance. */
     private void init(final int type) throws Exception {
 
-        String[] logs = {"System Log: ~/.executequery/logs/eq.output.log",
-                         "Export Log: ~/.executequery/logs/eq.export.log",
-                         "Import Log: ~/.executequery/logs/eq.import.log"};
+        String[] logs = {"System Log: ~/.redexpert/logs/eq.output.log",
+                         "Export Log: ~/.redexpert/logs/eq.export.log",
+                         "Import Log: ~/.redexpert/logs/eq.import.log"};
         
         logCombo = WidgetFactory.createComboBox(logs);
         logCombo.addItemListener(this);
@@ -275,7 +275,7 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
     // --------------------------------------------
 
     public String getPrintJobName() {
-        return "Execute Query - system log";
+        return "Red Expert - system log";
     }
 
     public String toString() {

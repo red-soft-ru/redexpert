@@ -594,19 +594,12 @@
           execute-class="org.executequery.actions.helpcommands.AboutCommand"/>
 
   <action id="visit-eq-command"
-          name="Visit executequery.org online"
+          name="Visit red-soft.biz online"
           mnemonic="V"
           small-icon="/org/executequery/icons/WebComponent16.png"
           accel-editable="false"
           description="Opens executequery.org in a browser window"
           execute-class="org.executequery.actions.helpcommands.VisitOnlineCommand"/>
-
-  <action id="donate-command"
-          name="Make a Donation"
-          mnemonic="D"
-          accel-editable="false"
-          description="Make a donation to support the continued development of Execute Query"
-          execute-class="org.executequery.actions.helpcommands.MakeDonationCommand"/>
 
   <action id="check-update-command"
           name="Check for Update"

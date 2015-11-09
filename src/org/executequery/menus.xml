@@ -579,9 +579,6 @@
           <menu-item id="visit-eq-command"
                      class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-          <menu-item id="donate-command"
-                     class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
           <menu name="Feedback"
                 class="org.underworldlabs.swing.menu.MainMenu"
                 mnemonic="F">

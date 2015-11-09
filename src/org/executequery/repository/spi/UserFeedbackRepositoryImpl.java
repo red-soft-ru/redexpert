@@ -20,12 +20,8 @@
 
 package org.executequery.repository.spi;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import org.executequery.http.RemoteHttpClient;
 import org.executequery.http.RemoteHttpClientException;
-import org.executequery.http.RemoteHttpResponse;
 import org.executequery.http.spi.DefaultRemoteHttpClient;
 import org.executequery.log.Log;
 import org.executequery.repository.RepositoryException;
@@ -35,6 +31,14 @@ import org.executequery.util.SystemResources;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import java.util.Properties;
+
 /**
  *
  * @author   Takis Diakoumis
@@ -43,41 +47,55 @@ import org.underworldlabs.util.SystemProperties;
  */
 public class UserFeedbackRepositoryImpl implements UserFeedbackRepository {
 
-    private static final String FEEDBACK_POST_ADDRESS = "http://executequery.org/feedback-submit";
+    private static final String FEEDBACK_POST_ADDRESS = "rdb.support@red-soft.biz";
     
-    private static final String ADDRESS = "executequery.org";
+    private static final String ADDRESS = "red-soft.biz";
+
+    private static final String MAIL_SERVER = "mail.red-soft.biz";
     
     public void postFeedback(UserFeedback userFeedback) throws RepositoryException {
 
         try {
         
-            Log.info("Posting feedback to http://executequery.org");
+            Log.info("Sending feedback to rdb.support@red-soft.biz");
 
             saveEntriesToPreferences(userFeedback);
             
             if (siteAvailable()) {
-                
-                URL url = new URL(FEEDBACK_POST_ADDRESS);
 
-                Log.trace("Sending user feedback to path [ " + ADDRESS + url.getPath() + " ]");
-                
-                RemoteHttpClient httpClient = remoteHttpClient();
-                RemoteHttpResponse httpPostResponse = 
-                    httpClient.httpPostRequest(ADDRESS, url.getPath(), userFeedback.asMap());
+                try{
+                    // Get system properties
+                    Properties properties = System.getProperties();
 
-                Log.trace("User feedback submitted - response code [ " + httpPostResponse.getResponseCode() + " ]");
-                
-                if (httpPostResponse.getResponseCode() != 200) {
-                    
-                    throw new RepositoryException(genericExceptionMessage());
+                    // Setup mail server
+                    properties.setProperty("mail.smtp.host", MAIL_SERVER);
+
+                    // Get the default Session object.
+                    Session session = Session.getDefaultInstance(properties);
+
+                    // Create a default MimeMessage object.
+                    MimeMessage message = new MimeMessage(session);
+
+                    // Set From: header field of the header.
+                    message.setFrom(new InternetAddress(userFeedback.getEmail()));
+
+                    // Set To: header field of the header.
+                    message.addRecipient(Message.RecipientType.TO, new InternetAddress(FEEDBACK_POST_ADDRESS));
+
+                    // Set Subject: header field
+                    message.setSubject(userFeedback.getType());
+
+                    // Now set the actual message
+                    message.setText("From: " + userFeedback.getName() + "\n\n" + userFeedback.getRemarks());
+
+                    // Send message
+                    Transport.send(message);
+                    System.out.println("Sent message successfully....");
+                }catch (MessagingException mex) {
+                    mex.printStackTrace();
                 }
-                
-            }
-            
-        }
-        catch (MalformedURLException e) {
 
-            handleException(e);
+            }
             
         } catch (RemoteHttpClientException e) {
             
@@ -102,8 +120,10 @@ public class UserFeedbackRepositoryImpl implements UserFeedbackRepository {
     }
 
     private boolean siteAvailable() {
-
-        return remoteHttpClient().hostReachable(ADDRESS);
+        RemoteHttpClient remoteHttpClient = remoteHttpClient();
+        remoteHttpClient.setHttp("http");
+        remoteHttpClient.setHttpPort(80);
+        return remoteHttpClient.hostReachable(ADDRESS);
     }
 
     public void cancel() {
@@ -121,7 +141,7 @@ public class UserFeedbackRepositoryImpl implements UserFeedbackRepository {
     private String genericExceptionMessage() {
 
         return "An error occured posting the feedback report to\n" +
-            "http://executequery.org. Please try again later.";
+            "http://red-soft.biz. Please try again later.";
     }
 
     private RemoteHttpClient remoteHttpClient() {

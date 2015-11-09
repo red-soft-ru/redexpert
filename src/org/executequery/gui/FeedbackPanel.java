@@ -269,7 +269,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         sb.append("</td></tr><tr><td>");
         sb.append("If you wish to send feedback with ");
         sb.append("attachments, please send an email to ");
-        sb.append("feedback@executequery.org instead of completing this form.");
+        sb.append("rdb.support@red-soft.biz instead of completing this form.");
         sb.append("</td></tr><tr><td>This feature requires an active ");
         sb.append("internet connection.</td></tr>");
         sb.append(Constants.TABLE_TAG_END);
@@ -318,7 +318,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
 
                     GUIUtilities.displayInformationMessage(
                             "Your remarks were successfully posted to " +
-                            "http://executequery.org.\nThank you for your feedback.");
+                            "rdb.support@red-soft.biz.\nThank you for your feedback.");
 
                 } else if (cancelled || result == Constants.WORKER_FAIL ||
                         result == Constants.WORKER_CANCEL) {
@@ -342,7 +342,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         progressDialog = new InterruptibleProgressDialog(
                             GUIUtilities.getParentFrame(),
                             "Posting Feedback",
-                            "Posting feedback report to http://executequery.org",
+                            "Posting feedback report to rdb.support@red-soft.biz",
                             this);
 
         worker.start();
@@ -426,14 +426,14 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
 
         switch (feedbackType) {
             case BUG_REPORT:
-                typeString = "1";
+                typeString = "Red Expert: BUG_REPORT";
                 break;
             case FEATURE_REQUEST:
-                typeString = "2";
+                typeString = "Red Expert: FEATURE_REQUEST";
                 break;
             case USER_COMMENTS:
             default:
-                typeString = "0";
+                typeString = "Red Expert: USER_COMMENTS";
                 break;
         }
 

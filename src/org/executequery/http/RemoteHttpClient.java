@@ -36,6 +36,9 @@ public interface RemoteHttpClient {
     
     RemoteHttpResponse httpPostRequest(String host, String path, Map<String, String> params);
 
+    void setHttp(String http);
+
+    void setHttpPort(int port);
 }
 
 

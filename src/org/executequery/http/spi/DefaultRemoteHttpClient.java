@@ -54,9 +54,9 @@ import org.underworldlabs.util.SystemProperties;
  */
 public class DefaultRemoteHttpClient implements RemoteHttpClient {
 
-    private static final String HTTP = "https";
+    private static String HTTP = "https";
 
-    private static final int HTTP_PORT = 443;
+    private static int HTTP_PORT = 443;
 
     public boolean hostReachable(String host) {
 
@@ -303,6 +303,13 @@ public class DefaultRemoteHttpClient implements RemoteHttpClient {
         return SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "internet.proxy.password");
     }
 
+    public void setHttp(String http){
+        HTTP = http;
+    }
+
+    public void setHttpPort(int port){
+        HTTP_PORT = port;
+    }
 }
 
 

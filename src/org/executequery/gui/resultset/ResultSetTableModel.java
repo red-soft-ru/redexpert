@@ -44,8 +44,8 @@ import org.underworldlabs.util.MiscUtils;
  * The sql result set table model.
  * 
  * @author Takis Diakoumis
- * @version $Revision: 1494 $
- * @date $Date: 2015-09-11 16:56:32 +1000 (Fri, 11 Sep 2015) $
+ * @version $Revision: 1544 $
+ * @date $Date: 2015-12-07 10:56:37 +1100 (Mon, 07 Dec 2015) $
  */
 public class ResultSetTableModel extends AbstractSortableTableModel {
 
@@ -225,6 +225,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                             case Types.LONGVARBINARY:
                             case Types.VARBINARY:
                             case Types.BINARY:
+                                value.setValue(resultSet.getBytes(i));
+                                break;
                             case Types.BLOB:
                                 value.setValue(resultSet.getBlob(i));
                                 break;

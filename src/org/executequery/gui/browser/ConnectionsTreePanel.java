@@ -75,8 +75,8 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1526 $
- * @date     $Date: 2015-10-07 10:33:58 +1100 (Wed, 07 Oct 2015) $
+ * @version  $Revision: 1539 $
+ * @date     $Date: 2015-10-18 22:55:23 +1100 (Sun, 18 Oct 2015) $
  */
 public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
                                   implements ConnectionListener,

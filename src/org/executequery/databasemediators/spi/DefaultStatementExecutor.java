@@ -69,8 +69,8 @@ import org.underworldlabs.util.MiscUtils;
  * so as to maintain the correct rollback segment.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1515 $
- * @date     $Date: 2015-10-05 17:25:21 +1100 (Mon, 05 Oct 2015) $
+ * @version  $Revision: 1542 $
+ * @date     $Date: 2015-11-30 10:29:28 +1100 (Mon, 30 Nov 2015) $
  */
 public class DefaultStatementExecutor implements StatementExecutor {
 
@@ -1089,7 +1089,8 @@ public class DefaultStatementExecutor implements StatementExecutor {
         boolean isResultSet = false;
 
         try {
-            stmnt.setEscapeProcessing(enableEscapes);
+
+            setStatementEscapeProcessing(stmnt, enableEscapes);            
             isResultSet = stmnt.execute(query);
 
             if (isResultSet) {
@@ -1128,6 +1129,18 @@ public class DefaultStatementExecutor implements StatementExecutor {
         return statementResult;
     }
 
+    private void setStatementEscapeProcessing(Statement statement, boolean enableEscapes) {
+
+        try {
+        
+            statement.setEscapeProcessing(enableEscapes);
+            
+        } catch (SQLException e) {
+            
+            Log.warning("Attempt to set statement escape processing failed - " + e.getMessage());            
+        }
+    }
+
     /** <p>Executes the specified query and returns 0 if this
      *  executes successfully. If an exception occurs, -1 is
      *  returned and the relevant error message, if available,
@@ -1148,8 +1161,10 @@ public class DefaultStatementExecutor implements StatementExecutor {
         stmnt = conn.createStatement();
 
         try {
+            
             stmnt.clearWarnings();
-            stmnt.setEscapeProcessing(false);
+            setStatementEscapeProcessing(stmnt, false);
+            
             boolean isResultSet = stmnt.execute(query);
 
             if (!isResultSet) {
@@ -1159,8 +1174,9 @@ public class DefaultStatementExecutor implements StatementExecutor {
                     updateCount = -10000;
 
                 statementResult.setUpdateCount(updateCount);
-            }
-            else { // should never be a result set
+            
+            } else { // should never be a result set
+
                 ResultSet rs = stmnt.getResultSet();
                 statementResult.setResultSet(rs);
             }

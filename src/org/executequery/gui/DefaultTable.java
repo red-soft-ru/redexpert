@@ -36,8 +36,8 @@ import org.underworldlabs.swing.table.DefaultTableHeaderRenderer;
  * Default table display using a custom header renderer and fixed min sizes.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1546 $
+ * @date     $Date: 2015-12-22 15:54:37 +1100 (Tue, 22 Dec 2015) $
  */
 public class DefaultTable extends JTable implements StandardTable {
     
@@ -91,6 +91,4 @@ public class DefaultTable extends JTable implements StandardTable {
     }
 
 }
-
-
 

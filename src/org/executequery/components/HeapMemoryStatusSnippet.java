@@ -39,8 +39,8 @@ import org.underworldlabs.swing.HeapMemoryDialog;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1569 $
+ * @date     $Date: 2016-02-03 12:33:44 +1100 (Wed, 03 Feb 2016) $
  */
 public class HeapMemoryStatusSnippet extends JPanel
                                      implements ActionListener {
@@ -92,7 +92,7 @@ public class HeapMemoryStatusSnippet extends JPanel
         free = (int)Runtime.getRuntime().freeMemory();
         int totalUserAfter = total - free;
         
-        Log.info("Garbage collection realeased " +
+        Log.info("Garbage collection released " +
             ((totalUsedBefore - totalUserAfter) / 1000) + "Kb.");
     }
     

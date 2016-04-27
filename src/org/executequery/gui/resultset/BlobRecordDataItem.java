@@ -66,6 +66,10 @@ public class BlobRecordDataItem extends AbstractLobRecordDataItem {
         if (value instanceof String) { // eg. oracle RAW type
 
             return ((String) getValue()).getBytes();
+        
+        } else if (value instanceof byte[]) {
+            
+            return (byte[]) value;
         }
         
         Blob blob = (Blob) value;

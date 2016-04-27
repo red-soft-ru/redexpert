@@ -40,8 +40,8 @@ import org.underworldlabs.swing.plaf.UIUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1506 $
- * @date     $Date: 2015-09-24 08:34:32 +1000 (Thu, 24 Sep 2015) $
+ * @version  $Revision: 1569 $
+ * @date     $Date: 2016-02-03 12:33:44 +1100 (Wed, 03 Feb 2016) $
  */
 public class HeapMemoryPanel extends JPanel 
                              implements ActionListener {
@@ -135,7 +135,7 @@ public class HeapMemoryPanel extends JPanel
         free = (int)Runtime.getRuntime().freeMemory();
         int totalUserAfter = total - free;
         
-        System.err.println("Garbage collection realeased " +
+        System.err.println("Garbage collection released " +
             ((totalUsedBefore - totalUserAfter) / 1000) + "Kb.");
     }
     

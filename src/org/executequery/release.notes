@@ -1,6 +1,18 @@
 --- Execute Query - RELEASE NOTES ---
 
-Date: 14 October 2015
+Date: 27 April 2016
+
+Summary of changes - v4.3.3 Build 5456:
+----------------------------------------
+
+- Fixed SQL text pane background hardcoded to white for theme changes.
+- Wrapped statement escape setting on query execution to avoid possible error
+  for unimplemented with some JDBC drivers. 
+- Separated binary types to use BLOB or BYTE.
+- Modified thread model for connection disconnections to avoid locks.
+- Modified to allow for correct multi-line text values in the table data editor.
+- Added column names option to result set cell/row copy to clipboard.
+
 
 Summary of changes - v4.3.2 Build 5449:
 ----------------------------------------
@@ -523,4 +535,4 @@ Thank you for trying Execute Query.
 
 Takis Diakoumis
 takisd@executequery.org
-14 October 2015
+27 April 2016

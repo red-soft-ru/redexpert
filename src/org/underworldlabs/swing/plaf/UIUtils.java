@@ -44,8 +44,8 @@ import org.underworldlabs.swing.plaf.smoothgradient.SmoothGradientLookAndFeel;
  * colours, icons etc.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1505 $
- * @date     $Date: 2015-09-23 23:17:34 +1000 (Wed, 23 Sep 2015) $
+ * @version  $Revision: 1536 $
+ * @date     $Date: 2015-10-15 14:51:18 +1100 (Thu, 15 Oct 2015) $
  */
 public class UIUtils {
            
@@ -80,6 +80,16 @@ public class UIUtils {
         return getColour("executequery.Border.colour", "controlDkShadow");
     }
 
+    public static String asHexColor(String key) {
+
+        return toHexString(UIManager.getColor(key));
+    }
+    
+    public static String toHexString(Color color) {
+
+        return String.format("#%06X", (0xFFFFFF & color.getRGB()));
+    }
+    
     public static Color getColour(String key, String defaultKey) {
         
         Color color = UIManager.getColor(key);
@@ -90,8 +100,8 @@ public class UIUtils {
         } else {
             
             return UIManager.getColor(defaultKey);       
-        }        
-        
+        }
+
     }
     
     public static Color getColour(String key, Color defaultColour) {

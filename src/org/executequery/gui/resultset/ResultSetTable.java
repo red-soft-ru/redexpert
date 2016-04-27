@@ -24,7 +24,10 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
+import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -39,8 +42,10 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
+import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.StandardTable;
+import org.underworldlabs.swing.table.MultiLineStringCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
 import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.util.SystemProperties;
@@ -48,14 +53,16 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1531 $
- * @date     $Date: 2015-10-13 12:13:37 +1100 (Tue, 13 Oct 2015) $
+ * @version  $Revision: 1546 $
+ * @date     $Date: 2015-12-22 15:54:37 +1100 (Tue, 22 Dec 2015) $
  */
 @SuppressWarnings({"unchecked","rawtypes"})
 public class ResultSetTable extends JTable implements StandardTable {
 
-    private DefaultCellEditor cellEditor;
+    private DefaultCellEditor defaultCellEditor;
 
+    private DefaultCellEditor multiLineCellEditor;
+    
     private ResultsTableColumnModel columnModel;
 
     private ResultSetTableCellRenderer cellRenderer;
@@ -69,12 +76,18 @@ public class ResultSetTable extends JTable implements StandardTable {
 
         final StringCellEditor stringCellEditor = new StringCellEditor();
         stringCellEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
-
-        cellEditor = new DefaultCellEditor(stringCellEditor) {
+        defaultCellEditor = new DefaultCellEditor(stringCellEditor) {
             public Object getCellEditorValue() {
                 return stringCellEditor.getValue(); }
         };
 
+        final MultiLineStringCellEditor multiLineStringCellEditor = new MultiLineStringCellEditor();
+        multiLineStringCellEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
+        multiLineCellEditor = new DefaultCellEditor(multiLineStringCellEditor) {
+            public Object getCellEditorValue() {
+                return multiLineStringCellEditor.getValue(); }
+        };
+        
     }
 
     public ResultSetTable(TableModel model) {
@@ -149,7 +162,7 @@ public class ResultSetTable extends JTable implements StandardTable {
             int selectedRowCount = getSelectedRowCount();
             if (selectedRowCount > 1) {
 
-                int[] selectedRows = getSelectedRows();
+                int[] selectedRows = getSelectedRows();                
                 setRowSelectionInterval(selectedRows[0], selectedRows[selectedRows.length - 1]);
 
             } else {
@@ -189,7 +202,7 @@ public class ResultSetTable extends JTable implements StandardTable {
 
     public void copySelectedCells() {
 
-        copySelectedCells('\t', false);
+        copySelectedCells('\t', false, false);
         
         /*
         
@@ -233,15 +246,25 @@ public class ResultSetTable extends JTable implements StandardTable {
 
     public void copySelectedCellsAsCSV() {
         
-        copySelectedCells(',', false);
+        copySelectedCells(',', false, false);
+    }
+    
+    public void copySelectedCellsAsCSVWithNames() {
+        
+        copySelectedCells(',', false, true);
     }
     
     public void copySelectedCellsAsCSVQuoted() {
         
-        copySelectedCells(',', true);
+        copySelectedCells(',', true, false);
     }
     
-    private void copySelectedCells(char delimiter, boolean quoted) {
+    public void copySelectedCellsAsCSVQuotedWithNames() {
+        
+        copySelectedCells(',', true, true);
+    }
+    
+    private void copySelectedCells(char delimiter, boolean quoted, boolean withNames) {
         
         StringBuilder sb = new StringBuilder();
         
@@ -255,7 +278,19 @@ public class ResultSetTable extends JTable implements StandardTable {
         
         int[] selectedRows = getSelectedRows();
         int[] selectedCols = getSelectedColumns();
-        
+
+        if (withNames) {
+            
+            sb.append("#");
+            List<String> list = new ArrayList<String>();
+            for (int j = 0; j < cols; j++) {
+    
+                list.add(getColumnName(selectedCols[j]));
+            }
+    
+            sb.append(StringUtils.join(list, delimiter)).append('\n');
+        }
+
         String quote = quoted ? "'" : "";
         for (int i = 0; i < rows; i++) {
             
@@ -275,16 +310,15 @@ public class ResultSetTable extends JTable implements StandardTable {
             if (i < rows - 1) {
                 
                 sb.append('\n');
-            
             }
 
         }
 
         if (cols == 1) {
-            
+
             sb.deleteCharAt(sb.length() - 1);            
         }
-        
+
         GUIUtilities.copyToClipBoard(sb.toString());
     }
     
@@ -380,7 +414,22 @@ public class ResultSetTable extends JTable implements StandardTable {
     }
 
     public TableCellEditor getCellEditor(int row, int column) {
-        return cellEditor;
+        
+        RecordDataItem value = (RecordDataItem) getValueAt(row, column);
+        int sqlType = value.getDataType();
+        switch (sqlType) {
+
+            case Types.LONGVARCHAR:
+            case Types.LONGNVARCHAR:
+            case Types.CHAR:
+            case Types.NCHAR:
+            case Types.VARCHAR:
+            case Types.NVARCHAR:
+            case Types.CLOB:
+                return multiLineCellEditor;
+        }
+        
+        return defaultCellEditor;
     }
 
     private int getUserPreferredColumnWidth() {
@@ -435,4 +484,3 @@ public class ResultSetTable extends JTable implements StandardTable {
     }
     
 }
-

@@ -31,6 +31,7 @@ import javax.swing.text.html.HTMLDocument;
 
 import org.executequery.util.SystemWebBrowserLauncher;
 import org.underworldlabs.swing.DialogMessageContent;
+import org.underworldlabs.swing.plaf.UIUtils;
 
 public class SimpleHtmlContentPane extends JEditorPane implements DialogMessageContent {
 
@@ -46,8 +47,9 @@ public class SimpleHtmlContentPane extends JEditorPane implements DialogMessageC
         setSelectionColor(UIManager.getColor("OptionPane.background"));
 
         Font font = UIManager.getFont("OptionPane.font");
-        String bodyRule = "body { font-family: " + font.getFamily() + "; " +
-                "font-size: " + (font.getSize()) + "pt; }";
+        String bodyRule = "body {font-family:" + font.getFamily() + "; " +
+                "font-size:" + (font.getSize()) + "pt; color:" +
+                UIUtils.asHexColor("OptionPane.foreground") + ";}";
 
         ((HTMLDocument) getDocument()).getStyleSheet().addRule(bodyRule);
         
@@ -84,10 +86,4 @@ public class SimpleHtmlContentPane extends JEditorPane implements DialogMessageC
         this.dialog = dialog;
     }
     
-    
 }
-
-
-
-
-

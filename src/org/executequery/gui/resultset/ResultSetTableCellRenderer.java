@@ -44,8 +44,8 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1499 $
- * @date     $Date: 2015-09-18 17:04:59 +1000 (Fri, 18 Sep 2015) $
+ * @version  $Revision: 1545 $
+ * @date     $Date: 2015-12-22 10:22:44 +1100 (Tue, 22 Dec 2015) $
  */
 class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
@@ -230,8 +230,11 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
         switch (sqlType) {
 
             case Types.LONGVARCHAR:
+            case Types.LONGNVARCHAR:
             case Types.CHAR:
+            case Types.NCHAR:
             case Types.VARCHAR:
+            case Types.NVARCHAR:
             case Types.CLOB:
                 color = charValueDisplayColor;
                 break;

@@ -91,8 +91,8 @@ import org.underworldlabs.util.MiscUtils;
 /** 
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1541 $
+ * @date     $Date: 2015-11-18 10:52:54 +1100 (Wed, 18 Nov 2015) $
  */
 public class ExportResultSetPanel extends DefaultTabViewActionPanel
                                   implements NamedView,
@@ -153,7 +153,7 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
         includeColumNamesCheck = new JCheckBox("Include column names as first row");
         
         sqlText = new SimpleSqlTextPanel();
-        sqlText.getTextPane().setBackground(Color.WHITE);
+//        sqlText.getTextPane().setBackground(Color.WHITE);
         sqlText.setBorder(null);
         sqlText.setScrollPaneBorder(BorderFactory.createMatteBorder(1, 1, 0, 1, UIUtils.getDefaultBorderColour()));
 

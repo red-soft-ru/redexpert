@@ -82,9 +82,11 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         cellOpensDialog.setSelected(doubleClickCellOpensDialog());
         cellOpensDialog.setActionCommand("cellOpensDialog");
 
-        add(create("Copy Selected Cell(s)", "copySelectedCells"));
-        add(create("Copy Selected Cells Comma-Separated", "copySelectedCellsAsCSV"));
-        add(create("Copy Selected Cells Comma-Separated and Quoted", "copySelectedCellsAsCSVQuoted"));
+        add(create("Copy Selected Cells", "copySelectedCells"));
+        add(create("Copy Selected Cells - comma-separated", "copySelectedCellsAsCSV"));
+        add(create("Copy Selected Cells - comma-separated with names", "copySelectedCellsAsCSVWithNames"));
+        add(create("Copy Selected Cells - comma-separated and quoted", "copySelectedCellsAsCSVQuoted"));
+        add(create("Copy Selected Cells - comma-separated and quoted with names", "copySelectedCellsAsCSVQuotedWithNames"));
         addSeparator();
         add(create("Select Row", "selectRow"));
         add(create("Select Column", "selectColumn"));
@@ -253,11 +255,21 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         table.copySelectedCellsAsCSV();
     }
     
+    public void copySelectedCellsAsCSVWithNames(ActionEvent e) {
+        
+        table.copySelectedCellsAsCSVWithNames();
+    }
+    
     public void copySelectedCellsAsCSVQuoted(ActionEvent e) {
         
         table.copySelectedCellsAsCSVQuoted();
     }
 
+    public void copySelectedCellsAsCSVQuotedWithNames(ActionEvent e) {
+        
+        table.copySelectedCellsAsCSVQuotedWithNames();
+    }
+    
     public void exportTable(ActionEvent e) {
 
         new QueryEditorResultsExporter(resultSetTableModel());

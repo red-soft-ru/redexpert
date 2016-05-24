@@ -2,8 +2,8 @@
 Version=1.0
 Encoding=UTF-8
 Type=Application
-Exec=eq.sh
-Icon=eq.png
+Exec=red_expert.sh
+Icon=red_expert.png
 Terminal=false
 Name=Execute Query
 Categories=Application;Development;

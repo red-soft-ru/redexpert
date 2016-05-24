@@ -1,8 +1,20 @@
 --- Execute Query - RELEASE NOTES ---
 
-Date: 28 September 2015
+Date: 27 April 2016
 
-Summary of changes - v4.3.2 Build 5445:
+Summary of changes - v4.3.3 Build 5456:
+----------------------------------------
+
+- Fixed SQL text pane background hardcoded to white for theme changes.
+- Wrapped statement escape setting on query execution to avoid possible error
+  for unimplemented with some JDBC drivers. 
+- Separated binary types to use BLOB or BYTE.
+- Modified thread model for connection disconnections to avoid locks.
+- Modified to allow for correct multi-line text values in the table data editor.
+- Added column names option to result set cell/row copy to clipboard.
+
+
+Summary of changes - v4.3.2 Build 5449:
 ----------------------------------------
 
 - Modified to examine result set return values as objects and strings to render
@@ -12,6 +24,19 @@ Summary of changes - v4.3.2 Build 5445:
 - Introduced a new dark theme - Execute Query Dark Theme.
 - Now logging a warning only when attempting and failing to set transaction 
   isolation level on a connection.
+- Modified text pane log event thread in render to avoid possible write locks.
+- Fixed result set table sort issue when selecting and rendering boolean types.
+- Added delay to table row count query for browser node selections to avoid 
+  system hang when moving through selection nodes - eg. keyboard arrow
+  scrolling up/down quickly.
+- Added delay to table data retrieval for browser node selection ensuring no 
+  unecessary connections are opened and statements executed. 
+- Fixed error on selecting to disconnect from the browser tree popup menu when 
+  the current selection is not a host node.
+- Modified to allow double-click item selections on available/selected list 
+  panels, ie. import/export column selections.
+- Added new menu items to Result Set table to copy cells as comma-separated 
+  values with or without quotes. 
 
 
 Summary of changes - v4.3.1 Build 5443:
@@ -510,4 +535,4 @@ Thank you for trying Execute Query.
 
 Takis Diakoumis
 takisd@executequery.org
-28 September 2015
+27 April 2016

@@ -219,7 +219,7 @@ public final class DerivedQuery {
         
             type = QueryTypes.COMMIT;
         
-        } else if (query.indexOf("ROLLBACK") == 0) {
+        } else if (query.indexOf("ROLLBACK") == 0 && query.indexOf("ROLLBACK TO") == -1) {
             
             type = QueryTypes.ROLLBACK;
 
@@ -241,12 +241,7 @@ public final class DerivedQuery {
         }
         
         return type;
-
     }
     
 }
-
-
-
-
 

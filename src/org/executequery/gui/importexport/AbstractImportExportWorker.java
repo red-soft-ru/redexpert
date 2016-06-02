@@ -40,8 +40,6 @@ import java.util.Vector;
 
 import javax.swing.JOptionPane;
 
-import liquibase.database.Database;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -60,12 +58,14 @@ import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
+import liquibase.database.Database;
+
 /**
  * Abstract import/export worker class.
  *
  * @author   Takis Diakoumis Dragan Vasic
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1658 $
+ * @date     $Date: 2016-06-02 21:23:31 +1000 (Thu, 02 Jun 2016) $
  */
 public abstract class AbstractImportExportWorker implements ImportExportWorker {
 
@@ -437,7 +437,18 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
 
                 case Types.BIT:
                 case Types.BOOLEAN:
-                    boolean _boolean = Boolean.valueOf(value).booleanValue();
+                    
+                    String booleanValue = value;
+                    if ("t".equalsIgnoreCase(value)) {
+                        
+                        booleanValue = "true";
+                        
+                    } else if ("f".equalsIgnoreCase(value)) {
+                        
+                        booleanValue = "false";
+                    }
+                    
+                    boolean _boolean = Boolean.valueOf(booleanValue).booleanValue();
                     prepStmnt.setBoolean(index, _boolean);
                     break;
 

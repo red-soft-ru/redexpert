@@ -1,6 +1,13 @@
 --- Execute Query - RELEASE NOTES ---
 
-Date: 27 April 2016
+Date: 2 June 2016
+
+Summary of changes - v4.3.4 Build 5460:
+----------------------------------------
+
+- Modified to detect variations on rollback and issuing pure statement instead.
+- Modified to evaluate 't' and 'f' as boolean values on data import
+
 
 Summary of changes - v4.3.3 Build 5456:
 ----------------------------------------
@@ -535,4 +542,4 @@ Thank you for trying Execute Query.
 
 Takis Diakoumis
 takisd@executequery.org
-27 April 2016
+2 June 2016

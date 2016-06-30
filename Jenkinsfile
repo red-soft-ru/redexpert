@@ -119,7 +119,14 @@ catch (any)
 }
 finally
 {
-   mail (to: 'artyom.smirnov@red-soft.ru',
+    def body = "Job URL ${env.BUILD_URL}"
+
+    if (currentBuild.result == 'SUCCESS')
+    {
+        body += "\n\nBuild page: http://builds.red-soft.biz/release_hub/red_expert/${version}"
+    }
+
+    mail (to: 'artyom.smirnov@red-soft.ru',
          subject: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) - ${currentBuild.result}",
-         body: "Job URL ${env.BUILD_URL}");    
+         body: body);
 }

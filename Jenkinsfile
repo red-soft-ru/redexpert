@@ -68,7 +68,7 @@ node('master')
     println("version=${version}")
     println("vcs_url=${vcs_url}")
     
-    stage 'Create source dir'
+    stage 'Create source dist'
     archive_prefix="RedExpert-${version}"
     sh 'rm -rf dist-src && mkdir dist-src'
     sh "git archive --prefix=${archive_prefix}/ -o dist-src/${archive_prefix}.tar.gz HEAD"
@@ -78,6 +78,7 @@ node('master')
 
 node('jdk18&&linux')
 {
+    stage 'Build'
     deleteDir()
     unstash 'src'
     
@@ -92,7 +93,7 @@ node('jdk18&&linux')
 
 node('master')
 {
-    stage 'Deploying'
+    stage 'Deploy'
     deleteDir()
     def wd = pwd()
 

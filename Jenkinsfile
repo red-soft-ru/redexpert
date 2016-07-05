@@ -1,7 +1,5 @@
 import java.text.SimpleDateFormat 
 
-String project = "redsoftbiz/executequery"
-String url = "https://github.com/${project}"
 String rev
 String version
 String vcs_url
@@ -18,7 +16,7 @@ node('master')
 
     utils = load '/home/jenkins/pipeline/utils.groovy'
 
-    git url: url
+    checkout scm
 
     def sout = new StringBuilder()
     def serr = new StringBuilder()
@@ -62,7 +60,7 @@ node('master')
     }
     matcher = null
     
-    vcs_url = "https://github.com/" + project + "/commit/" + rev
+    vcs_url = "https://github.com/redsoftbiz/executequery/commit/" + rev
     
     println("rev=${rev}")
     println("version=${version}")

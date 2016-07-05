@@ -43,14 +43,14 @@ node('master')
     }        
     proc = null
         
-    def matcher = (sout =~ /(?sm).*${rev} refs\/tags\/v(?<version>\d\.\d\.\d).*/)
+    def matcher = (sout =~ /(?sm).*${rev} refs\/tags\/v(?<version>\d+\.\d+(\.\d+)?).*/)
     if (matcher.matches())
     {
         version = matcher.group('version')
     }
     else
     {
-        matcher = (new File(wd + '/build.xml').text =~ /(?sm).*version.*(?<version>\d\.\d(\.\d)?).*/)
+        matcher = (new File(wd + '/build.xml').text =~ /(?sm).*version.*(?<version>\d+\.\d+(\.\d+)?).*/)
         if (!matcher.matches())
         {
             throw new Exception("Unable obtain version")

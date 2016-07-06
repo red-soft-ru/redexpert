@@ -5,6 +5,7 @@ String version
 String vcs_url
 String utils
 String archive_prefix
+String branch = env.BRANCH_NAME
 
 try
 {
@@ -14,26 +15,15 @@ node('master')
     stage 'Prepare'
     def wd = pwd()
 
-    utils = load '/home/jenkins/pipeline/utils.groovy'
+    utils = fileLoader.fromGit('utils', 'http://git.red-soft.biz/utils/jenkins_pipeline_utils.git', 'master', null, '')
 
     checkout scm
 
+    rev = utils.getGitRevision(wd)
+   
     def sout = new StringBuilder()
     def serr = new StringBuilder()
-    def proc = 'git rev-parse HEAD'.execute(null, new File(wd))
-    proc.waitForProcessOutput(sout, serr)
-    
-    if (proc.exitValue() != 0)
-    {
-        println(serr)
-        throw new Exception("Unable obtain revision")
-    }
-    rev = sout.toString()
-    println(rev)
-   
-    sout = new StringBuilder()
-    serr = new StringBuilder()
-    proc = 'git show-ref --tags -d'.execute(null, new File(wd))
+    def proc = 'git show-ref --tags -d'.execute(null, new File(wd))
     proc.waitForProcessOutput(sout, serr)
     
     if (proc.exitValue() != 0)
@@ -104,7 +94,7 @@ node('master')
     sh "echo file dist-src/RedExpert-${version}.tar.gz tar.gz src >> artifacts"
     sh "echo end >> artifacts"
 
-    utils.deployAndRegister('red_expert', version, wd+'/artifacts', env.BUILD_URL, vcs_url, 'red_expert', wd, '', '')
+    utils.deployAndRegister('red_expert', version, wd+'/artifacts', env.BUILD_URL, vcs_url, 'red_expert', wd, '', '', branch)
     
     currentBuild.result = 'SUCCESS'    
 }

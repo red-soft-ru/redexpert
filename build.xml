@@ -8,7 +8,7 @@
 	<property name="lib.dir" value="${dist.outdir}/lib" />
 	<property name="docs.dir" value="${dist.outdir}/docs" />
 	<property name="main.class" value="org.executequery.ExecuteQuery" />
-	<property name="version" value="4.3" />
+	<property name="version" value="4.3.2" />
 
 	<path id="classpath">
 		<pathelement location="${lib.dir}" />

@@ -24,7 +24,7 @@ node('master')
         rev = utils.getGitRevision(wd)
        
 
-        def matcher = (new File(wd + '/build.xml').text =~ /(?sm).*version.*(?<version>\d+\.\d+(\.\d+)?).*/)
+        def matcher = (new File(wd + '/build.xml').text =~ /(?sm).*version" value="(?<version>\d+((\.\d+)*)?)".*/)
         if (!matcher.matches())
         {
             throw new Exception("Unable obtain version")

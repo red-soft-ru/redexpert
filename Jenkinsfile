@@ -56,7 +56,7 @@ node('jdk18&&linux')
         
         sh "tar xf dist-src/${archive_prefix}-src.tar.gz"
         withEnv(["JAVA_HOME=${env.JAVA_HOME_1_8}"]) {
-            sh "cd ${archive_prefix} && ant && ./package.sh && mv dist .."
+            sh "cd ${archive_prefix} && ant && ci/package.sh && mv dist .."
         }
         
         stash includes: 'dist/**', name: 'bin'

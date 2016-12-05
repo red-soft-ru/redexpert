@@ -86,11 +86,8 @@ public class ApplicationLauncher {
             }
 
             System.setProperty("executequery.minor.version",
-                    stringApplicationProperty("eq.minor.version"));
+                    stringApplicationProperty("re.version"));
 
-            System.setProperty("executequery.minor.version",
-                    stringApplicationProperty("eq.minor.version"));
-            
             SplashPanel splash = null;
 
             if (displaySplash()) {
@@ -102,7 +99,7 @@ public class ApplicationLauncher {
 
             // set the version number to display on the splash panel
             System.setProperty("executequery.major.version",
-                    stringApplicationProperty("eq.major.version"));
+                    stringApplicationProperty("re.version"));
 
             System.setProperty("executequery.help.version",
                     stringApplicationProperty("help.version"));

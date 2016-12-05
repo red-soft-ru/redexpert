@@ -5,7 +5,6 @@ String rev
 String version
 String vcs_url
 String utils
-String archive_prefix
 String branch = env.BRANCH_NAME
 
 try
@@ -14,6 +13,7 @@ try
 node('master')
 {
     def wd = pwd()
+    deleteDir()
     stage('Prepare')
     {
 
@@ -22,9 +22,8 @@ node('master')
         checkout scm
 
         rev = utils.getGitRevision(wd)
-       
 
-        def matcher = (new File(wd + '/build.xml').text =~ /(?sm).*version" value="(?<version>\d+((\.\d+)*)?)".*/)
+        def matcher = (new File(wd + '/src/org/executequery/eq.system.properties').text =~ /(?sm).*re\.version=(?<version>\d+((\.\d+)*)?).*/)
         if (!matcher.matches())
         {
             throw new Exception("Unable obtain version")
@@ -42,10 +41,7 @@ node('master')
     
     stage('Create source dist')
     {
-        archive_prefix="RedExpert-${version}"
-        sh 'rm -rf dist-src && mkdir dist-src'
-        sh "git archive --prefix=${archive_prefix}/ -o dist-src/${archive_prefix}.tar.gz HEAD"
-        
+        sh "VERSION=${version} ci/prepare-src.sh"       
         stash includes: 'dist-src/**', name: 'src'
     }
 }
@@ -56,11 +52,11 @@ node('jdk18&&linux')
     {
         deleteDir()
         unstash 'src'
+        def archive_prefix="RedExpert-${version}-src"
         
-        sh "mkdir dist"
         sh "tar xf dist-src/${archive_prefix}.tar.gz"
-        withEnv(["JAVA_HOME=${env.JAVA_HOME_1_8}", "RED_EXPERT_VERSION=${version}"]) {
-            sh "cd ${archive_prefix} && ant -Dversion=${version} && ./package.sh && mv dist .."
+        withEnv(["JAVA_HOME=${env.JAVA_HOME_1_8}"]) {
+            sh "cd ${archive_prefix} && ant && ./package.sh && mv dist .."
         }
         
         stash includes: 'dist/**', name: 'bin'
@@ -80,7 +76,11 @@ node('master')
         sh "echo artifact red_expert ${version} > artifacts"
         sh "echo file dist/RedExpert-${version}.tar.gz tar.gz bin >> artifacts"
         sh "echo file dist/RedExpert-${version}.zip zip bin >> artifacts"
-        sh "echo file dist-src/RedExpert-${version}.tar.gz tar.gz src >> artifacts"
+        sh "echo end >> artifacts"
+
+        sh "echo artifact red_expert-src ${version} >> artifacts"
+        sh "echo file dist-src/RedExpert-${version}-src.tar.gz tar.gz src >> artifacts"
+        sh "echo file dist-src/RedExpert-${version}-src.zip zip src >> artifacts"
         sh "echo end >> artifacts"
 
         utils.deployAndRegister(release_hub_project, version, wd+'/artifacts', env.BUILD_URL, vcs_url, 'red_expert', wd, '', '', branch)

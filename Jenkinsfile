@@ -52,9 +52,9 @@ node('jdk18&&linux')
     {
         deleteDir()
         unstash 'src'
-        def archive_prefix="RedExpert-${version}-src"
+        def archive_prefix="RedExpert-${version}"
         
-        sh "tar xf dist-src/${archive_prefix}.tar.gz"
+        sh "tar xf dist-src/${archive_prefix}-src.tar.gz"
         withEnv(["JAVA_HOME=${env.JAVA_HOME_1_8}"]) {
             sh "cd ${archive_prefix} && ant && ./package.sh && mv dist .."
         }

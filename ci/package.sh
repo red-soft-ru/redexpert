@@ -18,7 +18,7 @@ check_variable RED_EXPERT_VERSION
 rm -rf tmp dist
 mkdir tmp dist
 
-cp RedExpert-${RED_EXPERT_VERSION}.jar tmp/RedExpert.jar
+cp RedExpert.jar tmp
 cp eq.sh tmp/RedExpert.sh
 cp RedExpert.bat tmp
 

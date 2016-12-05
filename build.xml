@@ -8,7 +8,6 @@
 	<property name="lib.dir" value="${dist.outdir}/lib" />
 	<property name="docs.dir" value="${dist.outdir}/docs" />
 	<property name="main.class" value="org.executequery.ExecuteQuery" />
-	<property file="src/org/executequery/eq.system.properties" prefix="eq.system"/>
 
 	<path id="classpath">
 		<pathelement location="${lib.dir}" />
@@ -50,11 +49,11 @@
 	<target name="jar" depends="compile" description="generate the jar file">
 		
         <manifestclasspath property="manifest.classpath"
-                           jarfile="${dist.outdir}/RedExpert-${eq.system.re.version}.jar">
+                           jarfile="${dist.outdir}/RedExpert.jar">
             <classpath refid="classpath" />
         </manifestclasspath>
 
-        <jar jarfile="${dist.outdir}/RedExpert-${eq.system.re.version}.jar" 
+        <jar jarfile="${dist.outdir}/RedExpert.jar" 
             basedir="${compile.outdir}"
             compress="false" includes="org/**">
 

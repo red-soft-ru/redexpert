@@ -260,6 +260,8 @@ public class CreateIndexPanel extends ActionPanel
 
         // register as a keyword listener
         EventMediator.registerListener(this);
+
+        itemStateChanged(null);
     }
 
     private void createTableAndModel() {

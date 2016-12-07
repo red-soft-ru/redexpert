@@ -41,6 +41,7 @@ import org.executequery.databaseobjects.DatabaseSource;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
+import org.executequery.databaseobjects.impl.DefaultDatabaseSchema;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.log.Log;
@@ -464,7 +465,10 @@ public class TableSelectionCombosGroup implements ItemListener {
 
                     } else {
                         
-                        clearCombos();
+//                        clearCombos();
+                        DatabaseSchema databaseSchema = new DefaultDatabaseSchema(host, "");
+                        schemas.add(databaseSchema);
+                        populateModelForCombo(schemasCombo, schemas);
                     }
 
                 }

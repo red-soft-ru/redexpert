@@ -237,10 +237,10 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
         
         Vector<ExecutableObjectType> types = new Vector<ExecutableObjectType>();
 
-        String type = NamedObject.META_TYPES[NamedObject.FUNCTION];
+        String type = NamedObject.META_TYPES[NamedObject.PROCEDURE];
         types.add(new ExecutableObjectType(type));
-        
-        type = NamedObject.META_TYPES[NamedObject.PROCEDURE];
+
+        type = NamedObject.META_TYPES[NamedObject.FUNCTION];
         types.add(new ExecutableObjectType(type));
         
         return types;

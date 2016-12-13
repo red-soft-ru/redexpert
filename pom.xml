@@ -221,6 +221,68 @@
 				</executions>
 			</plugin>
 
+			<plugin>
+			    	<groupId>org.apache.maven.plugins</groupId>
+			    	<artifactId>maven-shade-plugin</artifactId>
+			    	<version>1.4</version>
+			    	<executions>
+					<execution>
+				    		<phase>package</phase>
+				    		<goals>
+							<goal>shade</goal>
+				    		</goals>
+					</execution>
+			    	</executions>
+			    	<configuration>
+					<shadedArtifactAttached>true</shadedArtifactAttached> 
+					<shadedClassifierName>shaded</shadedClassifierName> 
+			    	</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.bluestemsoftware.open.maven.plugin</groupId>
+				<artifactId>launch4j-plugin</artifactId>
+				<version>1.5.0.0</version>
+				<executions>
+
+				<!-- GUI exe -->
+				<execution>
+					<id>l4j-gui</id>
+					<phase>package</phase>
+				    	<goals>
+						<goal>launch4j</goal>
+					</goals>
+				    	<configuration>
+						<headerType>gui</headerType>
+						<outfile>target/${project.artifactId}-${project.version}.exe</outfile>
+						<jar>target/${project.artifactId}-${project.version}-shaded.jar</jar>
+						<errTitle>App Err</errTitle>
+						<classPath>
+					    		<mainClass>org.executequery.ExecuteQuery</mainClass>
+						</classPath>
+						<icon>red_expert.ico</icon>
+						<jre>
+					    		<minVersion>1.7.0</minVersion>
+					    		<maxVersion>1.8.0</maxVersion>
+					    		<initialHeapSize>128</initialHeapSize>
+					    		<maxHeapSize>1024</maxHeapSize>
+						</jre>
+						<versionInfo>
+					    		<fileVersion>${project.version}.0.0</fileVersion>
+					    		<txtFileVersion>${project.version}</txtFileVersion>
+					    		<fileDescription>${project.artifactId}-${project.version}</fileDescription>
+					    		<copyright>Red Soft</copyright>
+					    		<productVersion>${project.version}.0.0</productVersion>
+					    		<txtProductVersion>${project.version}</txtProductVersion>
+					    		<productName>${project.artifactId}</productName>
+					    		<internalName>Prod${project.artifactId}uct</internalName>
+					    		<originalFilename>${project.artifactId}-${project.version}.exe</originalFilename>
+						</versionInfo>
+				    </configuration>
+				</execution>
+			    </executions>
+			</plugin>
+
 		</plugins>
 	</build>
 </project>

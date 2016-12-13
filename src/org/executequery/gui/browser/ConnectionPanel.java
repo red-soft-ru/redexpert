@@ -31,6 +31,7 @@ import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
@@ -81,6 +82,7 @@ import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.LinkButton;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.actions.ActionUtilities;
+import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 /**
@@ -92,6 +94,8 @@ import org.underworldlabs.util.MiscUtils;
 public class ConnectionPanel extends AbstractConnectionPanel 
                              implements DatabaseDriverListener,
                                         ChangeListener {
+
+    private List<String> charsets;
     
     // -------------------------------
     // text fields and combos
@@ -109,6 +113,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private NumberTextField portField;
     private JTextField sourceField;
     private JTextField urlField;
+
+    private JComboBox charsetsCombo;
 
     private JLabel statusLabel;
     
@@ -177,7 +183,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
         
         // retrieve the drivers
         buildDriversList();
-        
+
+        // retrieve the available charsets
+        loadCharsets();
+        charsetsCombo = WidgetFactory.createComboBox(charsets.toArray());
+
         // ---------------------------------
         // add the basic connection fields
         
@@ -229,11 +239,14 @@ public class ConnectionPanel extends AbstractConnectionPanel
         addLabelFieldPair(mainPanel, "Data Source:", 
                 sourceField, "Data source name", gbc);
 
+        addLabelFieldPair(mainPanel, "Character Set:",
+                charsetsCombo, "Default character set for this connection", gbc);
+
         addLabelFieldPair(mainPanel, "JDBC URL:", 
                 urlField, "The full JDBC URL for this connection (optional)", gbc);
 
         addDriverFields(mainPanel, gbc);
-        
+
         connectButton = createButton("Connect", CONNECT_ACTION_COMMAND, 'T');
         disconnectButton = createButton("Disconnect", "disconnect", 'D');
 
@@ -371,6 +384,29 @@ public class ConnectionPanel extends AbstractConnectionPanel
         add(tabPane, BorderLayout.CENTER);
         
         EventMediator.registerListener(this);
+    }
+
+    private void loadCharsets() {
+        Properties props;
+        try {
+            if (charsets == null)
+                charsets = new ArrayList<String>();
+            else
+                charsets.clear();
+
+            String resource = FileUtils.loadResource("org/executequery/charsets.properties");
+            String[] strings = resource.split(System.getProperty("line.separator"));
+            for(String s : strings){
+                if (!s.startsWith("#") && !s.isEmpty())
+                    charsets.add(s);
+            }
+            java.util.Collections.sort(charsets);
+            charsets.add(0, "NONE");
+
+        } catch(Exception e) {
+            e.printStackTrace();
+            return;
+        }
     }
 
     @Override
@@ -761,10 +797,17 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
             if (!MiscUtils.isNull(key) && !MiscUtils.isNull(value)) {
 
+                if ((key.equalsIgnoreCase("lc_ctype"))
+                        /*&& !charsetsCombo.getSelectedItem().toString().equals("NONE")*/)
+                    continue;
                 properties.setProperty(key, value);
             }
 
         }
+
+        if (!properties.containsKey("lc_ctype") &&
+                !charsetsCombo.getSelectedItem().toString().equals("NONE"))
+            properties.setProperty("lc_ctype", charsetsCombo.getSelectedItem().toString());
 
         databaseConnection.setJdbcProperties(properties);
     }
@@ -784,7 +827,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         int count = 0;
         for (Enumeration<?> i = properties.propertyNames(); i.hasMoreElements();) {
             String name = (String)i.nextElement();
-            if (!name.equalsIgnoreCase("password")) {
+            if (!name.equalsIgnoreCase("password") || !name.equalsIgnoreCase("lc_ctype")) {
                 advancedProperties[count][0] = name;
                 advancedProperties[count][1] = properties.getProperty(name);
                 count++;
@@ -796,7 +839,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
     /**
      * Indicates a connection has been established.
      * 
-     * @param the connection properties object
+     * @param databaseConnection connection properties object
      */
     public void connected(DatabaseConnection databaseConnection) {
 
@@ -812,7 +855,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
     /**
      * Indicates a connection has been closed.
      * 
-     * @param the connection properties object
+     * @param databaseConnection connection properties object
      */
     public void disconnected(DatabaseConnection databaseConnection) {
         enableFields(false);
@@ -1070,7 +1113,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
      * values as held within the specified connection
      * properties object.
      *
-     * @param the connection to set the fields to
+     * @param host connection to set the fields to
      */
     public void setConnectionValue(DatabaseHost host) {
         

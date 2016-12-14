@@ -25,6 +25,7 @@ mkdir -p $RESULT_DIR
 echo Preparing $VERSION sources
 cd $SOURCES
 sed -e "s/^\(re.version\).*/\1=$VERSION/" -i $SOURCES/src/org/executequery/eq.system.properties 
+sed -e "s/\(<exe\.version>\)[^<>]*\(<\/exe.version>\)/\1$VERSION\2/" -i $SOURCES/pom.xml
 
 echo Archiving sources
 ARCHIVE_PREFIX=RedExpert-$VERSION

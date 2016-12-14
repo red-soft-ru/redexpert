@@ -6,6 +6,10 @@
 	<version>4.3</version>
 	<packaging>jar</packaging>
 
+	<properties>                             
+		<exe.version>4.3.4.8</exe.version>
+	</properties>
+
 	<repositories>
 		<repository>
 			<id>nexus-releases</id>
@@ -256,7 +260,7 @@
 						<headerType>gui</headerType>
 						<outfile>target/${project.artifactId}-${project.version}.exe</outfile>
 						<jar>target/${project.artifactId}-${project.version}-shaded.jar</jar>
-						<errTitle>App Err</errTitle>
+						<errTitle>Red Expert Error</errTitle>
 						<classPath>
 					    		<mainClass>org.executequery.ExecuteQuery</mainClass>
 						</classPath>
@@ -268,14 +272,14 @@
 					    		<maxHeapSize>1024</maxHeapSize>
 						</jre>
 						<versionInfo>
-					    		<fileVersion>${project.version}.0.0</fileVersion>
+					    		<fileVersion>${exe.version}</fileVersion>
 					    		<txtFileVersion>${project.version}</txtFileVersion>
 					    		<fileDescription>${project.artifactId}-${project.version}</fileDescription>
 					    		<copyright>Red Soft</copyright>
-					    		<productVersion>${project.version}.0.0</productVersion>
-					    		<txtProductVersion>${project.version}</txtProductVersion>
+					    		<productVersion>${exe.version}</productVersion>
+					    		<txtProductVersion>${exe.version}</txtProductVersion>
 					    		<productName>${project.artifactId}</productName>
-					    		<internalName>Prod${project.artifactId}uct</internalName>
+					    		<internalName>${project.artifactId}</internalName>
 					    		<originalFilename>${project.artifactId}-${project.version}.exe</originalFilename>
 						</versionInfo>
 				    </configuration>

@@ -39,6 +39,7 @@ import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.executequery.util.ThreadWorker;
 import org.executequery.util.UserProperties;
+import org.firebirdsql.jdbc.FBResultSet;
 import org.underworldlabs.util.MiscUtils;
 
 /**
@@ -485,6 +486,15 @@ public class QueryDispatcher {
                         setStatusMessage(ERROR_EXECUTING);
 
                     } else {
+                        // Trying to get execution plan of firebird statement
+                        try {
+                            // If profiler is used
+                            FBResultSet fbResultSet = rset.unwrap(FBResultSet.class);
+                            setOutputMessage(SqlMessages.PLAIN_MESSAGE, fbResultSet.getExecutionPlan());
+
+                        } catch (Exception e) {
+                            // nothing to do
+                        }
 
                         setResultSet(rset, query.getOriginalQuery());
                     }

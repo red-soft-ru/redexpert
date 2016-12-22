@@ -72,6 +72,7 @@ import org.executequery.gui.UndoableComponent;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.drivers.DriversTreePanel;
 import org.executequery.gui.editor.QueryEditor;
+import org.executequery.gui.jdbclogger.JdbcLoggerPanel;
 import org.executequery.gui.keywords.KeywordsDockedPanel;
 import org.executequery.gui.sqlstates.SQLStateCodesDockedPanel;
 import org.executequery.gui.text.TextEditor;
@@ -112,7 +113,6 @@ import org.underworldlabs.util.SystemProperties;
 
 /**
  * <p>The GUIUtilities is the primary 'controller' class for all
- * Execute Query GUI components. It provides access to resources
  * in addition to many utility helper methods such as displaying
  * simple dialogs and updating menus.
  *
@@ -166,6 +166,8 @@ public final class GUIUtilities {
     private static SystemErrLogger outLogger;
 
     private static SystemOutputPanel systemOutputPanel;
+
+    private static JdbcLoggerPanel jdbcLoggerPanel;
 
     /** private constructor */
     private GUIUtilities() {}
@@ -884,6 +886,12 @@ public final class GUIUtilities {
         systemOutputPanel.clear();
     }
 
+    public static void startJdbcLogger() {
+
+        jdbcLoggerPanel = new JdbcLoggerPanel();
+        dockedTabComponents.put(jdbcLoggerPanel.PROPERTY_KEY, jdbcLoggerPanel);
+    }
+
     /** <p>Calculates and returns the centered position
      *  of a dialog with the specified size to be added
      *  to the desktop area - ie. taking into account the
@@ -1107,6 +1115,12 @@ public final class GUIUtilities {
             // init the logger
             // this method will add the output panel
             startLogger();
+
+        } else if (key.equals(JdbcLoggerPanel.PROPERTY_KEY)) {
+
+            // init the logger
+            // this method will add the logger panel
+            startJdbcLogger();
 
         } else if (key.equals(KeywordsDockedPanel.PROPERTY_KEY)) {
 

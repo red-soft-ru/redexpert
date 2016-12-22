@@ -77,6 +77,13 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel implements
                     "System console",
                     Boolean.valueOf(stringUserProperty(key))));
 
+        key = "system.display.jdbclogger";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Jdbc logger",
+                Boolean.valueOf(stringUserProperty(key))));
+
         key = "system.display.connections";
         list.add(new UserPreference(
                     UserPreference.BOOLEAN_TYPE,

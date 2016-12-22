@@ -143,6 +143,8 @@ public class ApplicationLauncher {
 
             GUIUtilities.startLogger();
 
+            GUIUtilities.startJdbcLogger();
+
             advanceSplash(splash);
 
             // initialise the frame

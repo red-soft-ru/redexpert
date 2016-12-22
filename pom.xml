@@ -162,8 +162,13 @@
 			<version>1.4</version>
 		</dependency>
 
-		
-	</dependencies>
+		<dependency>
+			<groupId>com.fifesoft</groupId>
+			<artifactId>rsyntaxtextarea</artifactId>
+			<version>2.5.6</version>
+		</dependency>
+
+    </dependencies>
 
 	<build>
 		<sourceDirectory>src</sourceDirectory>

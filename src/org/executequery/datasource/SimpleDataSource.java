@@ -138,7 +138,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
             Log.info("JDBC URL generated: "+url);
     
         } else {
-          
+
             Log.info("Using user specified JDBC URL: " + url);
         }
 

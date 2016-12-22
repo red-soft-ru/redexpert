@@ -207,6 +207,13 @@
                      property-key="system.display.console"
                      tool-tip="Opens the system output console"/>
 
+          <menu-item name="Jdbc Logger"
+                     class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
+                     mnemonic="J"
+                     action-command="viewJdbcLogger"
+                     property-key="system.display.jdbclogger"
+                     tool-tip="Opens the jdbc logger panel"/>
+
           <menu-item name="Connections"
                      class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                      mnemonic="N"

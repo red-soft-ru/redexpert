@@ -46,7 +46,7 @@ node('master')
     }
 }
 
-node('jdk18&&linux')
+node('jdk18&&linux&&builder')
 {
     stage('Build')
     {
@@ -55,7 +55,7 @@ node('jdk18&&linux')
         def archive_prefix="RedExpert-${version}"
         
         sh "tar xf dist-src/${archive_prefix}-src.tar.gz"
-        withEnv(["JAVA_HOME=${env.JAVA_HOME_1_8}", "RED_EXPERT_VERSION=${version}"]) {
+        withEnv(["JAVA_HOME=${JAVA_HOME_1_8}", "RED_EXPERT_VERSION=${version}"]) {
             sh "cd ${archive_prefix} && ant && ci/package.sh && mv dist .."
         }
         

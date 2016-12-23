@@ -549,7 +549,7 @@ public class CreateDatabasePanel extends ActionPanel
             }
         }
 
-        if (databaseDriver.getName().equals("Firebird Driver"))
+        if (databaseDriver.getClassName().contains("FBDriver"))
             createFirebirdDatabase(databaseDriver);
         else
             GUIUtilities.displayErrorMessage("Creating database for selected driver is not implemented");

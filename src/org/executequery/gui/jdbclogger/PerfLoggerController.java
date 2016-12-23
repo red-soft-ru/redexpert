@@ -7,6 +7,9 @@ import org.executequery.gui.jdbclogger.net.LogProcessor;
 import org.executequery.gui.jdbclogger.net.ServerLogReceiver;
 
 import javax.swing.*;
+import javax.swing.event.AncestorEvent;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ContainerEvent;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -23,8 +26,9 @@ public class PerfLoggerController {
 
     private final RefreshDataTask refreshDataTask;
 
-    private FilterType filterType = FilterType.HIGHLIGHT;
+    private Filter.FilterType filterType = Filter.FilterType.HIGHLIGHT;
     private final ScheduledExecutorService refreshDataScheduledExecutorService;
+    private boolean forceRefresh;
 
     PerfLoggerController(final AbstractLogReceiver logReceiver, JdbcLoggerPanel loggerPanel) {
         this.logReceiver = logReceiver;
@@ -32,8 +36,11 @@ public class PerfLoggerController {
         jdbcLoggerPanel = loggerPanel;
 
         refreshDataTask = new RefreshDataTask();
+
         refreshDataScheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         refreshDataScheduledExecutorService.scheduleWithFixedDelay(refreshDataTask, 1, 2, TimeUnit.SECONDS);
+
+        forceRefresh = false;
     }
 
     void startReciever() {
@@ -62,7 +69,7 @@ public class PerfLoggerController {
         refresh();
     }
 
-    void setFilterType(final FilterType filterType) {
+    void setFilterType(final Filter.FilterType filterType) {
         this.filterType = filterType;
         refresh();
     }
@@ -75,18 +82,8 @@ public class PerfLoggerController {
         refresh();
     }
 
-    void onClose() {
-        refreshDataScheduledExecutorService.shutdownNow();
-        try {
-            refreshDataScheduledExecutorService.awaitTermination(5, TimeUnit.SECONDS);
-        } catch (final InterruptedException e) {
-            e.printStackTrace();
-        }
-        logReceiver.dispose();
-    }
-
     private void refresh() {
-        if (filterType == FilterType.FILTER) {
+        if (filterType == Filter.FilterType.FILTER) {
             jdbcLoggerPanel.table.setTxtToHighlight(null);
             jdbcLoggerPanel.table.setMinDurationNanoToHighlight(null);
         } else {
@@ -95,6 +92,8 @@ public class PerfLoggerController {
         }
         jdbcLoggerPanel.setTxtToHighlight(txtFilter);
 
+        refreshDataTask.forceRefresh();
+        refreshDataScheduledExecutorService.submit(refreshDataTask);
     }
 
     public void onSelectStatement(UUID selectedLogId) {
@@ -130,23 +129,7 @@ public class PerfLoggerController {
         }
     }
 
-    enum FilterType {
-        HIGHLIGHT("Highlight"), FILTER("Filter");
-        final private String title;
-
-        FilterType(final String title) {
-            this.title = title;
-        }
-
-        @Override
-        public String toString() {
-            return title;
-        }
-    }
-
     private class RefreshDataTask implements Runnable {
-        private volatile long lastRefreshTime;
-        private int connectionsCount;
 
         @Override
         public void run() {
@@ -188,13 +171,13 @@ public class PerfLoggerController {
                 for (AbstractLogReceiver logReceiver : childReceivers) {
                     LogProcessor logProcessor = logReceiver.getLogProcessor();
 
-                    if (!logProcessor.isNeededUpdate())
+                    if (!logProcessor.isNeededUpdate() && !forceRefresh)
                         return;
 
                     HashMap<UUID, List<StatementLog>> statementLogs = logProcessor.getStatementLogs();
                     HashMap<UUID, ConnectionInfo> connections = logProcessor.getConnections();
                     if (statementLogs.size() > 0) {
-                        List<List<StatementLog>> statementList = new ArrayList<List<StatementLog>>(statementLogs.values());
+                        List<List<StatementLog>> statementList = new ArrayList<>(statementLogs.values());
                         for (List<StatementLog> statements : statementList) {
                             for (StatementLog statement : statements) {
                                 List<Object> objectList = new ArrayList<>();
@@ -224,15 +207,24 @@ public class PerfLoggerController {
                                     tempColumnTypes.add(statementTypeByte.getClass());
                                 }
 
+                                String rawSql = statement.getRawSql();
+                                if (filterType.equals(Filter.FilterType.FILTER) && txtFilter != null)
+                                    if (!rawSql.toLowerCase().contains(txtFilter.toLowerCase()))
+                                        continue;
+                                objectList.add(rawSql);
+                                if (!tempColumnNames.contains(LogConstants.RAW_SQL_COLUMN)) {
+                                    tempColumnNames.add(LogConstants.RAW_SQL_COLUMN);
+                                    tempColumnTypes.add(rawSql.getClass());
+                                }
 
                                 Object[] row = objectList.toArray();
                                 tempRows.add(row);
-
                             }
                         }
                     }
 
                     logProcessor.setNeededUpdate(false);
+                    forceRefresh = false;
                 }
 
             } catch (Exception e) {
@@ -250,6 +242,10 @@ public class PerfLoggerController {
                     }
                 }
             });
+        }
+
+        public void forceRefresh() {
+            forceRefresh = true;
         }
     }
 }

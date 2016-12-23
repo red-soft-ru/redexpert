@@ -15,13 +15,13 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.Timestamp;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 import static java.awt.event.InputEvent.CTRL_MASK;
 import static java.awt.event.KeyEvent.VK_BACK_SPACE;
@@ -69,6 +69,9 @@ public class JdbcLoggerPanel extends AbstractDockedTabPanel {
     JTextField connectionCreationDurationField;
     JLabel lblConnectionStatus;
 
+    private JComboBox<Filter.FilterType> comboBoxFilterType;
+    private JTextField txtFldSqlFilter;
+
     public JdbcLoggerPanel() {
         super(new BorderLayout());
 
@@ -94,10 +97,10 @@ public class JdbcLoggerPanel extends AbstractDockedTabPanel {
 
         dataModel = new ResultSetDataModel();
         final GridBagLayout gridBagLayout = new GridBagLayout();
-        gridBagLayout.columnWidths = new int[] { 36, 0 };
-        gridBagLayout.rowHeights = new int[] { 30, 316, 29, 0 };
-        gridBagLayout.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-        gridBagLayout.rowWeights = new double[] { 0.0, 1.0, 0.0, Double.MIN_VALUE };
+        gridBagLayout.columnWidths = new int[]{36, 0};
+        gridBagLayout.rowHeights = new int[]{30, 316, 29, 0};
+        gridBagLayout.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+        gridBagLayout.rowWeights = new double[]{0.0, 1.0, 0.0, Double.MIN_VALUE};
         setLayout(gridBagLayout);
 
         final JPanel topPanel = new JPanel();
@@ -108,11 +111,70 @@ public class JdbcLoggerPanel extends AbstractDockedTabPanel {
         gbc_topPanel.gridy = 0;
         add(topPanel, gbc_topPanel);
         final GridBagLayout gbl_topPanel = new GridBagLayout();
-        gbl_topPanel.columnWidths = new int[] { 51, 0, 0, 0, 0 };
-        gbl_topPanel.rowHeights = new int[] { 0, 0 };
-        gbl_topPanel.columnWeights = new double[] { 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
-        gbl_topPanel.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
+        gbl_topPanel.columnWidths = new int[]{51, 0, 0, 0, 0};
+        gbl_topPanel.rowHeights = new int[]{0, 0};
+        gbl_topPanel.columnWeights = new double[]{1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+        gbl_topPanel.rowWeights = new double[]{0.0, Double.MIN_VALUE};
         topPanel.setLayout(gbl_topPanel);
+
+        final JPanel filterPanel = new JPanel();
+        filterPanel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Filter",
+                TitledBorder.LEADING, TitledBorder.TOP, null, null));
+        final GridBagConstraints gbc_filterPanel = new GridBagConstraints();
+        gbc_filterPanel.fill = GridBagConstraints.HORIZONTAL;
+        gbc_filterPanel.insets = new Insets(0, 0, 0, 5);
+        gbc_filterPanel.gridx = 0;
+        gbc_filterPanel.gridy = 0;
+        topPanel.add(filterPanel, gbc_filterPanel);
+        final GridBagLayout gbl_filterPanel = new GridBagLayout();
+        gbl_filterPanel.columnWidths = new int[]{0, 51, 246, 0};
+        gbl_filterPanel.rowHeights = new int[]{30, 0, 0};
+        gbl_filterPanel.columnWeights = new double[]{0.0, 0.0, 1.0, Double.MIN_VALUE};
+        gbl_filterPanel.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+        filterPanel.setLayout(gbl_filterPanel);
+
+        comboBoxFilterType = new JComboBox<>();
+        comboBoxFilterType
+                .setModel(new DefaultComboBoxModel<>(EnumSet.allOf(Filter.FilterType.class).toArray(new Filter.FilterType[0])));
+        comboBoxFilterType.setSelectedItem(Filter.FilterType.HIGHLIGHT);
+        comboBoxFilterType.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                final Filter.FilterType filterType = comboBoxFilterType.getItemAt(comboBoxFilterType.getSelectedIndex());
+                perfLoggerController.setFilterType(filterType != null ? filterType : Filter.FilterType.HIGHLIGHT);
+            }
+        });
+        final GridBagConstraints gbc_filterTypeComboBox = new GridBagConstraints();
+        gbc_filterTypeComboBox.insets = new Insets(0, 0, 5, 5);
+        gbc_filterTypeComboBox.fill = GridBagConstraints.HORIZONTAL;
+        gbc_filterTypeComboBox.gridx = 0;
+        gbc_filterTypeComboBox.gridy = 0;
+        filterPanel.add(comboBoxFilterType, gbc_filterTypeComboBox);
+
+        final JLabel lblText = new JLabel("Text:");
+        final GridBagConstraints gbc_lblText = new GridBagConstraints();
+        gbc_lblText.anchor = GridBagConstraints.BASELINE_TRAILING;
+        gbc_lblText.insets = new Insets(0, 0, 5, 5);
+        gbc_lblText.gridx = 1;
+        gbc_lblText.gridy = 0;
+        filterPanel.add(lblText, gbc_lblText);
+
+        txtFldSqlFilter = new JTextField();
+        final GridBagConstraints gbc_txtFldSqlFilter = new GridBagConstraints();
+        gbc_txtFldSqlFilter.anchor = GridBagConstraints.BASELINE;
+        gbc_txtFldSqlFilter.fill = GridBagConstraints.HORIZONTAL;
+        gbc_txtFldSqlFilter.insets = new Insets(0, 0, 5, 0);
+        gbc_txtFldSqlFilter.gridx = 2;
+        gbc_txtFldSqlFilter.gridy = 0;
+        filterPanel.add(txtFldSqlFilter, gbc_txtFldSqlFilter);
+        txtFldSqlFilter.setColumns(10);
+
+        txtFldSqlFilter.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            @Override
+            public void undoableEditHappened(final UndoableEditEvent e) {
+                perfLoggerController.setTextFilter(txtFldSqlFilter.getText());
+            }
+        });
 
         final JSplitPane splitPane = new JSplitPane();
         splitPane.setResizeWeight(0.8);
@@ -124,8 +186,6 @@ public class JdbcLoggerPanel extends AbstractDockedTabPanel {
         final JScrollPane logListPanel = new JScrollPane();
         logListPanel.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         table = new CustomTable(dataModel);
-        table.setSelectionForeground(SystemColor.textHighlightText);
-        table.setSelectionBackground(SystemColor.textHighlight);
         table.setDefaultRenderer(Byte.class, new CustomTableCellRenderer());
         table.setDefaultRenderer(String.class, new CustomTableCellRenderer());
         stmtTimestampCellRenderer = new StatementTimestampTableCellRenderer();
@@ -150,7 +210,7 @@ public class JdbcLoggerPanel extends AbstractDockedTabPanel {
         table.addKeyListener(new KeyAdapter() {
 
             @Override
-            public void keyReleased(  final KeyEvent e) {
+            public void keyReleased(final KeyEvent e) {
                 assert e != null;
                 if (e.getKeyCode() == VK_BACK_SPACE || e.getKeyCode() == VK_DELETE) {
                     if (e.getModifiers() == CTRL_MASK) {
@@ -169,46 +229,44 @@ public class JdbcLoggerPanel extends AbstractDockedTabPanel {
 
         });
 
-        {// popup menu
-            final JPopupMenu popupMenu = new JPopupMenu();
-            final JMenuItem deleteItem = new JMenuItem("Append to advanced filter");
-            deleteItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(  final ActionEvent e) {
+        final JPopupMenu popupMenu = new JPopupMenu();
+        final JMenuItem deleteItem = new JMenuItem("Append to advanced filter");
+        deleteItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
 
-                }
-            });
-            popupMenu.add(deleteItem);
+            }
+        });
+        popupMenu.add(deleteItem);
 
-            table.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mousePressed(  final MouseEvent e) {
-                    assert e != null;
-                    handlePotentialRightClick(e);
-                }
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(final MouseEvent e) {
+                assert e != null;
+                handlePotentialRightClick(e);
+            }
 
-                @Override
-                public void mouseReleased(  final MouseEvent e) {
-                    assert e != null;
-                    handlePotentialRightClick(e);
-                }
+            @Override
+            public void mouseReleased(final MouseEvent e) {
+                assert e != null;
+                handlePotentialRightClick(e);
+            }
 
-                private void handlePotentialRightClick(final MouseEvent e) {
-                    if (e.isPopupTrigger()) {
-                        final JTable source = (JTable) e.getSource();
-                        final int row = source.rowAtPoint(e.getPoint());
-                        final int column = source.columnAtPoint(e.getPoint());
-                        if (row >= 0) {
-                            if (!source.isRowSelected(row) || !source.isColumnSelected(column)) {
-                                source.changeSelection(row, column, false, false);
-                            }
-
-                            popupMenu.show(e.getComponent(), e.getX(), e.getY());
+            private void handlePotentialRightClick(final MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    final JTable source = (JTable) e.getSource();
+                    final int row = source.rowAtPoint(e.getPoint());
+                    final int column = source.columnAtPoint(e.getPoint());
+                    if (row >= 0) {
+                        if (!source.isRowSelected(row) || !source.isColumnSelected(column)) {
+                            source.changeSelection(row, column, false, false);
                         }
+
+                        popupMenu.show(e.getComponent(), e.getX(), e.getY());
                     }
                 }
-            });
-        }
+            }
+        });
 
         splitPane.setTopComponent(logListPanel);
 
@@ -217,10 +275,10 @@ public class JdbcLoggerPanel extends AbstractDockedTabPanel {
                 TitledBorder.LEADING, TitledBorder.TOP, null, new Color(51, 51, 51)));
         splitPane.setBottomComponent(sqlDetailPanel);
         final GridBagLayout gbl_sqlDetailPanel = new GridBagLayout();
-        gbl_sqlDetailPanel.columnWidths = new int[] { 842, 0 };
-        gbl_sqlDetailPanel.rowHeights = new int[] { 112, 0 };
-        gbl_sqlDetailPanel.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-        gbl_sqlDetailPanel.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
+        gbl_sqlDetailPanel.columnWidths = new int[]{842, 0};
+        gbl_sqlDetailPanel.rowHeights = new int[]{112, 0};
+        gbl_sqlDetailPanel.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+        gbl_sqlDetailPanel.rowWeights = new double[]{1.0, Double.MIN_VALUE};
         sqlDetailPanel.setLayout(gbl_sqlDetailPanel);
 
         final JTabbedPane tabbedPanelsqlDetails = new JTabbedPane();
@@ -234,10 +292,10 @@ public class JdbcLoggerPanel extends AbstractDockedTabPanel {
         final JPanel panelRawSql = new JPanel();
         tabbedPanelsqlDetails.addTab("Raw SQL", panelRawSql);
         final GridBagLayout gbl_panelRawSql = new GridBagLayout();
-        gbl_panelRawSql.columnWidths = new int[] { 0, 0, 0 };
-        gbl_panelRawSql.rowHeights = new int[] { 0, 0 };
-        gbl_panelRawSql.columnWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
-        gbl_panelRawSql.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
+        gbl_panelRawSql.columnWidths = new int[]{0, 0, 0};
+        gbl_panelRawSql.rowHeights = new int[]{0, 0};
+        gbl_panelRawSql.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+        gbl_panelRawSql.rowWeights = new double[]{1.0, Double.MIN_VALUE};
         panelRawSql.setLayout(gbl_panelRawSql);
 
         final JScrollPane scrollPaneRawSql = new JScrollPane();
@@ -257,10 +315,10 @@ public class JdbcLoggerPanel extends AbstractDockedTabPanel {
         final JPanel panelFilledSql = new JPanel();
         tabbedPanelsqlDetails.addTab("FilledSQL", panelFilledSql);
         final GridBagLayout gbl_panelFilledSql = new GridBagLayout();
-        gbl_panelFilledSql.columnWidths = new int[] { 0, 0, 0 };
-        gbl_panelFilledSql.rowHeights = new int[] { 0, 0 };
-        gbl_panelFilledSql.columnWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
-        gbl_panelFilledSql.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
+        gbl_panelFilledSql.columnWidths = new int[]{0, 0, 0};
+        gbl_panelFilledSql.rowHeights = new int[]{0, 0};
+        gbl_panelFilledSql.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+        gbl_panelFilledSql.rowWeights = new double[]{1.0, Double.MIN_VALUE};
         panelFilledSql.setLayout(gbl_panelFilledSql);
 
         final JScrollPane scrollPaneFilledSql = new JScrollPane();
@@ -284,10 +342,10 @@ public class JdbcLoggerPanel extends AbstractDockedTabPanel {
                         TitledBorder.LEADING, TitledBorder.TOP, null, new Color(51, 51, 51)),
                 "Connection info", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(51, 51, 51)));
         final GridBagLayout gbl_panelConnectionInfo = new GridBagLayout();
-        gbl_panelConnectionInfo.columnWidths = new int[] { 0, 0, 0, 0, 0 };
-        gbl_panelConnectionInfo.rowHeights = new int[] { 0, 0, 0, 0 };
-        gbl_panelConnectionInfo.columnWeights = new double[] { 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE };
-        gbl_panelConnectionInfo.rowWeights = new double[] { 0.0, 0.0, 0.0, Double.MIN_VALUE };
+        gbl_panelConnectionInfo.columnWidths = new int[]{0, 0, 0, 0, 0};
+        gbl_panelConnectionInfo.rowHeights = new int[]{0, 0, 0, 0};
+        gbl_panelConnectionInfo.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+        gbl_panelConnectionInfo.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
         panelConnectionInfo.setLayout(gbl_panelConnectionInfo);
 
         final JLabel lblConnectionUrl = new JLabel("URL:");
@@ -375,10 +433,10 @@ public class JdbcLoggerPanel extends AbstractDockedTabPanel {
         gbc_bottomPanel.gridy = 2;
         add(bottomPanel, gbc_bottomPanel);
         final GridBagLayout gbl_bottomPanel = new GridBagLayout();
-        gbl_bottomPanel.columnWidths = new int[] { 0, 507, 125, 125, 79, 0 };
-        gbl_bottomPanel.rowHeights = new int[] { 29, 0 };
-        gbl_bottomPanel.columnWeights = new double[] { 0.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
-        gbl_bottomPanel.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
+        gbl_bottomPanel.columnWidths = new int[]{0, 507, 125, 125, 79, 0};
+        gbl_bottomPanel.rowHeights = new int[]{29, 0};
+        gbl_bottomPanel.columnWeights = new double[]{0.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+        gbl_bottomPanel.rowWeights = new double[]{0.0, Double.MIN_VALUE};
         bottomPanel.setLayout(gbl_bottomPanel);
 
         lblConnectionStatus = new JLabel("");
@@ -433,7 +491,7 @@ public class JdbcLoggerPanel extends AbstractDockedTabPanel {
                     }
                 }
             }
-        } else if (selectedRow >= 0 && selectedRow <  rows.size() && modelRowIndex < rows.size()) {
+        } else if (selectedRow >= 0 && selectedRow < rows.size() && modelRowIndex < rows.size()) {
             final int newSelectedRowIndex = table.convertRowIndexToView(modelRowIndex);
             table.setRowSelectionInterval(newSelectedRowIndex, newSelectedRowIndex);
         }
@@ -448,7 +506,7 @@ public class JdbcLoggerPanel extends AbstractDockedTabPanel {
         return null;
     }
 
-    public void setTxtToHighlight(  final String txtToHighlight) {
+    public void setTxtToHighlight(final String txtToHighlight) {
         final SearchContext searchContext = new SearchContext(txtToHighlight);
         searchContext.setMarkAll(true);
         SearchEngine.markAll(txtFieldRawSql, searchContext);

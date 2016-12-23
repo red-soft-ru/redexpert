@@ -44,7 +44,7 @@ import org.underworldlabs.util.SystemProperties;
  */
 public class LatestVersionRepositoryImpl implements LatestVersionRepository {
 
-    private static final String ADDRESS = "api.github.com";
+    private static final String ADDRESS = "github.com";
     
     public String getId() {
 
@@ -61,7 +61,8 @@ public class LatestVersionRepositoryImpl implements LatestVersionRepository {
                 String build = null;
 
                 RemoteHttpClient httpClient = remoteHttpClient();
-                RemoteHttpResponse response = httpClient.httpGetRequest("api.github.com", versionUrl().getPath());
+                RemoteHttpResponse response = httpClient.httpGetRequest("api.github.com", versionUrl().getPath() +
+                        "?access_token=f736f6f95867d9497fff331ecdc08bae9ec34fc8");
 
                 String responseTextLines = response.getResponse();
                 Pattern p = Pattern.compile("\"tag_name\":\"(.*?)\"", Pattern.CASE_INSENSITIVE);
@@ -149,7 +150,8 @@ public class LatestVersionRepositoryImpl implements LatestVersionRepository {
             try {
 
                 RemoteHttpClient httpClient = remoteHttpClient();
-                RemoteHttpResponse response = httpClient.httpGetRequest(ADDRESS, releaseNotesUrl().getPath());
+                RemoteHttpResponse response = httpClient.httpGetRequest(ADDRESS, releaseNotesUrl().getPath() +
+                "?access_token=f736f6f95867d9497fff331ecdc08bae9ec34fc8");
 
                 return response.getResponse();
 

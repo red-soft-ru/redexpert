@@ -1,6 +1,5 @@
 package org.executequery.gui.jdbclogger;
 
-
 import org.executequery.gui.AbstractDockedTabPanel;
 import org.executequery.gui.jdbclogger.net.AbstractLogReceiver;
 import org.executequery.gui.jdbclogger.net.ServerLogReceiver;

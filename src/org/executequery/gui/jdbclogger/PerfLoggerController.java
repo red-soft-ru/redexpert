@@ -7,6 +7,7 @@ import org.executequery.gui.jdbclogger.net.LogProcessor;
 import org.executequery.gui.jdbclogger.net.ServerLogReceiver;
 
 import javax.swing.*;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -202,6 +203,12 @@ public class PerfLoggerController {
                                 if (!tempColumnNames.contains(LogConstants.ID_COLUMN)) {
                                     tempColumnNames.add(LogConstants.ID_COLUMN);
                                     tempColumnTypes.add(statement.getLogId().getClass());
+                                }
+
+                                objectList.add(new Timestamp(statement.getTimestamp()));
+                                if (!tempColumnNames.contains(LogConstants.TSTAMP_COLUMN)) {
+                                    tempColumnNames.add(LogConstants.TSTAMP_COLUMN);
+                                    tempColumnTypes.add(Timestamp.class);
                                 }
 
                                 objectList.add( connections.get(statement.getConnectionUuid()).getConnectionNumber());

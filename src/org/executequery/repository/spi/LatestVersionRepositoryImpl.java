@@ -62,7 +62,7 @@ public class LatestVersionRepositoryImpl implements LatestVersionRepository {
 
                 RemoteHttpClient httpClient = remoteHttpClient();
                 RemoteHttpResponse response = httpClient.httpGetRequest("api.github.com", versionUrl().getPath() +
-                        "?access_token=f736f6f95867d9497fff331ecdc08bae9ec34fc8");
+                        "?access_token=145758a9d7895bc57a631694c145864df19fe6d9");
 
                 String responseTextLines = response.getResponse();
                 Pattern p = Pattern.compile("\"tag_name\":\"(.*?)\"", Pattern.CASE_INSENSITIVE);
@@ -151,7 +151,7 @@ public class LatestVersionRepositoryImpl implements LatestVersionRepository {
 
                 RemoteHttpClient httpClient = remoteHttpClient();
                 RemoteHttpResponse response = httpClient.httpGetRequest(ADDRESS, releaseNotesUrl().getPath() +
-                "?access_token=f736f6f95867d9497fff331ecdc08bae9ec34fc8");
+                "?access_token=145758a9d7895bc57a631694c145864df19fe6d9");
 
                 return response.getResponse();
 

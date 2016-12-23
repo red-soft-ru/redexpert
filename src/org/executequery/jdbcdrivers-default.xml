@@ -30,4 +30,13 @@
         <classname>sun.jdbc.odbc.JdbcOdbcDriver</classname>
         <url>jdbc:odbc:[source]</url>
     </databasedrivers>
+    <databasedrivers>
+        <id>1111112</id>
+        <name>JDBC Logger Driver</name>
+        <description>Measuring performance of SQL statements executed through JDBC</description>
+        <type>-1</type>
+        <path>./lib/jdbc-perf-logger-driver-0.8.1-SNAPSHOT.jar</path>
+        <classname>ch.sla.jdbcperflogger.driver.WrappingDriver</classname>
+        <url>jdbcperflogger: jdbc connection string</url>
+    </databasedrivers>
 </jdbcdrivers>

@@ -168,6 +168,14 @@
 			<version>2.5.6</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.github.sylvainlaurent.jdbcperflogger</groupId>
+			<artifactId>jdbc-perf-logger-agent</artifactId>
+			<version>0.8.1</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/jdbc-perf-logger-driver-0.8.1-SNAPSHOT.jar</systemPath>
+		</dependency>
+
     </dependencies>
 
 	<build>

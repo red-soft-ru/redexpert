@@ -228,7 +228,8 @@ public abstract class CreateTableFunctionPanel extends JPanel
                 schemas = metaData.getHostedCatalogsVector();
             }
             schemaModel.setElements(schemas);
-            schemaCombo.setSelectedIndex(0);
+            if (schemas.size() != 0)
+                schemaCombo.setSelectedIndex(0);
             tablePanel.setDataTypes(metaData.getDataTypesArray());
         }
         

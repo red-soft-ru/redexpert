@@ -5,7 +5,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import ch.sla.jdbcperflogger.StatementType;
 import ch.sla.jdbcperflogger.model.*;
+import org.executequery.gui.jdbclogger.model.FullStatementLog;
 
 public class LogProcessor extends Thread implements AutoCloseable {
 
@@ -14,49 +16,15 @@ public class LogProcessor extends Thread implements AutoCloseable {
     private volatile boolean isNeededUpdate;
 
     private final BlockingQueue<LogMessage> logs = new ArrayBlockingQueue<>(10000);
-    private final HashMap <UUID, ConnectionInfo> connections = new HashMap<>();
-    private final HashMap<UUID, List<StatementLog>> statementLogs = new HashMap<>();
-    private final HashMap<UUID, List<StatementExecutedLog>> statementExecutedLogs = new HashMap<>();
-    private final HashMap<UUID, List<ResultSetLog>> resultSetLogs = new HashMap<>();
-    private final HashMap<UUID, List<BatchedNonPreparedStatementsLog>> batchedNonPreparedStatementsLogs =
-            new HashMap<>();
-    private final HashMap<UUID, List<BatchedPreparedStatementsLog>> batchedPreparedStatementsLogs =
-            new HashMap<>();
-    private final HashMap<UUID, List<TxCompleteLog>> txCompleteLogs = new HashMap<>();
-    private final List<BufferFullLogMessage> bufferFullLogMessageLogs = new ArrayList<>();
+    private final HashMap<UUID, ConnectionInfo> connections = new HashMap<>();
+    private final LinkedHashMap<UUID, FullStatementLog> fullStatementLogs = new LinkedHashMap<>();
 
     public HashMap<UUID, ConnectionInfo> getConnections() {
         return connections;
     }
-
-    public HashMap<UUID, List<StatementLog>> getStatementLogs() {
-        return statementLogs;
+    public LinkedHashMap<UUID, FullStatementLog> getFullStatementLogs() {
+        return fullStatementLogs;
     }
-
-    public HashMap<UUID, List<StatementExecutedLog>> getStatementExecutedLogs() {
-        return statementExecutedLogs;
-    }
-
-    public HashMap<UUID, List<ResultSetLog>> getResultSetLogs() {
-        return resultSetLogs;
-    }
-
-    public HashMap<UUID, List<BatchedNonPreparedStatementsLog>> getBatchedNonPreparedStatementsLogs() {
-        return batchedNonPreparedStatementsLogs;
-    }
-
-    public HashMap<UUID, List<BatchedPreparedStatementsLog>> getBatchedPreparedStatementsLogs() {
-        return batchedPreparedStatementsLogs;
-    }
-
-    public HashMap<UUID, List<TxCompleteLog>> getTxCompleteLogs() {
-        return txCompleteLogs;
-    }
-
-    public List<BufferFullLogMessage> getBufferFullLogMessageLogs() {
-        return bufferFullLogMessageLogs;
-    }
-
 
     public boolean isNeededUpdate() {
         return isNeededUpdate;
@@ -117,43 +85,69 @@ public class LogProcessor extends Thread implements AutoCloseable {
                     connections.put(connectionInfo.getUuid(), connectionInfo);
                 } else if (logMessage instanceof StatementLog) {
                     StatementLog statementLog = (StatementLog) logMessage;
-                    List<StatementLog> l = statementLogs.get(statementLog.getConnectionUuid());
-                    if (l == null)
-                        statementLogs.put(statementLog.getConnectionUuid(), l=new ArrayList<StatementLog>());
-                    l.add(statementLog);
+                    FullStatementLog fullStatementLog = new FullStatementLog();
+                    fullStatementLog.setConnectionId(statementLog.getConnectionUuid());
+                    fullStatementLog.setLogId(statementLog.getLogId());
+                    fullStatementLog.setTimestamp(statementLog.getTimestamp());
+                    fullStatementLog.setStatementType(statementLog.getStatementType());
+                    fullStatementLog.setRawSql(statementLog.getRawSql());
+                    fullStatementLog.setFilledSql(statementLog.getFilledSql());
+                    fullStatementLog.setAutoCommit(statementLog.isAutoCommit());
+                    fullStatementLog.setThreadName(statementLog.getThreadName());
+
+                    fullStatementLogs.put(fullStatementLog.getLogId(), fullStatementLog);
                 } else if (logMessage instanceof StatementExecutedLog) {
-                    StatementExecutedLog statementExecutedLog = (StatementExecutedLog) logMessage;
-                    List<StatementExecutedLog> l = statementExecutedLogs.get(statementExecutedLog.getLogId());
-                    if (l == null)
-                        statementExecutedLogs.put(statementExecutedLog.getLogId(), l=new ArrayList<StatementExecutedLog>());
-                    l.add(statementExecutedLog);
+                    StatementExecutedLog log = (StatementExecutedLog) logMessage;
+                    FullStatementLog fullStatementLog = fullStatementLogs.get(log.getLogId());
+                    fullStatementLog.setExecutionTimeNanos(log.getExecutionTimeNanos());
+                    fullStatementLog.setSqlException(log.getSqlException());
+                    fullStatementLog.setUpdateCount(log.getUpdateCount());
+                    fullStatementLogs.put(fullStatementLog.getLogId(), fullStatementLog);
                 } else if (logMessage instanceof ResultSetLog) {
-                    ResultSetLog resultSetLog = (ResultSetLog) logMessage;
-                    List<ResultSetLog> l = resultSetLogs.get(resultSetLog.getLogId());
-                    if (l == null)
-                        resultSetLogs.put(resultSetLog.getLogId(), l=new ArrayList<ResultSetLog>());
-                    l.add(resultSetLog);
+                    ResultSetLog log = (ResultSetLog) logMessage;
+                    FullStatementLog fullStatementLog = fullStatementLogs.get(log.getLogId());
+                    fullStatementLog.setFetchDurationNanos(log.getFetchDurationNanos());
+                    fullStatementLog.setNbRowsIterated(log.getNbRowsIterated());
+                    fullStatementLog.setResultSetUsageDurationNanos(log.getResultSetUsageDurationNanos());
+                    fullStatementLogs.put(fullStatementLog.getLogId(), fullStatementLog);
                 } else if (logMessage instanceof BatchedNonPreparedStatementsLog) {
-                    BatchedNonPreparedStatementsLog batchedNonPreparedStatementsLog = (BatchedNonPreparedStatementsLog) logMessage;
-                    List<BatchedNonPreparedStatementsLog> l = batchedNonPreparedStatementsLogs.get(batchedNonPreparedStatementsLog.getLogId());
-                    if (l == null)
-                        batchedNonPreparedStatementsLogs.put(batchedNonPreparedStatementsLog.getLogId(), l=new ArrayList<BatchedNonPreparedStatementsLog>());
-                    l.add(batchedNonPreparedStatementsLog);
+                    BatchedNonPreparedStatementsLog log = (BatchedNonPreparedStatementsLog) logMessage;
+                    FullStatementLog fullStatementLog = new FullStatementLog();
+                    fullStatementLog.setSqlList(log.getSqlList());
+                    fullStatementLog.setConnectionId(log.getConnectionUuid());
+                    fullStatementLog.setLogId(log.getLogId());
+                    fullStatementLog.setTimestamp(log.getTimestamp());
+                    fullStatementLog.setStatementType(log.getStatementType());
+                    fullStatementLog.setAutoCommit(log.isAutoCommit());
+                    fullStatementLog.setThreadName(log.getThreadName());
+                    fullStatementLogs.put(log.getLogId(), fullStatementLog);
                 } else if (logMessage instanceof BatchedPreparedStatementsLog) {
-                    BatchedPreparedStatementsLog batchedPreparedStatementsLog = (BatchedPreparedStatementsLog) logMessage;
-                    List<BatchedPreparedStatementsLog> l = batchedPreparedStatementsLogs.get(batchedPreparedStatementsLog.getLogId());
-                    if (l == null)
-                        batchedPreparedStatementsLogs.put(batchedPreparedStatementsLog.getLogId(), l=new ArrayList<BatchedPreparedStatementsLog>());
-                    l.add(batchedPreparedStatementsLog);
+                    BatchedPreparedStatementsLog log = (BatchedPreparedStatementsLog) logMessage;
+                    FullStatementLog fullStatementLog = new FullStatementLog();
+                    fullStatementLog.setSqlList(log.getSqlList());
+                    fullStatementLog.setConnectionId(log.getConnectionUuid());
+                    fullStatementLog.setLogId(log.getLogId());
+                    fullStatementLog.setTimestamp(log.getTimestamp());
+                    fullStatementLog.setStatementType(log.getStatementType());
+                    fullStatementLog.setAutoCommit(log.isAutoCommit());
+                    fullStatementLog.setThreadName(log.getThreadName());
+                    fullStatementLog.setRawSql(log.getRawSql());
+                    fullStatementLogs.put(log.getLogId(), fullStatementLog);
                 } else if (logMessage instanceof TxCompleteLog) {
                     TxCompleteLog txCompleteLog = (TxCompleteLog) logMessage;
-                    List<TxCompleteLog> l = txCompleteLogs.get(txCompleteLog.getConnectionUuid());
-                    if (l == null)
-                        txCompleteLogs.put(txCompleteLog.getConnectionUuid(), l=new ArrayList<TxCompleteLog>());
-                    l.add(txCompleteLog);
+                    FullStatementLog fullStatementLog = new FullStatementLog();
+                    fullStatementLog.setSavePointDescription(txCompleteLog.getSavePointDescription());
+                    fullStatementLog.setTimestamp(txCompleteLog.getTimestamp());
+                    fullStatementLog.setStatementType(StatementType.TRANSACTION);
+                    fullStatementLog.setExecutionTimeNanos(txCompleteLog.getExecutionTimeNanos());
+                    fullStatementLog.setCompletionType(txCompleteLog.getCompletionType());
+                    fullStatementLog.setConnectionId(txCompleteLog.getConnectionUuid());
+                    fullStatementLog.setThreadName(txCompleteLog.getThreadName());
+                    fullStatementLog.setLogId(UUID.randomUUID()); // 'cause it doesn't have own logId
+
+                    fullStatementLogs.put(fullStatementLog.getLogId(), fullStatementLog);
                 } else if (logMessage instanceof BufferFullLogMessage) {
-                    BufferFullLogMessage bufferFullLogMessage = (BufferFullLogMessage) logMessage;
-                    bufferFullLogMessageLogs.add(bufferFullLogMessage);
+                    // nothing to do???
                 } else {
                     throw new IllegalArgumentException("unexpected log, class=" + logMessage.getClass());
                 }

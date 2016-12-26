@@ -1,16 +1,12 @@
 package org.executequery.gui.jdbclogger;
 
 import ch.sla.jdbcperflogger.model.ConnectionInfo;
-import ch.sla.jdbcperflogger.model.StatementLog;
+import org.executequery.gui.jdbclogger.model.FullStatementLog;
 import org.executequery.gui.jdbclogger.net.AbstractLogReceiver;
 import org.executequery.gui.jdbclogger.net.LogProcessor;
 import org.executequery.gui.jdbclogger.net.ServerLogReceiver;
 
 import javax.swing.*;
-import javax.swing.event.AncestorEvent;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ContainerEvent;
-import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -105,25 +101,28 @@ public class PerfLoggerController {
             LogProcessor logProcessor = logReceiver.getLogProcessor();
 
             HashMap<UUID, ConnectionInfo> connections = logProcessor.getConnections();
-            HashMap<UUID, List<StatementLog>> statements = logProcessor.getStatementLogs();
+            LinkedHashMap<UUID, FullStatementLog> fullStatementLogs = logProcessor.getFullStatementLogs();
 
-            for (Map.Entry<UUID, List<StatementLog>> entry : statements.entrySet())
-            {
-                List<StatementLog> statementLogs = entry.getValue();
-                for (StatementLog statement : statementLogs) {
-                    if (selectedLogId.equals(statement.getLogId())) {
-                        jdbcLoggerPanel.txtFieldFilledSql.setText(statement.getFilledSql());
-                        jdbcLoggerPanel.txtFieldRawSql.setText(statement.getRawSql());
-                        ConnectionInfo connectionInfo = connections.get(statement.getConnectionUuid());
+            for (Map.Entry<UUID, FullStatementLog> entry : fullStatementLogs.entrySet()) {
+                FullStatementLog statement = entry.getValue();
+                if (selectedLogId.equals(statement.getLogId())) {
+                    jdbcLoggerPanel.txtFieldFilledSql.setText(statement.getFilledSql());
+                    jdbcLoggerPanel.txtFieldRawSql.setText(statement.getRawSql());
+                    ConnectionInfo connectionInfo = connections.get(statement.getConnectionId());
 
-                        jdbcLoggerPanel.connectionCreationDateField.setText(connectionInfo.getCreationDate().toString());
-                        long millis = TimeUnit.NANOSECONDS
-                                .toMillis(connectionInfo.getConnectionCreationDuration());
-                        jdbcLoggerPanel.connectionCreationDurationField.setText(String.valueOf(millis));
-                        jdbcLoggerPanel.connectionUrlField.setText(connectionInfo.getUrl());
-                        jdbcLoggerPanel.connectionPropertiesField.setText(connectionInfo.getConnectionProperties().toString());
-                        return;
+                    jdbcLoggerPanel.connectionCreationDateField.setText(connectionInfo.getCreationDate().toString());
+                    long millis = TimeUnit.NANOSECONDS
+                            .toMillis(connectionInfo.getConnectionCreationDuration());
+                    jdbcLoggerPanel.connectionCreationDurationField.setText(String.valueOf(millis));
+                    jdbcLoggerPanel.connectionUrlField.setText(connectionInfo.getUrl());
+                    jdbcLoggerPanel.connectionPropertiesField.setText(connectionInfo.getConnectionProperties().toString());
+
+                    if (statement.getSqlException() != null && !statement.getSqlException().isEmpty()) {
+                        jdbcLoggerPanel.txtFieldFilledSql.append(statement.getSqlException());
+                        jdbcLoggerPanel.txtFieldRawSql.append(statement.getSqlException());
                     }
+
+                    return;
                 }
             }
         }
@@ -159,8 +158,8 @@ public class PerfLoggerController {
         }
 
         void doRefreshData() {
-            final List<String> tempColumnNames = new ArrayList<>();
-            final List<Class<?>> tempColumnTypes = new ArrayList<>();
+            List<String> tempColumnNames = new ArrayList<>();
+            List<Class<?>> tempColumnTypes = new ArrayList<>();
             final List<Object[]> tempRows = new ArrayList<>();
 
             try {
@@ -174,52 +173,38 @@ public class PerfLoggerController {
                     if (!logProcessor.isNeededUpdate() && !forceRefresh)
                         return;
 
-                    HashMap<UUID, List<StatementLog>> statementLogs = logProcessor.getStatementLogs();
+                    LinkedHashMap<UUID, FullStatementLog> fullStatementLogs = logProcessor.getFullStatementLogs();
                     HashMap<UUID, ConnectionInfo> connections = logProcessor.getConnections();
-                    if (statementLogs.size() > 0) {
-                        List<List<StatementLog>> statementList = new ArrayList<>(statementLogs.values());
-                        for (List<StatementLog> statements : statementList) {
-                            for (StatementLog statement : statements) {
-                                List<Object> objectList = new ArrayList<>();
+                    if (fullStatementLogs.size() > 0) {
+                        for (Map.Entry<UUID, FullStatementLog> entry : fullStatementLogs.entrySet()) {
 
-                                objectList.add( statement.getLogId());
-                                if (!tempColumnNames.contains(LogConstants.ID_COLUMN)) {
-                                    tempColumnNames.add(LogConstants.ID_COLUMN);
-                                    tempColumnTypes.add(statement.getLogId().getClass());
-                                }
+                            StatementRow row = new StatementRow();
+                            FullStatementLog statement = entry.getValue();
 
-                                objectList.add(new Timestamp(statement.getTimestamp()));
-                                if (!tempColumnNames.contains(LogConstants.TSTAMP_COLUMN)) {
-                                    tempColumnNames.add(LogConstants.TSTAMP_COLUMN);
-                                    tempColumnTypes.add(Timestamp.class);
-                                }
+                            if (filterType.equals(Filter.FilterType.FILTER) && txtFilter != null)
+                                if (!statement.getRawSql().toLowerCase().contains(txtFilter.toLowerCase()))
+                                    continue;
 
-                                objectList.add( connections.get(statement.getConnectionUuid()).getConnectionNumber());
-                                if (!tempColumnNames.contains(LogConstants.CONNECTION_NUMBER_COLUMN)) {
-                                    tempColumnNames.add(LogConstants.CONNECTION_NUMBER_COLUMN);
-                                    tempColumnTypes.add(statement.getConnectionUuid().getClass());
-                                }
+                            row.addIDColumn(statement.getLogId());
+                            row.addTimestampColumn(statement.getTimestamp());
+                            row.addStatementTypeColumn(Byte.valueOf(String.valueOf(statement.getStatementType().getId())));
+                            row.addRawSQLColumn(statement.getRawSql());
+                            row.addRsetTimeColumn(statement.getResultSetUsageDurationNanos());
+                            row.addExecTimeColumn(statement.getExecutionTimeNanos());
+                            row.addFetchTimeColumn(statement.getFetchDurationNanos());
+                            row.addNBRowsColumn(statement.getNbRowsIterated());
+                            row.addThreadNameColumn(statement.getThreadName());
+                            row.addConnectionNumberColumn(connections.get(statement.getConnectionId()).getConnectionNumber());
+                            row.addTimeoutColumn(statement.getTimeout());
+                            row.addAutocommitColumn(statement.isAutoCommit());
 
-                                Byte statementTypeByte = Byte.valueOf(String.valueOf(statement.getStatementType().getId()));
-                                objectList.add(statementTypeByte);
-                                if (!tempColumnNames.contains(LogConstants.STMT_TYPE_COLUMN)) {
-                                    tempColumnNames.add(LogConstants.STMT_TYPE_COLUMN);
-                                    tempColumnTypes.add(statementTypeByte.getClass());
-                                }
-
-                                String rawSql = statement.getRawSql();
-                                if (filterType.equals(Filter.FilterType.FILTER) && txtFilter != null)
-                                    if (!rawSql.toLowerCase().contains(txtFilter.toLowerCase()))
-                                        continue;
-                                objectList.add(rawSql);
-                                if (!tempColumnNames.contains(LogConstants.RAW_SQL_COLUMN)) {
-                                    tempColumnNames.add(LogConstants.RAW_SQL_COLUMN);
-                                    tempColumnTypes.add(rawSql.getClass());
-                                }
-
-                                Object[] row = objectList.toArray();
-                                tempRows.add(row);
+                            if (statement.getSqlException() != null && !statement.getSqlException().isEmpty()) {
+                                row.addErrorFlag();
                             }
+
+                            tempColumnNames = row.getColumnNames();
+                            tempColumnTypes = row.getColumnTypes();
+                            tempRows.add(row.getData());
                         }
                     }
 
@@ -231,11 +216,13 @@ public class PerfLoggerController {
                 e.printStackTrace();
             }
 
+            final List<String> finalTempColumnNames = tempColumnNames;
+            final List<Class<?>> finalTempColumnTypes = tempColumnTypes;
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        jdbcLoggerPanel.setData(tempRows, tempColumnNames, tempColumnTypes,
+                        jdbcLoggerPanel.setData(tempRows, finalTempColumnNames, finalTempColumnTypes,
                                 true);
                     } catch (Exception e) {
                         e.printStackTrace();

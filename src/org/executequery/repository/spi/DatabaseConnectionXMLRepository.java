@@ -196,6 +196,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLRepository<Datab
     private static final String TX_ISOLATION = "txisolation";
     private static final String AUTO_COMMIT = "autocommit";
     private static final String PORT = "port";
+    private static final String CHARSET = "charset";
     private static final String URL = "url";
     private static final String DRIVER_NAME = "drivername";
     private static final String ADVANCED = "advanced";
@@ -310,6 +311,10 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLRepository<Datab
             } else if (localNameIsKey(localName, PORT)) {
 
                 databaseConnection.setPort(contentsAsString);
+
+            } else if (localNameIsKey(localName, CHARSET)) {
+
+                databaseConnection.setCharset(contentsAsString);
 
             } else if (localNameIsKey(localName, URL)) {
 
@@ -529,6 +534,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLRepository<Datab
                 writeXML(HOST, connection.getHost(), INDENT_TWO);
                 writeXML(DATA_SOURCE, connection.getSourceName(), INDENT_TWO);
                 writeXML(PORT, connection.getPort(), INDENT_TWO);
+                writeXML(CHARSET, connection.getCharset(), INDENT_TWO);
                 writeXML(URL, connection.getURL(), INDENT_TWO);
 
                 // TODO: remove driver name from save

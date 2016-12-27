@@ -1029,6 +1029,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         sourceField.setText(databaseConnection.getSourceName());
         urlField.setText(databaseConnection.getURL());
         nameField.setText(databaseConnection.getName());
+        charsetsCombo.setSelectedItem(databaseConnection.getCharset());
 
         // assign as the current connection
         this.databaseConnection = databaseConnection;
@@ -1069,6 +1070,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         databaseConnection.setPort(portField.getText());
         databaseConnection.setSourceName(sourceField.getText());
         databaseConnection.setURL(urlField.getText());
+        databaseConnection.setCharset(charsetsCombo.getSelectedItem().toString());
 
         // jdbc driver selection
         int driverIndex = driverCombo.getSelectedIndex();

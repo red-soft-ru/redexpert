@@ -97,6 +97,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     
     /** the tx isolation level */
     private int transactionIsolation;
+
+    private String charset;
     
     private String folderId;
     
@@ -218,6 +220,14 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     
     public void setPort(String port) {
         this.port = port;
+    }
+
+    public String getCharset() {
+        return charset == null ? Constants.EMPTY : charset;
+    }
+
+    public void setCharset(String charset) {
+        this.charset = charset;
     }
     
     public String getURL() {

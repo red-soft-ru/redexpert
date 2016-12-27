@@ -66,6 +66,10 @@ public interface DatabaseConnection extends Serializable {
 
     void setPort(String port);
 
+    public String getCharset();
+
+    public void setCharset(String charset);
+
     String getURL();
 
     void setURL(String url);

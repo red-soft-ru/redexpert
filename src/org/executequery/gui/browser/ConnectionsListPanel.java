@@ -473,7 +473,7 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
 
         private List<DatabaseConnection> values;
         private String[] header = {"", "Connection Name", "Host",
-                                   "Data Source", "User", "Driver"};
+                                   "Data Source", "User", "Driver", "Charset"};
 
         public ConnectionsTableModel(List<DatabaseConnection> values) {
             this.values = values;
@@ -521,6 +521,8 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
                         return databaseConnection.getUserName();
                     case 5:
                         return databaseConnection.getDriverName();
+                    case 6:
+                        return databaseConnection.getCharset();
                 }
             } else {
                 

@@ -21,7 +21,22 @@
 		<dependency>
 			<groupId>biz.redsoft.customlib</groupId>
 			<artifactId>jaybird</artifactId>
-			<version>2.2.2</version>
+			<version>3.0.0</version>
+			<scope>system</scope>
+			<systemPath>${pom.basedir}/lib/jaybird-full-3.0.0.jar</systemPath>
+			<type>jar</type>
+		</dependency>
+
+		<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<version>2.11.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.antlr</groupId>
+			<artifactId>antlr4-runtime</artifactId>
+			<version>4.6</version>
 		</dependency>
 
 		<dependency>
@@ -173,7 +188,7 @@
 			<artifactId>jdbc-perf-logger-agent</artifactId>
 			<version>0.8.1</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/jdbc-perf-logger-driver-0.8.1-SNAPSHOT.jar</systemPath>
+			<systemPath>${pom.basedir}/lib/jdbc-perf-logger-driver-0.8.1-SNAPSHOT.jar</systemPath>
 		</dependency>
 
     </dependencies>
@@ -198,6 +213,57 @@
 		</resources>
 
 		<plugins>
+
+			<plugin>
+				<groupId>com.googlecode.addjars-maven-plugin</groupId>
+				<artifactId>addjars-maven-plugin</artifactId>
+				<version>1.0.5</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>add-jars</goal>
+						</goals>
+						<configuration>
+							<resources>
+								<resource>
+									<directory>./lib</directory>
+									<includes>
+										<include>**/jaybird-full-3.0.0.jar</include>
+										<include>**/jdbc-perf-logger-driver-0.8.1-SNAPSHOT.jar</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.0.2</version>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${pom.basedir}/target</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${pom.basedir}</directory>
+									<filtering>true</filtering>
+									<includes>
+										<include>**/fbtrace.conf</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.0.2</version>
@@ -269,33 +335,33 @@
 				    	<goals>
 						<goal>launch4j</goal>
 					</goals>
-				    	<configuration>
+					<configuration>
 						<headerType>gui</headerType>
-						<outfile>target/${project.artifactId}-${project.version}.exe</outfile>
-						<jar>target/${project.artifactId}-${project.version}-shaded.jar</jar>
+						<outfile>${pom.basedir}/target/${project.artifactId}-${project.version}.exe</outfile>
+						<jar>${pom.basedir}/target/${project.artifactId}-${project.version}-shaded.jar</jar>
 						<errTitle>Red Expert Error</errTitle>
 						<classPath>
-					    		<mainClass>org.executequery.ExecuteQuery</mainClass>
+								<mainClass>org.executequery.ExecuteQuery</mainClass>
 						</classPath>
-						<icon>red_expert.ico</icon>
+						<icon>${pom.basedir}/red_expert.ico</icon>
 						<jre>
-					    		<minVersion>1.7.0</minVersion>
-					    		<maxVersion>1.8.0</maxVersion>
-					    		<initialHeapSize>128</initialHeapSize>
-					    		<maxHeapSize>1024</maxHeapSize>
+								<minVersion>1.7.0</minVersion>
+								<maxVersion>1.8.0</maxVersion>
+								<initialHeapSize>128</initialHeapSize>
+								<maxHeapSize>1024</maxHeapSize>
 						</jre>
 						<versionInfo>
-					    		<fileVersion>${exe.version}</fileVersion>
-					    		<txtFileVersion>${project.version}</txtFileVersion>
-					    		<fileDescription>${project.artifactId}-${project.version}</fileDescription>
-					    		<copyright>Red Soft</copyright>
-					    		<productVersion>${exe.version}</productVersion>
-					    		<txtProductVersion>${exe.version}</txtProductVersion>
-					    		<productName>${project.artifactId}</productName>
-					    		<internalName>${project.artifactId}</internalName>
-					    		<originalFilename>${project.artifactId}-${project.version}.exe</originalFilename>
+							<fileVersion>${exe.version}</fileVersion>
+							<txtFileVersion>${project.version}</txtFileVersion>
+							<fileDescription>${project.artifactId}-${project.version}</fileDescription>
+							<copyright>Red Soft</copyright>
+							<productVersion>${exe.version}</productVersion>
+							<txtProductVersion>${exe.version}</txtProductVersion>
+							<productName>${project.artifactId}</productName>
+							<internalName>${project.artifactId}</internalName>
+							<originalFilename>${project.artifactId}-${project.version}.exe</originalFilename>
 						</versionInfo>
-				    </configuration>
+					</configuration>
 				</execution>
 			    </executions>
 			</plugin>

@@ -21,6 +21,7 @@ mkdir tmp dist
 cp RedExpert.jar tmp
 cp eq.sh tmp/RedExpert.sh
 cp RedExpert.bat tmp
+cp fbtrace.conf tmp
 
 cp -r red_expert.{png,ico} \
 	  lib \

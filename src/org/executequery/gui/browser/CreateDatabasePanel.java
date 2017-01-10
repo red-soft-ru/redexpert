@@ -567,7 +567,7 @@ public class CreateDatabasePanel extends ActionPanel
         String path = sourceField.getText();
         fbManager.setServer(server);
         fbManager.setPort(port);
-        fbManager.setMACPlugin("");
+//        fbManager.setMACPlugin("");
         try {
             fbManager.start();
             if (fbManager.isDatabaseExists(path, userField.getText(), MiscUtils.charsToString(passwordField.getPassword()))) {

@@ -28,11 +28,10 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.sql.Connection;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Properties;
+import java.sql.SQLException;
+import java.util.*;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
@@ -75,6 +74,7 @@ import org.executequery.gui.drivers.DialogDriverPanel;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
+import org.firebirdsql.management.FBTraceManager;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DefaultFieldLabel;
 import org.underworldlabs.swing.DefaultTextField;
@@ -94,6 +94,81 @@ import org.underworldlabs.util.MiscUtils;
 public class ConnectionPanel extends AbstractConnectionPanel 
                              implements DatabaseDriverListener,
                                         ChangeListener {
+
+    private static class TraceMessageLoop
+            implements Runnable {
+
+        FBTraceManager fbTraceManager;
+        String configuration = null;
+        String database;
+        String charSet;
+        String user;
+        String password;
+        String host;
+        int port;
+
+        String traceUUID;
+
+        TraceMessageLoop(){
+            fbTraceManager = new FBTraceManager();
+            fbTraceManager.setLogger(System.out);
+            traceUUID = UUID.randomUUID().toString();
+            try {
+                configuration = fbTraceManager.loadConfigurationFromFile("fbtrace.conf", true);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public void setDatabase(String database) {
+            this.database = database;
+        }
+
+        public void setCharSet(String charSet) {
+            this.charSet = charSet;
+        }
+
+        public void setUser(String user) {
+            this.user = user;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public void setHost(String host) {
+            this.host = host;
+        }
+
+        public void setPort(int port) {
+            this.port = port;
+        }
+
+        public void run() {
+            try {
+                fbTraceManager.setHost(this.host);
+                fbTraceManager.setPort(this.port);
+                fbTraceManager.setCharSet(this.charSet);
+                fbTraceManager.setPassword(this.password);
+                fbTraceManager.setUser(this.user);
+                fbTraceManager.setDatabase(this.database);
+                fbTraceManager.startTraceSession(traceUUID, configuration);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public void stop() {
+            int traceSessionId = fbTraceManager.getSessionId(traceUUID);
+            try {
+                fbTraceManager.stopTraceSession(traceSessionId);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    TraceMessageLoop traceMessageLoop = null;
 
     private List<String> charsets;
     
@@ -672,6 +747,21 @@ public class ConnectionPanel extends AbstractConnectionPanel
                             e.getMessage() + "\n\n");
                 }
 
+
+                    String className = host.getDatabaseConnection().getJDBCDriver().getClassName();
+                    if (className.contains("FBDriver")) {
+
+                        traceMessageLoop = new TraceMessageLoop();
+                        traceMessageLoop.setDatabase(host.getDatabaseConnection().getSourceName());
+                        traceMessageLoop.setPort(host.getDatabaseConnection().getPortInt());
+                        traceMessageLoop.setUser(host.getDatabaseConnection().getUserName());
+                        traceMessageLoop.setPassword(host.getDatabaseConnection().getPassword());
+                        traceMessageLoop.setCharSet("UTF8");
+                        traceMessageLoop.setHost(host.getDatabaseConnection().getHost());
+
+                        Thread traceThread = new Thread(traceMessageLoop);
+                        traceThread.start();
+                    }
             }
 
         } catch (DataSourceException e) {
@@ -767,6 +857,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
     public void disconnect() {
         try {
             host.disconnect();
+            if (traceMessageLoop != null) {
+                traceMessageLoop.stop();
+            }
         }
         catch (DataSourceException e) {
             GUIUtilities.displayErrorMessage(

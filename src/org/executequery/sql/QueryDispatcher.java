@@ -20,6 +20,7 @@
 
 package org.executequery.sql;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
@@ -39,8 +40,17 @@ import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.executequery.util.ThreadWorker;
 import org.executequery.util.UserProperties;
+import org.firebirdsql.gds.ISCConstants;
+import org.firebirdsql.gds.ng.AbstractFbDatabase;
+import org.firebirdsql.gds.ng.FbExceptionBuilder;
+import org.firebirdsql.gds.ng.InfoProcessor;
+import org.firebirdsql.jdbc.FBConnection;
 import org.firebirdsql.jdbc.FBResultSet;
+import org.firebirdsql.management.FBManager;
 import org.underworldlabs.util.MiscUtils;
+
+import static org.firebirdsql.gds.VaxEncoding.iscVaxInteger;
+import static org.firebirdsql.gds.VaxEncoding.iscVaxInteger2;
 
 /**
  * Determines the type of exeuted query and returns appropriate results.
@@ -50,6 +60,16 @@ import org.underworldlabs.util.MiscUtils;
  * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
  */
 public class QueryDispatcher {
+
+    byte perfomanceInfoBytes[] =
+            {
+                    ISCConstants.isc_info_reads,
+                    ISCConstants.isc_info_writes,
+                    ISCConstants.isc_info_fetches,
+                    ISCConstants.isc_info_marks,
+                    ISCConstants.isc_info_page_size, ISCConstants.isc_info_num_buffers,
+                    ISCConstants.isc_info_current_memory, ISCConstants.isc_info_max_memory
+            };
 
     /** the parent controller */
     private QueryDelegate delegate;
@@ -335,6 +355,8 @@ public class QueryDispatcher {
      */
     private Object executeSQL(String sql, boolean executeAsBlock) {
 
+        FBPerformanceInfo before = null, after = null;
+
         waiting = false;
         long totalDuration = 0l;
 
@@ -455,6 +477,14 @@ public class QueryDispatcher {
 
                 }
 
+                try {
+                    FBConnection fbConnection = (FBConnection)querySender.getConnection().unwrap(FBConnection.class);
+
+                    before = fbConnection.getFbDatabase().getDatabaseInfo(perfomanceInfoBytes, 256, new FBPerformanceInfoProcessor());
+                } catch (Exception e) {
+                    // nothing to do
+                }
+
                 start = System.currentTimeMillis();
                 SqlStatementResult result = querySender.execute(type, queryToExecute);
 
@@ -486,11 +516,13 @@ public class QueryDispatcher {
                         setStatusMessage(ERROR_EXECUTING);
 
                     } else {
+
                         // Trying to get execution plan of firebird statement
                         try {
                             // If profiler is used
                             FBResultSet fbResultSet = rset.unwrap(FBResultSet.class);
-                            setOutputMessage(SqlMessages.PLAIN_MESSAGE, fbResultSet.getExecutionPlan());
+
+                            setOutputMessage(SqlMessages.OVERWRITE_MODE, fbResultSet.getExecutionPlan());
 
                         } catch (Exception e) {
                             // nothing to do
@@ -577,6 +609,23 @@ public class QueryDispatcher {
             }
 
             statementExecuted(sql);
+
+            // Trying to get execution plan of firebird statement
+            try {
+                FBConnection fbConnection = querySender.getConnection().unwrap(FBConnection.class);
+
+                after = fbConnection.getFbDatabase().getDatabaseInfo(perfomanceInfoBytes, 256, new FBPerformanceInfoProcessor());
+
+                FBPerformanceInfo resultPerfomanceInfo = null;
+                if (before != null && after != null)
+                    resultPerfomanceInfo = FBPerformanceInfo.processInfo(before, after);
+
+                setOutputMessage(SqlMessages.OVERWRITE_MODE, resultPerfomanceInfo.getPerformanceInfo());
+
+            } catch (Exception e) {
+                // nothing to do
+            }
+
 
         } catch (SQLException e) {
 

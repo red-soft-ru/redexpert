@@ -1508,6 +1508,9 @@ public class DefaultStatementExecutor implements StatementExecutor {
         }
     }
 
+    public Connection getConnection() {
+        return conn;
+    }
 }
 
 

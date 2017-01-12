@@ -20,6 +20,7 @@
 
 package org.executequery.databasemediators.spi;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.executequery.databasemediators.DatabaseConnection;
@@ -108,6 +109,8 @@ public interface StatementExecutor {
     void releaseResources();
 
     void setDatabaseConnection(DatabaseConnection _databaseConnection);
+
+    Connection getConnection();
 
     SqlStatementResult getResultSet(String query, int fetchSize) throws SQLException;
 

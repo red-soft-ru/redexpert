@@ -195,6 +195,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     }
     
     public int getPortInt() {
+        if (port.isEmpty())
+            return 3050;
         return Integer.parseInt(port);
     }
     

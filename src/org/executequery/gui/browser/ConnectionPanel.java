@@ -759,8 +759,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
                         traceMessageLoop.setCharSet("UTF8");
                         traceMessageLoop.setHost(host.getDatabaseConnection().getHost());
 
-                        Thread traceThread = new Thread(traceMessageLoop);
-                        traceThread.start();
+//                        Thread traceThread = new Thread(traceMessageLoop);
+//                        traceThread.start();
                     }
             }
 

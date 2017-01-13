@@ -18,10 +18,15 @@ import org.executequery.gui.drivers.DialogDriverPanel;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
-import org.firebirdsql.management.FBManager;
+import org.firebirdsql.gds.impl.GDSFactory;
+import org.firebirdsql.gds.impl.GDSType;
+import org.firebirdsql.gds.ng.FbConnectionProperties;
+import org.firebirdsql.gds.ng.jna.AbstractNativeDatabaseFactory;
+import org.firebirdsql.gds.ng.jna.JnaDatabase;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.actions.ActionUtilities;
+import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -33,8 +38,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
-import java.util.Enumeration;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Created by vasiliy.yashkov on 10.07.2015.
@@ -57,6 +61,8 @@ public class CreateDatabasePanel extends ActionPanel
 
     private static final String CREATE_ACTION_COMMAND = "create";
 
+    private java.util.List<String> charsets;
+
     private JComboBox driverCombo;
     private JCheckBox encryptPwdCheck;
     private JCheckBox savePwdCheck;
@@ -67,6 +73,8 @@ public class CreateDatabasePanel extends ActionPanel
     private JTextField hostField;
     private NumberTextField portField;
     private JTextField sourceField;
+
+    private JComboBox charsetsCombo;
 
     private JLabel statusLabel;
 
@@ -148,6 +156,10 @@ public class CreateDatabasePanel extends ActionPanel
         // retrieve the drivers
         buildDriversList();
 
+        // retrieve the available charsets
+        loadCharsets();
+        charsetsCombo = WidgetFactory.createComboBox(charsets.toArray());
+
         // ---------------------------------
         // add the basic connection fields
 
@@ -198,6 +210,9 @@ public class CreateDatabasePanel extends ActionPanel
 
         addLabelFieldPair(mainPanel, "Data Source:",
                 sourceField, "Data source name", gbc);
+
+        addLabelFieldPair(mainPanel, "Character Set:",
+            charsetsCombo, "Default character set for this connection", gbc);
 
         addDriverFields(mainPanel, gbc);
 
@@ -331,6 +346,29 @@ public class CreateDatabasePanel extends ActionPanel
         add(tabPane, BorderLayout.CENTER);
 
         EventMediator.registerListener(this);
+    }
+
+    private void loadCharsets() {
+        Properties props;
+        try {
+            if (charsets == null)
+                charsets = new ArrayList<String>();
+            else
+                charsets.clear();
+
+            String resource = FileUtils.loadResource("org/executequery/charsets.properties");
+            String[] strings = resource.split(System.getProperty("line.separator"));
+            for(String s : strings){
+                if (!s.startsWith("#") && !s.isEmpty())
+                    charsets.add(s);
+            }
+            java.util.Collections.sort(charsets);
+            charsets.add(0, "NONE");
+
+        } catch(Exception e) {
+            e.printStackTrace();
+            return;
+        }
     }
 
     private NumberTextField createNumberTextField() {
@@ -557,7 +595,7 @@ public class CreateDatabasePanel extends ActionPanel
 
 
     private void createFirebirdDatabase(DatabaseDriver databaseDriver) {
-        FBManager fbManager = new FBManager();
+
         String server = this.hostField.getText();
         Integer port = this.portField.getValue();
         if (port == 0) {
@@ -565,37 +603,40 @@ public class CreateDatabasePanel extends ActionPanel
             this.portField.setValue(3050);
         }
         String path = sourceField.getText();
-        fbManager.setServer(server);
-        fbManager.setPort(port);
-//        fbManager.setMACPlugin("");
+
+        final FbConnectionProperties connectionInfo;
+        {
+            connectionInfo = new FbConnectionProperties();
+            connectionInfo.setServerName(server);
+            connectionInfo.setPortNumber(port);
+            connectionInfo.setUser(userField.getText());
+            connectionInfo.setPassword(MiscUtils.charsToString(passwordField.getPassword()));
+            connectionInfo.setDatabaseName(path);
+            connectionInfo.setEncoding(charsetsCombo.getSelectedItem().toString());
+        }
+
+        AbstractNativeDatabaseFactory factory = null;
+        JnaDatabase db = null;
         try {
-            fbManager.start();
-            if (fbManager.isDatabaseExists(path, userField.getText(), MiscUtils.charsToString(passwordField.getPassword()))) {
-                fbManager.stop();
-                GUIUtilities.displayExceptionErrorDialog("Database already exists",
-                        new Exception("Create database exception"));
-                return;
-            } else {
-                try {
-                    fbManager.createDatabase(path, userField.getText(), MiscUtils.charsToString(passwordField.getPassword()));
-                    GUIUtilities.displayInformationMessage("Database successfully created");
-                } catch (Exception e) {
-                    fbManager.stop();
-                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(),
-                            new Exception("Create database exception"));
-                    return;
-                }
-            }
-            fbManager.stop();
-        } catch (DataSourceException e) {
+            factory = (AbstractNativeDatabaseFactory) GDSFactory.getDatabaseFactoryForType(GDSType.getType("NATIVE"));
+
+            db = factory.connect(connectionInfo);
+
+            String createDb = String.format("CREATE DATABASE '%s' USER '%s' PASSWORD '%s' DEFAULT CHARACTER SET %s",
+                path, userField.getText(), MiscUtils.charsToString(passwordField.getPassword()),
+                charsetsCombo.getSelectedItem().toString());
+            db.executeImmediate(createDb, null);
+
+            db.close();
+
+        } catch (Exception e) {
             StringBuilder sb = new StringBuilder();
             sb.append("The connection to the database could not be established.");
             sb.append("\nPlease ensure all required fields have been entered ");
             sb.append("correctly and try again.\n\nThe system returned:\n");
-            sb.append(e.getExtendedMessage());
+            sb.append(e.getMessage());
             GUIUtilities.displayExceptionErrorDialog(sb.toString(), e);
-        } catch (Exception e) {
-            e.printStackTrace();
+            return;
         } finally {
             GUIUtilities.showNormalCursor();
         }

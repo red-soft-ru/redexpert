@@ -78,24 +78,39 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
     
     private void startupCheck() {
-        
-        try {
-        
-            version = getVersionInfo();
 
-            if (isNewVersion(version)) {
-                
-                logNewVersonInfo();
-                setNotifierInStatusBar();
-                
-            } else {
-                
-                Log.info("Red Expert is up to date.");
+        ApplicationContext instance = ApplicationContext.getInstance();
+
+        String repo = instance.getRepo();
+
+        if (!repo.isEmpty()) {
+            // updating from repository to latest version
+            // anyway
+            UpdateLoader updateLoader = new UpdateLoader();
+            updateLoader.setVisible(true);
+            updateLoader.update(repo);
+
+        } else {
+
+            try {
+
+                version = getVersionInfo();
+
+                if (isNewVersion(version)) {
+
+                    logNewVersonInfo();
+                    setNotifierInStatusBar();
+
+                } else {
+
+                    Log.info("Red Expert is up to date.");
+                }
+
+            } catch (ApplicationException e) {
+
+                Log.warning("Error checking for update: " + e.getMessage());
             }
 
-        } catch (ApplicationException e) {
-
-            Log.warning("Error checking for update: " + e.getMessage());
         }
         
     }

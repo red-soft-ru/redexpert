@@ -72,7 +72,7 @@ public class LiquibaseDatabaseFactory {
 
             return sybaseDatabase();
 
-        } else if (name.contains("FIREBIRD")) {
+        } else if (name.contains("FIREBIRD") || name.contains("RED DATABASE")) {
 
             return firebirdDatabase();
 

@@ -39,7 +39,7 @@ public final class ApplicationContext {
 
     private static final String USER_HOME = "user.home";
 
-    private static final String REPO = "repo";
+    private static final String REPO = "-repo";
 
     private static final String[] PROPERTY_OVERRIDES = {SETTINGS_DIR, USER_HOME_DIR, REPO};
     

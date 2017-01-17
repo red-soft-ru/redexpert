@@ -151,7 +151,7 @@ public class UpdateLoader extends JFrame {
 
     private void launch() {
         ApplicationContext instance = ApplicationContext.getInstance();
-        String repo = "-pero=" + instance.getRepo();
+        String repo = "-repo=" + instance.getRepo();
         String[] run = {"java", "-jar", "RedExpert.jar", repo};
         try {
             Runtime.getRuntime().exec(run);

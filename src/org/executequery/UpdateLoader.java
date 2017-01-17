@@ -21,6 +21,8 @@ public class UpdateLoader extends JFrame {
 
     private Thread worker;
     private final String root = "update/";
+    private String repo = null;
+    private String version = null;
     private String downloadLink;
 
     private JTextArea outText;
@@ -30,8 +32,9 @@ public class UpdateLoader extends JFrame {
     private JPanel panel1;
     private JPanel panel2;
 
-    public UpdateLoader() {
+    public UpdateLoader(String perository) {
         initComponents();
+        this.repo = perository;
     }
 
     private String getlastVersion(String repo) {
@@ -114,11 +117,10 @@ public class UpdateLoader extends JFrame {
         this.dispose();
     }
 
-    void update(String repo) {
+    void update() {
         this.setTitle("Updating from " + repo);
         outText.setText("Contacting Download Server...");
-        String ver = getlastVersion(repo);
-        this.downloadLink = repo + "/" + ver + "/red_expert-" + ver + "-bin.zip";
+        this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
         download();
     }
 
@@ -146,7 +148,8 @@ public class UpdateLoader extends JFrame {
     }
 
     private void launch() {
-        String[] run = {"java", "-jar", "RedExpert.jar"};
+        ApplicationContext instance = ApplicationContext.getInstance();
+        String[] run = {"java", "-jar", "RedExpert.jar", instance.getRepo()};
         try {
             Runtime.getRuntime().exec(run);
         } catch (Exception ex) {
@@ -262,4 +265,12 @@ public class UpdateLoader extends JFrame {
 
     }
 
+    public boolean isNeedUpdate() {
+        version = getlastVersion(this.repo);
+        String localVersion = System.getProperty("executequery.minor.version");
+
+        int newVersion = Integer.valueOf(version.replaceAll("\\.", ""));
+        int currentVersion = Integer.valueOf(localVersion.replaceAll("\\.", ""));
+        return (newVersion > currentVersion);
+    }
 }

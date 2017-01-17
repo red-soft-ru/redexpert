@@ -86,10 +86,14 @@ public class CheckForUpdateNotifier implements Interruptible {
         if (!repo.isEmpty()) {
             // updating from repository to latest version
             // anyway
-            UpdateLoader updateLoader = new UpdateLoader();
-            updateLoader.setVisible(true);
-            updateLoader.update(repo);
+            UpdateLoader updateLoader = new UpdateLoader(repo);
+            if (updateLoader.isNeedUpdate()) {
+                updateLoader.setVisible(true);
+                updateLoader.update();
+            } else {
 
+                Log.info("Red Expert is up to date.");
+            }
         } else {
 
             try {

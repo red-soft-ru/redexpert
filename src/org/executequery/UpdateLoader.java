@@ -55,9 +55,11 @@ public class UpdateLoader extends JFrame {
 
             }
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            GUIUtilities.displayExceptionErrorDialog("Cannot download update from repository.\n" +
+                    "Please, check repository url.", e);
         } catch (IOException e) {
-            e.printStackTrace();
+            GUIUtilities.displayExceptionErrorDialog("Cannot download update from repository.\n" +
+                    "Please, check repository url.", e);
         }
         String s = buffer.toString();
 
@@ -270,8 +272,11 @@ public class UpdateLoader extends JFrame {
         version = getlastVersion(this.repo);
         String localVersion = System.getProperty("executequery.minor.version");
 
-        int newVersion = Integer.valueOf(version.replaceAll("\\.", ""));
-        int currentVersion = Integer.valueOf(localVersion.replaceAll("\\.", ""));
-        return (newVersion > currentVersion);
+        if (version != null && localVersion != null) {
+            int newVersion = Integer.valueOf(version.replaceAll("\\.", ""));
+            int currentVersion = Integer.valueOf(localVersion.replaceAll("\\.", ""));
+            return (newVersion > currentVersion);
+        }
+        return false;
     }
 }

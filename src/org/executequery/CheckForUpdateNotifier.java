@@ -207,10 +207,10 @@ public class CheckForUpdateNotifier implements Interruptible {
     public class DownloadNotificationLabelMouseAdapter extends MouseAdapter {
         public void mouseReleased(MouseEvent e) {
 
-            resetLabel();
-
             int yesNo = displayNewDownloadVersionMessage();
             if (yesNo == JOptionPane.YES_OPTION) {
+
+                resetLabel();
 
                 worker = new org.underworldlabs.swing.util.SwingWorker() {
 

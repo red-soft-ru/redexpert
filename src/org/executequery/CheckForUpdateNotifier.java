@@ -84,8 +84,10 @@ public class CheckForUpdateNotifier implements Interruptible {
         String repo = instance.getRepo();
 
         if (!repo.isEmpty()) {
+
+            Log.info("Checking for new version update from " + repo + " ...");
+
             // updating from repository to latest version
-            // anyway
             UpdateLoader updateLoader = new UpdateLoader(repo);
             if (updateLoader.isNeedUpdate()) {
                 updateLoader.setVisible(true);
@@ -97,6 +99,8 @@ public class CheckForUpdateNotifier implements Interruptible {
         } else {
 
             try {
+
+                Log.info("Checking for new version update from https://github.com/redsoftbiz/executequery/releases ...");
 
                 version = getVersionInfo();
 
@@ -286,9 +290,7 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
     
     private ApplicationVersion getVersionInfo() {
-        
-        Log.info("Checking for new version update from https://github.com/redsoftbiz/executequery/releases ...");
-        
+
         return repository().getLatestVersion();
     }
     

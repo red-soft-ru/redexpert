@@ -20,30 +20,26 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.BorderLayout;
-import java.sql.ResultSet;
-
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.table.TableModel;
-
-import org.executequery.gui.DefaultTable;
 import org.executequery.gui.editor.ResultSetTableContainer;
+import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.underworldlabs.swing.table.TableSorter;
 
+import javax.swing.*;
+import javax.swing.table.TableModel;
+import java.awt.*;
+import java.sql.ResultSet;
+
 public class DatabaseObjectMetaDataPanel extends JPanel implements ResultSetTableContainer {
 
-    private JTable table;
+    private ResultSetTable table;
     private ResultSetTableModel tableModel;
 
     public DatabaseObjectMetaDataPanel() {
 
         super(new BorderLayout());
         
-        table = new DefaultTable();
+        table = new ResultSetTable();
         tableModel = new ResultSetTableModel();
         table.setModel(new TableSorter(tableModel, table.getTableHeader()));
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -68,7 +64,6 @@ public class DatabaseObjectMetaDataPanel extends JPanel implements ResultSetTabl
     }
 
     public void transposeRow(TableModel tableModel, int row) {}
-    
 }
 
 

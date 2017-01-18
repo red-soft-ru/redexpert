@@ -32,9 +32,9 @@ public class UpdateLoader extends JFrame {
     private JPanel panel1;
     private JPanel panel2;
 
-    public UpdateLoader(String perository) {
+    public UpdateLoader(String repository) {
         initComponents();
-        this.repo = perository;
+        this.repo = repository;
     }
 
     private String getlastVersion(String repo) {

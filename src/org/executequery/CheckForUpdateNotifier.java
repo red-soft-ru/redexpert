@@ -25,9 +25,7 @@ import java.awt.event.MouseEvent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import org.executequery.components.SimpleHtmlContentPane;
 import org.executequery.components.StatusBarPanel;
@@ -35,6 +33,7 @@ import org.executequery.gui.InformationDialog;
 import org.executequery.log.Log;
 import org.executequery.repository.LatestVersionRepository;
 import org.executequery.repository.RepositoryCache;
+import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.InterruptibleProgressDialog;
 import org.underworldlabs.swing.util.Interruptible;
@@ -60,6 +59,8 @@ public class CheckForUpdateNotifier implements Interruptible {
     private InterruptibleProgressDialog progressDialog;
 
     private boolean monitorProgress;
+
+    UpdateLoader updateLoader = null;
     
     public void startupCheckForUpdate() {
         
@@ -88,10 +89,12 @@ public class CheckForUpdateNotifier implements Interruptible {
             Log.info("Checking for new version update from " + repo + " ...");
 
             // updating from repository to latest version
-            UpdateLoader updateLoader = new UpdateLoader(repo);
+            updateLoader = new UpdateLoader(repo);
             if (updateLoader.isNeedUpdate()) {
-                updateLoader.setVisible(true);
-                updateLoader.update();
+                version = new ApplicationVersion(updateLoader.getVersion(), null);
+                setDownloadNotifierInStatusBar();
+//                updateLoader.setVisible(true);
+//                updateLoader.update();
             } else {
 
                 Log.info("Red Expert is up to date.");
@@ -121,6 +124,20 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         }
         
+    }
+
+    private void setDownloadNotifierInStatusBar() {
+        JLabel label = getUpdateNotificationLabel();
+
+        JButton button = new DefaultButton();
+        button.setText("Download update");
+        button.setSize(200, 20);
+
+        label.addMouseListener(new DownloadNotificationLabelMouseAdapter());
+        label.setIcon(GUIUtilities.loadIcon("YellowBallAnimated16.gif"));
+        label.setToolTipText(newVersionAvailableText());
+
+        statusBar().setThirdLabelText("Update available");
     }
 
     private void setNotifierInStatusBar() {
@@ -184,6 +201,64 @@ public class CheckForUpdateNotifier implements Interruptible {
             statusBar().setThirdLabelText("");
         }
         
+    }
+
+
+    public class DownloadNotificationLabelMouseAdapter extends MouseAdapter {
+        public void mouseReleased(MouseEvent e) {
+
+            resetLabel();
+
+            int yesNo = displayNewDownloadVersionMessage();
+            if (yesNo == JOptionPane.YES_OPTION) {
+
+                worker = new org.underworldlabs.swing.util.SwingWorker() {
+
+                    public Object construct() {
+
+                        updateLoader.setVisible(true);
+                        updateLoader.update();
+
+                        return Constants.WORKER_SUCCESS;
+                    }
+                    public void finished() {
+
+//                        closeProgressDialog();
+//                        GUIUtilities.showNormalCursor();
+                    }
+
+                };
+                worker.start();
+
+            }
+
+        }
+
+        private void resetLabel() {
+
+            JLabel label = getUpdateNotificationLabel();
+
+            label.setIcon(null);
+            label.setToolTipText(null);
+
+            label.removeMouseListener(this);
+
+            statusBar().setThirdLabelText("");
+        }
+    }
+
+    private int displayNewDownloadVersionMessage() {
+        return GUIUtilities.displayYesNoDialog(
+                new SimpleHtmlContentPane(newDownloadVersionMessage(version)),
+                "Red Expert Update");
+    }
+
+    private String newDownloadVersionMessage(ApplicationVersion version) {
+        return "New version " + version.getVersion() +
+                " is available for download at " +
+                "<a style=\"color:#3F7ED3\" href=\"" + updateLoader.getRepo() + "\">" + updateLoader.getRepo() + "</a>." +
+                "\n\nDo you wish to download new version?";
+
     }
 
     public void checkForUpdate(boolean monitorProgress) {

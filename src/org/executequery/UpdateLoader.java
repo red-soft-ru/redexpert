@@ -21,6 +21,11 @@ public class UpdateLoader extends JFrame {
 
     private Thread worker;
     private final String root = "update/";
+
+    public String getRepo() {
+        return repo;
+    }
+
     private String repo = null;
     private String version = null;
     private String downloadLink;
@@ -278,5 +283,10 @@ public class UpdateLoader extends JFrame {
             return (newVersion > currentVersion);
         }
         return false;
+    }
+
+
+    public String getVersion() {
+        return version;
     }
 }

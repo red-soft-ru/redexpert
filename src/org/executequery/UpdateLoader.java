@@ -37,7 +37,7 @@ public class UpdateLoader extends JFrame {
         this.repo = repository;
     }
 
-    private String getlastVersion(String repo) {
+    private String getLastVersion(String repo) {
         StringBuilder buffer = new StringBuilder("");
         try {
             String path = repo + "/maven-metadata.xml";
@@ -269,7 +269,7 @@ public class UpdateLoader extends JFrame {
     }
 
     public boolean isNeedUpdate() {
-        version = getlastVersion(this.repo);
+        version = getLastVersion(this.repo);
         String localVersion = System.getProperty("executequery.minor.version");
 
         if (version != null && localVersion != null) {

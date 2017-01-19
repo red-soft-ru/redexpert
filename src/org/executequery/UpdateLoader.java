@@ -1,5 +1,7 @@
 package org.executequery;
 
+import org.executequery.log.Log;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -60,11 +62,13 @@ public class UpdateLoader extends JFrame {
 
             }
         } catch (MalformedURLException e) {
-            GUIUtilities.displayExceptionErrorDialog("Cannot download update from repository.\n" +
-                    "Please, check repository url.", e);
+            Log.error("Cannot download update from repository. " +
+                    "Please, check repository url or try update later.");
+            return null;
         } catch (IOException e) {
-            GUIUtilities.displayExceptionErrorDialog("Cannot download update from repository.\n" +
-                    "Please, check repository url.", e);
+            Log.error("Cannot download update from repository. " +
+                    "Please, check repository url or try update later.");
+            return null;
         }
         String s = buffer.toString();
 

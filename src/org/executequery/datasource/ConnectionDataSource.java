@@ -172,6 +172,7 @@ public class ConnectionDataSource implements DataSource, DatabaseDataSource {
                 }
 
                 Log.info("JDBC URL generated: "+jdbcUrl);
+                Log.info("JDBC properties: " + databaseConnection.getJdbcProperties());
 
             } else {
               

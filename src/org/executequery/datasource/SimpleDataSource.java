@@ -136,6 +136,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
             url = replacePart(url, databaseConnection.getPort(), PORT);
             url = replacePart(url, databaseConnection.getSourceName(), SOURCE);
             Log.info("JDBC URL generated: "+url);
+            Log.info("JDBC properties: " + properties);
     
         } else {
 

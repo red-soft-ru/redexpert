@@ -159,11 +159,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
         }
 
         public void stop() {
-            int traceSessionId = fbTraceManager.getSessionId(traceUUID);
             try {
+                int traceSessionId = fbTraceManager.getSessionId(traceUUID);
                 fbTraceManager.stopTraceSession(traceSessionId);
-            } catch (SQLException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+//                e.printStackTrace();
             }
         }
     }
@@ -898,8 +898,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         }
 
-        if (!properties.containsKey("lc_ctype") &&
-                !charsetsCombo.getSelectedItem().toString().equals("NONE"))
+        if (!properties.containsKey("lc_ctype"))
             properties.setProperty("lc_ctype", charsetsCombo.getSelectedItem().toString());
 
         databaseConnection.setJdbcProperties(properties);

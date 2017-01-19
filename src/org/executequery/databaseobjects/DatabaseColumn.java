@@ -112,6 +112,10 @@ public interface DatabaseColumn extends DatabaseObjectElement {
      */
     String getDefaultValue();
 
+    boolean isGenerated();
+
+    String getComputedSource();
+
     /**
      * Returns a formatted string representation of the
      * column's data type and size - eg. VARCHAR(10).

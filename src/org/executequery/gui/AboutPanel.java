@@ -38,6 +38,7 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -97,7 +98,7 @@ public class AboutPanel extends BaseDialog
         imagePanel = new AboutImagePanel();
 
         JPanel basePanel = new JPanel(new BorderLayout());
-        basePanel.setPreferredSize(new Dimension(400, 480));
+        basePanel.setPreferredSize(new Dimension(720, 480));
         basePanel.add(imagePanel, BorderLayout.NORTH);
         basePanel.add(tabPane, BorderLayout.CENTER);
         basePanel.add(addButtonPanel(), BorderLayout.SOUTH);
@@ -374,7 +375,7 @@ public class AboutPanel extends BaseDialog
     class AboutImagePanel extends JPanel {
 
         private static final int HEIGHT = 206;
-        private static final int WIDTH = 400;
+        private static final int WIDTH = 720;
 
         private final Color FOREGROUND_COLOUR = new Color(255, 255, 255);
 
@@ -402,7 +403,7 @@ public class AboutPanel extends BaseDialog
 
             versionText = "version " +
                     System.getProperty("executequery.minor.version") +
-                    ". Red Soft 2006-2015. http://www.red-soft.biz";
+                    ". Red Soft 2015-" + Calendar.getInstance().get(Calendar.YEAR) + ". http://www.red-soft.biz";
             versionFont = new Font("dialog", Font.BOLD, 12);
 
             forkText = "Fork of Execute Query: http://executequery.org";

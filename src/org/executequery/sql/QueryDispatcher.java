@@ -522,7 +522,7 @@ public class QueryDispatcher {
                             // If profiler is used
                             FBResultSet fbResultSet = rset.unwrap(FBResultSet.class);
 
-                            setOutputMessage(SqlMessages.OVERWRITE_MODE, fbResultSet.getExecutionPlan());
+                            setOutputMessage(SqlMessages.PLAIN_MESSAGE, fbResultSet.getExecutionPlan());
 
                         } catch (Exception e) {
                             // nothing to do
@@ -620,7 +620,7 @@ public class QueryDispatcher {
                 if (before != null && after != null)
                     resultPerfomanceInfo = FBPerformanceInfo.processInfo(before, after);
 
-                setOutputMessage(SqlMessages.OVERWRITE_MODE, resultPerfomanceInfo.getPerformanceInfo());
+                setOutputMessage(SqlMessages.PLAIN_MESSAGE, resultPerfomanceInfo.getPerformanceInfo());
 
             } catch (Exception e) {
                 // nothing to do

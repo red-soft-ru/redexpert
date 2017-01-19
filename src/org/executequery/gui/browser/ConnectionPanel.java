@@ -71,9 +71,11 @@ import org.executequery.gui.DefaultTable;
 import org.executequery.gui.FormPanelButton;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.drivers.DialogDriverPanel;
+import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
+import org.firebirdsql.jdbc.FBConnection;
 import org.firebirdsql.management.FBTraceManager;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DefaultFieldLabel;
@@ -747,8 +749,18 @@ public class ConnectionPanel extends AbstractConnectionPanel
                             e.getMessage() + "\n\n");
                 }
 
+                Connection connection = host.getConnection();
 
-                    String className = host.getDatabaseConnection().getJDBCDriver().getClassName();
+                try {
+                    FBConnection fbConnection = connection.unwrap(FBConnection.class);
+
+                    Log.info("Connection encoding: " +fbConnection.getFbDatabase().getEncoding().getCharsetName());
+
+                } catch (SQLException e) {
+                    // nothing
+                }
+
+                String className = host.getDatabaseConnection().getJDBCDriver().getClassName();
                     if (className.contains("FBDriver")) {
 
                         traceMessageLoop = new TraceMessageLoop();

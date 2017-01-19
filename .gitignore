@@ -3,3 +3,6 @@ target
 /bin/
 eq.jar
 /out/
+/.idea/
+/.settings/
+/executequery.iml

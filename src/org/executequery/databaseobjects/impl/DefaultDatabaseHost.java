@@ -22,10 +22,7 @@ package org.executequery.databaseobjects.impl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +42,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.TablePrivilege;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.log.Log;
+import org.firebirdsql.jdbc.FBConnection;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
@@ -702,6 +700,11 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             }
             */
 
+            boolean isFirebirdConnection = false;
+            Connection connection = dmd.getConnection();
+            if (connection instanceof FBConnection)
+                isFirebirdConnection = true;
+
             while (rs.next()) {
 
                 DefaultDatabaseColumn column = new DefaultDatabaseColumn();
@@ -715,6 +718,34 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 column.setRequired(rs.getInt(11) == DatabaseMetaData.columnNoNulls);
                 column.setRemarks(rs.getString(12));
                 column.setDefaultValue(rs.getString(13));
+
+                if (isFirebirdConnection) {
+                    int fieldLength = rs.getInt(16);
+                    String isGen = rs.getString(24);
+                    String computedSource = null;
+                    if (isGen.compareToIgnoreCase("YES") == 0) {
+                        column.setGenerated(true);
+                        Statement statement = dmd.getConnection().createStatement();
+                        ResultSet sourceRS = statement.executeQuery("select RF.RDB$COMPUTED_SOURCE, RRF.RDB$FIELD_NAME from RDB$FIELDS RF, " +
+                            "rdb$relation_fields RRF\n" +
+                            "where\n" +
+                            "    RRF.rdb$field_name = '" + column.getName() + "'\n" +
+                            "    and\n" +
+                            "    RRF.rdb$relation_name = '" + table + "'\n" +
+                            "    and\n" +
+                            "    RF.rdb$field_name = RRF.rdb$field_source");
+                        if (sourceRS.next()) {
+                            computedSource = sourceRS.getString(1);
+                            releaseResources(sourceRS);
+                        }
+                        if (fieldLength != 0)
+                            column.setColumnSize(fieldLength);
+                        if (computedSource != null && !computedSource.isEmpty()) {
+//                            column.setTypeName(computedSource);
+                            column.setComputedSource(computedSource);
+                        }
+                    }
+                }
                 columns.add(column);
             }
             releaseResources(rs);

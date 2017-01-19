@@ -90,6 +90,8 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         setDefaultValue(column.getDefaultValue());
         setPrimaryKey(column.isPrimaryKey());
         setForeignKey(column.isForeignKey());
+        setGenerated(column.isGenerated());
+        setComputedSource(column.getComputedSource());
     }
 
     @Override
@@ -624,6 +626,8 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         destination.setForeignKey(source.isForeignKey());
         destination.setNewColumn(source.isNewColumn());
         destination.setMarkedDeleted(source.isMarkedDeleted());
+        destination.setGenerated(source.isGenerated());
+        destination.setComputedSource(source.getComputedSource());
     }
 
     /**

@@ -70,6 +70,12 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     /** the column default value */
     private String defaultValue;
 
+    /** generated column */
+    private boolean isGenerated;
+
+    /** the column source */
+    private String computedSource;
+
     /** the column meta data map */
     private Map<String, String> metaData;
     
@@ -117,6 +123,22 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
 
     public void setTypeName(String typeName) {
         this.typeName = typeName;
+    }
+
+    public boolean isGenerated() {
+        return isGenerated;
+    }
+
+    public void setGenerated(boolean generated) {
+        isGenerated = generated;
+    }
+
+    public String getComputedSource() {
+        return computedSource;
+    }
+
+    public void setComputedSource(String computedSource) {
+        this.computedSource = computedSource;
     }
     
     /**
@@ -262,6 +284,16 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     public String getFormattedDataType() {
 
         String typeString = getTypeName() == null ? "" : getTypeName();
+
+        boolean generated = isGenerated();
+
+        if (generated) {
+            StringBuilder buffer = new StringBuilder();
+            buffer.append("COMPUTED BY ");
+            buffer.append(getComputedSource());
+
+            return buffer.toString();
+        }
 
         StringBuilder buffer = new StringBuilder(typeString);
 

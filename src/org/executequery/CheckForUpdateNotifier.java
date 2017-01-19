@@ -93,11 +93,9 @@ public class CheckForUpdateNotifier implements Interruptible {
             if (updateLoader.isNeedUpdate()) {
                 version = new ApplicationVersion(updateLoader.getVersion(), null);
                 setDownloadNotifierInStatusBar();
-//                updateLoader.setVisible(true);
-//                updateLoader.update();
             } else {
-
-                Log.info("Red Expert is up to date.");
+                if (updateLoader.getVersion() != null)
+                    Log.info("Red Expert is up to date.");
             }
         } else {
 

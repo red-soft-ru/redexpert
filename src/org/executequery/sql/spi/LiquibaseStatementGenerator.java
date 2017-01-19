@@ -47,6 +47,7 @@ import liquibase.change.core.DropUniqueConstraintChange;
 import liquibase.change.core.ModifyDataTypeChange;
 import liquibase.change.core.RenameColumnChange;
 import liquibase.database.Database;
+import liquibase.database.DatabaseConnection;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.logging.LogFactory;
@@ -65,6 +66,7 @@ import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.log.Log;
 import org.executequery.sql.StatementGenerator;
+import org.firebirdsql.jdbc.FBConnection;
 
 public class LiquibaseStatementGenerator implements StatementGenerator {
 
@@ -334,7 +336,17 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
 
     private CreateTableChange createTableChange(DatabaseTable table, Database database) {
 
-        CreateTableChange tableChange = new CreateTableChange();
+        CreateTableChange tableChange = null;
+
+        try {
+            if (database.getConnection().getDatabaseProductName().contains("Firebird") ||
+                    database.getConnection().getDatabaseProductName().contains("Red Database"))
+                tableChange = new FirebirdCreateTableChange();
+            else
+                tableChange = new CreateTableChange();
+        } catch (DatabaseException e) {
+            e.printStackTrace();
+        }
         //tableChange.setSchemaName(table.getSchemaName());
         tableChange.setTableName(table.getName());
 
@@ -678,7 +690,14 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
     private String generateStatements(Change change, Database database) {
 
         StringBuilder sb = new StringBuilder();
-        SqlStatement[] statements = change.generateStatements(database);
+        SqlStatement[] statements = null;
+
+        if (change instanceof FirebirdCreateTableChange) {
+            FirebirdCreateTableChange firebirdChange = (FirebirdCreateTableChange) change;
+            statements = firebirdChange.generateStatements(database);
+        } else {
+            statements = change.generateStatements(database);
+        }
         for (SqlStatement statement : statements) {
 
             Sql[] generatedSql = SqlGeneratorFactory.getInstance().generateSql(statement, database);

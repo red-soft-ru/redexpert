@@ -20,21 +20,7 @@
 
 package org.executequery.gui;
 
-import java.awt.AlphaComposite;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -94,6 +80,7 @@ public class AboutPanel extends BaseDialog
         tabPane.add("Resources", systemResources());
         tabPane.add("License", license());
         tabPane.add("Credits", credits());
+        tabPane.add("Copyright", copyright());
 
         imagePanel = new AboutImagePanel();
 
@@ -106,6 +93,42 @@ public class AboutPanel extends BaseDialog
         addDisplayComponentWithEmptyBorder(basePanel);
         setResizable(false);
         display();
+    }
+
+    private Component copyright() {
+        JPanel base = new JPanel(new GridBagLayout());
+
+        String versionText = "Version " +
+                System.getProperty("executequery.minor.version") +
+                ". Red Soft 2015-" + Calendar.getInstance().get(Calendar.YEAR) + ". http://www.red-soft.biz";
+
+        String forkText = "Fork of Execute Query: http://executequery.org";
+        base.setBorder(BorderFactory.createEtchedBorder());
+
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(5,5,5,5);
+        gbc.weightx = 1.0;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.fill = GridBagConstraints.BOTH;
+        base.add(new JLabel(versionText, JLabel.CENTER), gbc);
+
+        gbc.insets.top = 7;
+        gbc.insets.left = 7;
+        gbc.insets.right = 7;
+        gbc.gridy++;
+        gbc.ipady = 5;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.weightx = 0;
+
+        base.add(new JLabel(forkText, JLabel.CENTER), gbc);
+
+        JPanel main = new JPanel(new GridBagLayout());
+        main.add(base, resetConstraints(gbc));
+
+        return main;
     }
 
     private GridBagConstraints resetConstraints(GridBagConstraints gbc) {
@@ -377,15 +400,9 @@ public class AboutPanel extends BaseDialog
         private static final int HEIGHT = 206;
         private static final int WIDTH = 720;
 
-        private final Color FOREGROUND_COLOUR = new Color(255, 255, 255);
-
         private Timer timer;
         private Image eqImage;
         private Image background;
-
-        private Font versionFont;
-        private String versionText;
-        private String forkText;
 
         // background and logo fade
         boolean stageOneComplete;
@@ -393,21 +410,11 @@ public class AboutPanel extends BaseDialog
         // version text
         boolean stageTwoComplete;
 
-        int leftOffsetImage;
-        int leftOffsetText;
         int bottomOffsetVersion;
 
         private float alpha;
 
         protected AboutImagePanel() {
-
-            versionText = "version " +
-                    System.getProperty("executequery.minor.version") +
-                    ". Red Soft 2015-" + Calendar.getInstance().get(Calendar.YEAR) + ". http://www.red-soft.biz";
-            versionFont = new Font("dialog", Font.BOLD, 12);
-
-            forkText = "Fork of Execute Query: http://executequery.org";
-            versionFont = new Font("dialog", Font.BOLD, 12);
 
             ImageIcon icon = GUIUtilities.loadImage("AboutText.png");
             eqImage = icon.getImage();
@@ -505,21 +512,6 @@ public class AboutPanel extends BaseDialog
                 g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                     RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-                g2d.setColor(FOREGROUND_COLOUR);
-                g2d.setFont(versionFont);
-
-                FontMetrics fm = g.getFontMetrics(versionFont);
-                int textLength = fm.stringWidth(versionText);
-                imageX = imageX + ((imageWidth - textLength) / 2);
-
-                g2d.setClip(imageX, 100, textLength, HEIGHT - 100);
-                g2d.drawString(versionText, imageX, HEIGHT - bottomOffsetVersion);
-
-                textLength = fm.stringWidth(forkText);
-                imageX = (WIDTH - imageWidth) / 2 + ((imageWidth - textLength) / 2);
-
-                g2d.setClip(imageX, 100, textLength, HEIGHT + 20 - 100);
-                g2d.drawString(forkText, imageX, HEIGHT + 20 - bottomOffsetVersion);
             }
 
             g2d.setClip(0, 0, WIDTH, HEIGHT);

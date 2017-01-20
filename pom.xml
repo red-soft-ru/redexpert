@@ -191,6 +191,18 @@
 			<systemPath>${pom.basedir}/lib/jdbc-perf-logger-driver-0.8.1-SNAPSHOT.jar</systemPath>
 		</dependency>
 
+		<dependency>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna</artifactId>
+			<version>4.2.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.resource</groupId>
+			<artifactId>connector-api</artifactId>
+			<version>1.5</version>
+		</dependency>
+
     </dependencies>
 
 	<build>

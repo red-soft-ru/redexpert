@@ -548,15 +548,20 @@ public class QueryDispatcher {
                             setStatusMessage(ERROR_EXECUTING);
 
                         } else {
-                        
-                            type = result.getType();
-                            setResultText(updateCount, type);
 
-                            if (type == QueryTypes.COMMIT || type == QueryTypes.ROLLBACK) {
-                            
-                                setStatusMessage(" " + result.getMessage());
+                            if (result.isException()) {
+                                setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage());
+                            } else {
+                                type = result.getType();
+                                setResultText(updateCount, type);
+
+
+                                if (type == QueryTypes.COMMIT || type == QueryTypes.ROLLBACK) {
+
+                                    setStatusMessage(" " + result.getMessage());
+                                }
+
                             }
-
                         }
 
                     } else {

@@ -1420,6 +1420,8 @@ public class DefaultStatementExecutor implements StatementExecutor {
         if (Log.isDebugEnabled()) {
             e.printStackTrace();
         }
+
+        Log.error(e.getMessage(), e);
     }
 
     /**

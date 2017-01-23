@@ -4,7 +4,7 @@ String release_hub_project = 'red_expert'
 String rev
 String version
 String vcs_url
-String utils
+def utils
 String branch = env.BRANCH_NAME
 
 try

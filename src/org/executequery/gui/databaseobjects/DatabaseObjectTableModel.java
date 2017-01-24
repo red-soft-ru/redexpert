@@ -38,7 +38,7 @@ import org.underworldlabs.swing.print.AbstractPrintableTableModel;
  */
 public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
 
-    protected String[] header = {"", "Name", "Datatype", "Size", "Scale", "Required", "Default" };
+    protected String[] header = {"", "Name", "Datatype", "Size", "Scale", "Required", "Default", "Computed_Source" };
 
     /** the database table columns */
     protected List<DatabaseColumn> columns;

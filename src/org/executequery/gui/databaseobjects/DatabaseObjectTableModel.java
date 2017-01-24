@@ -120,6 +120,8 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
                 return Boolean.valueOf(column.isRequired());
             case 6:
                 return column.getDefaultValue();
+            case 7:
+                return column.getComputedSource();
             default:
                 return null;
         }

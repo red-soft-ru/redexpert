@@ -271,6 +271,8 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
             return procedureSourceCode;
         }
 
+        procedureSourceCode = "";
+
         try {
 
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();

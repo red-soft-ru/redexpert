@@ -106,6 +106,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         JPanel sourcePanel = new JPanel(new BorderLayout());
         sourcePanel.setBorder(BorderFactory.createTitledBorder("Source"));
         textPane = new SQLTextPane();
+        textPane.setEditable(false);
         sourcePanel.add(new JScrollPane(textPane), BorderLayout.CENTER);
 //        sourcePanel.add(new JScrollPane(textPane), BorderLayout.CENTER);
         splitPane.setTopComponent(paramPanel);
@@ -228,6 +229,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         try {
             procNameField.setText(executeable.getName());
             model.setValues(executeable.getParametersArray());
+            textPane.setText(executeable.getProcedureSourceCode());
             //schemaNameField.setText(executeable.getSchemaName());
         } 
         catch (DataSourceException e) {

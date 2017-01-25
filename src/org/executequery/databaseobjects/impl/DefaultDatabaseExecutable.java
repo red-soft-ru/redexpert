@@ -29,6 +29,8 @@ import org.executequery.databaseobjects.DatabaseExecutable;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.ProcedureParameter;
+import org.firebirdsql.jdbc.FBDatabaseMetaData;
+import org.firebirdsql.jdbc.FirebirdDatabaseMetaData;
 import org.underworldlabs.jdbc.DataSourceException;
 
 /**
@@ -46,6 +48,8 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
     /** the proc type */
     private short executableType;
+
+    private String procedureSourceCode;
     
     public DefaultDatabaseExecutable() {}
     
@@ -259,6 +263,37 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
     public void setExecutableType(short executableType) {
         this.executableType = executableType;
+    }
+
+    public String getProcedureSourceCode() {
+        if (!isMarkedForReload() && procedureSourceCode != null) {
+
+            return procedureSourceCode;
+        }
+
+        try {
+
+            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
+
+            String _catalog = getCatalogName();
+            String _schema = getSchemaName();
+
+
+            if (dmd instanceof FBDatabaseMetaData) {
+                FirebirdDatabaseMetaData fbMetaData = (FirebirdDatabaseMetaData)dmd;
+                procedureSourceCode = fbMetaData.getProcedureSourceCode(getName());
+            }
+
+            return procedureSourceCode;
+
+        } catch (SQLException e) {
+
+            throw new DataSourceException(e);
+
+        } finally {
+
+            setMarkedForReload(false);
+        }
     }
 
 }

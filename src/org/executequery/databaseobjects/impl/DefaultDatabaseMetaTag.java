@@ -150,6 +150,15 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     
                     children = _children;
                     
+                } else if (type == GLOBAL_TEMPORARY) {
+                    List<NamedObject> _children = new ArrayList<NamedObject>(children.size());
+                    for (NamedObject i : children) {
+
+                        _children.add(new DefaultTemporaryDatabaseTable((DatabaseObject)i));
+                    }
+
+                    children = _children;
+
                 }
 
             }

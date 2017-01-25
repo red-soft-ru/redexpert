@@ -75,6 +75,8 @@ public interface NamedObject extends java.io.Serializable {
     int SYSTEM_NUMERIC_FUNCTIONS = 11;
     
     int SYSTEM_DATE_TIME_FUNCTIONS = 12;
+
+    int GLOBAL_TEMPORARY = 14;
     
     
     String[] META_TYPES = {"FUNCTION",
@@ -90,7 +92,8 @@ public interface NamedObject extends java.io.Serializable {
                                                "SYSTEM_STRING_FUNCTIONS",
                                                "SYSTEM_NUMERIC_FUNCTIONS",
                                                "SYSTEM_DATE_TIME_FUNCTIONS",
-                                               "SYSTEM VIEW"};
+                                               "SYSTEM VIEW",
+                                                "GLOBAL TEMPORARY"};
 
     /**
      * Marks this object as being 'reset', where for any loaded object

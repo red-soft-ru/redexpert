@@ -29,12 +29,7 @@ import java.sql.DatabaseMetaData;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 
 import org.executequery.GUIUtilities;
@@ -45,6 +40,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseProcedure;
 import org.executequery.databaseobjects.impl.SystemDatabaseFunction;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.text.SQLTextPane;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
@@ -68,6 +64,8 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
     private ProcedureTableModel model;
     
     private Map cache;
+
+    JTextPane textPane;
     
     /** the browser's control object */
     private BrowserController controller;
@@ -92,13 +90,30 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         table.setCellSelectionEnabled(true);
         table.setColumnSelectionAllowed(false);
         table.setRowSelectionAllowed(false);
-        
+
+        final JSplitPane splitPane = new JSplitPane();
+        splitPane.setResizeWeight(0.8);
+        splitPane.setOneTouchExpandable(true);
+        splitPane.setBorder(null);
+        splitPane.setContinuousLayout(true);
+        splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+
+
         JPanel paramPanel = new JPanel(new BorderLayout());
         paramPanel.setBorder(BorderFactory.createTitledBorder("Parameters"));
         paramPanel.add(new JScrollPane(table), BorderLayout.CENTER);
-        
+
+        JPanel sourcePanel = new JPanel(new BorderLayout());
+        sourcePanel.setBorder(BorderFactory.createTitledBorder("Source"));
+        textPane = new SQLTextPane();
+        sourcePanel.add(new JScrollPane(textPane), BorderLayout.CENTER);
+//        sourcePanel.add(new JScrollPane(textPane), BorderLayout.CENTER);
+        splitPane.setTopComponent(paramPanel);
+        splitPane.setBottomComponent(sourcePanel);
+
         JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP);
-        tabs.add("Description", paramPanel);
+        tabs.add("Description", splitPane);
+//        tabs.add("Source", sourcePanel);
         
         objectNameLabel = new JLabel();
         procNameField = new DisabledField();

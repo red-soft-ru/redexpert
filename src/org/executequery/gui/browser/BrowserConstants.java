@@ -87,8 +87,8 @@ public class BrowserConstants {
                                                     "Synonym24.png",
                                                     "SystemTable24.png",
                                                     "DatabaseTable24.png",
-                                                    "DatabaseTable24.png", // make trigger image
-                    //                              "Trigger24.png",
+                                                    "DatabaseTable24.png",
+                                                    "Trigger.png",
                                                     "TableView24.png",
                                                     "TableColumn24.png",
                                                     "SystemFunction24.png"}; // system function
@@ -187,7 +187,7 @@ public class BrowserConstants {
 
     public static final String SYSTEM_VIEWS_IMAGE = "SystemTableView16.png";
 
-    public static final String TABLE_TRIGGER_IMAGE = "TableTrigger16.png";
+    public static final String TABLE_TRIGGER_IMAGE = "Trigger.png";
     
     public static final String FOLDER_FOREIGN_KEYS_IMAGE = "FolderForeignKeys16.png";
     

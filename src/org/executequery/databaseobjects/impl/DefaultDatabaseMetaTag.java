@@ -465,7 +465,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
-        ResultSet resultSet = statement.executeQuery("SELECT * FROM RDB$TRIGGERS R");
+        ResultSet resultSet = statement.executeQuery("SELECT * FROM RDB$TRIGGERS R \n" +
+                " ORDER BY R.RDB$TRIGGER_NAME");
 
         return resultSet;
     }

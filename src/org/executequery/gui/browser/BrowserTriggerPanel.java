@@ -81,6 +81,9 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP);
         tabs.add("Trigger", panel);
 
+        JPanel descriptionPanel = new JPanel(new BorderLayout());
+        tabs.add("Description", descriptionPanel);
+
         objectNameLabel = new JLabel();
         triggerNameField = new DisabledField();
 

@@ -20,6 +20,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     private String triggerSourceCode;
     private boolean triggerActive;
     private String tableName;
+    private String triggerDescription;
 
     /**
      * Creates a new instance.
@@ -167,4 +168,43 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
             setMarkedForReload(false);
         }
     }
+
+    public String getTriggerDescription() {
+        if (!isMarkedForReload() && triggerDescription != null) {
+
+            return triggerDescription;
+        }
+
+        Statement statement = null;
+
+        triggerDescription = "";
+
+        try {
+
+            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
+
+            String _catalog = getCatalogName();
+            String _schema = getSchemaName();
+
+            if (dmd instanceof FBDatabaseMetaData) {
+                statement = dmd.getConnection().createStatement();
+                ResultSet rs = statement.executeQuery("SELECT R.RDB$DESCRIPTION \n" +
+                        " FROM RDB$TRIGGERS R \n" +
+                        " WHERE R.RDB$TRIGGER_NAME = '" + getName() + "'");
+
+                if (rs.next())
+                    triggerDescription = rs.getString(1);
+            }
+            return triggerDescription;
+
+        } catch (SQLException e) {
+
+            throw new DataSourceException(e);
+
+        } finally {
+
+            setMarkedForReload(false);
+        }
+    }
+
 }

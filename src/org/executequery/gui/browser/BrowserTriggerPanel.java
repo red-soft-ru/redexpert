@@ -5,6 +5,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextPane;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.swing.DefaultComboBox;
 import org.underworldlabs.swing.DisabledField;
 
 import javax.swing.*;
@@ -25,6 +26,9 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
     private JLabel objectNameLabel;
 
     private JCheckBox activeCheckbox;
+
+    private JLabel tableNameLabel;
+    private JComboBox tableNameCombo;
 
     private Map cache;
 
@@ -52,7 +56,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
         panel.setLayout(new BorderLayout());
 
-        JPanel paramPanel = new JPanel(new BorderLayout());
+        JPanel paramPanel = new JPanel(new GridBagLayout());
         paramPanel.setBorder(BorderFactory.createTitledBorder("Parameters"));
 
         JPanel sourcePanel = new JPanel(new BorderLayout());
@@ -62,13 +66,20 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         sourcePanel.add(new JScrollPane(textPane), BorderLayout.CENTER);
 
         activeCheckbox = new JCheckBox("Is Active", false);
-        paramPanel.add(activeCheckbox);
+        paramPanel.add(activeCheckbox, new GridBagConstraints(0, 0, 2, 1, 1, 0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 0, 5, 5), 0, 0));
+
+        tableNameLabel = new JLabel("For Table:");
+        paramPanel.add(tableNameLabel);
+
+        tableNameCombo = new DefaultComboBox();
+        paramPanel.add(tableNameCombo);
 
         panel.add(paramPanel, BorderLayout.NORTH);
         panel.add(sourcePanel, BorderLayout.CENTER);
 
         JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP);
-        tabs.add("Description", panel);
+        tabs.add("Trigger", panel);
 
         objectNameLabel = new JLabel();
         triggerNameField = new DisabledField();
@@ -154,7 +165,8 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 //            model.setValues(executeable.getParametersArray());
             textPane.setText(trigger.getTriggerSourceCode());
             activeCheckbox.setSelected(trigger.isTriggerActive());
-            //schemaNameField.setText(executeable.getSchemaName());
+            tableNameCombo.removeAllItems();
+            tableNameCombo.addItem(trigger.getTriggerTableName());
         }
         catch (DataSourceException e) {
             controller.handleException(e);

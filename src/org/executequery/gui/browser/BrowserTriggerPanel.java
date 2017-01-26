@@ -24,6 +24,8 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
     private JLabel objectNameLabel;
 
+    private JCheckBox activeCheckbox;
+
     private Map cache;
 
     JTextPane textPane;
@@ -58,6 +60,9 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         textPane = new SQLTextPane();
         textPane.setEditable(false);
         sourcePanel.add(new JScrollPane(textPane), BorderLayout.CENTER);
+
+        activeCheckbox = new JCheckBox("Is Active", false);
+        paramPanel.add(activeCheckbox);
 
         panel.add(paramPanel, BorderLayout.NORTH);
         panel.add(sourcePanel, BorderLayout.CENTER);
@@ -148,6 +153,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
             triggerNameField.setText(trigger.getName());
 //            model.setValues(executeable.getParametersArray());
             textPane.setText(trigger.getTriggerSourceCode());
+            activeCheckbox.setSelected(trigger.isTriggerActive());
             //schemaNameField.setText(executeable.getSchemaName());
         }
         catch (DataSourceException e) {

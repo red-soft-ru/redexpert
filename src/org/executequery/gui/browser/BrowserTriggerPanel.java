@@ -7,6 +7,7 @@ import org.executequery.gui.text.SQLTextPane;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DefaultComboBox;
 import org.underworldlabs.swing.DisabledField;
+import org.underworldlabs.swing.StyledLogPane;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,6 +30,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
     private JLabel tableNameLabel;
     private JComboBox tableNameCombo;
+    JTextPane descriptionPane;
 
     private Map cache;
 
@@ -82,6 +84,12 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         tabs.add("Trigger", panel);
 
         JPanel descriptionPanel = new JPanel(new BorderLayout());
+        descriptionPanel.setBorder(BorderFactory.createEtchedBorder());
+
+        descriptionPane = new StyledLogPane();
+
+        descriptionPanel.add(descriptionPane, BorderLayout.CENTER);
+
         tabs.add("Description", descriptionPanel);
 
         objectNameLabel = new JLabel();
@@ -170,6 +178,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
             activeCheckbox.setSelected(trigger.isTriggerActive());
             tableNameCombo.removeAllItems();
             tableNameCombo.addItem(trigger.getTriggerTableName());
+            descriptionPane.setText(trigger.getTriggerDescription());
         }
         catch (DataSourceException e) {
             controller.handleException(e);

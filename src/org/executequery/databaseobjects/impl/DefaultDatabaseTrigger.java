@@ -7,7 +7,9 @@ import org.firebirdsql.jdbc.FirebirdDatabaseMetaData;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Created by vasiliy on 26.01.17.
@@ -16,6 +18,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
         implements DatabaseProcedure {
 
     private String triggerSourceCode;
+    private boolean triggerActive;
 
     /**
      * Creates a new instance.
@@ -89,4 +92,40 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
         }
     }
 
+    public boolean isTriggerActive() {
+
+        Statement statement = null;
+
+        try {
+
+            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
+
+            String _catalog = getCatalogName();
+            String _schema = getSchemaName();
+
+
+            if (dmd instanceof FBDatabaseMetaData) {
+                statement = dmd.getConnection().createStatement();
+                ResultSet rs = statement.executeQuery("SELECT R.RDB$TRIGGER_INACTIVE \n" +
+                        " FROM RDB$TRIGGERS R \n" +
+                        " WHERE R.RDB$TRIGGER_NAME = '" + getName() + "'");
+
+                if (rs.next())
+                    triggerActive = rs.getInt(1) == 0 ? true : false;
+            }
+
+            return triggerActive;
+
+        } catch (SQLException e) {
+
+            throw new DataSourceException(e);
+
+        } finally {
+
+            if (statement != null)
+                releaseResources(statement);
+
+            setMarkedForReload(false);
+        }
+    }
 }

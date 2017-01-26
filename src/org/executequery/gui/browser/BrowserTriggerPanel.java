@@ -46,33 +46,27 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
     private void init() throws Exception {
 
-        final JSplitPane splitPane = new JSplitPane();
-        splitPane.setResizeWeight(0.8);
-        splitPane.setOneTouchExpandable(true);
-        splitPane.setBorder(null);
-        splitPane.setContinuousLayout(true);
-        splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        JPanel panel = new JPanel();
+
+        panel.setLayout(new BorderLayout());
 
         JPanel paramPanel = new JPanel(new BorderLayout());
         paramPanel.setBorder(BorderFactory.createTitledBorder("Parameters"));
-//        paramPanel.add(new JScrollPane(table), BorderLayout.CENTER);
 
         JPanel sourcePanel = new JPanel(new BorderLayout());
         sourcePanel.setBorder(BorderFactory.createTitledBorder("Source"));
         textPane = new SQLTextPane();
         textPane.setEditable(false);
         sourcePanel.add(new JScrollPane(textPane), BorderLayout.CENTER);
-//        sourcePanel.add(new JScrollPane(textPane), BorderLayout.CENTER);
-        splitPane.setTopComponent(paramPanel);
-        splitPane.setBottomComponent(sourcePanel);
+
+        panel.add(paramPanel, BorderLayout.NORTH);
+        panel.add(sourcePanel, BorderLayout.CENTER);
 
         JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP);
-        tabs.add("Description", splitPane);
-//        tabs.add("Source", sourcePanel);
+        tabs.add("Description", panel);
 
         objectNameLabel = new JLabel();
         triggerNameField = new DisabledField();
-        //schemaNameField = new DisabledField();
 
         JPanel base = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();

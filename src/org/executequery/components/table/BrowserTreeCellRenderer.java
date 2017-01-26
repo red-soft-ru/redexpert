@@ -193,7 +193,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 break;
 
             case NamedObject.GLOBAL_TEMPORARY:
-                setIcon(icons.get(BrowserConstants.TABLES_IMAGE));
+                setIcon(icons.get(BrowserConstants.GLOBAL_TABLES_IMAGE));
                 break;
 
             case NamedObject.FOREIGN_KEYS_FOLDER_NODE:

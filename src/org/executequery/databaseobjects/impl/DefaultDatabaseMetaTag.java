@@ -23,6 +23,7 @@ package org.executequery.databaseobjects.impl;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -227,24 +228,30 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         
             int type = getSubType();
             if (type != SYSTEM_FUNCTION) {
-                
+
                 if (isFunctionOrProcedure()) {
 
                     if (StringUtils.equalsIgnoreCase(getName(), procedureTerm())) {
-    
+
                         if (type == FUNCTION) {
-                            
+
                             return hasFunctions();
-                        
+
                         } else if (type == PROCEDURE) {
-                            
+
                             return hasProcedures();
                         }
-    
+
                     }
-    
+
                     return false;
-                
+
+                } else if (isTrigger()) {
+
+                    if (type == TRIGGER) {
+                        return hasTriggers();
+                    }
+
                 } else {
                     
                     return getHost().hasTablesForType(getCatalogName(), getSchemaName(), getMetaDataKey());                
@@ -265,6 +272,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         int type = getSubType();
         return type == FUNCTION || type == PROCEDURE;
+    }
+
+    private boolean isTrigger() {
+
+        int type = getSubType();
+        return type == TRIGGER;
     }
 
     private String procedureTerm() throws SQLException {
@@ -306,6 +319,25 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             
         } finally {
             
+            releaseResources(rs);
+        }
+    }
+
+    private boolean hasTriggers() {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getTriggersResultSet();
+            return rs != null && rs.next();
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return false;
+
+        } finally {
+
             releaseResources(rs);
         }
     }
@@ -381,6 +413,20 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         return dmd.getProcedures(catalogName, schemaName, null);
     }
+
+    private ResultSet getTriggersResultSet() throws SQLException {
+
+        String catalogName = catalogNameForQuery();
+        String schemaName = schemaNameForQuery();
+
+        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+        Statement statement = dmd.getConnection().createStatement();
+
+        ResultSet resultSet = statement.executeQuery("SELECT * FROM RDB$TRIGGERS R");
+
+        return resultSet;
+    }
+
 
     private String schemaNameForQuery() {
         

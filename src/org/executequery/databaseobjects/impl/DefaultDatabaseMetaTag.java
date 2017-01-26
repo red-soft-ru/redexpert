@@ -122,6 +122,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 children = loadFunctionsOrProcedures(type);
     
+            } else if (isTrigger()) {
+
+                children = loadTriggers();
+
             } else {
 
                 children = getHost().getTables(getCatalogName(), 
@@ -190,32 +194,40 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     }
 
-    private List<NamedObject> loadFunctionsOrProcedures(int type) 
+    private List<NamedObject> loadFunctionsOrProcedures(int type)
         throws DataSourceException {
 
         try {
-   
+
             if (StringUtils.equalsIgnoreCase(getName(), procedureTerm())) {
-   
+
                 // check what the term is - proc or function
                 if (type == FUNCTION) {
-   
+
                     return getFunctions();
-   
+
                 } else if (type == PROCEDURE) {
-   
+
                     return getProcedures();
                 }
-   
+
             }
-   
+
         } catch (SQLException e) {
 
             throw new DataSourceException(e);
         }
-        
+
         return new ArrayList<NamedObject>(0);
     }
+
+    private List<NamedObject> loadTriggers()
+            throws DataSourceException {
+
+            return getTriggers();
+
+    }
+
 
     public boolean hasChildObjects() throws DataSourceException {
         
@@ -404,6 +416,37 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             releaseResources(rs);
         }
     }
+
+    /**
+     * Loads the database triggers.
+     */
+    private List<NamedObject> getTriggers() throws DataSourceException {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getTriggersResultSet();
+            List<NamedObject> list = new ArrayList<NamedObject>();
+            while (rs.next()) {
+
+                DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this, rs.getString(1));
+                trigger.setRemarks(rs.getString(7));
+                list.add(trigger);
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return new ArrayList<NamedObject>(0);
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
 
     private ResultSet getProceduresResultSet() throws SQLException {
         

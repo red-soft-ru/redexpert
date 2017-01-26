@@ -175,7 +175,9 @@ public class BrowserConstants {
     
     /** The image icon 'PlainTable16.png' */
     public static final String TABLES_IMAGE = "PlainTable16.png";
-    
+
+    public static final String GLOBAL_TABLES_IMAGE = "GlobalTable16.png";
+
     /** The image icon 'TableColumn16.png' */
     public static final String COLUMNS_IMAGE = "TableColumn16.png";
     
@@ -218,6 +220,7 @@ public class BrowserConstants {
                                                FOREIGN_COLUMNS_IMAGE,
                                                SYSTEM_VIEWS_IMAGE,
                                                TABLE_TRIGGER_IMAGE,
+                                               GLOBAL_TABLES_IMAGE,
                                                FOLDER_COLUMNS_IMAGE,
                                                FOLDER_FOREIGN_KEYS_IMAGE,
                                                FOLDER_INDEXES_IMAGE,

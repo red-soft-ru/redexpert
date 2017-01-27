@@ -117,7 +117,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
 
         createSqlPane = new SQLTextPane();
 
-        sqlPanel.add(createSqlPane, BorderLayout.CENTER);
+        sqlPanel.add(new JScrollPane(createSqlPane), BorderLayout.CENTER);
 
         tabs.add("Sql", sqlPanel);
 

@@ -145,6 +145,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
         }
 
         if (output != null) {
+            sbSQL.append("RETURNS \n");
             sbSQL.append(output);
             sbSQL.append("\n");
         }

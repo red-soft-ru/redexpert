@@ -20,18 +20,6 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.print.Printable;
-import java.sql.DatabaseMetaData;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
-
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseExecutable;
 import org.executequery.databaseobjects.NamedObject;
@@ -44,6 +32,14 @@ import org.executequery.gui.text.SQLTextPane;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
+
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import java.awt.*;
+import java.awt.print.Printable;
+import java.sql.DatabaseMetaData;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -65,7 +61,8 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
     
     private Map cache;
 
-    JTextPane textPane;
+    JTextPane sourceTextPane;
+    JTextPane createSqlPane;
     
     /** the browser's control object */
     private BrowserController controller;
@@ -105,15 +102,26 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
 
         JPanel sourcePanel = new JPanel(new BorderLayout());
         sourcePanel.setBorder(BorderFactory.createTitledBorder("Source"));
-        textPane = new SQLTextPane();
-        textPane.setEditable(false);
-        sourcePanel.add(new JScrollPane(textPane), BorderLayout.CENTER);
-//        sourcePanel.add(new JScrollPane(textPane), BorderLayout.CENTER);
+        sourceTextPane = new SQLTextPane();
+        sourceTextPane.setEditable(false);
+        sourcePanel.add(new JScrollPane(sourceTextPane), BorderLayout.CENTER);
+//        sourcePanel.add(new JScrollPane(sourceTextPane), BorderLayout.CENTER);
         splitPane.setTopComponent(paramPanel);
         splitPane.setBottomComponent(sourcePanel);
 
         JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP);
         tabs.add("Description", splitPane);
+
+        JPanel sqlPanel = new JPanel(new BorderLayout());
+        sqlPanel.setBorder(BorderFactory.createEtchedBorder());
+
+        createSqlPane = new SQLTextPane();
+
+        sqlPanel.add(createSqlPane, BorderLayout.CENTER);
+
+        tabs.add("Sql", sqlPanel);
+
+
 //        tabs.add("Source", sourcePanel);
         
         objectNameLabel = new JLabel();
@@ -229,8 +237,12 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         try {
             procNameField.setText(executeable.getName());
             model.setValues(executeable.getParametersArray());
-            textPane.setText(executeable.getProcedureSourceCode());
-            //schemaNameField.setText(executeable.getSchemaName());
+            sourceTextPane.setText(executeable.getProcedureSourceCode());
+
+            DefaultDatabaseProcedure p = (DefaultDatabaseProcedure)executeable;
+            p.setHost(((DefaultDatabaseProcedure) executeable).getMetaTagParent().getHost());
+            createSqlPane.setText(p.getCreateSQLText());
+
         } 
         catch (DataSourceException e) {
             controller.handleException(e);

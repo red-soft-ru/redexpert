@@ -172,6 +172,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                     setIcon(icons.get(BrowserConstants.SYSTEM_FUNCTIONS_IMAGE));
                     break;
                 }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("sequence") == 0) {
+                    setIcon(icons.get(BrowserConstants.SEQUENCES_IMAGE));
+                    break;
+                }
 
                 setIcon(icons.get(BrowserConstants.DATABASE_OBJECT_IMAGE));
                 break;

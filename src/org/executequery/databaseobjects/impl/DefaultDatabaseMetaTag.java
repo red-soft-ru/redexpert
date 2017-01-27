@@ -264,6 +264,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         return hasTriggers();
                     }
 
+                } else if (isSequence()) {
+
+                    if (type == SEQUENCE) {
+                        return hasSequences();
+                    }
+
                 } else {
                     
                     return getHost().hasTablesForType(getCatalogName(), getSchemaName(), getMetaDataKey());                
@@ -291,6 +297,13 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         int type = getSubType();
         return type == TRIGGER;
     }
+
+    private boolean isSequence() {
+
+        int type = getSubType();
+        return type == SEQUENCE;
+    }
+
 
     private String procedureTerm() throws SQLException {
 
@@ -353,7 +366,26 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             releaseResources(rs);
         }
     }
-    
+
+    private boolean hasSequences() {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getSequencesResultSet();
+            return rs != null && rs.next();
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return false;
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
     /**
      * Loads the database functions.
      */
@@ -471,6 +503,18 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return resultSet;
     }
 
+    private ResultSet getSequencesResultSet() throws SQLException {
+
+        String catalogName = catalogNameForQuery();
+        String schemaName = schemaNameForQuery();
+
+        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+        Statement statement = dmd.getConnection().createStatement();
+
+        ResultSet resultSet = statement.executeQuery("select r.rdb$generator_name from rdb$generators r\n");
+
+        return resultSet;
+    }
 
     private String schemaNameForQuery() {
         

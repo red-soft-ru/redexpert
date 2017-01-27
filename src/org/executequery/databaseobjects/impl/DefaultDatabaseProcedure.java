@@ -22,6 +22,11 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
+import org.executequery.databaseobjects.ProcedureParameter;
+
+import java.sql.DatabaseMetaData;
+import java.sql.Types;
+import java.util.List;
 
 /**
  * Default database procedure implementation.
@@ -72,12 +77,86 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
         return META_TYPES[PROCEDURE];
     }
 
+    public String getCreateSQLText() {
+
+        StringBuilder sbSQL = new StringBuilder();
+        StringBuilder sbInput = new StringBuilder();
+        StringBuilder sbOutput = new StringBuilder();
+
+        sbSQL.append("CREATE OR ALTER PROCEDURE \n");
+        sbSQL.append(getName());
+        sbSQL.append("\n");
+
+        sbInput.append("( \n");
+
+        sbOutput.append("( \n");
+
+        List<ProcedureParameter> parameters = getParameters();
+
+        for (ProcedureParameter parameter : parameters) {
+            if (parameter.getType() == DatabaseMetaData.procedureColumnIn) {
+                sbInput.append("\t");
+                sbInput.append(parameter.getName());
+                sbInput.append(" ");
+                sbInput.append(parameter.getSqlType());
+                if (parameter.getDataType() == Types.CHAR
+                        || parameter.getDataType() == Types.VARCHAR
+                        || parameter.getDataType() == Types.NVARCHAR
+                        || parameter.getDataType() == Types.VARBINARY) {
+                    sbInput.append("(");
+                    sbInput.append(parameter.getSize());
+                    sbInput.append("),\n");
+                } else {
+                    sbInput.append(",\n");
+                }
+            } else if (parameter.getType() == DatabaseMetaData.procedureColumnOut) {
+                sbOutput.append("\t");
+                sbOutput.append(parameter.getName());
+                sbOutput.append(" ");
+                sbOutput.append(parameter.getSqlType());
+                if (parameter.getDataType() == Types.CHAR
+                        || parameter.getDataType() == Types.VARCHAR
+                        || parameter.getDataType() == Types.NVARCHAR
+                        || parameter.getDataType() == Types.VARBINARY) {
+                    sbOutput.append("(");
+                    sbOutput.append(parameter.getSize());
+                    sbOutput.append("),\n");
+                } else {
+                    sbOutput.append(",\n");
+                }
+            }
+        }
+
+        String input = null;
+        if (sbInput.length() > 3) {
+            input = sbInput.substring(0, sbInput.length() - 2);
+            input += "\n) \n";
+        }
+
+        if (input != null) {
+            sbSQL.append(input);
+            sbSQL.append("\n");
+        }
+
+        String output = null;
+        if (sbOutput.length() > 3) {
+            output = sbOutput.substring(0, sbOutput.length() - 2);
+            output += "\n) \n";
+        }
+
+        if (output != null) {
+            sbSQL.append(output);
+            sbSQL.append("\n");
+        }
+
+
+        sbSQL.append("AS");
+        sbSQL.append("\n");
+
+        sbSQL.append(getProcedureSourceCode());
+
+        sbSQL.append(";\n");
+
+        return sbSQL.toString();
+    }
 }
-
-
-
-
-
-
-
-

@@ -144,6 +144,35 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 break;
             
             case NamedObject.META_TAG:
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("procedure") == 0) {
+                    setIcon(icons.get(BrowserConstants.PROCEDURES_IMAGE));
+                    break;
+                }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system table") == 0) {
+                    setIcon(icons.get(BrowserConstants.SYSTEM_TABLES_IMAGE));
+                    break;
+                }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("table") == 0) {
+                    setIcon(icons.get(BrowserConstants.TABLES_IMAGE));
+                    break;
+                }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("view") == 0) {
+                    setIcon(icons.get(BrowserConstants.VIEWS_IMAGE));
+                    break;
+                }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("trigger") == 0) {
+                    setIcon(icons.get(BrowserConstants.TABLE_TRIGGER_IMAGE));
+                    break;
+                }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("global temporary") == 0) {
+                    setIcon(icons.get(BrowserConstants.GLOBAL_TABLES_IMAGE));
+                    break;
+                }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system functions") == 0) {
+                    setIcon(icons.get(BrowserConstants.SYSTEM_FUNCTIONS_IMAGE));
+                    break;
+                }
+
                 setIcon(icons.get(BrowserConstants.DATABASE_OBJECT_IMAGE));
                 break;
                 

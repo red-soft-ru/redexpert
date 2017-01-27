@@ -23,6 +23,11 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
     private JLabel objectNameLabel;
 
+    private JLabel valueLabel;
+    private JTextField valueField;
+
+    private JTextPane descriptionPane;
+
     private Map cache;
 
     /** the browser's control object */
@@ -49,6 +54,15 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
         JPanel paramPanel = new JPanel(new GridBagLayout());
         paramPanel.setBorder(BorderFactory.createTitledBorder("Parameters"));
+
+        valueLabel = new JLabel();
+        valueLabel.setText("Value: ");
+
+        valueField = new DisabledField();
+
+        paramPanel.add(valueLabel, new GridBagConstraints(0, 0, 1, 1, 1, 0,
+                GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(5, 0, 5, 5), 0, 0));
+        paramPanel.add(valueField);
 
         panel.add(paramPanel, BorderLayout.NORTH);
 
@@ -119,6 +133,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
         try {
             sequenceNameField.setText(sequence.getName());
+            valueField.setText(String.valueOf(sequence.getSequenceValue()));
         }
         catch (DataSourceException e) {
             controller.handleException(e);
@@ -139,6 +154,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
         if (sequence != null) {
             sequenceNameField.setText(sequence.getName());
+            valueField.setText(String.valueOf(sequence.getSequenceValue()));
 
         } else {
             sequenceNameField.setText(metaObject.getName());

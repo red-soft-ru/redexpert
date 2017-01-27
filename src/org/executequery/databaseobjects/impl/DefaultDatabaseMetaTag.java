@@ -126,6 +126,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 children = loadTriggers();
 
+            } else if (isSequence()) {
+
+                children = loadSequences();
+
             } else {
 
                 children = getHost().getTables(getCatalogName(), 
@@ -224,10 +228,16 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private List<NamedObject> loadTriggers()
             throws DataSourceException {
 
-            return getTriggers();
+        return getTriggers();
 
     }
 
+    private List<NamedObject> loadSequences()
+            throws DataSourceException {
+
+        return getSequences();
+
+    }
 
     public boolean hasChildObjects() throws DataSourceException {
         
@@ -479,6 +489,34 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
     }
 
+    /**
+     * Loads the database triggers.
+     */
+    private List<NamedObject> getSequences() throws DataSourceException {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getSequencesResultSet();
+            List<NamedObject> list = new ArrayList<NamedObject>();
+            while (rs.next()) {
+
+                DefaultDatabaseSequence sequence = new DefaultDatabaseSequence(this, rs.getString(1));
+                list.add(sequence);
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return new ArrayList<NamedObject>(0);
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
 
     private ResultSet getProceduresResultSet() throws SQLException {
         
@@ -511,7 +549,21 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
-        ResultSet resultSet = statement.executeQuery("select r.rdb$generator_name from rdb$generators r\n");
+        ResultSet resultSet = statement.executeQuery("execute block\n" +
+                "returns (\n" +
+                "    out_name char(31),\n" +
+                "    out_value bigint,\n" +
+                "    out_desc blob sub_type 1)\n" +
+                "as\n" +
+                "begin\n" +
+                "    for select rdb$generator_name, rdb$description from rdb$generators where rdb$system_flag is distinct from 1\n" +
+                "     order by  rdb$generator_name\n" +
+                "     into out_name, out_desc do\n" +
+                "    begin\n" +
+                "        execute statement 'select gen_id(' || out_name || ', 0) from rdb$database' into out_value;\n" +
+                "        suspend;\n" +
+                "    end\n" +
+                "end");
 
         return resultSet;
     }

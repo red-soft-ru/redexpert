@@ -40,6 +40,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseSchema;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
@@ -372,6 +373,20 @@ public class BrowserController {
 
                     triggerPanel.setValues((DefaultDatabaseTrigger) databaseObject);
                     return triggerPanel;
+
+                case NamedObject.SEQUENCE:
+                    BrowserSequencePanel sequencePanel = null;
+                    if (!viewPanel.containsPanel(BrowserSequencePanel.NAME)) {
+                        sequencePanel = new BrowserSequencePanel(this);
+                        viewPanel.addToLayout(sequencePanel);
+                    }
+                    else {
+                        sequencePanel = (BrowserSequencePanel)viewPanel.
+                                getFormObjectView(BrowserSequencePanel.NAME);
+                    }
+
+                    sequencePanel.setValues((DefaultDatabaseSequence) databaseObject);
+                    return sequencePanel;
 
                 case NamedObject.TABLE:
                     BrowserTableEditingPanel editingPanel = viewPanel.getEditingPanel();

@@ -60,9 +60,10 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
         valueField = new DisabledField();
 
-        paramPanel.add(valueLabel, new GridBagConstraints(0, 0, 1, 1, 1, 0,
-                GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(5, 0, 5, 5), 0, 0));
-        paramPanel.add(valueField);
+        paramPanel.add(valueLabel, new GridBagConstraints(0, 0, 1, 1, 0, 0,
+                GridBagConstraints.LINE_START, GridBagConstraints.LINE_START, new Insets(5, 0, 5, 5), 0, 0));
+        paramPanel.add(valueField, new GridBagConstraints(1, 0, 1, 1, 1, 0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 0, 5, 5), 0, 0));
 
         panel.add(paramPanel, BorderLayout.NORTH);
 

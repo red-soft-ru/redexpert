@@ -43,7 +43,8 @@ public interface KeywordRepository extends Repository {
     boolean contains(String word);
 
     void addUserDefinedKeyword(String word);
-    
+
+    List<String> getFirebirdKeywords(int majorVersion, int minorVersion);
 }
 
 

@@ -33,9 +33,11 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseSource;
 import org.executequery.databaseobjects.impl.ColumnInformation;
 import org.executequery.databaseobjects.impl.ColumnInformationFactory;
+import org.executequery.gui.editor.QueryEditor;
 import org.executequery.log.Log;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
+import org.firebirdsql.jdbc.FBConnection;
 
 public class AutoCompleteSelectionsFactory {
 
@@ -60,7 +62,8 @@ public class AutoCompleteSelectionsFactory {
         this.provider = provider;
     }
 
-    public void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteSchema) {
+    public void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteSchema,
+                      QueryEditor queryEditor) {
 
         tables = new ArrayList<AutoCompleteListItem>();
         
@@ -79,7 +82,22 @@ public class AutoCompleteSelectionsFactory {
             
                 addDatabaseDefinedKeywords(databaseHost, listSelections);
                 databaseSystemFunctionsForHost(databaseHost, listSelections);
+
+                try {
+                    FBConnection fbConnection = databaseHost.getConnection().unwrap(FBConnection.class);
+
+                    int majorVersion = fbConnection.getFbDatabase().getServerVersion().getMajorVersion();
+                    int minorVersion = fbConnection.getFbDatabase().getServerVersion().getMinorVersion();
+
+                    addFirebirdDefnedKeywords(databaseHost, listSelections, majorVersion, minorVersion);
+
+                } catch (SQLException e) {
+                    // nothing to do
+                }
+
                 addToProvider(listSelections);
+
+                queryEditor.updateSQLKeywords();
             }
 
             if (autoCompleteSchema) {
@@ -446,6 +464,12 @@ public class AutoCompleteSelectionsFactory {
 
         addKeywordsFromList(asList, list, 
                 "Database Defined Keyword", AutoCompleteListItemType.DATABASE_DEFINED_KEYWORD);
+    }
+
+    private void addFirebirdDefnedKeywords (DatabaseHost databaseHost, List<AutoCompleteListItem> list,
+                                            int majorVersion, int minorVersion) {
+        addKeywordsFromList(keywords().getFirebirdKeywords(majorVersion, minorVersion),
+                list, "Database Defined Keyword", AutoCompleteListItemType.DATABASE_DEFINED_KEYWORD);
     }
 
     private void addSQL92Keywords(List<AutoCompleteListItem> list) {

@@ -701,7 +701,7 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
             databaseHost = databaseObjectFactory.createDatabaseHost(selectedConnection);
         }
 
-    	selectionsFactory.build(databaseHost, autoCompleteKeywords, autoCompleteSchema);
+    	selectionsFactory.build(databaseHost, autoCompleteKeywords, autoCompleteSchema, queryEditor);
 
         return true;
     }

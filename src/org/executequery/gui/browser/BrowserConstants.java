@@ -198,6 +198,8 @@ public class BrowserConstants {
     public static final String FOLDER_COLUMNS_IMAGE = "FolderColumns16.png";
     
     public static final String FOLDER_INDEXES_IMAGE = "FolderIndexes16.png";
+
+    public static final String DOMAIN_IMAGE = "domain16.png";
     
     public static final String[] NODE_ICONS = {CONNECTIONS_IMAGE,
                                                CONNECTIONS_FOLDER_IMAGE,
@@ -224,7 +226,8 @@ public class BrowserConstants {
                                                FOLDER_COLUMNS_IMAGE,
                                                FOLDER_FOREIGN_KEYS_IMAGE,
                                                FOLDER_INDEXES_IMAGE,
-                                               FOLDER_PRIMARY_KEYS_IMAGE
+                                               FOLDER_PRIMARY_KEYS_IMAGE,
+                                               DOMAIN_IMAGE
                                                };
     
 }

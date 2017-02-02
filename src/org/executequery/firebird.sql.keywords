@@ -1,0 +1,89 @@
+Firebird 1.0
+
+    CURRENT_USER
+    CURRENT_ROLE   
+    RECREATE   
+
+Firebird 1.5
+
+    CURRENT_CONNECTION 
+    CURRENT_TRANSACTION 
+    BIGINT
+    CASE
+    RELEASE
+    ROW_COUNT
+    SAVEPOINT
+
+Firebird 2.0
+
+    BIT_LENGTH
+    BOTH
+    CHAR_LENGTH
+    CHARACTER_LENGTH
+    CLOSE
+    CROSS
+    FETCH
+    LEADING
+    LOWER
+    OCTET_LENGTH
+    OPEN
+    ROWS
+    TRAILING
+    TRIM
+    USING
+
+Firebird 2.1
+
+    CONNECT
+    DISCONNECT
+    GLOBAL
+    INSENSITIVE
+    RECURSIVE
+    SENSITIVE
+    START
+
+Firebird 2.5
+
+    SIMILAR
+
+Firebird 3.0
+
+    BOOLEAN
+    CORR
+    COVAR_POP
+    COVAR_SAMP
+    DELETING 
+    DETERMINISTIC
+    FALSE
+    INSERTING 
+    OFFSET
+    OVER
+    RDB$RECORD_VERSION 
+    REGR_AVGX
+    REGR_AVGY
+    REGR_COUNT
+    REGR_INTERCEPT
+    REGR_R2
+    REGR_SLOPE
+    REGR_SXX
+    REGR_SXY
+    REGR_SYY
+    RETURN
+    ROW
+    SCROLL
+    SQLSTATE 
+    STDDEV_POP
+    STDDEV_SAMP
+    TRUE
+    UNKNOWN
+    UPDATING 
+    VAR_POP
+    VAR_SAMP
+
+Firebird 4.0
+
+    UNBOUNDED
+    WINDOW
+    BINARY
+    VARBINARY
+

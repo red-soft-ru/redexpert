@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.executequery.ApplicationException;
 import org.executequery.EventMediator;
@@ -42,6 +44,8 @@ public class KeywordRepositoryImpl implements KeywordRepository {
     
     /** The user's added key words */
     private List<String> userDefinedKeyWords;
+
+    private List<String> firebirdKeyWords = new ArrayList<>();
 
     public List<String> getSQL92() {
 
@@ -63,12 +67,14 @@ public class KeywordRepositoryImpl implements KeywordRepository {
 
         int sql92Size = getSQL92().size();
         int userSize = getUserDefinedSQL().size();
+        int firebirdSize = this.firebirdKeyWords.size();
 
-        List<String> allWords = new ArrayList<String>(sql92Size + userSize);
+        List<String> allWords = new ArrayList<String>(sql92Size + userSize + firebirdSize);
         
         allWords.addAll(sql92KeyWords);
         allWords.addAll(userDefinedKeyWords);
-        
+        allWords.addAll(this.firebirdKeyWords);
+
         Collections.sort(allWords);
         
         return allWords;
@@ -80,7 +86,61 @@ public class KeywordRepositoryImpl implements KeywordRepository {
         list.add(word.toUpperCase());
         setUserDefinedKeywords(list);
     }
-    
+
+    @Override
+    public List<String> getFirebirdKeywords(int majorVersion, int minorVersion) {
+        try {
+
+            String path = "org/executequery/firebird.sql.keywords";
+            String values = FileUtils.loadResource(path);
+
+            StringTokenizer st = new StringTokenizer(values, "\n");
+            List<String> list = new ArrayList<String>(st.countTokens());
+
+            while (st.hasMoreTokens()) {
+                String trim = st.nextToken().trim();
+                if (trim.contains("Firebird")) {
+
+                    Pattern p = Pattern.compile("(\\d)(\\.)(\\d)", Pattern.CASE_INSENSITIVE);
+
+                    Matcher m = p.matcher(trim);
+
+                    String version = "";
+
+                    if (m.find())
+                         version = m.group(0);
+
+                    version = version.replace(".", "");
+
+                    int verFile = Integer.valueOf(version);
+                    int verServer = Integer.valueOf(String.valueOf(majorVersion) + String.valueOf(minorVersion));
+
+                    if (verFile > verServer)
+                        break;
+                    else
+                        continue;
+
+                }
+                list.add(trim);
+            }
+
+            this.firebirdKeyWords = list;
+
+            return this.firebirdKeyWords;
+
+        } catch (IOException e) {
+
+            if (Log.isDebugEnabled()) {
+
+                e.printStackTrace();
+            }
+
+            Log.error("Error retrieving SQL92 keyword list");
+
+            return new ArrayList<String>(0);
+        }
+    }
+
     public List<String> getUserDefinedSQL() {
         
         if (userDefinedKeyWords == null) {

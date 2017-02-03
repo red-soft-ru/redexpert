@@ -37,9 +37,9 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
     /** the table description table */
     private DefaultDatabaseObjectTable tableDescriptionTable;
 
-    JTextPane descriptionPane;
+    private JTextPane descriptionPane;
 
-    JTextPane sqlPane;
+    private JTextPane sqlPane;
 
     private Map cache;
 

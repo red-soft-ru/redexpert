@@ -647,17 +647,14 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         Statement statement = dmd.getConnection().createStatement();
 
         ResultSet resultSet = statement.executeQuery("SELECT\n" +
-                "    RF.rdb$field_name\n" +
+                "  f.rdb$field_name\n" +
                 "FROM\n" +
-                "    RDB$FIELDS RF\n" +
-                "    INNER JOIN RDB$RELATION_FIELDS\n" +
-                "        ON (RDB$RELATION_FIELDS.RDB$FIELD_SOURCE = RF.RDB$FIELD_NAME)\n" +
-                "    WHERE\n" +
-                "    RF.RDB$SYSTEM_FLAG = 0\n" +
-                "    group by\n" +
-                "        RF.RDB$FIELD_NAME\n" +
-                "        ORDER BY\n" +
-                "        RF.RDB$FIELD_NAME\n");
+                "  rdb$fields f\n" +
+                "  LEFT JOIN rdb$relation_fields rf\n" +
+                "    ON rf.rdb$field_source = f.rdb$field_name\n" +
+                "WHERE\n" +
+                "  COALESCE(f.rdb$system_flag, 0) = 0\n" +
+                "  group by f.rdb$field_name\n");
 
         return resultSet;
     }

@@ -17,6 +17,7 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
         implements DatabaseProcedure {
 
     private long value = -1;
+    private String description;
 
     /**
      * Creates a new instance.
@@ -94,4 +95,67 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
         }
     }
 
+    @Override
+    public String getDescription() {
+
+        Statement statement = null;
+
+        if (!isMarkedForReload() && description != null) {
+
+            return description;
+        }
+
+        try {
+
+            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
+
+            String _catalog = getCatalogName();
+            String _schema = getSchemaName();
+
+            if (dmd instanceof FBDatabaseMetaData) {
+
+                statement = dmd.getConnection().createStatement();
+                ResultSet rs = statement.executeQuery("select r.rdb$description\n" +
+                        "from rdb$generators r\n" +
+                        "where\n" +
+                        "trim(r.rdb$generator_name)='" + getName() + "'");
+
+                if (rs.next())
+                    description = rs.getString(1);
+            }
+
+            return description;
+
+        } catch (SQLException e) {
+
+            throw new DataSourceException(e);
+
+        } finally {
+
+            setMarkedForReload(false);
+        }
+    }
+
+    @Override
+    public String getCreateSQLText() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Create sequence ");
+        sb.append(getName());
+        sb.append(";");
+
+        return sb.toString();
+    }
+
+
+    public String getAlterSQLText() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Alter sequence ");
+        sb.append(getName());
+        sb.append(" restart with ");
+        sb.append(getSequenceValue());
+        sb.append(";");
+
+        return sb.toString();
+    }
 }

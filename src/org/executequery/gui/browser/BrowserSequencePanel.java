@@ -3,8 +3,10 @@ package org.executequery.gui.browser;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.text.SQLTextPane;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
+import org.underworldlabs.swing.StyledLogPane;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,6 +29,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
     private JTextField valueField;
 
     private JTextPane descriptionPane;
+    private JTextPane sqlPane;
 
     private Map cache;
 
@@ -69,6 +72,25 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
         JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP);
         tabs.add("Sequence", panel);
+
+        descriptionPane = new StyledLogPane();
+
+        JPanel descPanel = new JPanel();
+
+        descPanel.setLayout(new BorderLayout());
+        descPanel.add(descriptionPane);
+
+        tabs.add("Description", descPanel);
+
+        JPanel sqlPanel = new JPanel(new BorderLayout());
+
+        sqlPanel.setBorder(BorderFactory.createEtchedBorder());
+
+        sqlPane = new SQLTextPane();
+
+        sqlPanel.add(sqlPane, BorderLayout.CENTER);
+
+        tabs.add("Sql", sqlPanel);
 
         objectNameLabel = new JLabel();
         sequenceNameField = new DisabledField();
@@ -135,6 +157,10 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         try {
             sequenceNameField.setText(sequence.getName());
             valueField.setText(String.valueOf(sequence.getSequenceValue()));
+            descriptionPane.setText(sequence.getDescription());
+            sqlPane.setText(sequence.getCreateSQLText() +
+                    "\n\n" +
+                    sequence.getAlterSQLText());
         }
         catch (DataSourceException e) {
             controller.handleException(e);
@@ -156,6 +182,10 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         if (sequence != null) {
             sequenceNameField.setText(sequence.getName());
             valueField.setText(String.valueOf(sequence.getSequenceValue()));
+            descriptionPane.setText(sequence.getDescription());
+            sqlPane.setText(sequence.getCreateSQLText() +
+                    "\n\n" +
+                    sequence.getAlterSQLText());
 
         } else {
             sequenceNameField.setText(metaObject.getName());

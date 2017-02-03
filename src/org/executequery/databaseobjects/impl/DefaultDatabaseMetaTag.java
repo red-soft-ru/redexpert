@@ -130,6 +130,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 children = loadSequences();
 
+            } else if (isDomain()) {
+
+                children = loadDomains();
+
             } else {
 
                 children = getHost().getTables(getCatalogName(), 
@@ -239,6 +243,13 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     }
 
+    private List<NamedObject> loadDomains()
+            throws DataSourceException {
+
+        return getDomains();
+
+    }
+
     public boolean hasChildObjects() throws DataSourceException {
         
         if (!isMarkedForReload() && children != null) {
@@ -280,6 +291,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         return hasSequences();
                     }
 
+                } else if (isDomain()) {
+
+                    if (type == DOMAIN) {
+                        return hasDomains();
+                    }
+
                 } else {
                     
                     return getHost().hasTablesForType(getCatalogName(), getSchemaName(), getMetaDataKey());                
@@ -314,6 +331,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return type == SEQUENCE;
     }
 
+    private boolean isDomain() {
+
+        int type = getSubType();
+        return type == DOMAIN;
+    }
 
     private String procedureTerm() throws SQLException {
 
@@ -383,6 +405,25 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         try {
 
             rs = getSequencesResultSet();
+            return rs != null && rs.next();
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return false;
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
+    private boolean hasDomains() {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getDomainsResultSet();
             return rs != null && rs.next();
 
         } catch (SQLException e) {
@@ -518,6 +559,35 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
     }
 
+    /**
+     * Loads the database triggers.
+     */
+    private List<NamedObject> getDomains() throws DataSourceException {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getDomainsResultSet();
+            List<NamedObject> list = new ArrayList<NamedObject>();
+            while (rs.next()) {
+
+                DefaultDatabaseDomain domain = new DefaultDatabaseDomain(this, rs.getString(1));
+                list.add(domain);
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return new ArrayList<NamedObject>(0);
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
     private ResultSet getProceduresResultSet() throws SQLException {
         
         String catalogName = catalogNameForQuery();
@@ -564,6 +634,30 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "        suspend;\n" +
                 "    end\n" +
                 "end");
+
+        return resultSet;
+    }
+
+    private ResultSet getDomainsResultSet() throws SQLException {
+
+        String catalogName = catalogNameForQuery();
+        String schemaName = schemaNameForQuery();
+
+        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+        Statement statement = dmd.getConnection().createStatement();
+
+        ResultSet resultSet = statement.executeQuery("SELECT\n" +
+                "    RF.rdb$field_name\n" +
+                "FROM\n" +
+                "    RDB$FIELDS RF\n" +
+                "    INNER JOIN RDB$RELATION_FIELDS\n" +
+                "        ON (RDB$RELATION_FIELDS.RDB$FIELD_SOURCE = RF.RDB$FIELD_NAME)\n" +
+                "    WHERE\n" +
+                "    RF.RDB$SYSTEM_FLAG = 0\n" +
+                "    group by\n" +
+                "        RF.RDB$FIELD_NAME\n" +
+                "        ORDER BY\n" +
+                "        RF.RDB$FIELD_NAME\n");
 
         return resultSet;
     }

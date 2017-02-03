@@ -5,6 +5,7 @@ import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.gui.databaseobjects.DefaultDatabaseObjectTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.text.SQLTextPane;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
@@ -37,6 +38,8 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
     private DefaultDatabaseObjectTable tableDescriptionTable;
 
     JTextPane descriptionPane;
+
+    JTextPane sqlPane;
 
     private Map cache;
 
@@ -78,6 +81,16 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
         descriptionPanel.add(descriptionPane, BorderLayout.CENTER);
 
         tabPane.add("Description", descriptionPanel);
+
+        JPanel sqlPanel = new JPanel(new BorderLayout());
+
+        sqlPanel.setBorder(BorderFactory.createEtchedBorder());
+
+        sqlPane = new SQLTextPane();
+
+        sqlPanel.add(sqlPane, BorderLayout.CENTER);
+
+        tabPane.add("Sql", sqlPanel);
 
         objectNameLabel = new JLabel();
         domainNameField = new DisabledField();
@@ -154,6 +167,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
             domainNameField.setText(domain.getName());
             tableDescriptionTable.setColumnData(domain.getDomainData());
             descriptionPane.setText(domain.getRemarks());
+            sqlPane.setText(domain.getCreateSQLText());
         } catch (DataSourceException e) {
             controller.handleException(e);
         }
@@ -175,6 +189,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
             domainNameField.setText(domain.getName());
             tableDescriptionTable.setColumnData(domain.getDomainData());
             descriptionPane.setText(domain.getRemarks());
+            sqlPane.setText(domain.getCreateSQLText());
 
         } else {
             domainNameField.setText(metaObject.getName());

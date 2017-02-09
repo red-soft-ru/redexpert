@@ -191,7 +191,7 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         table.repaint();
     }
     
-    private List<DatabaseConnection> connections() {
+    public  List<DatabaseConnection> connections() {
 
         return connectionsRepository().findAll();
     }

@@ -70,6 +70,10 @@ public interface DatabaseConnection extends Serializable {
 
     public void setCharset(String charset);
 
+    public String getAuthMethod();
+
+    public void setAuthMethod(String method);
+
     String getURL();
 
     void setURL(String url);

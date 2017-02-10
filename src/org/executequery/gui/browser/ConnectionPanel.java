@@ -30,9 +30,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
@@ -51,6 +49,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
+import org.executequery.components.FileChooserDialog;
 import org.executequery.components.TextFieldPanel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
@@ -340,8 +339,26 @@ public class ConnectionPanel extends AbstractConnectionPanel
         addLabelFieldPair(mainPanel, "Port:", 
                 portField, "Database port number", gbc);
 
-        addLabelFieldPair(mainPanel, "Data Source:", 
-                sourceField, "Data source name", gbc);
+        JButton openFile = new JButton("Choose file");
+        openFile.addActionListener(new ActionListener() {
+            FileChooserDialog fileChooser = new FileChooserDialog();
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int returnVal = fileChooser.showOpenDialog(openFile);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+                    sourceField.setText(file.getAbsolutePath());
+                }
+            }
+        });
+
+        JPanel selectFilePanel = new JPanel(new BorderLayout());
+
+        selectFilePanel.add(sourceField, BorderLayout.CENTER);
+        selectFilePanel.add(openFile, BorderLayout.LINE_END);
+
+        addLabelFieldPair(mainPanel, "Data Source:",
+                selectFilePanel, "Data source name", gbc);
 
         addLabelFieldPair(mainPanel, "Character Set:",
                 charsetsCombo, "Default character set for this connection", gbc);

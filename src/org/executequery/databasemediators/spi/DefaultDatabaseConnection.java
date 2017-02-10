@@ -99,6 +99,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     private int transactionIsolation;
 
     private String charset;
+
+    private String authMethod;
     
     private String folderId;
     
@@ -230,6 +232,14 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     public void setCharset(String charset) {
         this.charset = charset;
+    }
+
+    public String getAuthMethod() {
+        return authMethod == null ? "Basic" : authMethod;
+    }
+
+    public void setAuthMethod(String method) {
+        this.authMethod = method;
     }
     
     public String getURL() {

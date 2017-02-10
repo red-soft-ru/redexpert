@@ -28,24 +28,18 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Logger;
 
-import javax.swing.BorderFactory;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
@@ -70,7 +64,10 @@ import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.FormPanelButton;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.console.Console;
+import org.executequery.gui.console.ConsoleTextPane;
 import org.executequery.gui.drivers.DialogDriverPanel;
+import org.executequery.gui.editor.OutputLogger;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
@@ -116,7 +113,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
             fbTraceManager.setLogger(System.out);
             traceUUID = UUID.randomUUID().toString();
             try {
-                configuration = fbTraceManager.loadConfigurationFromFile("fbtrace.conf", true);
+                configuration = fbTraceManager.loadConfigurationFromFile("config/fbtrace.conf", true);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -193,10 +190,14 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     private JComboBox charsetsCombo;
 
+    private JComboBox authCombo;
+
     private JLabel statusLabel;
     
     private JComboBox txCombo;
     private JButton txApplyButton;
+
+    JPanel basicPanel;
     
     // -------------------------------
 
@@ -240,6 +241,28 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         // ---------------------------------
         // create the basic props panel
+
+        List<String> auth = new ArrayList<>();
+        auth.add("Basic");
+        auth.add("GSS");
+        authCombo = new JComboBox(auth.toArray());
+        authCombo.addItemListener(new ItemListener()
+        {
+            @Override
+            public void itemStateChanged(ItemEvent e)
+            {
+                if (e.getStateChange() == ItemEvent.SELECTED)
+                {
+                    Object selectedItem = e.getItem();
+                    if (selectedItem.toString().equalsIgnoreCase("basic")) {
+                        basicPanel.setVisible(true);
+                    }
+                    else if (selectedItem.toString().equalsIgnoreCase("gss")) {
+                        basicPanel.setVisible(false);
+                    }
+                }
+            }
+        });
         
         // initialise the fields
         nameField = createTextField();
@@ -284,11 +307,18 @@ public class ConnectionPanel extends AbstractConnectionPanel
         addLabelFieldPair(mainPanel, "Connection Name:", 
                 nameField, "A friendly name for this connection", gbc);
 
-        addLabelFieldPair(mainPanel, "User Name:", 
+        addLabelFieldPair(mainPanel, "Authentication:",
+                authCombo, "Available authentications", gbc);
+
+        basicPanel = new JPanel(new GridBagLayout());
+
+        addLabelFieldPair(basicPanel, "User Name:",
                 userField, "Login user name", gbc);
 
-        addLabelFieldPair(mainPanel, "Password:", 
+        addLabelFieldPair(basicPanel, "Password:",
                 passwordField, "Login password", gbc);
+
+        mainPanel.add(basicPanel, gbc);
 
         JButton showPassword = new LinkButton("Show Password");
         showPassword.setActionCommand("showPassword");
@@ -305,7 +335,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
-        mainPanel.add(passwordOptionsPanel, gbc);
+        basicPanel.add(passwordOptionsPanel, gbc);
         
         addLabelFieldPair(mainPanel, "Host Name:", 
                 hostField, "Server host name or IP address", gbc);
@@ -732,8 +762,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
         
             // connect
             GUIUtilities.showWaitCursor();
-            
+
+            System.setProperty("java.security.auth.login.config", "config/gss.login.conf");
+
             boolean connected = host.connect();
+
             if (connected) {
             
                 // apply the tx level if supplied

@@ -64,10 +64,7 @@ import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.FormPanelButton;
 import org.executequery.gui.WidgetFactory;
-import org.executequery.gui.console.Console;
-import org.executequery.gui.console.ConsoleTextPane;
 import org.executequery.gui.drivers.DialogDriverPanel;
-import org.executequery.gui.editor.OutputLogger;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
@@ -935,8 +932,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
             if (!MiscUtils.isNull(key) && !MiscUtils.isNull(value)) {
 
-                if ((key.equalsIgnoreCase("lc_ctype"))
-                        /*&& !charsetsCombo.getSelectedItem().toString().equals("NONE")*/)
+                if (key.equalsIgnoreCase("lc_ctype") || key.equalsIgnoreCase("useGSSAuth"))
+                        /*&& !charsetsCombo.getSelectedItem().toString().equals("NONE")*/
                     continue;
                 properties.setProperty(key, value);
             }
@@ -945,6 +942,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         if (!properties.containsKey("lc_ctype"))
             properties.setProperty("lc_ctype", charsetsCombo.getSelectedItem().toString());
+
+        if (!properties.containsKey("useGSSAuth") && authCombo.getSelectedItem().toString().equalsIgnoreCase("gss"))
+            properties.setProperty("useGSSAuth", "true");
 
         databaseConnection.setJdbcProperties(properties);
     }
@@ -964,7 +964,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
         int count = 0;
         for (Enumeration<?> i = properties.propertyNames(); i.hasMoreElements();) {
             String name = (String)i.nextElement();
-            if (!name.equalsIgnoreCase("password") || !name.equalsIgnoreCase("lc_ctype")) {
+            if (!name.equalsIgnoreCase("password") && !name.equalsIgnoreCase("lc_ctype") &&
+                    !name.equalsIgnoreCase("useGSSAuth") ) {
                 advancedProperties[count][0] = name;
                 advancedProperties[count][1] = properties.getProperty(name);
                 count++;
@@ -1167,6 +1168,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         urlField.setText(databaseConnection.getURL());
         nameField.setText(databaseConnection.getName());
         charsetsCombo.setSelectedItem(databaseConnection.getCharset());
+        authCombo.setSelectedItem(databaseConnection.getAuthMethod());
 
         // assign as the current connection
         this.databaseConnection = databaseConnection;
@@ -1208,6 +1210,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         databaseConnection.setSourceName(sourceField.getText());
         databaseConnection.setURL(urlField.getText());
         databaseConnection.setCharset(charsetsCombo.getSelectedItem().toString());
+        databaseConnection.setAuthMethod(authCombo.getSelectedItem().toString());
 
         // jdbc driver selection
         int driverIndex = driverCombo.getSelectedIndex();

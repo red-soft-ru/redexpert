@@ -3,6 +3,7 @@ package org.executequery.gui.browser;
 import org.executequery.Constants;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
+import org.executequery.components.FileChooserDialog;
 import org.executequery.components.TextFieldPanel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseConnectionFactory;
@@ -37,6 +38,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.sql.Connection;
 import java.util.*;
 
@@ -208,8 +210,26 @@ public class CreateDatabasePanel extends ActionPanel
         addLabelFieldPair(mainPanel, "Port:",
                 portField, "Database port number", gbc);
 
+        JButton saveFile = new JButton("Choose file");
+        saveFile.addActionListener(new ActionListener() {
+            FileChooserDialog fileChooser = new FileChooserDialog();
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int returnVal = fileChooser.showSaveDialog(saveFile);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+                    sourceField.setText(file.getAbsolutePath());
+                }
+            }
+        });
+
+        JPanel saveFilePanel = new JPanel(new BorderLayout());
+
+        saveFilePanel.add(sourceField, BorderLayout.CENTER);
+        saveFilePanel.add(saveFile, BorderLayout.LINE_END);
+
         addLabelFieldPair(mainPanel, "Data Source:",
-                sourceField, "Data source name", gbc);
+                saveFilePanel, "Data source name", gbc);
 
         addLabelFieldPair(mainPanel, "Character Set:",
             charsetsCombo, "Default character set for this connection", gbc);

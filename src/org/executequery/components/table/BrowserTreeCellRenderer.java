@@ -184,6 +184,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                     setIcon(icons.get(BrowserConstants.EXCEPTION_IMAGE));
                     break;
                 }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("udf") == 0) {
+                    setIcon(icons.get(BrowserConstants.UDF_IMAGE));
+                    break;
+                }
 
                 setIcon(icons.get(BrowserConstants.DATABASE_OBJECT_IMAGE));
                 break;
@@ -232,8 +236,13 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
             case NamedObject.DOMAIN:
                 setIcon(icons.get(BrowserConstants.DOMAIN_IMAGE));
                 break;
+
             case NamedObject.EXCEPTION:
                 setIcon(icons.get(BrowserConstants.EXCEPTION_IMAGE));
+                break;
+
+            case NamedObject.UDF:
+                setIcon(icons.get(BrowserConstants.UDF_IMAGE));
                 break;
                 
             case NamedObject.TABLE:

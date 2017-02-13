@@ -40,10 +40,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseSchema;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
-import org.executequery.databaseobjects.impl.DefaultDatabaseException;
-import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
-import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
+import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
 import org.executequery.gui.forms.FormObjectView;
@@ -417,6 +414,20 @@ public class BrowserController {
 
                     exceptionPanel.setValues((DefaultDatabaseException) databaseObject);
                     return exceptionPanel;
+
+                case NamedObject.UDF:
+                    BrowserUDFPanel browserUDFPanel = null;
+                    if (!viewPanel.containsPanel(BrowserUDFPanel.NAME)) {
+                        browserUDFPanel = new BrowserUDFPanel(this);
+                        viewPanel.addToLayout(browserUDFPanel);
+                    }
+                    else {
+                        browserUDFPanel = (BrowserUDFPanel)viewPanel.
+                                getFormObjectView(BrowserUDFPanel.NAME);
+                    }
+
+                    browserUDFPanel.setValues((DefaultDatabaseUDF) databaseObject);
+                    return browserUDFPanel;
 
                 case NamedObject.TABLE:
                     BrowserTableEditingPanel editingPanel = viewPanel.getEditingPanel();

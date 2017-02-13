@@ -716,9 +716,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             List<NamedObject> list = new ArrayList<NamedObject>();
             while (rs.next()) {
 
-                DefaultDatabaseObject object = new DefaultDatabaseObject(this.getHost(), "UDF");
-                object.setName(rs.getString(1));
-                list.add(object);
+                DefaultDatabaseUDF udf = new DefaultDatabaseUDF(this, rs.getString(1));
+                list.add(udf);
             }
 
             return list;

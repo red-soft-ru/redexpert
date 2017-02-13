@@ -24,6 +24,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseExecutable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.databaseobjects.impl.DefaultDatabaseProcedure;
 import org.executequery.databaseobjects.impl.SystemDatabaseFunction;
 import org.executequery.gui.DefaultTable;
@@ -239,9 +240,11 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
             model.setValues(executeable.getParametersArray());
             sourceTextPane.setText(executeable.getProcedureSourceCode());
 
-            DefaultDatabaseProcedure p = (DefaultDatabaseProcedure)executeable;
-            p.setHost(((DefaultDatabaseProcedure) executeable).getMetaTagParent().getHost());
-            createSqlPane.setText(p.getCreateSQLText());
+            if (executeable instanceof DefaultDatabaseProcedure) {
+                DefaultDatabaseProcedure p = (DefaultDatabaseProcedure) executeable;
+                p.setHost(((DefaultDatabaseProcedure) executeable).getMetaTagParent().getHost());
+                createSqlPane.setText(p.getCreateSQLText());
+            }
 
         } 
         catch (DataSourceException e) {

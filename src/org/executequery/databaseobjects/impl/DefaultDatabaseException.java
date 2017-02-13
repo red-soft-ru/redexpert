@@ -8,6 +8,10 @@ import org.executequery.databaseobjects.DatabaseProcedure;
  */
 public class DefaultDatabaseException extends DefaultDatabaseExecutable
         implements DatabaseProcedure {
+
+    private String exceptionID;
+    private String exceptionText;
+
     /**
      * Creates a new instance.
      */
@@ -31,5 +35,33 @@ public class DefaultDatabaseException extends DefaultDatabaseExecutable
 
     public int getType() {
         return EXCEPTION;
+    }
+
+    public String getID() {
+        return exceptionID;
+    }
+
+    public void setExceptionID(String exceptionID) {
+        this.exceptionID = exceptionID;
+    }
+
+    public String getExceptionText() {
+        return exceptionText;
+    }
+
+    public void setExceptionText(String exceptionText) {
+        this.exceptionText = exceptionText;
+    }
+
+    public String getCreateSQLText() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE EXCEPTION \n");
+        sb.append(getName());
+        sb.append("\n");
+        sb.append("'");
+        sb.append(getExceptionText());
+        sb.append("';");
+
+        return sb.toString();
     }
 }

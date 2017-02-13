@@ -643,6 +643,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             while (rs.next()) {
 
                 DefaultDatabaseException exception = new DefaultDatabaseException(this, rs.getString(1));
+                exception.setRemarks(rs.getString(4));
+                exception.setExceptionID(rs.getString(3));
+                exception.setExceptionText(rs.getString(2));
                 list.add(exception);
             }
 

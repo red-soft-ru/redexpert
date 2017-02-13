@@ -50,6 +50,7 @@ public interface NamedObject extends java.io.Serializable {
     int GLOBAL_TEMPORARY = 14;
     int DOMAIN = 15;
     int EXCEPTION = 16;
+    int UDF = 17;
 
     int META_TAG = 93;
     int TABLE_COLUMN = 94;
@@ -86,7 +87,8 @@ public interface NamedObject extends java.io.Serializable {
                                                "SYSTEM VIEW",
                                                 "GLOBAL TEMPORARY",
                                                 "DOMAIN",
-                                                "EXCEPTION"};
+                                                "EXCEPTION",
+                                                "UDF"};
 
     /**
      * Marks this object as being 'reset', where for any loaded object

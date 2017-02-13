@@ -716,7 +716,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             List<NamedObject> list = new ArrayList<NamedObject>();
             while (rs.next()) {
 
-                DefaultDatabaseUDF udf = new DefaultDatabaseUDF(this, rs.getString(1));
+                DefaultDatabaseUDF udf = new DefaultDatabaseUDF(this, rs.getString(1), this.getHost());
                 udf.setRemarks(rs.getString(2));
                 udf.setModuleName(rs.getString(3));
                 udf.setEntryPoint(rs.getString(4));
@@ -835,9 +835,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         Statement statement = dmd.getConnection().createStatement();
 
         ResultSet resultSet = statement.executeQuery("select RDB$FUNCTION_NAME,\n" +
-                "RDB$DESCRIPTION\n" +
-                "RDB$MODULE_NAME\n" +
-                "RDB$ENTRYPOINT\n" +
+                "RDB$DESCRIPTION,\n" +
+                "RDB$MODULE_NAME,\n" +
+                "RDB$ENTRYPOINT,\n" +
                 "RDB$RETURN_ARGUMENT\n" +
                 "from RDB$FUNCTIONS\n" +
                 "order by RDB$FUNCTION_NAME");

@@ -134,7 +134,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 children = loadDomains();
 
-            } else {
+            } else if (isException()) {
+
+                children = loadExceptions();
+
+            }  else {
 
                 children = getHost().getTables(getCatalogName(), 
                                                getSchemaName(), 
@@ -250,6 +254,13 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     }
 
+    private List<NamedObject> loadExceptions()
+            throws DataSourceException {
+
+        return getExceptions();
+
+    }
+
     public boolean hasChildObjects() throws DataSourceException {
         
         if (!isMarkedForReload() && children != null) {
@@ -297,6 +308,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         return hasDomains();
                     }
 
+                } else if (isException()) {
+
+                    if (type == EXCEPTION) {
+                        return hasException();
+                    }
+
                 } else {
                     
                     return getHost().hasTablesForType(getCatalogName(), getSchemaName(), getMetaDataKey());                
@@ -335,6 +352,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         int type = getSubType();
         return type == DOMAIN;
+    }
+
+    private boolean isException() {
+
+        int type = getSubType();
+        return type == EXCEPTION;
     }
 
     private String procedureTerm() throws SQLException {
@@ -424,6 +447,25 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         try {
 
             rs = getDomainsResultSet();
+            return rs != null && rs.next();
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return false;
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
+    private boolean hasException() {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getExceptionResultSet();
             return rs != null && rs.next();
 
         } catch (SQLException e) {
@@ -588,6 +630,35 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
     }
 
+    /**
+     * Loads the database triggers.
+     */
+    private List<NamedObject> getExceptions() throws DataSourceException {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getExceptionResultSet();
+            List<NamedObject> list = new ArrayList<NamedObject>();
+            while (rs.next()) {
+
+                DefaultDatabaseException exception = new DefaultDatabaseException(this, rs.getString(1));
+                list.add(exception);
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return new ArrayList<NamedObject>(0);
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
     private ResultSet getProceduresResultSet() throws SQLException {
         
         String catalogName = catalogNameForQuery();
@@ -655,6 +726,24 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "WHERE\n" +
                 "  COALESCE(f.rdb$system_flag, 0) = 0\n" +
                 "  group by f.rdb$field_name\n");
+
+        return resultSet;
+    }
+
+    private ResultSet getExceptionResultSet() throws SQLException {
+
+        String catalogName = catalogNameForQuery();
+        String schemaName = schemaNameForQuery();
+
+        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+        Statement statement = dmd.getConnection().createStatement();
+
+        ResultSet resultSet = statement.executeQuery("select RDB$EXCEPTION_NAME, " +
+                "RDB$MESSAGE, " +
+                "RDB$EXCEPTION_NUMBER, " +
+                "RDB$DESCRIPTION\n" +
+                "from RDB$EXCEPTIONS\n" +
+                "order by RDB$EXCEPTION_NAME");
 
         return resultSet;
     }

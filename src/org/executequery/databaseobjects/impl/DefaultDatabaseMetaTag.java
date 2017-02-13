@@ -138,6 +138,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 children = loadExceptions();
 
+            }   else if (isUDF()) {
+
+                children = loadUDFs();
+
             }  else {
 
                 children = getHost().getTables(getCatalogName(), 
@@ -261,6 +265,13 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     }
 
+    private List<NamedObject> loadUDFs()
+            throws DataSourceException {
+
+        return getUDFs();
+
+    }
+
     public boolean hasChildObjects() throws DataSourceException {
         
         if (!isMarkedForReload() && children != null) {
@@ -314,7 +325,13 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         return hasException();
                     }
 
-                } else {
+                } else if (isUDF()) {
+
+                    if (type == UDF) {
+                        return hasUDF();
+                    }
+
+                }  else {
                     
                     return getHost().hasTablesForType(getCatalogName(), getSchemaName(), getMetaDataKey());                
                 }
@@ -358,6 +375,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         int type = getSubType();
         return type == EXCEPTION;
+    }
+
+    private boolean isUDF() {
+
+        int type = getSubType();
+        return type == UDF;
     }
 
     private String procedureTerm() throws SQLException {
@@ -466,6 +489,25 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         try {
 
             rs = getExceptionResultSet();
+            return rs != null && rs.next();
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return false;
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
+    private boolean hasUDF() {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getUDFResultSet();
             return rs != null && rs.next();
 
         } catch (SQLException e) {
@@ -662,6 +704,36 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
     }
 
+    /**
+     * Loads the database UDFs.
+     */
+    private List<NamedObject> getUDFs() throws DataSourceException {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getUDFResultSet();
+            List<NamedObject> list = new ArrayList<NamedObject>();
+            while (rs.next()) {
+
+                DefaultDatabaseObject object = new DefaultDatabaseObject(this.getHost(), "UDF");
+                object.setName(rs.getString(1));
+                list.add(object);
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return new ArrayList<NamedObject>(0);
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
     private ResultSet getProceduresResultSet() throws SQLException {
         
         String catalogName = catalogNameForQuery();
@@ -747,6 +819,22 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "RDB$DESCRIPTION\n" +
                 "from RDB$EXCEPTIONS\n" +
                 "order by RDB$EXCEPTION_NAME");
+
+        return resultSet;
+    }
+
+    private ResultSet getUDFResultSet() throws SQLException {
+
+        String catalogName = catalogNameForQuery();
+        String schemaName = schemaNameForQuery();
+
+        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+        Statement statement = dmd.getConnection().createStatement();
+
+        ResultSet resultSet = statement.executeQuery("select RDB$FUNCTION_NAME,\n" +
+                "RDB$DESCRIPTION\n" +
+                "from RDB$FUNCTIONS\n" +
+                "order by RDB$FUNCTION_NAME");
 
         return resultSet;
     }

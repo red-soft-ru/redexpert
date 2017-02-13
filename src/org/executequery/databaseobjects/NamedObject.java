@@ -33,24 +33,6 @@ import org.underworldlabs.jdbc.DataSourceException;
  */
 public interface NamedObject extends java.io.Serializable {
 
-    int BRANCH_NODE = 100;
-    int COLUMNS_FOLDER_NODE = 101;
-    int FOREIGN_KEYS_FOLDER_NODE = 102;
-    int PRIMARY_KEYS_FOLDER_NODE = 103;
-    int INDEXES_FOLDER_NODE = 104;
-    
-    int ROOT = 96;
-    int CATALOG = 98;
-    int HOST = 99;
-    int SCHEMA = 97;
-
-    int OTHER = 95;
-    
-    int TABLE_COLUMN = 94;
-
-    int META_TAG = 93;
-
-    
     int FUNCTION = 0;
     int INDEX = 1;
     int PROCEDURE = 2;
@@ -60,26 +42,34 @@ public interface NamedObject extends java.io.Serializable {
     int TABLE = 6;
     int TRIGGER = 7;
     int VIEW = 8;
+    int SYSTEM_FUNCTION = 9;
+    int SYSTEM_STRING_FUNCTIONS = 10;
+    int SYSTEM_NUMERIC_FUNCTIONS = 11;
+    int SYSTEM_DATE_TIME_FUNCTIONS = 12;
+    int SYSTEM_VIEW = 13;
+    int GLOBAL_TEMPORARY = 14;
+    int DOMAIN = 15;
+    int EXCEPTION = 16;
+
+    int META_TAG = 93;
+    int TABLE_COLUMN = 94;
+    int OTHER = 95;
+    int ROOT = 96;
+    int SCHEMA = 97;
+    int CATALOG = 98;
+    int HOST = 99;
+
+    int BRANCH_NODE = 100;
+    int COLUMNS_FOLDER_NODE = 101;
+    int FOREIGN_KEYS_FOLDER_NODE = 102;
+    int PRIMARY_KEYS_FOLDER_NODE = 103;
+    int INDEXES_FOLDER_NODE = 104;
 
     int PRIMARY_KEY = 999;
     int FOREIGN_KEY = 998;
     int UNIQUE_KEY = 997;
     int TABLE_INDEX = 996;
 
-    int SYSTEM_VIEW = 13;
-    
-    int SYSTEM_FUNCTION = 9;
-    
-    int SYSTEM_STRING_FUNCTIONS = 10;
-    
-    int SYSTEM_NUMERIC_FUNCTIONS = 11;
-    
-    int SYSTEM_DATE_TIME_FUNCTIONS = 12;
-
-    int GLOBAL_TEMPORARY = 14;
-
-    int DOMAIN = 15;
-    
     String[] META_TYPES = {"FUNCTION",
                                                "INDEX",
                                                "PROCEDURE",
@@ -95,7 +85,8 @@ public interface NamedObject extends java.io.Serializable {
                                                "SYSTEM_DATE_TIME_FUNCTIONS",
                                                "SYSTEM VIEW",
                                                 "GLOBAL TEMPORARY",
-                                                "DOMAIN"};
+                                                "DOMAIN",
+                                                "EXCEPTION"};
 
     /**
      * Marks this object as being 'reset', where for any loaded object

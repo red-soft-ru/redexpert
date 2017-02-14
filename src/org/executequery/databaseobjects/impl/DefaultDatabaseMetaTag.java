@@ -122,6 +122,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 children = loadFunctionsOrProcedures(type);
     
+            } else if (isIndex()) {
+
+                children = loadIndices();
+
             } else if (isTrigger()) {
 
                 children = loadTriggers();
@@ -237,6 +241,13 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return new ArrayList<NamedObject>(0);
     }
 
+    private List<NamedObject> loadIndices()
+            throws DataSourceException {
+
+        return getIndices();
+
+    }
+
     private List<NamedObject> loadTriggers()
             throws DataSourceException {
 
@@ -301,7 +312,13 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                     return false;
 
-                } else if (isTrigger()) {
+                } else if (isIndex()) {
+
+                    if (type == INDEX) {
+                        return hasIndices();
+                    }
+
+                }  else if (isTrigger()) {
 
                     if (type == TRIGGER) {
                         return hasTriggers();
@@ -351,6 +368,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         int type = getSubType();
         return type == FUNCTION || type == PROCEDURE;
+    }
+
+    private boolean isIndex() {
+
+        int type = getSubType();
+        return type == INDEX;
     }
 
     private boolean isTrigger() {
@@ -422,6 +445,25 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             
         } finally {
             
+            releaseResources(rs);
+        }
+    }
+
+    private boolean hasIndices() {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getIndicesResultSet();
+            return rs != null && rs.next();
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return false;
+
+        } finally {
+
             releaseResources(rs);
         }
     }
@@ -575,6 +617,36 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } catch (SQLException e) {
           
+            logThrowable(e);
+            return new ArrayList<NamedObject>(0);
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
+    /**
+     * Loads the database indices.
+     */
+    private List<NamedObject> getIndices() throws DataSourceException {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getIndicesResultSet();
+            List<NamedObject> list = new ArrayList<NamedObject>();
+            while (rs.next()) {
+
+                DefaultDatabaseObject object= new DefaultDatabaseObject(this.getHost(), "INDEX");
+                object.setName(rs.getString(1));
+                list.add(object);
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+
             logThrowable(e);
             return new ArrayList<NamedObject>(0);
 
@@ -750,6 +822,33 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         return dmd.getProcedures(catalogName, schemaName, null);
+    }
+
+    private ResultSet getIndicesResultSet() throws SQLException {
+
+        String catalogName = catalogNameForQuery();
+        String schemaName = schemaNameForQuery();
+
+        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+        Statement statement = dmd.getConnection().createStatement();
+
+        ResultSet resultSet = statement.executeQuery("select i.rdb$index_name,\n" +
+                "i.rdb$relation_name,\n" +
+                "i.rdb$unique_flag,\n" +
+                "i.rdb$index_inactive,\n" +
+                "i.rdb$index_type,\n" +
+                "isg.rdb$field_name,\n" +
+                "isg.rdb$field_position,\n" +
+                "i.rdb$statistics,\n" +
+                "i.rdb$expression_source,\n" +
+                "c.rdb$constraint_type,\n" +
+                "i.rdb$description\n" +
+                "from rdb$indices i\n" +
+                "left join rdb$relation_constraints c on i.rdb$index_name = c.rdb$index_name\n" +
+                "left join rdb$index_segments isg on isg.rdb$index_name = i.rdb$index_name\n" +
+                "order by i.rdb$index_name");
+
+        return resultSet;
     }
 
     private ResultSet getTriggersResultSet() throws SQLException {

@@ -41,6 +41,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.sql.Connection;
 import java.util.*;
+import java.util.List;
 
 /**
  * Created by vasiliy.yashkov on 10.07.2015.
@@ -77,6 +78,9 @@ public class CreateDatabasePanel extends ActionPanel
     private JTextField sourceField;
 
     private JComboBox charsetsCombo;
+    private JComboBox pageSizeCombo;
+
+    private List<String> pageSizes;
 
     private JLabel statusLabel;
 
@@ -136,6 +140,10 @@ public class CreateDatabasePanel extends ActionPanel
 
     private void init() {
 
+        pageSizes = new ArrayList<>();
+        pageSizes.add("4096");
+        pageSizes.add("8192");
+        pageSizes.add("16384");
         // ---------------------------------
         // create the basic props panel
 
@@ -161,6 +169,10 @@ public class CreateDatabasePanel extends ActionPanel
         // retrieve the available charsets
         loadCharsets();
         charsetsCombo = WidgetFactory.createComboBox(charsets.toArray());
+
+        pageSizeCombo = WidgetFactory.createComboBox(pageSizes.toArray());
+        pageSizeCombo.setSelectedItem("8192");
+        pageSizeCombo.setEditable(false);
 
         // ---------------------------------
         // add the basic connection fields
@@ -233,6 +245,9 @@ public class CreateDatabasePanel extends ActionPanel
 
         addLabelFieldPair(mainPanel, "Character Set:",
             charsetsCombo, "Default character set for this connection", gbc);
+
+        addLabelFieldPair(mainPanel, "Page Size:",
+                pageSizeCombo, "Default database page size", gbc);
 
         addDriverFields(mainPanel, gbc);
 
@@ -642,9 +657,12 @@ public class CreateDatabasePanel extends ActionPanel
 
             db = factory.connect(connectionInfo);
 
-            String createDb = String.format("CREATE DATABASE '%s' USER '%s' PASSWORD '%s' DEFAULT CHARACTER SET %s",
-                path, userField.getText(), MiscUtils.charsToString(passwordField.getPassword()),
-                charsetsCombo.getSelectedItem().toString());
+            String createDb = String.format("CREATE DATABASE '%s' USER '%s' PASSWORD '%s' PAGE_SIZE %s DEFAULT CHARACTER SET %s ",
+                    path,
+                    userField.getText(),
+                    MiscUtils.charsToString(passwordField.getPassword()),
+                    pageSizeCombo.getSelectedItem().toString(),
+                    charsetsCombo.getSelectedItem().toString());
             db.executeImmediate(createDb, null);
 
             db.close();

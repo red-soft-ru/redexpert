@@ -597,6 +597,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             while (rs.next()) {
 
                 DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this, rs.getString(1));
+                trigger.setTableName(rs.getString(3));
+                trigger.setTriggerSequence(rs.getInt(4));
+                trigger.setTriggerActive(rs.getInt(6) == 1 ? false : true);
+                trigger.setTriggerType(rs.getInt(5));
+                trigger.setTriggerDescription(rs.getString(7));
+                trigger.setTriggerSourceCode(rs.getString(2));
                 trigger.setRemarks(rs.getString(7));
                 list.add(trigger);
             }
@@ -754,8 +760,17 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
-        ResultSet resultSet = statement.executeQuery("SELECT * FROM RDB$TRIGGERS R \n" +
-                " ORDER BY R.RDB$TRIGGER_NAME");
+        ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name,\n" +
+                "t.rdb$trigger_source,\n" +
+                "t.rdb$relation_name,\n" +
+                "t.rdb$trigger_sequence,\n" +
+                "t.rdb$trigger_type,\n" +
+                "t.rdb$trigger_inactive,\n" +
+                "t.rdb$description\n" +
+                "\n" +
+                "from rdb$triggers t\n" +
+                "\n" +
+                "order by t.rdb$trigger_name");
 
         return resultSet;
     }

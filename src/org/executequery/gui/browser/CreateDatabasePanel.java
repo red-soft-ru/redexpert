@@ -155,7 +155,7 @@ public class CreateDatabasePanel extends ActionPanel
         sourceField = createMatchedWidthTextField();
         userField = createTextField();
 
-        //   nameField.addFocusListener(new ConnectionNameFieldListener(this));
+        portField.setText("3050");
 
         savePwdCheck = ActionUtilities.createCheckBox("Store Password", "setStorePassword");
         encryptPwdCheck = ActionUtilities.createCheckBox("Encrypt Password", "setEncryptPassword");

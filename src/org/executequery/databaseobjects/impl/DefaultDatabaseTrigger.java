@@ -21,6 +21,8 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     private boolean triggerActive;
     private String tableName;
     private String triggerDescription;
+    private int triggerSequence;
+    private String triggerType;
 
     /**
      * Creates a new instance.
@@ -62,149 +64,125 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     }
 
     public String getTriggerSourceCode() {
-        if (!isMarkedForReload() && triggerSourceCode != null) {
 
-            return triggerSourceCode;
-        }
-
-        triggerSourceCode = "";
-
-        try {
-
-            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-
-            String _catalog = getCatalogName();
-            String _schema = getSchemaName();
-
-
-            if (dmd instanceof FBDatabaseMetaData) {
-                FirebirdDatabaseMetaData fbMetaData = (FirebirdDatabaseMetaData)dmd;
-                triggerSourceCode = fbMetaData.getTriggerSourceCode(getName());
-            }
-
-            return triggerSourceCode;
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-
-        } finally {
-
-            setMarkedForReload(false);
-        }
+        return triggerSourceCode;
     }
 
     public boolean isTriggerActive() {
 
-        Statement statement = null;
-
-        try {
-
-            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-
-            String _catalog = getCatalogName();
-            String _schema = getSchemaName();
-
-
-            if (dmd instanceof FBDatabaseMetaData) {
-                statement = dmd.getConnection().createStatement();
-                ResultSet rs = statement.executeQuery("SELECT R.RDB$TRIGGER_INACTIVE \n" +
-                        " FROM RDB$TRIGGERS R \n" +
-                        " WHERE R.RDB$TRIGGER_NAME = '" + getName() + "'");
-
-                if (rs.next())
-                    triggerActive = rs.getInt(1) == 0 ? true : false;
-            }
-
             return triggerActive;
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-
-        } finally {
-
-            if (statement != null)
-                releaseResources(statement);
-
-            setMarkedForReload(false);
-        }
     }
 
     public String getTriggerTableName() {
-        if (!isMarkedForReload() && tableName != null) {
 
             return tableName;
-        }
-
-        Statement statement = null;
-
-        tableName = "";
-
-        try {
-
-            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-
-            String _catalog = getCatalogName();
-            String _schema = getSchemaName();
-
-            if (dmd instanceof FBDatabaseMetaData) {
-                statement = dmd.getConnection().createStatement();
-                ResultSet rs = statement.executeQuery("SELECT R.RDB$RELATION_NAME \n" +
-                        " FROM RDB$TRIGGERS R \n" +
-                        " WHERE R.RDB$TRIGGER_NAME = '" + getName() + "'");
-
-                if (rs.next())
-                    tableName = rs.getString(1);
-            }
-            return tableName;
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-
-        } finally {
-
-            setMarkedForReload(false);
-        }
     }
 
     public String getTriggerDescription() {
-        if (!isMarkedForReload() && triggerDescription != null) {
 
             return triggerDescription;
+    }
+
+    public void setTriggerSourceCode(String triggerSourceCode) {
+        this.triggerSourceCode = triggerSourceCode;
+    }
+
+    public void setTriggerActive(boolean triggerActive) {
+        this.triggerActive = triggerActive;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    public void setTriggerDescription(String triggerDescription) {
+        this.triggerDescription = triggerDescription;
+    }
+
+    public int getTriggerSequence() {
+        return triggerSequence;
+    }
+
+    public void setTriggerSequence(int triggerSequence) {
+        this.triggerSequence = triggerSequence;
+    }
+
+    public String getStringTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(int type) {
+        triggerType = triggerTypeFromInt(type);
+    }
+
+    private String triggerTypeFromInt(int type) {
+        switch (type) {
+            case 1:
+                return "BEFORE INSERT"; // 	Триггер выполняется перед вставкой записи в таблицу или просмотр.
+            case 2:
+                return "AFTER INSERT"; // 	Триггер выполняется после вставки записи в таблицу или просмотр.
+            case 3:
+                return "BEFORE UPDATE"; // 	Триггер выполняется перед изменением записи в таблице или просмотре.
+            case 4:
+                return "AFTER UPDATE"; // 	Триггер выполняется после изменения записи в таблице или просмотре.
+            case 5:
+                return "BEFORE DELETE"; // 	Триггер выполняется перед удалением записи из таблицы или просмотра.
+            case 6:
+                return "AFTER DELETE"; // 	Триггер выполняется после удаления записи из таблицы или просмотра.
+            case 17:
+                return "BEFORE INSERT OR UPDATE"; // 	Триггер выполняется перед вставкой или изменением записи в таблице или просмотре.
+            case 18:
+                return "AFTER INSERT OR UPDATE"; // 	Триггер выполняется после вставки или изменения записи в таблице или просмотре.
+            case 25:
+                return "BEFORE INSERT OR DELETE"; // 	Триггер выполняется перед вставкой или удалением записи в таблице или просмотре.
+            case 26:
+                return "AFTER INSERT OR DELETE"; // 	Триггер выполняется после вставки или удаления записи в таблице или просмотре.
+            case 27:
+                return "BEFORE UPDATE OR DELETE"; // 	Триггер выполняется перед изменением или удалением записи в таблице или просмотре.
+            case 28:
+                return "AFTER UPDATE OR DELETE"; // 	Триггер выполняется после изменения или удаления записи в таблице или просмотре.
+            case 113:
+                return "BEFORE INSERT OR UPDATE OR DELETE"; // 	Триггер выполняется перед вставкой, изменением или удалением записи в таблице или просмотре.
+            case 114:
+                return "AFTER INSERT OR UPDATE OR DELETE"; // 	Триггер выполняется после вставки, изменения или удаления записи в таблице или просмотре.
+            case 8192:
+                return "ON CONNECT"; // 	Триггер выполняется после установления подключения к базе данных.
+            case 8193:
+                return "ON DISCONNECT"; // 	Триггер выполняется перед отключением от базы данных.
+            case 8194:
+                return "ON TRANSACTION START"; // 	Триггер выполняется после старта транзакции.
+            case 8195:
+                return "ON TRANSACTION COMMIT"; // 	Триггер выполняется перед подтверждением COMMIT транзакции.
+            case 8196:
+                return "ON TRANSACTION ROLLBACK"; // 	Триггер выполняется перед отменой ROLLBACK транзакции.
+            default:
+                return "NULL";
         }
+    }
 
-        Statement statement = null;
+    @Override
+    public String getCreateSQLText() {
+        StringBuilder sb = new StringBuilder();
 
-        triggerDescription = "";
+        sb.append("SET TERM ^ ;");
+        sb.append("\n\n");
+        sb.append("CREATE OR ALTER TRIGGER ");
+        sb.append(getName());
+        sb.append(" FOR ");
+        sb.append(getTriggerTableName());
+        sb.append("\n");
+        sb.append(isTriggerActive() ? "ACTIVE" : "INACTIVE");
+        sb.append(" ");
+        sb.append(getStringTriggerType());
+        sb.append(" POSITION ");
+        sb.append(getTriggerSequence());
+        sb.append("\n");
+        sb.append(getTriggerSourceCode());
+        sb.append("^");
+        sb.append("\n\n");
+        sb.append("SET TERM ; ^");
 
-        try {
-
-            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-
-            String _catalog = getCatalogName();
-            String _schema = getSchemaName();
-
-            if (dmd instanceof FBDatabaseMetaData) {
-                statement = dmd.getConnection().createStatement();
-                ResultSet rs = statement.executeQuery("SELECT R.RDB$DESCRIPTION \n" +
-                        " FROM RDB$TRIGGERS R \n" +
-                        " WHERE R.RDB$TRIGGER_NAME = '" + getName() + "'");
-
-                if (rs.next())
-                    triggerDescription = rs.getString(1);
-            }
-            return triggerDescription;
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-
-        } finally {
-
-            setMarkedForReload(false);
-        }
+        return sb.toString();
     }
 
 }

@@ -12,6 +12,7 @@ import org.underworldlabs.swing.StyledLogPane;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.print.Printable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,6 +43,12 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
 
     private Map cache;
 
+    ArrayList<DefaultDatabaseUDF> udfs = new ArrayList<>();
+
+    private JTable table;
+
+    private DefaultDatabaseUDF.UDFTableModel model;
+
     /**
      * the browser's control object
      */
@@ -62,8 +69,11 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
     private void init() throws Exception {
         JPanel descPanel = new JPanel(new GridBagLayout());
 
+        model = new DefaultDatabaseUDF.UDFTableModel(udfs);
+        table = new JTable(model);
+
         descPanel.add(
-                new JScrollPane(),
+                new JScrollPane(table),
                 new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
                         GridBagConstraints.SOUTHEAST,
                         GridBagConstraints.BOTH,
@@ -149,6 +159,11 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
     public void setValues(DefaultDatabaseUDF udf) {
 
         currentObjectView = udf;
+
+        udfs.clear();
+        udfs.add(udf);
+
+        udf.loadParameters();
 
         objectNameLabel.setText("UDF Name:");
         setHeaderText("Database UDF");

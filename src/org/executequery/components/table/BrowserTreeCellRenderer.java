@@ -144,6 +144,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 break;
             
             case NamedObject.META_TAG:
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("index") == 0) {
+                    setIcon(icons.get(BrowserConstants.INDEXES_IMAGE));
+                    break;
+                }
                 if (databaseObject.getMetaDataKey().compareToIgnoreCase("procedure") == 0) {
                     setIcon(icons.get(BrowserConstants.PROCEDURES_IMAGE));
                     break;

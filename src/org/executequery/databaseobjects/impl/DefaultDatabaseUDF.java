@@ -303,7 +303,32 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
     }
 
     public String getCreateSQLText() {
-        return "";
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE EXTERNAL FUNCTION ");
+        sb.append(getName());
+        sb.append("\n");
+        String args = "";
+        for (int i = 0; i < parameters.size(); i++) {
+            if (returnArg == 0 && i ==0)
+                continue;
+            args += "\t" + parameters.get(i).getFieldStringType() + " " +
+                    parameters.get(i).getStringMechanism() + ",\n";
+        }
+        args = args.substring(0, args.length()-2);
+        sb.append(args);
+        sb.append("\n");
+        sb.append("RETURNS\n");
+        if(returnArg == 0)
+            sb.append(parameters.get(0).getFieldStringType() + " " + parameters.get(0).getStringMechanism());
+        else
+            sb.append("PARAMETER " + returnArg);
+        sb.append("\n");
+        sb.append("ENTRY POINT '");
+        sb.append(getEntryPoint().trim());
+        sb.append("' MODULE_NAME '");
+        sb.append(getModuleName().trim());
+        sb.append("';");
+        return sb.toString();
     }
 
     private String getTypeWithSize(int sqltype, int sqlsubtype, int sqlsize, int sqlscale) {

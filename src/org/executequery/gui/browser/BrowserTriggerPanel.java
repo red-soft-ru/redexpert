@@ -31,6 +31,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
     private JLabel tableNameLabel;
     private JComboBox tableNameCombo;
     JTextPane descriptionPane;
+    JTextPane sqlPane;
 
     private Map cache;
 
@@ -91,6 +92,15 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         descriptionPanel.add(descriptionPane, BorderLayout.CENTER);
 
         tabs.add("Description", descriptionPanel);
+
+        JPanel sqlPanel = new JPanel(new BorderLayout());
+        sqlPanel.setBorder(BorderFactory.createEtchedBorder());
+
+        sqlPane = new SQLTextPane();
+
+        sqlPanel.add(sqlPane, BorderLayout.CENTER);
+
+        tabs.add("Sql", sqlPanel);
 
         objectNameLabel = new JLabel();
         triggerNameField = new DisabledField();
@@ -173,12 +183,12 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
         try {
             triggerNameField.setText(trigger.getName());
-//            model.setValues(executeable.getParametersArray());
             textPane.setText(trigger.getTriggerSourceCode());
             activeCheckbox.setSelected(trigger.isTriggerActive());
             tableNameCombo.removeAllItems();
             tableNameCombo.addItem(trigger.getTriggerTableName());
             descriptionPane.setText(trigger.getTriggerDescription());
+            sqlPane.setText(trigger.getCreateSQLText());
         }
         catch (DataSourceException e) {
             controller.handleException(e);

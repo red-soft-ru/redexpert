@@ -20,11 +20,14 @@
 
 package org.executequery.databaseobjects.impl;
 
+import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseView;
 import org.executequery.sql.StatementGenerator;
 import org.underworldlabs.jdbc.DataSourceException;
+
+import java.util.List;
 
 public class DefaultDatabaseView extends DefaultDatabaseObject implements DatabaseView {
 
@@ -44,9 +47,30 @@ public class DefaultDatabaseView extends DefaultDatabaseObject implements Databa
     }
 
     public String getCreateSQLText() throws DataSourceException {
-        
+
         StatementGenerator statementGenerator = createStatementGenerator();
-        return statementGenerator.viewDefinition(databaseProductName(), this);
+        String sql = statementGenerator.viewDefinition(databaseProductName(), this);
+
+        StringBuilder sb = new StringBuilder();
+
+        List<DatabaseColumn> columns = this.getColumns();
+
+        sb.append("CREATE OR ALTER VIEW ");
+        sb.append(getName());
+        sb.append("(\n");
+
+        for (int i = 0; i < columns.size(); i++) {
+            sb.append("\n");
+            sb.append(columns.get(i).getName());
+            if (i != columns.size() - 1)
+                sb.append(",\n");
+        }
+        sb.append(")\n");
+        sb.append("AS\n");
+        sb.append(sql);
+
+        sb.append("\n");
+        return sb.toString();
     }
 
     @Override

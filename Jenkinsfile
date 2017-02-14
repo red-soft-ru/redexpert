@@ -7,6 +7,10 @@ String vcs_url
 def utils
 String branch = env.BRANCH_NAME
 
+properties([
+    buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '90', numToKeepStr: ''))
+])
+
 try
 {
 

@@ -599,7 +599,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this, rs.getString(1));
                 trigger.setTableName(rs.getString(3));
                 trigger.setTriggerSequence(rs.getInt(4));
-                trigger.setTriggerActive(rs.getInt(6) == 1 ? false : true);
+                trigger.setTriggerActive(rs.getInt(6) != 1);
                 trigger.setTriggerType(rs.getInt(5));
                 trigger.setTriggerDescription(rs.getString(7));
                 trigger.setTriggerSourceCode(rs.getString(2));

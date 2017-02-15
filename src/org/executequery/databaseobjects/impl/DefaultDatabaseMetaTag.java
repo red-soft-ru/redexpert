@@ -832,21 +832,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
-        ResultSet resultSet = statement.executeQuery("select i.rdb$index_name,\n" +
-                "i.rdb$relation_name,\n" +
-                "i.rdb$unique_flag,\n" +
-                "i.rdb$index_inactive,\n" +
-                "i.rdb$index_type,\n" +
-                "isg.rdb$field_name,\n" +
-                "isg.rdb$field_position,\n" +
-                "i.rdb$statistics,\n" +
-                "i.rdb$expression_source,\n" +
-                "c.rdb$constraint_type,\n" +
-                "i.rdb$description\n" +
-                "from rdb$indices i\n" +
-                "left join rdb$relation_constraints c on i.rdb$index_name = c.rdb$index_name\n" +
-                "left join rdb$index_segments isg on isg.rdb$index_name = i.rdb$index_name\n" +
-                "order by i.rdb$index_name");
+        ResultSet resultSet = statement.executeQuery("select " +
+                "RDB$INDEX_NAME, " +
+                "RDB$RELATION_NAME, " +
+                "RDB$SYSTEM_FLAG," +
+                "RDB$DESCRIPTION\n" +
+                "FROM RDB$INDICES ORDER BY RDB$INDEX_NAME");
 
         return resultSet;
     }

@@ -28,12 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.databaseobjects.DatabaseCatalog;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.DatabaseObject;
-import org.executequery.databaseobjects.DatabaseSchema;
-import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.*;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 
@@ -638,9 +633,13 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             List<NamedObject> list = new ArrayList<NamedObject>();
             while (rs.next()) {
 
-                DefaultDatabaseObject object= new DefaultDatabaseObject(this.getHost(), "INDEX");
-                object.setName(rs.getString(1));
-                list.add(object);
+                DefaultDatabaseIndex index = new DefaultDatabaseIndex(rs.getString(1).trim());
+                index.setTableName(rs.getString(2));
+                index.setIndexType(rs.getInt(4));
+                index.setActive(rs.getInt(6) != 1);
+                index.setUnique(rs.getInt(5) == 1);
+                index.setHost(this.getHost());
+                list.add(index);
             }
 
             return list;
@@ -836,6 +835,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "RDB$INDEX_NAME, " +
                 "RDB$RELATION_NAME, " +
                 "RDB$SYSTEM_FLAG," +
+                "RDB$INDEX_TYPE," +
+                "RDB$UNIQUE_FLAG," +
+                "RDB$INDEX_INACTIVE," +
                 "RDB$DESCRIPTION\n" +
                 "FROM RDB$INDICES ORDER BY RDB$INDEX_NAME");
 

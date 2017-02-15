@@ -217,6 +217,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
         sortingComboBox.setSelectedIndex(index.getIndexType());
         uniqueCheckBox.setSelected(index.isUnique());
         activeCheckBox.setSelected(index.isActive());
+        descriptionPane.setText(index.getRemarks());
 
         objectNameLabel.setText("Index Name:");
         setHeaderText("Database Index");

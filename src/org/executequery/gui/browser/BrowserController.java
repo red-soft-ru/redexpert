@@ -429,6 +429,20 @@ public class BrowserController {
                     browserUDFPanel.setValues((DefaultDatabaseUDF) databaseObject);
                     return browserUDFPanel;
 
+                case NamedObject.INDEX:
+                    BrowserIndexPanel browserIndexPanel = null;
+                    if (!viewPanel.containsPanel(BrowserIndexPanel.NAME)) {
+                        browserIndexPanel = new BrowserIndexPanel(this);
+                        viewPanel.addToLayout(browserIndexPanel);
+                    }
+                    else {
+                        browserIndexPanel = (BrowserIndexPanel)viewPanel.
+                                getFormObjectView(BrowserIndexPanel.NAME);
+                    }
+
+                    browserIndexPanel.setValues((DefaultDatabaseIndex) databaseObject);
+                    return browserIndexPanel;
+
                 case NamedObject.TABLE:
                     BrowserTableEditingPanel editingPanel = viewPanel.getEditingPanel();
                     editingPanel.setValues((DatabaseTable)databaseObject);

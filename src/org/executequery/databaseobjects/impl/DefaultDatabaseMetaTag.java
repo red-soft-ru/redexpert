@@ -638,6 +638,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 index.setIndexType(rs.getInt(4));
                 index.setActive(rs.getInt(6) != 1);
                 index.setUnique(rs.getInt(5) == 1);
+                index.setRemarks(rs.getString(7));
                 index.setHost(this.getHost());
                 list.add(index);
             }

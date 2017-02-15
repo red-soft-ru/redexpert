@@ -215,6 +215,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
 
         Statement statement = null;
 
+        parameters.clear();
+
         try {
             statement = this.getHost().getConnection().createStatement();
 

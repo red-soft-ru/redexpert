@@ -38,19 +38,22 @@ public interface NamedObject extends java.io.Serializable {
     int PROCEDURE = 2;
     int SEQUENCE = 3;
     int SYNONYM = 4;
-    int SYSTEM_TABLE = 5;
-    int TABLE = 6;
-    int TRIGGER = 7;
-    int VIEW = 8;
-    int SYSTEM_FUNCTION = 9;
-    int SYSTEM_STRING_FUNCTIONS = 10;
-    int SYSTEM_NUMERIC_FUNCTIONS = 11;
-    int SYSTEM_DATE_TIME_FUNCTIONS = 12;
-    int SYSTEM_VIEW = 13;
-    int GLOBAL_TEMPORARY = 14;
-    int DOMAIN = 15;
-    int EXCEPTION = 16;
-    int UDF = 17;
+    int TABLE = 5;
+    int TRIGGER = 6;
+    int VIEW = 7;
+    int GLOBAL_TEMPORARY = 8;
+    int DOMAIN = 9;
+    int EXCEPTION = 10;
+    int UDF = 11;
+    int SYSTEM_FUNCTION = 12;
+    int SYSTEM_STRING_FUNCTIONS = 13;
+    int SYSTEM_NUMERIC_FUNCTIONS = 14;
+    int SYSTEM_DATE_TIME_FUNCTIONS = 15;
+    int SYSTEM_VIEW = 16;
+    int SYSTEM_TABLE = 17;
+    int SYSTEM_DOMAIN = 18;
+    int SYSTEM_INDEX = 19;
+    int SYSTEM_TRIGGER = 20;
 
     int META_TAG = 93;
     int TABLE_COLUMN = 94;
@@ -72,23 +75,26 @@ public interface NamedObject extends java.io.Serializable {
     int TABLE_INDEX = 996;
 
     String[] META_TYPES = {"FUNCTION",
-                                               "INDEX",
-                                               "PROCEDURE",
-                                               "SEQUENCE",
-                                               "SYNONYM",
-                                               "SYSTEM TABLE",
-                                               "TABLE",
-                                               "TRIGGER",
-                                               "VIEW",
-                                               "SYSTEM FUNCTIONS",
-                                               "SYSTEM_STRING_FUNCTIONS",
-                                               "SYSTEM_NUMERIC_FUNCTIONS",
-                                               "SYSTEM_DATE_TIME_FUNCTIONS",
-                                               "SYSTEM VIEW",
-                                                "GLOBAL TEMPORARY",
-                                                "DOMAIN",
-                                                "EXCEPTION",
-                                                "UDF"};
+                            "INDEX",
+                            "PROCEDURE",
+                            "SEQUENCE",
+                            "SYNONYM",
+                            "TABLE",
+                            "TRIGGER",
+                            "VIEW",
+                            "GLOBAL TEMPORARY",
+                            "DOMAIN",
+                            "EXCEPTION",
+                            "UDF",
+                            "SYSTEM FUNCTIONS",
+                            "SYSTEM_STRING_FUNCTIONS",
+                            "SYSTEM_NUMERIC_FUNCTIONS",
+                            "SYSTEM_DATE_TIME_FUNCTIONS",
+                            "SYSTEM VIEW",
+                            "SYSTEM TABLE",
+                            "SYSTEM DOMAIN",
+                            "SYSTEM INDEX",
+                            "SYSTEM TRIGGER"};
 
     /**
      * Marks this object as being 'reset', where for any loaded object

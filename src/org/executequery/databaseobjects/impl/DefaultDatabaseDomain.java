@@ -1,9 +1,5 @@
 package org.executequery.databaseobjects.impl;
 
-import com.sun.org.apache.xalan.internal.xsltc.DOM;
-import liquibase.change.AddColumnConfig;
-import liquibase.change.ColumnConfig;
-import liquibase.change.core.AddColumnChange;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;

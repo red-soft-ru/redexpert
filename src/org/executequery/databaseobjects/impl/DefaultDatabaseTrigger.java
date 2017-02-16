@@ -2,14 +2,6 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
-import org.firebirdsql.jdbc.FBDatabaseMetaData;
-import org.firebirdsql.jdbc.FirebirdDatabaseMetaData;
-import org.underworldlabs.jdbc.DataSourceException;
-
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 
 /**
  * Created by vasiliy on 26.01.17.

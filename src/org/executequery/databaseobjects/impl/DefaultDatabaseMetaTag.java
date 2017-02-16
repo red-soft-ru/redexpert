@@ -137,11 +137,23 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 children = loadExceptions();
 
-            }   else if (isUDF()) {
+            } else if (isUDF()) {
 
                 children = loadUDFs();
 
-            }  else {
+            } else if (isSystemDomain()) {
+
+                children = loadSystemDomains();
+
+            } else if (isSystemIndex()) {
+
+                children = loadSystemIndices();
+
+            } else if (isSystemTrigger()) {
+
+                children = loadSystemTriggers();
+
+            } else {
 
                 children = getHost().getTables(getCatalogName(), 
                                                getSchemaName(), 
@@ -278,6 +290,27 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     }
 
+    private List<NamedObject> loadSystemDomains()
+            throws DataSourceException {
+
+        return getSystemDomains();
+
+    }
+
+    private List<NamedObject> loadSystemIndices()
+            throws DataSourceException {
+
+        return getSystemIndices();
+
+    }
+
+    private List<NamedObject> loadSystemTriggers()
+            throws DataSourceException {
+
+        return getSystemTriggers();
+
+    }
+
     public boolean hasChildObjects() throws DataSourceException {
         
         if (!isMarkedForReload() && children != null) {
@@ -343,7 +376,25 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         return hasUDF();
                     }
 
-                }  else {
+                } else if (isSystemDomain()) {
+
+                    if (type == SYSTEM_DOMAIN) {
+                        return hasSystemDomain();
+                    }
+
+                } else if (isSystemIndex()) {
+
+                    if (type == SYSTEM_INDEX) {
+                        return hasSystemIndex();
+                    }
+
+                } else if (isSystemTrigger()) {
+
+                    if (type == SYSTEM_TRIGGER) {
+                        return hasSystemTrigger();
+                    }
+
+                } else {
                     
                     return getHost().hasTablesForType(getCatalogName(), getSchemaName(), getMetaDataKey());                
                 }
@@ -399,6 +450,24 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         int type = getSubType();
         return type == UDF;
+    }
+
+    private boolean isSystemDomain() {
+
+        int type = getSubType();
+        return type == SYSTEM_DOMAIN;
+    }
+
+    private boolean isSystemIndex() {
+
+        int type = getSubType();
+        return type == SYSTEM_INDEX;
+    }
+
+    private boolean isSystemTrigger() {
+
+        int type = getSubType();
+        return type == SYSTEM_TRIGGER;
     }
 
     private String procedureTerm() throws SQLException {
@@ -545,6 +614,63 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         try {
 
             rs = getUDFResultSet();
+            return rs != null && rs.next();
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return false;
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
+    private boolean hasSystemDomain() {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getSystemDomainResultSet();
+            return rs != null && rs.next();
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return false;
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
+    private boolean hasSystemIndex() {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getSystemIndexResultSet();
+            return rs != null && rs.next();
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return false;
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
+    private boolean hasSystemTrigger() {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getSystemTriggerResultSet();
             return rs != null && rs.next();
 
         } catch (SQLException e) {
@@ -815,6 +941,97 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
     }
 
+    private List<NamedObject> getSystemDomains() throws DataSourceException {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getSystemDomainResultSet();
+            List<NamedObject> list = new ArrayList<NamedObject>();
+            while (rs.next()) {
+
+                DefaultDatabaseDomain domain = new DefaultDatabaseDomain(this, rs.getString(1));
+                list.add(domain);
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return new ArrayList<NamedObject>(0);
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
+    private List<NamedObject> getSystemIndices() throws DataSourceException {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getSystemIndexResultSet();
+            List<NamedObject> list = new ArrayList<NamedObject>();
+            while (rs.next()) {
+
+                DefaultDatabaseIndex index = new DefaultDatabaseIndex(rs.getString(1).trim());
+                index.setTableName(rs.getString(2));
+                index.setIndexType(rs.getInt(4));
+                index.setActive(rs.getInt(6) != 1);
+                index.setUnique(rs.getInt(5) == 1);
+                index.setRemarks(rs.getString(7));
+                index.setHost(this.getHost());
+                list.add(index);
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return new ArrayList<NamedObject>(0);
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
+    private List<NamedObject> getSystemTriggers() throws DataSourceException {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getSystemTriggerResultSet();
+            List<NamedObject> list = new ArrayList<NamedObject>();
+            while (rs.next()) {
+
+                DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this, rs.getString(1));
+                trigger.setTableName(rs.getString(3));
+                trigger.setTriggerSequence(rs.getInt(4));
+                trigger.setTriggerActive(rs.getInt(6) != 1);
+                trigger.setTriggerType(rs.getInt(5));
+                trigger.setTriggerDescription(rs.getString(7));
+                trigger.setTriggerSourceCode(rs.getString(2));
+                trigger.setRemarks(rs.getString(7));
+                list.add(trigger);
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return new ArrayList<NamedObject>(0);
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
     private ResultSet getProceduresResultSet() throws SQLException {
         
         String catalogName = catalogNameForQuery();
@@ -840,7 +1057,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "RDB$UNIQUE_FLAG," +
                 "RDB$INDEX_INACTIVE," +
                 "RDB$DESCRIPTION\n" +
-                "FROM RDB$INDICES ORDER BY RDB$INDEX_NAME");
+                "FROM RDB$INDICES " +
+                "where RDB$SYSTEM_FLAG = 0 \n" +
+                "ORDER BY RDB$INDEX_NAME");
 
         return resultSet;
     }
@@ -862,7 +1081,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "t.rdb$description\n" +
                 "\n" +
                 "from rdb$triggers t\n" +
-                "\n" +
+                "where t.rdb$system_flag = 0" +
                 "order by t.rdb$trigger_name");
 
         return resultSet;
@@ -903,15 +1122,14 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
-        ResultSet resultSet = statement.executeQuery("SELECT\n" +
-                "  f.rdb$field_name\n" +
-                "FROM\n" +
-                "  rdb$fields f\n" +
-                "  LEFT JOIN rdb$relation_fields rf\n" +
-                "    ON rf.rdb$field_source = f.rdb$field_name\n" +
-                "WHERE\n" +
-                "  COALESCE(f.rdb$system_flag, 0) = 0\n" +
-                "  group by f.rdb$field_name\n");
+        ResultSet resultSet = statement.executeQuery("select " +
+                "RDB$FIELD_NAME, " +
+                "RDB$SYSTEM_FLAG, " +
+                "RDB$DESCRIPTION\n" +
+                "from RDB$FIELDS\n" +
+                "where RDB$FIELD_NAME not like 'RDB$%'\n" +
+                "and RDB$FIELD_NAME not like 'MON$%'\n" +
+                "order by RDB$FIELD_NAME");
 
         return resultSet;
     }
@@ -949,6 +1167,72 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "RDB$RETURN_ARGUMENT\n" +
                 "from RDB$FUNCTIONS\n" +
                 "order by RDB$FUNCTION_NAME");
+
+        return resultSet;
+    }
+
+    private ResultSet getSystemDomainResultSet() throws SQLException {
+
+        String catalogName = catalogNameForQuery();
+        String schemaName = schemaNameForQuery();
+
+        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+        Statement statement = dmd.getConnection().createStatement();
+
+        ResultSet resultSet = statement.executeQuery("select " +
+                "RDB$FIELD_NAME, " +
+                "RDB$SYSTEM_FLAG, " +
+                "RDB$DESCRIPTION\n" +
+                "from RDB$FIELDS\n" +
+                "where RDB$FIELD_NAME like 'RDB$%'\n" +
+                "or RDB$FIELD_NAME like 'MON$%'\n" +
+                "order by RDB$FIELD_NAME");
+
+        return resultSet;
+    }
+
+    private ResultSet getSystemIndexResultSet() throws SQLException {
+
+        String catalogName = catalogNameForQuery();
+        String schemaName = schemaNameForQuery();
+
+        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+        Statement statement = dmd.getConnection().createStatement();
+
+        ResultSet resultSet = statement.executeQuery("select " +
+                "RDB$INDEX_NAME, " +
+                "RDB$RELATION_NAME, " +
+                "RDB$SYSTEM_FLAG," +
+                "RDB$INDEX_TYPE," +
+                "RDB$UNIQUE_FLAG," +
+                "RDB$INDEX_INACTIVE," +
+                "RDB$DESCRIPTION\n" +
+                "FROM RDB$INDICES \n" +
+                "where RDB$SYSTEM_FLAG = 1 \n" +
+                "ORDER BY RDB$INDEX_NAME");
+
+        return resultSet;
+    }
+
+    private ResultSet getSystemTriggerResultSet() throws SQLException {
+
+        String catalogName = catalogNameForQuery();
+        String schemaName = schemaNameForQuery();
+
+        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+        Statement statement = dmd.getConnection().createStatement();
+
+        ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name,\n" +
+                "t.rdb$trigger_source,\n" +
+                "t.rdb$relation_name,\n" +
+                "t.rdb$trigger_sequence,\n" +
+                "t.rdb$trigger_type,\n" +
+                "t.rdb$trigger_inactive,\n" +
+                "t.rdb$description\n" +
+                "\n" +
+                "from rdb$triggers t\n" +
+                "where t.rdb$system_flag <> 0" +
+                "order by t.rdb$trigger_name");
 
         return resultSet;
     }

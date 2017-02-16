@@ -192,6 +192,18 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                     setIcon(icons.get(BrowserConstants.UDF_IMAGE));
                     break;
                 }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system domain") == 0) {
+                    setIcon(icons.get(BrowserConstants.SYSTEM_DOMAIN_IMAGE));
+                    break;
+                }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system index") == 0) {
+                    setIcon(icons.get(BrowserConstants.SYSTEM_INDEX_IMAGE));
+                    break;
+                }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system trigger") == 0) {
+                    setIcon(icons.get(BrowserConstants.SYSTEM_TRIGGER_IMAGE));
+                    break;
+                }
 
                 setIcon(icons.get(BrowserConstants.DATABASE_OBJECT_IMAGE));
                 break;

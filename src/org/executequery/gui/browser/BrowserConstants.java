@@ -204,6 +204,12 @@ public class BrowserConstants {
     public static final String EXCEPTION_IMAGE = "exception16.png";
 
     public static final String UDF_IMAGE = "udf16.png";
+
+    public static final String SYSTEM_DOMAIN_IMAGE = "SystemDomain16.png";
+
+    public static final String SYSTEM_INDEX_IMAGE = "SystemIndex16.png";
+
+    public static final String SYSTEM_TRIGGER_IMAGE = "SystemTrigger.png";
     
     public static final String[] NODE_ICONS = {CONNECTIONS_IMAGE,
                                                CONNECTIONS_FOLDER_IMAGE,
@@ -233,7 +239,10 @@ public class BrowserConstants {
                                                FOLDER_PRIMARY_KEYS_IMAGE,
                                                DOMAIN_IMAGE,
                                                 EXCEPTION_IMAGE,
-                                                UDF_IMAGE
+                                                UDF_IMAGE,
+                                                SYSTEM_DOMAIN_IMAGE,
+                                                SYSTEM_INDEX_IMAGE,
+                                                SYSTEM_TRIGGER_IMAGE
                                                };
     
 }

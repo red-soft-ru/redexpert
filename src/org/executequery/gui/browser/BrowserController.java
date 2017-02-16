@@ -360,6 +360,7 @@ public class BrowserController {
                     return procsPanel;
 
                 case NamedObject.TRIGGER:
+                case NamedObject.SYSTEM_TRIGGER:
                     BrowserTriggerPanel triggerPanel = null;
                     if (!viewPanel.containsPanel(BrowserTriggerPanel.NAME)) {
                         triggerPanel = new BrowserTriggerPanel(this);
@@ -388,6 +389,7 @@ public class BrowserController {
                     return sequencePanel;
 
                 case NamedObject.DOMAIN:
+                case NamedObject.SYSTEM_DOMAIN:
                     BrowserDomainPanel domainPanel = null;
                     if (!viewPanel.containsPanel(BrowserDomainPanel.NAME)) {
                         domainPanel = new BrowserDomainPanel(this);
@@ -430,6 +432,7 @@ public class BrowserController {
                     return browserUDFPanel;
 
                 case NamedObject.INDEX:
+                case NamedObject.SYSTEM_INDEX:
                     BrowserIndexPanel browserIndexPanel = null;
                     if (!viewPanel.containsPanel(BrowserIndexPanel.NAME)) {
                         browserIndexPanel = new BrowserIndexPanel(this);

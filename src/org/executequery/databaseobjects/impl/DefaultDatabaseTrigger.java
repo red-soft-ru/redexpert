@@ -169,8 +169,10 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
         sb.append(" POSITION ");
         sb.append(getTriggerSequence());
         sb.append("\n");
-        sb.append(getTriggerSourceCode());
-        sb.append("^");
+        if (triggerSourceCode != null) {
+            sb.append(getTriggerSourceCode());
+            sb.append("^");
+        }
         sb.append("\n\n");
         sb.append("SET TERM ; ^");
 

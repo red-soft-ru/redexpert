@@ -29,6 +29,8 @@ public interface LatestVersionRepository extends Repository {
     ApplicationVersion getLatestVersion();
 
     String getReleaseNotes();
+
+    String getBinaryZipUrl();
     
 }
 

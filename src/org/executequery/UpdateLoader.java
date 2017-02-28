@@ -23,6 +23,7 @@ public class UpdateLoader extends JFrame {
 
     private Thread worker;
     private final String root = "update/";
+    private String binaryZipUrl;
 
     public String getRepo() {
         return repo;
@@ -131,7 +132,10 @@ public class UpdateLoader extends JFrame {
     void update() {
         this.setTitle("Updating from " + repo);
         outText.setText("Contacting Download Server...");
-        this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
+        if (!repo.isEmpty())
+            this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
+        else
+            this.downloadLink = binaryZipUrl;
         download();
     }
 
@@ -292,5 +296,9 @@ public class UpdateLoader extends JFrame {
 
     public String getVersion() {
         return version;
+    }
+
+    public void setBinaryZipUrl(String binaryZip) {
+        this.binaryZipUrl = binaryZip;
     }
 }

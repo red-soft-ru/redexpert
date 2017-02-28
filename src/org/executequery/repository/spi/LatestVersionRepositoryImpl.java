@@ -45,10 +45,15 @@ import org.underworldlabs.util.SystemProperties;
 public class LatestVersionRepositoryImpl implements LatestVersionRepository {
 
     private static final String ADDRESS = "github.com";
+    private String binaryZipUrl = "";
     
     public String getId() {
 
         return REPOSITORY_ID;
+    }
+
+    public String getBinaryZipUrl() {
+        return binaryZipUrl;
     }
     
     public ApplicationVersion getLatestVersion() {
@@ -76,6 +81,14 @@ public class LatestVersionRepositoryImpl implements LatestVersionRepository {
                 if(!version.isEmpty()){
                     if(version.substring(0, 1).equals("v"))
                         version = version.substring(1, version.length());
+                }
+
+                p = Pattern.compile("\"browser_download_url\":\"(.*?)\"", Pattern.CASE_INSENSITIVE);
+
+                m = p.matcher(responseTextLines);
+
+                if (m.find()) {
+                    binaryZipUrl = m.group(1);//responseTextLines.substring(m.start(), m.end()).trim();
                 }
 
                 return new ApplicationVersion(version, build);

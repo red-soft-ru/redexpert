@@ -295,7 +295,15 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
             return buffer.toString();
         }
 
-        StringBuilder buffer = new StringBuilder(typeString);
+        StringBuilder buffer = new StringBuilder();
+
+        if (computedSource != null && !computedSource.isEmpty()) {
+            buffer.append("<domain>");
+            buffer.append(computedSource);
+            buffer.append("/*");
+        }
+
+        buffer.append(typeString);
 
         // if the type doesn't end with a digit or it
         // is a char type then add the size - attempt
@@ -319,6 +327,11 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
                 buffer.append(")");
             }
         }
+
+        if (computedSource != null && !computedSource.isEmpty()) {
+            buffer.append("*/");
+        }
+
         return buffer.toString();
     }
 

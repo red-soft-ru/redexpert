@@ -723,10 +723,34 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                     int fieldLength = rs.getInt(16);
                     String isGen = rs.getString(24);
                     String computedSource = null;
+
+                    Statement statement = dmd.getConnection().createStatement();
+                    ResultSet sourceRS = statement.executeQuery("select " +
+                            " RRF.RDB$FIELD_SOURCE" +
+                            " from RDB$FIELDS RF, " +
+                            "rdb$relation_fields RRF\n" +
+                            "where\n" +
+                            "    RRF.rdb$field_name = '" + column.getName() + "'\n" +
+                            "    and\n" +
+                            "    RRF.rdb$relation_name = '" + table + "'\n" +
+                            "    and\n" +
+                            "    RF.rdb$field_name = RRF.rdb$field_source");
+                    if (sourceRS.next()) {
+                        computedSource = sourceRS.getString(1);
+                        releaseResources(sourceRS);
+                    }
+
+                    if (computedSource != null && !computedSource.isEmpty() &&
+                            !computedSource.substring(0, 3).equalsIgnoreCase("rdb")) {
+                        column.setComputedSource(computedSource);
+                    }
+
                     if (isGen.compareToIgnoreCase("YES") == 0) {
                         column.setGenerated(true);
-                        Statement statement = dmd.getConnection().createStatement();
-                        ResultSet sourceRS = statement.executeQuery("select RF.RDB$COMPUTED_SOURCE, RRF.RDB$FIELD_NAME from RDB$FIELDS RF, " +
+//                        Statement statement = dmd.getConnection().createStatement();
+                        /*ResultSet*/ sourceRS = statement.executeQuery("select RF.RDB$COMPUTED_SOURCE, " +
+                                " RRF.RDB$FIELD_NAME" +
+                                " from RDB$FIELDS RF, " +
                             "rdb$relation_fields RRF\n" +
                             "where\n" +
                             "    RRF.rdb$field_name = '" + column.getName() + "'\n" +

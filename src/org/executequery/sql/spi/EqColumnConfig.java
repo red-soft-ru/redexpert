@@ -42,6 +42,8 @@ class EqColumnConfig extends AddColumnConfig {
     public String getType() {
 
         LiquibaseDataType dataType = DataTypeFactory.getInstance().fromDescription(typeName, database);
+        if (super.getType().contains("<domain>"))
+            return super.getType();
         if (dataType.getMaxParameters(database) < 1) {
 
             return dataType.getName();

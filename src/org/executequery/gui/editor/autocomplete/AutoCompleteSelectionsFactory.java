@@ -462,6 +462,8 @@ public class AutoCompleteSelectionsFactory {
             asList.add(keyword);
         }
 
+        keywords().setDatabaseKeyWords(asList);
+
         addKeywordsFromList(asList, list, 
                 "Database Defined Keyword", AutoCompleteListItemType.DATABASE_DEFINED_KEYWORD);
     }

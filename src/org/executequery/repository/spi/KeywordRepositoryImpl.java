@@ -46,6 +46,7 @@ public class KeywordRepositoryImpl implements KeywordRepository {
     private List<String> userDefinedKeyWords;
 
     private List<String> firebirdKeyWords = new ArrayList<>();
+    private List<String> databaseKeyWords = new ArrayList<>();
 
     public List<String> getSQL92() {
 
@@ -68,12 +69,14 @@ public class KeywordRepositoryImpl implements KeywordRepository {
         int sql92Size = getSQL92().size();
         int userSize = getUserDefinedSQL().size();
         int firebirdSize = this.firebirdKeyWords.size();
+        int dbSize = this.databaseKeyWords.size();
 
-        List<String> allWords = new ArrayList<String>(sql92Size + userSize + firebirdSize);
+        List<String> allWords = new ArrayList<String>(sql92Size + userSize + firebirdSize + dbSize);
         
         allWords.addAll(sql92KeyWords);
         allWords.addAll(userDefinedKeyWords);
         allWords.addAll(this.firebirdKeyWords);
+        allWords.addAll(this.databaseKeyWords);
 
         Collections.sort(allWords);
         
@@ -306,6 +309,9 @@ public class KeywordRepositoryImpl implements KeywordRepository {
         return settings.getUserSettingsDirectory() + "sql.user.keywords";
     }
 
+    public void setDatabaseKeyWords(List<String> list) {
+        this.databaseKeyWords = list;
+    }
 }
 
 

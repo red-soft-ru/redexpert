@@ -31,6 +31,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
@@ -48,6 +50,7 @@ import javax.swing.table.TableColumnModel;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.EventMediator;
+import org.executequery.ExecuteQuery;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.components.TextFieldPanel;
@@ -963,6 +966,16 @@ public class ConnectionPanel extends AbstractConnectionPanel
         if (!properties.containsKey("useGSSAuth") && authCombo.getSelectedItem().toString().equalsIgnoreCase("gss"))
             properties.setProperty("useGSSAuth", "true");
 
+        String name = ManagementFactory.getRuntimeMXBean().getName();
+        String pid = name.split("@")[0];
+        properties.setProperty("process_id", pid);
+        try {
+            String path = ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            properties.setProperty("process_name", path);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
         databaseConnection.setJdbcProperties(properties);
     }
 
@@ -981,8 +994,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
         int count = 0;
         for (Enumeration<?> i = properties.propertyNames(); i.hasMoreElements();) {
             String name = (String)i.nextElement();
-            if (!name.equalsIgnoreCase("password") && !name.equalsIgnoreCase("lc_ctype") &&
-                    !name.equalsIgnoreCase("useGSSAuth") ) {
+            if (!name.equalsIgnoreCase("password") && !name.equalsIgnoreCase("lc_ctype")
+                    && !name.equalsIgnoreCase("useGSSAuth")
+                    && !name.equalsIgnoreCase("process_id")
+                    && !name.equalsIgnoreCase("process_name")) {
                 advancedProperties[count][0] = name;
                 advancedProperties[count][1] = properties.getProperty(name);
                 count++;

@@ -21,6 +21,8 @@
 package org.executequery.datasource;
 
 import java.io.PrintWriter;
+import java.lang.management.ManagementFactory;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -33,6 +35,7 @@ import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.ExecuteQuery;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.log.Log;
@@ -181,7 +184,19 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         for (Iterator i = advancedProperties.keySet().iterator(); i.hasNext();) {
 
             String key = (String) i.next();
+            if (key.equalsIgnoreCase("process_id") || key.equalsIgnoreCase("process_name"))
+                continue;
             properties.put(key, advancedProperties.getProperty(key));
+        }
+
+        String name = ManagementFactory.getRuntimeMXBean().getName();
+        String pid = name.split("@")[0];
+        properties.setProperty("process_id", pid);
+        try {
+            String path = ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            properties.setProperty("process_name", path);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
         }
         
     }

@@ -103,7 +103,7 @@ public class AutoCompleteSelectionsFactory {
             if (autoCompleteSchema) {
 
                 databaseTablesForHost(databaseHost);
-                databaseColumnsForTables(databaseHost, tables);
+//                databaseColumnsForTables(databaseHost, tables);
                 databaseFunctionsAndProceduresForHost(databaseHost);
             }
 
@@ -512,7 +512,55 @@ public class AutoCompleteSelectionsFactory {
         return (KeywordRepository)RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
     }
 
-    
+    public List<AutoCompleteListItem> buildItemsForTable(DatabaseHost databaseHost, String tableString) {
+        ResultSet rs = null;
+        List<ColumnInformation> columns = new ArrayList<ColumnInformation>();
+        List<AutoCompleteListItem> list = new ArrayList<AutoCompleteListItem>();
+
+        String catalog = databaseHost.getCatalogNameForQueries(defaultCatalogForHost(databaseHost));
+        String schema = databaseHost.getSchemaNameForQueries(defaultSchemaForHost(databaseHost));
+        DatabaseMetaData dmd = databaseHost.getDatabaseMetaData();
+
+        try {
+
+            rs = dmd.getColumns(catalog, schema, tableString, null);
+            while (rs.next()) {
+
+                String name = rs.getString(4);
+                columns.add(columnInformationFactory.build(
+                        tableString,
+                        name,
+                        rs.getString(6),
+                        rs.getInt(5),
+                        rs.getInt(7),
+                        rs.getInt(9),
+                        rs.getInt(11) == DatabaseMetaData.columnNoNulls));
+            }
+
+            for (ColumnInformation column : columns) {
+
+                list.add(new AutoCompleteListItem(
+                        column.getName(),
+                        tableString,
+                        column.getDescription(),
+                        DATABASE_COLUMN_DESCRIPTION,
+                        AutoCompleteListItemType.DATABASE_TABLE_COLUMN));
+            }
+        } catch (Throwable e) {
+
+            // don't want to break the editor here so just log and bail...
+
+            error("Error retrieving column data for table " + tableString + " - driver returned: " + e.getMessage());
+
+        } finally {
+
+            releaseResources(rs);
+        }
+
+        return list;
+
+    }
+
     static class AutoCompleteListItemComparator implements Comparator<AutoCompleteListItem> {
 
         public int compare(AutoCompleteListItem o1, AutoCompleteListItem o2) {

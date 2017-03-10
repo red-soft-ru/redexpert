@@ -342,17 +342,28 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
 
         List<AutoCompleteListItem> searchList = autoCompleteListItems;
         String wordPrefix = prefix.trim().toUpperCase();
+        String tableString = "";
 
         int dotIndex = prefix.indexOf('.');
         boolean hasDotIndex = (dotIndex != -1);
         if (hasDotIndex) {
 
+            tableString = wordPrefix.substring(0, dotIndex);
             wordPrefix = wordPrefix.substring(dotIndex + 1);
 
         } else if (wordPrefix.length() < MINIMUM_CHARS_FOR_DATABASE_LOOKUP && !hasTables) {
 
             return buildItemsStartingWithForList(
                     selectionsFactory.buildKeywords(databaseHost, autoCompleteKeywords), tables, wordPrefix, false);
+        }
+
+        // try to get columns for table
+        if (hasDotIndex) {
+            List<AutoCompleteListItem> itemsForTable =
+                    selectionsFactory.buildItemsForTable(databaseHost, tableString);
+
+            if (!itemsForTable.isEmpty())
+                return itemsForTable;
         }
 
         List<AutoCompleteListItem> itemsStartingWith =

@@ -143,18 +143,6 @@ public class PerfLoggerController {
 
             doRefreshData();
 
-            final StringBuilder txt = new StringBuilder();
-
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        jdbcLoggerPanel.lblStatus.setText(txt.toString());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
         }
 
         void doRefreshData() {

@@ -47,7 +47,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObjectFactory;
@@ -55,7 +54,6 @@ import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.gui.editor.ConnectionChangeListener;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.log.Log;
-import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.spi.KeywordRepositoryImpl;
 import org.executequery.sql.DerivedQuery;
 import org.executequery.sql.QueryTable;

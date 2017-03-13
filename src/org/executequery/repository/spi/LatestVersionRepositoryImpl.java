@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import org.executequery.ApplicationException;
 import org.executequery.ApplicationVersion;
 import org.executequery.Constants;
+import org.executequery.GUIUtilities;
 import org.executequery.http.RemoteHttpClient;
 import org.executequery.http.RemoteHttpClientException;
 import org.executequery.http.RemoteHttpResponse;
@@ -148,8 +149,12 @@ public class LatestVersionRepositoryImpl implements LatestVersionRepository {
             return remoteHttpClient().hostReachable(ADDRESS);
             
         } catch (Exception e) {
+
+            GUIUtilities.displayErrorMessage("Unable to check for update. This feature requires an " +
+                    "active internet connection.\nIf using a proxy server, " +
+                            "please configure this through the user preferences " +
+                            "> general selection.");
             
-            Log.error(e.getMessage(), e);
             throw new ApplicationException(ioErrorMessage());
         }
     }

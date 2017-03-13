@@ -58,7 +58,14 @@ public class PropertiesConns extends AbstractPropertiesBasePanel {
                     "General",
                     null));
 
-        String key = "connection.initialcount";
+        String key = "connection.usepool";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Use connection pool",
+                new Boolean(SystemProperties.getProperty("user", key))));
+
+        key = "connection.initialcount";
         list.add(new UserPreference(
                 UserPreference.INTEGER_TYPE,
                 1,

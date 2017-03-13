@@ -354,6 +354,7 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
         if (hasDotIndex) {
 
             tableString = wordPrefix.substring(0, dotIndex);
+            tableString = tableString.replace("(", "");
             wordPrefix = wordPrefix.substring(dotIndex + 1);
 
         } else if (wordPrefix.length() < MINIMUM_CHARS_FOR_DATABASE_LOOKUP && !hasTables) {
@@ -375,11 +376,22 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
         if (hasDotIndex) {
             KeywordRepositoryImpl kw = new KeywordRepositoryImpl();
             List<String> sql92 = kw.getSQL92();
-            Pattern pattern = Pattern.compile("(\\w+)\\s(" + tableString + "\\b)",
+            Pattern pattern = Pattern.compile("([A-z]*\\$\\w+)\\s("
+                            + tableString
+                            + "\\b)|(\\w+)\\s("
+                            + tableString
+                            + "\\b)",
                     Pattern.CASE_INSENSITIVE);
             Matcher matcher = pattern.matcher(editorText);
             while (matcher.find()) {
-                String tableFromAlias = matcher.group(1);
+                String tableFromAlias = "";
+                String tableFromAlias1 = matcher.group(1);
+                String tableFromAlias3 = matcher.group(3);
+
+                if (tableFromAlias1 != null)
+                    tableFromAlias = tableFromAlias1;
+                else if (tableFromAlias3 != null)
+                    tableFromAlias = tableFromAlias3;
 
                 if (sql92.contains(tableFromAlias.toUpperCase()))
                     continue;

@@ -399,8 +399,11 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
                 List<AutoCompleteListItem> itemsForTable =
                         selectionsFactory.buildItemsForTable(databaseHost, tableFromAlias.toUpperCase());
 
-                if (!itemsForTable.isEmpty())
-                    return itemsForTable;
+                if (!itemsForTable.isEmpty()) {
+                    itemsForTable =
+                            buildItemsStartingWithForList(itemsForTable, tables, wordPrefix, hasDotIndex);
+                }
+                return itemsForTable;
             }
         }
 

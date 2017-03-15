@@ -372,7 +372,8 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
                 itemsForTable =
                         buildItemsStartingWithForList(itemsForTable, tables, wordPrefix, hasDotIndex);
             }
-            return itemsForTable;
+            if (!itemsForTable.isEmpty())
+                return itemsForTable;
         }
 
         // maybe alias?

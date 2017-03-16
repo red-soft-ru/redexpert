@@ -100,6 +100,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     private String charset;
 
+    private String role;
+
     private String authMethod;
     
     private String folderId;
@@ -232,6 +234,14 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     public void setCharset(String charset) {
         this.charset = charset;
+    }
+
+    public String getRole() {
+        return role == null ? Constants.EMPTY : role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public String getAuthMethod() {

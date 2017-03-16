@@ -1374,6 +1374,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         urlField.setText(databaseConnection.getURL());
         nameField.setText(databaseConnection.getName());
         charsetsCombo.setSelectedItem(databaseConnection.getCharset());
+        roleField.setText(databaseConnection.getRole());
         authCombo.setSelectedItem(databaseConnection.getAuthMethod());
 
         // assign as the current connection
@@ -1415,6 +1416,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         databaseConnection.setPort(portField.getText());
         databaseConnection.setSourceName(sourceField.getText());
         databaseConnection.setURL(urlField.getText());
+        databaseConnection.setRole(roleField.getText());
         databaseConnection.setCharset(charsetsCombo.getSelectedItem().toString());
         databaseConnection.setAuthMethod(authCombo.getSelectedItem().toString());
 

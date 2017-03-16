@@ -188,8 +188,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private JTextField urlField;
 
     private JComboBox charsetsCombo;
+    private JTextField roleField;
 
     private JComboBox authCombo;
+    private JComboBox methodCombo;
 
     private JLabel statusLabel;
     
@@ -197,6 +199,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private JButton txApplyButton;
 
     JPanel basicPanel;
+    JPanel standardPanel;
+    JPanel jdbcUrlPanel;
     
     // -------------------------------
 
@@ -245,20 +249,34 @@ public class ConnectionPanel extends AbstractConnectionPanel
         auth.add("Basic");
         auth.add("GSS");
         authCombo = new JComboBox(auth.toArray());
-        authCombo.addItemListener(new ItemListener()
-        {
-            @Override
-            public void itemStateChanged(ItemEvent e)
+        authCombo.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED)
             {
-                if (e.getStateChange() == ItemEvent.SELECTED)
-                {
-                    Object selectedItem = e.getItem();
-                    if (selectedItem.toString().equalsIgnoreCase("basic")) {
-                        basicPanel.setVisible(true);
-                    }
-                    else if (selectedItem.toString().equalsIgnoreCase("gss")) {
-                        basicPanel.setVisible(false);
-                    }
+                Object selectedItem = e.getItem();
+                if (selectedItem.toString().equalsIgnoreCase("basic")) {
+                    basicPanel.setVisible(true);
+                }
+                else if (selectedItem.toString().equalsIgnoreCase("gss")) {
+                    basicPanel.setVisible(false);
+                }
+            }
+        });
+
+        List<String> methods = new ArrayList<>();
+        methods.add("Standard");
+        methods.add("JDBC");
+        methodCombo = new JComboBox(methods.toArray());
+        methodCombo.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED)
+            {
+                Object selectedItem = e.getItem();
+                if (selectedItem.toString().equalsIgnoreCase("standard")) {
+                    standardPanel.setVisible(true);
+                    jdbcUrlPanel.setVisible(false);
+                }
+                else if (selectedItem.toString().equalsIgnoreCase("jdbc")) {
+                    standardPanel.setVisible(false);
+                    jdbcUrlPanel.setVisible(true);
                 }
             }
         });
@@ -269,6 +287,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         hostField = createTextField();
         portField = createNumberTextField();
         sourceField = createMatchedWidthTextField();
+        roleField = createTextField();
         userField = createTextField();
         urlField = createMatchedWidthTextField();
 
@@ -297,27 +316,58 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.gridy = 0;
         gbc.gridx = 0;
-        
+
         statusLabel = new DefaultFieldLabel();
         addLabelFieldPair(mainPanel, "Status:", 
                 statusLabel, "Current connection status", gbc);
+
+        addDriverFields(mainPanel, gbc);
         
         gbc.insets.bottom = 5;
         addLabelFieldPair(mainPanel, "Connection Name:", 
                 nameField, "A friendly name for this connection", gbc);
 
-        addLabelFieldPair(mainPanel, "Authentication:",
-                authCombo, "Available authentications", gbc);
+//        addLabelFieldPair(mainPanel, "Authentication:",
+//                authCombo, "Available authentications", gbc);
+
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.weightx = 1.0;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
 
         basicPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints bgbc = new GridBagConstraints();
+        bgbc.fill = GridBagConstraints.HORIZONTAL;
+        bgbc.anchor = GridBagConstraints.NORTHWEST;
+        bgbc.insets = new Insets(5, 5, 5, 5);
 
-        addLabelFieldPair(basicPanel, "User Name:",
-                userField, "Login user name", gbc);
+        JLabel userLabel = new DefaultFieldLabel("User Name:");
+        bgbc.gridx = 0;
+        bgbc.gridwidth = 1;
+        bgbc.weightx = 0;
+        basicPanel.add(userLabel, bgbc);
 
-        addLabelFieldPair(basicPanel, "Password:",
-                passwordField, "Login password", gbc);
+        bgbc.gridx = 1;
+        bgbc.insets.left = 5;
+        bgbc.weightx = 0.25;
+        basicPanel.add(userField, bgbc);
 
-        mainPanel.add(basicPanel, gbc);
+        JLabel passwordLabel = new DefaultFieldLabel("Password:");
+        bgbc.gridx = 2;
+        bgbc.gridwidth = 1;
+        bgbc.weightx = 0;
+        basicPanel.add(passwordLabel, bgbc);
+
+        bgbc.gridx = 3;
+        bgbc.insets.left = 5;
+        bgbc.weightx = 0.25;
+        basicPanel.add(passwordField, bgbc);
+
+//        addLabelFieldPair(basicPanel, "User Name:",
+//                userField, "Login user name", gbc);
+//
+//        addLabelFieldPair(basicPanel, "Password:",
+//                passwordField, "Login password", gbc);
 
         JButton showPassword = new LinkButton("Show Password");
         showPassword.setActionCommand("showPassword");
@@ -325,22 +375,85 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         JPanel passwordOptionsPanel = new JPanel(new GridBagLayout());
         addComponents(passwordOptionsPanel,
-                      new ComponentToolTipPair[]{
+                new ComponentToolTipPair[]{
                         new ComponentToolTipPair(savePwdCheck, "Store the password with the connection information"),
                         new ComponentToolTipPair(encryptPwdCheck, "Encrypt the password when saving"),
                         new ComponentToolTipPair(showPassword, "Show the password in plain text")});
-        
-        gbc.gridy++;
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        basicPanel.add(passwordOptionsPanel, gbc);
-        
-        addLabelFieldPair(mainPanel, "Host Name:", 
-                hostField, "Server host name or IP address", gbc);
 
-        addLabelFieldPair(mainPanel, "Port:", 
-                portField, "Database port number", gbc);
+//        gbc.gridy++;
+//        gbc.gridx = 1;
+//        gbc.weightx = 1.0;
+//        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        bgbc.gridx = 3;
+        bgbc.gridy = 1;
+        bgbc.insets.left = 5;
+        bgbc.weightx = 0.1;
+        basicPanel.add(passwordOptionsPanel, bgbc);
+
+        JLabel charsetLabel = new DefaultFieldLabel("Character Set:");
+        bgbc.gridy = 2;
+        bgbc.gridx = 0;
+        bgbc.gridwidth = 1;
+        bgbc.weightx = 0;
+        basicPanel.add(charsetLabel, bgbc);
+
+        bgbc.gridx = 1;
+        bgbc.gridwidth = 1;
+        bgbc.insets.left = 5;
+        bgbc.weightx = 0.25;
+        basicPanel.add(charsetsCombo, bgbc);
+
+        JLabel roleLabel = new DefaultFieldLabel("Role:");
+        bgbc.gridy = 2;
+        bgbc.gridx = 2;
+        bgbc.gridwidth = 1;
+        bgbc.weightx = 0;
+        basicPanel.add(roleLabel, bgbc);
+
+        bgbc.gridx = 3;
+        bgbc.gridwidth = 2;
+        bgbc.insets.left = 5;
+        bgbc.weightx = 0.5;
+        basicPanel.add(roleField, bgbc);
+
+//        mainPanel.add(basicPanel, gbc);
+
+        addLabelFieldPair(mainPanel, "Connection parameters:",
+                methodCombo, "Specify connection parameters or JDBC string", gbc);
+
+        standardPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints sgbc = new GridBagConstraints();
+        sgbc.fill = GridBagConstraints.HORIZONTAL;
+        sgbc.anchor = GridBagConstraints.NORTHWEST;
+        sgbc.insets = new Insets(5, 5, 5, 5);
+
+        JLabel hostLabel = new DefaultFieldLabel("Host Name:");
+        sgbc.gridx = 0;
+        sgbc.gridwidth = 1;
+        sgbc.weightx = 0;
+        standardPanel.add(hostLabel, sgbc);
+
+        sgbc.gridx = 1;
+        sgbc.insets.left = 5;
+        sgbc.weightx = 0.25;
+        standardPanel.add(hostField, sgbc);
+
+        JLabel portLabel = new DefaultFieldLabel("Port:");
+        sgbc.gridx = 2;
+        sgbc.insets.left = 5;
+        sgbc.weightx = 0;
+        standardPanel.add(portLabel, sgbc);
+
+        sgbc.gridx = 3;
+        sgbc.insets.left = 5;
+        sgbc.weightx = 0.1;
+        standardPanel.add(portField, sgbc);
+
+        JLabel dataSourceLabel = new DefaultFieldLabel("Data Source:");
+        sgbc.gridx = 4;
+        sgbc.insets.left = 5;
+        sgbc.weightx = 0;
+        standardPanel.add(dataSourceLabel, sgbc);
 
         JButton openFile = new JButton("Choose file");
         openFile.addActionListener(new ActionListener() {
@@ -360,16 +473,77 @@ public class ConnectionPanel extends AbstractConnectionPanel
         selectFilePanel.add(sourceField, BorderLayout.CENTER);
         selectFilePanel.add(openFile, BorderLayout.LINE_END);
 
-        addLabelFieldPair(mainPanel, "Data Source:",
-                selectFilePanel, "Data source name", gbc);
+//        addLabelFieldPair(mainPanel, "Data Source:",
+//                selectFilePanel, "Data source name", gbc);
 
-        addLabelFieldPair(mainPanel, "Character Set:",
-                charsetsCombo, "Default character set for this connection", gbc);
+//        addLabelFieldPair(mainPanel, "Character Set:",
+//                charsetsCombo, "Default character set for this connection", gbc);
 
-        addLabelFieldPair(mainPanel, "JDBC URL:", 
-                urlField, "The full JDBC URL for this connection (optional)", gbc);
+        sgbc.gridx = 5;
+        sgbc.insets.left = 5;
+        sgbc.weightx = 0.25;
+        standardPanel.add(selectFilePanel, sgbc);
 
-        addDriverFields(mainPanel, gbc);
+//        addLabelFieldPair(mainPanel, "Authentication:",
+//                authCombo, "Available authentications", gbc);
+        JLabel authLabel = new DefaultFieldLabel("Authentication:");
+        sgbc.gridy = 1;
+        sgbc.gridx = 0;
+        sgbc.gridwidth = 1;
+        sgbc.weightx = 0;
+        standardPanel.add(authLabel, sgbc);
+
+        sgbc.gridx = 1;
+        sgbc.insets.left = 5;
+        sgbc.weightx = 0.25;
+        sgbc.gridwidth = GridBagConstraints.REMAINDER;
+        standardPanel.add(authCombo, sgbc);
+
+        sgbc.gridy++;
+        sgbc.gridx = 0;
+        sgbc.gridwidth = GridBagConstraints.REMAINDER;
+        standardPanel.add(basicPanel, sgbc);
+
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.insets.top = 10;
+
+//        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        mainPanel.add(standardPanel, gbc);
+
+//        addLabelFieldPair(mainPanel, "Host Name:",
+//                hostField, "Server host name or IP address", gbc);
+
+//        addLabelFieldPair(mainPanel, "Port:",
+//                portField, "Database port number", gbc);
+
+        jdbcUrlPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints jgbc = new GridBagConstraints();
+        jgbc.fill = GridBagConstraints.HORIZONTAL;
+        jgbc.anchor = GridBagConstraints.NORTHWEST;
+        jgbc.insets = new Insets(5, 5, 5, 5);
+
+        JLabel urlLabel = new DefaultFieldLabel("JDBC URL:");
+        jgbc.gridx = 0;
+        jgbc.gridwidth = 1;
+        jgbc.weightx = 0;
+        jdbcUrlPanel.add(urlLabel, jgbc);
+
+        jgbc.gridx = 1;
+        jgbc.insets.left = 5;
+        jgbc.weightx = 1.0;
+        jdbcUrlPanel.add(urlField, jgbc);
+
+//        addLabelFieldPair(mainPanel, "JDBC URL:",
+//                urlField, "The full JDBC URL for this connection (optional)", gbc);
+
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.insets.top = 10;
+
+//        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        mainPanel.add(jdbcUrlPanel, gbc);
+        jdbcUrlPanel.setVisible(false);
 
         connectButton = createButton("Connect", CONNECT_ACTION_COMMAND, 'T');
         disconnectButton = createButton("Disconnect", "disconnect", 'D');

@@ -1126,7 +1126,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
             if (!MiscUtils.isNull(key) && !MiscUtils.isNull(value)) {
 
-                if (key.equalsIgnoreCase("lc_ctype") || key.equalsIgnoreCase("useGSSAuth"))
+                if (key.equalsIgnoreCase("lc_ctype") || key.equalsIgnoreCase("useGSSAuth")
+                    || key.equalsIgnoreCase("roleName"))
                         /*&& !charsetsCombo.getSelectedItem().toString().equals("NONE")*/
                     continue;
                 properties.setProperty(key, value);
@@ -1139,6 +1140,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         if (!properties.containsKey("useGSSAuth") && authCombo.getSelectedItem().toString().equalsIgnoreCase("gss"))
             properties.setProperty("useGSSAuth", "true");
+
+        if (!properties.containsKey("roleName") && !roleField.getText().isEmpty())
+            properties.setProperty("roleName", roleField.getText());
 
         String name = ManagementFactory.getRuntimeMXBean().getName();
         String pid = name.split("@")[0];
@@ -1171,7 +1175,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
             if (!name.equalsIgnoreCase("password") && !name.equalsIgnoreCase("lc_ctype")
                     && !name.equalsIgnoreCase("useGSSAuth")
                     && !name.equalsIgnoreCase("process_id")
-                    && !name.equalsIgnoreCase("process_name")) {
+                    && !name.equalsIgnoreCase("process_name")
+                    && !name.equalsIgnoreCase("roleName")) {
                 advancedProperties[count][0] = name;
                 advancedProperties[count][1] = properties.getProperty(name);
                 count++;

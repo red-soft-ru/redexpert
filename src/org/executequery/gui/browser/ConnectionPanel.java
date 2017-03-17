@@ -1381,6 +1381,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         charsetsCombo.setSelectedItem(databaseConnection.getCharset());
         roleField.setText(databaseConnection.getRole());
         authCombo.setSelectedItem(databaseConnection.getAuthMethod());
+        methodCombo.setSelectedItem(databaseConnection.getConnectionMethod());
 
         // assign as the current connection
         this.databaseConnection = databaseConnection;
@@ -1424,6 +1425,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         databaseConnection.setRole(roleField.getText());
         databaseConnection.setCharset(charsetsCombo.getSelectedItem().toString());
         databaseConnection.setAuthMethod(authCombo.getSelectedItem().toString());
+        databaseConnection.setConnectionMethod(methodCombo.getSelectedItem().toString());
 
         // jdbc driver selection
         int driverIndex = driverCombo.getSelectedIndex();

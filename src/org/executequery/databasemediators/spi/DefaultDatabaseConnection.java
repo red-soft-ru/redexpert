@@ -103,6 +103,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     private String role;
 
     private String authMethod;
+
+    private String connectionMethod;
     
     private String folderId;
     
@@ -242,6 +244,14 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getConnectionMethod() {
+        return connectionMethod == null ? "Standard" : connectionMethod;
+    }
+
+    public void setConnectionMethod(String method) {
+        this.connectionMethod = method;
     }
 
     public String getAuthMethod() {

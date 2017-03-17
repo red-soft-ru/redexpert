@@ -129,8 +129,13 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     protected final String generateUrl(DatabaseConnection databaseConnection) {
 
         String url = databaseConnection.getURL();
-        
-        if (StringUtils.isBlank(url)) {
+
+        String connectionMethod = databaseConnection.getConnectionMethod();
+
+        if (connectionMethod.equalsIgnoreCase("jdbc")) {
+            Log.info("Using user specified JDBC URL: "+url);
+
+        } else {
         
             url = databaseConnection.getJDBCDriver().getURL();            
             Log.info("JDBC URL pattern: " + url);
@@ -141,9 +146,6 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
             Log.info("JDBC URL generated: "+url);
             Log.info("JDBC properties: " + properties);
     
-        } else {
-
-            Log.info("Using user specified JDBC URL: " + url);
         }
 
         return url;

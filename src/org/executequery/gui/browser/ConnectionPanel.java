@@ -449,7 +449,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         sgbc.weightx = 0.1;
         standardPanel.add(portField, sgbc);
 
-        JLabel dataSourceLabel = new DefaultFieldLabel("Data Source:");
+        JLabel dataSourceLabel = new DefaultFieldLabel("Database File:");
         sgbc.gridx = 4;
         sgbc.insets.left = 5;
         sgbc.weightx = 0;

@@ -199,6 +199,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLRepository<Datab
     private static final String CHARSET = "charset";
     private static final String ROLE = "role";
     private static final String AUTH_METHOD = "authmethod";
+    private static final String CONNECTION_METHOD = "connectionmethod";
     private static final String URL = "url";
     private static final String DRIVER_NAME = "drivername";
     private static final String ADVANCED = "advanced";
@@ -325,6 +326,10 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLRepository<Datab
             } else if (localNameIsKey(localName, AUTH_METHOD)) {
 
                 databaseConnection.setAuthMethod(contentsAsString);
+
+            } else if (localNameIsKey(localName, CONNECTION_METHOD)) {
+
+                databaseConnection.setConnectionMethod(contentsAsString);
 
             } else if (localNameIsKey(localName, URL)) {
 
@@ -547,6 +552,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLRepository<Datab
                 writeXML(CHARSET, connection.getCharset(), INDENT_TWO);
                 writeXML(ROLE, connection.getRole(), INDENT_TWO);
                 writeXML(AUTH_METHOD, connection.getAuthMethod(), INDENT_TWO);
+                writeXML(CONNECTION_METHOD, connection.getConnectionMethod(), INDENT_TWO);
                 writeXML(URL, connection.getURL(), INDENT_TWO);
 
                 // TODO: remove driver name from save

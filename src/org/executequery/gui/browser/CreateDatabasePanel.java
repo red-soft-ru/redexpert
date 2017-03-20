@@ -392,7 +392,7 @@ public class CreateDatabasePanel extends ActionPanel
                 charsets.clear();
 
             String resource = FileUtils.loadResource("org/executequery/charsets.properties");
-            String[] strings = resource.split(System.getProperty("line.separator"));
+            String[] strings = resource.split("\n");
             for(String s : strings){
                 if (!s.startsWith("#") && !s.isEmpty())
                     charsets.add(s);

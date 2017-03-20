@@ -324,7 +324,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         addDriverFields(mainPanel, gbc);
         
         gbc.insets.bottom = 5;
-        addLabelFieldPair(mainPanel, "Connection Name:", 
+        addLabelFieldPair(mainPanel, "Connection Name (Database Alias):",
                 nameField, "A friendly name for this connection", gbc);
 
 //        addLabelFieldPair(mainPanel, "Authentication:",
@@ -427,7 +427,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         sgbc.anchor = GridBagConstraints.NORTHWEST;
         sgbc.insets = new Insets(5, 5, 5, 5);
 
-        JLabel hostLabel = new DefaultFieldLabel("Host Name:");
+        JLabel hostLabel = new DefaultFieldLabel("Server(Host) Name:");
         sgbc.gridx = 0;
         sgbc.gridwidth = 1;
         sgbc.weightx = 0;
@@ -693,7 +693,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 charsets.clear();
 
             String resource = FileUtils.loadResource("org/executequery/charsets.properties");
-            String[] strings = resource.split(System.getProperty("line.separator"));
+            String[] strings = resource.split("\n"/*System.getProperty("line.separator")*/);
             for(String s : strings){
                 if (!s.startsWith("#") && !s.isEmpty())
                     charsets.add(s);

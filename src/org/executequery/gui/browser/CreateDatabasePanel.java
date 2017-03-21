@@ -667,6 +667,15 @@ public class CreateDatabasePanel extends ActionPanel
 
             db.close();
 
+        } catch (UnsatisfiedLinkError linkError) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Cannot create database, because fbclient library not found in environment path variable. \n");
+            sb.append("Please, add fbclient library to environment path variable.\n");
+            sb.append("Example for Windows system: setx path \"%path%;C:\\Program Files (x86)\\RedDatabase\\bin\\\"\n\n");
+            sb.append("Example for Linux system: export PATH=$PATH:/opt/RedDatabase/lib\n\n");
+            sb.append(linkError.getMessage());
+            GUIUtilities.displayExceptionErrorDialog(sb.toString(), linkError);
+            return;
         } catch (Exception e) {
             StringBuilder sb = new StringBuilder();
             sb.append("The connection to the database could not be established.");

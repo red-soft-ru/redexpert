@@ -1413,14 +1413,14 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
             return;
         }
-        
+        String path = sourceField.getText().replace("\\", "/");
         databaseConnection.setPasswordStored(savePwdCheck.isSelected());
         databaseConnection.setPasswordEncrypted(encryptPwdCheck.isSelected());
         databaseConnection.setUserName(userField.getText());
         databaseConnection.setPassword(MiscUtils.charsToString(passwordField.getPassword()));
         databaseConnection.setHost(hostField.getText());
         databaseConnection.setPort(portField.getText());
-        databaseConnection.setSourceName(sourceField.getText());
+        databaseConnection.setSourceName(path);
         databaseConnection.setURL(urlField.getText());
         databaseConnection.setRole(roleField.getText());
         databaseConnection.setCharset(charsetsCombo.getSelectedItem().toString());

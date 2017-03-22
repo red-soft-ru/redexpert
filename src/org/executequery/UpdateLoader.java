@@ -194,20 +194,25 @@ public class UpdateLoader extends JFrame {
         }
     }
 
-    private void copyFiles(File f, String dir) throws IOException {
+    private void copyFiles(File f, String dir) {
         File[] files = f.listFiles();
         for (File ff : files) {
             if (ff.isDirectory()) {
                 new File(dir + "/" + ff.getName()).mkdir();
                 copyFiles(ff, dir + "/" + ff.getName());
             } else {
-                copy(ff.getAbsolutePath(), dir + "/" + ff.getName());
+                try {
+                    copy(ff.getAbsolutePath(), dir + "/" + ff.getName());
+                } catch (IOException e) {
+                    outText.setText(outText.getText() + "\n Copying error. " +
+                        e.getMessage());
+                }
             }
 
         }
     }
 
-    public void copy(String srFile, String dtFile) throws FileNotFoundException, IOException {
+    public void copy(String srFile, String dtFile) throws IOException {
 
         File f1 = new File(srFile);
         File f2 = new File(dtFile);
@@ -225,39 +230,51 @@ public class UpdateLoader extends JFrame {
         out.close();
     }
 
-    private void unzip() throws IOException {
+    private void unzip() {
         int BUFFER = 2048;
         BufferedOutputStream dest = null;
         BufferedInputStream is = null;
         ZipEntry entry;
-        ZipFile zipfile = new ZipFile("update.zip");
-        Enumeration e = zipfile.entries();
-        (new File(root)).mkdir();
-        while (e.hasMoreElements()) {
-            entry = (ZipEntry) e.nextElement();
-            outText.setText(outText.getText() + "\nExtracting: " + entry);
-            if (entry.isDirectory())
-                (new File(root + entry.getName())).mkdir();
-            else {
-                (new File(root + entry.getName())).createNewFile();
-                is = new BufferedInputStream
-                        (zipfile.getInputStream(entry));
-                int count;
-                byte data[] = new byte[BUFFER];
-                FileOutputStream fos = new
-                        FileOutputStream(root + entry.getName());
-                dest = new
-                        BufferedOutputStream(fos, BUFFER);
-                while ((count = is.read(data, 0, BUFFER))
-                        != -1) {
-                    dest.write(data, 0, count);
+        try {
+            ZipFile zipfile = new ZipFile("update.zip");
+            Enumeration e = zipfile.entries();
+            (new File(root)).mkdir();
+            while (e.hasMoreElements()) {
+                entry = (ZipEntry) e.nextElement();
+                outText.setText(outText.getText() + "\nExtracting: " + entry);
+                if (entry.isDirectory())
+                    (new File(root + entry.getName())).mkdir();
+                else {
+                    (new File(root + entry.getName())).createNewFile();
+                    is = new BufferedInputStream
+                            (zipfile.getInputStream(entry));
+                    int count;
+                    byte data[] = new byte[BUFFER];
+                    try {
+                        FileOutputStream fos = new
+                                FileOutputStream(root + entry.getName());
+                        dest = new
+                                BufferedOutputStream(fos, BUFFER);
+                        while ((count = is.read(data, 0, BUFFER))
+                                != -1) {
+                            dest.write(data, 0, count);
+                        }
+                    } catch (FileNotFoundException ex) {
+                        outText.setText(outText.getText() + "\nExtracting " + entry + " error. " +
+                                ex.getMessage());
+                    } catch (IOException ex) {
+                        outText.setText(outText.getText() + "\nExtracting " + entry + "error." +
+                            ex.getMessage());
+                    }
+                    dest.flush();
+                    dest.close();
+                    is.close();
                 }
-                dest.flush();
-                dest.close();
-                is.close();
             }
+            zipfile.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
     }
 
     private void downloadFile(String link) throws MalformedURLException, IOException {

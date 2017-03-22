@@ -18,14 +18,15 @@ check_variable RED_EXPERT_VERSION
 rm -rf tmp dist
 mkdir tmp tmp/config dist
 
-cp RedExpert.jar tmp
+cp target/RedExpert.jar tmp
+cp target/RedExpert.exe tmp
 cp eq.sh tmp/RedExpert.sh
 cp RedExpert.bat tmp
 cp config/fbtrace.conf tmp/config
 cp config/gss.login.conf tmp/config
 
 cp -r red_expert.{png,ico} \
-	  lib \
+	  target/lib \
 	  docs \
 	  license \
 	  LICENSE \

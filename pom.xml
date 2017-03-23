@@ -363,7 +363,7 @@
 					<configuration>
 						<headerType>gui</headerType>
 						<outfile>${pom.basedir}/target/${project.artifactId}.exe</outfile>
-						<jar>${pom.basedir}/target/${project.artifactId}-shaded.jar</jar>
+						<jar>${pom.basedir}/target/${project.artifactId}.jar</jar>
 						<errTitle>Red Expert Error</errTitle>
 						<classPath>
 								<mainClass>org.executequery.ExecuteQuery</mainClass>

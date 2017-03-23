@@ -704,6 +704,7 @@ public class CreateDatabasePanel extends ActionPanel
             databaseConnection.setPassword(MiscUtils.charsToString(this.passwordField.getPassword()));
             databaseConnection.setPort(this.portField.getStringValue());
             databaseConnection.setSourceName(this.sourceField.getText());
+            databaseConnection.setCharset(this.charsetsCombo.getSelectedItem().toString());
 
             connectionsTreePanel.newConnection(databaseConnection);
 

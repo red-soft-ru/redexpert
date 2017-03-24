@@ -78,14 +78,16 @@ public class CreateDatabasePanel extends ActionPanel
     private JTextField sourceField;
 
     private JComboBox charsetsCombo;
+    private JTextField roleField;
     private JComboBox pageSizeCombo;
 
     private List<String> pageSizes;
 
-    private JLabel statusLabel;
-
     private JComboBox txCombo;
     private JButton txApplyButton;
+
+    JPanel basicPanel;
+    JPanel standardPanel;
 
     // -------------------------------
 
@@ -97,7 +99,7 @@ public class CreateDatabasePanel extends ActionPanel
     /**
      * connect button
      */
-    private JButton connectButton;
+    private JButton createButton;
 
     /**
      * the saved jdbc drivers
@@ -153,6 +155,7 @@ public class CreateDatabasePanel extends ActionPanel
         hostField = createTextField();
         portField = createNumberTextField();
         sourceField = createMatchedWidthTextField();
+        roleField = createTextField();
         userField = createTextField();
 
         portField.setText("3050");
@@ -185,19 +188,45 @@ public class CreateDatabasePanel extends ActionPanel
         gbc.gridy = 0;
         gbc.gridx = 0;
 
-        statusLabel = new DefaultFieldLabel();
-        addLabelFieldPair(mainPanel, "Status:",
-                statusLabel, "Current connection status", gbc);
-
+        addDriverFields(mainPanel, gbc);
+        
         gbc.insets.bottom = 5;
         addLabelFieldPair(mainPanel, "Connection Name:",
                 nameField, "A friendly name for this connection", gbc);
 
-        addLabelFieldPair(mainPanel, "User Name:",
-                userField, "Login user name", gbc);
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.weightx = 1.0;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
 
-        addLabelFieldPair(mainPanel, "Password:",
-                passwordField, "Login password", gbc);
+        basicPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints bgbc = new GridBagConstraints();
+        bgbc.fill = GridBagConstraints.HORIZONTAL;
+        bgbc.anchor = GridBagConstraints.NORTHWEST;
+        bgbc.insets = new Insets(5, 5, 5, 5);
+
+        JLabel userLabel = new DefaultFieldLabel("User Name:");
+        bgbc.gridx = 0;
+        bgbc.gridwidth = 1;
+        bgbc.weightx = 0;
+        basicPanel.add(userLabel, bgbc);
+
+        bgbc.gridx = 1;
+        bgbc.insets.left = 5;
+        bgbc.weightx = 0.25;
+        basicPanel.add(userField, bgbc);
+
+        JLabel passwordLabel = new DefaultFieldLabel("Password:");
+        bgbc.gridx = 2;
+        bgbc.gridwidth = 1;
+        bgbc.weightx = 0;
+        basicPanel.add(passwordLabel, bgbc);
+
+        bgbc.gridx = 3;
+        bgbc.insets.left = 5;
+        bgbc.weightx = 0.25;
+        bgbc.gridwidth = 4;
+        basicPanel.add(passwordField, bgbc);
 
         JButton showPassword = new LinkButton("Show Password");
         showPassword.setActionCommand("showPassword");
@@ -209,18 +238,84 @@ public class CreateDatabasePanel extends ActionPanel
                         new ComponentToolTipPair(savePwdCheck, "Store the password with the connection information"),
                         new ComponentToolTipPair(encryptPwdCheck, "Encrypt the password when saving"),
                         new ComponentToolTipPair(showPassword, "Show the password in plain text")});
+        bgbc.gridx = 3;
+        bgbc.gridy = 1;
+        bgbc.insets.left = 5;
+        bgbc.weightx = 0.1;
+        basicPanel.add(passwordOptionsPanel, bgbc);
 
-        gbc.gridy++;
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        mainPanel.add(passwordOptionsPanel, gbc);
+        JLabel charsetLabel = new DefaultFieldLabel("Character Set:");
+        bgbc.gridy = 2;
+        bgbc.gridx = 0;
+        bgbc.gridwidth = 1;
+        bgbc.weightx = 0;
+        basicPanel.add(charsetLabel, bgbc);
 
-        addLabelFieldPair(mainPanel, "Host Name:",
-                hostField, "Server host name or IP address", gbc);
+        bgbc.gridx = 1;
+        bgbc.gridwidth = 1;
+        bgbc.insets.left = 5;
+        bgbc.weightx = 0.25;
+        basicPanel.add(charsetsCombo, bgbc);
 
-        addLabelFieldPair(mainPanel, "Port:",
-                portField, "Database port number", gbc);
+        JLabel roleLabel = new DefaultFieldLabel("Role:");
+        bgbc.gridy = 2;
+        bgbc.gridx = 2;
+        bgbc.gridwidth = 1;
+        bgbc.weightx = 0;
+        basicPanel.add(roleLabel, bgbc);
+
+        bgbc.gridx = 3;
+        bgbc.gridwidth = 1;
+        bgbc.insets.left = 5;
+        bgbc.weightx = 0.5;
+        basicPanel.add(roleField, bgbc);
+
+        JLabel pageSizeLabel = new DefaultFieldLabel("Page Size:");
+        bgbc.gridy = 2;
+        bgbc.gridx = 4;
+        bgbc.gridwidth = 1;
+        bgbc.weightx = 0;
+        basicPanel.add(pageSizeLabel, bgbc);
+
+        bgbc.gridx = 5;
+        bgbc.gridwidth = 2;
+        bgbc.insets.left = 5;
+        bgbc.weightx = 0.5;
+        basicPanel.add(pageSizeCombo, bgbc);
+
+        standardPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints sgbc = new GridBagConstraints();
+        sgbc.fill = GridBagConstraints.HORIZONTAL;
+        sgbc.anchor = GridBagConstraints.NORTHWEST;
+        sgbc.insets = new Insets(5, 5, 5, 5);
+
+        JLabel hostLabel = new DefaultFieldLabel("Server(Host) Name:");
+        sgbc.gridx = 0;
+        sgbc.gridwidth = 1;
+        sgbc.weightx = 0;
+        standardPanel.add(hostLabel, sgbc);
+
+        sgbc.gridx = 1;
+        sgbc.insets.left = 5;
+        sgbc.weightx = 0.25;
+        standardPanel.add(hostField, sgbc);
+
+        JLabel portLabel = new DefaultFieldLabel("Port:");
+        sgbc.gridx = 2;
+        sgbc.insets.left = 5;
+        sgbc.weightx = 0;
+        standardPanel.add(portLabel, sgbc);
+
+        sgbc.gridx = 3;
+        sgbc.insets.left = 5;
+        sgbc.weightx = 0.1;
+        standardPanel.add(portField, sgbc);
+
+        JLabel dataSourceLabel = new DefaultFieldLabel("Database File:");
+        sgbc.gridx = 4;
+        sgbc.insets.left = 5;
+        sgbc.weightx = 0;
+        standardPanel.add(dataSourceLabel, sgbc);
 
         JButton saveFile = new JButton("Choose file");
         saveFile.addActionListener(new ActionListener() {
@@ -240,18 +335,23 @@ public class CreateDatabasePanel extends ActionPanel
         saveFilePanel.add(sourceField, BorderLayout.CENTER);
         saveFilePanel.add(saveFile, BorderLayout.LINE_END);
 
-        addLabelFieldPair(mainPanel, "Data Source:",
-                saveFilePanel, "Data source name", gbc);
+        sgbc.gridx = 5;
+        sgbc.insets.left = 5;
+        sgbc.weightx = 0.25;
+        standardPanel.add(saveFilePanel, sgbc);
 
-        addLabelFieldPair(mainPanel, "Character Set:",
-            charsetsCombo, "Default character set for this connection", gbc);
+        sgbc.gridy = 1;
+        sgbc.gridx = 0;
+        sgbc.gridwidth = GridBagConstraints.REMAINDER;
+        standardPanel.add(basicPanel, sgbc);
 
-        addLabelFieldPair(mainPanel, "Page Size:",
-                pageSizeCombo, "Default database page size", gbc);
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.insets.top = 10;
 
-        addDriverFields(mainPanel, gbc);
+        mainPanel.add(standardPanel, gbc);
 
-        connectButton = createButton("Create", CREATE_ACTION_COMMAND, 'T');
+        createButton = createButton("Create", CREATE_ACTION_COMMAND, 'T');
 
         JPanel buttons = new JPanel(new GridBagLayout());
         gbc.gridy++;
@@ -264,7 +364,7 @@ public class CreateDatabasePanel extends ActionPanel
         gbc.weighty = 1.0;
         gbc.anchor = GridBagConstraints.NORTHEAST;
         gbc.fill = GridBagConstraints.NONE;
-        buttons.add(connectButton, gbc);
+        buttons.add(createButton, gbc);
         gbc.gridx++;
         gbc.weightx = 0;
 
@@ -705,6 +805,7 @@ public class CreateDatabasePanel extends ActionPanel
             databaseConnection.setPort(this.portField.getStringValue());
             databaseConnection.setSourceName(this.sourceField.getText());
             databaseConnection.setCharset(this.charsetsCombo.getSelectedItem().toString());
+            databaseConnection.setRole(this.roleField.getText());
 
             connectionsTreePanel.newConnection(databaseConnection);
 
@@ -852,7 +953,7 @@ public class CreateDatabasePanel extends ActionPanel
     /**
      * Indicates a connection has been established.
      *
-     * @param the connection properties object
+     * @param databaseConnection connection properties object
      */
     public void connected(DatabaseConnection databaseConnection) {
 
@@ -868,7 +969,7 @@ public class CreateDatabasePanel extends ActionPanel
     /**
      * Indicates a connection has been closed.
      *
-     * @param the connection properties object
+     * @param databaseConnection connection properties object
      */
     public void disconnected(DatabaseConnection databaseConnection) {
         enableFields(false);
@@ -880,21 +981,8 @@ public class CreateDatabasePanel extends ActionPanel
     private void enableFields(boolean enable) {
 
         txApplyButton.setEnabled(enable);
-        connectButton.setEnabled(!enable);
+        createButton.setEnabled(!enable);
 
-        if (enable) {
-
-            int count = ConnectionManager.getOpenConnectionCount(databaseConnection);
-
-            statusLabel.setText("Connected [ " + count +
-                    (count > 1 ? " connections open ]" : " connection open ]"));
-
-        } else {
-
-            statusLabel.setText("Not Connected");
-        }
-
-        paintStatusLabel();
         setEncryptPassword();
     }
 
@@ -1117,11 +1205,11 @@ public class CreateDatabasePanel extends ActionPanel
      * values as held within the specified connection
      * properties object.
      *
-     * @param the connection to set the fields to
+     * @param host connection to set the fields to
      */
     public void setConnectionValue(DatabaseHost host) {
 
-        connectButton.setEnabled(false);
+        createButton.setEnabled(false);
 
         if (databaseConnection != null) {
 
@@ -1145,21 +1233,6 @@ public class CreateDatabasePanel extends ActionPanel
     private void focusNameField() {
         nameField.requestFocusInWindow();
         nameField.selectAll();
-    }
-
-    /**
-     * Forces a repaint using paintImmediately(...) on the
-     * connection status label.
-     */
-    private void paintStatusLabel() {
-        Runnable update = new Runnable() {
-            public void run() {
-                repaint();
-                Dimension dim = statusLabel.getSize();
-                statusLabel.paintImmediately(0, 0, dim.width, dim.height);
-            }
-        };
-        SwingUtilities.invokeLater(update);
     }
 
     private class JdbcPropertiesTableModel extends AbstractTableModel {

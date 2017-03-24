@@ -78,7 +78,6 @@ public class CreateDatabasePanel extends ActionPanel
     private JTextField sourceField;
 
     private JComboBox charsetsCombo;
-    private JTextField roleField;
     private JComboBox pageSizeCombo;
 
     private List<String> pageSizes;
@@ -155,7 +154,6 @@ public class CreateDatabasePanel extends ActionPanel
         hostField = createTextField();
         portField = createNumberTextField();
         sourceField = createMatchedWidthTextField();
-        roleField = createTextField();
         userField = createTextField();
 
         portField.setText("3050");
@@ -257,27 +255,14 @@ public class CreateDatabasePanel extends ActionPanel
         bgbc.weightx = 0.25;
         basicPanel.add(charsetsCombo, bgbc);
 
-        JLabel roleLabel = new DefaultFieldLabel("Role:");
+        JLabel pageSizeLabel = new DefaultFieldLabel("Page Size:");
         bgbc.gridy = 2;
         bgbc.gridx = 2;
         bgbc.gridwidth = 1;
         bgbc.weightx = 0;
-        basicPanel.add(roleLabel, bgbc);
-
-        bgbc.gridx = 3;
-        bgbc.gridwidth = 1;
-        bgbc.insets.left = 5;
-        bgbc.weightx = 0.5;
-        basicPanel.add(roleField, bgbc);
-
-        JLabel pageSizeLabel = new DefaultFieldLabel("Page Size:");
-        bgbc.gridy = 2;
-        bgbc.gridx = 4;
-        bgbc.gridwidth = 1;
-        bgbc.weightx = 0;
         basicPanel.add(pageSizeLabel, bgbc);
 
-        bgbc.gridx = 5;
+        bgbc.gridx = 4;
         bgbc.gridwidth = 2;
         bgbc.insets.left = 5;
         bgbc.weightx = 0.5;
@@ -805,7 +790,6 @@ public class CreateDatabasePanel extends ActionPanel
             databaseConnection.setPort(this.portField.getStringValue());
             databaseConnection.setSourceName(this.sourceField.getText());
             databaseConnection.setCharset(this.charsetsCombo.getSelectedItem().toString());
-            databaseConnection.setRole(this.roleField.getText());
 
             connectionsTreePanel.newConnection(databaseConnection);
 

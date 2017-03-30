@@ -99,6 +99,8 @@ public class QueryDispatcher {
 
     private boolean waiting;
 
+    FBPerformanceInfo before, after;
+
     // ------------------------------------------------
     // static string outputs
     // ------------------------------------------------
@@ -146,7 +148,7 @@ public class QueryDispatcher {
     /**
      * Sets the commit mode to that specified.
      *
-     * @param the commit mode
+     * @param autoCommit commit mode
      */
     public void setAutoCommit(boolean autoCommit) {
 
@@ -174,7 +176,7 @@ public class QueryDispatcher {
      * Indicates a connection has been closed.
      * Propagates the call to the query sender object.
      *
-     * @param the connection thats been closed
+     * @param dc connection thats been closed
      */
     public void disconnected(DatabaseConnection dc) {
         querySender.disconnected(dc);
@@ -194,8 +196,8 @@ public class QueryDispatcher {
      * indicates that the query should be executed in its entirety -
      * not split up into mulitple queries (where applicable).
      *
-     * @param the query string
-     * @param true to execute in entirety, false otherwise
+     * @param query query string
+     * @param executeAsBlock to execute in entirety, false otherwise
      */
     public void executeSQLQuery(String query, boolean executeAsBlock) {
 
@@ -208,9 +210,9 @@ public class QueryDispatcher {
      * indicates that the query should be executed in its entirety -
      * not split up into mulitple queries (where applicable).
      *
-     * @param the connection object
-     * @param the query string
-     * @param true to execute in entirety, false otherwise
+     * @param dc connection object
+     * @param query query string
+     * @param executeAsBlock to execute in entirety, false otherwise
      */
     public void executeSQLQuery(DatabaseConnection dc,
                                 final String query,
@@ -337,7 +339,6 @@ public class QueryDispatcher {
     /**
      * Returns whether a a query is currently being executed.
      *
-     * @param true if in an execution is in progress, false otherwise
      */
     public boolean isExecuting() {
 
@@ -350,12 +351,13 @@ public class QueryDispatcher {
      * flag indicates that the query should be executed in its entirety -
      * not split up into mulitple queries (where applicable).
      *
-     * @param the query string
-     * @param true to execute in entirety, false otherwise
+     * @param sql query string
+     * @param executeAsBlock to execute in entirety, false otherwise
      */
     private Object executeSQL(String sql, boolean executeAsBlock) {
 
-        FBPerformanceInfo before = null, after = null;
+        before = null;
+        after = null;
 
         waiting = false;
         long totalDuration = 0l;
@@ -511,6 +513,8 @@ public class QueryDispatcher {
 
                         }
 
+                        printExecutionPlan();
+
                         setOutputMessage(SqlMessages.ERROR_MESSAGE,
                                          message);
                         setStatusMessage(ERROR_EXECUTING);
@@ -528,6 +532,8 @@ public class QueryDispatcher {
                             // nothing to do
                         }
 
+                        printExecutionPlan();
+
                         setResultSet(rset, query.getOriginalQuery());
                     }
 
@@ -542,6 +548,8 @@ public class QueryDispatcher {
 
                         int updateCount = result.getUpdateCount();
                         if (updateCount == -1) {
+
+                            printExecutionPlan();
                             
                             setOutputMessage(SqlMessages.ERROR_MESSAGE,
                                     result.getErrorMessage());
@@ -550,8 +558,14 @@ public class QueryDispatcher {
                         } else {
 
                             if (result.isException()) {
+
+                                printExecutionPlan();
+
                                 setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage());
                             } else {
+
+                                printExecutionPlan();
+
                                 type = result.getType();
                                 setResultText(updateCount, type);
 
@@ -571,10 +585,14 @@ public class QueryDispatcher {
 
                         if (results == null) {
 
+                            printExecutionPlan();
+
                             setOutputMessage(SqlMessages.ERROR_MESSAGE,result.getErrorMessage());
                             setStatusMessage(ERROR_EXECUTING);
 
                         } else {
+
+                            printExecutionPlan();
 
                             setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Call executed successfully.");
                             int updateCount = result.getUpdateCount();
@@ -614,23 +632,6 @@ public class QueryDispatcher {
             }
 
             statementExecuted(sql);
-
-            // Trying to get execution plan of firebird statement
-            try {
-                FBConnection fbConnection = querySender.getConnection().unwrap(FBConnection.class);
-
-                after = fbConnection.getFbDatabase().getDatabaseInfo(perfomanceInfoBytes, 256, new FBPerformanceInfoProcessor());
-
-                FBPerformanceInfo resultPerfomanceInfo = null;
-                if (before != null && after != null)
-                    resultPerfomanceInfo = FBPerformanceInfo.processInfo(before, after);
-
-                setOutputMessage(SqlMessages.PLAIN_MESSAGE, resultPerfomanceInfo.getPerformanceInfo());
-
-            } catch (Exception e) {
-                // nothing to do
-            }
-
 
         } catch (SQLException e) {
 
@@ -676,6 +677,24 @@ public class QueryDispatcher {
         }
 
         return DONE;
+    }
+
+    private void printExecutionPlan() {
+        // Trying to get execution plan of firebird statement
+        try {
+            FBConnection fbConnection = querySender.getConnection().unwrap(FBConnection.class);
+
+            after = fbConnection.getFbDatabase().getDatabaseInfo(perfomanceInfoBytes, 256, new FBPerformanceInfoProcessor());
+
+            FBPerformanceInfo resultPerfomanceInfo = null;
+            if (before != null && after != null)
+                resultPerfomanceInfo = FBPerformanceInfo.processInfo(before, after);
+
+            setOutputMessage(SqlMessages.PLAIN_MESSAGE, resultPerfomanceInfo.getPerformanceInfo());
+
+        } catch (Exception e) {
+            // nothing to do
+        }
     }
 
     private String formatDuration(long totalDuration) {
@@ -747,7 +766,7 @@ public class QueryDispatcher {
      * Logs the execution duration within the output
      * pane for the specified value.
      *
-     * @param start the time in millis
+     * @param time the time in millis
      */
     private void logExecutionTime(long time) {
         setOutputMessage(SqlMessages.PLAIN_MESSAGE,

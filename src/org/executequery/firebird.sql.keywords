@@ -1,18 +1,35 @@
 Firebird 1.0
 
     CURRENT_USER
-    CURRENT_ROLE   
-    RECREATE   
+    CURRENT_ROLE
+    BREAK
+    DESCRIPTOR
+    FIRST
+    RECREATE
+    SKIP
+    SUBSTRING
 
 Firebird 1.5
 
-    CURRENT_CONNECTION 
-    CURRENT_TRANSACTION 
+    CURRENT_CONNECTION
+    CURRENT_TRANSACTION
     BIGINT
     CASE
     RELEASE
     ROW_COUNT
     SAVEPOINT
+
+    COALESCE
+    DELETING
+    INSERTING
+    LAST
+    LEAVE
+    LOCK
+    NULLIF
+    NULLS
+    STATEMENT
+    UPDATING
+    USING
 
 Firebird 2.0
 
@@ -30,7 +47,18 @@ Firebird 2.0
     ROWS
     TRAILING
     TRIM
-    USING
+
+    BACKUP
+    BLOCK
+    COLLATION
+    COMMENT
+    DIFFERENCE
+    IIF
+    NEXT
+    SCALAR_ARRAY
+    SEQUENCE
+    RESTART
+    RETURNING
 
 Firebird 2.1
 
@@ -42,9 +70,86 @@ Firebird 2.1
     SENSITIVE
     START
 
+    ABS
+    ACCENT
+    ACOS
+    ALWAYS
+    ASCII_CHAR
+    ASCII_VAL
+    ASIN
+    ATAN
+    ATAN2
+    BIN_AND
+    BIN_OR
+    BIN_SHL
+    BIN_SHR
+    BIN_XOR
+    CEIL
+    CEILING
+    COS
+    COSH
+    COT
+    DATEADD
+    DATEDIFF
+    DECODE
+    EXP
+    FLOOR
+    GEN_UUID
+    GENERATED
+    HASH
+    LIST
+    LN
+    LOG
+    LOG10
+    LPAD
+    MATCHED
+    MATCHING
+    MAXVALUE
+    MILLISECOND
+    MINVALUE
+    MOD
+    OVERLAY
+    PAD
+    PI
+    PLACING
+    POWER
+    PRESERVE
+    RAND
+    REPLACE
+    REVERSE
+    ROUND
+    RPAD
+    SIGN
+    SIN
+    SINH
+    SPACE
+    SQRT
+    TAN
+    TANH
+    TEMPORARY
+    TRUNC
+    WEEK
+
 Firebird 2.5
 
     SIMILAR
+
+    AUTONOMOUS
+    BIN_NOT
+    CALLER
+    CHAR_TO_UUID
+    COMMON
+    DATA
+    FIRSTNAME
+    GRANTED
+    LASTNAME
+    MIDDLENAME
+    MAPPING
+    OS_NAME
+    SOURCE
+    TWO_PHASE
+    UUID_TO_CHAR
+
 
 Firebird 3.0
 
@@ -52,13 +157,13 @@ Firebird 3.0
     CORR
     COVAR_POP
     COVAR_SAMP
-    DELETING 
+    DELETING
     DETERMINISTIC
     FALSE
-    INSERTING 
+    INSERTING
     OFFSET
     OVER
-    RDB$RECORD_VERSION 
+    RDB$RECORD_VERSION
     REGR_AVGX
     REGR_AVGY
     REGR_COUNT
@@ -71,14 +176,46 @@ Firebird 3.0
     RETURN
     ROW
     SCROLL
-    SQLSTATE 
+    SQLSTATE
     STDDEV_POP
     STDDEV_SAMP
     TRUE
     UNKNOWN
-    UPDATING 
+    UPDATING
     VAR_POP
     VAR_SAMP
+
+    ABSOLUTE
+    ACOSH
+    ASINH
+    ATANH
+    BODY
+    CONTINUE
+    DDL
+    DECRYPT
+    DENSE_RANK
+    ENCRYPT
+    ENGINE
+    FIRST_VALUE
+    IDENTITY
+    INCREMENT
+    LAST_VALUE
+    LAG
+    LEAD
+    LINGER
+    NAME
+    NTH_VALUE
+    PACKAGE
+    PARTITION
+    PLUGIN
+    PRIOR
+    RANK
+    RELATIVE
+    ROW_NUMBER
+    SERVERWIDE
+    TAGS
+    TRUSTED
+    USAGE
 
 Firebird 4.0
 
@@ -87,3 +224,16 @@ Firebird 4.0
     BINARY
     VARBINARY
 
+    CUME_DIST
+    EXCLUDE
+    FOLLOWING
+    NTILE
+    OTHERS
+    PERCENT_RANK
+    PRECEDING
+    PRIVILEGE
+    RANGE
+    RDB$ROLE_IN_USE
+    RDB$SYSTEM_PRIVILEGE
+    SYSTEM
+    TIES

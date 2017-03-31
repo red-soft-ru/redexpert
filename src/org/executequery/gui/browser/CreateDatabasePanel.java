@@ -20,10 +20,9 @@ import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.firebirdsql.gds.impl.GDSFactory;
-import org.firebirdsql.gds.impl.GDSType;
 import org.firebirdsql.gds.ng.FbConnectionProperties;
-import org.firebirdsql.gds.ng.jna.AbstractNativeDatabaseFactory;
-import org.firebirdsql.gds.ng.jna.JnaDatabase;
+import org.firebirdsql.gds.ng.FbDatabase;
+import org.firebirdsql.gds.ng.FbDatabaseFactory;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.actions.ActionUtilities;
@@ -733,23 +732,16 @@ public class CreateDatabasePanel extends ActionPanel
             connectionInfo.setPassword(MiscUtils.charsToString(passwordField.getPassword()));
             connectionInfo.setDatabaseName(path);
             connectionInfo.setEncoding(charsetsCombo.getSelectedItem().toString());
+            connectionInfo.getExtraDatabaseParameters().addArgument(4, Integer.valueOf(pageSizeCombo.getSelectedItem().toString()));
         }
 
-        AbstractNativeDatabaseFactory factory = null;
-        JnaDatabase db = null;
+        FbDatabaseFactory factory = null;
+        FbDatabase db = null;
         try {
-            factory = (AbstractNativeDatabaseFactory) GDSFactory.getDatabaseFactoryForType(GDSType.getType("NATIVE"));
+            factory = GDSFactory.getDatabaseFactoryForType(GDSFactory.getDefaultGDSType());
 
             db = factory.connect(connectionInfo);
-
-            String createDb = String.format("CREATE DATABASE '%s' USER '%s' PASSWORD '%s' PAGE_SIZE %s DEFAULT CHARACTER SET %s ",
-                    path,
-                    userField.getText(),
-                    MiscUtils.charsToString(passwordField.getPassword()),
-                    pageSizeCombo.getSelectedItem().toString(),
-                    charsetsCombo.getSelectedItem().toString());
-            db.executeImmediate(createDb, null);
-
+            db.createDatabase();
             db.close();
 
         } catch (UnsatisfiedLinkError linkError) {

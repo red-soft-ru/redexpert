@@ -123,6 +123,12 @@ public class QueryTokenizer {
         int lastIndex = 0;
 
         List<DerivedQuery> queries = new ArrayList<DerivedQuery>();
+
+        if (query.toLowerCase().startsWith("create")) {
+            queries.add(new DerivedQuery(query));
+            return queries;
+        }
+
         while ((index = query.indexOf(QUERY_DELIMITER, index + 1)) != -1) {
 
             if (Thread.interrupted()) {

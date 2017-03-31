@@ -204,6 +204,8 @@ public class ApplicationLauncher {
 
             printSystemProperties();
 
+            frame.setTitle("Red Expert - " +  System.getProperty("executequery.minor.version"));
+
             // auto-login if selected
             if (openConnection) {
 

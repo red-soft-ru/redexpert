@@ -204,6 +204,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                     setIcon(icons.get(BrowserConstants.SYSTEM_TRIGGER_IMAGE));
                     break;
                 }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system database trigger") == 0) {
+                    setIcon(icons.get(BrowserConstants.SYSTEM_DATABASE_TRIGGER_IMAGE));
+                    break;
+                }
 
                 setIcon(icons.get(BrowserConstants.DATABASE_OBJECT_IMAGE));
                 break;

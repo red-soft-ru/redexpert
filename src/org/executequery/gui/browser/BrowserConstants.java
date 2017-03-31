@@ -210,6 +210,8 @@ public class BrowserConstants {
     public static final String SYSTEM_INDEX_IMAGE = "SystemIndex16.png";
 
     public static final String SYSTEM_TRIGGER_IMAGE = "SystemTrigger.png";
+
+    public static final String SYSTEM_DATABASE_TRIGGER_IMAGE = "SystemDatabaseTrigger.png";
     
     public static final String[] NODE_ICONS = {CONNECTIONS_IMAGE,
                                                CONNECTIONS_FOLDER_IMAGE,
@@ -242,7 +244,8 @@ public class BrowserConstants {
                                                 UDF_IMAGE,
                                                 SYSTEM_DOMAIN_IMAGE,
                                                 SYSTEM_INDEX_IMAGE,
-                                                SYSTEM_TRIGGER_IMAGE
+                                                SYSTEM_TRIGGER_IMAGE,
+                                                SYSTEM_DATABASE_TRIGGER_IMAGE
                                                };
     
 }

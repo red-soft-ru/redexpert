@@ -1468,7 +1468,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
         try {
 
             if(stmnt != null) {
-                
+
                 if (!stmnt.isClosed())
                     stmnt.close();
             }

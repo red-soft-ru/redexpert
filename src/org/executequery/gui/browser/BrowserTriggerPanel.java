@@ -206,7 +206,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
                 beforeAfterLabel.setText("Event:");
             else if (trigger.getStringTriggerType().toLowerCase().contains("before"))
                 beforeAfterLabel.setText("Before:");
-            else if (trigger.getStringTriggerType().toLowerCase().contains("before"))
+            else if (trigger.getStringTriggerType().toLowerCase().contains("after"))
                 beforeAfterLabel.setText("After:");
             else
                 beforeAfterLabel.setText("Before/After:");

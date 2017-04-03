@@ -1,4 +1,4 @@
-package org.executequery.sql;
+package org.executequery.sql.fb;
 
 /**
  * Created by vasiliy on 12.01.17.
@@ -14,7 +14,9 @@ public class FBPerformanceInfo {
     private long perfBuffers;
     private long perfPageSize;
 
-    FBPerformanceInfo() {}
+    FBPerformanceInfo() {
+        int i = 0;
+    }
 
     public long getPerfFetches() {
         return perfFetches;

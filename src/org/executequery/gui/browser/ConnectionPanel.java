@@ -34,6 +34,7 @@ import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.ConsoleHandler;
@@ -58,6 +59,8 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.datasource.ConnectionManager;
+import org.executequery.datasource.DefaultDriverLoader;
+import org.executequery.datasource.DriverLoader;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DatabaseDriverEvent;
@@ -974,17 +977,27 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 }
 
                 Connection connection = host.getConnection();
+                DefaultDriverLoader driverLoader = new DefaultDriverLoader();
+                Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
+                DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
+                Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+
+                int majorVersion = driver.getMajorVersion();
 
                 try {
-                    FBConnection fbConnection = connection.unwrap(FBConnection.class);
+                    if (majorVersion >= 3) {
 
-                    Log.info("Connection encoding: " +fbConnection.getFbDatabase().getEncoding().getCharsetName());
+                        FBConnection fbConnection = connection.unwrap(FBConnection.class);
+
+                        Log.info("Connection encoding: " + fbConnection.getFbDatabase().getEncoding().getCharsetName());
+                    }
 
                 } catch (SQLException e) {
                     // nothing
                 }
 
-                String className = host.getDatabaseConnection().getJDBCDriver().getClassName();
+                if (majorVersion >= 3) {
+                    String className = host.getDatabaseConnection().getJDBCDriver().getClassName();
                     if (className.contains("FBDriver")) {
 
                         traceMessageLoop = new TraceMessageLoop();
@@ -998,6 +1011,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 //                        Thread traceThread = new Thread(traceMessageLoop);
 //                        traceThread.start();
                     }
+                }
             }
 
         } catch (DataSourceException e) {

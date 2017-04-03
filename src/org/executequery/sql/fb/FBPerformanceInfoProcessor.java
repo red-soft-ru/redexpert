@@ -1,8 +1,8 @@
-package org.executequery.sql;
+package org.executequery.sql.fb;
 
 import org.firebirdsql.gds.ISCConstants;
 import org.firebirdsql.gds.ng.FbExceptionBuilder;
-import org.firebirdsql.gds.ng.InfoProcessor;
+//import org.firebirdsql.gds.ng.InfoProcessor;
 
 import java.sql.SQLException;
 
@@ -12,11 +12,11 @@ import static org.firebirdsql.gds.VaxEncoding.iscVaxInteger2;
 /**
  * Created by vasiliy on 12.01.17.
  */
-public class FBPerformanceInfoProcessor implements InfoProcessor<FBPerformanceInfo> {
+public class FBPerformanceInfoProcessor/* implements InfoProcessor<FBPerformanceInfo>*/ {
 
     FBPerformanceInfo out = null;
 
-    @Override
+//    @Override
     public FBPerformanceInfo process(byte[] info) throws SQLException {
         if (info.length == 0) {
             throw new SQLException("Response buffer for database information request is empty");

@@ -242,7 +242,7 @@
 								<resource>
 									<directory>./lib</directory>
 									<includes>
-										<include>**/jaybird-full-3.0.0-SNAPSHOT.jar</include>
+										<!--include>**/jaybird-full-3.0.0-SNAPSHOT.jar</include-->
 										<include>**/jdbc-perf-logger-driver-0.8.1-SNAPSHOT.jar</include>
 									</includes>
 								</resource>

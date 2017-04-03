@@ -110,6 +110,8 @@ public interface StatementExecutor {
 
     void setDatabaseConnection(DatabaseConnection _databaseConnection);
 
+    DatabaseConnection getDatabaseConnection();
+
     Connection getConnection();
 
     SqlStatementResult getResultSet(String query, int fetchSize) throws SQLException;

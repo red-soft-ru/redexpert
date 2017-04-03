@@ -26,8 +26,11 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -42,7 +45,13 @@ import java.util.Map;
  */
 public class DefaultDriverLoader implements DriverLoader {
 
+    public static Map<String, Driver> getLoadedDrivers() {
+        return LOADED_DRIVERS;
+    }
+
     private static final Map<String, Driver> LOADED_DRIVERS = new HashMap<String, Driver>();
+
+    private static final Class[] parameters = new Class[]{URL.class};
     
     public Driver load(DatabaseDriver databaseDriver) {
 
@@ -68,9 +77,28 @@ public class DefaultDriverLoader implements DriverLoader {
                 if (!MiscUtils.isNull(path)) {
     
                     URL[] urls = MiscUtils.loadURLs(path);
-                    DynamicLibraryLoader loader = new DynamicLibraryLoader(urls);
-                    clazz = loader.loadLibrary(driverName);
-                
+//                    DynamicLibraryLoader loader = new DynamicLibraryLoader(urls);
+//                    clazz = loader.loadLibrary(driverName);
+
+                    URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+                    Class sysclass = URLClassLoader.class;
+
+                    try {
+                        Method method = sysclass.getDeclaredMethod("addURL", parameters);
+                        method.setAccessible(true);
+                        method.invoke(sysloader, urls);
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                        try {
+                            throw new IOException("Error, could not add URL to system classloader");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }//end try catch
+
+                    clazz = sysloader.loadClass(driverName);
+
+
                 } else {
     
                     clazz = loadUsingSystemLoader(driverName);

@@ -20,19 +20,17 @@
 
 package org.executequery.gui.editor.autocomplete;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.sql.*;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseSource;
 import org.executequery.databaseobjects.impl.ColumnInformation;
 import org.executequery.databaseobjects.impl.ColumnInformationFactory;
+import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.log.Log;
 import org.executequery.repository.KeywordRepository;
@@ -84,12 +82,21 @@ public class AutoCompleteSelectionsFactory {
                 databaseSystemFunctionsForHost(databaseHost, listSelections);
 
                 try {
-                    FBConnection fbConnection = databaseHost.getConnection().unwrap(FBConnection.class);
+                    DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
+                    DefaultDriverLoader driverLoader = new DefaultDriverLoader();
+                    Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
+                    DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
+                    Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
-                    int majorVersion = fbConnection.getFbDatabase().getServerVersion().getMajorVersion();
-                    int minorVersion = fbConnection.getFbDatabase().getServerVersion().getMinorVersion();
+                    int driverMajorVersion = driver.getMajorVersion();
+                    if (driverMajorVersion >= 3) {
+                        FBConnection fbConnection = databaseHost.getConnection().unwrap(FBConnection.class);
 
-                    addFirebirdDefnedKeywords(databaseHost, listSelections, majorVersion, minorVersion);
+                        int majorVersion = fbConnection.getFbDatabase().getServerVersion().getMajorVersion();
+                        int minorVersion = fbConnection.getFbDatabase().getServerVersion().getMinorVersion();
+
+                        addFirebirdDefnedKeywords(databaseHost, listSelections, majorVersion, minorVersion);
+                    }
 
                 } catch (SQLException e) {
                     // nothing to do

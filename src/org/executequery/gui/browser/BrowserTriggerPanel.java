@@ -186,7 +186,14 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
             textPane.setText(trigger.getTriggerSourceCode());
             activeCheckbox.setSelected(trigger.isTriggerActive());
             tableNameCombo.removeAllItems();
-            tableNameCombo.addItem(trigger.getTriggerTableName());
+            if (trigger.getTriggerTableName() != null && !trigger.getTriggerTableName().isEmpty()) {
+                tableNameLabel.setVisible(true);
+                tableNameCombo.setVisible(true);
+                tableNameCombo.addItem(trigger.getTriggerTableName());
+            } else {
+                tableNameLabel.setVisible(false);
+                tableNameCombo.setVisible(false);
+            }
             descriptionPane.setText(trigger.getTriggerDescription());
             sqlPane.setText(trigger.getCreateSQLText());
         }

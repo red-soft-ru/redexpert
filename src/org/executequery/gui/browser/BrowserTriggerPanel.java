@@ -22,13 +22,16 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
     public static final String NAME = "BrowserTriggerPanel";
 
     private DisabledField triggerNameField;
-    //private DisabledField schemaNameField;
+    private DisabledField triggerBeforeAfterField;
+    private DisabledField triggerPositionField;
 
     private JLabel objectNameLabel;
 
     private JCheckBox activeCheckbox;
 
     private JLabel tableNameLabel;
+    private JLabel beforeAfterLabel;
+    private JLabel triggerPositionLabel;
     private JComboBox tableNameCombo;
     JTextPane descriptionPane;
     JTextPane sqlPane;
@@ -77,6 +80,19 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
         tableNameCombo = new DefaultComboBox();
         paramPanel.add(tableNameCombo);
+
+        beforeAfterLabel = new JLabel("Before/After:");
+        paramPanel.add(beforeAfterLabel);
+
+        triggerBeforeAfterField = new DisabledField();
+        paramPanel.add(triggerBeforeAfterField);
+
+        triggerPositionLabel = new JLabel("Position:");
+        paramPanel.add(triggerPositionLabel);
+
+        triggerPositionField = new DisabledField();
+
+        paramPanel.add(triggerPositionField);
 
         panel.add(paramPanel, BorderLayout.NORTH);
         panel.add(sourcePanel, BorderLayout.CENTER);
@@ -185,6 +201,16 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
             triggerNameField.setText(trigger.getName());
             textPane.setText(trigger.getTriggerSourceCode());
             activeCheckbox.setSelected(trigger.isTriggerActive());
+            if (!trigger.getStringTriggerType().toLowerCase().contains("before") &&
+                !trigger.getStringTriggerType().toLowerCase().contains("after"))
+                beforeAfterLabel.setText("Event:");
+            else if (trigger.getStringTriggerType().toLowerCase().contains("before"))
+                beforeAfterLabel.setText("Before:");
+            else if (trigger.getStringTriggerType().toLowerCase().contains("before"))
+                beforeAfterLabel.setText("After:");
+            else
+                beforeAfterLabel.setText("Before/After:");
+            triggerBeforeAfterField.setText(trigger.getStringTriggerType());
             tableNameCombo.removeAllItems();
             if (trigger.getTriggerTableName() != null && !trigger.getTriggerTableName().isEmpty()) {
                 tableNameLabel.setVisible(true);
@@ -194,6 +220,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
                 tableNameLabel.setVisible(false);
                 tableNameCombo.setVisible(false);
             }
+            triggerPositionField.setText(String.valueOf(trigger.getTriggerSequence()));
             descriptionPane.setText(trigger.getTriggerDescription());
             sqlPane.setText(trigger.getCreateSQLText());
         }

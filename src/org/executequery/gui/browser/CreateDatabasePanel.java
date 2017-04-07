@@ -17,6 +17,7 @@ import org.executequery.gui.DefaultTable;
 import org.executequery.gui.FormPanelButton;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.drivers.DialogDriverPanel;
+import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
@@ -727,12 +728,30 @@ public class CreateDatabasePanel extends ActionPanel
         }
         String path = sourceField.getText();
 
+        URL[] urlDriver = new URL[0];
+        Class clazzDriver = null;
         URL[] urls = new URL[0];
         Class clazzdb = null;
         Object odb = null;
         try {
+            urlDriver = MiscUtils.loadURLs(databaseDriver.getPath());
+            ClassLoader clD = new URLClassLoader(urlDriver);
+            clazzDriver = clD.loadClass(databaseDriver.getClassName());
+            Object o = clazzDriver.newInstance();
+            Driver driver = (Driver)o;
+
+            Log.info("Database creation via jaybird");
+            Log.info("Driver version: " + driver.getMajorVersion() + "." + driver.getMinorVersion());
+
+            if (driver.getMajorVersion() < 3) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("Cannot create database, Jaybird 2.x has no implementation for creation database.");
+                GUIUtilities.displayErrorMessage(sb.toString());
+                return;
+            }
+
             urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-            ClassLoader cl = new URLClassLoader(urls);
+            ClassLoader cl = new URLClassLoader(urls, o.getClass().getClassLoader());
             clazzdb = cl.loadClass("biz.redsoft.CreateDatabase");
             odb = clazzdb.newInstance();
         } catch (ClassNotFoundException e) {

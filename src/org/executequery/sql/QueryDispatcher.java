@@ -551,9 +551,9 @@ public class QueryDispatcher {
                         // Trying to get execution plan of firebird statement
                         printPlan(rset);
 
-                        printExecutionPlan(before, after);
-
                         setResultSet(rset, query.getOriginalQuery());
+
+                        printExecutionPlan(before, after);
                     }
 
                     end = System.currentTimeMillis();
@@ -583,8 +583,6 @@ public class QueryDispatcher {
                                 setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage());
                             } else {
 
-                                printExecutionPlan(before, after);
-
                                 type = result.getType();
                                 setResultText(updateCount, type);
 
@@ -593,6 +591,8 @@ public class QueryDispatcher {
 
                                     setStatusMessage(" " + result.getMessage());
                                 }
+
+                                printExecutionPlan(before, after);
 
                             }
                         }
@@ -637,7 +637,7 @@ public class QueryDispatcher {
                     }
 
                 }
-
+                
                 // execution times
                 if (end == 0) {
 

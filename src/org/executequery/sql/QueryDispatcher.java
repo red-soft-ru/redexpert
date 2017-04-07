@@ -20,6 +20,9 @@
 
 package org.executequery.sql;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +30,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import biz.redsoft.IFBDatabasePerformance;
+import biz.redsoft.IFBPerformanceInfo;
 import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
@@ -36,14 +41,9 @@ import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.log.Log;
-import org.executequery.sql.fb.FBPerformanceInfo;
-import org.executequery.sql.fb.FBPerformanceInfoProcessor;
 import org.executequery.util.ThreadUtils;
 import org.executequery.util.ThreadWorker;
 import org.executequery.util.UserProperties;
-import org.firebirdsql.gds.ISCConstants;
-import org.firebirdsql.jdbc.FBConnection;
-import org.firebirdsql.jdbc.FBResultSet;
 import org.underworldlabs.util.MiscUtils;
 
 /**
@@ -54,16 +54,6 @@ import org.underworldlabs.util.MiscUtils;
  * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
  */
 public class QueryDispatcher {
-
-    byte perfomanceInfoBytes[] =
-            {
-                    ISCConstants.isc_info_reads,
-                    ISCConstants.isc_info_writes,
-                    ISCConstants.isc_info_fetches,
-                    ISCConstants.isc_info_marks,
-                    ISCConstants.isc_info_page_size, ISCConstants.isc_info_num_buffers,
-                    ISCConstants.isc_info_current_memory, ISCConstants.isc_info_max_memory
-            };
 
     /** the parent controller */
     private QueryDelegate delegate;
@@ -351,7 +341,7 @@ public class QueryDispatcher {
      */
     private Object executeSQL(String sql, boolean executeAsBlock) {
 
-        FBPerformanceInfo before, after;
+        IFBPerformanceInfo before, after;
         before = null;
         after = null;
 
@@ -482,15 +472,44 @@ public class QueryDispatcher {
                     DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
                     Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
-                    int majorVersion = driver.getMajorVersion();
+                    if (driver.getClass().getName().contains("FBDriver")) {
 
-                    if (majorVersion >= 3) {
-                        FBConnection fbConnection = (FBConnection) querySender.getConnection().unwrap(FBConnection.class);
+                        Connection connection = null;
+                        try {
+                            connection = querySender.getConnection().unwrap(Connection.class);
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
 
-                        byte[] databaseInfo = fbConnection.getFbDatabase().getDatabaseInfo(perfomanceInfoBytes, 256);
-                        FBPerformanceInfoProcessor fbPerformanceInfoProcessor = new FBPerformanceInfoProcessor();
-                        before = fbPerformanceInfoProcessor.process(databaseInfo);
+                        URL[] urls = new URL[0];
+                        Class clazzdb = null;
+                        Object odb = null;
+                        try {
+                            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                            ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
+                            clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformance");
+                            odb = clazzdb.newInstance();
+                        } catch (ClassNotFoundException e) {
+                            e.printStackTrace();
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        } catch (InstantiationException e) {
+                            e.printStackTrace();
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        }
+
+                        IFBDatabasePerformance db = (IFBDatabasePerformance)odb;
+                        try {
+
+                            db.setConnection(connection);
+                            before = db.getPerformanceInfo();
+
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
                     }
+
                 } catch (Exception e) {
                     // nothing to do
                 }
@@ -530,15 +549,7 @@ public class QueryDispatcher {
                     } else {
 
                         // Trying to get execution plan of firebird statement
-                        try {
-                            // If profiler is used
-                            FBResultSet fbResultSet = rset.unwrap(FBResultSet.class);
-
-                            setOutputMessage(SqlMessages.PLAIN_MESSAGE, fbResultSet.getExecutionPlan());
-
-                        } catch (Exception e) {
-                            // nothing to do
-                        }
+                        printPlan(rset);
 
                         printExecutionPlan(before, after);
 
@@ -687,7 +698,7 @@ public class QueryDispatcher {
         return DONE;
     }
 
-    private void printExecutionPlan(FBPerformanceInfo before, FBPerformanceInfo after) {
+    private void printExecutionPlan(IFBPerformanceInfo before, IFBPerformanceInfo after) {
         // Trying to get execution plan of firebird statement
         DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
         DefaultDriverLoader driverLoader = new DefaultDriverLoader();
@@ -695,25 +706,99 @@ public class QueryDispatcher {
         DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
         Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
-        int majorVersion = driver.getMajorVersion();
+        if (driver.getClass().getName().contains("FBDriver")) {
 
-        if (majorVersion >= 3) {
+            Connection connection = null;
             try {
-                FBConnection fbConnection = querySender.getConnection().unwrap(FBConnection.class);
-
-                byte[] databaseInfo = fbConnection.getFbDatabase().getDatabaseInfo(perfomanceInfoBytes, 256);
-                FBPerformanceInfoProcessor fbPerformanceInfoProcessor = new FBPerformanceInfoProcessor();
-                after = fbPerformanceInfoProcessor.process(databaseInfo);
-
-                FBPerformanceInfo resultPerfomanceInfo = null;
-                if (before != null && after != null)
-                    resultPerfomanceInfo = FBPerformanceInfo.processInfo(before, after);
-
-                setOutputMessage(SqlMessages.PLAIN_MESSAGE, resultPerfomanceInfo.getPerformanceInfo());
-
-            } catch (Exception e) {
-                // nothing to do
+                connection = querySender.getConnection().unwrap(Connection.class);
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
+
+            URL[] urls = new URL[0];
+            Class clazzdb = null;
+            Object odb = null;
+            try {
+                urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
+                clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformance");
+                odb = clazzdb.newInstance();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+
+            IFBDatabasePerformance db = (IFBDatabasePerformance)odb;
+            try {
+
+                db.setConnection(connection);
+                after = db.getPerformanceInfo();
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+                if (before != null && after != null) {
+                    IFBPerformanceInfo resultPerfomanceInfo = after.processInfo(before, after);
+
+                    setOutputMessage(SqlMessages.PLAIN_MESSAGE, resultPerfomanceInfo.getPerformanceInfo());
+                }
+        }
+
+    }
+
+    private void printPlan(ResultSet rs) {
+        try {
+            DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
+            DefaultDriverLoader driverLoader = new DefaultDriverLoader();
+            Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
+            DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
+            Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+
+            if (driver.getClass().getName().contains("FBDriver")) {
+
+                ResultSet resultSet = null;
+                try {
+                    resultSet = rs.unwrap(ResultSet.class);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+                URL[] urls = new URL[0];
+                Class clazzdb = null;
+                Object odb = null;
+                try {
+                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                    ClassLoader cl = new URLClassLoader(urls, resultSet.getClass().getClassLoader());
+                    clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformance");
+                    odb = clazzdb.newInstance();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InstantiationException e) {
+                    e.printStackTrace();
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+
+                IFBDatabasePerformance db = (IFBDatabasePerformance)odb;
+                try {
+
+                    setOutputMessage(SqlMessages.PLAIN_MESSAGE, db.getLastExecutedPlan(resultSet));
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

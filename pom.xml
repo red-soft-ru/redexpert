@@ -18,12 +18,13 @@
 	</repositories>
 
 	<dependencies>
+
 		<dependency>
 			<groupId>biz.redsoft.customlib</groupId>
-			<artifactId>jaybird</artifactId>
-			<version>3.0.0</version>
+			<artifactId>fbplugin</artifactId>
+			<version>1.0.0</version>
 			<scope>system</scope>
-			<systemPath>${pom.basedir}/lib/jaybird-full-3.0.0-SNAPSHOT.jar</systemPath>
+			<systemPath>${pom.basedir}/lib/fbplugin.jar</systemPath>
 			<type>jar</type>
 		</dependency>
 
@@ -244,6 +245,7 @@
 									<includes>
 										<!--include>**/jaybird-full-3.0.0-SNAPSHOT.jar</include-->
 										<include>**/jdbc-perf-logger-driver-0.8.1-SNAPSHOT.jar</include>
+										<include>**/fbplugin.jar</include>
 									</includes>
 								</resource>
 							</resources>
@@ -270,6 +272,26 @@
 									<filtering>true</filtering>
 									<includes>
 										<include>**/fbtrace.conf</include>
+										<include>**/gss.login.conf</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-resources-2</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${pom.basedir}/target/lib</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.basedir}/lib</directory>
+									<includes>
+										<include>fbplugin-impl.jar</include>
+										<include>jaybird-full-3.0.0-SNAPSHOT.jar</include>
 									</includes>
 								</resource>
 							</resources>

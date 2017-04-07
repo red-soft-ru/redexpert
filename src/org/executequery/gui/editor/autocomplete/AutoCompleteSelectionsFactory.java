@@ -20,9 +20,13 @@
 
 package org.executequery.gui.editor.autocomplete;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.*;
 
+import biz.redsoft.IFBDatabaseConnection;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
@@ -35,7 +39,7 @@ import org.executequery.gui.editor.QueryEditor;
 import org.executequery.log.Log;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
-import org.firebirdsql.jdbc.FBConnection;
+import org.underworldlabs.util.MiscUtils;
 
 public class AutoCompleteSelectionsFactory {
 
@@ -81,25 +85,48 @@ public class AutoCompleteSelectionsFactory {
                 addDatabaseDefinedKeywords(databaseHost, listSelections);
                 databaseSystemFunctionsForHost(databaseHost, listSelections);
 
-                try {
-                    DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
-                    DefaultDriverLoader driverLoader = new DefaultDriverLoader();
-                    Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
-                    DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-                    Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+                DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
+                DefaultDriverLoader driverLoader = new DefaultDriverLoader();
+                Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
+                DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
+                Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
-                    int driverMajorVersion = driver.getMajorVersion();
-                    if (driverMajorVersion >= 3) {
-                        FBConnection fbConnection = databaseHost.getConnection().unwrap(FBConnection.class);
+                if (driver.getClass().getName().contains("FBDriver")) {
 
-                        int majorVersion = fbConnection.getFbDatabase().getServerVersion().getMajorVersion();
-                        int minorVersion = fbConnection.getFbDatabase().getServerVersion().getMinorVersion();
-
-                        addFirebirdDefnedKeywords(databaseHost, listSelections, majorVersion, minorVersion);
+                    Connection connection = null;
+                    try {
+                        connection = databaseHost.getConnection().unwrap(Connection.class);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
                     }
 
-                } catch (SQLException e) {
-                    // nothing to do
+                    URL[] urls = new URL[0];
+                    Class clazzdb = null;
+                    Object odb = null;
+                    try {
+                        urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                        ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
+                        clazzdb = cl.loadClass("biz.redsoft.FBDatabaseConnection");
+                        odb = clazzdb.newInstance();
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (InstantiationException e) {
+                        e.printStackTrace();
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
+
+                    IFBDatabaseConnection db = (IFBDatabaseConnection)odb;
+                    try {
+
+                        db.setConnection(connection);
+                        addFirebirdDefnedKeywords(databaseHost, listSelections, db.getMajorVersion(), db.getMinorVersion());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+
                 }
 
                 addToProvider(listSelections);

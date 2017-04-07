@@ -42,7 +42,6 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.TablePrivilege;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.log.Log;
-import org.firebirdsql.jdbc.FBConnection;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
@@ -702,7 +701,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
             boolean isFirebirdConnection = false;
             Connection connection = dmd.getConnection();
-            if (connection instanceof FBConnection)
+            if (connection.getClass().getName().contains("FBConnection"))
                 isFirebirdConnection = true;
 
             while (rs.next()) {
@@ -909,7 +908,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * Returns the database source with the name specified scanning schema
      * sources first, then catalogs.
      *
-     * @param the name
+     * @param name name
      * @return the database source object
      */
     public DatabaseSource getDatabaseSource(String name) {

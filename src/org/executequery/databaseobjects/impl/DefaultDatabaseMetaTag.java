@@ -772,6 +772,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             while (rs.next()) {
 
                 DefaultDatabaseProcedure procedure = new DefaultDatabaseProcedure(this, rs.getString(3));
+                procedure.setHost(getHost());
                 procedure.setRemarks(rs.getString(7));
                 list.add(procedure);
             }

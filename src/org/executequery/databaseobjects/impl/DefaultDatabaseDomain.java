@@ -3,7 +3,6 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
-import org.firebirdsql.jdbc.FBDatabaseMetaData;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.DatabaseMetaData;
@@ -98,7 +97,7 @@ public class DefaultDatabaseDomain extends DefaultDatabaseExecutable
             String _schema = getSchemaName();
 
             columns = new ArrayList<>();
-            if (dmd instanceof FBDatabaseMetaData) {
+            if (dmd.getConnection().getClass().getName().contains("FBConnection")) {
                 statement = dmd.getConnection().createStatement();
 
                 ResultSet rs = statement.executeQuery("SELECT first 1\n" +

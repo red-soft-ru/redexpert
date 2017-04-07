@@ -29,7 +29,6 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
@@ -37,8 +36,6 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -74,8 +71,6 @@ import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
-import org.firebirdsql.jdbc.FBConnection;
-import org.firebirdsql.management.FBTraceManager;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DefaultFieldLabel;
 import org.underworldlabs.swing.DefaultTextField;
@@ -99,7 +94,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private static class TraceMessageLoop
             implements Runnable {
 
-        FBTraceManager fbTraceManager;
+//        FBTraceManager fbTraceManager;
         String configuration = null;
         String database;
         String charSet;
@@ -111,14 +106,14 @@ public class ConnectionPanel extends AbstractConnectionPanel
         String traceUUID;
 
         TraceMessageLoop(){
-            fbTraceManager = new FBTraceManager();
-            fbTraceManager.setLogger(System.out);
-            traceUUID = UUID.randomUUID().toString();
-            try {
-                configuration = fbTraceManager.loadConfigurationFromFile("config/fbtrace.conf", true);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//            fbTraceManager = new FBTraceManager();
+//            fbTraceManager.setLogger(System.out);
+//            traceUUID = UUID.randomUUID().toString();
+//            try {
+//                configuration = fbTraceManager.loadConfigurationFromFile("config/fbtrace.conf", true);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
         }
 
         public void setDatabase(String database) {
@@ -147,22 +142,22 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         public void run() {
             try {
-                fbTraceManager.setHost(this.host);
-                fbTraceManager.setPort(this.port);
-                fbTraceManager.setCharSet(this.charSet);
-                fbTraceManager.setPassword(this.password);
-                fbTraceManager.setUser(this.user);
-                fbTraceManager.setDatabase(this.database);
-                fbTraceManager.startTraceSession(traceUUID, configuration);
-            } catch (SQLException e) {
+//                fbTraceManager.setHost(this.host);
+//                fbTraceManager.setPort(this.port);
+//                fbTraceManager.setCharSet(this.charSet);
+//                fbTraceManager.setPassword(this.password);
+//                fbTraceManager.setUser(this.user);
+//                fbTraceManager.setDatabase(this.database);
+//                fbTraceManager.startTraceSession(traceUUID, configuration);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
         public void stop() {
             try {
-                int traceSessionId = fbTraceManager.getSessionId(traceUUID);
-                fbTraceManager.stopTraceSession(traceSessionId);
+//                int traceSessionId = fbTraceManager.getSessionId(traceUUID);
+//                fbTraceManager.stopTraceSession(traceSessionId);
             } catch (Exception e) {
 //                e.printStackTrace();
             }
@@ -986,13 +981,13 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
                 try {
                     if (majorVersion >= 3) {
-
-                        FBConnection fbConnection = connection.unwrap(FBConnection.class);
-
-                        Log.info("Connection encoding: " + fbConnection.getFbDatabase().getEncoding().getCharsetName());
+//
+//                        FBConnection fbConnection = connection.unwrap(FBConnection.class);
+//
+//                        Log.info("Connection encoding: " + fbConnection.getFbDatabase().getEncoding().getCharsetName());
                     }
 
-                } catch (SQLException e) {
+                } catch (Exception e) {
                     // nothing
                 }
 

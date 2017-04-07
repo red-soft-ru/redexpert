@@ -484,13 +484,12 @@ public class BrowserController {
                     if (!viewPanel.containsPanel(ObjectDefinitionPanel.NAME)) {
                         objectDefnPanel = new ObjectDefinitionPanel(this);
                         viewPanel.addToLayout(objectDefnPanel);
-                    }
-                    else {
-                        objectDefnPanel = (ObjectDefinitionPanel)viewPanel.
+                    } else {
+                        objectDefnPanel = (ObjectDefinitionPanel) viewPanel.
                                 getFormObjectView(ObjectDefinitionPanel.NAME);
                     }
                     objectDefnPanel.setValues(
-                            (org.executequery.databaseobjects.DatabaseObject)databaseObject);
+                            (org.executequery.databaseobjects.DatabaseObject) databaseObject);
                     return objectDefnPanel;
 
             }

@@ -1,5 +1,6 @@
 package org.executequery.gui.browser;
 
+import biz.redsoft.ICreateDatabase;
 import org.executequery.Constants;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
@@ -19,10 +20,6 @@ import org.executequery.gui.drivers.DialogDriverPanel;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
-import org.firebirdsql.gds.impl.GDSFactory;
-import org.firebirdsql.gds.ng.FbConnectionProperties;
-import org.firebirdsql.gds.ng.FbDatabase;
-import org.firebirdsql.gds.ng.FbDatabaseFactory;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.actions.ActionUtilities;
@@ -38,9 +35,16 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.util.*;
 import java.util.List;
+import java.util.jar.JarFile;
 
 /**
  * Created by vasiliy.yashkov on 10.07.2015.
@@ -186,7 +190,6 @@ public class CreateDatabasePanel extends ActionPanel
         gbc.gridx = 0;
 
         addDriverFields(mainPanel, gbc);
-        
         gbc.insets.bottom = 5;
         addLabelFieldPair(mainPanel, "Connection Name:",
                 nameField, "A friendly name for this connection", gbc);
@@ -304,6 +307,7 @@ public class CreateDatabasePanel extends ActionPanel
         JButton saveFile = new JButton("Choose file");
         saveFile.addActionListener(new ActionListener() {
             FileChooserDialog fileChooser = new FileChooserDialog();
+
             @Override
             public void actionPerformed(ActionEvent e) {
                 int returnVal = fileChooser.showSaveDialog(saveFile);
@@ -477,14 +481,14 @@ public class CreateDatabasePanel extends ActionPanel
 
             String resource = FileUtils.loadResource("org/executequery/charsets.properties");
             String[] strings = resource.split("\n");
-            for(String s : strings){
+            for (String s : strings) {
                 if (!s.startsWith("#") && !s.isEmpty())
                     charsets.add(s);
             }
             java.util.Collections.sort(charsets);
             charsets.add(0, "NONE");
 
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return;
         }
@@ -699,8 +703,8 @@ public class CreateDatabasePanel extends ActionPanel
 
         // get driver
         DatabaseDriver databaseDriver = null;
-        for(DatabaseDriver dd : jdbcDrivers){
-            if(dd.getName().equals(this.driverCombo.getSelectedItem().toString())) {
+        for (DatabaseDriver dd : jdbcDrivers) {
+            if (dd.getName().equals(this.driverCombo.getSelectedItem().toString())) {
                 databaseDriver = dd;
                 break;
             }
@@ -723,26 +727,35 @@ public class CreateDatabasePanel extends ActionPanel
         }
         String path = sourceField.getText();
 
-        final FbConnectionProperties connectionInfo;
-        {
-            connectionInfo = new FbConnectionProperties();
-            connectionInfo.setServerName(server);
-            connectionInfo.setPortNumber(port);
-            connectionInfo.setUser(userField.getText());
-            connectionInfo.setPassword(MiscUtils.charsToString(passwordField.getPassword()));
-            connectionInfo.setDatabaseName(path);
-            connectionInfo.setEncoding(charsetsCombo.getSelectedItem().toString());
-            connectionInfo.getExtraDatabaseParameters().addArgument(4, Integer.valueOf(pageSizeCombo.getSelectedItem().toString()));
+        URL[] urls = new URL[0];
+        Class clazzdb = null;
+        Object odb = null;
+        try {
+            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+            ClassLoader cl = new URLClassLoader(urls);
+            clazzdb = cl.loadClass("biz.redsoft.CreateDatabase");
+            odb = clazzdb.newInstance();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
         }
 
-        FbDatabaseFactory factory = null;
-        FbDatabase db = null;
-        try {
-            factory = GDSFactory.getDatabaseFactoryForType(GDSFactory.getDefaultGDSType());
+        ICreateDatabase db = (ICreateDatabase) odb;
+        db.setServer(server);
+        db.setPort(port);
+        db.setUser(userField.getText());
+        db.setPassword(MiscUtils.charsToString(passwordField.getPassword()));
+        db.setDatabaseName(path);
+        db.setEncoding(charsetsCombo.getSelectedItem().toString());
+        db.setPageSize(Integer.valueOf(pageSizeCombo.getSelectedItem().toString()));
 
-            db = factory.connect(connectionInfo);
-            db.createDatabase();
-            db.close();
+        try {
+            db.exec();
 
         } catch (UnsatisfiedLinkError linkError) {
             StringBuilder sb = new StringBuilder();
@@ -763,6 +776,7 @@ public class CreateDatabasePanel extends ActionPanel
             return;
         } finally {
             GUIUtilities.showNormalCursor();
+            System.gc();
         }
         int result = GUIUtilities.displayYesNoDialog("Register a created database?", "Database registration");
         if (result == JOptionPane.OK_OPTION || result == JOptionPane.YES_OPTION) {

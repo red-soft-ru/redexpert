@@ -77,27 +77,8 @@ public class DefaultDriverLoader implements DriverLoader {
                 if (!MiscUtils.isNull(path)) {
     
                     URL[] urls = MiscUtils.loadURLs(path);
-//                    DynamicLibraryLoader loader = new DynamicLibraryLoader(urls);
-//                    clazz = loader.loadLibrary(driverName);
-
-                    URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-                    Class sysclass = URLClassLoader.class;
-
-                    try {
-                        Method method = sysclass.getDeclaredMethod("addURL", parameters);
-                        method.setAccessible(true);
-                        method.invoke(sysloader, urls);
-                    } catch (Throwable t) {
-                        t.printStackTrace();
-                        try {
-                            throw new IOException("Error, could not add URL to system classloader");
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }//end try catch
-
-                    clazz = sysloader.loadClass(driverName);
-
+                    DynamicLibraryLoader loader = new DynamicLibraryLoader(urls);
+                    clazz = loader.loadLibrary(driverName);
 
                 } else {
     

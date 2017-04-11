@@ -246,6 +246,8 @@ public class AutoCompleteSelectionsFactory {
             int count = 0;
             
             rs = databaseMetaData.getTables(catalog, schema, null, types);
+            if (rs == null)
+                return;
             while (rs.next()) {
 
                 try {
@@ -278,7 +280,16 @@ public class AutoCompleteSelectionsFactory {
 
         } catch (SQLException e) {
 
-            error("Tables not available for type " + type + " - driver returned: " + e.getMessage());
+            try {
+                if (rs != null)
+                    if (!rs.isClosed())
+                        error("Tables not available for type " + type + " - driver returned: " + e.getMessage());
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        }catch (Exception e) {
+
+            // nothing to do
 
         } finally {
 
@@ -351,9 +362,13 @@ public class AutoCompleteSelectionsFactory {
             }
 
         } catch (Exception e) {
-
-            error("Tables not available for type " + type + " - driver returned: " + e.getMessage());
-
+            try {
+                if (rs != null)
+                    if (!rs.isClosed())
+                        error("Tables not available for type " + type + " - driver returned: " + e.getMessage());
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
         } finally {
 
             releaseResources(rs);

@@ -181,6 +181,16 @@ public class AutoCompleteSelectionsFactory {
 
         databaseObjectsForHost(databaseHost, "TABLE", DATABASE_TABLE_DESCRIPTION, AutoCompleteListItemType.DATABASE_TABLE);
         databaseObjectsForHost(databaseHost, "VIEW", DATABASE_TABLE_VIEW, AutoCompleteListItemType.DATABASE_VIEW);
+
+        DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
+        DefaultDriverLoader driverLoader = new DefaultDriverLoader();
+        Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
+        DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
+        Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+
+        if (driver.getClass().getName().contains("FBDriver")) {
+            databaseObjectsForHost(databaseHost, "SYSTEM TABLE", DATABASE_TABLE_VIEW, AutoCompleteListItemType.DATABASE_TABLE);
+        }
     }
 
     private void databaseSystemFunctionsForHost(DatabaseHost databaseHost, List<AutoCompleteListItem> listSelections) {

@@ -283,7 +283,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
         nameField = createTextField();
         passwordField = createPasswordField();
         hostField = createTextField();
+        hostField.setText("localhost");
         portField = createNumberTextField();
+        portField.setText("3050");
         sourceField = createMatchedWidthTextField();
         roleField = createTextField();
         userField = createTextField();
@@ -414,8 +416,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
         bgbc.weightx = 0.5;
         basicPanel.add(roleField, bgbc);
 
-//        mainPanel.add(basicPanel, gbc);
-
         addLabelFieldPair(mainPanel, "Connection parameters:",
                 methodCombo, "Specify connection parameters or JDBC string", gbc);
 
@@ -425,7 +425,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         sgbc.anchor = GridBagConstraints.NORTHWEST;
         sgbc.insets = new Insets(5, 5, 5, 5);
 
-        JLabel hostLabel = new DefaultFieldLabel("Server(Host) Name:");
+        JLabel hostLabel = new DefaultFieldLabel("Server(Host) Name(IP):");
         sgbc.gridx = 0;
         sgbc.gridwidth = 1;
         sgbc.weightx = 0;
@@ -1382,8 +1382,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
         encryptPwdCheck.setSelected(databaseConnection.isPasswordEncrypted());
         userField.setText(databaseConnection.getUserName());
         passwordField.setText(databaseConnection.getUnencryptedPassword());
-        hostField.setText(databaseConnection.getHost());
-        portField.setText(databaseConnection.getPort());
+        hostField.setText(databaseConnection.getHost().isEmpty() ? "localhost" : databaseConnection.getHost());
+        portField.setText(databaseConnection.getPort().isEmpty() ? "3050" : databaseConnection.getPort());
         sourceField.setText(databaseConnection.getSourceName());
         urlField.setText(databaseConnection.getURL());
         nameField.setText(databaseConnection.getName());

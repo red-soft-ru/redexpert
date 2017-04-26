@@ -50,7 +50,7 @@ node('master')
     }
 }
 
-node('jdk18&&linux&&builder')
+node('jdk18&&linux&&builder&&mvn')
 {
     stage('Build')
     {

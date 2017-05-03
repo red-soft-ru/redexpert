@@ -55,6 +55,7 @@ public interface NamedObject extends java.io.Serializable {
     int SYSTEM_INDEX = 19;
     int SYSTEM_TRIGGER = 20;
     int SYSTEM_DATABASE_TRIGGER = 21;
+    int PACKAGE = 22;
 
     int META_TAG = 93;
     int TABLE_COLUMN = 94;
@@ -96,7 +97,8 @@ public interface NamedObject extends java.io.Serializable {
                             "SYSTEM DOMAIN",
                             "SYSTEM INDEX",
                             "SYSTEM TRIGGER",
-                            "SYSTEM DATABASE TRIGGER"};
+                            "SYSTEM DATABASE TRIGGER",
+                            "PACKAGE"};
 
     /**
      * Marks this object as being 'reset', where for any loaded object
@@ -158,7 +160,7 @@ public interface NamedObject extends java.io.Serializable {
     /**
      * Sets the parent object to that specified.
      *
-     * @param the parent named object
+     * @param parent parent named object
      */
     void setParent(NamedObject parent);
 

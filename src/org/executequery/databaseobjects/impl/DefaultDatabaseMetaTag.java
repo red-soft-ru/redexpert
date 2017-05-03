@@ -157,6 +157,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 children = loadSystemDatabaseTriggers();
 
+            } else if (isPackage()) {
+
+                children = loadPackages();
+
             } else {
 
                 children = getHost().getTables(getCatalogName(), 
@@ -322,6 +326,13 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     }
 
+    private List<NamedObject> loadPackages()
+            throws DataSourceException {
+
+        return getPackages();
+
+    }
+
     public boolean hasChildObjects() throws DataSourceException {
         
         if (!isMarkedForReload() && children != null) {
@@ -411,6 +422,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         return hasSystemDatabaseTrigger();
                     }
 
+                } else if (isPackage()) {
+
+                    if (type == PACKAGE) {
+                        return hasPackages();
+                    }
+
                 } else {
                     
                     return getHost().hasTablesForType(getCatalogName(), getSchemaName(), getMetaDataKey());                
@@ -491,6 +508,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         int type = getSubType();
         return type == SYSTEM_DATABASE_TRIGGER;
+    }
+
+    private boolean isPackage() {
+
+        int type = getSubType();
+        return type == PACKAGE;
     }
 
     private String procedureTerm() throws SQLException {
@@ -713,6 +736,25 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         try {
 
             rs = getSystemDatabaseTriggerResultSet();
+            return rs != null && rs.next();
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return false;
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
+    private boolean hasPackages() {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getPackagesResultSet();
             return rs != null && rs.next();
 
         } catch (SQLException e) {
@@ -1110,6 +1152,43 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
     }
 
+    private List<NamedObject> getPackages() throws DataSourceException {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getPackagesResultSet();
+            List<NamedObject> list = new ArrayList<NamedObject>();
+            while (rs.next()) {
+
+                DefaultDatabaseObject object = new DefaultDatabaseObject(getHost(), META_TYPES[22]);
+                object.setName(rs.getString(1).trim());
+                /*DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
+                        rs.getString(1).trim());
+                trigger.setTableName(rs.getString(3));
+                trigger.setTriggerSequence(rs.getInt(4));
+                trigger.setTriggerActive(rs.getInt(6) != 1);
+                trigger.setTriggerType(rs.getLong(5));
+                trigger.setTriggerDescription(rs.getString(7));
+                trigger.setTriggerSourceCode(rs.getString(2));
+                trigger.setRemarks(rs.getString(7));
+                list.add(trigger);*/
+                list.add(object);
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return new ArrayList<NamedObject>(0);
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
     private ResultSet getProceduresResultSet() throws SQLException {
         
         String catalogName = catalogNameForQuery();
@@ -1336,6 +1415,27 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             "where t.rdb$system_flag = 0" +
             "and t.rdb$trigger_type > 114 \n" +
             "order by t.rdb$trigger_name");
+
+        return resultSet;
+    }
+
+    private ResultSet getPackagesResultSet() throws SQLException {
+
+        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+        Statement statement = dmd.getConnection().createStatement();
+
+        ResultSet resultSet = statement.executeQuery("select p.rdb$package_name,\n" +
+                "p.rdb$package_header_source,\n" +
+                "p.rdb$package_body_source,\n" +
+                "p.rdb$valid_body_flag,\n" +
+                "p.rdb$security_class,\n" +
+                "p.rdb$owner_name,\n" +
+                "p.rdb$system_flag,\n" +
+                "p.rdb$description,\n" +
+                "p.rdb$sql_security\n" +
+                "\n" +
+                "from rdb$packages p\n" +
+                "order by p.rdb$package_name");
 
         return resultSet;
     }

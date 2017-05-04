@@ -38,7 +38,16 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     public String getHeaderSource() {
-        return headerSource;
+        StringBuilder sb = new StringBuilder();
+        sb.append("create or alter package");
+        sb.append(" ");
+        sb.append(getName());
+        sb.append("\n");
+        sb.append("as");
+        sb.append("\n");
+        sb.append(this.headerSource);
+
+        return sb.toString();
     }
 
     public void setHeaderSource(String headerSource) {
@@ -46,7 +55,16 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     public String getBodySource() {
-        return bodySource;
+        StringBuilder sb = new StringBuilder();
+        sb.append("recreate package body");
+        sb.append(" ");
+        sb.append(getName());
+        sb.append("\n");
+        sb.append("as");
+        sb.append("\n");
+        sb.append(this.bodySource);
+
+        return sb.toString();
     }
 
     public void setBodySource(String bodySource) {
@@ -100,5 +118,37 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     @Override
     public String getDescription() {
         return this.description;
+    }
+
+    @Override
+    public String getCreateSQLText() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("set term ^ ;");
+        sb.append("\n");
+        sb.append("\n");
+        sb.append(getHeaderSource());
+        sb.append("^");
+        sb.append("\n");
+        sb.append("\n");
+        sb.append(getBodySource());
+        sb.append("^");
+        sb.append("\n");
+        sb.append("\n");
+        sb.append("set term ; ^");
+        sb.append("\n");
+        sb.append("\n");
+        if (this.description != null && !this.description.isEmpty()) {
+            sb.append("comment on package");
+            sb.append(" ");
+            sb.append(getName());
+            sb.append(" ");
+            sb.append("is");
+            sb.append("\n");
+            sb.append("'");
+            sb.append(getDescription());
+            sb.append("';");
+        }
+
+        return sb.toString();
     }
 }

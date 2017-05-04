@@ -391,7 +391,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
     /**
      * Builds a HTML tool tip describing this tree connection.
      * 
-     * @param the connection object
+     * @param connection object
      */
     private String buildToolTip(DatabaseConnection connection) {
         // reset

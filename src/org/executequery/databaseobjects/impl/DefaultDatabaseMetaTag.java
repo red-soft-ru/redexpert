@@ -1161,19 +1161,16 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             List<NamedObject> list = new ArrayList<NamedObject>();
             while (rs.next()) {
 
-                DefaultDatabaseObject object = new DefaultDatabaseObject(getHost(), META_TYPES[22]);
-                object.setName(rs.getString(1).trim());
-                /*DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
-                        rs.getString(1).trim());
-                trigger.setTableName(rs.getString(3));
-                trigger.setTriggerSequence(rs.getInt(4));
-                trigger.setTriggerActive(rs.getInt(6) != 1);
-                trigger.setTriggerType(rs.getLong(5));
-                trigger.setTriggerDescription(rs.getString(7));
-                trigger.setTriggerSourceCode(rs.getString(2));
-                trigger.setRemarks(rs.getString(7));
-                list.add(trigger);*/
-                list.add(object);
+                DefaultDatabasePackage databasePackage = new DefaultDatabasePackage(this, rs.getString(1).trim());
+                databasePackage.setHeaderSource(rs.getString(2));
+                databasePackage.setBodySource(rs.getString(3));
+                databasePackage.setValidBodyFlag(rs.getBoolean(4));
+                databasePackage.setSecurityClass(rs.getString(5));
+                databasePackage.setOwnerName(rs.getString(6));
+                databasePackage.setSystemFlag(rs.getBoolean(7));
+                databasePackage.setDescription(rs.getString(8));
+                databasePackage.setSqlSecurity(rs.getBoolean(9));
+                list.add(databasePackage);
             }
 
             return list;

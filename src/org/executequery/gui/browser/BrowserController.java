@@ -374,6 +374,20 @@ public class BrowserController {
                     triggerPanel.setValues((DefaultDatabaseTrigger) databaseObject);
                     return triggerPanel;
 
+                case NamedObject.PACKAGE:
+                    BrowserPackagePanel packagePanel = null;
+                    if (!viewPanel.containsPanel(BrowserPackagePanel.NAME)) {
+                        packagePanel = new BrowserPackagePanel(this);
+                        viewPanel.addToLayout(packagePanel);
+                    }
+                    else {
+                        packagePanel = (BrowserPackagePanel)viewPanel.
+                                getFormObjectView(BrowserPackagePanel.NAME);
+                    }
+
+                    packagePanel.setValues((DefaultDatabasePackage) databaseObject);
+                    return packagePanel;
+
                 case NamedObject.SEQUENCE:
                     BrowserSequencePanel sequencePanel = null;
                     if (!viewPanel.containsPanel(BrowserSequencePanel.NAME)) {

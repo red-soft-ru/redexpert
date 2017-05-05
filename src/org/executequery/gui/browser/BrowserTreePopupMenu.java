@@ -157,7 +157,7 @@ class BrowserTreePopupMenu extends JPopupMenu {
                 
                 if (node.isHostNode()) {
 
-                    reload.setEnabled(false);
+                    //reload.setEnabled(false);
                     sql.setEnabled(false);
                     exportData.setEnabled(false);
                     importData.setEnabled(false);

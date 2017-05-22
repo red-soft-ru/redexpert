@@ -24,7 +24,9 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Enumeration;
 
 import javax.help.BadIDException;
@@ -39,6 +41,7 @@ import javax.swing.JFrame;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.underworldlabs.swing.util.IconUtilities;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 /** 
@@ -97,6 +100,16 @@ public class HelpWindow {
         try {
 
             ClassLoader classLoader = classLoader();
+
+            URL[] urls = new URL[0];
+            Class clazzdb = null;
+            Object odb = null;
+            try {
+                urls = MiscUtils.loadURLs("./docs/eqhelp.jar");
+                classLoader = new URLClassLoader(urls, getClass().getClassLoader());
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
 
             URL url = HelpSet.findHelpSet(classLoader, HELP_SET);
 

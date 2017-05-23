@@ -101,9 +101,7 @@ public class HelpWindow {
 
             ClassLoader classLoader = classLoader();
 
-            URL[] urls = new URL[0];
-            Class clazzdb = null;
-            Object odb = null;
+            URL[] urls;
             try {
                 urls = MiscUtils.loadURLs("./docs/eqhelp.jar");
                 classLoader = new URLClassLoader(urls, getClass().getClassLoader());

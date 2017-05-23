@@ -271,6 +271,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
             case NamedObject.ROLE:
                 setIcon(icons.get(BrowserConstants.ROLE_IMAGE));
                 break;
+
             case NamedObject.EXCEPTION:
                 setIcon(icons.get(BrowserConstants.EXCEPTION_IMAGE));
                 break;

@@ -254,6 +254,12 @@
         <button id="20" action-id="create-database-command">
           <visible>true</visible>
           <order>2</order>
+
+        </button>
+
+        <button id="24" action-id="user-manager-command">
+          <visible>true</visible>
+          <order>7</order>
         </button>
 
         <button id="21" action-id="create-table-command">
@@ -381,6 +387,10 @@
         <button id="16" action-id="about-command">
           <visible>true</visible>
           <order>2</order>
+        </button>
+        <button id="50" action-id="user-manager-command">
+          <visible>true</visible>
+          <order>3</order>
         </button>
 
         <button id="44" action-id="visit-eq-command">

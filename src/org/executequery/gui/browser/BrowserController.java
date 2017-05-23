@@ -245,8 +245,8 @@ public class BrowserController {
      * displayed based on the specified host node connection object
      * and the selected node as specified.
      *
-     * @param the connection host parent object
-     * @param the selected node
+     * //@param the connection host parent object
+     * //@param the selected node
      */
     public synchronized void valueChanged_(DatabaseObjectNode node) {
 
@@ -273,8 +273,8 @@ public class BrowserController {
      * displayed based on the specified host node connection object
      * and the selected node as specified.
      *
-     * @param the connection host parent object
-     * @param the selected node
+     * @param// the connection host parent object
+     * @param //the selected node
      */
     private FormObjectView buildPanelView(DatabaseObjectNode node) {
         try {
@@ -387,6 +387,7 @@ public class BrowserController {
 
                     packagePanel.setValues((DefaultDatabasePackage) databaseObject);
                     return packagePanel;
+
                 case NamedObject.SEQUENCE:
                     BrowserSequencePanel sequencePanel = null;
                     if (!viewPanel.containsPanel(BrowserSequencePanel.NAME)) {
@@ -472,6 +473,7 @@ public class BrowserController {
 
                     browserIndexPanel.setValues((DefaultDatabaseIndex) databaseObject);
                     return browserIndexPanel;
+
                 case NamedObject.TABLE:
                     BrowserTableEditingPanel editingPanel = viewPanel.getEditingPanel();
                     editingPanel.setValues((DatabaseTable)databaseObject);

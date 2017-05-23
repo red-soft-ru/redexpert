@@ -577,6 +577,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
 
         // remove from folder
         node.removeFromFolder();
+
         
         // remove from the connections
         connections.remove(index);

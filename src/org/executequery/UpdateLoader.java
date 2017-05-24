@@ -23,7 +23,6 @@ public class UpdateLoader extends JFrame {
 
     private Thread worker;
     private final String root = "update/";
-    private String binaryZipUrl;
 
     public String getRepo() {
         return repo;
@@ -132,10 +131,7 @@ public class UpdateLoader extends JFrame {
     void update() {
         this.setTitle("Updating from " + repo);
         outText.setText("Contacting Download Server...");
-        if (!repo.isEmpty())
-            this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
-        else
-            this.downloadLink = binaryZipUrl;
+        this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
         download();
     }
 
@@ -194,25 +190,20 @@ public class UpdateLoader extends JFrame {
         }
     }
 
-    private void copyFiles(File f, String dir) {
+    private void copyFiles(File f, String dir) throws IOException {
         File[] files = f.listFiles();
         for (File ff : files) {
             if (ff.isDirectory()) {
                 new File(dir + "/" + ff.getName()).mkdir();
                 copyFiles(ff, dir + "/" + ff.getName());
             } else {
-                try {
-                    copy(ff.getAbsolutePath(), dir + "/" + ff.getName());
-                } catch (IOException e) {
-                    outText.setText(outText.getText() + "\n Copying error. " +
-                        e.getMessage());
-                }
+                copy(ff.getAbsolutePath(), dir + "/" + ff.getName());
             }
 
         }
     }
 
-    public void copy(String srFile, String dtFile) throws IOException {
+    public void copy(String srFile, String dtFile) throws FileNotFoundException, IOException {
 
         File f1 = new File(srFile);
         File f2 = new File(dtFile);
@@ -230,51 +221,39 @@ public class UpdateLoader extends JFrame {
         out.close();
     }
 
-    private void unzip() {
+    private void unzip() throws IOException {
         int BUFFER = 2048;
         BufferedOutputStream dest = null;
         BufferedInputStream is = null;
         ZipEntry entry;
-        try {
-            ZipFile zipfile = new ZipFile("update.zip");
-            Enumeration e = zipfile.entries();
-            (new File(root)).mkdir();
-            while (e.hasMoreElements()) {
-                entry = (ZipEntry) e.nextElement();
-                outText.setText(outText.getText() + "\nExtracting: " + entry);
-                if (entry.isDirectory())
-                    (new File(root + entry.getName())).mkdir();
-                else {
-                    (new File(root + entry.getName())).createNewFile();
-                    is = new BufferedInputStream
-                            (zipfile.getInputStream(entry));
-                    int count;
-                    byte data[] = new byte[BUFFER];
-                    try {
-                        FileOutputStream fos = new
-                                FileOutputStream(root + entry.getName());
-                        dest = new
-                                BufferedOutputStream(fos, BUFFER);
-                        while ((count = is.read(data, 0, BUFFER))
-                                != -1) {
-                            dest.write(data, 0, count);
-                        }
-                    } catch (FileNotFoundException ex) {
-                        outText.setText(outText.getText() + "\nExtracting " + entry + " error. " +
-                                ex.getMessage());
-                    } catch (IOException ex) {
-                        outText.setText(outText.getText() + "\nExtracting " + entry + "error." +
-                            ex.getMessage());
-                    }
-                    dest.flush();
-                    dest.close();
-                    is.close();
+        ZipFile zipfile = new ZipFile("update.zip");
+        Enumeration e = zipfile.entries();
+        (new File(root)).mkdir();
+        while (e.hasMoreElements()) {
+            entry = (ZipEntry) e.nextElement();
+            outText.setText(outText.getText() + "\nExtracting: " + entry);
+            if (entry.isDirectory())
+                (new File(root + entry.getName())).mkdir();
+            else {
+                (new File(root + entry.getName())).createNewFile();
+                is = new BufferedInputStream
+                        (zipfile.getInputStream(entry));
+                int count;
+                byte data[] = new byte[BUFFER];
+                FileOutputStream fos = new
+                        FileOutputStream(root + entry.getName());
+                dest = new
+                        BufferedOutputStream(fos, BUFFER);
+                while ((count = is.read(data, 0, BUFFER))
+                        != -1) {
+                    dest.write(data, 0, count);
                 }
+                dest.flush();
+                dest.close();
+                is.close();
             }
-            zipfile.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
     }
 
     private void downloadFile(String link) throws MalformedURLException, IOException {
@@ -313,9 +292,5 @@ public class UpdateLoader extends JFrame {
 
     public String getVersion() {
         return version;
-    }
-
-    public void setBinaryZipUrl(String binaryZip) {
-        this.binaryZipUrl = binaryZip;
     }
 }

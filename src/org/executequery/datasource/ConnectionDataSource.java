@@ -133,13 +133,9 @@ public class ConnectionDataSource implements DataSource, DatabaseDataSource {
             }
 
             jdbcUrl = databaseConnection.getURL();
-
-            String connectionMethod = databaseConnection.getConnectionMethod();
-
-            if (connectionMethod.equalsIgnoreCase("jdbc")) {
-                Log.info("Using user specified JDBC URL: "+jdbcUrl);
-
-            } else { // if the url is null - generate it
+            
+            // if the url is null - generate it
+            if (MiscUtils.isNull(jdbcUrl)) {
                 
                 /* Generate the JDBC URL as specfied in jdbcdrivers.xml
                  * using the server, port and source values for the connection. */
@@ -178,8 +174,11 @@ public class ConnectionDataSource implements DataSource, DatabaseDataSource {
                 Log.info("JDBC URL generated: "+jdbcUrl);
                 Log.info("JDBC properties: " + databaseConnection.getJdbcProperties());
 
+            } else {
+              
+                Log.info("Using user specified JDBC URL: "+jdbcUrl);
             }
-
+            
             // check if this driver has already been loaded
             if (loadedDrivers.containsKey(databaseDriver)) {
                 

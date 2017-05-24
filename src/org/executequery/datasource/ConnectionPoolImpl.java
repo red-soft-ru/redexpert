@@ -33,7 +33,6 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.SystemProperties;
 
 /**
  *
@@ -159,18 +158,9 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
             activeConnections.add(connection);
 
         } else if (size < maximumConnections) {
-            boolean usePool = SystemProperties.getBooleanProperty("user", "connection.usepool");
-            if (!usePool) {
-                if (activeConnections.size() > 0)
-                    return activeConnections.get(0);
-                else {
-                    createConnection();
-                    return getConnection();
-                }
-            } else {
-                createConnection();
-                return getConnection();
-            }
+
+            createConnection();
+            return getConnection();
 
         } else {
 

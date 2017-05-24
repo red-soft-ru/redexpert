@@ -22,10 +22,10 @@
 
    <docked-tab>
       <key>system.display.jdbclogger</key>
-      <index>1</index>
-      <position>2</position>
-      <visible>false</visible>
-      <minimised>true</minimised>
+      <index>0</index>
+      <position>5</position>
+      <visible>true</visible>
+      <minimised>false</minimised>
    </docked-tab>
 
    <docked-tab>

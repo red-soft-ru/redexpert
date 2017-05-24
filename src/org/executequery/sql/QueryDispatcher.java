@@ -20,31 +20,37 @@
 
 package org.executequery.sql;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import biz.redsoft.IFBDatabasePerformance;
-import biz.redsoft.IFBPerformanceInfo;
 import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.datasource.ConnectionManager;
-import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.executequery.util.ThreadWorker;
 import org.executequery.util.UserProperties;
+import org.firebirdsql.gds.ISCConstants;
+import org.firebirdsql.gds.ng.AbstractFbDatabase;
+import org.firebirdsql.gds.ng.FbExceptionBuilder;
+import org.firebirdsql.gds.ng.InfoProcessor;
+import org.firebirdsql.jdbc.FBConnection;
+import org.firebirdsql.jdbc.FBResultSet;
+import org.firebirdsql.management.FBManager;
 import org.underworldlabs.util.MiscUtils;
+
+import static org.firebirdsql.gds.VaxEncoding.iscVaxInteger;
+import static org.firebirdsql.gds.VaxEncoding.iscVaxInteger2;
 
 /**
  * Determines the type of exeuted query and returns appropriate results.
@@ -54,6 +60,16 @@ import org.underworldlabs.util.MiscUtils;
  * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
  */
 public class QueryDispatcher {
+
+    byte perfomanceInfoBytes[] =
+            {
+                    ISCConstants.isc_info_reads,
+                    ISCConstants.isc_info_writes,
+                    ISCConstants.isc_info_fetches,
+                    ISCConstants.isc_info_marks,
+                    ISCConstants.isc_info_page_size, ISCConstants.isc_info_num_buffers,
+                    ISCConstants.isc_info_current_memory, ISCConstants.isc_info_max_memory
+            };
 
     /** the parent controller */
     private QueryDelegate delegate;
@@ -98,7 +114,7 @@ public class QueryDispatcher {
 
 
     public QueryDispatcher(QueryDelegate runner) {
-        try {
+
         this.delegate = runner;
 
         querySender = new DefaultStatementExecutor(null, true);
@@ -108,9 +124,6 @@ public class QueryDispatcher {
         initialiseLogging();
 
         queryTokenizer = new QueryTokenizer();
-        } catch (NoClassDefFoundError e) {
-            e.printStackTrace();
-        }
     }
 
     public void preferencesChanged() {
@@ -133,7 +146,7 @@ public class QueryDispatcher {
     /**
      * Sets the commit mode to that specified.
      *
-     * @param autoCommit commit mode
+     * @param the commit mode
      */
     public void setAutoCommit(boolean autoCommit) {
 
@@ -161,7 +174,7 @@ public class QueryDispatcher {
      * Indicates a connection has been closed.
      * Propagates the call to the query sender object.
      *
-     * @param dc connection thats been closed
+     * @param the connection thats been closed
      */
     public void disconnected(DatabaseConnection dc) {
         querySender.disconnected(dc);
@@ -181,8 +194,8 @@ public class QueryDispatcher {
      * indicates that the query should be executed in its entirety -
      * not split up into mulitple queries (where applicable).
      *
-     * @param query query string
-     * @param executeAsBlock to execute in entirety, false otherwise
+     * @param the query string
+     * @param true to execute in entirety, false otherwise
      */
     public void executeSQLQuery(String query, boolean executeAsBlock) {
 
@@ -195,9 +208,9 @@ public class QueryDispatcher {
      * indicates that the query should be executed in its entirety -
      * not split up into mulitple queries (where applicable).
      *
-     * @param dc connection object
-     * @param query query string
-     * @param executeAsBlock to execute in entirety, false otherwise
+     * @param the connection object
+     * @param the query string
+     * @param true to execute in entirety, false otherwise
      */
     public void executeSQLQuery(DatabaseConnection dc,
                                 final String query,
@@ -324,6 +337,7 @@ public class QueryDispatcher {
     /**
      * Returns whether a a query is currently being executed.
      *
+     * @param true if in an execution is in progress, false otherwise
      */
     public boolean isExecuting() {
 
@@ -336,14 +350,12 @@ public class QueryDispatcher {
      * flag indicates that the query should be executed in its entirety -
      * not split up into mulitple queries (where applicable).
      *
-     * @param sql query string
-     * @param executeAsBlock to execute in entirety, false otherwise
+     * @param the query string
+     * @param true to execute in entirety, false otherwise
      */
     private Object executeSQL(String sql, boolean executeAsBlock) {
 
-        IFBPerformanceInfo before, after;
-        before = null;
-        after = null;
+        FBPerformanceInfo before = null, after = null;
 
         waiting = false;
         long totalDuration = 0l;
@@ -466,50 +478,9 @@ public class QueryDispatcher {
                 }
 
                 try {
-                    DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
-                    DefaultDriverLoader driverLoader = new DefaultDriverLoader();
-                    Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
-                    DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-                    Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+                    FBConnection fbConnection = (FBConnection)querySender.getConnection().unwrap(FBConnection.class);
 
-                    if (driver.getClass().getName().contains("FBDriver")) {
-
-                        Connection connection = null;
-                        try {
-                            connection = querySender.getConnection().unwrap(Connection.class);
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-
-                        URL[] urls = new URL[0];
-                        Class clazzdb = null;
-                        Object odb = null;
-                        try {
-                            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-                            ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
-                            clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformance");
-                            odb = clazzdb.newInstance();
-                        } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                        } catch (InstantiationException e) {
-                            e.printStackTrace();
-                        } catch (MalformedURLException e) {
-                            e.printStackTrace();
-                        }
-
-                        IFBDatabasePerformance db = (IFBDatabasePerformance)odb;
-                        try {
-
-                            db.setConnection(connection);
-                            before = db.getPerformanceInfo();
-
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
+                    before = fbConnection.getFbDatabase().getDatabaseInfo(perfomanceInfoBytes, 256, new FBPerformanceInfoProcessor());
                 } catch (Exception e) {
                     // nothing to do
                 }
@@ -540,8 +511,6 @@ public class QueryDispatcher {
 
                         }
 
-                        printExecutionPlan(before, after);
-
                         setOutputMessage(SqlMessages.ERROR_MESSAGE,
                                          message);
                         setStatusMessage(ERROR_EXECUTING);
@@ -549,11 +518,17 @@ public class QueryDispatcher {
                     } else {
 
                         // Trying to get execution plan of firebird statement
-                        printPlan(rset);
+                        try {
+                            // If profiler is used
+                            FBResultSet fbResultSet = rset.unwrap(FBResultSet.class);
+
+                            setOutputMessage(SqlMessages.PLAIN_MESSAGE, fbResultSet.getExecutionPlan());
+
+                        } catch (Exception e) {
+                            // nothing to do
+                        }
 
                         setResultSet(rset, query.getOriginalQuery());
-
-                        printExecutionPlan(before, after);
                     }
 
                     end = System.currentTimeMillis();
@@ -567,8 +542,6 @@ public class QueryDispatcher {
 
                         int updateCount = result.getUpdateCount();
                         if (updateCount == -1) {
-
-                            printExecutionPlan(before, after);
                             
                             setOutputMessage(SqlMessages.ERROR_MESSAGE,
                                     result.getErrorMessage());
@@ -577,12 +550,8 @@ public class QueryDispatcher {
                         } else {
 
                             if (result.isException()) {
-
-                                printExecutionPlan(before, after);
-
                                 setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage());
                             } else {
-
                                 type = result.getType();
                                 setResultText(updateCount, type);
 
@@ -591,8 +560,6 @@ public class QueryDispatcher {
 
                                     setStatusMessage(" " + result.getMessage());
                                 }
-
-                                printExecutionPlan(before, after);
 
                             }
                         }
@@ -604,14 +571,10 @@ public class QueryDispatcher {
 
                         if (results == null) {
 
-                            printExecutionPlan(before, after);
-
                             setOutputMessage(SqlMessages.ERROR_MESSAGE,result.getErrorMessage());
                             setStatusMessage(ERROR_EXECUTING);
 
                         } else {
-
-                            printExecutionPlan(before, after);
 
                             setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Call executed successfully.");
                             int updateCount = result.getUpdateCount();
@@ -637,7 +600,7 @@ public class QueryDispatcher {
                     }
 
                 }
-                
+
                 // execution times
                 if (end == 0) {
 
@@ -651,6 +614,23 @@ public class QueryDispatcher {
             }
 
             statementExecuted(sql);
+
+            // Trying to get execution plan of firebird statement
+            try {
+                FBConnection fbConnection = querySender.getConnection().unwrap(FBConnection.class);
+
+                after = fbConnection.getFbDatabase().getDatabaseInfo(perfomanceInfoBytes, 256, new FBPerformanceInfoProcessor());
+
+                FBPerformanceInfo resultPerfomanceInfo = null;
+                if (before != null && after != null)
+                    resultPerfomanceInfo = FBPerformanceInfo.processInfo(before, after);
+
+                setOutputMessage(SqlMessages.PLAIN_MESSAGE, resultPerfomanceInfo.getPerformanceInfo());
+
+            } catch (Exception e) {
+                // nothing to do
+            }
+
 
         } catch (SQLException e) {
 
@@ -696,110 +676,6 @@ public class QueryDispatcher {
         }
 
         return DONE;
-    }
-
-    private void printExecutionPlan(IFBPerformanceInfo before, IFBPerformanceInfo after) {
-        // Trying to get execution plan of firebird statement
-        DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
-        DefaultDriverLoader driverLoader = new DefaultDriverLoader();
-        Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
-        DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-        Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
-
-        if (driver.getClass().getName().contains("FBDriver")) {
-
-            Connection connection = null;
-            try {
-                connection = querySender.getConnection().unwrap(Connection.class);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-
-            URL[] urls = new URL[0];
-            Class clazzdb = null;
-            Object odb = null;
-            try {
-                urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-                ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
-                clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformance");
-                odb = clazzdb.newInstance();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-
-            IFBDatabasePerformance db = (IFBDatabasePerformance)odb;
-            try {
-
-                db.setConnection(connection);
-                after = db.getPerformanceInfo();
-
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-
-                if (before != null && after != null) {
-                    IFBPerformanceInfo resultPerfomanceInfo = after.processInfo(before, after);
-
-                    setOutputMessage(SqlMessages.PLAIN_MESSAGE, resultPerfomanceInfo.getPerformanceInfo());
-                }
-        }
-
-    }
-
-    private void printPlan(ResultSet rs) {
-        try {
-            DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
-            DefaultDriverLoader driverLoader = new DefaultDriverLoader();
-            Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
-            DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-            Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
-
-            if (driver.getClass().getName().contains("FBDriver")) {
-
-                ResultSet resultSet = null;
-                try {
-                    resultSet = rs.unwrap(ResultSet.class);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-
-                URL[] urls = new URL[0];
-                Class clazzdb = null;
-                Object odb = null;
-                try {
-                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-                    ClassLoader cl = new URLClassLoader(urls, resultSet.getClass().getClassLoader());
-                    clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformance");
-                    odb = clazzdb.newInstance();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
-
-                IFBDatabasePerformance db = (IFBDatabasePerformance)odb;
-                try {
-
-                    setOutputMessage(SqlMessages.PLAIN_MESSAGE, db.getLastExecutedPlan(resultSet));
-
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private String formatDuration(long totalDuration) {
@@ -871,7 +747,7 @@ public class QueryDispatcher {
      * Logs the execution duration within the output
      * pane for the specified value.
      *
-     * @param time the time in millis
+     * @param start the time in millis
      */
     private void logExecutionTime(long time) {
         setOutputMessage(SqlMessages.PLAIN_MESSAGE,

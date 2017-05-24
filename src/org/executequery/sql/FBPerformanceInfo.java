@@ -1,9 +1,9 @@
-package biz.redsoft;
+package org.executequery.sql;
 
 /**
  * Created by vasiliy on 12.01.17.
  */
-public class FBPerformanceInfo implements IFBPerformanceInfo{
+public class FBPerformanceInfo {
     private long perfFetches;
     private long perfMarks;
     private long perfReads;
@@ -14,9 +14,7 @@ public class FBPerformanceInfo implements IFBPerformanceInfo{
     private long perfBuffers;
     private long perfPageSize;
 
-    FBPerformanceInfo() {
-
-    }
+    FBPerformanceInfo() {}
 
     public long getPerfFetches() {
         return perfFetches;
@@ -90,7 +88,7 @@ public class FBPerformanceInfo implements IFBPerformanceInfo{
         this.perfPageSize = perfPageSize;
     }
 
-    public IFBPerformanceInfo processInfo(IFBPerformanceInfo before, IFBPerformanceInfo after) {
+    public static FBPerformanceInfo processInfo(FBPerformanceInfo before, FBPerformanceInfo after) {
         FBPerformanceInfo resultInfo = new FBPerformanceInfo();
 
         resultInfo.setPerfBuffers(after.getPerfBuffers());

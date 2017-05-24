@@ -26,11 +26,8 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -45,13 +42,7 @@ import java.util.Map;
  */
 public class DefaultDriverLoader implements DriverLoader {
 
-    public static Map<String, Driver> getLoadedDrivers() {
-        return LOADED_DRIVERS;
-    }
-
     private static final Map<String, Driver> LOADED_DRIVERS = new HashMap<String, Driver>();
-
-    private static final Class[] parameters = new Class[]{URL.class};
     
     public Driver load(DatabaseDriver databaseDriver) {
 
@@ -79,7 +70,7 @@ public class DefaultDriverLoader implements DriverLoader {
                     URL[] urls = MiscUtils.loadURLs(path);
                     DynamicLibraryLoader loader = new DynamicLibraryLoader(urls);
                     clazz = loader.loadLibrary(driverName);
-
+                
                 } else {
     
                     clazz = loadUsingSystemLoader(driverName);

@@ -70,18 +70,6 @@ public interface DatabaseConnection extends Serializable {
 
     public void setCharset(String charset);
 
-    public String getRole();
-
-    public void setRole(String role);
-
-    public String getAuthMethod();
-
-    public void setAuthMethod(String method);
-
-    public String getConnectionMethod();
-
-    public void setConnectionMethod(String method);
-
     String getURL();
 
     void setURL(String url);

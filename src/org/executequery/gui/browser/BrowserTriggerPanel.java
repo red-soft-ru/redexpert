@@ -22,19 +22,15 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
     public static final String NAME = "BrowserTriggerPanel";
 
     private DisabledField triggerNameField;
-    private DisabledField triggerBeforeAfterField;
-    private DisabledField triggerPositionField;
+    //private DisabledField schemaNameField;
 
     private JLabel objectNameLabel;
 
     private JCheckBox activeCheckbox;
 
     private JLabel tableNameLabel;
-    private JLabel beforeAfterLabel;
-    private JLabel triggerPositionLabel;
     private JComboBox tableNameCombo;
     JTextPane descriptionPane;
-    JTextPane sqlPane;
 
     private Map cache;
 
@@ -81,19 +77,6 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         tableNameCombo = new DefaultComboBox();
         paramPanel.add(tableNameCombo);
 
-        beforeAfterLabel = new JLabel("Before/After:");
-        paramPanel.add(beforeAfterLabel);
-
-        triggerBeforeAfterField = new DisabledField();
-        paramPanel.add(triggerBeforeAfterField);
-
-        triggerPositionLabel = new JLabel("Position:");
-        paramPanel.add(triggerPositionLabel);
-
-        triggerPositionField = new DisabledField();
-
-        paramPanel.add(triggerPositionField);
-
         panel.add(paramPanel, BorderLayout.NORTH);
         panel.add(sourcePanel, BorderLayout.CENTER);
 
@@ -108,15 +91,6 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         descriptionPanel.add(descriptionPane, BorderLayout.CENTER);
 
         tabs.add("Description", descriptionPanel);
-
-        JPanel sqlPanel = new JPanel(new BorderLayout());
-        sqlPanel.setBorder(BorderFactory.createEtchedBorder());
-
-        sqlPane = new SQLTextPane();
-
-        sqlPanel.add(sqlPane, BorderLayout.CENTER);
-
-        tabs.add("Sql", sqlPanel);
 
         objectNameLabel = new JLabel();
         triggerNameField = new DisabledField();
@@ -199,30 +173,12 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
         try {
             triggerNameField.setText(trigger.getName());
+//            model.setValues(executeable.getParametersArray());
             textPane.setText(trigger.getTriggerSourceCode());
             activeCheckbox.setSelected(trigger.isTriggerActive());
-            if (!trigger.getStringTriggerType().toLowerCase().contains("before") &&
-                !trigger.getStringTriggerType().toLowerCase().contains("after"))
-                beforeAfterLabel.setText("Event:");
-            else if (trigger.getStringTriggerType().toLowerCase().contains("before"))
-                beforeAfterLabel.setText("Before:");
-            else if (trigger.getStringTriggerType().toLowerCase().contains("after"))
-                beforeAfterLabel.setText("After:");
-            else
-                beforeAfterLabel.setText("Before/After:");
-            triggerBeforeAfterField.setText(trigger.getStringTriggerType());
             tableNameCombo.removeAllItems();
-            if (trigger.getTriggerTableName() != null && !trigger.getTriggerTableName().isEmpty()) {
-                tableNameLabel.setVisible(true);
-                tableNameCombo.setVisible(true);
-                tableNameCombo.addItem(trigger.getTriggerTableName());
-            } else {
-                tableNameLabel.setVisible(false);
-                tableNameCombo.setVisible(false);
-            }
-            triggerPositionField.setText(String.valueOf(trigger.getTriggerSequence()));
+            tableNameCombo.addItem(trigger.getTriggerTableName());
             descriptionPane.setText(trigger.getTriggerDescription());
-            sqlPane.setText(trigger.getCreateSQLText());
         }
         catch (DataSourceException e) {
             controller.handleException(e);

@@ -201,20 +201,6 @@ public class BrowserConstants {
 
     public static final String DOMAIN_IMAGE = "domain16.png";
 
-    public static final String EXCEPTION_IMAGE = "exception16.png";
-
-    public static final String UDF_IMAGE = "udf16.png";
-
-    public static final String SYSTEM_DOMAIN_IMAGE = "SystemDomain16.png";
-
-    public static final String SYSTEM_INDEX_IMAGE = "SystemIndex16.png";
-
-    public static final String SYSTEM_TRIGGER_IMAGE = "SystemTrigger.png";
-
-    public static final String SYSTEM_DATABASE_TRIGGER_IMAGE = "SystemDatabaseTrigger.png";
-
-    public static final String PACKAGE_IMAGE = "package16.png";
-
     public static final String ROLE_IMAGE = "user_manager_16.png";
     public static final String GRANT_IMAGE="grant.png";
     public static final String NO_GRANT_IMAGE="no_grant.png";
@@ -248,14 +234,7 @@ public class BrowserConstants {
                                                FOLDER_INDEXES_IMAGE,
                                                FOLDER_PRIMARY_KEYS_IMAGE,
                                                DOMAIN_IMAGE,
-                                                EXCEPTION_IMAGE,
-                                                UDF_IMAGE,
-                                                SYSTEM_DOMAIN_IMAGE,
-                                                SYSTEM_INDEX_IMAGE,
-                                                SYSTEM_TRIGGER_IMAGE,
-                                                SYSTEM_DATABASE_TRIGGER_IMAGE,
-                                                PACKAGE_IMAGE,
-                                                ROLE_IMAGE
+                                               ROLE_IMAGE
                                                };
     
 }

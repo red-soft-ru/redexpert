@@ -28,16 +28,24 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.net.URISyntaxException;
+import java.io.IOException;
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.*;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
@@ -48,16 +56,12 @@ import javax.swing.table.TableColumnModel;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.EventMediator;
-import org.executequery.ExecuteQuery;
 import org.executequery.GUIUtilities;
-import org.executequery.components.FileChooserDialog;
 import org.executequery.components.TextFieldPanel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.datasource.ConnectionManager;
-import org.executequery.datasource.DefaultDriverLoader;
-import org.executequery.datasource.DriverLoader;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DatabaseDriverEvent;
@@ -71,6 +75,8 @@ import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
+import org.firebirdsql.jdbc.FBConnection;
+import org.firebirdsql.management.FBTraceManager;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DefaultFieldLabel;
 import org.underworldlabs.swing.DefaultTextField;
@@ -94,7 +100,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private static class TraceMessageLoop
             implements Runnable {
 
-//        FBTraceManager fbTraceManager;
+        FBTraceManager fbTraceManager;
         String configuration = null;
         String database;
         String charSet;
@@ -106,14 +112,14 @@ public class ConnectionPanel extends AbstractConnectionPanel
         String traceUUID;
 
         TraceMessageLoop(){
-//            fbTraceManager = new FBTraceManager();
-//            fbTraceManager.setLogger(System.out);
-//            traceUUID = UUID.randomUUID().toString();
-//            try {
-//                configuration = fbTraceManager.loadConfigurationFromFile("config/fbtrace.conf", true);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
+            fbTraceManager = new FBTraceManager();
+            fbTraceManager.setLogger(System.out);
+            traceUUID = UUID.randomUUID().toString();
+            try {
+                configuration = fbTraceManager.loadConfigurationFromFile("fbtrace.conf", true);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         public void setDatabase(String database) {
@@ -142,22 +148,22 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         public void run() {
             try {
-//                fbTraceManager.setHost(this.host);
-//                fbTraceManager.setPort(this.port);
-//                fbTraceManager.setCharSet(this.charSet);
-//                fbTraceManager.setPassword(this.password);
-//                fbTraceManager.setUser(this.user);
-//                fbTraceManager.setDatabase(this.database);
-//                fbTraceManager.startTraceSession(traceUUID, configuration);
-            } catch (Exception e) {
+                fbTraceManager.setHost(this.host);
+                fbTraceManager.setPort(this.port);
+                fbTraceManager.setCharSet(this.charSet);
+                fbTraceManager.setPassword(this.password);
+                fbTraceManager.setUser(this.user);
+                fbTraceManager.setDatabase(this.database);
+                fbTraceManager.startTraceSession(traceUUID, configuration);
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
 
         public void stop() {
             try {
-//                int traceSessionId = fbTraceManager.getSessionId(traceUUID);
-//                fbTraceManager.stopTraceSession(traceSessionId);
+                int traceSessionId = fbTraceManager.getSessionId(traceUUID);
+                fbTraceManager.stopTraceSession(traceSessionId);
             } catch (Exception e) {
 //                e.printStackTrace();
             }
@@ -186,19 +192,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private JTextField urlField;
 
     private JComboBox charsetsCombo;
-    private JTextField roleField;
-
-    private JComboBox authCombo;
-    private JComboBox methodCombo;
 
     private JLabel statusLabel;
     
     private JComboBox txCombo;
     private JButton txApplyButton;
-
-    JPanel basicPanel;
-    JPanel standardPanel;
-    JPanel jdbcUrlPanel;
     
     // -------------------------------
 
@@ -242,52 +240,13 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         // ---------------------------------
         // create the basic props panel
-
-        List<String> auth = new ArrayList<>();
-        auth.add("Basic");
-        auth.add("GSS");
-        authCombo = new JComboBox(auth.toArray());
-        authCombo.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED)
-            {
-                Object selectedItem = e.getItem();
-                if (selectedItem.toString().equalsIgnoreCase("basic")) {
-                    basicPanel.setVisible(true);
-                }
-                else if (selectedItem.toString().equalsIgnoreCase("gss")) {
-                    basicPanel.setVisible(false);
-                }
-            }
-        });
-
-        List<String> methods = new ArrayList<>();
-        methods.add("Standard");
-        methods.add("JDBC");
-        methodCombo = new JComboBox(methods.toArray());
-        methodCombo.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED)
-            {
-                Object selectedItem = e.getItem();
-                if (selectedItem.toString().equalsIgnoreCase("standard")) {
-                    standardPanel.setVisible(true);
-                    jdbcUrlPanel.setVisible(false);
-                }
-                else if (selectedItem.toString().equalsIgnoreCase("jdbc")) {
-                    standardPanel.setVisible(false);
-                    jdbcUrlPanel.setVisible(true);
-                }
-            }
-        });
         
         // initialise the fields
         nameField = createTextField();
         passwordField = createPasswordField();
         hostField = createTextField();
-        hostField.setText("localhost");
         portField = createNumberTextField();
-        portField.setText("3050");
         sourceField = createMatchedWidthTextField();
-        roleField = createTextField();
         userField = createTextField();
         urlField = createMatchedWidthTextField();
 
@@ -316,58 +275,20 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.gridy = 0;
         gbc.gridx = 0;
-
+        
         statusLabel = new DefaultFieldLabel();
         addLabelFieldPair(mainPanel, "Status:", 
                 statusLabel, "Current connection status", gbc);
-
-        addDriverFields(mainPanel, gbc);
         
         gbc.insets.bottom = 5;
-        addLabelFieldPair(mainPanel, "Connection Name (Database Alias):",
+        addLabelFieldPair(mainPanel, "Connection Name:", 
                 nameField, "A friendly name for this connection", gbc);
 
-//        addLabelFieldPair(mainPanel, "Authentication:",
-//                authCombo, "Available authentications", gbc);
+        addLabelFieldPair(mainPanel, "User Name:", 
+                userField, "Login user name", gbc);
 
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.weightx = 1.0;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-
-        basicPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints bgbc = new GridBagConstraints();
-        bgbc.fill = GridBagConstraints.HORIZONTAL;
-        bgbc.anchor = GridBagConstraints.NORTHWEST;
-        bgbc.insets = new Insets(5, 5, 5, 5);
-
-        JLabel userLabel = new DefaultFieldLabel("User Name:");
-        bgbc.gridx = 0;
-        bgbc.gridwidth = 1;
-        bgbc.weightx = 0;
-        basicPanel.add(userLabel, bgbc);
-
-        bgbc.gridx = 1;
-        bgbc.insets.left = 5;
-        bgbc.weightx = 0.25;
-        basicPanel.add(userField, bgbc);
-
-        JLabel passwordLabel = new DefaultFieldLabel("Password:");
-        bgbc.gridx = 2;
-        bgbc.gridwidth = 1;
-        bgbc.weightx = 0;
-        basicPanel.add(passwordLabel, bgbc);
-
-        bgbc.gridx = 3;
-        bgbc.insets.left = 5;
-        bgbc.weightx = 0.25;
-        basicPanel.add(passwordField, bgbc);
-
-//        addLabelFieldPair(basicPanel, "User Name:",
-//                userField, "Login user name", gbc);
-//
-//        addLabelFieldPair(basicPanel, "Password:",
-//                passwordField, "Login password", gbc);
+        addLabelFieldPair(mainPanel, "Password:", 
+                passwordField, "Login password", gbc);
 
         JButton showPassword = new LinkButton("Show Password");
         showPassword.setActionCommand("showPassword");
@@ -375,173 +296,33 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         JPanel passwordOptionsPanel = new JPanel(new GridBagLayout());
         addComponents(passwordOptionsPanel,
-                new ComponentToolTipPair[]{
+                      new ComponentToolTipPair[]{
                         new ComponentToolTipPair(savePwdCheck, "Store the password with the connection information"),
                         new ComponentToolTipPair(encryptPwdCheck, "Encrypt the password when saving"),
                         new ComponentToolTipPair(showPassword, "Show the password in plain text")});
-
-//        gbc.gridy++;
-//        gbc.gridx = 1;
-//        gbc.weightx = 1.0;
-//        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        bgbc.gridx = 3;
-        bgbc.gridy = 1;
-        bgbc.insets.left = 5;
-        bgbc.weightx = 0.1;
-        basicPanel.add(passwordOptionsPanel, bgbc);
-
-        JLabel charsetLabel = new DefaultFieldLabel("Character Set:");
-        bgbc.gridy = 2;
-        bgbc.gridx = 0;
-        bgbc.gridwidth = 1;
-        bgbc.weightx = 0;
-        basicPanel.add(charsetLabel, bgbc);
-
-        bgbc.gridx = 1;
-        bgbc.gridwidth = 1;
-        bgbc.insets.left = 5;
-        bgbc.weightx = 0.25;
-        basicPanel.add(charsetsCombo, bgbc);
-
-        JLabel roleLabel = new DefaultFieldLabel("Role:");
-        bgbc.gridy = 2;
-        bgbc.gridx = 2;
-        bgbc.gridwidth = 1;
-        bgbc.weightx = 0;
-        basicPanel.add(roleLabel, bgbc);
-
-        bgbc.gridx = 3;
-        bgbc.gridwidth = 2;
-        bgbc.insets.left = 5;
-        bgbc.weightx = 0.5;
-        basicPanel.add(roleField, bgbc);
-
-        addLabelFieldPair(mainPanel, "Connection parameters:",
-                methodCombo, "Specify connection parameters or JDBC string", gbc);
-
-        standardPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints sgbc = new GridBagConstraints();
-        sgbc.fill = GridBagConstraints.HORIZONTAL;
-        sgbc.anchor = GridBagConstraints.NORTHWEST;
-        sgbc.insets = new Insets(5, 5, 5, 5);
-
-        JLabel hostLabel = new DefaultFieldLabel("Server(Host) Name(IP):");
-        sgbc.gridx = 0;
-        sgbc.gridwidth = 1;
-        sgbc.weightx = 0;
-        standardPanel.add(hostLabel, sgbc);
-
-        sgbc.gridx = 1;
-        sgbc.insets.left = 5;
-        sgbc.weightx = 0.25;
-        standardPanel.add(hostField, sgbc);
-
-        JLabel portLabel = new DefaultFieldLabel("Port:");
-        sgbc.gridx = 2;
-        sgbc.insets.left = 5;
-        sgbc.weightx = 0;
-        standardPanel.add(portLabel, sgbc);
-
-        sgbc.gridx = 3;
-        sgbc.insets.left = 5;
-        sgbc.weightx = 0.1;
-        standardPanel.add(portField, sgbc);
-
-        JLabel dataSourceLabel = new DefaultFieldLabel("Database File:");
-        sgbc.gridx = 4;
-        sgbc.insets.left = 5;
-        sgbc.weightx = 0;
-        standardPanel.add(dataSourceLabel, sgbc);
-
-        JButton openFile = new JButton("Choose file");
-        openFile.addActionListener(new ActionListener() {
-            FileChooserDialog fileChooser = new FileChooserDialog();
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int returnVal = fileChooser.showOpenDialog(openFile);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    File file = fileChooser.getSelectedFile();
-                    sourceField.setText(file.getAbsolutePath());
-                }
-            }
-        });
-
-        JPanel selectFilePanel = new JPanel(new BorderLayout());
-
-        selectFilePanel.add(sourceField, BorderLayout.CENTER);
-        selectFilePanel.add(openFile, BorderLayout.LINE_END);
-
-//        addLabelFieldPair(mainPanel, "Data Source:",
-//                selectFilePanel, "Data source name", gbc);
-
-//        addLabelFieldPair(mainPanel, "Character Set:",
-//                charsetsCombo, "Default character set for this connection", gbc);
-
-        sgbc.gridx = 5;
-        sgbc.insets.left = 5;
-        sgbc.weightx = 0.25;
-        standardPanel.add(selectFilePanel, sgbc);
-
-//        addLabelFieldPair(mainPanel, "Authentication:",
-//                authCombo, "Available authentications", gbc);
-        JLabel authLabel = new DefaultFieldLabel("Authentication:");
-        sgbc.gridy = 1;
-        sgbc.gridx = 0;
-        sgbc.gridwidth = 1;
-        sgbc.weightx = 0;
-        standardPanel.add(authLabel, sgbc);
-
-        sgbc.gridx = 1;
-        sgbc.insets.left = 5;
-        sgbc.weightx = 0.25;
-        sgbc.gridwidth = GridBagConstraints.REMAINDER;
-        standardPanel.add(authCombo, sgbc);
-
-        sgbc.gridy++;
-        sgbc.gridx = 0;
-        sgbc.gridwidth = GridBagConstraints.REMAINDER;
-        standardPanel.add(basicPanel, sgbc);
-
+        
         gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.insets.top = 10;
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        mainPanel.add(passwordOptionsPanel, gbc);
+        
+        addLabelFieldPair(mainPanel, "Host Name:", 
+                hostField, "Server host name or IP address", gbc);
 
-//        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        mainPanel.add(standardPanel, gbc);
+        addLabelFieldPair(mainPanel, "Port:", 
+                portField, "Database port number", gbc);
 
-//        addLabelFieldPair(mainPanel, "Host Name:",
-//                hostField, "Server host name or IP address", gbc);
+        addLabelFieldPair(mainPanel, "Data Source:", 
+                sourceField, "Data source name", gbc);
 
-//        addLabelFieldPair(mainPanel, "Port:",
-//                portField, "Database port number", gbc);
+        addLabelFieldPair(mainPanel, "Character Set:",
+                charsetsCombo, "Default character set for this connection", gbc);
 
-        jdbcUrlPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints jgbc = new GridBagConstraints();
-        jgbc.fill = GridBagConstraints.HORIZONTAL;
-        jgbc.anchor = GridBagConstraints.NORTHWEST;
-        jgbc.insets = new Insets(5, 5, 5, 5);
+        addLabelFieldPair(mainPanel, "JDBC URL:", 
+                urlField, "The full JDBC URL for this connection (optional)", gbc);
 
-        JLabel urlLabel = new DefaultFieldLabel("JDBC URL:");
-        jgbc.gridx = 0;
-        jgbc.gridwidth = 1;
-        jgbc.weightx = 0;
-        jdbcUrlPanel.add(urlLabel, jgbc);
-
-        jgbc.gridx = 1;
-        jgbc.insets.left = 5;
-        jgbc.weightx = 1.0;
-        jdbcUrlPanel.add(urlField, jgbc);
-
-//        addLabelFieldPair(mainPanel, "JDBC URL:",
-//                urlField, "The full JDBC URL for this connection (optional)", gbc);
-
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.insets.top = 10;
-
-//        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        mainPanel.add(jdbcUrlPanel, gbc);
-        jdbcUrlPanel.setVisible(false);
+        addDriverFields(mainPanel, gbc);
 
         connectButton = createButton("Connect", CONNECT_ACTION_COMMAND, 'T');
         disconnectButton = createButton("Disconnect", "disconnect", 'D');
@@ -691,7 +472,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 charsets.clear();
 
             String resource = FileUtils.loadResource("org/executequery/charsets.properties");
-            String[] strings = resource.split("\n"/*System.getProperty("line.separator")*/);
+            String[] strings = resource.split(System.getProperty("line.separator"));
             for(String s : strings){
                 if (!s.startsWith("#") && !s.isEmpty())
                     charsets.add(s);
@@ -951,11 +732,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
         
             // connect
             GUIUtilities.showWaitCursor();
-
-            System.setProperty("java.security.auth.login.config", "config/gss.login.conf");
-
+            
             boolean connected = host.connect();
-
             if (connected) {
             
                 // apply the tx level if supplied
@@ -972,27 +750,17 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 }
 
                 Connection connection = host.getConnection();
-                DefaultDriverLoader driverLoader = new DefaultDriverLoader();
-                Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
-                DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-                Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
-
-                int majorVersion = driver.getMajorVersion();
 
                 try {
-                    if (majorVersion >= 3) {
-//
-//                        FBConnection fbConnection = connection.unwrap(FBConnection.class);
-//
-//                        Log.info("Connection encoding: " + fbConnection.getFbDatabase().getEncoding().getCharsetName());
-                    }
+                    FBConnection fbConnection = connection.unwrap(FBConnection.class);
 
-                } catch (Exception e) {
+                    Log.info("Connection encoding: " +fbConnection.getFbDatabase().getEncoding().getCharsetName());
+
+                } catch (SQLException e) {
                     // nothing
                 }
 
-                if (majorVersion >= 3) {
-                    String className = host.getDatabaseConnection().getJDBCDriver().getClassName();
+                String className = host.getDatabaseConnection().getJDBCDriver().getClassName();
                     if (className.contains("FBDriver")) {
 
                         traceMessageLoop = new TraceMessageLoop();
@@ -1006,7 +774,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
 //                        Thread traceThread = new Thread(traceMessageLoop);
 //                        traceThread.start();
                     }
-                }
             }
 
         } catch (DataSourceException e) {
@@ -1135,9 +902,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
             if (!MiscUtils.isNull(key) && !MiscUtils.isNull(value)) {
 
-                if (key.equalsIgnoreCase("lc_ctype") || key.equalsIgnoreCase("useGSSAuth")
-                    || key.equalsIgnoreCase("roleName"))
-                        /*&& !charsetsCombo.getSelectedItem().toString().equals("NONE")*/
+                if ((key.equalsIgnoreCase("lc_ctype"))
+                        /*&& !charsetsCombo.getSelectedItem().toString().equals("NONE")*/)
                     continue;
                 properties.setProperty(key, value);
             }
@@ -1146,22 +912,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         if (!properties.containsKey("lc_ctype"))
             properties.setProperty("lc_ctype", charsetsCombo.getSelectedItem().toString());
-
-        if (!properties.containsKey("useGSSAuth") && authCombo.getSelectedItem().toString().equalsIgnoreCase("gss"))
-            properties.setProperty("useGSSAuth", "true");
-
-        if (!properties.containsKey("roleName") && !roleField.getText().isEmpty())
-            properties.setProperty("roleName", roleField.getText());
-
-        String name = ManagementFactory.getRuntimeMXBean().getName();
-        String pid = name.split("@")[0];
-        properties.setProperty("process_id", pid);
-        try {
-            String path = ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-            properties.setProperty("process_name", path);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
 
         databaseConnection.setJdbcProperties(properties);
     }
@@ -1181,11 +931,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         int count = 0;
         for (Enumeration<?> i = properties.propertyNames(); i.hasMoreElements();) {
             String name = (String)i.nextElement();
-            if (!name.equalsIgnoreCase("password") && !name.equalsIgnoreCase("lc_ctype")
-                    && !name.equalsIgnoreCase("useGSSAuth")
-                    && !name.equalsIgnoreCase("process_id")
-                    && !name.equalsIgnoreCase("process_name")
-                    && !name.equalsIgnoreCase("roleName")) {
+            if (!name.equalsIgnoreCase("password") || !name.equalsIgnoreCase("lc_ctype")) {
                 advancedProperties[count][0] = name;
                 advancedProperties[count][1] = properties.getProperty(name);
                 count++;
@@ -1382,15 +1128,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
         encryptPwdCheck.setSelected(databaseConnection.isPasswordEncrypted());
         userField.setText(databaseConnection.getUserName());
         passwordField.setText(databaseConnection.getUnencryptedPassword());
-        hostField.setText(databaseConnection.getHost().isEmpty() ? "localhost" : databaseConnection.getHost());
-        portField.setText(databaseConnection.getPort().isEmpty() ? "3050" : databaseConnection.getPort());
+        hostField.setText(databaseConnection.getHost());
+        portField.setText(databaseConnection.getPort());
         sourceField.setText(databaseConnection.getSourceName());
         urlField.setText(databaseConnection.getURL());
         nameField.setText(databaseConnection.getName());
         charsetsCombo.setSelectedItem(databaseConnection.getCharset());
-        roleField.setText(databaseConnection.getRole());
-        authCombo.setSelectedItem(databaseConnection.getAuthMethod());
-        methodCombo.setSelectedItem(databaseConnection.getConnectionMethod());
 
         // assign as the current connection
         this.databaseConnection = databaseConnection;
@@ -1422,19 +1165,16 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
             return;
         }
-        String path = sourceField.getText().replace("\\", "/");
+        
         databaseConnection.setPasswordStored(savePwdCheck.isSelected());
         databaseConnection.setPasswordEncrypted(encryptPwdCheck.isSelected());
         databaseConnection.setUserName(userField.getText());
         databaseConnection.setPassword(MiscUtils.charsToString(passwordField.getPassword()));
         databaseConnection.setHost(hostField.getText());
         databaseConnection.setPort(portField.getText());
-        databaseConnection.setSourceName(path);
+        databaseConnection.setSourceName(sourceField.getText());
         databaseConnection.setURL(urlField.getText());
-        databaseConnection.setRole(roleField.getText());
         databaseConnection.setCharset(charsetsCombo.getSelectedItem().toString());
-        databaseConnection.setAuthMethod(authCombo.getSelectedItem().toString());
-        databaseConnection.setConnectionMethod(methodCombo.getSelectedItem().toString());
 
         // jdbc driver selection
         int driverIndex = driverCombo.getSelectedIndex();

@@ -2,6 +2,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
+import org.firebirdsql.jdbc.FBDatabaseMetaData;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.DatabaseMetaData;
@@ -73,7 +74,7 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
             String _catalog = getCatalogName();
             String _schema = getSchemaName();
 
-            if (dmd.getConnection().getClass().getName().contains("FBConnection")) {
+            if (dmd instanceof FBDatabaseMetaData) {
 
                 statement = dmd.getConnection().createStatement();
                 ResultSet rs = statement.executeQuery("select gen_id(" + getName() + ", 0) from rdb$database");
@@ -111,7 +112,7 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
             String _catalog = getCatalogName();
             String _schema = getSchemaName();
 
-            if (dmd.getConnection().getClass().getName().contains("FBConnection")) {
+            if (dmd instanceof FBDatabaseMetaData) {
 
                 statement = dmd.getConnection().createStatement();
                 ResultSet rs = statement.executeQuery("select r.rdb$description\n" +

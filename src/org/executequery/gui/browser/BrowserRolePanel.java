@@ -333,8 +333,9 @@ create_table();
 
 
                     Statement st = con.createStatement();
-                    ResultSet rs1=st.executeQuery("select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
-                            "where (rdb$Relation_name='"+relName.elementAt(i)+"') and (rdb$user='"+jComboBox1.getSelectedItem()+"')");
+                    String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
+                            "where (rdb$Relation_name='"+relName.elementAt(i)+"') and (rdb$user='"+jComboBox1.getSelectedItem()+"')";
+                    ResultSet rs1=st.executeQuery(s);
                     Vector<Object> roleData= new Vector<Object>();
 
                     roleData.add(relName.elementAt(i));
@@ -348,7 +349,11 @@ create_table();
                         String grant=rs1.getString(1);
                         grant=grant.substring(0,1);
                         int ind = grants.indexOf(grant);
-                        if (rs1.getObject(2).equals(0)) {
+                        Object obj=rs1.getObject(2);
+                        if(obj == null)
+                            rolesTable.setValueAt(gr, i, ind + 1);
+                        else
+                        if (obj.equals(0)) {
 
 
                             rolesTable.setValueAt(gr, i, ind + 1);

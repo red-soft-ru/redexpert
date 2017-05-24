@@ -26,12 +26,6 @@ public class FirebirdDataTypeFactory extends DataTypeFactory {
             ((LiquibaseDataType)type).finishInitialization(dataTypeDefinition);
             return (LiquibaseDataType)type;
         }
-        if (dataTypeDefinition.contains("<domain>")) {
-            dataTypeDefinition = dataTypeDefinition.replace("<domain>", "");
-            Object type = new UnknownType(dataTypeDefinition);
-            ((LiquibaseDataType)type).finishInitialization(dataTypeDefinition);
-            return (LiquibaseDataType)type;
-        }
 
         return super.fromDescription(dataTypeDefinition, database);
     }

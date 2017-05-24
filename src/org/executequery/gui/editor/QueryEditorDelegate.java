@@ -36,7 +36,7 @@ public class QueryEditorDelegate implements QueryDelegate {
 
     private int currentStatementHistoryIndex = -1;
 
-    private QueryDispatcher dispatcher = null;
+    private final QueryDispatcher dispatcher;
 
     private final QueryEditor queryEditor;
 
@@ -44,9 +44,7 @@ public class QueryEditorDelegate implements QueryDelegate {
 
         super();
         this.queryEditor = queryEditor;
-
-            dispatcher = new QueryDispatcher(this);
-
+        dispatcher = new QueryDispatcher(this);
     }
 
     public void destroyConnection() {
@@ -98,7 +96,7 @@ public class QueryEditorDelegate implements QueryDelegate {
     /**
      * Indicates a connection has been closed.
      *
-     * @param dc connection thats been closed
+     * @param the connection thats been closed
      */
     public void disconnected(DatabaseConnection dc) {
 

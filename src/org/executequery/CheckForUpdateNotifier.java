@@ -110,13 +110,6 @@ public class CheckForUpdateNotifier implements Interruptible {
                     logNewVersonInfo();
                     setNotifierInStatusBar();
 
-                    String binaryZip = getBinaryUrl();
-                    if (!binaryZip.isEmpty()) {
-                        updateLoader = new UpdateLoader("");
-                        updateLoader.setBinaryZipUrl(binaryZip);
-                        setDownloadNotifierInStatusBar();
-                    }
-
                 } else {
 
                     Log.info("Red Expert is up to date.");
@@ -165,11 +158,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         
         return GUIUtilities.getStatusBar();
     }
-
-    public String getBinaryUrl() {
-        return repository.getBinaryZipUrl();
-    }
-
+    
     class NotificationLabelMouseAdapter extends MouseAdapter {
         
         public void mouseReleased(MouseEvent e) {

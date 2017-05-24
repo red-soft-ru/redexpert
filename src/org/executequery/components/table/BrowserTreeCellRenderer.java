@@ -144,10 +144,6 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 break;
             
             case NamedObject.META_TAG:
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("index") == 0) {
-                    setIcon(icons.get(BrowserConstants.INDEXES_IMAGE));
-                    break;
-                }
                 if (databaseObject.getMetaDataKey().compareToIgnoreCase("procedure") == 0) {
                     setIcon(icons.get(BrowserConstants.PROCEDURES_IMAGE));
                     break;
@@ -186,34 +182,6 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 }
                 if (databaseObject.getMetaDataKey().compareToIgnoreCase("role") == 0) {
                     setIcon(icons.get(BrowserConstants.ROLE_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("exception") == 0) {
-                    setIcon(icons.get(BrowserConstants.EXCEPTION_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("udf") == 0) {
-                    setIcon(icons.get(BrowserConstants.UDF_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system domain") == 0) {
-                    setIcon(icons.get(BrowserConstants.SYSTEM_DOMAIN_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system index") == 0) {
-                    setIcon(icons.get(BrowserConstants.SYSTEM_INDEX_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system trigger") == 0) {
-                    setIcon(icons.get(BrowserConstants.SYSTEM_TRIGGER_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system database trigger") == 0) {
-                    setIcon(icons.get(BrowserConstants.SYSTEM_DATABASE_TRIGGER_IMAGE));
-                    break;
-                }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("package") == 0) {
-                    setIcon(icons.get(BrowserConstants.PACKAGE_IMAGE));
                     break;
                 }
 
@@ -261,23 +229,11 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 setIcon(icons.get(BrowserConstants.TABLE_TRIGGER_IMAGE));
                 break;
 
-            case NamedObject.PACKAGE:
-                setIcon(icons.get(BrowserConstants.PACKAGE_IMAGE));
-                break;
-
             case NamedObject.DOMAIN:
                 setIcon(icons.get(BrowserConstants.DOMAIN_IMAGE));
                 break;
             case NamedObject.ROLE:
                 setIcon(icons.get(BrowserConstants.ROLE_IMAGE));
-                break;
-
-            case NamedObject.EXCEPTION:
-                setIcon(icons.get(BrowserConstants.EXCEPTION_IMAGE));
-                break;
-
-            case NamedObject.UDF:
-                setIcon(icons.get(BrowserConstants.UDF_IMAGE));
                 break;
                 
             case NamedObject.TABLE:
@@ -402,7 +358,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
     /**
      * Builds a HTML tool tip describing this tree connection.
      * 
-     * @param connection object
+     * @param the connection object
      */
     private String buildToolTip(DatabaseConnection connection) {
         // reset

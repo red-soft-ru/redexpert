@@ -47,6 +47,7 @@ import liquibase.change.core.DropUniqueConstraintChange;
 import liquibase.change.core.ModifyDataTypeChange;
 import liquibase.change.core.RenameColumnChange;
 import liquibase.database.Database;
+import liquibase.database.DatabaseConnection;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.logging.LogFactory;
@@ -65,6 +66,7 @@ import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.log.Log;
 import org.executequery.sql.StatementGenerator;
+import org.firebirdsql.jdbc.FBConnection;
 
 public class LiquibaseStatementGenerator implements StatementGenerator {
 

@@ -29,8 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -54,7 +52,6 @@ import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.gui.editor.ConnectionChangeListener;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.log.Log;
-import org.executequery.repository.spi.KeywordRepositoryImpl;
 import org.executequery.sql.DerivedQuery;
 import org.executequery.sql.QueryTable;
 import org.executequery.util.UserProperties;
@@ -335,8 +332,6 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
 
     private List<AutoCompleteListItem> itemsStartingWith(List<QueryTable> tables, String prefix) {
 
-        String editorText = queryEditor.getEditorText();
-
         boolean hasTables = hasTables(tables);
         if (StringUtils.isBlank(prefix) && !hasTables) {
 
@@ -347,68 +342,17 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
 
         List<AutoCompleteListItem> searchList = autoCompleteListItems;
         String wordPrefix = prefix.trim().toUpperCase();
-        String tableString = "";
 
         int dotIndex = prefix.indexOf('.');
         boolean hasDotIndex = (dotIndex != -1);
         if (hasDotIndex) {
 
-            tableString = wordPrefix.substring(0, dotIndex);
-            tableString = tableString.replace("(", "");
             wordPrefix = wordPrefix.substring(dotIndex + 1);
 
         } else if (wordPrefix.length() < MINIMUM_CHARS_FOR_DATABASE_LOOKUP && !hasTables) {
 
             return buildItemsStartingWithForList(
                     selectionsFactory.buildKeywords(databaseHost, autoCompleteKeywords), tables, wordPrefix, false);
-        }
-
-        // try to get columns for table
-        if (hasDotIndex) {
-            List<AutoCompleteListItem> itemsForTable =
-                    selectionsFactory.buildItemsForTable(databaseHost, tableString.toUpperCase());
-
-            if (!itemsForTable.isEmpty()) {
-                itemsForTable =
-                        buildItemsStartingWithForList(itemsForTable, tables, wordPrefix, hasDotIndex);
-            }
-            if (!itemsForTable.isEmpty())
-                return itemsForTable;
-        }
-
-        // maybe alias?
-        if (hasDotIndex) {
-            KeywordRepositoryImpl kw = new KeywordRepositoryImpl();
-            List<String> sql92 = kw.getSQL92();
-            Pattern pattern = Pattern.compile("([A-z]*\\$\\w+)\\s("
-                            + tableString
-                            + "\\b)|(\\w+)\\s("
-                            + tableString
-                            + "\\b)",
-                    Pattern.CASE_INSENSITIVE);
-            Matcher matcher = pattern.matcher(editorText);
-            while (matcher.find()) {
-                String tableFromAlias = "";
-                String tableFromAlias1 = matcher.group(1);
-                String tableFromAlias3 = matcher.group(3);
-
-                if (tableFromAlias1 != null)
-                    tableFromAlias = tableFromAlias1;
-                else if (tableFromAlias3 != null)
-                    tableFromAlias = tableFromAlias3;
-
-                if (sql92.contains(tableFromAlias.toUpperCase()))
-                    continue;
-
-                List<AutoCompleteListItem> itemsForTable =
-                        selectionsFactory.buildItemsForTable(databaseHost, tableFromAlias.toUpperCase());
-
-                if (!itemsForTable.isEmpty()) {
-                    itemsForTable =
-                            buildItemsStartingWithForList(itemsForTable, tables, wordPrefix, hasDotIndex);
-                }
-                return itemsForTable;
-            }
         }
 
         List<AutoCompleteListItem> itemsStartingWith =

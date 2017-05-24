@@ -28,7 +28,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.DatabaseCatalog;
+import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.DatabaseMetaTag;
+import org.executequery.databaseobjects.DatabaseObject;
+import org.executequery.databaseobjects.DatabaseSchema;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 
@@ -117,10 +122,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 children = loadFunctionsOrProcedures(type);
     
-            } else if (isIndex()) {
-
-                children = loadIndices();
-
             } else if (isTrigger()) {
 
                 children = loadTriggers();
@@ -134,34 +135,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 children = loadDomains();
 
             }else if (isRole()) {
-                children= loadRoles();
-            } else if (isException()) {
 
-                children = loadExceptions();
-
-            } else if (isUDF()) {
-
-                children = loadUDFs();
-
-            } else if (isSystemDomain()) {
-
-                children = loadSystemDomains();
-
-            } else if (isSystemIndex()) {
-
-                children = loadSystemIndices();
-
-            } else if (isSystemTrigger()) {
-
-                children = loadSystemTriggers();
-
-            } else if (isSystemDatabaseTrigger()) {
-
-                children = loadSystemDatabaseTriggers();
-
-            } else if (isPackage()) {
-
-                children = loadPackages();
+                children = loadRoles();
 
             }
             else {
@@ -259,13 +234,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return new ArrayList<NamedObject>(0);
     }
 
-    private List<NamedObject> loadIndices()
-            throws DataSourceException {
-
-        return getIndices();
-
-    }
-
     private List<NamedObject> loadTriggers()
             throws DataSourceException {
 
@@ -290,55 +258,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             throws DataSourceException {
 
         return getRoles();
-
-    }
-
-    private List<NamedObject> loadExceptions()
-            throws DataSourceException {
-
-        return getExceptions();
-
-    }
-
-    private List<NamedObject> loadUDFs()
-            throws DataSourceException {
-
-        return getUDFs();
-
-    }
-
-    private List<NamedObject> loadSystemDomains()
-            throws DataSourceException {
-
-        return getSystemDomains();
-
-    }
-
-    private List<NamedObject> loadSystemIndices()
-            throws DataSourceException {
-
-        return getSystemIndices();
-
-    }
-
-    private List<NamedObject> loadSystemTriggers()
-            throws DataSourceException {
-
-        return getSystemTriggers();
-
-    }
-
-    private List<NamedObject> loadSystemDatabaseTriggers()
-        throws DataSourceException {
-
-        return getSystemDatabaseTriggers();
-
-    }
-
-    private List<NamedObject> loadPackages()
-            throws DataSourceException {
-
-        return getPackages();
 
     }
 
@@ -371,13 +290,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                     return false;
 
-                } else if (isIndex()) {
-
-                    if (type == INDEX) {
-                        return hasIndices();
-                    }
-
-                }  else if (isTrigger()) {
+                } else if (isTrigger()) {
 
                     if (type == TRIGGER) {
                         return hasTriggers();
@@ -402,49 +315,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     }
 
                 }
-                 else if (isException()) {
-
-                    if (type == EXCEPTION) {
-                        return hasException();
-                    }
-
-                } else if (isUDF()) {
-
-                    if (type == UDF) {
-                        return hasUDF();
-                    }
-
-                } else if (isSystemDomain()) {
-
-                    if (type == SYSTEM_DOMAIN) {
-                        return hasSystemDomain();
-                    }
-
-                } else if (isSystemIndex()) {
-
-                    if (type == SYSTEM_INDEX) {
-                        return hasSystemIndex();
-                    }
-
-                } else if (isSystemTrigger()) {
-
-                    if (type == SYSTEM_TRIGGER) {
-                        return hasSystemTrigger();
-                    }
-
-                } else if (isSystemDatabaseTrigger()) {
-
-                    if (type == SYSTEM_DATABASE_TRIGGER) {
-                        return hasSystemDatabaseTrigger();
-                    }
-
-                } else if (isPackage()) {
-
-                    if (type == PACKAGE) {
-                        return hasPackages();
-                    }
-
-                } else {
+                else {
                     
                     return getHost().hasTablesForType(getCatalogName(), getSchemaName(), getMetaDataKey());                
                 }
@@ -464,12 +335,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         int type = getSubType();
         return type == FUNCTION || type == PROCEDURE;
-    }
-
-    private boolean isIndex() {
-
-        int type = getSubType();
-        return type == INDEX;
     }
 
     private boolean isTrigger() {
@@ -493,48 +358,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         int type = getSubType();
         return type == ROLE;
-    }
-
-    private boolean isException() {
-
-        int type = getSubType();
-        return type == EXCEPTION;
-    }
-
-    private boolean isUDF() {
-
-        int type = getSubType();
-        return type == UDF;
-    }
-
-    private boolean isSystemDomain() {
-
-        int type = getSubType();
-        return type == SYSTEM_DOMAIN;
-    }
-
-    private boolean isSystemIndex() {
-
-        int type = getSubType();
-        return type == SYSTEM_INDEX;
-    }
-
-    private boolean isSystemTrigger() {
-
-        int type = getSubType();
-        return type == SYSTEM_TRIGGER;
-    }
-
-    private boolean isSystemDatabaseTrigger() {
-
-        int type = getSubType();
-        return type == SYSTEM_DATABASE_TRIGGER;
-    }
-
-    private boolean isPackage() {
-
-        int type = getSubType();
-        return type == PACKAGE;
     }
 
     private String procedureTerm() throws SQLException {
@@ -576,25 +399,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             
         } finally {
             
-            releaseResources(rs);
-        }
-    }
-
-    private boolean hasIndices() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getIndicesResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
             releaseResources(rs);
         }
     }
@@ -674,139 +478,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
     }
 
-    private boolean hasException() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getExceptionResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            releaseResources(rs);
-        }
-    }
-
-    private boolean hasUDF() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getUDFResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            releaseResources(rs);
-        }
-    }
-
-    private boolean hasSystemDomain() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemDomainResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            releaseResources(rs);
-        }
-    }
-
-    private boolean hasSystemIndex() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemIndexResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            releaseResources(rs);
-        }
-    }
-
-    private boolean hasSystemTrigger() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemTriggerResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            releaseResources(rs);
-        }
-    }
-
-    private boolean hasSystemDatabaseTrigger() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemDatabaseTriggerResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            releaseResources(rs);
-        }
-    }
-
-    private boolean hasPackages() {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getPackagesResultSet();
-            return rs != null && rs.next();
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return false;
-
-        } finally {
-
-            releaseResources(rs);
-        }
-    }
-
     /**
      * Loads the database functions.
      */
@@ -853,7 +524,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             while (rs.next()) {
 
                 DefaultDatabaseProcedure procedure = new DefaultDatabaseProcedure(this, rs.getString(3));
-                procedure.setHost(getHost());
                 procedure.setRemarks(rs.getString(7));
                 list.add(procedure);
             }
@@ -862,41 +532,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } catch (SQLException e) {
           
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            releaseResources(rs);
-        }
-    }
-
-    /**
-     * Loads the database indices.
-     */
-    private List<NamedObject> getIndices() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getIndicesResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabaseIndex index = new DefaultDatabaseIndex(rs.getString(1).trim());
-                index.setTableName(rs.getString(2));
-                index.setIndexType(rs.getInt(4));
-                index.setActive(rs.getInt(6) != 1);
-                index.setUnique(rs.getInt(5) == 1);
-                index.setRemarks(rs.getString(7));
-                index.setHost(this.getHost());
-                list.add(index);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
             logThrowable(e);
             return new ArrayList<NamedObject>(0);
 
@@ -918,14 +553,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             List<NamedObject> list = new ArrayList<NamedObject>();
             while (rs.next()) {
 
-                DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
-                    rs.getString(1).trim());
-                trigger.setTableName(rs.getString(3));
-                trigger.setTriggerSequence(rs.getInt(4));
-                trigger.setTriggerActive(rs.getInt(6) != 1);
-                trigger.setTriggerType(rs.getLong(5));
-                trigger.setTriggerDescription(rs.getString(7));
-                trigger.setTriggerSourceCode(rs.getString(2));
+                DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this, rs.getString(1));
                 trigger.setRemarks(rs.getString(7));
                 list.add(trigger);
             }
@@ -1026,230 +654,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
     }
 
-    /**
-     * Loads the database triggers.
-     */
-    private List<NamedObject> getExceptions() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getExceptionResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabaseException exception = new DefaultDatabaseException(this, rs.getString(1));
-                exception.setRemarks(rs.getString(4));
-                exception.setExceptionID(rs.getString(3));
-                exception.setExceptionText(rs.getString(2));
-                list.add(exception);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            releaseResources(rs);
-        }
-    }
-
-    /**
-     * Loads the database UDFs.
-     */
-    private List<NamedObject> getUDFs() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getUDFResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabaseUDF udf = new DefaultDatabaseUDF(this, rs.getString(1), this.getHost());
-                udf.setRemarks(rs.getString(2));
-                udf.setModuleName(rs.getString(3));
-                udf.setEntryPoint(rs.getString(4));
-                udf.setReturnArg(rs.getInt(5));
-                list.add(udf);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            releaseResources(rs);
-        }
-    }
-
-    private List<NamedObject> getSystemDomains() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemDomainResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabaseDomain domain = new DefaultDatabaseDomain(this, rs.getString(1));
-                list.add(domain);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            releaseResources(rs);
-        }
-    }
-
-    private List<NamedObject> getSystemIndices() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemIndexResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabaseIndex index = new DefaultDatabaseIndex(rs.getString(1).trim());
-                index.setTableName(rs.getString(2));
-                index.setIndexType(rs.getInt(4));
-                index.setActive(rs.getInt(6) != 1);
-                index.setUnique(rs.getInt(5) == 1);
-                index.setRemarks(rs.getString(7));
-                index.setHost(this.getHost());
-                list.add(index);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            releaseResources(rs);
-        }
-    }
-
-    private List<NamedObject> getSystemTriggers() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemTriggerResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this, rs.getString(1));
-                trigger.setTableName(rs.getString(3));
-                trigger.setTriggerSequence(rs.getInt(4));
-                trigger.setTriggerActive(rs.getInt(6) != 1);
-                trigger.setTriggerType(rs.getInt(5));
-                trigger.setTriggerDescription(rs.getString(7));
-                trigger.setTriggerSourceCode(rs.getString(2));
-                trigger.setRemarks(rs.getString(7));
-                list.add(trigger);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            releaseResources(rs);
-        }
-    }
-
-    private List<NamedObject> getSystemDatabaseTriggers() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getSystemDatabaseTriggerResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
-                    rs.getString(1).trim());
-                trigger.setTableName(rs.getString(3));
-                trigger.setTriggerSequence(rs.getInt(4));
-                trigger.setTriggerActive(rs.getInt(6) != 1);
-                trigger.setTriggerType(rs.getLong(5));
-                trigger.setTriggerDescription(rs.getString(7));
-                trigger.setTriggerSourceCode(rs.getString(2));
-                trigger.setRemarks(rs.getString(7));
-                list.add(trigger);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            releaseResources(rs);
-        }
-    }
-
-    private List<NamedObject> getPackages() throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            rs = getPackagesResultSet();
-            List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
-
-                DefaultDatabasePackage databasePackage = new DefaultDatabasePackage(this, rs.getString(1).trim());
-                databasePackage.setHeaderSource(rs.getString(2));
-                databasePackage.setBodySource(rs.getString(3));
-                databasePackage.setValidBodyFlag(rs.getBoolean(4));
-                databasePackage.setSecurityClass(rs.getString(5));
-                databasePackage.setOwnerName(rs.getString(6));
-                databasePackage.setSystemFlag(rs.getBoolean(7));
-                databasePackage.setDescription(rs.getString(8));
-                databasePackage.setSqlSecurity(rs.getBoolean(9));
-                list.add(databasePackage);
-            }
-
-            return list;
-
-        } catch (SQLException e) {
-
-            logThrowable(e);
-            return new ArrayList<NamedObject>(0);
-
-        } finally {
-
-            releaseResources(rs);
-        }
-    }
-
     private ResultSet getProceduresResultSet() throws SQLException {
         
         String catalogName = catalogNameForQuery();
@@ -1257,29 +661,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         return dmd.getProcedures(catalogName, schemaName, null);
-    }
-
-    private ResultSet getIndicesResultSet() throws SQLException {
-
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("select " +
-                "RDB$INDEX_NAME, " +
-                "RDB$RELATION_NAME, " +
-                "RDB$SYSTEM_FLAG," +
-                "RDB$INDEX_TYPE," +
-                "RDB$UNIQUE_FLAG," +
-                "RDB$INDEX_INACTIVE," +
-                "RDB$DESCRIPTION\n" +
-                "FROM RDB$INDICES " +
-                "where RDB$SYSTEM_FLAG = 0 \n" +
-                "ORDER BY RDB$INDEX_NAME");
-
-        return resultSet;
     }
 
     private ResultSet getTriggersResultSet() throws SQLException {
@@ -1290,18 +671,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
-        ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name,\n" +
-                "t.rdb$trigger_source,\n" +
-                "t.rdb$relation_name,\n" +
-                "t.rdb$trigger_sequence,\n" +
-                "t.rdb$trigger_type,\n" +
-                "t.rdb$trigger_inactive,\n" +
-                "t.rdb$description\n" +
-                "\n" +
-                "from rdb$triggers t\n" +
-                "where t.rdb$system_flag = 0\n" +
-                "and t.rdb$trigger_type <= 114 \n" +
-                "order by t.rdb$trigger_name");
+        ResultSet resultSet = statement.executeQuery("SELECT * FROM RDB$TRIGGERS R \n" +
+                " ORDER BY R.RDB$TRIGGER_NAME");
 
         return resultSet;
     }
@@ -1342,14 +713,15 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
-        ResultSet resultSet = statement.executeQuery("select " +
-                "RDB$FIELD_NAME, " +
-                "RDB$SYSTEM_FLAG, " +
-                "RDB$DESCRIPTION\n" +
-                "from RDB$FIELDS\n" +
-                "where RDB$FIELD_NAME not like 'RDB$%'\n" +
-                "and RDB$FIELD_NAME not like 'MON$%'\n" +
-                "order by RDB$FIELD_NAME");
+        ResultSet resultSet = statement.executeQuery("SELECT\n" +
+                "  f.rdb$field_name\n" +
+                "FROM\n" +
+                "  rdb$fields f\n" +
+                "  LEFT JOIN rdb$relation_fields rf\n" +
+                "    ON rf.rdb$field_source = f.rdb$field_name\n" +
+                "WHERE\n" +
+                "  COALESCE(f.rdb$system_flag, 0) = 0\n" +
+                "  group by f.rdb$field_name\n");
 
         return resultSet;
     }
@@ -1362,154 +734,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         Statement statement = dmd.getConnection().createStatement();
 
         ResultSet resultSet = statement.executeQuery("SELECT RDB$ROLE_NAME FROM RDB$ROLES");
-
-        return resultSet;
-    }
-
-    private ResultSet getExceptionResultSet() throws SQLException {
-
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("select RDB$EXCEPTION_NAME, " +
-                "RDB$MESSAGE, " +
-                "RDB$EXCEPTION_NUMBER, " +
-                "RDB$DESCRIPTION\n" +
-                "from RDB$EXCEPTIONS\n" +
-                "order by RDB$EXCEPTION_NAME");
-
-        return resultSet;
-    }
-
-    private ResultSet getUDFResultSet() throws SQLException {
-
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("select RDB$FUNCTION_NAME,\n" +
-                "RDB$DESCRIPTION,\n" +
-                "RDB$MODULE_NAME,\n" +
-                "RDB$ENTRYPOINT,\n" +
-                "RDB$RETURN_ARGUMENT\n" +
-                "from RDB$FUNCTIONS\n" +
-                "order by RDB$FUNCTION_NAME");
-
-        return resultSet;
-    }
-
-    private ResultSet getSystemDomainResultSet() throws SQLException {
-
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("select " +
-                "RDB$FIELD_NAME, " +
-                "RDB$SYSTEM_FLAG, " +
-                "RDB$DESCRIPTION\n" +
-                "from RDB$FIELDS\n" +
-                "where RDB$FIELD_NAME like 'RDB$%'\n" +
-                "or RDB$FIELD_NAME like 'MON$%'\n" +
-                "order by RDB$FIELD_NAME");
-
-        return resultSet;
-    }
-
-    private ResultSet getSystemIndexResultSet() throws SQLException {
-
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("select " +
-                "RDB$INDEX_NAME, " +
-                "RDB$RELATION_NAME, " +
-                "RDB$SYSTEM_FLAG," +
-                "RDB$INDEX_TYPE," +
-                "RDB$UNIQUE_FLAG," +
-                "RDB$INDEX_INACTIVE," +
-                "RDB$DESCRIPTION\n" +
-                "FROM RDB$INDICES \n" +
-                "where RDB$SYSTEM_FLAG = 1 \n" +
-                "ORDER BY RDB$INDEX_NAME");
-
-        return resultSet;
-    }
-
-    private ResultSet getSystemTriggerResultSet() throws SQLException {
-
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name,\n" +
-                "t.rdb$trigger_source,\n" +
-                "t.rdb$relation_name,\n" +
-                "t.rdb$trigger_sequence,\n" +
-                "t.rdb$trigger_type,\n" +
-                "t.rdb$trigger_inactive,\n" +
-                "t.rdb$description\n" +
-                "\n" +
-                "from rdb$triggers t\n" +
-                "where t.rdb$system_flag <> 0" +
-                "order by t.rdb$trigger_name");
-
-        return resultSet;
-    }
-
-    private ResultSet getSystemDatabaseTriggerResultSet() throws SQLException {
-
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name,\n" +
-            "t.rdb$trigger_source,\n" +
-            "t.rdb$relation_name,\n" +
-            "t.rdb$trigger_sequence,\n" +
-            "t.rdb$trigger_type,\n" +
-            "t.rdb$trigger_inactive,\n" +
-            "t.rdb$description\n" +
-            "\n" +
-            "from rdb$triggers t\n" +
-            "where t.rdb$system_flag = 0" +
-            "and t.rdb$trigger_type > 114 \n" +
-            "order by t.rdb$trigger_name");
-
-        return resultSet;
-    }
-
-    private ResultSet getPackagesResultSet() throws SQLException {
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("select p.rdb$package_name,\n" +
-                "p.rdb$package_header_source,\n" +
-                "p.rdb$package_body_source,\n" +
-                "p.rdb$valid_body_flag,\n" +
-                "p.rdb$security_class,\n" +
-                "p.rdb$owner_name,\n" +
-                "p.rdb$system_flag,\n" +
-                "p.rdb$description,\n" +
-                "p.rdb$sql_security\n" +
-                "\n" +
-                "from rdb$packages p\n" +
-                "order by p.rdb$package_name");
 
         return resultSet;
     }

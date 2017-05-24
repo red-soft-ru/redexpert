@@ -1,4 +1,4 @@
-package biz.redsoft;
+package org.executequery.sql;
 
 import org.firebirdsql.gds.ISCConstants;
 import org.firebirdsql.gds.ng.FbExceptionBuilder;
@@ -91,5 +91,4 @@ public class FBPerformanceInfoProcessor implements InfoProcessor<FBPerformanceIn
         }
         return out;
     }
-
 }

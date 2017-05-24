@@ -18,13 +18,12 @@
 	</repositories>
 
 	<dependencies>
-
 		<dependency>
 			<groupId>biz.redsoft.customlib</groupId>
-			<artifactId>fbplugin</artifactId>
-			<version>1.0.0</version>
+			<artifactId>jaybird</artifactId>
+			<version>3.0.0</version>
 			<scope>system</scope>
-			<systemPath>${pom.basedir}/lib/fbplugin.jar</systemPath>
+			<systemPath>${pom.basedir}/lib/jaybird-full-3.0.0.jar</systemPath>
 			<type>jar</type>
 		</dependency>
 
@@ -209,8 +208,6 @@
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 
-		<finalName>${project.artifactId}</finalName>
-
 		<resources>
 			<resource>
 				<directory>src</directory>
@@ -243,9 +240,8 @@
 								<resource>
 									<directory>./lib</directory>
 									<includes>
-										<!--include>**/jaybird-full-3.0.0-SNAPSHOT.jar</include-->
+										<include>**/jaybird-full-3.0.0.jar</include>
 										<include>**/jdbc-perf-logger-driver-0.8.1-SNAPSHOT.jar</include>
-										<include>**/fbplugin.jar</include>
 									</includes>
 								</resource>
 							</resources>
@@ -272,26 +268,6 @@
 									<filtering>true</filtering>
 									<includes>
 										<include>**/fbtrace.conf</include>
-										<include>**/gss.login.conf</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-					<execution>
-						<id>copy-resources-2</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${pom.basedir}/target/lib</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${project.basedir}/lib</directory>
-									<includes>
-										<include>fbplugin-impl.jar</include>
-										<include>jaybird-full-3.0.0-SNAPSHOT.jar</include>
 									</includes>
 								</resource>
 							</resources>
@@ -304,8 +280,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.0.2</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
 
@@ -345,27 +321,16 @@
 			    	<artifactId>maven-shade-plugin</artifactId>
 			    	<version>1.4</version>
 			    	<executions>
-						<execution>
-								<phase>package</phase>
-								<goals>
-								<goal>shade</goal>
-								</goals>
-						</execution>
+					<execution>
+				    		<phase>package</phase>
+				    		<goals>
+							<goal>shade</goal>
+				    		</goals>
+					</execution>
 			    	</executions>
 			    	<configuration>
-						<finalName>${project.artifactId}-shaded</finalName>
-						<shadedArtifactAttached>true</shadedArtifactAttached>
-						<shadedClassifierName>shaded</shadedClassifierName>
-						<filters>
-							<filter>
-								<artifact>*:*</artifact>
-								<excludes>
-									<exclude>META-INF/*.SF</exclude>
-									<exclude>META-INF/*.DSA</exclude>
-									<exclude>META-INF/*.RSA</exclude>
-								</excludes>
-							</filter>
-						</filters>
+					<shadedArtifactAttached>true</shadedArtifactAttached> 
+					<shadedClassifierName>shaded</shadedClassifierName> 
 			    	</configuration>
 			</plugin>
 
@@ -384,16 +349,16 @@
 					</goals>
 					<configuration>
 						<headerType>gui</headerType>
-						<outfile>${pom.basedir}/target/${project.artifactId}.exe</outfile>
-						<jar>${pom.basedir}/target/${project.artifactId}.jar</jar>
+						<outfile>${pom.basedir}/target/${project.artifactId}-${project.version}.exe</outfile>
+						<jar>${pom.basedir}/target/${project.artifactId}-${project.version}-shaded.jar</jar>
 						<errTitle>Red Expert Error</errTitle>
 						<classPath>
 								<mainClass>org.executequery.ExecuteQuery</mainClass>
 						</classPath>
 						<icon>${pom.basedir}/red_expert.ico</icon>
 						<jre>
-								<minVersion>1.8.0</minVersion>
-								<maxVersion>1.9.0</maxVersion>
+								<minVersion>1.7.0</minVersion>
+								<maxVersion>1.8.0</maxVersion>
 								<initialHeapSize>128</initialHeapSize>
 								<maxHeapSize>1024</maxHeapSize>
 						</jre>

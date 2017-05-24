@@ -45,8 +45,6 @@ public interface KeywordRepository extends Repository {
     void addUserDefinedKeyword(String word);
 
     List<String> getFirebirdKeywords(int majorVersion, int minorVersion);
-
-    void setDatabaseKeyWords(List<String> list);
 }
 
 

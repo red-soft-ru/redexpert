@@ -1469,8 +1469,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
             if(stmnt != null) {
 
-                if (!stmnt.isClosed())
-                    stmnt.close();
+                stmnt.close();
             }
             stmnt = null;
 
@@ -1509,10 +1508,6 @@ public class DefaultStatementExecutor implements StatementExecutor {
                 handleException(e);
             }
         }
-    }
-
-    public DatabaseConnection getDatabaseConnection() {
-        return databaseConnection;
     }
 
     public Connection getConnection() {

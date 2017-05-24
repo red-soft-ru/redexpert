@@ -20,26 +20,24 @@
 
 package org.executequery.gui.editor.autocomplete;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.sql.*;
-import java.util.*;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
-import biz.redsoft.IFBDatabaseConnection;
 import org.apache.commons.lang.StringUtils;
-import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseSource;
 import org.executequery.databaseobjects.impl.ColumnInformation;
 import org.executequery.databaseobjects.impl.ColumnInformationFactory;
-import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.log.Log;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
-import org.underworldlabs.util.MiscUtils;
+import org.firebirdsql.jdbc.FBConnection;
 
 public class AutoCompleteSelectionsFactory {
 
@@ -85,48 +83,16 @@ public class AutoCompleteSelectionsFactory {
                 addDatabaseDefinedKeywords(databaseHost, listSelections);
                 databaseSystemFunctionsForHost(databaseHost, listSelections);
 
-                DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
-                DefaultDriverLoader driverLoader = new DefaultDriverLoader();
-                Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
-                DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-                Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+                try {
+                    FBConnection fbConnection = databaseHost.getConnection().unwrap(FBConnection.class);
 
-                if (driver.getClass().getName().contains("FBDriver")) {
+                    int majorVersion = fbConnection.getFbDatabase().getServerVersion().getMajorVersion();
+                    int minorVersion = fbConnection.getFbDatabase().getServerVersion().getMinorVersion();
 
-                    Connection connection = null;
-                    try {
-                        connection = databaseHost.getConnection().unwrap(Connection.class);
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
+                    addFirebirdDefnedKeywords(databaseHost, listSelections, majorVersion, minorVersion);
 
-                    URL[] urls = new URL[0];
-                    Class clazzdb = null;
-                    Object odb = null;
-                    try {
-                        urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-                        ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
-                        clazzdb = cl.loadClass("biz.redsoft.FBDatabaseConnection");
-                        odb = clazzdb.newInstance();
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    } catch (InstantiationException e) {
-                        e.printStackTrace();
-                    } catch (MalformedURLException e) {
-                        e.printStackTrace();
-                    }
-
-                    IFBDatabaseConnection db = (IFBDatabaseConnection)odb;
-                    try {
-
-                        db.setConnection(connection);
-                        addFirebirdDefnedKeywords(databaseHost, listSelections, db.getMajorVersion(), db.getMinorVersion());
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-
+                } catch (SQLException e) {
+                    // nothing to do
                 }
 
                 addToProvider(listSelections);
@@ -137,7 +103,7 @@ public class AutoCompleteSelectionsFactory {
             if (autoCompleteSchema) {
 
                 databaseTablesForHost(databaseHost);
-//                databaseColumnsForTables(databaseHost, tables);
+                databaseColumnsForTables(databaseHost, tables);
                 databaseFunctionsAndProceduresForHost(databaseHost);
             }
 
@@ -181,16 +147,6 @@ public class AutoCompleteSelectionsFactory {
 
         databaseObjectsForHost(databaseHost, "TABLE", DATABASE_TABLE_DESCRIPTION, AutoCompleteListItemType.DATABASE_TABLE);
         databaseObjectsForHost(databaseHost, "VIEW", DATABASE_TABLE_VIEW, AutoCompleteListItemType.DATABASE_VIEW);
-
-        DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
-        DefaultDriverLoader driverLoader = new DefaultDriverLoader();
-        Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
-        DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-        Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
-
-        if (driver.getClass().getName().contains("FBDriver")) {
-            databaseObjectsForHost(databaseHost, "SYSTEM TABLE", DATABASE_TABLE_VIEW, AutoCompleteListItemType.DATABASE_TABLE);
-        }
     }
 
     private void databaseSystemFunctionsForHost(DatabaseHost databaseHost, List<AutoCompleteListItem> listSelections) {
@@ -256,8 +212,6 @@ public class AutoCompleteSelectionsFactory {
             int count = 0;
             
             rs = databaseMetaData.getTables(catalog, schema, null, types);
-            if (rs == null)
-                return;
             while (rs.next()) {
 
                 try {
@@ -290,16 +244,7 @@ public class AutoCompleteSelectionsFactory {
 
         } catch (SQLException e) {
 
-            try {
-                if (rs != null)
-                    if (!rs.isClosed())
-                        error("Tables not available for type " + type + " - driver returned: " + e.getMessage());
-            } catch (SQLException e1) {
-                e1.printStackTrace();
-            }
-        }catch (Exception e) {
-
-            // nothing to do
+            error("Tables not available for type " + type + " - driver returned: " + e.getMessage());
 
         } finally {
 
@@ -372,13 +317,9 @@ public class AutoCompleteSelectionsFactory {
             }
 
         } catch (Exception e) {
-            try {
-                if (rs != null)
-                    if (!rs.isClosed())
-                        error("Tables not available for type " + type + " - driver returned: " + e.getMessage());
-            } catch (SQLException e1) {
-                e1.printStackTrace();
-            }
+
+            error("Tables not available for type " + type + " - driver returned: " + e.getMessage());
+
         } finally {
 
             releaseResources(rs);
@@ -521,8 +462,6 @@ public class AutoCompleteSelectionsFactory {
             asList.add(keyword);
         }
 
-        keywords().setDatabaseKeyWords(asList);
-
         addKeywordsFromList(asList, list, 
                 "Database Defined Keyword", AutoCompleteListItemType.DATABASE_DEFINED_KEYWORD);
     }
@@ -571,55 +510,7 @@ public class AutoCompleteSelectionsFactory {
         return (KeywordRepository)RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
     }
 
-    public List<AutoCompleteListItem> buildItemsForTable(DatabaseHost databaseHost, String tableString) {
-        ResultSet rs = null;
-        List<ColumnInformation> columns = new ArrayList<ColumnInformation>();
-        List<AutoCompleteListItem> list = new ArrayList<AutoCompleteListItem>();
-
-        String catalog = databaseHost.getCatalogNameForQueries(defaultCatalogForHost(databaseHost));
-        String schema = databaseHost.getSchemaNameForQueries(defaultSchemaForHost(databaseHost));
-        DatabaseMetaData dmd = databaseHost.getDatabaseMetaData();
-
-        try {
-
-            rs = dmd.getColumns(catalog, schema, tableString, null);
-            while (rs.next()) {
-
-                String name = rs.getString(4);
-                columns.add(columnInformationFactory.build(
-                        tableString,
-                        name,
-                        rs.getString(6),
-                        rs.getInt(5),
-                        rs.getInt(7),
-                        rs.getInt(9),
-                        rs.getInt(11) == DatabaseMetaData.columnNoNulls));
-            }
-
-            for (ColumnInformation column : columns) {
-
-                list.add(new AutoCompleteListItem(
-                        column.getName(),
-                        tableString,
-                        column.getDescription(),
-                        DATABASE_COLUMN_DESCRIPTION,
-                        AutoCompleteListItemType.DATABASE_TABLE_COLUMN));
-            }
-        } catch (Throwable e) {
-
-            // don't want to break the editor here so just log and bail...
-
-            error("Error retrieving column data for table " + tableString + " - driver returned: " + e.getMessage());
-
-        } finally {
-
-            releaseResources(rs);
-        }
-
-        return list;
-
-    }
-
+    
     static class AutoCompleteListItemComparator implements Comparator<AutoCompleteListItem> {
 
         public int compare(AutoCompleteListItem o1, AutoCompleteListItem o2) {

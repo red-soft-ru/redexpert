@@ -1,8 +1,13 @@
 package org.executequery.databaseobjects.impl;
 
+import com.sun.org.apache.xalan.internal.xsltc.DOM;
+import liquibase.change.AddColumnConfig;
+import liquibase.change.ColumnConfig;
+import liquibase.change.core.AddColumnChange;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
+import org.firebirdsql.jdbc.FBDatabaseMetaData;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.DatabaseMetaData;
@@ -97,7 +102,7 @@ public class DefaultDatabaseDomain extends DefaultDatabaseExecutable
             String _schema = getSchemaName();
 
             columns = new ArrayList<>();
-            if (dmd.getConnection().getClass().getName().contains("FBConnection")) {
+            if (dmd instanceof FBDatabaseMetaData) {
                 statement = dmd.getConnection().createStatement();
 
                 ResultSet rs = statement.executeQuery("SELECT first 1\n" +
@@ -131,7 +136,7 @@ public class DefaultDatabaseDomain extends DefaultDatabaseExecutable
                     column.setColumnSize(rs.getInt(6));
                     if (rs.getInt(4) != 0)
                         column.setColumnSize(rs.getInt(4));
-                    column.setColumnScale(Math.abs(rs.getInt(5)));
+                    column.setColumnScale(rs.getInt(5));
                     column.setRequired(rs.getInt(12) == DatabaseMetaData.columnNoNulls);
                     column.setRemarks(rs.getString(8));
                     this.setRemarks(rs.getString(8));
@@ -176,24 +181,24 @@ public class DefaultDatabaseDomain extends DefaultDatabaseExecutable
         switch (sqltype) {
             case smallint_type:
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
-                    return "NUMERIC(" + sqlSize + "," + Math.abs(sqlscale) + ")";
+                    return "NUMERIC(" + sqlSize + ",0)";
                 else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL("+ sqlSize + "," + Math.abs(sqlscale) + ")";
+                    return "DECIMAL("+ sqlSize + "," + sqlscale + ")";
                 else
                     return "SMALLINT";
             case integer_type:
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
-                    return "NUMERIC(" + sqlSize + "," + Math.abs(sqlscale) + ")";
+                    return "NUMERIC(" + sqlSize + ",0)";
                 else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL("+ sqlSize + "," + Math.abs(sqlscale) + ")";
+                    return "DECIMAL("+ sqlSize + "," + sqlscale + ")";
                 else
                     return "INTEGER";
             case double_type:
             case d_float_type:
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
-                    return "NUMERIC(" + sqlSize + "," + Math.abs(sqlscale) + ")";
+                    return "NUMERIC(" + sqlSize + ",0)";
                 else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL("+ sqlSize + "," + Math.abs(sqlscale) + ")";
+                    return "DECIMAL("+ sqlSize + "," + sqlscale + ")";
                 else
                     return "DOUBLE PRECISION";
             case float_type:
@@ -210,9 +215,9 @@ public class DefaultDatabaseDomain extends DefaultDatabaseExecutable
                 return "DATE";
             case int64_type:
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
-                    return "NUMERIC(" + sqlSize + "," + Math.abs(sqlscale) + ")";
+                    return "NUMERIC(" + sqlSize + ",0)";
                 else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL("+ sqlSize + "," + Math.abs(sqlscale) + ")";
+                    return "DECIMAL("+ sqlSize + "," + sqlscale + ")";
                 else
                     return "BIGINT";
             case blob_type:

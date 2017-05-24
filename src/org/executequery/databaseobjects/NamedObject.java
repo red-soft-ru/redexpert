@@ -33,74 +33,72 @@ import org.underworldlabs.jdbc.DataSourceException;
  */
 public interface NamedObject extends java.io.Serializable {
 
-    int FUNCTION = 0;
-    int INDEX = 1;
-    int PROCEDURE = 2;
-    int SEQUENCE = 3;
-    int SYNONYM = 4;
-    int TABLE = 5;
-    int TRIGGER = 6;
-    int VIEW = 7;
-    int GLOBAL_TEMPORARY = 8;
-    int DOMAIN = 9;
-    int EXCEPTION = 10;
-    int UDF = 11;
-    int SYSTEM_FUNCTION = 12;
-    int SYSTEM_STRING_FUNCTIONS = 13;
-    int SYSTEM_NUMERIC_FUNCTIONS = 14;
-    int SYSTEM_DATE_TIME_FUNCTIONS = 15;
-    int SYSTEM_VIEW = 16;
-    int SYSTEM_TABLE = 17;
-    int SYSTEM_DOMAIN = 18;
-    int SYSTEM_INDEX = 19;
-    int SYSTEM_TRIGGER = 20;
-    int SYSTEM_DATABASE_TRIGGER = 21;
-    int PACKAGE = 22;
-    int ROLE = 23;
-
-    int META_TAG = 93;
-    int TABLE_COLUMN = 94;
-    int OTHER = 95;
-    int ROOT = 96;
-    int SCHEMA = 97;
-    int CATALOG = 98;
-    int HOST = 99;
-
     int BRANCH_NODE = 100;
     int COLUMNS_FOLDER_NODE = 101;
     int FOREIGN_KEYS_FOLDER_NODE = 102;
     int PRIMARY_KEYS_FOLDER_NODE = 103;
     int INDEXES_FOLDER_NODE = 104;
+    
+    int ROOT = 96;
+    int CATALOG = 98;
+    int HOST = 99;
+    int SCHEMA = 97;
+
+    int OTHER = 95;
+    
+    int TABLE_COLUMN = 94;
+
+    int META_TAG = 93;
+
+    
+    int FUNCTION = 0;
+    int INDEX = 1;
+    int PROCEDURE = 2;
+    int SEQUENCE = 3;
+    int SYNONYM = 4;
+    int SYSTEM_TABLE = 5;
+    int TABLE = 6;
+    int TRIGGER = 7;
+    int VIEW = 8;
 
     int PRIMARY_KEY = 999;
     int FOREIGN_KEY = 998;
     int UNIQUE_KEY = 997;
     int TABLE_INDEX = 996;
 
+    int SYSTEM_VIEW = 13;
+    
+    int SYSTEM_FUNCTION = 9;
+    
+    int SYSTEM_STRING_FUNCTIONS = 10;
+    
+    int SYSTEM_NUMERIC_FUNCTIONS = 11;
+    
+    int SYSTEM_DATE_TIME_FUNCTIONS = 12;
+
+    int GLOBAL_TEMPORARY = 14;
+
+    int DOMAIN = 15;
+
+    int ROLE  =16;
+    
     String[] META_TYPES = {"FUNCTION",
-                            "INDEX",
-                            "PROCEDURE",
-                            "SEQUENCE",
-                            "SYNONYM",
-                            "TABLE",
-                            "TRIGGER",
-                            "VIEW",
-                            "GLOBAL TEMPORARY",
-                            "DOMAIN",
-                            "EXCEPTION",
-                            "UDF",
-                            "SYSTEM FUNCTIONS",
-                            "SYSTEM_STRING_FUNCTIONS",
-                            "SYSTEM_NUMERIC_FUNCTIONS",
-                            "SYSTEM_DATE_TIME_FUNCTIONS",
-                            "SYSTEM VIEW",
-                            "SYSTEM TABLE",
-                            "SYSTEM DOMAIN",
-                            "SYSTEM INDEX",
-                            "SYSTEM TRIGGER",
-                            "SYSTEM DATABASE TRIGGER",
-                            "PACKAGE",
-                            "ROLE"};
+                                               "INDEX",
+                                               "PROCEDURE",
+                                               "SEQUENCE",
+                                               "SYNONYM",
+                                               "SYSTEM TABLE",
+                                               "TABLE",
+                                               "TRIGGER",
+                                               "VIEW",
+                                               "SYSTEM FUNCTIONS",
+                                               "SYSTEM_STRING_FUNCTIONS",
+                                               "SYSTEM_NUMERIC_FUNCTIONS",
+                                               "SYSTEM_DATE_TIME_FUNCTIONS",
+                                               "SYSTEM VIEW",
+                                                "GLOBAL TEMPORARY",
+                                                "DOMAIN",
+    "ROLE"};
 
     /**
      * Marks this object as being 'reset', where for any loaded object
@@ -162,7 +160,7 @@ public interface NamedObject extends java.io.Serializable {
     /**
      * Sets the parent object to that specified.
      *
-     * @param parent parent named object
+     * @param the parent named object
      */
     void setParent(NamedObject parent);
 

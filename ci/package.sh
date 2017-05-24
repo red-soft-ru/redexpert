@@ -16,17 +16,15 @@ function check_variable()
 check_variable RED_EXPERT_VERSION
 
 rm -rf tmp dist
-mkdir tmp tmp/config dist
+mkdir tmp dist
 
-cp target/RedExpert.jar tmp
-cp target/RedExpert.exe tmp
+cp RedExpert.jar tmp
 cp eq.sh tmp/RedExpert.sh
 cp RedExpert.bat tmp
-cp config/fbtrace.conf tmp/config
-cp config/gss.login.conf tmp/config
+cp fbtrace.conf tmp
 
 cp -r red_expert.{png,ico} \
-	  target/lib \
+	  lib \
 	  docs \
 	  license \
 	  LICENSE \

@@ -20,21 +20,18 @@
 
 package org.executequery.databaseobjects.impl;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import biz.redsoft.IDatabaseMetadata;
 import org.executequery.databaseobjects.DatabaseExecutable;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.ProcedureParameter;
+import org.firebirdsql.jdbc.FBDatabaseMetaData;
+import org.firebirdsql.jdbc.FirebirdDatabaseMetaData;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.MiscUtils;
 
 /**
  *
@@ -279,34 +276,21 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         try {
 
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-            if (this.getHost().getDatabaseConnection().getJDBCDriver().getClassName().contains("FBDriver")) {
 
-                URL[] urls = new URL[0];
-                Class clazzdb = null;
-                Object odb = null;
-                try {
-                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-                    ClassLoader cl = new URLClassLoader(urls, dmd.getClass().getClassLoader());
-                    clazzdb = cl.loadClass("biz.redsoft.DatabaseMetadata");
-                    odb = clazzdb.newInstance();
-                    IDatabaseMetadata db = (IDatabaseMetadata)odb;
+            String _catalog = getCatalogName();
+            String _schema = getSchemaName();
 
-                    procedureSourceCode = db.getProcedureSourceCode(dmd, getName());
 
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+            if (dmd instanceof FBDatabaseMetaData) {
+                FirebirdDatabaseMetaData fbMetaData = (FirebirdDatabaseMetaData)dmd;
+                procedureSourceCode = fbMetaData.getProcedureSourceCode(getName());
             }
 
             return procedureSourceCode;
+
+        } catch (SQLException e) {
+
+            throw new DataSourceException(e);
 
         } finally {
 

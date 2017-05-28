@@ -36,11 +36,11 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 	private int displayLength;
 
 	private String displayValue;
-	
+
 	public ClobRecordDataItem(String name, int dataType, String dataTypeName) {
 
 		super(name, dataType, dataTypeName);
-		
+
 		displayLength = SystemProperties.getIntProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.clob.length");
 	}
@@ -52,21 +52,23 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 
 		    displayValue = new String(getData());
 		    if (displayValue.length() > displayLength) {
-		    
+
 		        displayValue = displayValue.substring(0, displayLength);
 		    }
 		}
-		
+
 		return displayValue;
 	}
-	
-	public String getLobRecordItemName() {
+
+	@Override
+    public String getLobRecordItemName() {
 
 		return getDataTypeName();
 	}
 
+    @Override
     protected byte[] readLob() {
-    	
+
         Object value = getValue();
         if (value instanceof String) {
 
@@ -77,7 +79,7 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 
     	Reader reader;
     	Writer writer = new StringWriter();
-    	
+
 		try {
 
 			reader = clob.getCharacterStream();
@@ -85,7 +87,7 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 		} catch (SQLException e) {
 
 			if (Log.isDebugEnabled()) {
-			
+
 				Log.debug("Error reading CLOB data", e);
 			}
 
@@ -93,39 +95,48 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 		}
 
         try {
-        
-            int read;
 
+            int read;
             while ((read = reader.read()) > -1) {
-	
+
 	            writer.write(read);
 	        }
-	        
+
 	        writer.flush();
 
 		} catch (IOException e) {
 
 			if (Log.isDebugEnabled()) {
-				
+
 				Log.debug("Error reading CLOB data", e);
 			}
 
 			return e.getMessage().getBytes();
-		
+
 		} finally {
-		    
+
             try {
-                
+
                 if (writer != null) {
-                    
+
                     writer.close();
                 }
-                
+
             } catch (IOException e) {}
 
 		}
 
     	return writer.toString().trim().getBytes();
+    }
+
+    @Override
+    public String toString() {
+
+        if (isValueNull()) {
+
+            return null;
+        }
+        return getDisplayValue().toString();
     }
 
 }

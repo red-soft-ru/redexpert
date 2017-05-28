@@ -23,8 +23,8 @@ package org.executequery;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1661 $
+ * @date     $Date: 2016-07-13 20:53:12 +1000 (Wed, 13 Jul 2016) $
  */
 public final class ApplicationVersion {
 
@@ -61,13 +61,3 @@ public final class ApplicationVersion {
     }
     
 }
-
-
-
-
-
-
-
-
-
-

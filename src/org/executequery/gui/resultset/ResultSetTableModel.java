@@ -42,10 +42,10 @@ import org.underworldlabs.util.MiscUtils;
 
 /**
  * The sql result set table model.
- * 
+ *
  * @author Takis Diakoumis
- * @version $Revision: 1544 $
- * @date $Date: 2015-12-07 10:56:37 +1100 (Mon, 07 Dec 2015) $
+ * @version $Revision: 1746 $
+ * @date $Date: 2017-05-28 12:57:00 +1000 (Sun, 28 May 2017) $
  */
 public class ResultSetTableModel extends AbstractSortableTableModel {
 
@@ -59,9 +59,9 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     private boolean interrupted;
 
     private List<ResultSetColumnHeader> columnHeaders;
-    
+
     private List<ResultSetColumnHeader> visibleColumnHeaders;
-    
+
     /** The table values */
     private List<List<RecordDataItem>> tableData;
 
@@ -73,12 +73,12 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     private String query;
 
     public ResultSetTableModel() {
-        
+
         this(null, -1);
     }
 
     public ResultSetTableModel(int maxRecords) {
-        
+
         this(null, maxRecords);
     }
 
@@ -88,54 +88,54 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     }
 
     public ResultSetTableModel(ResultSet resultSet, int maxRecords, String query) {
-        
+
         this.maxRecords = maxRecords;
         this.query = query;
-        
+
         columnHeaders = new ArrayList<ResultSetColumnHeader>();
         visibleColumnHeaders = new ArrayList<ResultSetColumnHeader>();
 
         tableData = new ArrayList<List<RecordDataItem>>();
         recordDataItemFactory = new RecordDataItemFactory();
-        
+
         holdMetaData = UserProperties.getInstance().getBooleanProperty("editor.results.metadata");
-        
+
         if (resultSet != null) {
-            
+
             createTable(resultSet);
         }
-        
+
     }
-    
+
     public ResultSetTableModel(List<String> columnHeaders, List<List<RecordDataItem>> tableData) {
-        
+
         this.tableData = tableData;
         this.columnHeaders = createHeaders(columnHeaders);
         visibleColumnHeaders = new ArrayList<ResultSetColumnHeader>();
         resetVisibleColumnHeaders();
     }
-    
+
     public List<ResultSetColumnHeader> getColumnHeaders() {
-     
+
         return columnHeaders;
     }
-    
+
     private List<ResultSetColumnHeader> createHeaders(List<String> columnHeaders) {
-        
+
         int index = 0;
         List<ResultSetColumnHeader> list = new ArrayList<ResultSetColumnHeader>();
         for (String columnHeader : columnHeaders) {
-            
+
             list.add(new ResultSetColumnHeader(index++, columnHeader));
         }
-        
+
         return list;
     }
-    
+
     public String getQuery() {
         return query;
     }
-    
+
     public void createTable(ResultSet resultSet) {
 
         if (!isOpenAndValid(resultSet)) {
@@ -161,7 +161,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
                 columnHeaders.add(
                         new ResultSetColumnHeader(zeroBaseIndex,
-                                                  rsmd.getColumnLabel(i), 
+                                                  rsmd.getColumnLabel(i),
                                                   rsmd.getColumnName(i),
                                                   rsmd.getColumnType(i),
                                                   rsmd.getColumnTypeName(i)));
@@ -193,7 +193,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
                     ResultSetColumnHeader header = columnHeaders.get(zeroBaseIndex);
                 	RecordDataItem value = recordDataItemFactory.create(header);
-                	
+
                     try {
 
                         int dataType = header.getDataType();
@@ -204,7 +204,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                             // getObject for -1 data types (eg. longvarchar).
                             // force string for these - others stick with
                             // getObject() for default value formatting
-    
+
                             case Types.CHAR:
                             case Types.VARCHAR:
                                 value.setValue(resultSet.getString(i));
@@ -257,14 +257,14 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                             case Types.SQLXML:
 
                                 // use getObject for all other known types
-                                
+
                                 value.setValue(resultSet.getObject(i));
                                 break;
 
                             default:
-                                
+
                                 // otherwise try as string
-                                
+
                                 asStringOrObject(value, resultSet, i);
                                 break;
                         }
@@ -272,16 +272,16 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                     } catch (Exception e) {
 
                         try {
-                        
+
                             // ... and on dump, resort to string
                             value.setValue(resultSet.getString(i));
-                            
+
                         } catch (SQLException sqlException) {
-                            
+
                             // catch-all SQLException - yes, this is hideous
 
                             // noticed with invalid date formatted values in mysql
-                            
+
                             value.setValue("<Error - " + sqlException.getMessage() + ">");
                         }
                     }
@@ -304,36 +304,36 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             }
 
             if (Log.isTraceEnabled()) {
-            
-                Log.trace("Finished populating table model - " + recordCount + " rows - [ " 
+
+                Log.trace("Finished populating table model - " + recordCount + " rows - [ "
                         + MiscUtils.formatDuration(System.currentTimeMillis() - time) + "]");
             }
 
             fireTableStructureChanged();
 
         } catch (SQLException e) {
-            
+
             System.err.println("SQL error populating table model at: " + e.getMessage());
             Log.debug("Table model error - " + e.getMessage(), e);
 
         } catch (Exception e) {
 
             if (e instanceof InterruptedException) {
-                
+
                 Log.debug("ResultSet generation interrupted.", e);
-            
+
             } else {
 
                 String message = e.getMessage();
                 if (StringUtils.isBlank(message)) {
-    
+
                     System.err.println("Exception populating table model.");
-    
+
                 } else {
-                
+
                     System.err.println("Exception populating table model at: " + message);
                 }
-    
+
                 Log.debug("Table model error - ", e);
             }
 
@@ -342,10 +342,10 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             if (resultSet != null) {
 
                 try {
-                
-                    resultSet.close();
 
                     Statement statement = resultSet.getStatement();
+                    resultSet.close();
+
                     if (statement != null) {
 
                         statement.close();
@@ -361,13 +361,13 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     private void asStringOrObject(RecordDataItem value, ResultSet resultSet, int column) throws SQLException {
 
         // often getString returns a more useful representation
-        // return using getString where object.toString is the default impl 
-        
-        Object valueAsObject = resultSet.getObject(column); 
+        // return using getString where object.toString is the default impl
+
+        Object valueAsObject = resultSet.getObject(column);
         String valueAsString = resultSet.getString(column);
-        
+
         if (valueAsObject != null) {
-            
+
             String valueAsObjectToString = valueAsObject.toString();
             String toString = valueAsObject.getClass().getName() + "@" + Integer.toHexString(valueAsObject.hashCode());
             if (!StringUtils.equals(valueAsObjectToString, toString)) {
@@ -382,19 +382,34 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     private boolean isOpenAndValid(ResultSet resultSet) {
 
         try {
-        
-            return (resultSet != null && !resultSet.isClosed());
-        
-        } catch (SQLException e) {
+
+            if (resultSet != null) {
+                
+                try {
+                    
+                    return !resultSet.isClosed();
+                    
+                } catch (IllegalAccessError e) {
+                    
+                    // possible jt400 issue
+                    
+                    return false;
+                }
+                
+            }
             
-            Log.debug("Error checking if result set is open and valid - " + e.getMessage());            
+            return false;
+
+        } catch (SQLException e) {
+
+            Log.debug("Error checking if result set is open and valid - " + e.getMessage());
             return false;
         }
     }
 
     private void resetMetaData() {
         if (metaDataTableModel != null) {
-            
+
             metaDataTableModel.reset();
         }
     }
@@ -427,7 +442,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     private static final String GET = "get";
     private static final String EXCLUDES = "getColumnCount";
     private static final String COLUMN_NAME = "ColumnName";
-    
+
     private void setMetaDataVectors(ResultSetMetaData rsmd) {
 
         Class<?> metaClass = rsmd.getClass();
@@ -504,28 +519,28 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             }
 
         } catch (SQLException e) {
-            
+
             Log.debug(e.getMessage(), e);
         }
 
         if (metaDataTableModel == null) {
-            
+
             metaDataTableModel = new ResultSetMetaDataTableModel();
         }
-        
-        metaDataTableModel.setValues(columns, metaData);        
+
+        metaDataTableModel.setValues(columns, metaData);
     }
 
     private String objectToString(Object res) {
 
         String value = null;
-        
+
         if (res != null) {
-            
+
             value = res.toString();
 
         } else {
-            
+
             value = "";
         }
 
@@ -538,7 +553,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     }
 
     public boolean hasResultSetMetaData() {
-        
+
         return (metaDataTableModel != null && metaDataTableModel.getRowCount() > 0);
     }
 
@@ -548,11 +563,11 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     }
 
     // ----------------------------------------------------------
-    
+
     @Override
     public void fireTableStructureChanged() {
 
-        resetVisibleColumnHeaders();        
+        resetVisibleColumnHeaders();
         super.fireTableStructureChanged();
     }
 
@@ -560,24 +575,26 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
         visibleColumnHeaders.clear();
         for (ResultSetColumnHeader header : columnHeaders) {
-            
+
             if (header.isVisible()) {
-                
+
                 visibleColumnHeaders.add(header);
             }
 
         }
     }
-    
+
+    @Override
     public int getColumnCount() {
 
         if (visibleColumnHeaders == null) {
-            
+
             return 0;
         }
         return visibleColumnHeaders.size();
     }
 
+    @Override
     public int getRowCount() {
 
         if (tableData == null) {
@@ -588,18 +605,18 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     }
 
     public List<String> getColumnNames() {
-        
+
         List<String> list = new ArrayList<String>();
-        for (ResultSetColumnHeader header : columnHeaders) { 
-            
+        for (ResultSetColumnHeader header : columnHeaders) {
+
             list.add(header.getLabel());
         }
-        
+
         return list;
     }
-    
+
     public List<RecordDataItem> getRowDataForRow(int row) {
-        
+
         return tableData.get(row);
     }
 
@@ -613,35 +630,36 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
                 rowData.get(asVisibleColumnIndex(column)).valueChanged(value);
                 fireTableCellUpdated(row, column);
-                
+
             } catch (DataSourceException e) {
-                
+
                 Throwable cause = e.getCause();
                 if (cause instanceof ParseException) {
-                    
+
                     ErrorMessagePublisher.publish(
                             "Invalid value provided for type -\n" + e.getExtendedMessage(), cause);
                 }
             }
-                
+
         }
     }
-    
+
     private int asVisibleColumnIndex(int column) {
-        
+
         ResultSetColumnHeader columnHeader = visibleColumnHeaders.get(column);
         for (int i = 0, n = columnHeaders.size(); i < n; i++) {
-            
+
             if (columnHeader.getId().equals(columnHeaders.get(i).getId())) {
 
                 return i;
             }
-            
+
         }
 
         return column;
     }
-    
+
+    @Override
     public Object getValueAt(int row, int column) {
 
         if (row < tableData.size()) {
@@ -657,114 +675,117 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     }
 
     public Object getRowValueAt(int row) {
-        
+
         return tableData.get(row);
     }
 
     private boolean cellsEditable;
 
     public void setCellsEditable(boolean cellsEditable) {
-     
+
         this.cellsEditable = cellsEditable;
     }
-    
+
+    @Override
     public boolean isCellEditable(int row, int column) {
 
         if (!visibleColumnHeaders.get(column).isEditable()) {
-            
-            return false; 
-        }
-        
-        RecordDataItem recordDataItem = tableData.get(row).get(asVisibleColumnIndex(column));
-        if (recordDataItem.isLob()) {
 
             return false;
         }
-        
+
+        RecordDataItem recordDataItem = tableData.get(row).get(asVisibleColumnIndex(column));
+        if (recordDataItem.isBlob()) {
+
+            return false;
+        }
+
         return cellsEditable;
     }
 
     public void setNonEditableColumns(List<String> nonEditableColumns) {
 
         setCellsEditable(true);
-        
+
         for (String nonEditableColumn : nonEditableColumns) {
-            
+
             for (ResultSetColumnHeader header : columnHeaders) {
-                
+
                 if (header.getLabel().equals(nonEditableColumn)) {
 
                     header.setEditable(false);
                     break;
                 }
-                
+
             }
-            
+
         }
-        
+
     }
-    
+
     public String getColumnNameHint(int column) {
-        
+
         return visibleColumnHeaders.get(column).getNameHint();
     }
-    
+
+    @Override
     public String getColumnName(int column) {
-        
+
         return visibleColumnHeaders.get(column).getLabel();
     }
 
+    @Override
     public Class<?> getColumnClass(int column) {
 
         if (tableData.isEmpty()) {
-            
+
             return String.class;
         }
 
         RecordDataItem recordDataItem = tableData.get(0).get(column);
         if (recordDataItem.isValueNull()) {
-            
+
             return String.class;
         }
-        
+
         int columnType = recordDataItem.getDataType();
         switch (columnType) {
 
             case Types.TINYINT:
                 return Byte.class;
-    
+
             case Types.BIGINT:
                 return Long.class;
-    
+
             case Types.SMALLINT:
                 return Short.class;
-    
+
             case Types.BIT:
             case Types.LONGVARCHAR:
             case Types.CHAR:
             case Types.VARCHAR:
             case Types.BOOLEAN: // don't display the checkbox
                 return String.class;
-    
+
             case Types.NUMERIC:
             case Types.DECIMAL:
                 return BigDecimal.class;
-    
+
             case Types.INTEGER:
                 return Integer.class;
-                
+
             case Types.DATE:
             case Types.TIME:
             case Types.TIMESTAMP:
                 return java.util.Date.class;
-    
+
             case Types.REAL:
                 return Float.class;
-    
+
             case Types.FLOAT:
             case Types.DOUBLE:
                 return Double.class;
-    
+
             default:
                 return Object.class;
 

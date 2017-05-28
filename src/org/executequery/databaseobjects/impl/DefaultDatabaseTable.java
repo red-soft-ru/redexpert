@@ -20,6 +20,7 @@
 
 package org.executequery.databaseobjects.impl;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -41,12 +42,13 @@ import org.executequery.databaseobjects.TableDataChangeWorker;
 import org.executequery.sql.SQLFormatter;
 import org.executequery.sql.StatementGenerator;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.FileUtils;
 
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1680 $
+ * @date     $Date: 2016-08-28 14:46:09 +1000 (Sun, 28 Aug 2016) $
  */
 public class DefaultDatabaseTable extends DefaultDatabaseObject implements DatabaseTable {
 

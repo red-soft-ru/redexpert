@@ -1,12 +1,17 @@
 --- Execute Query - RELEASE NOTES ---
 
-Date: 2 June 2016
+Date: 29 May 2017
 
-Summary of changes - v4.3.4 Build 5460:
+Summary of changes - v4.3.4 Build 5463:
 ----------------------------------------
 
 - Modified to detect variations on rollback and issuing pure statement instead.
-- Modified to evaluate 't' and 'f' as boolean values on data import
+- Modified to evaluate 't' and 'f' as boolean values on data import.
+- Added null value check on table rendering for data export setup 
+  (was throwing NPE). 
+- Modified cell background in table editor tab to better  reflect dark theme 
+  when selected.
+- Fixed possible IllegalAccessError on checking result set status for jt400.
 
 
 Summary of changes - v4.3.3 Build 5456:
@@ -542,4 +547,4 @@ Thank you for trying Execute Query.
 
 Takis Diakoumis
 takisd@executequery.org
-2 June 2016
+29 May 2017

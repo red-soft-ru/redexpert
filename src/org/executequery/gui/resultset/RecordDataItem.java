@@ -23,25 +23,25 @@ package org.executequery.gui.resultset;
 import org.underworldlabs.swing.table.TableCellValue;
 
 /**
- * 
+ *
  * @author Takis Diakoumis
- * @version $Revision: 1487 $
- * @date $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version $Revision: 1689 $
+ * @date $Date: 2017-02-14 11:05:59 +1100 (Tue, 14 Feb 2017) $
  */
 public interface RecordDataItem extends TableCellValue {
 
     int length();
-    
+
 	int getDataType();
 
     String getName();
 
 	Object getDisplayValue();
-	
+
 	void setValue(Object value);
 
 	boolean isValueNull();
-	
+
 	void setNull();
 
     void valueChanged(Object newValue);
@@ -51,8 +51,10 @@ public interface RecordDataItem extends TableCellValue {
     boolean isSQLValueNull();
 
     Object getValueAsType();
-    
+
     boolean isLob();
+
+    boolean isBlob();
 
     boolean valueContains(String pattern);
 

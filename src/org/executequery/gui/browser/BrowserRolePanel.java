@@ -395,12 +395,14 @@ create_table();
 
                     Statement st = con.createStatement();
                     if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
-                        if (!headers[col].equals("Execute"))
+                        if (!headers[col].equals("Execute")) {
                             st.execute("REVOKE " + headers[col] + " ON \"" + relName.elementAt(row) + "\" FROM \"" + jComboBox1.getSelectedItem() + "\";");
-                    } else if (headers[col].equals("Execute"))
-
+                            rolesTable.setValueAt(no, row, col);
+                        }
+                        } else if (headers[col].equals("Execute")) {
                         st.execute("REVOKE " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" FROM \"" + jComboBox1.getSelectedItem() + "\";");
-
+                        rolesTable.setValueAt(no, row, col);
+                    }
 
                 } catch (Exception e) {
                     GUIUtilities.displayErrorMessage(e.getMessage());
@@ -412,12 +414,15 @@ create_table();
 
                         Statement st = con.createStatement();
                         if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
-                            if (!headers[col].equals("Execute"))
+                            if (!headers[col].equals("Execute")) {
                                 st.execute("REVOKE " + headers[col] + " ON \"" + relName.elementAt(row) + "\" FROM \"" + jComboBox1.getSelectedItem() + "\";");
-                        } else if (headers[col].equals("Execute"))
+                                rolesTable.setValueAt(no, row, col);
+                            }
+                            } else if (headers[col].equals("Execute")) {
 
                             st.execute("REVOKE " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" FROM \"" + jComboBox1.getSelectedItem() + "\";");
-
+                            rolesTable.setValueAt(no, row, col);
+                        }
 
                     } catch (Exception e) {
                         GUIUtilities.displayErrorMessage(e.getMessage());
@@ -427,11 +432,14 @@ create_table();
 
                         Statement st = con.createStatement();
                         if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
-                            if (!headers[col].equals("Execute"))
+                            if (!headers[col].equals("Execute")) {
                                 st.execute("GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";");
-                        } else if (headers[col].equals("Execute"))
+                                rolesTable.setValueAt(gr, row, col);
+                            }
+                        } else if (headers[col].equals("Execute")) {
                             st.execute("GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";");
-
+                            rolesTable.setValueAt(gr, row, col);
+                        }
 
                     } catch (Exception e) {
                         GUIUtilities.displayErrorMessage(e.getMessage());
@@ -442,12 +450,14 @@ create_table();
 
                         Statement st = con.createStatement();
                         if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
-                            if (!headers[col].equals("Execute"))
+                            if (!headers[col].equals("Execute")) {
                                 st.execute("GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";");
-                        } else if (headers[col].equals("Execute"))
-                            st.execute("GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";");
+                                rolesTable.setValueAt(gr, row, col);
+                            }
+                            } else if (headers[col].equals("Execute"))
+                        {st.execute("GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";");
 
-
+                        rolesTable.setValueAt(gr, row, col);}
                     } catch (Exception e) {
                         GUIUtilities.displayErrorMessage(e.getMessage());
                     }
@@ -456,11 +466,14 @@ create_table();
 
                 Statement st = con.createStatement();
                 if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
-                    if (!headers[col].equals("Execute"))
+                    if (!headers[col].equals("Execute")) {
                         st.execute("GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\" WITH GRANT OPTION;");
-                } else if (headers[col].equals("Execute"))
+                        rolesTable.setValueAt(adm, row, col);
+                    }
+                    } else if (headers[col].equals("Execute")) {
                     st.execute("GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\" WITH GRANT OPTION;");
-
+                    rolesTable.setValueAt(adm, row, col);
+                }
 
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
@@ -475,7 +488,7 @@ create_table();
            for (int col=1;col<headers.length;col++)
            grant_on_role(1,row,col);
        }
-       create_table();
+       //create_table();
     }
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {
@@ -485,7 +498,7 @@ create_table();
             for (int col=1;col<headers.length;col++)
                 grant_on_role(2,row,col);
         }
-        create_table();
+        //create_table();
     }
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {
@@ -495,7 +508,7 @@ create_table();
             for (int col=1;col<headers.length;col++)
                 grant_on_role(0,row,col);
         }
-        create_table();
+        //create_table();
     }
     private void allGrantsButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
@@ -504,7 +517,7 @@ create_table();
             for (int col = 1; col < headers.length; col++) {
                 grant_on_role(1, row, col);
             }
-            create_table();
+            //create_table();
         }
     }
 
@@ -515,7 +528,7 @@ create_table();
             for (int col = 1; col < headers.length; col++) {
                 grant_on_role(2, row, col);
             }
-            create_table();
+            //create_table();
         }
     }
 
@@ -526,7 +539,7 @@ create_table();
             for (int col = 1; col < headers.length; col++) {
                 grant_on_role(0, row, col);
             }
-            create_table();
+            //create_table();
         }
 
     }
@@ -540,7 +553,7 @@ create_table();
         {
             grant_on_role(1,row,col);
         }
-        create_table();
+        //create_table();
 
     }
 
@@ -552,7 +565,7 @@ create_table();
         {
             grant_on_role(2,row,col);
         }
-        create_table();
+        //create_table();
     }
 
     private void allRolesNoGrantButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -590,7 +603,7 @@ create_table();
                         grant_on_role(1,row,col);
 
                 }
-                create_table();
+                //create_table();
             }
         }
     }

@@ -9,6 +9,7 @@ import liquibase.database.Database;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
+import org.executequery.components.table.RowHeaderRenderer;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -432,7 +433,7 @@ public class UserManagerPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
         int row=membershipTable.getSelectedRow();
         int col=membershipTable.getSelectedColumn();
-        if (col>0) {
+        if (col>=0) {
             try {
                 //Connection con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
                 Statement st = con.createStatement();
@@ -461,7 +462,7 @@ public class UserManagerPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
         int row=membershipTable.getSelectedRow();
         int col=membershipTable.getSelectedColumn();
-        if (col>0) {
+        if (col>=0) {
             try {
                 //Connection con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
                 Statement st = con.createStatement();
@@ -490,7 +491,7 @@ public class UserManagerPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
         int row=membershipTable.getSelectedRow();
         int col=membershipTable.getSelectedColumn();
-        if (col>0) {
+        if (col>=0) {
             try {
                 //Connection con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
                 Statement st = con.createStatement();
@@ -605,7 +606,7 @@ public class UserManagerPanel extends javax.swing.JPanel {
                     ));
 
                     role_names.clear();
-                    role_names.add("USER");
+                    //role_names.add("USER");
                     while (result.next()) {
                         String rol=result.getString(1).trim();
                         role_names.add(rol);
@@ -645,7 +646,7 @@ create_membership();
                 {
                     roleData.add(no);
                 }
-                roleData.set(0,user_names.elementAt(i));
+                //roleData.set(0,user_names.elementAt(i));
                 while (rs1.next())
                 {
                     String u=rs1.getString(3);
@@ -663,14 +664,28 @@ create_membership();
             catch(Exception e)
             {GUIUtilities.displayErrorMessage(e.getMessage());}
         }
+        int sizer=0;
         for(int i=0;i<role_names.size();i++)
         {
 
-            membershipTable.getColumn(role_names.elementAt(i)).setMinWidth(role_names.elementAt(i).length()*8);
+            int temper=role_names.elementAt(i).length()*8;
+            membershipTable.getColumn(role_names.elementAt(i)).setMinWidth(temper);
+            sizer+=temper;
             //membershipTable.getColumn(role_names.elementAt(i)).setResizable(false);
 
         }
-        //membershipTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+        JList rowHeader=new JList(user_names);
+        rowHeader.setFixedCellWidth(150);
+        rowHeader.setFixedCellHeight(membershipTable.getRowHeight());
+        rowHeader.setCellRenderer(new RowHeaderRenderer(membershipTable));
+        jScrollPane3.setRowHeaderView(rowHeader);
+        int wid=jScrollPane3.getPreferredSize().width;
+        if (sizer>wid)
+            membershipTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        else
+            membershipTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+
     }
     ResultSet result;
     public void addUser()

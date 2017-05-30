@@ -13,6 +13,7 @@ public class RoleTableModel extends DefaultTableModel{
     {
         super();
     }
+    Vector rowIdentifiers;
     public RoleTableModel (int rowCount,int columnCount)
     {
         super(rowCount, columnCount);

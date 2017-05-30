@@ -31,6 +31,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel {
         gr=GUIUtilities.loadIcon(BrowserConstants.GRANT_IMAGE);
         no=GUIUtilities.loadIcon(BrowserConstants.NO_GRANT_IMAGE);
         adm=GUIUtilities.loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
+        enableGrant=true;
         initComponents();
 
 
@@ -39,11 +40,11 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel {
     void setValues(DefaultDatabaseRole ddr,BrowserController contr)
     {
 
-        jComboBox1.setSelectedItem(ddr.getName());
-        if (con!=null)
+
+        /*if (con!=null)
         {
             ConnectionManager.close(controller.getDatabaseConnection(),con);
-        }
+        }*/
         controller=contr;
        // ConnectionManager.
         try {
@@ -55,11 +56,13 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel {
                 GUIUtilities.displayErrorMessage(e.getMessage());
 
         }
+        create_roles_list(ddr.getName());
     }
 
     Connection con;
     Statement state;
     ResultSet rs;
+    Boolean enableGrant;
     void initComponents()
     {
         try {
@@ -229,7 +232,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE))
         );
-create_table();
+//create_table();
     }
     Vector<String> roles;
     void create_roles_list()
@@ -254,6 +257,30 @@ create_table();
             GUIUtilities.displayErrorMessage(e.getMessage());
         }
     }
+    void create_roles_list(String selectedRole)
+    {
+        enableGrant=false;
+        try {
+            Statement st = con.createStatement();
+            ResultSet result = st.executeQuery("SELECT RDB$ROLE_NAME FROM RDB$ROLES");
+            roles=new Vector<>();
+            while (result.next())
+            {
+                String role=result.getString(1);
+                roles.add(role);
+
+
+            }
+            jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(roles));
+            jComboBox1.setSelectedItem(selectedRole);
+
+        }
+        catch(Exception e)
+        {
+            GUIUtilities.displayErrorMessage(e.getMessage());
+        }
+        enableGrant=true;
+    }
     String grants = "SUDIXR";
     String [] headers={"Object", "Select", "Update", "Delete","Insert","Execute","References"};
     Vector<String> relName;
@@ -261,6 +288,7 @@ create_table();
     Icon gr,no,adm;
     void create_table()
     {
+        setEnableGrant(false);
         relName=new Vector<>();
         relType=new Vector<>();
         rolesTable.setModel(new RoleTableModel
@@ -376,7 +404,7 @@ create_table();
 
             GUIUtilities.displayErrorMessage(e.getMessage());
         }
-
+    setEnableGrant(true);
     }
 
     private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {
@@ -388,6 +416,7 @@ create_table();
     }
     void grant_on_role(int grantt,int row,int col)
     {
+        if (enableGrant)
         switch (grantt)
         {
             case 0:
@@ -483,100 +512,135 @@ create_table();
     }
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
+        if (enableGrant)
        for (int row=0;row<relName.size();row++)
        {
            for (int col=1;col<headers.length;col++)
            grant_on_role(1,row,col);
        }
+       else {
+            GUIUtilities.displayInformationMessage("Please wait");
+        }
        //create_table();
     }
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
+        if (enableGrant)
         for (int row=0;row<relName.size();row++)
         {
             for (int col=1;col<headers.length;col++)
                 grant_on_role(2,row,col);
+        }
+        else {
+            GUIUtilities.displayInformationMessage("Please wait");
         }
         //create_table();
     }
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
+        if (enableGrant)
         for (int row=0;row<relName.size();row++)
         {
             for (int col=1;col<headers.length;col++)
                 grant_on_role(0,row,col);
         }
+        else {
+            GUIUtilities.displayInformationMessage("Please wait");
+        }
         //create_table();
     }
     private void allGrantsButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
+        if (enableGrant)
+        {
         int row=rolesTable.getSelectedRow();
         if(row>=0) {
             for (int col = 1; col < headers.length; col++) {
                 grant_on_role(1, row, col);
             }
             //create_table();
+        }}
+        else {
+            GUIUtilities.displayInformationMessage("Please wait");
         }
     }
 
     private void allAdminOptionButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
+        if (enableGrant)
+        {
         int row=rolesTable.getSelectedRow();
         if(row>=0) {
             for (int col = 1; col < headers.length; col++) {
                 grant_on_role(2, row, col);
             }
             //create_table();
+        }}
+        else {
+            GUIUtilities.displayInformationMessage("Please wait");
         }
     }
 
     private void noAllGrantsButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
-        int row=rolesTable.getSelectedRow();
-        if(row>=0) {
-            for (int col = 1; col < headers.length; col++) {
-                grant_on_role(0, row, col);
+        if(enableGrant) {
+            int row = rolesTable.getSelectedRow();
+            if (row >= 0) {
+                for (int col = 1; col < headers.length; col++) {
+                    grant_on_role(0, row, col);
+                }
+                //create_table();
             }
-            //create_table();
+        }else {
+            GUIUtilities.displayInformationMessage("Please wait");
         }
 
     }
 
     private void allUsersGrantButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
-
-        int col=rolesTable.getSelectedColumn();
-        if(col>0)
-        for(int row=0;row<relName.size();row++)
-        {
-            grant_on_role(1,row,col);
+if (enableGrant) {
+    int col = rolesTable.getSelectedColumn();
+    if (col > 0)
+        for (int row = 0; row < relName.size(); row++) {
+            grant_on_role(1, row, col);
         }
-        //create_table();
+    //create_table();
+}else {
+    GUIUtilities.displayInformationMessage("Please wait");
+}
 
     }
 
     private void allUsersAdminOptionButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
-        int col=rolesTable.getSelectedColumn();
-        if(col>0)
-        for(int row=0;row<relName.size();row++)
+        if (enableGrant)
         {
-            grant_on_role(2,row,col);
-        }
+            int col = rolesTable.getSelectedColumn();
+        if (col > 0)
+            for (int row = 0; row < relName.size(); row++) {
+                grant_on_role(2, row, col);
+            }
+    }else {
+        GUIUtilities.displayInformationMessage("Please wait");
+    }
         //create_table();
     }
 
     private void allRolesNoGrantButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
-        int col=rolesTable.getSelectedColumn();
-        if(col>0)
-        for(int row=0;row<relName.size();row++)
-        {
-            grant_on_role(0,row,col);
+        if (enableGrant) {
+            int col = rolesTable.getSelectedColumn();
+            if (col > 0)
+                for (int row = 0; row < relName.size(); row++) {
+                    grant_on_role(0, row, col);
+                }
+        }else {
+            GUIUtilities.displayInformationMessage("Please wait");
         }
-        create_table();
+        //create_table();
     }
     private void objectBoxActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
@@ -621,6 +685,19 @@ create_table();
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JScrollPane jScrollPane1;
+    void setEnableGrant(boolean enable)
+    {
+        enableGrant=enable;
+        jButton1.setEnabled(enable);
+        jButton2.setEnabled(enable);
+        jButton3.setEnabled(enable);
+        noAllGrantsButton.setEnabled(enable);
+        allAdminOptionButton.setEnabled(enable);
+        allGrantsButton.setEnabled(enable);
+        allRolesNoGrantButton.setEnabled(enable);
+        allUsersAdminOptionButton.setEnabled(enable);
+        allUsersGrantButton.setEnabled(enable);
+    }
     @Override
     public void cleanup() {
 

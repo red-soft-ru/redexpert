@@ -88,7 +88,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel {
         allGrantsButton = new javax.swing.JButton();
         allAdminOptionButton = new javax.swing.JButton();
         noAllGrantsButton = new javax.swing.JButton();
-
+        cancelWait = new JButton();
         BrowserTableCellRenderer bctr = new BrowserTableCellRenderer();
         rolesTable.setDefaultRenderer(Object.class,bctr);
         jScrollPane1.setViewportView(rolesTable);
@@ -180,6 +180,13 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel {
             }
         });
 
+        cancelWait.setText("Cancel waiting fill");
+        cancelWait.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelWaitActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -208,7 +215,9 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel {
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(allUsersAdminOptionButton)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(allRolesNoGrantButton)))
+                                                .addComponent(allRolesNoGrantButton)
+                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(cancelWait)))
                                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addComponent(jScrollPane1)
         );
@@ -226,7 +235,8 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel {
                                         .addComponent(jButton3)
                                         .addComponent(allUsersGrantButton)
                                         .addComponent(allUsersAdminOptionButton)
-                                        .addComponent(allRolesNoGrantButton))
+                                        .addComponent(allRolesNoGrantButton)
+                                        .addComponent(cancelWait))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(jCheckBox1)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -355,7 +365,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel {
 
                 }
             }
-            for(int i=0;i<relName.size();i++)
+            for(int i=0;i<relName.size()&&!enableGrant;i++)
             {
                 try {
 
@@ -685,9 +695,13 @@ if (enableGrant) {
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JScrollPane jScrollPane1;
+    JButton cancelWait;
     void setEnableGrant(boolean enable)
     {
         enableGrant=enable;
+        jComboBox1.setEnabled(enable);
+        objectBox.setEnabled(enable);
+        jCheckBox1.setEnabled(enable);
         jButton1.setEnabled(enable);
         jButton2.setEnabled(enable);
         jButton3.setEnabled(enable);
@@ -697,6 +711,11 @@ if (enableGrant) {
         allRolesNoGrantButton.setEnabled(enable);
         allUsersAdminOptionButton.setEnabled(enable);
         allUsersGrantButton.setEnabled(enable);
+        cancelWait.setVisible(!enable);
+    }
+    void cancelWaitActionPerformed(java.awt.event.ActionEvent evt)
+    {
+        setEnableGrant(true);
     }
     @Override
     public void cleanup() {

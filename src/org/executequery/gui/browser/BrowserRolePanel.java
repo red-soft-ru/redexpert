@@ -61,18 +61,19 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
         {
             ConnectionManager.close(controller.getDatabaseConnection(),con);
         }*/
-        controller=contr;
-       // ConnectionManager.
-        try {
-            con = ConnectionManager.getConnection(controller.getDatabaseConnection());
+        if (enableGrant) {
+            controller = contr;
+            // ConnectionManager.
+            try {
+                con = ConnectionManager.getConnection(controller.getDatabaseConnection());
 
-        }
-        catch(Exception e)
-        {
+            } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
 
+            }
+            create_roles_list(ddr.getName());
         }
-        create_roles_list(ddr.getName());
+        else GUIUtilities.displayErrorMessage("Please wait or cancel fill");
     }
 
     Connection con;

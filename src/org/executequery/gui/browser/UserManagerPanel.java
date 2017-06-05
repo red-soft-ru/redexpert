@@ -355,7 +355,21 @@ public class UserManagerPanel extends javax.swing.JPanel {
     }// </editor-fold>
     Connection con;
     private void databaseBoxActionPerformed(java.awt.event.ActionEvent evt) {
+        if(listConnections.get(databaseBox.getSelectedIndex()).isConnected())
         refresh();
+        else {
+            usersTable.setModel(new RoleTableModel(
+                    new Object[][]{
+
+                    },
+                    new String[]{
+                            "User name", "First name", "Middle name", "Last name"
+                    }
+            ));
+            JFrame frame_pass = new FrameLogin(this, listConnections.get(databaseBox.getSelectedIndex()).getUserName(),
+                    listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
+            frame_pass.setVisible(true);
+        }
     }
     void addUserButtonActionPerformed(java.awt.event.ActionEvent evt)
     {
@@ -539,42 +553,30 @@ public class UserManagerPanel extends javax.swing.JPanel {
      * This objects icon as an internal frame
      */
     public static final String FRAME_ICON = "user_manager_16.png";
-    UserManager userManager;
+    public UserManager userManager;
     private BrowserController controller;
     List<DatabaseConnection> listConnections;
     Map<String,User> users;
     Vector<String>user_names;
     Vector<String>role_names;
     public User userAdd;
-    void refresh()
+    void getUsersPanel()
     {
-        if(databaseBox.getItemAt(databaseBox.getSelectedIndex())!="") {
-            serverBox.removeAllItems();
-            serverBox.addItem(listConnections.get(databaseBox.getSelectedIndex()).getHost());
-        }
-        if(listConnections.get(databaseBox.getSelectedIndex()).isConnected()) {
-            con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
-            userManager.setDatabase(listConnections.get(databaseBox.getSelectedIndex()).getSourceName());
-            userManager.setUser(listConnections.get(databaseBox.getSelectedIndex()).getUserName());
-            userManager.setPassword(listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
-            userManager.setHost(listConnections.get(databaseBox.getSelectedIndex()).getHost());
-            userManager.setPort(listConnections.get(databaseBox.getSelectedIndex()).getPortInt());
+        try {
 
-            try {
+            users = userManager.getUsers();
 
-                users = userManager.getUsers();
+            usersTable.setModel(new RoleTableModel(
+                    new Object[][]{
 
-                usersTable.setModel(new RoleTableModel(
-                        new Object[][]{
+                    },
+                    new String[]{
+                            "User name", "First name", "Middle name", "Last name"
+                    }
+            ));
+            user_names.clear();
 
-                        },
-                        new String[]{
-                                "User name", "First name", "Middle name", "Last name"
-                        }
-                ));
-                user_names.clear();
-
-                for (User u : users.values()) {
+            for (User u : users.values()) {
 
                 /*DatabaseConnection db=listConnections.get(databaseBox.getSelectedIndex());
 
@@ -583,14 +585,34 @@ public class UserManagerPanel extends javax.swing.JPanel {
                 Statement st=con.createStatement();
                 ResultSet rs = st.executeQuery("sp_who");
                 System.out.println(rs.getString(0));*/
-                    user_names.add(u.getUserName().trim());
-                    Object[] rowData = new Object[]{u.getUserName(), u.getFirstName(), u.getMiddleName(), u.getLastName()};
-                    ((RoleTableModel) usersTable.getModel()).addRow(rowData);
-                }
-            } catch (Exception e) {
-                System.out.println(e.toString());
-                GUIUtilities.displayErrorMessage(e.toString());
+                user_names.add(u.getUserName().trim());
+                Object[] rowData = new Object[]{u.getUserName(), u.getFirstName(), u.getMiddleName(), u.getLastName()};
+                ((RoleTableModel) usersTable.getModel()).addRow(rowData);
             }
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            GUIUtilities.displayErrorMessage(e.toString());
+        }
+    }
+    void refresh()
+    {
+        if(databaseBox.getItemAt(databaseBox.getSelectedIndex())!="") {
+            serverBox.removeAllItems();
+            serverBox.addItem(listConnections.get(databaseBox.getSelectedIndex()).getHost());
+        }
+        userManager.setDatabase(listConnections.get(databaseBox.getSelectedIndex()).getSourceName());
+        userManager.setHost(listConnections.get(databaseBox.getSelectedIndex()).getHost());
+        userManager.setPort(listConnections.get(databaseBox.getSelectedIndex()).getPortInt());
+        if(listConnections.get(databaseBox.getSelectedIndex()).isConnected()) {
+            rolesPanel.setVisible(true);
+            membershipPanel.setVisible(true);
+            con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
+
+            userManager.setUser(listConnections.get(databaseBox.getSelectedIndex()).getUserName());
+            userManager.setPassword(listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
+
+getUsersPanel();
+
                 try {
 
                     //con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
@@ -621,11 +643,15 @@ public class UserManagerPanel extends javax.swing.JPanel {
                 } catch (Exception e) {
                     GUIUtilities.displayErrorMessage(e.toString());
                 }
-
+            create_membership();
 
         }
-
-create_membership();
+else{
+            getUsersPanel();
+            membershipPanel.setVisible(false);
+            rolesPanel.setVisible(false);
+        }
+//create_membership();
     }
     void create_membership()
     {

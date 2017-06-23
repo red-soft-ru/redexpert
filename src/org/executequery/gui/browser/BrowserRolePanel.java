@@ -308,7 +308,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
         enableGrant=false;
         try {
             Statement st = con.createStatement();
-            ResultSet result = st.executeQuery("SELECT RDB$ROLE_NAME FROM RDB$ROLES");
+            ResultSet result = st.executeQuery("SELECT RDB$ROLE_NAME FROM RDB$ROLES ORDER BY RDB$ROLE_NAME");
             roles=new Vector<>();
             while (result.next())
             {
@@ -347,7 +347,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
             if(objectBox.getSelectedIndex()==0 || objectBox.getSelectedIndex()==1 )
             {
                 state = con.createStatement();
-                rs = state.executeQuery("Select RDB$RELATION_NAME from RDB$RELATIONS WHERE RDB$RELATION_TYPE != 1");
+                rs = state.executeQuery("Select RDB$RELATION_NAME from RDB$RELATIONS WHERE RDB$RELATION_TYPE != 1 order by 1" );
                 while (rs.next()) {
                     String name = rs.getString(1);
                     if (jCheckBox1.isSelected()) {
@@ -366,7 +366,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
             if(objectBox.getSelectedIndex()==0 || objectBox.getSelectedIndex()==3 )
             {
                 state = con.createStatement();
-                rs = state.executeQuery("Select DISTINCT RDB$VIEW_NAME from RDB$VIEW_RELATIONS");
+                rs = state.executeQuery("Select DISTINCT RDB$VIEW_NAME from RDB$VIEW_RELATIONS order by 1");
                 while (rs.next()) {
                     String name = rs.getString(1);
                     if (jCheckBox1.isSelected()) {
@@ -385,7 +385,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
             if(objectBox.getSelectedIndex()==0 || objectBox.getSelectedIndex()==2 )
             {
                 state = con.createStatement();
-                rs = state.executeQuery("Select RDB$PROCEDURE_NAME from RDB$PROCEDURES");
+                rs = state.executeQuery("Select RDB$PROCEDURE_NAME from RDB$PROCEDURES order by 1");
                 while (rs.next()) {
                     String name = rs.getString(1);
                     if (jCheckBox1.isSelected()) {
@@ -401,6 +401,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
 
                 }
             }
+
             progBar.setMaximum(relName.size());
             for(int i=0;i<relName.size()&&!enableGrant;i++)
             {
@@ -455,7 +456,27 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
     setEnableGrant(true);
         progBar.setValue(0);
     }
+    void sort()
+    {
+        boolean chang=false;
+        for(int i=1;i<relName.size();i++)
+        {
+            int com=((String)relName.elementAt(i)).compareTo(relName.elementAt(i-1));
+            if (com <0) {
+                chang = true;
+                String temp = relName.elementAt(i);
+                String temp2= relType.elementAt(i);
+                relName.set(i,relName.elementAt(i-1));
+                relType.set(i,relType.elementAt(i-1));
+                relName.set(i-1,temp);
+                relType.set(i-1,temp2);
 
+            }
+
+
+        }
+        if (chang) sort();
+    }
     private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {
         act=Action.CREATE_TABLE;
         setEnableGrant(false);
@@ -537,7 +558,9 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
                         Statement st = con.createStatement();
                         if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
                             if (!headers[col].equals("Execute")) {
-                                st.execute("GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";");
+                                st.execute("GRANT " + headers[col] + " ON \""
+                                        + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem()
+                                        + "\";");
                                 rolesTable.setValueAt(gr, row, col);
                             }
                             } else if (headers[col].equals("Execute"))

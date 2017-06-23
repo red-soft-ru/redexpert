@@ -21,6 +21,7 @@ import org.firebirdsql.management.*;
 
 import javax.swing.*;
 import javax.swing.table.TableModel;
+import java.awt.event.ActionEvent;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -52,21 +53,30 @@ public class UserManagerPanel extends javax.swing.JPanel {
         initComponents();
         listConnections=((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
         this.userManager = new FBUserManager();
+        execute_w=false;
         for(DatabaseConnection dc:listConnections)
         {
             databaseBox.addItem(dc.getName());
-            if (dc.isConnected())
+            if (dc.isConnected()) {
+                execute_w=true;
                 databaseBox.setSelectedItem(dc.getName());
+
+
+            }
            // Connection connection = ConnectionManager.getConnection(dc);
 
            // Statement statement = connection.createStatement();
            // ResultSet dsfsdf = statement.executeQuery("dsfsdf");
         }
+        if (!execute_w) {
+            execute_w = true;
+            databaseBox.setSelectedIndex(0);
+        }
         userAdd=new FBUser();
 
     }
     Icon gr,no,adm;
-
+boolean execute_w;
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -355,20 +365,22 @@ public class UserManagerPanel extends javax.swing.JPanel {
     }// </editor-fold>
     Connection con;
     private void databaseBoxActionPerformed(java.awt.event.ActionEvent evt) {
-        if(listConnections.get(databaseBox.getSelectedIndex()).isConnected())
-        refresh();
-        else {
-            usersTable.setModel(new RoleTableModel(
-                    new Object[][]{
+        if(execute_w) {
+            if (listConnections.get(databaseBox.getSelectedIndex()).isConnected())
+                refresh();
+            else {
+                usersTable.setModel(new RoleTableModel(
+                        new Object[][]{
 
-                    },
-                    new String[]{
-                            "User name", "First name", "Middle name", "Last name"
-                    }
-            ));
-            JFrame frame_pass = new FrameLogin(this, listConnections.get(databaseBox.getSelectedIndex()).getUserName(),
-                    listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
-            frame_pass.setVisible(true);
+                        },
+                        new String[]{
+                                "User name", "First name", "Middle name", "Last name"
+                        }
+                ));
+                JFrame frame_pass = new FrameLogin(this, listConnections.get(databaseBox.getSelectedIndex()).getUserName(),
+                        listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
+                frame_pass.setVisible(true);
+            }
         }
     }
     void addUserButtonActionPerformed(java.awt.event.ActionEvent evt)
@@ -554,7 +566,6 @@ public class UserManagerPanel extends javax.swing.JPanel {
      */
     public static final String FRAME_ICON = "user_manager_16.png";
     public UserManager userManager;
-    private BrowserController controller;
     List<DatabaseConnection> listConnections;
     Map<String,User> users;
     Vector<String>user_names;
@@ -617,7 +628,8 @@ getUsersPanel();
 
                     //con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
                     Statement state = con.createStatement();
-                    result = state.executeQuery("SELECT RDB$ROLE_NAME,RDB$OWNER_NAME FROM RDB$ROLES");
+                    result = state.executeQuery("SELECT RDB$ROLE_NAME,RDB$OWNER_NAME FROM RDB$ROLES ORDER BY" +
+                            " RDB$ROLE_NAME");
                     rolesTable.setModel(new RoleTableModel(
                             new Object[][]{
 

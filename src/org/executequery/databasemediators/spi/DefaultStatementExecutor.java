@@ -69,8 +69,8 @@ import org.underworldlabs.util.MiscUtils;
  * so as to maintain the correct rollback segment.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1542 $
- * @date     $Date: 2015-11-30 10:29:28 +1100 (Mon, 30 Nov 2015) $
+ * @version  $Revision: 1685 $
+ * @date     $Date: 2017-01-18 11:34:30 +1100 (Wed, 18 Jan 2017) $
  */
 public class DefaultStatementExecutor implements StatementExecutor {
 
@@ -265,7 +265,14 @@ public class DefaultStatementExecutor implements StatementExecutor {
                 conn = ConnectionManager.getConnection(databaseConnection);
                 if (keepAlive) {
 
-                    conn.setAutoCommit(commitMode);
+                    try {
+
+                        conn.setAutoCommit(commitMode);
+
+                    } catch (SQLException e) {
+
+                        Log.warning("Error setting default commit mode for statement execution - " + e.getMessage());
+                    }
                 }
 
                 useCount = 0;
@@ -305,20 +312,22 @@ public class DefaultStatementExecutor implements StatementExecutor {
      *  @param  the SQL query to execute
      *  @return the query result
      */
+    @Override
     public SqlStatementResult getResultSet(String query) throws SQLException {
-        
+
         return getResultSet(query, -1);
     }
 
-    /** <p>Executes the specified query (SELECT) and returns a <code>ResultSet</code> object 
-     * from this query. 
-     * 
-     * <p>If an exception occurs, null is returned and the relevant error message, if available, 
+    /** <p>Executes the specified query (SELECT) and returns a <code>ResultSet</code> object
+     * from this query.
+     *
+     * <p>If an exception occurs, null is returned and the relevant error message, if available,
      * assigned to this object for retrieval.
      *
      *  @param  the SQL query to execute
      *  @return the query result
      */
+    @Override
     public SqlStatementResult getResultSet(String query, int fetchSize) throws SQLException {
 
         if (!prepared()) {
@@ -328,14 +337,14 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
         stmnt = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
         if (fetchSize != -1) {
-            
+
             stmnt.setFetchSize(fetchSize);
         }
-        
+
         // mysql
 //        stmnt = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
 //        stmnt.setFetchSize(Integer.MIN_VALUE);
-        
+
         try {
 
             ResultSet rs = stmnt.executeQuery(query);
@@ -357,6 +366,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
      *  @param  the SQL procedure to execute
      *  @return the query result
      */
+    @Override
     public SqlStatementResult execute(DatabaseExecutable databaseExecutable)
         throws SQLException {
 
@@ -431,22 +441,22 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
                 String namePrefix = null;
                 if (databaseExecutable.supportCatalogInFunctionOrProcedureCalls()) {
-                    
+
                     namePrefix = databaseExecutable.getCatalogName();
-                    
+
                 }
                 if (databaseExecutable.supportSchemaInFunctionOrProcedureCalls()) {
-                    
+
                     namePrefix = databaseExecutable.getSchemaName();
-                    
+
                 }
-                
+
                 if (namePrefix != null) {
-                    
+
                     sb.append(namePrefix).append('.');
                 }
             }
-            
+
             sb.append(databaseExecutable.getName()).
                append("( ");
 
@@ -522,32 +532,32 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
                 // register the in params
                 for (int i = 0, n = ins.size(); i < n; i++) {
-                    
+
                     ProcedureParameter procedureParameter = ins.get(i);
                     value = procedureParameter.getValue();
                     dataType = procedureParameter.getDataType();
 
                     // try infer a type if OTHER
                     if (dataType == Types.OTHER) {
-                        
+
                         // checking only for bit/bool for now
-                        
+
                         if (isTrueFalse(value)) {
-                            
+
                             dataType = Types.BOOLEAN;
-                        
+
                         } else if (isBit(value)) {
-                            
+
                             dataType = Types.BIT;
                             value = value.substring(2, value.length() - 1);
                         }
 
                     }
-                    
+
                     if (MiscUtils.isNull(value) || value.equalsIgnoreCase(NULL)) {
 
                         cstmnt.setNull(index, dataType);
-                    
+
                     } else {
 
                         switch (dataType) {
@@ -570,21 +580,21 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
                             case Types.BIT:
                             case Types.BOOLEAN:
-                                
+
                                 boolean _boolean = false;
                                 if (NumberUtils.isNumber(value)) {
-                                    
+
                                     int number = Integer.valueOf(value);
                                     if (number > 0) {
-                                        
+
                                         _boolean = true;
                                     }
-                                
+
                                 } else {
-                                    
+
                                     _boolean = Boolean.valueOf(value).booleanValue();
                                 }
-                                
+
                                 cstmnt.setBoolean(index, _boolean);
                                 break;
 
@@ -597,7 +607,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
                                 int _int = Integer.valueOf(value).intValue();
                                 cstmnt.setInt(index, _int);
                                 break;
-                                
+
                             case Types.REAL:
                                 float _float = Float.valueOf(value).floatValue();
                                 cstmnt.setFloat(index, _float);
@@ -621,7 +631,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
                             default:
                                 cstmnt.setObject(index, value);
-                                
+
                         }
 
                     }
@@ -631,7 +641,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
                 }
 
             } catch (Exception e) {
-              
+
                 statementResult.setOtherErrorMessage(e.getClass().getName() + ": " + e.getMessage());
                 return statementResult;
             }
@@ -640,7 +650,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
         /*
         test creating function for postgres:
-            
+
         CREATE FUNCTION concat_lower_or_upper(a text, b text, uppercase boolean DEFAULT false)
         RETURNS text
         AS
@@ -652,7 +662,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
         $$
         LANGUAGE SQL IMMUTABLE STRICT;
         */
-        
+
         try {
             cstmnt.clearWarnings();
             boolean hasResultSet = cstmnt.execute();
@@ -770,11 +780,11 @@ public class DefaultStatementExecutor implements StatementExecutor {
     }
 
     private boolean isTrueFalse(String value) {
-        
+
         String toLower = value.toLowerCase();
         return "true".equals(toLower) || "false".equals(toLower);
     }
-    
+
     /** <p>Executes the specified procedure and returns
      *  a <code>ResultSet</code> object from this query.
      *  <p>If an exception occurs, null is returned and
@@ -850,7 +860,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
                     // check that the proc accepts params
 //                    if (!procedure.hasParameters()) {
-//                    
+//
 //                        statementResult.setSqlException(new SQLException("Procedure call was invalid"));
 //                        return statementResult;
 //                    }
@@ -860,24 +870,24 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
                     // extract the parameters
                     StringTokenizer st = new StringTokenizer(params, ",");
-                    
+
                     // no defined params from the meta data but params supplied ??
                     // attempt to execute as supplied and bubble up db error if an issue
                     if (parameters.length == 0) {
-                        
+
                         parameters = new ProcedureParameter[st.countTokens()];
                         for (int i = 0, n = st.countTokens(); i < n; i++) {
-                            
+
                             procedure.addParameter("UNKNOWN", DatabaseMetaData.procedureColumnIn, Types.OTHER, "OTHER", -1);
                         }
-                        
+
                         parameters = procedure.getParametersArray();
                     }
-                    
+
                     while (st.hasMoreTokens()) {
 
                         String value = st.nextToken().trim();
-                        
+
                         // check applicable param
                         for (int i = paramIndex; i < parameters.length; i++) {
                             paramIndex++;
@@ -973,11 +983,13 @@ public class DefaultStatementExecutor implements StatementExecutor {
         return null;
     }
 
+    @Override
     public SqlStatementResult execute(int type, String query) throws SQLException {
 
         return execute(type, query, -1);
     }
 
+    @Override
     public SqlStatementResult execute(int type, String query, int fetchSize) throws SQLException {
 
         statementResult.setType(type);
@@ -1020,7 +1032,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
             case QueryTypes.SHOW_TABLES:
                 return showTables();
-                
+
             /*
             case CONNECT:
                 return establishConnection(query.toUpperCase());
@@ -1048,12 +1060,12 @@ public class DefaultStatementExecutor implements StatementExecutor {
             String schema = null;
 
             if (defaultCatalog != null) {
-                
+
                 catalog = defaultCatalog.getName();
             }
-            
+
             if (defaultSchema != null) {
-                
+
                 schema = defaultSchema.getName();
             }
 
@@ -1065,7 +1077,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
             statementResult.setSqlException(e);
             finished();
-        
+
         } finally {
 
             if (host != null) {
@@ -1073,11 +1085,12 @@ public class DefaultStatementExecutor implements StatementExecutor {
                 host.close();
             }
         }
-        
+
         return statementResult;
     }
 
-    
+
+    @Override
     public SqlStatementResult execute(String query, boolean enableEscapes)
         throws SQLException {
 
@@ -1090,7 +1103,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
         try {
 
-            setStatementEscapeProcessing(stmnt, enableEscapes);            
+            setStatementEscapeProcessing(stmnt, enableEscapes);
             isResultSet = stmnt.execute(query);
 
             if (isResultSet) {
@@ -1132,12 +1145,12 @@ public class DefaultStatementExecutor implements StatementExecutor {
     private void setStatementEscapeProcessing(Statement statement, boolean enableEscapes) {
 
         try {
-        
+
             statement.setEscapeProcessing(enableEscapes);
-            
+
         } catch (SQLException e) {
-            
-            Log.warning("Attempt to set statement escape processing failed - " + e.getMessage());            
+
+            Log.warning("Attempt to set statement escape processing failed - " + e.getMessage());
         }
     }
 
@@ -1151,6 +1164,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
      *  @param  the SQL query to execute
      *  @return the number of rows affected
      */
+    @Override
     public SqlStatementResult createProcedure(String query) throws SQLException {
 
         if (!prepared()) {
@@ -1161,10 +1175,10 @@ public class DefaultStatementExecutor implements StatementExecutor {
         stmnt = conn.createStatement();
 
         try {
-            
+
             stmnt.clearWarnings();
             setStatementEscapeProcessing(stmnt, false);
-            
+
             boolean isResultSet = stmnt.execute(query);
 
             if (!isResultSet) {
@@ -1174,7 +1188,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
                     updateCount = -10000;
 
                 statementResult.setUpdateCount(updateCount);
-            
+
             } else { // should never be a result set
 
                 ResultSet rs = stmnt.getResultSet();
@@ -1215,6 +1229,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
      *  @param  the SQL query to execute
      *  @return the number of rows affected
      */
+    @Override
     public SqlStatementResult updateRecords(String query) throws SQLException {
 
         if (!prepared()) {
@@ -1318,6 +1333,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
     /**
      * Destroys the open connection.
      */
+    @Override
     public void destroyConnection() throws SQLException {
         try {
             ConnectionManager.close(databaseConnection, conn);
@@ -1332,6 +1348,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
      *
      *  @param true for auto-commit, false otherwise
      */
+    @Override
     public void setCommitMode(boolean commitMode) {
         this.commitMode = commitMode;
         //Log.debug("commitMode: " + commitMode);
@@ -1348,6 +1365,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
     /**
      * Cancels the current SQL statement being executed.
      */
+    @Override
     public void cancelCurrentStatement() {
 
         Log.info("Attempting to cancel the current statement...");
@@ -1427,6 +1445,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
     /**
      * Closes the database connection of this object.
      */
+    @Override
     public void closeConnection() throws SQLException {
         // if set to keep the connection open
         // for this instance - return
@@ -1442,6 +1461,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
      *
      * @param the connection thats been closed
      */
+    @Override
     public void disconnected(DatabaseConnection dc) {
         if (databaseConnection == dc) {
             closeConnection(true);
@@ -1463,6 +1483,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
     }
 
     /** <p>Releases database resources held by this class. */
+    @Override
     public void releaseResources() {
 
         try {
@@ -1490,6 +1511,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
     }
 
+    @Override
     public void setDatabaseConnection(DatabaseConnection _databaseConnection) {
         if (databaseConnection != _databaseConnection) {
             try {

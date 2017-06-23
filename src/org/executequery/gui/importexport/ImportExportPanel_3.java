@@ -51,8 +51,8 @@ import org.executequery.gui.DefaultTable;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1669 $
+ * @date     $Date: 2016-07-31 15:22:51 +1000 (Sun, 31 Jul 2016) $
  */
 public class ImportExportPanel_3 extends JPanel {
     
@@ -483,7 +483,10 @@ public class ImportExportPanel_3 extends JPanel {
         
         public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
-            setText(value.toString());
+            if (value != null) {
+             
+                setText(value.toString());
+            }
             return this;
         }
 

@@ -98,6 +98,14 @@ public class HelpWindow {
 
             ClassLoader classLoader = classLoader();
 
+            URL[] urls;
+            try {
+                urls = MiscUtils.loadURLs("./docs/eqhelp.jar");
+                classLoader = new URLClassLoader(urls, getClass().getClassLoader());
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+
             URL url = HelpSet.findHelpSet(classLoader, HELP_SET);
 
             HelpSet helpSet = new HelpSet(classLoader, url);

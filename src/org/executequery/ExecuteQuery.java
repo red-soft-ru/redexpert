@@ -20,17 +20,14 @@
 
 package org.executequery;
 
-import javax.swing.JOptionPane;
-
 import org.executequery.gui.HelpWindow;
-import org.underworldlabs.util.MiscUtils;
 
 /** 
  * The entry point for Execute Query.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1661 $
+ * @date     $Date: 2016-07-13 20:53:12 +1000 (Wed, 13 Jul 2016) $
  */
 public final class ExecuteQuery {
     
@@ -42,6 +39,7 @@ public final class ExecuteQuery {
     public static void main(String[] args) {
         
         // make sure the installed java version is at least 1.7
+        /*
         if (!MiscUtils.isMinJavaVersion(1, 7)) {
 
             JOptionPane.showMessageDialog(null, 
@@ -55,6 +53,7 @@ public final class ExecuteQuery {
 
             System.exit(1);
         }
+        */
 
         if (isHelpStartupOnly(args)) {
             

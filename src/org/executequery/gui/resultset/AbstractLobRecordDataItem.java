@@ -20,33 +20,36 @@
 
 package org.executequery.gui.resultset;
 
-public abstract class AbstractLobRecordDataItem extends AbstractRecordDataItem 
+public abstract class AbstractLobRecordDataItem extends AbstractRecordDataItem
 												implements LobRecordDataItem {
 
 	private byte[] data;
-	
+
 	public AbstractLobRecordDataItem(String name, int dataType, String dataTypeName) {
-		
+
 		super(name, dataType, dataTypeName);
 	}
 
-	public int length() {
-		
+	@Override
+    public int length() {
+
 		return (data == null ? 0 : data.length);
 	}
-	
-	public byte[] getData() {
-		
+
+	@Override
+    public byte[] getData() {
+
 		if (data == null) {
-			
+
 			data = readLob();
 		}
-		
+
 		return data;
 	}
 
 	abstract byte[] readLob();
-	
+
+    @Override
     public String asBinaryString() {
 
         char space = ' ';
@@ -57,7 +60,7 @@ public abstract class AbstractLobRecordDataItem extends AbstractRecordDataItem
 
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < bytesToProcess; i++) {
-            
+
             String hexString = Integer.toHexString(data[i]);
             if (hexString.startsWith(stripPrefix)) {
 
@@ -65,26 +68,27 @@ public abstract class AbstractLobRecordDataItem extends AbstractRecordDataItem
             }
 
             if (hexString.length() == 1) {
-                
+
                 sb.append('0');
             }
 
-            sb.append(hexString.toUpperCase()).append(space);            
+            sb.append(hexString.toUpperCase()).append(space);
         }
 
         if (bytesToProcess == defaultBytesToProcess) {
-        
+
             sb.append("..");
         }
-        
+
         return sb.toString();
     }
 
+    @Override
     public boolean isLob() {
 
         return true;
     }
-    
+
 }
 
 

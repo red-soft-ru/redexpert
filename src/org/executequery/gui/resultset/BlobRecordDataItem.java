@@ -46,6 +46,7 @@ public class BlobRecordDataItem extends AbstractLobRecordDataItem {
         return BLOB_DATA_OBJECT;
     }
 
+    @Override
     public String getLobRecordItemName() {
 
         MimeType mimeType = mimeTypeFromByteArray(getData());
@@ -60,18 +61,19 @@ public class BlobRecordDataItem extends AbstractLobRecordDataItem {
 
     }
 
+    @Override
     protected byte[] readLob() {
 
         Object value = getValue();
         if (value instanceof String) { // eg. oracle RAW type
 
             return ((String) getValue()).getBytes();
-        
+
         } else if (value instanceof byte[]) {
-            
+
             return (byte[]) value;
         }
-        
+
         Blob blob = (Blob) value;
 
         byte[] blobBytes = null;
@@ -110,6 +112,13 @@ public class BlobRecordDataItem extends AbstractLobRecordDataItem {
 
         return MimeTypes.get().getMimeType(data);
     }
-    
+
+    @Override
+    public boolean isBlob() {
+
+        return true;
+    }
+
+
 }
 

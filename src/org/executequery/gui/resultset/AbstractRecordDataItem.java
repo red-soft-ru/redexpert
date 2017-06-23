@@ -28,25 +28,25 @@ import org.underworldlabs.jdbc.DataSourceException;
 
 
 /**
- * 
+ *
  * @author Takis Diakoumis
- * @version $Revision: 1487 $
- * @date $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version $Revision: 1689 $
+ * @date $Date: 2017-02-14 11:05:59 +1100 (Tue, 14 Feb 2017) $
  */
 public abstract class AbstractRecordDataItem implements RecordDataItem {
 
 	private Object value;
 
     private String name;
-    
+
     private int dataType;
 
 	private String dataTypeName;
-	
+
 	private boolean changed;
 
 	private static final SQLTypeObjectFactory TYPE_OBJECT_FACTORY = new SQLTypeObjectFactory();
-	
+
 	public AbstractRecordDataItem(String name, int dataType, String dataTypeName) {
 
 		super();
@@ -55,40 +55,46 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
 		this.dataTypeName = dataTypeName;
 	}
 
-	public int length() {
-	    
+	@Override
+    public int length() {
+
 	    if (!isValueNull()) {
-	    
+
 	        return toString().length();
 
 	    } else {
-	        
+
 	        return 0;
 	    }
 	}
-	
+
 	public String getDataTypeName() {
 		return dataTypeName;
 	}
 
-	public int getDataType() {
+	@Override
+    public int getDataType() {
 		return dataType;
 	}
 
-	public Object getDisplayValue() {
+	@Override
+    public Object getDisplayValue() {
 		return getValue();
 	}
-	
-	public Object getValue() {
+
+	@Override
+    public Object getValue() {
 		return value;
 	}
 
-	public void setValue(Object value) {
+	@Override
+    public void setValue(Object value) {
 		this.value = value;
 	}
 
-	public boolean valueContains(String pattern) {
-	    
+	@Override
+    public boolean valueContains(String pattern) {
+
 	    if (isLob() || isValueNull()) {
 
 	        return false;
@@ -96,36 +102,37 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
 	    return StringUtils.containsIgnoreCase(getValue().toString(), pattern);
 	}
 
-	public void valueChanged(Object newValue) {
+	@Override
+    public void valueChanged(Object newValue) {
 
 		if (valuesEqual(this.value, newValue)) {
 
 			return;
 		}
-		
+
 	    if (newValue != null && isStringLiteralNull(newValue)) {
-	        
+
 	        setValue(null);
-	        
+
 	    } else {
-	        
+
 	        setValue(newValue);
 	    }
 	    changed = true;
 	}
-	
+
 	private boolean valuesEqual(Object firstValue, Object secondValue) {
 
 		if (ObjectUtils.equals(firstValue, secondValue)) {
-			
+
 			return true;
 		}
-		
+
 		if (firstValue != null && secondValue != null) {
-			
+
 			return firstValue.toString().equals(secondValue.toString());
 		}
-		
+
 		return false;
 	}
 
@@ -134,11 +141,13 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
 	    return newValue.toString().equalsIgnoreCase("NULL");
     }
 
+    @Override
     public boolean isValueNull() {
 		return (value == null);
 	}
-	
-	public String toString() {
+
+	@Override
+    public String toString() {
 
 		if (getValue() != null) {
 
@@ -148,50 +157,62 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
 		return null;
 	}
 
-	public void setNull() {
+	@Override
+    public void setNull() {
 		value = null;
 	}
-	
-	public boolean isChanged() {
+
+	@Override
+    public boolean isChanged() {
         return changed;
     }
 
+    @Override
     public String getName() {
         return name;
     }
-    
+
+    @Override
     public boolean isSQLValueNull() {
         return isValueNull();// && StringUtils.isBlank(toString());
     }
-    
+
+    @Override
     public Object getValueAsType() {
 
         if (isValueNull()) {
-            
+
             return null;
         }
         return valueAsType(this.value);
     }
 
     protected Object valueAsType(Object value) {
-        
+
         try {
-        
+
             return TYPE_OBJECT_FACTORY.create(dataType, value);
-            
+
         } catch (DataSourceException e) {
-            
+
             Log.info("Unable to retrieve value as type for column [ " + name + " ]");
             return e.getMessage();
-            
+
         }
     }
 
+    @Override
+    public boolean isBlob() {
+
+        return false;
+    }
+
+    @Override
     public boolean isLob() {
 
         return false;
     }
-    
+
 }
 
 

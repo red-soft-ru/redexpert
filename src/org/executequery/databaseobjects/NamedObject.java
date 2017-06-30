@@ -56,6 +56,7 @@ public interface NamedObject extends java.io.Serializable {
     int SYSTEM_TRIGGER = 20;
     int SYSTEM_DATABASE_TRIGGER = 21;
     int PACKAGE = 22;
+    int ROLE = 23;
 
     int META_TAG = 93;
     int TABLE_COLUMN = 94;
@@ -98,7 +99,8 @@ public interface NamedObject extends java.io.Serializable {
                             "SYSTEM INDEX",
                             "SYSTEM TRIGGER",
                             "SYSTEM DATABASE TRIGGER",
-                            "PACKAGE"};
+                            "PACKAGE",
+                            "ROLE"};
 
     /**
      * Marks this object as being 'reset', where for any loaded object

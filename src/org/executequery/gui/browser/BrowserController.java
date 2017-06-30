@@ -245,8 +245,8 @@ public class BrowserController {
      * displayed based on the specified host node connection object
      * and the selected node as specified.
      *
-     * @param the connection host parent object
-     * @param the selected node
+     * //@param the connection host parent object
+     * //@param the selected node
      */
     public synchronized void valueChanged_(DatabaseObjectNode node) {
 
@@ -273,8 +273,8 @@ public class BrowserController {
      * displayed based on the specified host node connection object
      * and the selected node as specified.
      *
-     * @param the connection host parent object
-     * @param the selected node
+     * @param// the connection host parent object
+     * @param //the selected node
      */
     private FormObjectView buildPanelView(DatabaseObjectNode node) {
         try {
@@ -416,7 +416,21 @@ public class BrowserController {
 
                     domainPanel.setValues((DefaultDatabaseDomain) databaseObject);
                     return domainPanel;
+                case NamedObject.ROLE:
+                    BrowserRolePanel rolePanel = null;
+                    if (!GUIUtilities.isPanelOpen(BrowserRolePanel.NAME)) {
+                        rolePanel = new BrowserRolePanel(this);
+                        GUIUtilities.addCentralPane(BrowserRolePanel.NAME,UserManagerPanel.FRAME_ICON,
+                                rolePanel,null,true);
+                    }
+                    else {
+                        rolePanel = (BrowserRolePanel)GUIUtilities.
+                                getCentralPane(BrowserRolePanel.NAME);
+                        GUIUtilities.setSelectedCentralPane(BrowserRolePanel.NAME);
+                    }
 
+                    rolePanel.setValues((DefaultDatabaseRole) databaseObject,this);
+                    return null;
                 case NamedObject.EXCEPTION:
                     BrowserExceptionPanel exceptionPanel = null;
                     if (!viewPanel.containsPanel(BrowserExceptionPanel.NAME)) {

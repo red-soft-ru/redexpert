@@ -29,7 +29,7 @@ cp -r red_expert.{png,ico} \
 	  target/lib \
 	  docs \
 	  license \
-	  LICENSE \
+	  LICENSE.txt \
 	  tmp
 
 cd tmp

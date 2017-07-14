@@ -362,8 +362,8 @@
 
           <menu-item id="database-disconnect-command"
                      class="org.underworldlabs.swing.menu.MainMenuItem"/>
-          
-          <menu-item id="separator"/>
+
+                <menu-item id="separator"/>
           
           <menu-item id="create-table-command"
                      class="org.underworldlabs.swing.menu.MainMenuItem"/>
@@ -402,6 +402,7 @@
 
     </menu>
 
+
     <menu name="Tools"
           class="org.underworldlabs.swing.menu.MainMenu"
           mnemonic="T">
@@ -414,6 +415,8 @@
 
           <menu-item id="user-keywords-command"
                      class="org.underworldlabs.swing.menu.MainMenuItem"/>
+        <menu-item id="user-manager-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
           <menu-item id="separator"/>
 
@@ -615,5 +618,6 @@
           <menu-item id="about-command" class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
     </menu>
+
 
 </menus>

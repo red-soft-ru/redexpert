@@ -133,6 +133,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 children = loadDomains();
 
+            }else if (isRole()) {
+                children= loadRoles();
             } else if (isException()) {
 
                 children = loadExceptions();
@@ -161,7 +163,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 children = loadPackages();
 
-            } else {
+            }
+            else {
 
                 children = getHost().getTables(getCatalogName(), 
                                                getSchemaName(), 
@@ -283,6 +286,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return getDomains();
 
     }
+    private List<NamedObject> loadRoles()
+            throws DataSourceException {
+
+        return getRoles();
+
+    }
 
     private List<NamedObject> loadExceptions()
             throws DataSourceException {
@@ -386,7 +395,14 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         return hasDomains();
                     }
 
-                } else if (isException()) {
+                } else if (isRole()) {
+
+                    if (type == ROLE) {
+                        return hasRoles();
+                    }
+
+                }
+                 else if (isException()) {
 
                     if (type == EXCEPTION) {
                         return hasException();
@@ -472,6 +488,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         int type = getSubType();
         return type == DOMAIN;
+    }
+    private boolean isRole() {
+
+        int type = getSubType();
+        return type == ROLE;
     }
 
     private boolean isException() {
@@ -622,6 +643,24 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         try {
 
             rs = getDomainsResultSet();
+            return rs != null && rs.next();
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return false;
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+    private boolean hasRoles() {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getRolesResultSet();
             return rs != null && rs.next();
 
         } catch (SQLException e) {
@@ -961,6 +1000,31 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             releaseResources(rs);
         }
     }
+    private List<NamedObject> getRoles() throws DataSourceException {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getRolesResultSet();
+            List<NamedObject> list = new ArrayList<NamedObject>();
+            while (rs.next()) {
+
+                  DefaultDatabaseRole role=new DefaultDatabaseRole(this,rs.getObject(1).toString());
+                list.add(role);
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return new ArrayList<NamedObject>(0);
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
 
     /**
      * Loads the database triggers.
@@ -1242,6 +1306,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return resultSet;
     }
 
+
     private ResultSet getSequencesResultSet() throws SQLException {
 
         String catalogName = catalogNameForQuery();
@@ -1285,6 +1350,18 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "where RDB$FIELD_NAME not like 'RDB$%'\n" +
                 "and RDB$FIELD_NAME not like 'MON$%'\n" +
                 "order by RDB$FIELD_NAME");
+
+        return resultSet;
+    }
+    private ResultSet getRolesResultSet() throws SQLException {
+
+        String catalogName = catalogNameForQuery();
+        String schemaName = schemaNameForQuery();
+
+        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+        Statement statement = dmd.getConnection().createStatement();
+
+        ResultSet resultSet = statement.executeQuery("SELECT RDB$ROLE_NAME FROM RDB$ROLES");
 
         return resultSet;
     }

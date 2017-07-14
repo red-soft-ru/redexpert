@@ -214,6 +214,12 @@ public class BrowserConstants {
     public static final String SYSTEM_DATABASE_TRIGGER_IMAGE = "SystemDatabaseTrigger.png";
 
     public static final String PACKAGE_IMAGE = "package16.png";
+
+    public static final String ROLE_IMAGE = "user_manager_16.png";
+    public static final String GRANT_IMAGE="grant.png";
+    public static final String NO_GRANT_IMAGE="no_grant.png";
+    public static final String ADMIN_OPTION_IMAGE="admin_option.png";
+
     
     public static final String[] NODE_ICONS = {CONNECTIONS_IMAGE,
                                                CONNECTIONS_FOLDER_IMAGE,
@@ -248,7 +254,8 @@ public class BrowserConstants {
                                                 SYSTEM_INDEX_IMAGE,
                                                 SYSTEM_TRIGGER_IMAGE,
                                                 SYSTEM_DATABASE_TRIGGER_IMAGE,
-                                                PACKAGE_IMAGE
+                                                PACKAGE_IMAGE,
+                                                ROLE_IMAGE
                                                };
     
 }

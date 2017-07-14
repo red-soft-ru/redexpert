@@ -33,6 +33,7 @@ public class BrowserTreeNode extends DefaultMutableTreeNode {
     
     private boolean typeParent;
     private boolean expanded;
+
     private BaseDatabaseObject _userObject;
 
     private NamedObject userObject;
@@ -49,6 +50,7 @@ public class BrowserTreeNode extends DefaultMutableTreeNode {
         this.userObject = userObject;
         this.typeParent = typeParent;
         expanded = false;
+
     }
 
     

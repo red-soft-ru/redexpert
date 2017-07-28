@@ -73,17 +73,41 @@ public class FBUserManagerImpl implements IFBUserManager {
 
   @Override
   public void add(IFBUser user) throws SQLException, IOException {
-    fbUserManager.add((FBUser)user);
+    FBUser fbUser = new FBUser();
+    fbUser.setFirstName(user.getFirstName());
+    fbUser.setGroupId(user.getGroupId());
+    fbUser.setLastName(user.getLastName());
+    fbUser.setMiddleName(user.getMiddleName());
+    fbUser.setPassword(user.getPassword());
+    fbUser.setUserId(user.getUserId());
+    fbUser.setUserName(user.getUserName());
+    fbUserManager.add(fbUser);
   }
 
   @Override
   public void delete(IFBUser user) throws SQLException, IOException {
-    fbUserManager.delete((FBUser)user);
+    FBUser fbUser = new FBUser();
+    fbUser.setFirstName(user.getFirstName());
+    fbUser.setGroupId(user.getGroupId());
+    fbUser.setLastName(user.getLastName());
+    fbUser.setMiddleName(user.getMiddleName());
+    fbUser.setPassword(user.getPassword());
+    fbUser.setUserId(user.getUserId());
+    fbUser.setUserName(user.getUserName());
+    fbUserManager.delete(fbUser);
   }
 
   @Override
   public void update(IFBUser user) throws SQLException, IOException {
-    fbUserManager.update((FBUser)user);
+    FBUser fbUser = new FBUser();
+    fbUser.setFirstName(user.getFirstName());
+    fbUser.setGroupId(user.getGroupId());
+    fbUser.setLastName(user.getLastName());
+    fbUser.setMiddleName(user.getMiddleName());
+    fbUser.setPassword(user.getPassword());
+    fbUser.setUserId(user.getUserId());
+    fbUser.setUserName(user.getUserName());
+    fbUserManager.update(fbUser);
   }
 
   @Override

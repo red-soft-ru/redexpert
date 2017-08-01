@@ -291,7 +291,7 @@
 									<directory>${project.basedir}/lib</directory>
 									<includes>
 										<include>fbplugin-impl.jar</include>
-										<include>jaybird-full-3.0.0-SNAPSHOT.jar</include>
+										<include>jaybird-full-3.1.0-SNAPSHOT.jar</include>
 									</includes>
 								</resource>
 							</resources>

@@ -126,6 +126,9 @@ public class UpdateLoader extends JFrame {
     }
 
     private void cancelUpdate() {
+        if (cancelButton.getText().equals("Close"))
+        {System.exit(0);}
+        else
         this.dispose();
     }
 

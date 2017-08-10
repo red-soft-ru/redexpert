@@ -8,6 +8,7 @@
 
 	<properties>                             
 		<exe.version>4.3.4.8</exe.version>
+		<basedir>${pom.basedir}</basedir>
 	</properties>
 
 	<repositories>
@@ -208,9 +209,9 @@
 
 	<build>
 		<sourceDirectory>src</sourceDirectory>
-
+		
 		<finalName>${project.artifactId}</finalName>
-
+			
 		<resources>
 			<resource>
 				<directory>src</directory>
@@ -423,7 +424,7 @@
             <id>create-archive</id>
             <phase>package</phase>
             <goals>
-              <goal>single</goal>
+              <goal>attached</goal>
             </goals>
           </execution>
         </executions>

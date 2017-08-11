@@ -60,7 +60,7 @@ node('jdk18&&linux&&builder&&mvn')
         
         sh "tar xf dist-src/${archive_prefix}-src.tar.gz"
         withEnv(["JAVA_HOME=${JAVA_HOME_1_8}", "RED_EXPERT_VERSION=${version}"]) {
-            sh "cd ${archive_prefix} && mvn -f ./plugins/fbplugin package && mvn -f ./plugins/fbplugin-impl package && mvn package && mkdir dist && cp target/RedExpert-bin.* dist/ && mv dist .."
+            sh "cd ${archive_prefix} && mvn -f ./plugins/fbplugin package && mvn -f ./plugins/fbplugin-impl package && mvn package && mkdir dist && cp target/${archive_prefix}.* dist/ && mv dist .."
         }
         
         stash includes: 'dist/**', name: 'bin'
@@ -78,8 +78,6 @@ node('master')
         unstash 'bin'
         
         sh "echo artifact red_expert ${version} > artifacts"
-		sh "mv dist/RedExpert-bin.tar.gz dist/RedExpert-${version}.tar.gz"
-		sh "mv dist/RedExpert-bin.zip dist/RedExpert-${version}.zip"
         sh "echo file dist/RedExpert-${version}.tar.gz tar.gz bin >> artifacts"
         sh "echo file dist/RedExpert-${version}.zip zip bin >> artifacts"
         sh "echo end >> artifacts"

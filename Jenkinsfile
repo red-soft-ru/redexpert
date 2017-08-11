@@ -56,11 +56,11 @@ node('jdk18&&linux&&builder&&mvn')
     {
         deleteDir()
         unstash 'src'
-        def archive_prefix="RedExpert-bin"
+        def archive_prefix="RedExpert-${version}"
         
         sh "tar xf dist-src/${archive_prefix}-src.tar.gz"
         withEnv(["JAVA_HOME=${JAVA_HOME_1_8}", "RED_EXPERT_VERSION=${version}"]) {
-            sh "cd ${archive_prefix} && mvn -f ./plugins/fbplugin package && mvn -f ./plugins/fbplugin-impl package && mvn package && mkdir dist && cp target/archive_prefix.* dist/archive_prefix.* "
+            sh "cd ${archive_prefix} && mvn -f ./plugins/fbplugin package && mvn -f ./plugins/fbplugin-impl package && mvn package && mkdir dist && cp target/"RedExpert-bin.* dist/"RedExpert-bin.* && mv dist .."
         }
         
         stash includes: 'dist/**', name: 'bin'

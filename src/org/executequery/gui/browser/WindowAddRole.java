@@ -34,9 +34,9 @@ public class WindowAddRole extends javax.swing.JPanel {
         //layout.setHorizontalGroup();
         okButton.setSize(50,20);
         okButton.setLocation(50,100);
-        jLabel1.setSize(50,20);
+        jLabel1.setSize(50,25);
         jLabel1.setLocation(50,50);
-        nameTextField.setSize(500,20);
+        nameTextField.setSize(500,25);
         nameTextField.setLocation(100,50);
         this.add(okButton);
         this.add(jLabel1);

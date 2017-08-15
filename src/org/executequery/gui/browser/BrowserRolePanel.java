@@ -1,6 +1,6 @@
 package org.executequery.gui.browser;
 
-import com.sun.glass.ui.Application;
+//import com.sun.glass.ui.Application;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTableCellRenderer;
 import org.executequery.databaseobjects.impl.DefaultDatabaseRole;

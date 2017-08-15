@@ -10,7 +10,7 @@
   <fileSets>
   <fileSet>
       <directory>${basedir}</directory>
-      <outputDirectory>RedExpert-${exe.version}</outputDirectory>
+      <outputDirectory></outputDirectory>
       <includes>
 		<include>red_expert.png</include>
 		<include>red_expert.ico</include>
@@ -20,35 +20,35 @@
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}</directory>
-      <outputDirectory>RedExpert-${exe.version}</outputDirectory>
+      <outputDirectory></outputDirectory>
       <includes>
         <include>RedExpert.*</include>
       </includes>
     </fileSet>
 	<fileSet>
       <directory>${basedir}/docs</directory>
-      <outputDirectory>RedExpert-${exe.version}/docs</outputDirectory>
+      <outputDirectory>docs</outputDirectory>
       <includes>
         <include>*</include>
       </includes>
     </fileSet>
 	<fileSet>
       <directory>${project.build.directory}/lib</directory>
-      <outputDirectory>RedExpert-${exe.version}/lib</outputDirectory>
+      <outputDirectory>lib</outputDirectory>
       <includes>
         <include>*</include>
       </includes>
     </fileSet>
 	<fileSet>
       <directory>${basedir}/license</directory>
-      <outputDirectory>RedExpert-${exe.version}/license</outputDirectory>
+      <outputDirectory>license</outputDirectory>
       <includes>
         <include>*</include>
       </includes>
     </fileSet>
 	<fileSet>
       <directory>${project.build.directory}/config</directory>
-      <outputDirectory>RedExpert-${exe.version}/config</outputDirectory>
+      <outputDirectory>config</outputDirectory>
       <includes>
         <include>*</include>
       </includes>

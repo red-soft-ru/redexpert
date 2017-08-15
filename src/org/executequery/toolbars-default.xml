@@ -388,11 +388,6 @@
           <visible>true</visible>
           <order>2</order>
         </button>
-        <button id="50" action-id="user-manager-command">
-          <visible>true</visible>
-          <order>3</order>
-        </button>
-
         <button id="44" action-id="visit-eq-command">
           <visible>false</visible>
           <order>1000</order>

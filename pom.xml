@@ -311,6 +311,7 @@
                         <configuration>
                             <target name="copy and rename file">
                                 <copy file="${basedir}/eq.sh" tofile="${basedir}/target/RedExpert.sh" />
+								<chmod file="${basedir}/target/RedExpert.sh" perm="755"/>
                             </target>
                         </configuration>
                         <goals>
@@ -435,7 +436,9 @@
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.5.3</version>
         <configuration>
-          <descriptor>dep.xml</descriptor>
+			<descriptors>
+				<descriptor>dep.xml</descriptor>
+			</descriptors>
         </configuration>
         <executions>
           <execution>

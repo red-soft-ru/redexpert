@@ -24,6 +24,7 @@
       <includes>
         <include>RedExpert.*</include>
       </includes>
+        <fileMode>0755</fileMode>
     </fileSet>
 	<fileSet>
       <directory>${basedir}/docs</directory>

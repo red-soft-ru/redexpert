@@ -126,7 +126,7 @@ public class UpdateLoader extends JFrame {
     }
 
     private void cancelUpdate() {
-        
+
         this.dispose();
     }
 

@@ -24,6 +24,7 @@ import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
@@ -460,6 +461,9 @@ public class UserManagerPanel extends javax.swing.JPanel {
                 JFrame frame_pass = new FrameLogin(this, listConnections.get(databaseBox.getSelectedIndex()).getUserName(),
                         listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
                 frame_pass.setVisible(true);
+                int width = Toolkit.getDefaultToolkit().getScreenSize().width;
+                int height = Toolkit.getDefaultToolkit().getScreenSize().height;
+                frame_pass.setLocation(width/2-frame_pass.getWidth()/2,height/2-frame_pass.getHeight()/2);
             }
         }
     }

@@ -262,6 +262,11 @@
           <order>7</order>
         </button>
 
+        <button id="46" action-id="grant-manager-command">
+          <visible>true</visible>
+          <order>8</order>
+        </button>
+
         <button id="21" action-id="create-table-command">
           <visible>true</visible>
           <order>3</order>

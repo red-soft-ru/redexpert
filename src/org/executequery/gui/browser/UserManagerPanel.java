@@ -393,73 +393,124 @@ public class UserManagerPanel extends javax.swing.JPanel {
     }// </editor-fold>
 
     void init_user_manager() {
-        DatabaseDriver dd = null;
-        List<DatabaseDriver> dds = driverRepository().findAll();
-        for (DatabaseDriver d : dds) {
-            if (d.getClassName().contains("FBDriver"))
-                dd = d;
-            break;
+        if(con==null) {
+            DatabaseDriver dd = null;
+            List<DatabaseDriver> dds = driverRepository().findAll();
+            for (DatabaseDriver d : dds) {
+                if (d.getClassName().contains("FBDriver"))
+                    dd = d;
+                break;
+            }
+            URL[] urlDriver = new URL[0];
+            Class clazzDriver = null;
+            URL[] urls = new URL[0];
+            Class clazzdb = null;
+            Object o = null;
+            Object odb = null;
+            try {
+                urlDriver = MiscUtils.loadURLs(dd.getPath());
+                ClassLoader clD = new URLClassLoader(urlDriver);
+                clazzDriver = clD.loadClass(dd.getClassName());
+                o = clazzDriver.newInstance();
+                Driver driver = (Driver) o;
+
+
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            try {
+
+                urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                ClassLoader cl = new URLClassLoader(urls, o.getClass().getClassLoader());
+                clazzdb = cl.loadClass("biz.redsoft.FBUserImpl");
+                odb = clazzdb.newInstance();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+
+            userAdd = (IFBUser) odb;
+
+            // todo Make sure object is created
+            urls = new URL[0];
+            clazzdb = null;
+            odb = null;
+            try {
+                urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                ClassLoader cl = new URLClassLoader(urls, o.getClass().getClassLoader());
+                clazzdb = cl.loadClass("biz.redsoft.FBUserManagerImpl");
+                odb = clazzdb.newInstance();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            this.userManager = (IFBUserManager) odb;
         }
-        URL[] urlDriver = new URL[0];
-        Class clazzDriver = null;
-        URL[] urls = new URL[0];
-        Class clazzdb = null;
-        Object o = null;
-        Object odb = null;
-        try {
-            urlDriver = MiscUtils.loadURLs(dd.getPath());
-            ClassLoader clD = new URLClassLoader(urlDriver);
-            clazzDriver = clD.loadClass(dd.getClassName());
-            o = clazzDriver.newInstance();
-            Driver driver = (Driver) o;
+        else
+        {
+            Connection connection = null;
+            try {
+                connection = con.unwrap(Connection.class);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
 
+            URL[] urls = new URL[0];
+            Class clazzdb = null;
+            Object odb = null;
+            try {
+                urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
+                clazzdb = cl.loadClass("biz.redsoft.FBUserImpl");
+                odb = clazzdb.newInstance();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
 
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+            userAdd = (IFBUser)odb;
+
+            // todo Make sure object is created
+            urls = new URL[0];
+            clazzdb = null;
+            odb = null;
+            try {
+                urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
+                clazzdb = cl.loadClass("biz.redsoft.FBUserManagerImpl");
+                odb = clazzdb.newInstance();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            this.userManager = (IFBUserManager)odb;
         }
-        try {
-
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-            ClassLoader cl = new URLClassLoader(urls, o.getClass().getClassLoader());
-            clazzdb = cl.loadClass("biz.redsoft.FBUserImpl");
-            odb = clazzdb.newInstance();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-
-        userAdd = (IFBUser) odb;
-
-        // todo Make sure object is created
-        urls = new URL[0];
-        clazzdb = null;
-        odb = null;
-        try {
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-            ClassLoader cl = new URLClassLoader(urls, o.getClass().getClassLoader());
-            clazzdb = cl.loadClass("biz.redsoft.FBUserManagerImpl");
-            odb = clazzdb.newInstance();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        this.userManager = (IFBUserManager) odb;
     }
 
 
@@ -711,7 +762,10 @@ public class UserManagerPanel extends javax.swing.JPanel {
             rolesPanel.setVisible(true);
             membershipPanel.setVisible(true);
             con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
-
+            init_user_manager();
+            userManager.setDatabase(listConnections.get(databaseBox.getSelectedIndex()).getSourceName());
+            userManager.setHost(listConnections.get(databaseBox.getSelectedIndex()).getHost());
+            userManager.setPort(listConnections.get(databaseBox.getSelectedIndex()).getPortInt());
             userManager.setUser(listConnections.get(databaseBox.getSelectedIndex()).getUserName());
             userManager.setPassword(listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
             getUsersPanel();

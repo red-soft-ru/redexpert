@@ -7,17 +7,13 @@ package org.executequery.gui.browser;
 
 import biz.redsoft.IFBUser;
 import biz.redsoft.IFBUserManager;
-import liquibase.database.Database;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
 import org.executequery.components.table.RowHeaderRenderer;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.datasource.ConnectionManager;
-import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
@@ -25,8 +21,6 @@ import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -34,6 +28,7 @@ import java.sql.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+
 /**
  * @author mikhan808
  */
@@ -43,46 +38,67 @@ public class UserManagerPanel extends javax.swing.JPanel {
      * Creates new form UserManagerPanel
      */
     public UserManagerPanel() {
-
-        Database db;
-
-
         gr = GUIUtilities.loadIcon(BrowserConstants.GRANT_IMAGE);
         no = GUIUtilities.loadIcon(BrowserConstants.NO_GRANT_IMAGE);
         adm = GUIUtilities.loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
-        //userManager.
-        execute_w=false;
+        execute_w = false;
         user_names = new Vector<String>();
         role_names = new Vector<String>();
         initComponents();
         listConnections = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
         init_user_manager();
-        for(DatabaseConnection dc:listConnections)
-        {
+        for (DatabaseConnection dc : listConnections) {
             databaseBox.addItem(dc.getName());
             if (dc.isConnected()) {
-                execute_w=true;
+                execute_w = true;
                 databaseBox.setSelectedItem(dc.getName());
-
-
             }
-            // Connection connection = ConnectionManager.getConnection(dc);
-
-            // Statement statement = connection.createStatement();
-            // ResultSet dsfsdf = statement.executeQuery("dsfsdf");
         }
         if (!execute_w) {
             execute_w = true;
             databaseBox.setSelectedIndex(0);
         }
-
-        // todo Make sure object is created
-//    userAdd = new FBUser();
-
     }
+
+    // Variables declaration - do not modify
+    private javax.swing.JButton addUserButton;
+    private javax.swing.JButton addRoleButton;
+    private javax.swing.JButton adminButton;
+    private javax.swing.JComboBox<String> databaseBox;
+    private javax.swing.JLabel databaseLabel;
+    private javax.swing.JButton deleteUserButton;
+    private javax.swing.JButton deleteRoleButton;
+    private javax.swing.JButton editUserButton;
+    private javax.swing.JButton grantButton;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JPanel membershipPanel;
+    private javax.swing.JTable membershipTable;
+    private javax.swing.JButton no_grantButton;
+    private javax.swing.JButton refreshUsersButton;
+    private javax.swing.JPanel rolesPanel;
+    private javax.swing.JComboBox<String> serverBox;
+    private javax.swing.JLabel serverLabel;
+    private javax.swing.JPanel usersPanel;
+    private javax.swing.JTable usersTable;
+    private javax.swing.JTable rolesTable;
     boolean execute_w;
     Icon gr, no, adm;
-
+    Connection con;
+    public static final String TITLE = "User manager";
+    public static final String FRAME_ICON = "user_manager_16.png";
+    public IFBUserManager userManager;
+    public BrowserController controller;
+    List<DatabaseConnection> listConnections;
+    Map<String, IFBUser> users;
+    Vector<String> user_names;
+    Vector<String> role_names;
+    public IFBUser userAdd;
+    ResultSet result;
+    // End of variables declaration
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -375,27 +391,27 @@ public class UserManagerPanel extends javax.swing.JPanel {
 
         jTabbedPane1.getAccessibleContext().setAccessibleName("Users");
     }// </editor-fold>
-    void init_user_manager()
-    {  DatabaseDriver dd=null;
-        List<DatabaseDriver> dds=driverRepository().findAll();
-    for(DatabaseDriver d: dds)
-    {
-        if (d.getClassName().contains("FBDriver"))
-            dd=d;
-        break;
-    }
+
+    void init_user_manager() {
+        DatabaseDriver dd = null;
+        List<DatabaseDriver> dds = driverRepository().findAll();
+        for (DatabaseDriver d : dds) {
+            if (d.getClassName().contains("FBDriver"))
+                dd = d;
+            break;
+        }
         URL[] urlDriver = new URL[0];
         Class clazzDriver = null;
         URL[] urls = new URL[0];
         Class clazzdb = null;
-        Object o =null;
+        Object o = null;
         Object odb = null;
         try {
             urlDriver = MiscUtils.loadURLs(dd.getPath());
             ClassLoader clD = new URLClassLoader(urlDriver);
             clazzDriver = clD.loadClass(dd.getClassName());
             o = clazzDriver.newInstance();
-            Driver driver = (Driver)o;
+            Driver driver = (Driver) o;
 
 
         } catch (ClassNotFoundException e) {
@@ -423,7 +439,7 @@ public class UserManagerPanel extends javax.swing.JPanel {
             e.printStackTrace();
         }
 
-        userAdd = (IFBUser)odb;
+        userAdd = (IFBUser) odb;
 
         // todo Make sure object is created
         urls = new URL[0];
@@ -443,13 +459,13 @@ public class UserManagerPanel extends javax.swing.JPanel {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-        this.userManager = (IFBUserManager)odb;
+        this.userManager = (IFBUserManager) odb;
     }
-    Connection con;
+
 
     private void databaseBoxActionPerformed(java.awt.event.ActionEvent evt) {
 
-        if(execute_w) {
+        if (execute_w) {
             if (listConnections.get(databaseBox.getSelectedIndex()).isConnected())
                 refresh();
             else {
@@ -466,7 +482,7 @@ public class UserManagerPanel extends javax.swing.JPanel {
                 frame_pass.setVisible(true);
                 int width = Toolkit.getDefaultToolkit().getScreenSize().width;
                 int height = Toolkit.getDefaultToolkit().getScreenSize().height;
-                frame_pass.setLocation(width/2-frame_pass.getWidth()/2,height/2-frame_pass.getHeight()/2);
+                frame_pass.setLocation(width / 2 - frame_pass.getWidth() / 2, height / 2 - frame_pass.getHeight() / 2);
             }
         }
     }
@@ -499,13 +515,13 @@ public class UserManagerPanel extends javax.swing.JPanel {
     }
 
     void refreshUserButtonActionPerformed(java.awt.event.ActionEvent evt) {
+
         refresh();
     }
 
     void deleteUserButtonActionPerformed(java.awt.event.ActionEvent evt) {
         int ind = usersTable.getSelectedRow();
         if (ind >= 0) {
-
             if (GUIUtilities.displayConfirmDialog("Are you sure that you want to delete user?") == 0) {
                 try {
                     userManager.delete(((IFBUser) (users.values().toArray()[ind])));
@@ -514,11 +530,7 @@ public class UserManagerPanel extends javax.swing.JPanel {
                 }
                 refresh();
             }
-        } else {
-
-
         }
-
     }
 
     void deleteRoleButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -527,10 +539,8 @@ public class UserManagerPanel extends javax.swing.JPanel {
             String role = (String) ((RoleTableModel) rolesTable.getModel()).getValueAt(ind, 0);
             if (GUIUtilities.displayConfirmDialog("Are you sure that you want to delete role " + role + "?") == 0)
                 try {
-                    //Connection con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
                     Statement state = con.createStatement();
                     state.execute("DROP ROLE " + role);
-
                     refresh();
                 } catch (Exception e) {
                     GUIUtilities.displayErrorMessage(e.getMessage());
@@ -545,26 +555,19 @@ public class UserManagerPanel extends javax.swing.JPanel {
         int col = membershipTable.getSelectedColumn();
         if (col >= 0) {
             try {
-                //Connection con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
                 Statement st = con.createStatement();
                 st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
-
-
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
             try {
-
-                //Connection con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
                 Statement st = con.createStatement();
                 st.execute("GRANT " + role_names.elementAt(col) + " TO " + user_names.elementAt(row) + ";");
                 create_membership();
-
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
         }
-
     }
 
     private void adminButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -573,21 +576,15 @@ public class UserManagerPanel extends javax.swing.JPanel {
         int col = membershipTable.getSelectedColumn();
         if (col >= 0) {
             try {
-                //Connection con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
                 Statement st = con.createStatement();
                 st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
-
-
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
             try {
-
-                //Connection con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
                 Statement st = con.createStatement();
                 st.execute("GRANT " + role_names.elementAt(col) + " TO " + user_names.elementAt(row) + " WITH ADMIN OPTION;");
                 create_membership();
-
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
@@ -601,48 +598,34 @@ public class UserManagerPanel extends javax.swing.JPanel {
         int col = membershipTable.getSelectedColumn();
         if (col >= 0) {
             try {
-                //Connection con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
                 Statement st = con.createStatement();
                 st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
-
-
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
             create_membership();
         }
-
     }
+
     private void membershipMouseClicked(java.awt.event.MouseEvent evt) {
-        if (evt.getClickCount()>1) {
+        if (evt.getClickCount() > 1) {
             int row = membershipTable.getSelectedRow();
             int col = membershipTable.getSelectedColumn();
             if (col >= 0) {
                 if (((Icon) membershipTable.getValueAt(row, col)).equals(gr)) {
-
-
-                    grant_with_admin(row,col);
-
-
+                    grant_with_admin(row, col);
                 } else if (((Icon) membershipTable.getValueAt(row, col)).equals(adm)) {
-
-                    revoke_grant(row,col);
-
+                    revoke_grant(row, col);
                 } else {
-
-
-                    grant_to(row,col);
-
+                    grant_to(row, col);
                 }
-                //create_table();
             }
         }
     }
-    void grant_with_admin(int row,int col)
-    {
+
+    void grant_with_admin(int row, int col) {
         if (col >= 0) {
             try {
-                //Connection con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
                 Statement st = con.createStatement();
                 st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
 
@@ -651,8 +634,6 @@ public class UserManagerPanel extends javax.swing.JPanel {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
             try {
-
-                //Connection con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
                 Statement st = con.createStatement();
                 st.execute("GRANT " + role_names.elementAt(col) + " TO " + user_names.elementAt(row) + " WITH ADMIN OPTION;");
                 create_membership();
@@ -662,86 +643,38 @@ public class UserManagerPanel extends javax.swing.JPanel {
             }
         }
     }
-    void grant_to(int row,int col)
-    {if (col >= 0) {
-        try {
-            //Connection con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
-            Statement st = con.createStatement();
-            st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
 
-
-        } catch (Exception e) {
-            GUIUtilities.displayErrorMessage(e.getMessage());
-        }
-        try {
-
-            //Connection con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
-            Statement st = con.createStatement();
-            st.execute("GRANT " + role_names.elementAt(col) + " TO " + user_names.elementAt(row) + ";");
-            create_membership();
-
-        } catch (Exception e) {
-            GUIUtilities.displayErrorMessage(e.getMessage());
-        }
-    }
-    }
-    void revoke_grant(int row,int col)
-    {
+    void grant_to(int row, int col) {
         if (col >= 0) {
             try {
-                //Connection con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
                 Statement st = con.createStatement();
                 st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
+            } catch (Exception e) {
+                GUIUtilities.displayErrorMessage(e.getMessage());
+            }
+            try {
+                Statement st = con.createStatement();
+                st.execute("GRANT " + role_names.elementAt(col) + " TO " + user_names.elementAt(row) + ";");
+                create_membership();
+            } catch (Exception e) {
+                GUIUtilities.displayErrorMessage(e.getMessage());
+            }
+        }
+    }
 
-
+    void revoke_grant(int row, int col) {
+        if (col >= 0) {
+            try {
+                Statement st = con.createStatement();
+                st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
             create_membership();
         }
     }
-    // Variables declaration - do not modify
-    private javax.swing.JButton addUserButton;
-    private javax.swing.JButton addRoleButton;
-    private javax.swing.JButton adminButton;
-    private javax.swing.JComboBox<String> databaseBox;
-    private javax.swing.JLabel databaseLabel;
-    private javax.swing.JButton deleteUserButton;
-    private javax.swing.JButton deleteRoleButton;
-    private javax.swing.JButton editUserButton;
-    private javax.swing.JButton grantButton;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JPanel membershipPanel;
-    private javax.swing.JTable membershipTable;
-    private javax.swing.JButton no_grantButton;
-    private javax.swing.JButton refreshUsersButton;
-    private javax.swing.JPanel rolesPanel;
-    private javax.swing.JComboBox<String> serverBox;
-    private javax.swing.JLabel serverLabel;
-    private javax.swing.JPanel usersPanel;
-    private javax.swing.JTable usersTable;
-    private javax.swing.JTable rolesTable;
-    // End of variables declaration
-    public static final String TITLE = "User manager";
 
-    /**
-     * This objects icon as an internal frame
-     */
-    public static final String FRAME_ICON = "user_manager_16.png";
-    public IFBUserManager userManager;
-    public BrowserController controller;
-    List<DatabaseConnection> listConnections;
-    Map<String, IFBUser> users;
-    Vector<String> user_names;
-    Vector<String> role_names;
-    public IFBUser userAdd;
-
-    void getUsersPanel()
-    {
+    void getUsersPanel() {
         try {
 
             users = userManager.getUsers();
@@ -755,15 +688,7 @@ public class UserManagerPanel extends javax.swing.JPanel {
                     }
             ));
             user_names.clear();
-
             for (IFBUser u : users.values()) {
-
-                /*DatabaseConnection db=listConnections.get(databaseBox.getSelectedIndex());
-                Class.forName("org.firebirdsql.");
-                Connection con= DriverManager.getConnection(db.getURL(),db.getUserName(),db.getPassword());
-                Statement st=con.createStatement();
-                ResultSet rs = st.executeQuery("sp_who");
-                System.out.println(rs.getString(0));*/
                 user_names.add(u.getUserName().trim());
                 Object[] rowData = new Object[]{u.getUserName(), u.getFirstName(), u.getMiddleName(), u.getLastName()};
                 ((RoleTableModel) usersTable.getModel()).addRow(rowData);
@@ -773,27 +698,24 @@ public class UserManagerPanel extends javax.swing.JPanel {
             GUIUtilities.displayErrorMessage(e.toString());
         }
     }
+
     public void refresh() {
-        if(databaseBox.getItemAt(databaseBox.getSelectedIndex())!="") {
+        if (databaseBox.getItemAt(databaseBox.getSelectedIndex()) != "") {
             serverBox.removeAllItems();
             serverBox.addItem(listConnections.get(databaseBox.getSelectedIndex()).getHost());
         }
         userManager.setDatabase(listConnections.get(databaseBox.getSelectedIndex()).getSourceName());
         userManager.setHost(listConnections.get(databaseBox.getSelectedIndex()).getHost());
         userManager.setPort(listConnections.get(databaseBox.getSelectedIndex()).getPortInt());
-        if(listConnections.get(databaseBox.getSelectedIndex()).isConnected()) {
+        if (listConnections.get(databaseBox.getSelectedIndex()).isConnected()) {
             rolesPanel.setVisible(true);
             membershipPanel.setVisible(true);
             con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
 
             userManager.setUser(listConnections.get(databaseBox.getSelectedIndex()).getUserName());
             userManager.setPassword(listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
-
             getUsersPanel();
-
             try {
-
-                //con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
                 Statement state = con.createStatement();
                 result = state.executeQuery("SELECT RDB$ROLE_NAME,RDB$OWNER_NAME FROM RDB$ROLES ORDER BY" +
                         " RDB$ROLE_NAME");
@@ -805,32 +727,23 @@ public class UserManagerPanel extends javax.swing.JPanel {
                                 "Role name", "Owner"
                         }
                 ));
-
                 role_names.clear();
-                //role_names.add("USER");
                 while (result.next()) {
-                    String rol=result.getString(1).trim();
+                    String rol = result.getString(1).trim();
                     role_names.add(rol);
                     user_names.add(rol);
                     Object[] roleData = new Object[]{rol, result.getObject(2)};
                     ((RoleTableModel) rolesTable.getModel()).addRow(roleData);
-
-
                 }
-
-
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.toString());
             }
             create_membership();
-
-        }
-        else{
+        } else {
             getUsersPanel();
             membershipPanel.setVisible(false);
             rolesPanel.setVisible(false);
         }
-//create_membership();
     }
 
     void create_membership() {
@@ -841,7 +754,6 @@ public class UserManagerPanel extends javax.swing.JPanel {
 
         for (int i = 0; i < user_names.size(); i++) {
             try {
-                //Connection con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
                 Statement st = con.createStatement();
                 ResultSet rs1 = st.executeQuery("select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION,rdb$Relation_name from RDB$USER_PRIVILEGES\n" +
                         "where (RDB$USER='" + user_names.elementAt(i) + "') and (rdb$object_type=8 or rdb$object_type=13)");
@@ -849,7 +761,6 @@ public class UserManagerPanel extends javax.swing.JPanel {
                 for (String u : role_names) {
                     roleData.add(no);
                 }
-                //roleData.set(0,user_names.elementAt(i));
                 while (rs1.next()) {
                     String u = rs1.getString(3);
                     u = u.trim();
@@ -868,12 +779,9 @@ public class UserManagerPanel extends javax.swing.JPanel {
         }
         int sizer = 0;
         for (int i = 0; i < role_names.size(); i++) {
-
             int temper = role_names.elementAt(i).length() * 8;
             membershipTable.getColumn(role_names.elementAt(i)).setMinWidth(temper);
             sizer += temper;
-            //membershipTable.getColumn(role_names.elementAt(i)).setResizable(false);
-
         }
 
         JList rowHeader = new JList(user_names);
@@ -889,9 +797,9 @@ public class UserManagerPanel extends javax.swing.JPanel {
 
     }
 
-    ResultSet result;
-    private DatabaseDriverRepository driverRepository() {
 
+
+    private DatabaseDriverRepository driverRepository() {
         return (DatabaseDriverRepository) RepositoryCache.load(
                 DatabaseDriverRepository.REPOSITORY_ID);
     }
@@ -899,7 +807,6 @@ public class UserManagerPanel extends javax.swing.JPanel {
     public void addUser() {
         try {
             userManager.add(userAdd);
-
             refresh();
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
@@ -909,7 +816,6 @@ public class UserManagerPanel extends javax.swing.JPanel {
 
     public void addRole(String role) {
         try {
-            //Connection con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
             Statement state = con.createStatement();
             if (!state.execute("CREATE ROLE " + role))
                 GUIUtilities.displayInformationMessage("Succes");
@@ -925,7 +831,6 @@ public class UserManagerPanel extends javax.swing.JPanel {
     public void editUser() {
         try {
             userManager.update(userAdd);
-
             refresh();
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
@@ -933,4 +838,8 @@ public class UserManagerPanel extends javax.swing.JPanel {
         }
     }
 
+
+
 }
+
+

@@ -307,6 +307,7 @@ public class UserManagerPanel extends javax.swing.JPanel {
                 grantButtonActionPerformed(evt);
             }
         });
+        grantButton.setToolTipText("GRANT ROLE");
 
         adminButton.setIcon(adm);
         adminButton.addActionListener(new java.awt.event.ActionListener() {
@@ -314,6 +315,7 @@ public class UserManagerPanel extends javax.swing.JPanel {
                 adminButtonActionPerformed(evt);
             }
         });
+        adminButton.setToolTipText("GRANT ROLE WITH ADMIN OPTION");
 
         no_grantButton.setIcon(no);
         no_grantButton.addActionListener(new java.awt.event.ActionListener() {
@@ -321,6 +323,7 @@ public class UserManagerPanel extends javax.swing.JPanel {
                 no_grantButtonActionPerformed(evt);
             }
         });
+        no_grantButton.setToolTipText("REVOKE ROLE");
 
         javax.swing.GroupLayout membershipPanelLayout = new javax.swing.GroupLayout(membershipPanel);
         membershipPanel.setLayout(membershipPanelLayout);
@@ -614,7 +617,7 @@ public class UserManagerPanel extends javax.swing.JPanel {
         if (evt.getClickCount()>1) {
             int row = membershipTable.getSelectedRow();
             int col = membershipTable.getSelectedColumn();
-            if (col > 0) {
+            if (col >= 0) {
                 if (((Icon) membershipTable.getValueAt(row, col)).equals(gr)) {
 
 

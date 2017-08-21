@@ -43,7 +43,9 @@ public class BrowserTableCellRenderer extends JLabel
         setOpaque(true);
         setBorder(getNoFocusBorder());
         setName("Table.cellRenderer");
+
     }
+
 
     private Border getNoFocusBorder() {
         Border border = DefaultLookup.getBorder(this, ui, "Table.cellNoFocusBorder");
@@ -68,6 +70,7 @@ public class BrowserTableCellRenderer extends JLabel
         super.setForeground(c);
         unselectedForeground = c;
     }
+
 
     /**
      * Overrides <code>JComponent.setBackground</code> to assign
@@ -124,6 +127,11 @@ public class BrowserTableCellRenderer extends JLabel
 
         Color fg = null;
         Color bg = null;
+        if(value.getClass().equals(Object[].class))
+        {
+            fg=(Color) ((Object[])value)[1];
+            value=((Object[])value)[0];
+        }
 
         //JTable.DropLocation dropLocation = table.getDropLocation();
         /*if (dropLocation != null
@@ -196,9 +204,11 @@ public class BrowserTableCellRenderer extends JLabel
                     background = alternateColor;
                 }
             }
+            if(fg==null)
             super.setForeground(unselectedForeground != null
                     ? unselectedForeground
                     : table.getForeground());
+            else super.setForeground(fg);
             super.setBackground(background);
             setBorder(getNoFocusBorder());
         }

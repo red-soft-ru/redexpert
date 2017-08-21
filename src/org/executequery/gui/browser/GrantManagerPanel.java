@@ -8,6 +8,8 @@ package org.executequery.gui.browser;
 import biz.redsoft.IFBUser;
 import biz.redsoft.IFBUserManager;
 import org.executequery.GUIUtilities;
+import org.executequery.components.table.BrowserTableCellRenderer;
+import org.executequery.components.table.RoleTableModel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -15,13 +17,17 @@ import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import java.awt.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 /**
  *
@@ -33,18 +39,50 @@ public class GrantManagerPanel extends javax.swing.JPanel {
      * Creates new form GrantManagerPanel
      */
     public GrantManagerPanel() {
+        gr=GUIUtilities.loadIcon(BrowserConstants.GRANT_IMAGE);
+        no=GUIUtilities.loadIcon(BrowserConstants.NO_GRANT_IMAGE);
+        adm=GUIUtilities.loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
+        enableElements=true;
         enabled_dBox=false;
         initComponents();
+        BrowserTableCellRenderer bctr = new BrowserTableCellRenderer();
+        tablePrivileges.setDefaultRenderer(Object.class,bctr);
         enabled_dBox=true;
         load_connections();
         load_userList();
+        setEnableElements(true);
     }
     public static final String TITLE = "Grant manager";
     public static final String FRAME_ICON = "grant_manager_16.png";
     List<DatabaseConnection> listConnections;
     Connection con;
+    Statement state;
+    ResultSet rs;
     DefaultListModel userlistModel;
     boolean enabled_dBox;
+    boolean enableElements;
+    Vector<String> relName;
+    Vector<String> relType;
+    Vector<Boolean> relSystem;
+    Vector<Boolean> relGranted;
+    String grants = "SUDIXRGA";
+    String [] headers={"Object", "Select", "Update", "Delete","Insert","Execute","References","Usage"};
+    Icon gr,no,adm;
+    Action act;
+    enum Action
+    {
+        NO_ALL_GRANTS_TO_OBJECT,
+        ALL_GRANTS_TO_OBJECT,
+        ALL_GRANTS_TO_OBJECT_WITH_GRANT_OPTION,
+        NO_GRANT_TO_ALL_OBJECTS,
+        GRANT_TO_ALL_OBJECTS,
+        GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION,
+        NO_ALL_GRANTS_TO_ALL_OBJECTS,
+        ALL_GRANTS_TO_ALL_OBJECTS,
+        ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION,
+        CREATE_TABLE
+
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -80,7 +118,7 @@ public class GrantManagerPanel extends javax.swing.JPanel {
         jCheckBox1 = new javax.swing.JCheckBox();
         systemCheck = new javax.swing.JCheckBox();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tablePrivileges = new javax.swing.JTable();
         jPanel4 = new javax.swing.JPanel();
         labelTable = new javax.swing.JLabel();
         revoke_v1 = new javax.swing.JButton();
@@ -91,6 +129,8 @@ public class GrantManagerPanel extends javax.swing.JPanel {
         grant_option_g1 = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         jTable2 = new javax.swing.JTable();
+        jProgressBar1 = new javax.swing.JProgressBar();
+        cancelButton = new javax.swing.JButton();
 
         databaseBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         databaseBox.addActionListener(new java.awt.event.ActionListener() {
@@ -100,6 +140,11 @@ public class GrantManagerPanel extends javax.swing.JPanel {
         });
 
         refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/Refresh16.png"))); // NOI18N
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -131,6 +176,11 @@ public class GrantManagerPanel extends javax.swing.JPanel {
             }
         });
 
+        userList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                userListValueChanged(evt);
+            }
+        });
         jScrollPane1.setViewportView(userList);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -148,7 +198,7 @@ public class GrantManagerPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(userBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE))
+                .addComponent(jScrollPane1))
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createMatteBorder(3, 3, 3, 3, new java.awt.Color(158, 132, 35)));
@@ -159,43 +209,111 @@ public class GrantManagerPanel extends javax.swing.JPanel {
         jLabel2.setOpaque(true);
 
         revoke_v.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_vertical.png"))); // NOI18N
+        revoke_v.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                revoke_vActionPerformed(evt);
+            }
+        });
 
         revoke_g.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_gorisont.png"))); // NOI18N
+        revoke_g.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                revoke_gActionPerformed(evt);
+            }
+        });
 
         revoke_all.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_all.png"))); // NOI18N
+        revoke_all.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                revoke_allActionPerformed(evt);
+            }
+        });
 
         grant_v.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/grant_vertical.png"))); // NOI18N
+        grant_v.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                grant_vActionPerformed(evt);
+            }
+        });
 
         grant_g.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/grant_gorisont.png"))); // NOI18N
+        grant_g.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                grant_gActionPerformed(evt);
+            }
+        });
 
         grant_all.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/grant_all.png"))); // NOI18N
+        grant_all.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                grant_allActionPerformed(evt);
+            }
+        });
 
         grant_option_v.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_vertical.png"))); // NOI18N
+        grant_option_v.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                grant_option_vActionPerformed(evt);
+            }
+        });
 
         grant_option_g.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_gorisont.png"))); // NOI18N
+        grant_option_g.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                grant_option_gActionPerformed(evt);
+            }
+        });
 
         grant_option_all.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_all.png"))); // NOI18N
+        grant_option_all.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                grant_option_allActionPerformed(evt);
+            }
+        });
 
         objectBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "All objects", "Tables", "Views", "Procedures" }));
+        objectBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                objectBoxActionPerformed(evt);
+            }
+        });
 
         filterBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Display all", "Granted only", "Non-granted only" }));
+        filterBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterBoxActionPerformed(evt);
+            }
+        });
+
+        filterField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterFieldActionPerformed(evt);
+            }
+        });
 
         jCheckBox1.setText("Invert filter");
+        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBox1ActionPerformed(evt);
+            }
+        });
 
         systemCheck.setText("Show system tables");
+        systemCheck.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                systemCheckActionPerformed(evt);
+            }
+        });
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tablePrivileges.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+
             }
         ));
-        jScrollPane2.setViewportView(jTable1);
+        jScrollPane2.setViewportView(tablePrivileges);
 
         jPanel4.setForeground(new java.awt.Color(0, 0, 0));
 
@@ -218,13 +336,10 @@ public class GrantManagerPanel extends javax.swing.JPanel {
 
         jTable2.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+
             }
         ));
         jScrollPane3.setViewportView(jTable2);
@@ -247,7 +362,7 @@ public class GrantManagerPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(grant_option_g1)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING)
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -266,16 +381,22 @@ public class GrantManagerPanel extends javax.swing.JPanel {
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
+        cancelButton.setText("Cancel fill");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jScrollPane2)
+            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(systemCheck)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(objectBox, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -308,11 +429,17 @@ public class GrantManagerPanel extends javax.swing.JPanel {
                                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(jPanel3Layout.createSequentialGroup()
                                         .addComponent(jCheckBox1)
-                                        .addGap(0, 0, Short.MAX_VALUE))
-                                    .addComponent(filterField))))))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(cancelButton))
+                                    .addComponent(filterField)))))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(systemCheck)
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 347, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
-            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -337,10 +464,17 @@ public class GrantManagerPanel extends javax.swing.JPanel {
                     .addComponent(filterField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jCheckBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(systemCheck))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jCheckBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(systemCheck))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(cancelButton)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 247, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -377,6 +511,118 @@ public class GrantManagerPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
         load_userList();
     }//GEN-LAST:event_userBoxActionPerformed
+
+    private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_userListValueChanged
+        // TODO add your handling code here:
+        act=Action.CREATE_TABLE;
+        execute_thread();
+    }//GEN-LAST:event_userListValueChanged
+
+    private void objectBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_objectBoxActionPerformed
+        // TODO add your handling code here:
+        act=Action.CREATE_TABLE;
+        execute_thread();
+    }//GEN-LAST:event_objectBoxActionPerformed
+
+    private void filterBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterBoxActionPerformed
+        // TODO add your handling code here:
+        act=Action.CREATE_TABLE;
+        execute_thread();
+    }//GEN-LAST:event_filterBoxActionPerformed
+
+    private void filterFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterFieldActionPerformed
+        // TODO add your handling code here:
+        act=Action.CREATE_TABLE;
+        execute_thread();
+    }//GEN-LAST:event_filterFieldActionPerformed
+
+    private void systemCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_systemCheckActionPerformed
+        // TODO add your handling code here:
+        act=Action.CREATE_TABLE;
+        execute_thread();
+    }//GEN-LAST:event_systemCheckActionPerformed
+
+    private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
+        // TODO add your handling code here:
+        act=Action.CREATE_TABLE;
+        execute_thread();
+    }//GEN-LAST:event_jCheckBox1ActionPerformed
+
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cancelButtonActionPerformed
+
+    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
+        // TODO add your handling code here:
+        load_userList();
+    }//GEN-LAST:event_refreshButtonActionPerformed
+
+    private void revoke_vActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revoke_vActionPerformed
+        // TODO add your handling code here:
+        act=Action.NO_GRANT_TO_ALL_OBJECTS;
+        execute_thread();
+    }//GEN-LAST:event_revoke_vActionPerformed
+
+    private void revoke_gActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revoke_gActionPerformed
+        // TODO add your handling code here:
+        int row=tablePrivileges.getSelectedRow();
+        if(row>=0) {
+            for (int col = 1; col < headers.length; col++) {
+                grant_on_role(0, row, col);
+            }
+        }
+
+    }//GEN-LAST:event_revoke_gActionPerformed
+
+    private void revoke_allActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revoke_allActionPerformed
+        // TODO add your handling code here:
+        act=Action.NO_ALL_GRANTS_TO_ALL_OBJECTS;
+        execute_thread();
+    }//GEN-LAST:event_revoke_allActionPerformed
+
+    private void grant_vActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_grant_vActionPerformed
+        // TODO add your handling code here:
+        act=Action.GRANT_TO_ALL_OBJECTS;
+        execute_thread();
+    }//GEN-LAST:event_grant_vActionPerformed
+
+    private void grant_gActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_grant_gActionPerformed
+        // TODO add your handling code here:
+        int row=tablePrivileges.getSelectedRow();
+        if(row>=0) {
+            for (int col = 1; col < headers.length; col++) {
+                grant_on_role(1, row, col);
+            }
+        }
+    }//GEN-LAST:event_grant_gActionPerformed
+
+    private void grant_allActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_grant_allActionPerformed
+        // TODO add your handling code here:
+        act=Action.ALL_GRANTS_TO_ALL_OBJECTS;
+        execute_thread();
+    }//GEN-LAST:event_grant_allActionPerformed
+
+    private void grant_option_vActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_grant_option_vActionPerformed
+        // TODO add your handling code here:
+        act=Action.GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION;
+        execute_thread();
+    }//GEN-LAST:event_grant_option_vActionPerformed
+
+    private void grant_option_gActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_grant_option_gActionPerformed
+        // TODO add your handling code here:
+        int row=tablePrivileges.getSelectedRow();
+        if(row>=0) {
+            for (int col = 1; col < headers.length; col++) {
+                grant_on_role(2, row, col);
+            }
+        }
+    }//GEN-LAST:event_grant_option_gActionPerformed
+
+    private void grant_option_allActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_grant_option_allActionPerformed
+        // TODO add your handling code here:
+        act=Action.ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION;
+        execute_thread();
+    }//GEN-LAST:event_grant_option_allActionPerformed
     void load_connections() {
         enabled_dBox=false;
         databaseBox.removeAllItems();
@@ -404,6 +650,8 @@ public class GrantManagerPanel extends javax.swing.JPanel {
             break;
             default:break;
         }
+        if (userlistModel.size()>0)
+            userList.setSelectedIndex(0);
     }
     IFBUserManager getUserManager(IFBUserManager userManager,DatabaseConnection dc)
     {
@@ -455,7 +703,335 @@ public class GrantManagerPanel extends javax.swing.JPanel {
             GUIUtilities.displayErrorMessage(e.toString());
         }
     }
+
+    void load_table() {
+        setEnableElements(false);
+        relName = new Vector<>();
+        relType = new Vector<>();
+        relSystem = new Vector<>();
+        relGranted = new Vector<>();
+        tablePrivileges.setModel(new RoleTableModel(headers, 0));
+        if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 1)
+            getTables();
+        if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 2)
+            getViews();
+        if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 3)
+            getProcedures();
+        jProgressBar1.setMaximum(relName.size());
+        for (int i = 0; i < relName.size() && !enableElements; i++) {
+            jProgressBar1.setValue(i);
+            try {
+
+
+                Statement st = con.createStatement();
+                String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
+                        "where (rdb$Relation_name='" + relName.elementAt(i) + "') and (rdb$user='" + userList.getSelectedValue().trim() + "')";
+                ResultSet rs1 = st.executeQuery(s);
+                Vector<Object> roleData = new Vector<Object>();
+                if (rs1!=null) {
+                    relGranted.set(i, true);
+                }
+                if (filterBox.getSelectedIndex() == 2 && relGranted.get(i)) {
+                    removeRow(i);
+                    i--;
+                } else if (filterBox.getSelectedIndex() == 1 && !relGranted.get(i)) {
+                    removeRow(i);
+                    i--;
+                } else {
+                    Object[] obj={relName.elementAt(i),Color.BLACK};
+                    if(relSystem.elementAt(i))
+                        obj[1]=Color.RED;
+                    roleData.add(obj);
+                    for (int k = 0; k < 7; k++)
+                        roleData.add(no);
+                    ((RoleTableModel) tablePrivileges.getModel()).addRow(roleData);
+
+                    while (rs1.next()) {
+                        String grant = rs1.getString(1).trim();
+                        int ind = grants.indexOf(grant);
+                        if (ind != 7)
+                            if (rs1.getObject(2).equals(0)) {
+                                tablePrivileges.setValueAt(gr, i, ind + 1);
+                            } else
+                                ((RoleTableModel) tablePrivileges.getModel()).setValueAt(adm, i, ind + 1);
+                    }
+                }
+            } catch (Exception e) {
+                GUIUtilities.displayErrorMessage(e.getMessage());
+            }
+        }
+        setEnableElements(true);
+    }
+    void getTables()
+    {
+        try {
+            state = con.createStatement();
+            rs = state.executeQuery("Select RDB$RELATION_NAME,RDB$SYSTEM_FLAG from RDB$RELATIONS WHERE RDB$RELATION_TYPE != 1 order by 1");
+            while (rs.next()) {
+                String name = rs.getString(1);
+                String type =objectBox.getItemAt(1);
+                boolean system_flag=rs.getInt(2)==1;
+                if(!system_flag||system_flag==systemCheck.isSelected())
+                {
+                    if (!jCheckBox1.isSelected()==name.contains(filterField.getText()))
+                        addRow(name,type,system_flag,false);
+                }
+            }
+        } catch (Exception e) {
+            GUIUtilities.displayErrorMessage(e.getMessage());
+        }
+    }
+    void getViews()
+    {
+        try {
+            state = con.createStatement();
+            rs = state.executeQuery("Select DISTINCT RDB$VIEW_NAME from RDB$VIEW_RELATIONS");
+            while (rs.next()) {
+                String name = rs.getString(1);
+                String type =objectBox.getItemAt(2);
+                boolean system_flag=false;
+                if (!jCheckBox1.isSelected()==name.contains(filterField.getText()))
+                    addRow(name,type,system_flag,false);
+            }
+        } catch (Exception e) {
+            GUIUtilities.displayErrorMessage(e.getMessage());
+        }
+    }
+    void getProcedures()
+    {
+        try {
+            state = con.createStatement();
+            rs = state.executeQuery("Select RDB$PROCEDURE_NAME from RDB$PROCEDURES");
+            while (rs.next()) {
+                String name = rs.getString(1);
+                String type =objectBox.getItemAt(2);
+                boolean system_flag=false;
+                if (!jCheckBox1.isSelected()==name.contains(filterField.getText()))
+                    addRow(name,type,system_flag,false);
+            }
+        } catch (Exception e) {
+            GUIUtilities.displayErrorMessage(e.getMessage());
+        }
+    }
+    void removeRow(int i)
+    {
+        relName.remove(i);
+        relType.remove(i);
+        relSystem.remove(i);
+        relGranted.remove(i);
+    }
+    void addRow(String name,String type,boolean system_flag,boolean grant_flag)
+    {
+        relName.add(name);
+        relType.add(type);
+        relSystem.add(system_flag);
+        relGranted.add(grant_flag);
+    }
+    void setEnableElements(boolean enable)
+    {
+        enableElements=enable;
+        databaseBox.setEnabled(enable);
+        objectBox.setEnabled(enable);
+        jCheckBox1.setEnabled(enable);
+        filterBox.setEnabled(enable);
+        filterField.setEnabled(enable);
+        grant_all.setEnabled(enable);
+        grant_g.setEnabled(enable);
+        grant_g1.setEnabled(enable);
+        grant_option_all.setEnabled(enable);
+        grant_option_g.setEnabled(enable);
+        grant_option_g1.setEnabled(enable);
+        grant_option_v.setEnabled(enable);
+        grant_option_v1.setEnabled(enable);
+        grant_v.setEnabled(enable);
+        grant_v1.setEnabled(enable);
+        refreshButton.setEnabled(enable);
+        revoke_all.setEnabled(enable);
+        revoke_g.setEnabled(enable);
+        revoke_g1.setEnabled(enable);
+        revoke_v.setEnabled(enable);
+        revoke_v1.setEnabled(enable);
+        systemCheck.setEnabled(enable);
+        userBox.setEnabled(enable);
+        userList.setEnabled(enable);
+        cancelButton.setVisible(!enable);
+        jProgressBar1.setVisible(!enable);
+        if (enable)
+            jProgressBar1.setValue(0);
+    }
+    public void run(){
+        int col;
+        switch (act)
+        {
+            case CREATE_TABLE:load_table();
+                break;
+            case ALL_GRANTS_TO_ALL_OBJECTS:
+            {
+                jProgressBar1.setMaximum(relName.size());
+                for (int row=0; row < relName.size()&&!enableElements; row++) {
+                    jProgressBar1.setValue(row);
+                    for ( col = 1; col < headers.length; col++)
+                        grant_on_role(1, row, col);
+                }
+                jProgressBar1.setValue(0);
+                setEnableElements(true);
+            }
+            break;
+            case ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION: jProgressBar1.setMaximum(relName.size());
+                for (int row = 0; row < relName.size()&&!enableElements; row++) {
+                    jProgressBar1.setValue(row);
+                    for ( col = 1; col < headers.length; col++)
+                        grant_on_role(2, row, col);
+                }jProgressBar1.setValue(0);
+                setEnableElements(true);
+                break;
+            case NO_ALL_GRANTS_TO_ALL_OBJECTS:jProgressBar1.setMaximum(relName.size());
+                for (int row = 0; row < relName.size()&&!enableElements; row++) {
+                    jProgressBar1.setValue(row);
+                    for ( col = 1; col < headers.length; col++)
+                        grant_on_role(0, row, col);
+                }jProgressBar1.setValue(0);
+                setEnableElements(true);
+                break;
+            case GRANT_TO_ALL_OBJECTS: col = tablePrivileges.getSelectedColumn();
+                jProgressBar1.setMaximum(relName.size());
+                if (col > 0)
+                    for (int row = 0; row < relName.size()&&!enableElements; row++) {
+                        jProgressBar1.setValue(row);
+                        grant_on_role(1, row, col);
+                    }
+                jProgressBar1.setValue(0);
+                setEnableElements(true);
+                break;
+            case GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION:
+                col = tablePrivileges.getSelectedColumn();
+                jProgressBar1.setMaximum(relName.size());
+                if (col > 0)
+                    for (int row = 0; row < relName.size()&&!enableElements; row++) {
+                        jProgressBar1.setValue(row);
+                        grant_on_role(2, row, col);
+                    }
+                jProgressBar1.setValue(0);
+                setEnableElements(true);
+                break;
+            case NO_GRANT_TO_ALL_OBJECTS:
+                col = tablePrivileges.getSelectedColumn();
+                jProgressBar1.setMaximum(relName.size());
+                if (col > 0)
+                    for (int row = 0; row < relName.size()&&!enableElements; row++) {
+                        jProgressBar1.setValue(row);
+                        grant_on_role(0, row, col);
+                    }
+                jProgressBar1.setValue(0);
+                setEnableElements(true);
+                break;
+        }
+    }
+    void grant_on_role(int grantt,int row,int col)
+    {
+        if(row<tablePrivileges.getRowCount())
+            switch (grantt)
+            {
+                case 0:
+                    try {
+
+                        Statement st = con.createStatement();
+                        if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
+                            if (!headers[col].equals("Execute")) {
+                                st.execute("REVOKE " + headers[col] + " ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";");
+                                tablePrivileges.setValueAt(no, row, col);
+                            }
+                        } else if (headers[col].equals("Execute")) {
+                            st.execute("REVOKE " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";");
+                            tablePrivileges.setValueAt(no, row, col);
+                        }
+
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    break;
+                case 1:
+                    if (((Icon) tablePrivileges.getValueAt(row, col)).equals(adm)) {
+                        try {
+
+                            Statement st = con.createStatement();
+                            if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
+                                if (!headers[col].equals("Execute")) {
+                                    st.execute("REVOKE " + headers[col] + " ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";");
+                                    tablePrivileges.setValueAt(no, row, col);
+                                }
+                            } else if (headers[col].equals("Execute")) {
+
+                                st.execute("REVOKE " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";");
+                                tablePrivileges.setValueAt(no, row, col);
+                            }
+
+                        } catch (Exception e) {
+                            System.out.println(e.getMessage());
+                        }
+
+                        try {
+
+                            Statement st = con.createStatement();
+                            if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
+                                if (!headers[col].equals("Execute")) {
+                                    st.execute("GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";");
+                                    tablePrivileges.setValueAt(gr, row, col);
+                                }
+                            } else if (headers[col].equals("Execute")) {
+                                st.execute("GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";");
+                                tablePrivileges.setValueAt(gr, row, col);
+                            }
+
+                        } catch (Exception e) {
+                            System.out.println(e.getMessage());
+                        }
+
+                    }else
+                        try {
+
+                            Statement st = con.createStatement();
+                            if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
+                                if (!headers[col].equals("Execute")) {
+                                    st.execute("GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";");
+                                    tablePrivileges.setValueAt(gr, row, col);
+                                }
+                            } else if (headers[col].equals("Execute"))
+                            {st.execute("GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";");
+
+                                tablePrivileges.setValueAt(gr, row, col);}
+                        } catch (Exception e) {
+                            System.out.println(e.getMessage());
+                        }
+                    break;
+                case 2:try {
+
+                    Statement st = con.createStatement();
+                    if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
+                        if (!headers[col].equals("Execute")) {
+                            st.execute("GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;");
+                            tablePrivileges.setValueAt(adm, row, col);
+                        }
+                    } else if (headers[col].equals("Execute")) {
+                        st.execute("GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;");
+                        tablePrivileges.setValueAt(adm, row, col);
+                    }
+
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
+                    break;
+            }
+    }
+    void execute_thread()
+    {
+        setEnableElements(false);
+        Runnable r= new ThreadOfGrantManager(this);
+        Thread t = new Thread(r);
+        t.start();
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton cancelButton;
     private javax.swing.JComboBox<String> databaseBox;
     private javax.swing.JComboBox<String> filterBox;
     private javax.swing.JTextField filterField;
@@ -476,10 +1052,10 @@ public class GrantManagerPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTable jTable1;
     private javax.swing.JTable jTable2;
     private javax.swing.JLabel labelTable;
     private javax.swing.JComboBox<String> objectBox;
@@ -490,6 +1066,7 @@ public class GrantManagerPanel extends javax.swing.JPanel {
     private javax.swing.JButton revoke_v;
     private javax.swing.JButton revoke_v1;
     private javax.swing.JCheckBox systemCheck;
+    private javax.swing.JTable tablePrivileges;
     private javax.swing.JComboBox<String> userBox;
     private javax.swing.JList<String> userList;
     // End of variables declaration//GEN-END:variables

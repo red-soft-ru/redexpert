@@ -30,14 +30,14 @@ import javax.swing.JPanel;
  * Base panel with default action listener implementation using reflection.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public abstract class ActionPanel extends JPanel
                                   implements ActionListener {
     
-    private static Object[] args;
-    private static Class<?>[] argTypes;
+    private Object[] args;
+    private Class<?>[] argTypes;
     
     public ActionPanel() {
         super();
@@ -83,9 +83,3 @@ public abstract class ActionPanel extends JPanel
     }
     
 }
-
-
-
-
-
-

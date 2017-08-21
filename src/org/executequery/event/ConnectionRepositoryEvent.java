@@ -20,13 +20,15 @@
 
 package org.executequery.event;
 
+import java.util.List;
+
 import org.executequery.databasemediators.DatabaseConnection;
 
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1768 $
+ * @date     $Date: 2017-08-20 21:33:48 +1000 (Sun, 20 Aug 2017) $
  */
 public interface ConnectionRepositoryEvent extends ApplicationEvent {
 
@@ -39,7 +41,7 @@ public interface ConnectionRepositoryEvent extends ApplicationEvent {
     /** Method name for connection removed */
     String CONNECTION_REMOVED = "connectionRemoved";
 
-    DatabaseConnection getDatabaseConnection();
+    List<DatabaseConnection> getDatabaseConnections();
     
 }
 

@@ -33,10 +33,10 @@ import org.xml.sax.Attributes;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
-public class MenuItemXMLRepository extends AbstractXMLRepository<MenuItem>
+public class MenuItemXMLRepository extends AbstractXMLResourceReaderWriter<MenuItem>
                                    implements MenuItemRepository {
 
     private static final String RESOURCE_PATH = "org/executequery/menus.xml";

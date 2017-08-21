@@ -79,8 +79,8 @@ import org.underworldlabs.util.MiscUtils;
  * The Create Index panel.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class CreateIndexPanel extends ActionPanel
                               implements FocusComponentPanel,
@@ -92,7 +92,6 @@ public class CreateIndexPanel extends ActionPanel
     
     public static final String TITLE = "Create Index";
     public static final String FRAME_ICON = "NewIndex16.png";
-    
     
     private JComboBox schemaCombo;
     private JComboBox connectionsCombo; 
@@ -168,13 +167,13 @@ public class CreateIndexPanel extends ActionPanel
         JScrollPane tableScroller = new JScrollPane(selectedTable);
         
         // build the table's tools panel
-        moveUpButton = ActionUtilities.createButton(
+        moveUpButton = ActionUtilities.createToolbarButton(
                 this,
                 "Up16.png",
                 "Move the selection up", 
                 "moveColumnUp");
 
-        moveDownButton = ActionUtilities.createButton(
+        moveDownButton = ActionUtilities.createToolbarButton(
                 this,
                 "Down16.png",
                 "Move the selection down", 

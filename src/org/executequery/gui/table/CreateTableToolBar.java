@@ -25,10 +25,9 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
+
 import org.executequery.GUIUtilities;
 import org.underworldlabs.swing.actions.ActionUtilities;
 
@@ -42,8 +41,8 @@ import org.underworldlabs.swing.actions.ActionUtilities;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class CreateTableToolBar extends JPanel
                                 implements ActionListener {
@@ -85,19 +84,19 @@ public class CreateTableToolBar extends JPanel
      *  these with the relevant listener. */
     private void initialiseButtons() {
 
-        insertAfterButton = ActionUtilities.createButton(
+        insertAfterButton = ActionUtilities.createToolbarButton(
                 this,
                 GUIUtilities.getAbsoluteIconPath("ColumnInsertAfter16.png"),
                 "Insert a value after the current selection", 
                 null);
 
-        insertBeforeButton = ActionUtilities.createButton(
+        insertBeforeButton = ActionUtilities.createToolbarButton(
                 this,
                 GUIUtilities.getAbsoluteIconPath("ColumnInsertBefore16.png"),
                 "Insert a value before the current selection", 
                 null);
 
-        deleteRowButton = ActionUtilities.createButton(
+        deleteRowButton = ActionUtilities.createToolbarButton(
                 this,
                 GUIUtilities.getAbsoluteIconPath("ColumnDelete16.png"),
                 "Delete the selected value", 
@@ -115,13 +114,13 @@ public class CreateTableToolBar extends JPanel
         add(deleteRowButton, gbc);
 
         if (canMove) {
-            moveUpButton = ActionUtilities.createButton(
+            moveUpButton = ActionUtilities.createToolbarButton(
                     this,
                     "Up16.png",
                     "Move the selection up", 
                     null);
 
-            moveDownButton = ActionUtilities.createButton(
+            moveDownButton = ActionUtilities.createToolbarButton(
                     this,
                     "Down16.png",
                     "Move the selection down", 

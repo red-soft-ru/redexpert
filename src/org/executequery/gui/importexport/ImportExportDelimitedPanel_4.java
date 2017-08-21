@@ -37,8 +37,8 @@ import org.executequery.gui.WidgetFactory;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ImportExportDelimitedPanel_4 extends JPanel 
                                           implements ActionListener {
@@ -65,14 +65,14 @@ public class ImportExportDelimitedPanel_4 extends JPanel
     private ParseDateSelectionPanel dateFormatPanel;
     
     /** The controlling object for this process */
-    private ImportExportProcess parent;
+    private ImportExportDataProcess parent;
     
     /** <p>Creates a new instance with the specified
      *  process as the parent.
      *
      *  @param the parent controlling the process
      */
-    public ImportExportDelimitedPanel_4(ImportExportProcess parent) {
+    public ImportExportDelimitedPanel_4(ImportExportDataProcess parent) {
         super(new GridBagLayout());
         this.parent = parent;
         
@@ -170,7 +170,7 @@ public class ImportExportDelimitedPanel_4 extends JPanel
         
         int type = parent.getTransferType();
         
-        if (type == ImportExportProcess.EXPORT) {
+        if (type == ImportExportDataProcess.EXPORT) {
 //            dateFormatPanel.setEnabled(false);
             //dateFormatField.setOpaque(false);
             //dateFormatField.setEnabled(false);
@@ -203,10 +203,10 @@ public class ImportExportDelimitedPanel_4 extends JPanel
 
         int index = rollbackCombo.getSelectedIndex();
         if (index == 7) {
-            return ImportExportProcess.COMMIT_END_OF_FILE;
+            return ImportExportDataProcess.COMMIT_END_OF_FILE;
         } 
         else if (index == 8) {
-            return ImportExportProcess.COMMIT_END_OF_ALL_FILES;
+            return ImportExportDataProcess.COMMIT_END_OF_ALL_FILES;
         }
         else {
             return Integer.parseInt((String)rollbackCombo.getSelectedItem());
@@ -222,9 +222,9 @@ public class ImportExportDelimitedPanel_4 extends JPanel
      */
     public int getOnError() {
         if (errorCombo.getSelectedIndex() == 0)
-            return ImportExportProcess.LOG_AND_CONTINUE;
+            return ImportExportDataProcess.LOG_AND_CONTINUE;
         else
-            return ImportExportProcess.STOP_TRANSFER;
+            return ImportExportDataProcess.STOP_TRANSFER;
     }
     
     /** <p>Retrieves the selected type of delimiter within

@@ -64,8 +64,8 @@ import liquibase.database.Database;
  * Abstract import/export worker class.
  *
  * @author   Takis Diakoumis Dragan Vasic
- * @version  $Revision: 1658 $
- * @date     $Date: 2016-06-02 21:23:31 +1000 (Thu, 02 Jun 2016) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public abstract class AbstractImportExportWorker implements ImportExportWorker {
 
@@ -73,7 +73,7 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
     protected ImportExportProgressPanel progress;
 
     /** the parent process controller */
-    protected ImportExportProcess parent;
+    protected ImportExportDataProcess parent;
 
     /** the start time of this process */
     protected long startTime;
@@ -135,7 +135,7 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
     /** string resource loader */
     private StringBundle bundle;
 
-    public AbstractImportExportWorker(ImportExportProcess parent,
+    public AbstractImportExportWorker(ImportExportDataProcess parent,
                                       ImportExportProgressPanel progress) {
         this.parent = parent;
         this.progress = progress;
@@ -774,7 +774,7 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
 	/**
      * Returns the controlling parent process object.
      */
-    protected ImportExportProcess getParent() {
+    protected ImportExportDataProcess getParent() {
         return parent;
     }
 
@@ -814,7 +814,7 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
             String path = logFileDirectory();
 
             int transferType = parent.getTransferType();
-            if (transferType == ImportExportProcess.EXPORT) {
+            if (transferType == ImportExportDataProcess.EXPORT) {
                 logHeader = "[ Data Export Process - ";
                 path += SystemProperties.getProperty("system", "eq.export.log");
             } else {

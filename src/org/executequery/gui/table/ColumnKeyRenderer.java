@@ -47,10 +47,10 @@ public class ColumnKeyRenderer extends DefaultTableCellRenderer {
     private ImageIcon pkfkImage;
 
     /** deleted flag icon */
-    private static ImageIcon deleteImage;
+    private ImageIcon deleteImage;
     
     /** new column flag icon */
-    private static ImageIcon newImage;
+    private ImageIcon newImage;
 
     public ColumnKeyRenderer() {
         deleteImage = GUIUtilities.loadIcon("MarkDeleted16.png", true);

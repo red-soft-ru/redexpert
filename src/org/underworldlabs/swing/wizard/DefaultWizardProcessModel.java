@@ -29,8 +29,8 @@ import javax.swing.JPanel;
  * The default model for a wizard process panel.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class DefaultWizardProcessModel implements WizardProcessModel {
     
@@ -261,8 +261,3 @@ public class DefaultWizardProcessModel implements WizardProcessModel {
     }
     
 }
-
-
-
-
-

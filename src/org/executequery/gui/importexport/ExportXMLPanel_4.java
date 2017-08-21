@@ -48,8 +48,8 @@ import org.executequery.gui.importexport.ImportExportXMLPanel;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ExportXMLPanel_4 extends JPanel  {
     
@@ -150,10 +150,10 @@ public class ExportXMLPanel_4 extends JPanel  {
     }
     
     public void setSelectedRadios() {
-        if (parent.getTableTransferType() == ImportExportProcess.MULTIPLE_TABLE) {
+        if (parent.getTableTransferType() == ImportExportDataProcess.MULTIPLE_TABLE) {
             schemaRadio.setSelected(true);
             
-            if (parent.getMutlipleTableTransferType() == ImportExportProcess.SINGLE_FILE)
+            if (parent.getMutlipleTableTransferType() == ImportExportDataProcess.SINGLE_FILE)
                 tableRadio.setEnabled(false);
             else
                 tableRadio.setEnabled(true);
@@ -172,9 +172,9 @@ public class ExportXMLPanel_4 extends JPanel  {
     
     public int getSelection() {
         if (schemaRadio.isSelected()) {
-            return ImportExportProcess.SCHEMA_ELEMENT;
+            return ImportExportDataProcess.SCHEMA_ELEMENT;
         } else {
-            return ImportExportProcess.TABLE_ELEMENT;
+            return ImportExportDataProcess.TABLE_ELEMENT;
         }
     }
     

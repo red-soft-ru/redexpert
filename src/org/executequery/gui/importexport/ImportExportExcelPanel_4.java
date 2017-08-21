@@ -37,8 +37,8 @@ import org.executequery.gui.DefaultTable;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ImportExportExcelPanel_4 extends JPanel {
     
@@ -55,14 +55,14 @@ public class ImportExportExcelPanel_4 extends JPanel {
     private SheetNameTableModel tableModel;
     
     /** The controlling object for this process */
-    private ImportExportProcess parent;
+    private ImportExportDataProcess parent;
     
     /** <p>Creates a new instance with the specified
      *  process as the parent.
      *
      *  @param the parent controlling the process
      */
-    public ImportExportExcelPanel_4(ImportExportProcess parent) {
+    public ImportExportExcelPanel_4(ImportExportDataProcess parent) {
         super(new GridBagLayout());
         this.parent = parent;
         

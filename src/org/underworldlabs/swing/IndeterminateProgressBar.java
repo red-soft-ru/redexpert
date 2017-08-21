@@ -34,8 +34,8 @@ import org.underworldlabs.swing.plaf.UIUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1768 $
+ * @date     $Date: 2017-08-20 21:33:48 +1000 (Sun, 20 Aug 2017) $
  */
 public class IndeterminateProgressBar extends JComponent
                                       implements Runnable, ProgressBar {
@@ -55,6 +55,7 @@ public class IndeterminateProgressBar extends JComponent
     }
     
     public IndeterminateProgressBar(boolean paintBorder) {
+
         inProgress = false;
         scrollerWidth = 20;
         this.paintBorder = paintBorder;
@@ -116,24 +117,30 @@ public class IndeterminateProgressBar extends JComponent
         timer = null;
     }
     
+    @Override
+    public int getHeight() {
+
+        return (int) Math.max(super.getHeight(), getPreferredSize().getHeight()); 
+    }
+    
     public void paintComponent(Graphics g) {
-        
     	UIUtils.antialias(g);
     	
         int width = getWidth();
         int height = getHeight();
-        
+
         int y1 = height - 2;
         int y4 = height - 3;
         
         if (paintBorder) {
+        
             // draw the line border
             g.setColor(getScrollbarColour());
             g.drawRect(0, 0, width - 2, height - 2);
             width--;
-        }
         
-        else {
+        } else {
+            
             // draw the default border
             paintBorder(g);
             y1 = height;

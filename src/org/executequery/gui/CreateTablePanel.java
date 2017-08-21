@@ -47,8 +47,8 @@ import org.underworldlabs.util.MiscUtils;
  * <p>The Create Panel function
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class CreateTablePanel extends CreateTableFunctionPanel
                               implements ActionListener,
@@ -79,6 +79,7 @@ public class CreateTablePanel extends CreateTableFunctionPanel
     
     /** <p>Initializes the state of this instance. */
     private void jbInit() throws Exception {
+
         addButtonsPanel(new BottomButtonPanel(
                                 this, "Create", "create-table", parent.isDialog()));
         setPreferredSize(new Dimension(750,480));
@@ -245,13 +246,3 @@ public class CreateTablePanel extends CreateTableFunctionPanel
     }
     
 }
-
-
-
-
-
-
-
-
-
-

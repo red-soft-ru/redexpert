@@ -74,8 +74,8 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class UserLayoutProperties implements Serializable,
                                              DockedTabDragListener,
@@ -556,10 +556,10 @@ public class UserLayoutProperties implements Serializable,
                 object.setPosition(Integer.parseInt(contents.toString()));
             }
             else if (localName.equals("visible")) {
-                object.setVisible(new Boolean(contents.toString()).booleanValue());
+                object.setVisible(Boolean.valueOf(contents.toString()).booleanValue());
             }
             else if (localName.equals("minimised")) {
-                object.setMinimised(new Boolean(contents.toString()).booleanValue());
+                object.setMinimised(Boolean.valueOf(contents.toString()).booleanValue());
             }
             else if (localName.equals("docked-tab")) {
                 layoutObjects.put(object.getKey(), object);

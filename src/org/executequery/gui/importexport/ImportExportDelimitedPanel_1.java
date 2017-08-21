@@ -38,8 +38,8 @@ import org.executequery.gui.WidgetFactory;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ImportExportDelimitedPanel_1 extends JPanel {
     
@@ -56,14 +56,14 @@ public class ImportExportDelimitedPanel_1 extends JPanel {
     private DynamicComboBoxModel connectionsModel;
 
     /** The controlling object for this process */
-    private ImportExportProcess parent;
+    private ImportExportDataProcess parent;
     
     /** <p>Creates a new instance with the specified
      *  process as the parent.
      *
      *  @param the parent controlling the process
      */
-    public ImportExportDelimitedPanel_1(ImportExportProcess parent) {
+    public ImportExportDelimitedPanel_1(ImportExportDataProcess parent) {
         super(new GridBagLayout());
         this.parent = parent;
         
@@ -92,14 +92,14 @@ public class ImportExportDelimitedPanel_1 extends JPanel {
         StringBuffer sb = new StringBuffer(500);
 
         int type = parent.getTransferType();
-        if (type == ImportExportProcess.EXPORT) {
+        if (type == ImportExportDataProcess.EXPORT) {
             sb.append("Single table export retrieves requested data from one ").
             append("table only. This will also allow for the selection of individual ").
             append("columns from that table.\n\nSelecting a multiple table export ").
             append("does not allow for individual column selection and all ").
             append("columns within selected tables are exported.\n");
         } 
-        else if (type == ImportExportProcess.IMPORT) {
+        else if (type == ImportExportDataProcess.IMPORT) {
             sb.append("Single table import inserts data into one table only.").
             append(" This will also allow for the selection of individual ").
             append("columns from that table.\n\nSelecting a multiple table import ").
@@ -151,9 +151,9 @@ public class ImportExportDelimitedPanel_1 extends JPanel {
      */
     public int getSelection() {
         if (singleRadio.isSelected()) {
-            return ImportExportProcess.SINGLE_TABLE;
+            return ImportExportDataProcess.SINGLE_TABLE;
         } else {
-            return ImportExportProcess.MULTIPLE_TABLE;
+            return ImportExportDataProcess.MULTIPLE_TABLE;
         }
     }
     

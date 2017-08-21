@@ -32,8 +32,10 @@ public class GUIConstants {
 
     public static final Insets DEFAULT_FIELD_MARGIN = new Insets(2, 2, 2, 2);
 
-    public static final int DEFAULT_MENU_HEIGHT = 24;
+    public static final Insets DEFAULT_BUTTON_INSETS = new Insets(2, 24, 2, 24);
     
+    public static final int DEFAULT_MENU_HEIGHT = 24;
+
 }
 
 

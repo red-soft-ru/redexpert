@@ -51,17 +51,20 @@ import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.event.ConnectionRepositoryEvent;
+import org.executequery.event.ConnectionRepositoryListener;
 import org.executequery.event.ConnectionsFolderRepositoryEvent;
 import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.event.DefaultConnectionsFolderRepositoryEvent;
 import org.executequery.event.UserPreferenceEvent;
 import org.executequery.event.UserPreferenceListener;
 import org.executequery.gui.AbstractDockedTabActionPanel;
+import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
 import org.executequery.gui.browser.tree.SchemaTree;
+import org.executequery.gui.connections.ImportConnectionsPanel;
 import org.executequery.repository.ConnectionFoldersRepository;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
@@ -75,11 +78,12 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1539 $
- * @date     $Date: 2015-10-18 22:55:23 +1100 (Sun, 18 Oct 2015) $
+ * @version  $Revision: 1768 $
+ * @date     $Date: 2017-08-20 21:33:48 +1000 (Sun, 20 Aug 2017) $
  */
 public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
                                   implements ConnectionListener,
+                                             ConnectionRepositoryListener,
                                              UserPreferenceListener {
 
     public static final String TITLE = "Connections";
@@ -195,14 +199,12 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
 
     private List<ConnectionsFolder> folders() {
 
-        return ((ConnectionFoldersRepository)RepositoryCache.load(
-                ConnectionFoldersRepository.REPOSITORY_ID)).findAll();
+        return ((ConnectionFoldersRepository) RepositoryCache.load(ConnectionFoldersRepository.REPOSITORY_ID)).findAll();
     }
 
     private List<DatabaseConnection> connections() {
         
-        return ((DatabaseConnectionRepository)RepositoryCache.load(
-                DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
+        return ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
     }
     
     private DatabaseConnectionFactory databaseConnectionFactory() {
@@ -300,6 +302,44 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
         return (DatabaseHostNode)object;
     }
 
+    public void exportConnections() {
+        
+        try {
+
+            GUIUtilities.showWaitCursor();
+
+            BaseDialog dialog = new BaseDialog(ExportConnectionsPanel.TITLE, true);
+            org.executequery.gui.connections.ExportConnectionsPanel panel = new org.executequery.gui.connections.ExportConnectionsPanel(dialog);
+            
+            dialog.addDisplayComponentWithEmptyBorder(panel);
+            dialog.display();
+
+        } finally {
+          
+            GUIUtilities.showNormalCursor();
+        }
+        
+    }
+    
+    public void importConnections() {
+
+        try {
+
+            GUIUtilities.showWaitCursor();
+
+            BaseDialog dialog = new BaseDialog(ImportConnectionsPanel.TITLE, true);
+            ImportConnectionsPanel panel = new ImportConnectionsPanel(dialog);
+            
+            dialog.addDisplayComponentWithEmptyBorder(panel);
+            dialog.display();
+
+        } finally {
+          
+            GUIUtilities.showNormalCursor();
+        }
+
+    }
+    
     @SuppressWarnings("rawtypes")
     public void sortConnections() {
 
@@ -336,7 +376,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
 
         if (isRootNode) {
         
-            connectionModified(null);
+            connectionModified((DatabaseConnection) null);
 
         } else {
         
@@ -370,7 +410,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
 
         for (Enumeration<?> i = root.children(); i.hasMoreElements();) {
 
-            DefaultMutableTreeNode _node = (DefaultMutableTreeNode)i.nextElement();
+            DefaultMutableTreeNode _node = (DefaultMutableTreeNode) i.nextElement();
             if (_node instanceof ConnectionsFolderNode) {
 
                 ConnectionsFolderNode folderNode = (ConnectionsFolderNode) _node;
@@ -437,10 +477,10 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     
     
     
-    private DatabaseConnection addConnectionFromNode(DefaultMutableTreeNode _node) {
+    private DatabaseConnection addConnectionFromNode(DefaultMutableTreeNode node) {
 
-        Object userObject = _node.getUserObject();
-        DatabaseHost object = (DatabaseHost)userObject;
+        Object userObject = node.getUserObject();
+        DatabaseHost object = (DatabaseHost) userObject;
         
         DatabaseConnection databaseConnection = object.getDatabaseConnection();
         connections.add(databaseConnection);
@@ -529,7 +569,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
         ConnectionsFolder connectionsFolder = folder.getConnectionsFolder();
         folders.remove(connectionsFolder);
         tree.removeNode(folder);
-        connectionModified(null);
+        connectionModified((DatabaseConnection) null);
         folderRemoved(connectionsFolder);
     }
 
@@ -1144,8 +1184,9 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     }
 
     public boolean canHandleEvent(ApplicationEvent event) {
-        return (event instanceof ConnectionEvent) ||
-            (event instanceof UserPreferenceEvent);
+        return (event instanceof ConnectionEvent) 
+                || (event instanceof UserPreferenceEvent)
+                || (event instanceof ConnectionRepositoryEvent);
     }
 
     // ------------------------------------------
@@ -1933,6 +1974,26 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
         EventMediator.fireEvent(
                 new DefaultConnectionsFolderRepositoryEvent(
                         this, ConnectionsFolderRepositoryEvent.FOLDER_MODIFIED, connectionsFolder));
+    }
+
+    @Override
+    public void connectionAdded(ConnectionRepositoryEvent connectionRepositoryEvent) {
+        
+        tree.reset(createTreeStructure());
+    }
+    
+    @Override
+    public void connectionModified(ConnectionRepositoryEvent connectionRepositoryEvent) {
+
+        // nothing to see here
+        
+    }
+    
+    @Override
+    public void connectionRemoved(ConnectionRepositoryEvent connectionRepositoryEvent) {
+
+        // nothing to see here
+        
     }
     
 }

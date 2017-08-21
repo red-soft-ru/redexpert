@@ -63,8 +63,8 @@ import org.underworldlabs.swing.plaf.UIUtils;
  * Central tab pane with scroll and menu buttons.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1498 $
- * @date     $Date: 2015-09-18 10:16:35 +1000 (Fri, 18 Sep 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class ScrollingTabPane extends AbstractTabPane 
                               implements SwingConstants {
@@ -660,8 +660,8 @@ public class ScrollingTabPane extends AbstractTabPane
             // rotate as required
             if (direction != NORTH) {
                 double theta = 0;
-                double xOrigin = getWidth() / 2;
-                double yOrigin = getHeight() / 2;
+                double xOrigin = getWidth() / (double) 2;
+                double yOrigin = getHeight() / (double) 2;
 
                 switch (direction) {
                     case EAST:
@@ -1181,7 +1181,7 @@ public class ScrollingTabPane extends AbstractTabPane
         }
         
         /** the close icon for each tab */
-        private Icon closeIcon = new DockedTabCloseIcon();
+        private transient Icon closeIcon = new DockedTabCloseIcon();
 
         private void initDefaults() {
             Font _font = getFont();

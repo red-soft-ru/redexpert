@@ -35,8 +35,8 @@ import org.underworldlabs.util.MiscUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class NumberTextField extends JTextField {
     
@@ -45,14 +45,15 @@ public class NumberTextField extends JTextField {
     private int digits;
     
     public NumberTextField() {
+        
         super();
         
-        if (numberDocument == null)
-            numberDocument = new WholeNumberDocument();
+        this.digits = -1;
         
-        digits = -1;
+        this.numberDocument = new WholeNumberDocument();
         numberDocument.setDigits(digits);
-        integerFormatter = NumberFormat.getNumberInstance();
+        
+        this.integerFormatter = NumberFormat.getNumberInstance();
         integerFormatter.setParseIntegerOnly(true);
     }
     
@@ -128,7 +129,7 @@ class WholeNumberDocument extends PlainDocument {
     public void insertString(int offs, String str, AttributeSet a)
         throws BadLocationException {
 
-        if (digits != -1) {
+        if (digits > 0) {
             
             if (getLength() >= digits) {
                 toolkit.beep();

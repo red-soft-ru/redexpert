@@ -84,8 +84,8 @@ import org.underworldlabs.util.MiscUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1768 $
+ * @date     $Date: 2017-08-20 21:33:48 +1000 (Sun, 20 Aug 2017) $
  */
 public class ConnectionPanel extends AbstractConnectionPanel 
                              implements DatabaseDriverListener,
@@ -181,7 +181,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private JTextField userField;
     private JPasswordField passwordField;
     private JTextField hostField;
-    private NumberTextField portField;
+//    private NumberTextField portField;
+    private JTextField portField;
     private JTextField sourceField;
     private JTextField urlField;
 
@@ -1049,7 +1050,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         EventMediator.fireEvent(
                 new DefaultConnectionRepositoryEvent(
-                        this, ConnectionRepositoryEvent.CONNECTION_MODIFIED, null));
+                        this, ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) null));
         
         return true;
     }

@@ -650,6 +650,8 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         return super.hasConstraints() && 
             (constraints != null && !constraints.isEmpty());
     }
+
+    static final long serialVersionUID = -8548400438832796686L;
     
 }
 

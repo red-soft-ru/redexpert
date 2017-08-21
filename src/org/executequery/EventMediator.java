@@ -35,8 +35,8 @@ import org.executequery.log.Log;
  * Global application events are registered and mediated through this class.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1768 $
+ * @date     $Date: 2017-08-20 21:33:48 +1000 (Sun, 20 Aug 2017) $
  */
 public final class EventMediator {
     
@@ -106,7 +106,7 @@ public final class EventMediator {
             if (method.getName().compareTo(methodName) == 0) {
                 
                 Class<?>[] parameterTypes = method.getParameterTypes();
-                if (parameterTypes.length ==1) {
+                if (parameterTypes.length == 1) {
 
                     Class<?> parameter = parameterTypes[0];
                     if (parameter.isInstance(event)) {

@@ -21,6 +21,7 @@
 package org.executequery.gui.browser;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -65,10 +66,10 @@ public class SimpleMetaDataModel extends AbstractTableModel {
         propertyValues = new String[size];
         
         int count = 0;
-        for (String key : map.keySet()) {
+        for (Entry<String, String> entry : map.entrySet()) {
 
-            propertyNames[count] = key;
-            propertyValues[count] = (String) map.get(key);
+            propertyNames[count] = entry.getKey();
+            propertyValues[count] = (String) map.get(entry.getValue());
             count++;            
         }        
         

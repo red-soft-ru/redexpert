@@ -30,13 +30,14 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 
 import org.underworldlabs.swing.DefaultButton;
+import org.underworldlabs.swing.DefaultToolbarButton;
 import org.underworldlabs.swing.util.IconUtilities;
 
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ActionUtilities {
     
@@ -77,12 +78,27 @@ public class ActionUtilities {
         return item;
     }
 
-    public static JButton createButton(ActionListener actionListener, 
-                                       String icon,
-                                       String toolTipText, 
-                                       String command) {
+    public static JButton createToolbarButton(ActionListener actionListener, 
+                                               String icon,
+                                               String toolTipText, 
+                                               String command) {
         
-        JButton item = new DefaultButton();
+        JButton item = new DefaultToolbarButton();
+        return init(actionListener, icon, toolTipText, command, item);
+    }
+
+    public static JButton createButton(ActionListener actionListener, 
+            String icon,
+            String toolTipText, 
+            String command) {
+        
+        JButton button = new DefaultButton();
+        return init(actionListener, icon, toolTipText, command, button);
+    }
+
+    private static JButton init(ActionListener actionListener, String icon, String toolTipText, String command,
+            JButton item) {
+
         if (icon != null) {
             item.setIcon(IconUtilities.loadIcon(icon));
             item.setMargin(new Insets(1, 1, 1, 1));

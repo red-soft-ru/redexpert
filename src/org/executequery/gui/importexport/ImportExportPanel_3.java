@@ -51,8 +51,8 @@ import org.executequery.gui.DefaultTable;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1669 $
- * @date     $Date: 2016-07-31 15:22:51 +1000 (Sun, 31 Jul 2016) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ImportExportPanel_3 extends JPanel {
     
@@ -66,9 +66,9 @@ public class ImportExportPanel_3 extends JPanel {
     private String lastPath;
     
     /** The controlling object for this process */
-    private ImportExportProcess parent;
+    private ImportExportDataProcess parent;
     
-    public ImportExportPanel_3(ImportExportProcess parent) {
+    public ImportExportPanel_3(ImportExportDataProcess parent) {
         super(new GridBagLayout());
         this.parent = parent;
         try {
@@ -131,7 +131,7 @@ public class ImportExportPanel_3 extends JPanel {
         
         switch (type) {
             
-            case ImportExportProcess.SINGLE_TABLE:
+            case ImportExportDataProcess.SINGLE_TABLE:
                 
                 String tableName = parent.getTableName();
                 tables = new Vector<DataTransferObject>(1);
@@ -148,7 +148,7 @@ public class ImportExportPanel_3 extends JPanel {
                 
                 break;
 
-            case ImportExportProcess.MULTIPLE_TABLE:
+            case ImportExportDataProcess.MULTIPLE_TABLE:
                 
                 String[] selectedTables = parent.getSelectedTables();
                 tables = new Vector<DataTransferObject>(selectedTables.length);
@@ -254,6 +254,8 @@ public class ImportExportPanel_3 extends JPanel {
         
         return true;
     }
+
+    private static final String[] HEADER = {"Table Name", "File Path", ""};
     
     /** 
      * Defines the table model for the table to file selection for the transfer. 
@@ -262,10 +264,8 @@ public class ImportExportPanel_3 extends JPanel {
 
         private Vector<DataTransferObject> data;
 
-        private final String BROWSE = "Browse";
+        private static final String BROWSE = "Browse";
 
-        private final String[] header = {"Table Name", "File Path", ""};
-        
         public TableTransferModel() {}
         
         public TableTransferModel(Vector<DataTransferObject> data) {
@@ -288,7 +288,7 @@ public class ImportExportPanel_3 extends JPanel {
         
         public int getColumnCount() {
 
-            return header.length;
+            return HEADER.length;
         }
         
         public void setColumnDataVector(Vector<DataTransferObject> data) {
@@ -350,15 +350,15 @@ public class ImportExportPanel_3 extends JPanel {
         
         private String getFileName(String value) {
             // make sure we have the right file extension
-            if (parent.getTransferType() == ImportExportProcess.EXPORT) {
+            if (parent.getTransferType() == ImportExportDataProcess.EXPORT) {
                 String defaultExtension = null;
                 String fileExtension = findExtension(value);
 
                 int transferFormat = parent.getTransferFormat();
-                if (transferFormat == ImportExportProcess.XML) {
+                if (transferFormat == ImportExportDataProcess.XML) {
                     defaultExtension = ".xml";
                 }
-                else if (transferFormat == ImportExportProcess.EXCEL) {
+                else if (transferFormat == ImportExportDataProcess.EXCEL) {
                     defaultExtension = ".xls";
                 }
 
@@ -380,7 +380,7 @@ public class ImportExportPanel_3 extends JPanel {
         }
         
         public String getColumnName(int col) {
-            return header[col];
+            return HEADER[col];
         }
         
         public boolean isCellEditable(int row, int col) {
@@ -430,7 +430,7 @@ public class ImportExportPanel_3 extends JPanel {
                 }
 
                 String dialogTitle = null;                
-                if (parent.getTransferType() == ImportExportProcess.EXPORT) {
+                if (parent.getTransferType() == ImportExportDataProcess.EXPORT) {
                     dialogTitle = "Select Export File...";
                 } else {
                     dialogTitle = "Select Import File...";
@@ -447,7 +447,7 @@ public class ImportExportPanel_3 extends JPanel {
                 }
 
                 File fileName = fileChooser.getSelectedFile();
-                if (parent.getTransferType() == ImportExportProcess.IMPORT) {
+                if (parent.getTransferType() == ImportExportDataProcess.IMPORT) {
                     
                     if (fileName == null || (!fileName.exists() && !fileName.isFile()))
                         JOptionPane.showMessageDialog(GUIUtilities.getParentFrame(),

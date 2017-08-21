@@ -44,8 +44,8 @@ import org.underworldlabs.swing.ListSelectionPanel;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ImportExportPanel_2 extends JPanel
                                  implements ItemListener {
@@ -77,9 +77,9 @@ public class ImportExportPanel_2 extends JPanel
     private DynamicComboBoxModel schemaSelectionModel;
     
     /** The controlling object for this process */
-    private ImportExportProcess parent;
+    private ImportExportDataProcess parent;
     
-    public ImportExportPanel_2(ImportExportProcess parent) {
+    public ImportExportPanel_2(ImportExportDataProcess parent) {
         super(new GridBagLayout());
         
         this.parent = parent;
@@ -230,14 +230,14 @@ public class ImportExportPanel_2 extends JPanel
 //                }
 //            }
 
-            if (transferType == ImportExportProcess.MULTIPLE_TABLE) {
+            if (transferType == ImportExportDataProcess.MULTIPLE_TABLE) {
                 // label the selection lists
                 list.setLabelText("Available Tables:", "Selected Tables:");
                 // remove values and disable table combo
                 tableSelectionModel.removeAllElements();
                 enableTableComponents(false);
             }
-            else if (transferType == ImportExportProcess.SINGLE_TABLE) {
+            else if (transferType == ImportExportDataProcess.SINGLE_TABLE) {
                 // label the selection lists
                 list.setLabelText("Available Columns:", "Selected Columns:");
                 enableTableComponents(true);
@@ -263,7 +263,7 @@ public class ImportExportPanel_2 extends JPanel
     
     private void tableComboSelection() {
         if (parent.getTableTransferType() == 
-                ImportExportProcess.MULTIPLE_TABLE || 
+                ImportExportDataProcess.MULTIPLE_TABLE || 
                 tableSelectionModel.getSize() == 0) {
             return;
         }
@@ -323,7 +323,7 @@ public class ImportExportPanel_2 extends JPanel
 
         try {
             int type = parent.getTableTransferType();
-            if (type == ImportExportProcess.MULTIPLE_TABLE) {
+            if (type == ImportExportDataProcess.MULTIPLE_TABLE) {
                 list.createAvailableList(
                         metaData.getTables(catalogName, schemaName, "TABLE"));
             }
@@ -376,7 +376,7 @@ public class ImportExportPanel_2 extends JPanel
     
     public Vector<ColumnData> getSelectedColumns() {
         int type = parent.getTableTransferType();
-        if (type == ImportExportProcess.SINGLE_TABLE) {
+        if (type == ImportExportDataProcess.SINGLE_TABLE) {
             return list.getSelectedValues();
         } else {
             return null;
@@ -387,10 +387,10 @@ public class ImportExportPanel_2 extends JPanel
         int type = parent.getTableTransferType();
         String[] tables = null;
         
-        if (type == ImportExportProcess.SINGLE_TABLE) {
+        if (type == ImportExportDataProcess.SINGLE_TABLE) {
             tables = new String[]{(String)tableCombo.getSelectedItem()};
         }
-        else if (type == ImportExportProcess.MULTIPLE_TABLE) {
+        else if (type == ImportExportDataProcess.MULTIPLE_TABLE) {
             Vector v = list.getSelectedValues();
             tables = new String[v.size()];
             for (int i = 0; i < tables.length; i++) {

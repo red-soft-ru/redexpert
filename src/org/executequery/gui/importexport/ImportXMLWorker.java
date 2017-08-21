@@ -50,8 +50,8 @@ import org.xml.sax.helpers.DefaultHandler;
  * Performs the 'work' during the import XML process.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ImportXMLWorker extends AbstractImportExportWorker 
                              implements Constants {
@@ -110,9 +110,9 @@ public class ImportXMLWorker extends AbstractImportExportWorker
     // ---------------------------------------
 
     /** SAX exception message not to be printed */
-    private final String SAX_NO_PRINT_EXCEPTION = "SAX_NO_PRINT";
+    private static final String SAX_NO_PRINT_EXCEPTION = "SAX_NO_PRINT";
     
-    public ImportXMLWorker(ImportExportProcess parent,
+    public ImportXMLWorker(ImportExportDataProcess parent,
                            ImportExportProgressPanel progress) {
         super(parent, progress);
         tableTransferType = parent.getTableTransferType();
@@ -145,7 +145,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
     // retrieve the file, create the parser and start parseing
     private Object doWork() {
         
-        haltOnError = (getParent().getOnError() == ImportExportProcess.STOP_TRANSFER);
+        haltOnError = (getParent().getOnError() == ImportExportDataProcess.STOP_TRANSFER);
 
         // the XML handler
         ImportXMLHandler handler = null;
@@ -187,7 +187,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
 
                 DataTransferObject obj = (DataTransferObject)transfers.get(i);
 
-                if (fileFormat == ImportExportProcess.SINGLE_FILE) {
+                if (fileFormat == ImportExportDataProcess.SINGLE_FILE) {
                     tablesArray = getParent().getSelectedTables();
                 }
                 else {
@@ -207,7 +207,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
 
             // commit the last remaining block or where 
             // set to commit at the end of all files
-            if (rollbackSize != ImportExportProcess.COMMIT_END_OF_FILE) {
+            if (rollbackSize != ImportExportDataProcess.COMMIT_END_OF_FILE) {
                 setProgressStatus(-1);
                 try {
                     if (conn != null) {
@@ -301,7 +301,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
         // ----------------------------------
         // --- reuseable string constants ---
         // ----------------------------------
-        private final char COMMA = ',';
+        private static final char COMMA = ',';
         
         // the date format
         private String dateFormatString;
@@ -409,10 +409,10 @@ public class ImportXMLWorker extends AbstractImportExportWorker
 
             lastStartElement = localName;
             
-            if (tableTransferType == ImportExportProcess.MULTIPLE_TABLE 
+            if (tableTransferType == ImportExportDataProcess.MULTIPLE_TABLE 
                     && !hasTableAttribute) {
 
-                if (fileFormat == ImportExportProcess.SINGLE_FILE) {
+                if (fileFormat == ImportExportDataProcess.SINGLE_FILE) {
                     tableTag = tablesArray[tableCount];
                 } else {
                     tableTag = tablesArray[0];
@@ -665,7 +665,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                     }
 
                     // do the commit rollback size selected is end of file
-                    if (rollbackSize == ImportExportProcess.COMMIT_END_OF_FILE) {
+                    if (rollbackSize == ImportExportDataProcess.COMMIT_END_OF_FILE) {
                         conn.commit();
                         totalInsertCount += commitCount;
                         tableCommitCount = tableInsertCount;
@@ -826,7 +826,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
         private boolean isSelectedColumn(String columnName) {
             // return true for a multi-table import
             if (parent.getTableTransferType() == 
-                    ImportExportProcess.MULTIPLE_TABLE) {
+                    ImportExportDataProcess.MULTIPLE_TABLE) {
                 return true;
             }
 
@@ -859,7 +859,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
         private boolean isIgnoredColumn(String columnName) {
             // return false for a multi-table import
             if (parent.getTableTransferType() == 
-                    ImportExportProcess.MULTIPLE_TABLE) {
+                    ImportExportDataProcess.MULTIPLE_TABLE) {
                 return false;
             }
 

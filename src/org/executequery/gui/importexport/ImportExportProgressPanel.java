@@ -43,8 +43,8 @@ import org.executequery.sql.SqlMessages;
  *
  * @deprecated use NewImportExportProgressPanel
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ImportExportProgressPanel extends JPanel
                                        implements ActionListener {
@@ -59,7 +59,7 @@ public class ImportExportProgressPanel extends JPanel
     private LoggingOutputPane output;
     
     /** the parent process object */
-    private ImportExportProcess parent;
+    private ImportExportDataProcess parent;
     
     /** Constructs a new instance with the specified
      *  worker as the initiater and controller, and the
@@ -68,7 +68,7 @@ public class ImportExportProgressPanel extends JPanel
      *  @param The worker for this process
      *  @param Whether this is a export process
      */
-    public ImportExportProgressPanel(ImportExportProcess parent) {
+    public ImportExportProgressPanel(ImportExportDataProcess parent) {
         super(new GridBagLayout());
         try {
             this.parent = parent;
@@ -83,7 +83,7 @@ public class ImportExportProgressPanel extends JPanel
     private void jbInit() throws Exception {
         
         JLabel transferLabel = new JLabel("Importing Data...");        
-        if (parent.getTransferType() == ImportExportProcess.EXPORT) {
+        if (parent.getTransferType() == ImportExportDataProcess.EXPORT) {
             transferLabel.setText("Exporting Data...");
         }
 

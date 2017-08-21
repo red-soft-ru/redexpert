@@ -47,8 +47,8 @@ import org.underworldlabs.util.FileUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1680 $
- * @date     $Date: 2016-08-28 14:46:09 +1000 (Sun, 28 Aug 2016) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class DefaultDatabaseTable extends DefaultDatabaseObject implements DatabaseTable {
 
@@ -66,7 +66,7 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
     /** the user modified SQL text for changes */
     private String modifiedSQLText;
 
-    private TableDataChangeWorker tableDataChangeExecutor;
+    private transient TableDataChangeWorker tableDataChangeExecutor;
 
     /** Creates a new instance of DatabaseTable */
     public DefaultDatabaseTable(DatabaseObject object) {
@@ -1212,11 +1212,7 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
     	return names;
 
     }
+
+    static final long serialVersionUID = -963831243178078154L;
     
 }
-
-
-
-
-
-

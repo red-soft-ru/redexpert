@@ -38,8 +38,8 @@ import org.underworldlabs.swing.util.SwingWorker;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ExportDelimitedWorker extends AbstractImportExportWorker {
     
@@ -53,7 +53,7 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
      * @param parent - the parent for this process
      * @param progress - the progress panel
      */
-    public ExportDelimitedWorker(ImportExportProcess parent,
+    public ExportDelimitedWorker(ImportExportDataProcess parent,
                                  ImportExportProgressPanel progress) {
         super(parent, progress);
         transferData();

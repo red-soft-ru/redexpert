@@ -66,8 +66,8 @@ import org.underworldlabs.util.SystemProperties;
  * Properties panel base.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1512 $
- * @date     $Date: 2015-09-27 21:23:07 +1000 (Sun, 27 Sep 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class SimplePreferencesPanel extends JPanel 
                                     implements MouseListener {
@@ -313,7 +313,7 @@ public class SimplePreferencesPanel extends JPanel
                     break;                
                 case UserPreference.BOOLEAN_TYPE:
                     preferences[i].reset(
-                            new Boolean(SystemProperties.getProperty("defaults", preferences[i].getKey())));
+                            Boolean.valueOf(SystemProperties.getProperty("defaults", preferences[i].getKey())));
                     break;
                 case UserPreference.COLOUR_TYPE:
                     preferences[i].reset(

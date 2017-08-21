@@ -52,8 +52,8 @@ import javax.swing.KeyStroke;
  *
  * @author   Takis Diakoumis
  * @author   Dragan Vasic
- * @version  $Revision: 1530 $
- * @date     $Date: 2015-10-13 11:02:42 +1100 (Tue, 13 Oct 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public final class MiscUtils {
 
@@ -354,6 +354,8 @@ public final class MiscUtils {
             }
 
         }
+
+        loader.close();
         return (String[])clazzes.toArray(new String[clazzes.size()]);
     }
 

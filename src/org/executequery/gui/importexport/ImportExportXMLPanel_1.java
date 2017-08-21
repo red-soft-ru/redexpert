@@ -35,8 +35,8 @@ import org.underworldlabs.swing.MultiLineLabel;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ImportExportXMLPanel_1 extends AbstractImportExportPanelOne  {
     
@@ -53,14 +53,14 @@ public class ImportExportXMLPanel_1 extends AbstractImportExportPanelOne  {
     private JRadioButton multipleFileRadio;
     
     /** The parent controller for this process */
-    private ImportExportProcess parent;
+    private ImportExportDataProcess parent;
     
     /** <p>Creates a new instance with the specified parent
      *  object as the controller
      *
      *  @param the parent object
      */
-    public ImportExportXMLPanel_1(ImportExportProcess parent) {
+    public ImportExportXMLPanel_1(ImportExportDataProcess parent) {
         super(new GridBagLayout());
         this.parent = parent;
         
@@ -110,11 +110,11 @@ public class ImportExportXMLPanel_1 extends AbstractImportExportPanelOne  {
         
         String importExportTip = null;
         int type = parent.getTransferType();
-        if (type == ImportExportProcess.EXPORT) {
+        if (type == ImportExportDataProcess.EXPORT) {
           
             importExportTip = getString("ImportExportXMLPanel.exportTip");
 
-        } else if (type == ImportExportProcess.IMPORT) {
+        } else if (type == ImportExportDataProcess.IMPORT) {
             
             importExportTip = getString("ImportExportXMLPanel.importTip");
         }
@@ -164,9 +164,9 @@ public class ImportExportXMLPanel_1 extends AbstractImportExportPanelOne  {
      */
     public int getTableTransferType() {
         if (singleRadio.isSelected())
-            return ImportExportProcess.SINGLE_TABLE;
+            return ImportExportDataProcess.SINGLE_TABLE;
         else
-            return ImportExportProcess.MULTIPLE_TABLE;
+            return ImportExportDataProcess.MULTIPLE_TABLE;
     }
     
     /** <p>Returns the type of multiple table
@@ -176,9 +176,9 @@ public class ImportExportXMLPanel_1 extends AbstractImportExportPanelOne  {
      */
     public int getMutlipleTableTransferType() {
         if (singleFileRadio.isSelected())
-            return ImportExportProcess.SINGLE_FILE;
+            return ImportExportDataProcess.SINGLE_FILE;
         else
-            return ImportExportProcess.MULTIPLE_FILE;
+            return ImportExportDataProcess.MULTIPLE_FILE;
     }
     
 }

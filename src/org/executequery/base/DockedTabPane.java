@@ -52,8 +52,8 @@ import org.underworldlabs.swing.plaf.UIUtils;
  * Left, right and bottom docked tab pane.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1498 $
- * @date     $Date: 2015-09-18 10:16:35 +1000 (Fri, 18 Sep 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class DockedTabPane extends AbstractTabPane {
     
@@ -662,8 +662,8 @@ public class DockedTabPane extends AbstractTabPane {
         }
 
         // the close and minimise icon
-        private Icon closeIcon = new DockedTabCloseIcon();
-        private Icon minimizeIcon = new DockedTabMinimizeIcon(parent.getOrientation());
+        private transient Icon closeIcon = new DockedTabCloseIcon();
+        private transient Icon minimizeIcon = new DockedTabMinimizeIcon(parent.getOrientation());
 
         private void initDefaults() {
             Font _font = DockedTabPane.this.getFont();
@@ -957,14 +957,3 @@ public class DockedTabPane extends AbstractTabPane {
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

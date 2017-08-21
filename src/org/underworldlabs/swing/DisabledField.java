@@ -41,14 +41,14 @@ import javax.swing.UIManager;
  * limited design and purpose.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class DisabledField extends JTextField {
     
-    private static final int HEIGHT = 24;
+    private static final int HEIGHT = 28;
     
-    protected static final Insets INSETS = new Insets(4, 3, 4, 3);        
+    protected static final Insets INSETS = new Insets(5, 3, 5, 3);   
     
     public DisabledField() {
         this("");

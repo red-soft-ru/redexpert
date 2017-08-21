@@ -29,8 +29,8 @@ import org.underworldlabs.util.SystemProperties;
  * Query Editor general preferences panel.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1512 $
- * @date     $Date: 2015-09-27 21:23:07 +1000 (Sun, 27 Sep 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
 
@@ -192,7 +192,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 "Tools panel",
-                new Boolean(SystemProperties.getProperty("user", key))));
+                Boolean.valueOf(SystemProperties.getProperty("user", key))));
 
         key = "editor.display.linenums";
         list.add(new UserPreference(

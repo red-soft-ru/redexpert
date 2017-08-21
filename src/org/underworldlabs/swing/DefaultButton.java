@@ -21,6 +21,7 @@
 package org.underworldlabs.swing;
 
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.ActionListener;
 
 import javax.swing.Action;
@@ -68,18 +69,19 @@ public class DefaultButton extends JButton {
 
         Dimension preferredSize = super.getPreferredSize();
         preferredSize.height = getHeight();
-        
+
         return preferredSize;
     }
-    
+
+    @Override
+    public Insets getInsets() {
+        
+        return GUIConstants.DEFAULT_BUTTON_INSETS;
+    }
+
     public int getHeight() {
 
         return Math.max(super.getHeight(), GUIConstants.DEFAULT_BUTTON_HEIGHT); 
     }
     
 }
-
-
-
-
-

@@ -23,19 +23,20 @@ import java.awt.print.Printable;
 
 import org.executequery.EventMediator;
 import org.executequery.base.TabView;
-import org.executequery.print.PrintFunction;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.gui.forms.FormObjectViewContainer;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
+import org.executequery.print.PrintFunction;
 
 /**
  * Base panel for browser tree selection views.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1768 $
+ * @date     $Date: 2017-08-20 21:33:48 +1000 (Sun, 20 Aug 2017) $
  */
 public class BrowserViewPanel extends FormObjectViewContainer 
                               implements TabView,
@@ -87,7 +88,7 @@ public class BrowserViewPanel extends FormObjectViewContainer
         
         EventMediator.fireEvent(
                 new DefaultConnectionRepositoryEvent(
-                        this, ConnectionRepositoryEvent.CONNECTION_MODIFIED, null));
+                        this, ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) null));
 
         return true;
     }

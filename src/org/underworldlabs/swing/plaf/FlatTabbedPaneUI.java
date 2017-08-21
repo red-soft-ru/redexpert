@@ -91,8 +91,8 @@ import javax.swing.text.View;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class FlatTabbedPaneUI extends TabbedPaneUI
         implements SwingConstants {
@@ -3013,10 +3013,10 @@ public class FlatTabbedPaneUI extends TabbedPaneUI
         }
         
         public String toString() {
-            return new String("viewport.viewSize="+viewport.getViewSize()+"\n"+
-                    "viewport.viewRectangle="+viewport.getViewRect()+"\n"+
-                    "leadingTabIndex="+leadingTabIndex+"\n"+
-                    "tabViewPosition="+tabViewPosition);
+            return "viewport.viewSize=" + viewport.getViewSize() + "\n" +
+                    "viewport.viewRectangle=" + viewport.getViewRect() + "\n" +
+                    "leadingTabIndex=" + leadingTabIndex + "\n"+
+                    "tabViewPosition=" + tabViewPosition;
         }
         
     }

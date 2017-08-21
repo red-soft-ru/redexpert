@@ -45,8 +45,8 @@ import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
  * Tree cell renderer or the database browser.
  * 
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
     
@@ -102,9 +102,9 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
         
         this.hasFocus = hasFocus;
 
-        DefaultMutableTreeNode child = (DefaultMutableTreeNode)value;
+        DefaultMutableTreeNode child = (DefaultMutableTreeNode) value;
         
-        DatabaseObjectNode node = (DatabaseObjectNode)child;
+        DatabaseObjectNode node = (DatabaseObjectNode) child;
         int type = node.getType();
         
         String label = node.getDisplayName();

@@ -20,8 +20,6 @@
 
 package org.executequery.gui.resultset;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
 
@@ -74,11 +72,8 @@ public class BlobRecordDataItem extends AbstractLobRecordDataItem {
             return (byte[]) value;
         }
 
+        byte[] blobBytes;
         Blob blob = (Blob) value;
-
-        byte[] blobBytes = null;
-        InputStream binaryStream = null;
-
         try {
 
             blobBytes = blob.getBytes(1, (int) blob.length());
@@ -92,19 +87,7 @@ public class BlobRecordDataItem extends AbstractLobRecordDataItem {
 
             return e.getMessage().getBytes();
 
-        } finally {
-
-            try {
-
-                if (binaryStream != null) {
-
-                    binaryStream.close();
-                }
-
-            } catch (IOException e) {}
-
         }
-
         return blobBytes;
     }
 
@@ -119,6 +102,4 @@ public class BlobRecordDataItem extends AbstractLobRecordDataItem {
         return true;
     }
 
-
 }
-

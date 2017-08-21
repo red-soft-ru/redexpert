@@ -41,11 +41,11 @@ import org.underworldlabs.swing.wizard.WizardProcessPanel;
  * Import export to delimited file parent object.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1530 $
- * @date     $Date: 2015-10-13 11:02:42 +1100 (Tue, 13 Oct 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ImportExportDelimitedPanel extends WizardProcessPanel
-                                        implements ImportExportProcess,
+                                        implements ImportExportDataProcess,
                                                    ActiveComponent {
     
     /** The type of transfer - import/export */
@@ -374,11 +374,11 @@ public class ImportExportDelimitedPanel extends WizardProcessPanel
             case 1:
 
                 if (!secondPanel.hasSelections()) {
-                    if (getTableTransferType() == ImportExportProcess.MULTIPLE_TABLE) {
+                    if (getTableTransferType() == ImportExportDataProcess.MULTIPLE_TABLE) {
                         GUIUtilities.displayErrorMessage(
                         "You must select at least one table");
                     }
-                    else if (getTableTransferType() == ImportExportProcess.SINGLE_TABLE) {
+                    else if (getTableTransferType() == ImportExportDataProcess.SINGLE_TABLE) {
                         GUIUtilities.displayErrorMessage(
                         "You must select at least one column");
                     }                
@@ -414,10 +414,10 @@ public class ImportExportDelimitedPanel extends WizardProcessPanel
                 processing = true;
                 model.addPanel(progressPanel);
 
-                if (transferType == ImportExportProcess.EXPORT) {
+                if (transferType == ImportExportDataProcess.EXPORT) {
                     doExport();
                 }
-                else if (transferType == ImportExportProcess.IMPORT) {
+                else if (transferType == ImportExportDataProcess.IMPORT) {
                     doImport();
                 }
                 setButtonsEnabled(false);
@@ -518,7 +518,7 @@ public class ImportExportDelimitedPanel extends WizardProcessPanel
             int type = getTransferType();
             String firstTitle = "Database Connection and Export Type";
             String fifthTitle = "Exporting Data...";
-            if (type == ImportExportProcess.IMPORT) {
+            if (type == ImportExportDataProcess.IMPORT) {
                 firstTitle = "Database Connection and Import Type";
                 fifthTitle = "Importing Data...";
             }
@@ -532,11 +532,11 @@ public class ImportExportDelimitedPanel extends WizardProcessPanel
 
             String[] steps = {"Select database connection and transfer type",
                               "Select the tables/columns",
-                              type == ImportExportProcess.IMPORT ?
+                              type == ImportExportDataProcess.IMPORT ?
                                   "Select the data file(s) to import from" :
                                   "Select the data file(s) to export to",
                               "Set any further transfer options",
-                              type == ImportExportProcess.IMPORT ?
+                              type == ImportExportDataProcess.IMPORT ?
                                   "Import the data" :
                                   "Export the data"};
             setSteps(steps);

@@ -40,11 +40,11 @@ import org.underworldlabs.swing.wizard.WizardProcessPanel;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1530 $
- * @date     $Date: 2015-10-13 11:02:42 +1100 (Tue, 13 Oct 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ImportExportXMLPanel extends WizardProcessPanel
-                                  implements ImportExportProcess,
+                                  implements ImportExportDataProcess,
                                              ActiveComponent {
     
     /** The dimension of each child panel */
@@ -354,7 +354,7 @@ public class ImportExportXMLPanel extends WizardProcessPanel
     }
 
     public String getXMLFormatString() {
-        if (fourthPanel_ex.getSelection() == ImportExportProcess.SCHEMA_ELEMENT) {
+        if (fourthPanel_ex.getSelection() == ImportExportDataProcess.SCHEMA_ELEMENT) {
             return "Schema and table elements";
         }
         else {
@@ -420,11 +420,11 @@ public class ImportExportXMLPanel extends WizardProcessPanel
             case 1:
                 
                 if (!secondPanel.hasSelections()) {
-                    if (getTableTransferType() == ImportExportProcess.MULTIPLE_TABLE) {
+                    if (getTableTransferType() == ImportExportDataProcess.MULTIPLE_TABLE) {
                         GUIUtilities.displayErrorMessage(
                         "You must select at least one table");
                     }
-                    else if (getTableTransferType() == ImportExportProcess.SINGLE_TABLE) {
+                    else if (getTableTransferType() == ImportExportDataProcess.SINGLE_TABLE) {
                         GUIUtilities.displayErrorMessage(
                         "You must select at least one column");
                     }
@@ -564,7 +564,7 @@ public class ImportExportXMLPanel extends WizardProcessPanel
             int type = getTransferType();
             String firstTitle = "Database Connection and Export Type";
             String lastTitle = "Exporting Data...";
-            if (type == ImportExportProcess.IMPORT) {
+            if (type == ImportExportDataProcess.IMPORT) {
                 firstTitle = "Database Connection and Import Type";
                 lastTitle = "Importing Data...";
             }
@@ -581,13 +581,13 @@ public class ImportExportXMLPanel extends WizardProcessPanel
 
             String[] steps = {"Select database connection and transfer type",
                               "Select the tables/columns",
-                              type == ImportExportProcess.IMPORT ?
+                              type == ImportExportDataProcess.IMPORT ?
                                   "Select the XML file(s) to import from" :
                                   "Select the XML file(s) to export to",
                               "Select the element style",
                               "Set any further transfer options",
                               "Summary",
-                              type == ImportExportProcess.IMPORT ?
+                              type == ImportExportDataProcess.IMPORT ?
                                   "Import the data" :
                                   "Export the data"};
             setSteps(steps);

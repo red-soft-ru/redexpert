@@ -27,14 +27,14 @@ import org.underworldlabs.swing.actions.BaseCommand;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.importexport.ImportExportExcelPanel;
-import org.executequery.gui.importexport.ImportExportProcess;
+import org.executequery.gui.importexport.ImportExportDataProcess;
 
 /** 
  * Execution for Export Excel
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ExportExcelCommand extends OpenFrameCommand
                                 implements BaseCommand {
@@ -55,7 +55,7 @@ public class ExportExcelCommand extends OpenFrameCommand
                 BaseDialog dialog = 
                         createDialog("Export Excel Spreadsheet", false, false);
                 ImportExportExcelPanel panel = 
-                        new ImportExportExcelPanel(dialog, ImportExportProcess.EXPORT);
+                        new ImportExportExcelPanel(dialog, ImportExportDataProcess.EXPORT);
                 dialog.addDisplayComponent(panel);
                 dialog.display();
             }

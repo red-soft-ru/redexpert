@@ -20,39 +20,42 @@
 
 package org.executequery.event;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.executequery.databasemediators.DatabaseConnection;
 
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1768 $
+ * @date     $Date: 2017-08-20 21:33:48 +1000 (Sun, 20 Aug 2017) $
  */
 public class DefaultConnectionRepositoryEvent extends AbstractApplicationEvent 
                                               implements ConnectionRepositoryEvent {
 
-    private final DatabaseConnection databaseConnection;
+    private final List<DatabaseConnection> databaseConnections;
 
     public DefaultConnectionRepositoryEvent(
             Object source, String method, DatabaseConnection databaseConnection) {
 
         super(source, method);
-        this.databaseConnection = databaseConnection;
+        databaseConnections = new ArrayList<DatabaseConnection>();
+        databaseConnections.add(databaseConnection);
     }
 
-    public DatabaseConnection getDatabaseConnection() {
-
-        return databaseConnection;
+    public DefaultConnectionRepositoryEvent(
+            Object source, String method, List<DatabaseConnection> databaseConnections) {
+        
+        super(source, method);
+        this.databaseConnections = databaseConnections;
     }
     
+    public List<DatabaseConnection> getDatabaseConnections() {
+
+        return databaseConnections;
+    }
+
+    static final long serialVersionUID = -589504120102249710L;
+    
 }
-
-
-
-
-
-
-
-
-
-

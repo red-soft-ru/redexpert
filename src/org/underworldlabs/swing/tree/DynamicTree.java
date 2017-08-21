@@ -35,8 +35,8 @@ import javax.swing.tree.TreeSelectionModel;
  * and provides convenience methods for removal/insertion of nodes.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1768 $
+ * @date     $Date: 2017-08-20 21:33:48 +1000 (Sun, 20 Aug 2017) $
  */
 public class DynamicTree extends JTree {
 //                         implements PropertyChangeListener,
@@ -196,13 +196,16 @@ public class DynamicTree extends JTree {
      * @return the tree node or null if not found
      */
     public DefaultMutableTreeNode getNodeFromRoot(Object userObject) {
+
         int childCount = root.getChildCount();
         for (int i = 0; i < childCount; i++) {
-            DefaultMutableTreeNode node = 
-                    (DefaultMutableTreeNode)root.getChildAt(i);
+        
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) root.getChildAt(i);
             if (node.getUserObject() == userObject) {
+            
                 return node;
             }
+
         }
         return null;
     } 
@@ -214,6 +217,12 @@ public class DynamicTree extends JTree {
      */
     public DefaultMutableTreeNode getRootNode() {
         return root;
+    }
+    
+    public void reset(DefaultMutableTreeNode root) {
+        
+        setModel(new DefaultTreeModel(root));
+        repaint();
     }
     
     /**
@@ -270,10 +279,11 @@ public class DynamicTree extends JTree {
      */
     public void addToRoot(TreeNode node, boolean selectNode) {
 
-        DefaultMutableTreeNode _node = (DefaultMutableTreeNode)node;
+        DefaultMutableTreeNode _node = (DefaultMutableTreeNode) node;
         treeModel.insertNodeInto(_node, root, root.getChildCount());
         
         if (selectNode) {
+
             selectNode(_node);
         }
     }
@@ -478,7 +488,4 @@ public class DynamicTree extends JTree {
     
     
 }
-
-
-
 

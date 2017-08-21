@@ -35,8 +35,8 @@ import org.executequery.gui.WidgetFactory;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ImportExportXMLPanel_5 extends JPanel {
     
@@ -53,7 +53,7 @@ public class ImportExportXMLPanel_5 extends JPanel {
     private JCheckBox batchCheck;
     
     /** The controlling object for this process */
-    private ImportExportProcess parent;
+    private ImportExportDataProcess parent;
     
     /** the date parsing selection panel */
     private ParseDateSelectionPanel dateFormatPanel;
@@ -63,7 +63,7 @@ public class ImportExportXMLPanel_5 extends JPanel {
      *
      *  @param the parent controlling the process
      */
-    public ImportExportXMLPanel_5(ImportExportProcess parent) {
+    public ImportExportXMLPanel_5(ImportExportDataProcess parent) {
         super(new GridBagLayout());
         this.parent = parent;
         
@@ -149,7 +149,7 @@ public class ImportExportXMLPanel_5 extends JPanel {
         
         int type = parent.getTransferType();
         
-        if (type == ImportExportProcess.EXPORT) {
+        if (type == ImportExportDataProcess.EXPORT) {
 //            dateFormatPanel.setEnabled(false);
             //dateFormatField.setOpaque(false);
             //dateFormatField.setEnabled(false);
@@ -174,10 +174,10 @@ public class ImportExportXMLPanel_5 extends JPanel {
 
         int index = rollbackCombo.getSelectedIndex();
         if (index == 7) {
-            return ImportExportProcess.COMMIT_END_OF_FILE;
+            return ImportExportDataProcess.COMMIT_END_OF_FILE;
         } 
         else if (index == 8) {
-            return ImportExportProcess.COMMIT_END_OF_ALL_FILES;
+            return ImportExportDataProcess.COMMIT_END_OF_ALL_FILES;
         }
         else {
             return Integer.parseInt((String)rollbackCombo.getSelectedItem());
@@ -193,9 +193,9 @@ public class ImportExportXMLPanel_5 extends JPanel {
      */
     public int getOnError() {
         if (errorCombo.getSelectedIndex() == 0)
-            return ImportExportProcess.LOG_AND_CONTINUE;
+            return ImportExportDataProcess.LOG_AND_CONTINUE;
         else
-            return ImportExportProcess.STOP_TRANSFER;
+            return ImportExportDataProcess.STOP_TRANSFER;
     }
     
     /** <p>Indicates whether the process (import only)

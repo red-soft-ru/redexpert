@@ -44,8 +44,8 @@ import org.underworldlabs.swing.DynamicComboBoxModel;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ImportExportExcelPanel_1 extends JPanel  {
     
@@ -68,14 +68,14 @@ public class ImportExportExcelPanel_1 extends JPanel  {
     private DynamicComboBoxModel connectionsModel;
 
     /** The parent controller for this process */
-    private ImportExportProcess parent;
+    private ImportExportDataProcess parent;
     
     /** <p>Creates a new instance with the specified parent
      *  object as the controller
      *
      *  @param the parent object
      */
-    public ImportExportExcelPanel_1(ImportExportProcess parent) {
+    public ImportExportExcelPanel_1(ImportExportDataProcess parent) {
         super(new GridBagLayout());
         this.parent = parent;
         
@@ -126,7 +126,7 @@ public class ImportExportExcelPanel_1 extends JPanel  {
         StringBuilder sb = new StringBuilder(500);
         
         int type = parent.getTransferType();
-        if (type == ImportExportProcess.EXPORT) {
+        if (type == ImportExportDataProcess.EXPORT) {
             sb.append("Single table export retrieves requested data from one ").
             append("table only. This will also allow for the selection of individual ").
             append("columns from that table.\n\nSelecting a multiple table export ").
@@ -134,7 +134,7 @@ public class ImportExportExcelPanel_1 extends JPanel  {
             append("columns within selected tables are exported. A multiple table ").
             append("export also allows for a single file for all tables within separate ").
             append("sheets of the generated spreadsheet file.");
-        } else if (type == ImportExportProcess.IMPORT) {
+        } else if (type == ImportExportDataProcess.IMPORT) {
             sb.append("Single table import inserts data into one table only.").
             append(" This will also allow for the selection of individual ").
             append("columns from that table.\n\nSelecting a multiple table import ").
@@ -201,9 +201,9 @@ public class ImportExportExcelPanel_1 extends JPanel  {
      */
     public int getTableTransferType() {
         if (singleRadio.isSelected())
-            return ImportExportProcess.SINGLE_TABLE;
+            return ImportExportDataProcess.SINGLE_TABLE;
         else
-            return ImportExportProcess.MULTIPLE_TABLE;
+            return ImportExportDataProcess.MULTIPLE_TABLE;
     }
     
     /** <p>Returns the type of multiple table
@@ -214,10 +214,10 @@ public class ImportExportExcelPanel_1 extends JPanel  {
     public int getMutlipleTableTransferType() {
         
         if (singleFileRadio.isSelected())
-            return ImportExportProcess.SINGLE_FILE;
+            return ImportExportDataProcess.SINGLE_FILE;
         
         else
-            return ImportExportProcess.MULTIPLE_FILE;
+            return ImportExportDataProcess.MULTIPLE_FILE;
         
     }
     

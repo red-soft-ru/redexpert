@@ -37,7 +37,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public class DatabaseDriverXMLRepository extends AbstractXMLRepository<DatabaseDriver> 
+public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter<DatabaseDriver> 
                                          implements DatabaseDriverRepository {
 
     private static final String DEFAULT_XML_RESOURCE = "org/executequery/jdbcdrivers-default.xml";

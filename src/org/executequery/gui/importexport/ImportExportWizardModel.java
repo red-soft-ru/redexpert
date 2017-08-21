@@ -25,8 +25,8 @@ import org.underworldlabs.swing.wizard.DefaultWizardProcessModel;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ImportExportWizardModel extends DefaultWizardProcessModel {
 
@@ -35,7 +35,7 @@ public class ImportExportWizardModel extends DefaultWizardProcessModel {
 
         String firstTitle = "Database Connection and Export Type";
         String fifthTitle = "Exporting Data...";
-        if (transferType == ImportExportProcess.IMPORT) {
+        if (transferType == ImportExportDataProcess.IMPORT) {
             firstTitle = "Database Connection and Import Type";
             fifthTitle = "Importing Data...";
         }
@@ -50,11 +50,11 @@ public class ImportExportWizardModel extends DefaultWizardProcessModel {
 
         String[] steps = {"Select database connection and transfer type",
                           "Select the tables/columns",
-                          transferType == ImportExportProcess.IMPORT ?
+                          transferType == ImportExportDataProcess.IMPORT ?
                               "Select the data file(s) to import from" :
                               "Select the data file(s) to export to",
                           "Set any further transfer options",
-                          transferType == ImportExportProcess.IMPORT ?
+                          transferType == ImportExportDataProcess.IMPORT ?
                               "Import the data" :
                               "Export the data"};
         setSteps(steps);

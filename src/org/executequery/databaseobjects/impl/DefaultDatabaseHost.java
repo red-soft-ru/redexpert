@@ -49,8 +49,8 @@ import org.underworldlabs.util.MiscUtils;
  * Default database host object implementation.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1533 $
- * @date     $Date: 2015-10-13 17:43:25 +1100 (Tue, 13 Oct 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class DefaultDatabaseHost extends AbstractNamedObject
                                  implements DatabaseHost {
@@ -602,7 +602,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     }
 
-    private ColumnInformationFactory columnInformationFactory = new ColumnInformationFactory();
+    private transient ColumnInformationFactory columnInformationFactory = new ColumnInformationFactory();
     
     /**
      * Returns the column names of the specified database object.

@@ -36,10 +36,10 @@ import org.executequery.databaseobjects.impl.ColumnConstraint;
 public class ColumnConstraintRenderer extends DefaultTableCellRenderer {
     
     /** deleted flag icon */
-    private static ImageIcon deleteImage;
+    private ImageIcon deleteImage;
     
     /** new column flag icon */
-    private static ImageIcon newImage;
+    private ImageIcon newImage;
 
     /** Creates a new instance of ColumnConstraintRenderer */
     public ColumnConstraintRenderer() {

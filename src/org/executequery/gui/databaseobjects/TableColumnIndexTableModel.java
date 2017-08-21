@@ -75,7 +75,7 @@ public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
             case 2:
                 return index.getIndexedColumn();
             case 3:
-                return new Boolean(index.isNonUnique());
+                return Boolean.valueOf(index.isNonUnique());
             default:
                 return null;
         }
@@ -85,19 +85,19 @@ public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
         TableColumnIndex index = indexes.get(row);
         switch (col) {
             case 1:
-                index.setName((String)value);
+                index.setName((String) value);
                 break;
             case 2:
-                index.setIndexedColumn((String)value);
+                index.setIndexedColumn((String) value);
                 break;
             case 3:
-                index.setNonUnique(((Boolean)value).booleanValue());
+                index.setNonUnique(((Boolean) value).booleanValue());
                 break;
         }
         fireTableRowsUpdated(row, row);
     }
     
-    public Class getColumnClass(int col) {
+    public Class<?> getColumnClass(int col) {
         if (col == 3) {
             return Boolean.class;
         }

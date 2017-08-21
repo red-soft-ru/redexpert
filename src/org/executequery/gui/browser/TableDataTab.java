@@ -83,8 +83,8 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1524 $
- * @date     $Date: 2015-10-07 08:06:57 +1100 (Wed, 07 Oct 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class TableDataTab extends JPanel 
     implements ResultSetTableContainer, TableModelListener, UserPreferenceListener {
@@ -708,6 +708,4 @@ public class TableDataTab extends JPanel
         
     }
 
-
 }
-

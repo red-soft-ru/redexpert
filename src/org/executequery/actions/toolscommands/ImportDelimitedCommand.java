@@ -26,15 +26,15 @@ import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.importexport.ImportExportDelimitedPanel;
-import org.executequery.gui.importexport.ImportExportProcess;
+import org.executequery.gui.importexport.ImportExportDataProcess;
 import org.underworldlabs.swing.actions.BaseCommand;
 
 /** 
  * <p>Execution for Export to Delimited File
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ImportDelimitedCommand extends OpenFrameCommand
                                     implements BaseCommand {
@@ -56,7 +56,7 @@ public class ImportDelimitedCommand extends OpenFrameCommand
                 BaseDialog dialog = 
                         createDialog("Import Data", false, false);
                 ImportExportDelimitedPanel panel = 
-                        new ImportExportDelimitedPanel(dialog, ImportExportProcess.IMPORT);
+                        new ImportExportDelimitedPanel(dialog, ImportExportDataProcess.IMPORT);
                 dialog.addDisplayComponent(panel);
                 dialog.display();
             }

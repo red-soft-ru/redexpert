@@ -50,13 +50,12 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
-abstract class AbstractXMLRepository<T> {
+abstract class AbstractXMLResourceReaderWriter<T> {
 
-    protected final List<T> readResource(String classPathResource, 
-            DefaultHandler handler) throws RepositoryException {
+    protected final List<T> readResource(String classPathResource, DefaultHandler handler) throws RepositoryException {
 
         InputStream input = null;
         ClassLoader cl = ActionBuilder.class.getClassLoader();
@@ -76,7 +75,6 @@ abstract class AbstractXMLRepository<T> {
     protected final List<T> read(String filePath, DefaultHandler handler) throws RepositoryException {
         
         File file = new File(filePath);
-
         if (file.exists()) {
 
             try {
@@ -96,8 +94,7 @@ abstract class AbstractXMLRepository<T> {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private List<T> read(InputStream in, DefaultHandler handler) 
-        throws RepositoryException {
+    private List<T> read(InputStream in, DefaultHandler handler) throws RepositoryException {
 
         if (!(handler instanceof XMLRepositoryHandler<?>)) {
 
@@ -144,7 +141,6 @@ abstract class AbstractXMLRepository<T> {
             XMLReader xmlReader, InputSource inputSource) throws RepositoryException {
         
         OutputStream os = null;
-
         try {
             
             TransformerFactory transFactory = TransformerFactory.newInstance();
@@ -170,11 +166,11 @@ abstract class AbstractXMLRepository<T> {
 
             handleException(e);
 
-        }
-        finally {
+        } finally {
 
             try {
                 if (os != null) {
+          
                     os.close();
                 }
             } catch (IOException e) {}
@@ -183,15 +179,9 @@ abstract class AbstractXMLRepository<T> {
         
     }
 
-    private void handleException(Throwable e) 
-        throws RepositoryException {
+    private void handleException(Throwable e)  throws RepositoryException {
+        
         throw new RepositoryException(e);
     }
 
 }
-
-
-
-
-
-

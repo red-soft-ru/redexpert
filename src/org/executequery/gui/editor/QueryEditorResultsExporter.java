@@ -60,7 +60,7 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.DefaultInlineFieldButton;
 import org.executequery.gui.importexport.DefaultExcelWorkbookBuilder;
 import org.executequery.gui.importexport.ExcelWorkbookBuilder;
-import org.executequery.gui.importexport.ImportExportProcess;
+import org.executequery.gui.importexport.ImportExportDataProcess;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.gui.resultset.ResultSetTableModelToXMLWriter;
@@ -75,8 +75,8 @@ import org.underworldlabs.util.MiscUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class QueryEditorResultsExporter extends AbstractBaseDialog {
     
@@ -248,13 +248,13 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         int index = typeCombo.getSelectedIndex();
         switch (index) {
             case 0:
-                return ImportExportProcess.DELIMITED;
+                return ImportExportDataProcess.DELIMITED;
             case 1:
-                return ImportExportProcess.EXCEL;
+                return ImportExportDataProcess.EXCEL;
             case 2:
-                return ImportExportProcess.XML;
+                return ImportExportDataProcess.XML;
             default:
-                return ImportExportProcess.DELIMITED;
+                return ImportExportDataProcess.DELIMITED;
         }
 
     }
@@ -294,11 +294,11 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         String path = file.getAbsolutePath();
 
         int exportFormatType = getExportFormatType();
-        if (exportFormatType == ImportExportProcess.EXCEL) {
+        if (exportFormatType == ImportExportDataProcess.EXCEL) {
             
             suffix = ".xls";
 
-        } else if (exportFormatType == ImportExportProcess.XML) {
+        } else if (exportFormatType == ImportExportDataProcess.XML) {
         
             suffix = ".xml";            
         }
@@ -339,7 +339,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             }
         }
         
-        if (getExportFormatType() == ImportExportProcess.DELIMITED 
+        if (getExportFormatType() == ImportExportDataProcess.DELIMITED 
                 && delimCombo.getSelectedIndex() == 4) {
 
             value = customDelimField.getText();
@@ -367,10 +367,10 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
     private Object doExport() {
         int exportFormatType = getExportFormatType();
-        if (exportFormatType == ImportExportProcess.DELIMITED) {
+        if (exportFormatType == ImportExportDataProcess.DELIMITED) {
 
             return exportDelimited();
-        } else if (exportFormatType == ImportExportProcess.EXCEL) {
+        } else if (exportFormatType == ImportExportDataProcess.EXCEL) {
             
             return exportExcel();
 

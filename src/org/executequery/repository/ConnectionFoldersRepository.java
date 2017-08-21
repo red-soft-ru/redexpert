@@ -34,11 +34,17 @@ public interface ConnectionFoldersRepository extends Repository {
 
     List<ConnectionsFolder> findAll();
 
+    ConnectionsFolder add(ConnectionsFolder connectionsFolder);
+    
     ConnectionsFolder findByName(String name);
     
     ConnectionsFolder findById(String id);
 
     boolean nameExists(ConnectionsFolder exclude, String name);
+
+    void save(String path, List<ConnectionsFolder> connectionFolders);
+
+    List<ConnectionsFolder> open(String filePath);
 
 }
 

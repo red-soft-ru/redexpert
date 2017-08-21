@@ -23,11 +23,11 @@ package org.executequery.util.mime;
 // JDK imports
 import java.io.File;
 import java.net.URL;
-import java.util.Map;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 // Commons Logging imports
 import org.apache.commons.logging.Log;
@@ -203,15 +203,23 @@ public final class MimeTypes {
         MimeType mimeType = null;
         MimeType[] mimeTypes = getMimeTypes(name);
         if (mimeTypes == null) {
+            
             // No mime-type found, so trying to analyse the content
             mimeType = getMimeType(data);
+
+/*
         } else if (mimeTypes.length > 1) {
+
             // TODO: More than one mime-type found, so trying magic resolution
             // on these mime types
             //mimeType = getMimeType(data, mimeTypes);
             // For now, just get the first one
+
             mimeType = mimeTypes[0];
+*/
+
         } else {
+
             mimeType = mimeTypes[0];
         }
         return mimeType;

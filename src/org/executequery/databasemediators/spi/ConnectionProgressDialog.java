@@ -46,8 +46,8 @@ import org.underworldlabs.swing.ProgressBarFactory;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class ConnectionProgressDialog extends JDialog
                                       implements Runnable,
@@ -69,7 +69,7 @@ public class ConnectionProgressDialog extends JDialog
 
         try {
 
-            jbInit();
+            init();
 
         } catch (Exception e) {
 
@@ -83,7 +83,7 @@ public class ConnectionProgressDialog extends JDialog
         setVisible(true);
     }
 
-    private void jbInit() throws Exception {
+    private void init() throws Exception {
 
         progressBar = ProgressBarFactory.create(true, true);
         ((JComponent) progressBar).setPreferredSize(new Dimension(260, 18));

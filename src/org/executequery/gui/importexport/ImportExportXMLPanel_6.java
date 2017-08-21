@@ -41,8 +41,8 @@ import org.executequery.gui.WidgetFactory;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ImportExportXMLPanel_6 extends JPanel {
     
@@ -153,22 +153,22 @@ public class ImportExportXMLPanel_6 extends JPanel {
         String typeString = null;
         int transferType = parent.getTransferType();
 
-        if (parent.getTableTransferType() == ImportExportProcess.MULTIPLE_TABLE) {
+        if (parent.getTableTransferType() == ImportExportDataProcess.MULTIPLE_TABLE) {
             selectedLabel.setText("Selected Tables:");
             tableLabel.setEnabled(false);
             
-            typeString = transferType == ImportExportProcess.EXPORT ?
+            typeString = transferType == ImportExportDataProcess.EXPORT ?
                         "Multiple table export - " : "Multiple table import - ";
             
             columnsList.setListData(parent.getSelectedTables());
             
         } 
-        else if (parent.getTableTransferType() == ImportExportProcess.SINGLE_TABLE) {
+        else if (parent.getTableTransferType() == ImportExportDataProcess.SINGLE_TABLE) {
             tableField.setText(parent.getTableName());
             selectedLabel.setText("Selected Columns:");
             tableLabel.setEnabled(true);
             
-            typeString = transferType == ImportExportProcess.IMPORT ?
+            typeString = transferType == ImportExportDataProcess.IMPORT ?
                         "Single table import - " : "Single table export - ";
 
             columnsList.setListData(parent.getSelectedColumns());
@@ -176,7 +176,7 @@ public class ImportExportXMLPanel_6 extends JPanel {
         
         
         if (parent.getMutlipleTableTransferType() == 
-                ImportExportProcess.SINGLE_FILE) {
+                ImportExportDataProcess.SINGLE_FILE) {
             typeString += "single file";
         } else {
             typeString += "multiple file";

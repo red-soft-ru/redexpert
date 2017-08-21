@@ -40,14 +40,14 @@ import java.util.TimeZone;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class DateUtils {
     
     private Calendar calendar;
-    private static TimeZone timezone;
-    private static Locale locale;
+    private TimeZone timezone;
+    private Locale locale;
     
     private SimpleDateFormat dateFormat;
     
@@ -57,14 +57,9 @@ public class DateUtils {
     private static final String ZERO = "0";
     
     public DateUtils() {
-        if (timezone == null) {
-            timezone = TimeZone.getTimeZone(
-                            System.getProperty("user.country"));
-        }
-        if (locale == null) {
-            locale = new Locale(System.getProperty("user.language"),
-                                System.getProperty("user.timezone"));
-        }
+
+        timezone = TimeZone.getTimeZone(System.getProperty("user.country"));
+        locale = new Locale(System.getProperty("user.language"), System.getProperty("user.timezone"));
         calendar = Calendar.getInstance();
     }
     

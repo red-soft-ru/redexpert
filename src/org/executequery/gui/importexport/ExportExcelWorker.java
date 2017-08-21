@@ -38,8 +38,8 @@ import org.underworldlabs.swing.util.SwingWorker;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ExportExcelWorker extends AbstractImportExportWorker
                                implements Constants {
@@ -108,7 +108,7 @@ public class ExportExcelWorker extends AbstractImportExportWorker
 
             int fileFormat = _parent.getMutlipleTableTransferType();
             boolean isSingleTable = (_parent.getTableTransferType() == 
-                                            ImportExportProcess.SINGLE_TABLE);
+                                            ImportExportDataProcess.SINGLE_TABLE);
 
             Vector<?> files = _parent.getDataFileVector();
             String[] tablesArray = _parent.getSelectedTables();
@@ -149,7 +149,7 @@ public class ExportExcelWorker extends AbstractImportExportWorker
                 
                 } else {
                   
-                    if (fileFormat == ImportExportProcess.MULTIPLE_FILE) {
+                    if (fileFormat == ImportExportDataProcess.MULTIPLE_FILE) {
                         
                         dto = (DataTransferObject)files.elementAt(i);
 
@@ -233,7 +233,7 @@ public class ExportExcelWorker extends AbstractImportExportWorker
 
                 rset.close();
                 
-                if (isSingleTable || fileFormat == ImportExportProcess.MULTIPLE_FILE) {
+                if (isSingleTable || fileFormat == ImportExportDataProcess.MULTIPLE_FILE) {
                     
                     builder.writeTo(outputStream);
                 }
@@ -248,7 +248,7 @@ public class ExportExcelWorker extends AbstractImportExportWorker
                 
             }
             
-            if (!isSingleTable && fileFormat == ImportExportProcess.SINGLE_FILE) {     
+            if (!isSingleTable && fileFormat == ImportExportDataProcess.SINGLE_FILE) {     
                 
                 builder.writeTo(outputStream);
                 

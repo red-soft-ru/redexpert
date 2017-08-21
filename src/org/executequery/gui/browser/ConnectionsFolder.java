@@ -148,8 +148,10 @@ public class ConnectionsFolder {
     public void empty() {
         connections.clear();
     }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
     
 }
-
-
-

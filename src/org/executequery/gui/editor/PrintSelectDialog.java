@@ -44,8 +44,8 @@ import org.underworldlabs.swing.util.SwingWorker;
  *  to print from - the text area or the results panel.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class PrintSelectDialog extends JPanel {
     
@@ -150,32 +150,20 @@ public class PrintSelectDialog extends JPanel {
         if (!queryEditor.isResultSetSelected()) {
 
             GUIUtilities.displayErrorMessage("No SQL table results.");
-
             queryEditor = null;
 
             return "Failed";
         }
         
-        String title = "SQL: " + queryEditor.getEditorText().
-            replaceAll("\n", "").trim();
-        
-        if (title.length() > 60) {
-
-            title = title.substring(0, 60);
-        }
-
         PrintingSupport printingSupport = new PrintingSupport();
-
-        return printingSupport.print(queryEditor.getPrintableForQueryArea(), 
-                "Red Expert - editor");
+        return printingSupport.print(queryEditor.getPrintableForQueryArea(), "Red Expert - editor");
     }
     
     private String printText() {
 
         PrintingSupport printingSupport = new PrintingSupport();
 
-        return printingSupport.print(queryEditor.getPrintableForQueryArea(), 
-                "Red Expert - editor", true);
+        return printingSupport.print(queryEditor.getPrintableForQueryArea(), "Red Expert - editor", true);
     }
     
     private void printButtons_actionPerformed(ActionEvent e) {

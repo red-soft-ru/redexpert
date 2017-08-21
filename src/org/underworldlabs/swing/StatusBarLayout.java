@@ -41,8 +41,8 @@ import java.util.Vector;
  * and where others should fill the remaining space.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class StatusBarLayout implements LayoutManager2, Serializable {
     
@@ -59,7 +59,7 @@ public class StatusBarLayout implements LayoutManager2, Serializable {
     private Vector<StatusBarLayoutConstraints> constraintsList;
 
     /** the constraints comparator for ordering */
-    private ConstraintsComparator comparator;
+    private transient ConstraintsComparator comparator;
     
     /** Creates a new instance of StatusBarLayout */
     public StatusBarLayout() {
@@ -296,6 +296,9 @@ public class StatusBarLayout implements LayoutManager2, Serializable {
         return rects;
     }
 
+    static final long serialVersionUID = -2564060189545121492L;
+    
+    
     class ConstraintsComparator implements Comparator {
         
         public int compare(Object obj1, Object obj2) {
@@ -307,17 +310,3 @@ public class StatusBarLayout implements LayoutManager2, Serializable {
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

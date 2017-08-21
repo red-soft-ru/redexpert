@@ -63,14 +63,14 @@ import org.underworldlabs.swing.tree.DynamicTree;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1768 $
+ * @date     $Date: 2017-08-20 21:33:48 +1000 (Sun, 20 Aug 2017) $
  */
 public class SchemaTree extends DynamicTree
                         implements TreeExpansionListener,
                                    TreeSelectionListener {
 
-    private static final int ROW_HEIGHT = 24;
+    private static final int ROW_HEIGHT = 26;
     
     private ConnectionsTreePanel panel;
 
@@ -364,12 +364,12 @@ public class SchemaTree extends DynamicTree
                     
                         break;
 
-                    } else if (next.getLevel() > node.getLevel()) {  // child node
+                    } else if (next.getLevel() > node.getLevel()) { // child node
 
                         copy.add(copy(next));
                         // node already contains child
 
-                    } else {                                        // sibling
+                    } else { // sibling
 
                         copies.add(copy(next));
                         toRemove.add(next);

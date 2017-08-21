@@ -40,6 +40,12 @@ public interface DatabaseConnectionRepository extends Repository {
 
     boolean nameExists(DatabaseConnection exclude, String name);
 
+    void save(String path, List<DatabaseConnection> databaseConnections);
+
+    List<DatabaseConnection> open(String filePath);
+
+    DatabaseConnection add(DatabaseConnection databaseConnection);
+
 }
 
 

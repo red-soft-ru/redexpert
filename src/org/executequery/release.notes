@@ -1,6 +1,14 @@
 --- Execute Query - RELEASE NOTES ---
 
-Date: 29 May 2017
+Date: 21 August 2017
+
+Summary of changes - v4.4.0 Build 5467:
+----------------------------------------
+
+- Added selective connection and folder import and export.
+- Minor UI tweaks: sizes, borders, buttons.
+- New splash and about images
+
 
 Summary of changes - v4.3.4 Build 5463:
 ----------------------------------------
@@ -547,4 +555,4 @@ Thank you for trying Execute Query.
 
 Takis Diakoumis
 takisd@executequery.org
-29 May 2017
+21 August 2017

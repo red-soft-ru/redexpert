@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.executequery.gui.browser.ConnectionsFolder;
 import org.executequery.repository.ConnectionFoldersRepository;
 import org.executequery.repository.RepositoryException;
@@ -34,7 +35,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public class ConnectionFoldersXMLRepository extends AbstractXMLRepository<ConnectionsFolder> 
+public class ConnectionFoldersXMLRepository extends AbstractXMLResourceReaderWriter<ConnectionsFolder> 
                                          implements ConnectionFoldersRepository {
 
     private static final String DEFAULT_XML_RESOURCE = "org/executequery/connection-folders-default.xml";
@@ -48,11 +49,28 @@ public class ConnectionFoldersXMLRepository extends AbstractXMLRepository<Connec
         return folders();
     }
 
+    @Override
+    public ConnectionsFolder add(ConnectionsFolder connectionsFolder) {
+
+        String name = connectionsFolder.getName();
+        
+        int count = 1;
+        while (nameExists(null, name)) {
+
+            name += "_" + (count++);
+        }
+
+        connectionsFolder.setName(name);
+        folders().add(connectionsFolder);
+        
+        return connectionsFolder;
+    }
+    
     public ConnectionsFolder findById(String id) {
 
         for (ConnectionsFolder folder : folders()) {
             
-            if (folder.getId() == id) {
+            if (StringUtils.equals(folder.getId(), id)) {
                 
                 return folder;
             }
@@ -91,11 +109,16 @@ public class ConnectionFoldersXMLRepository extends AbstractXMLRepository<Connec
 
         if (namesValid()) {
 
-            write(filePath(), new ConnectionsFolderParser(), new ConnectionsFolderInputSource(folders));
+            save(filePath(), folders);
         }
 
     }
 
+    public void save(String path, List<ConnectionsFolder> connectionFolders) {
+        
+        write(path, new ConnectionsFolderParser(), new ConnectionsFolderInputSource(connectionFolders));
+    }
+    
     public String getId() {
 
         return REPOSITORY_ID;
@@ -117,12 +140,17 @@ public class ConnectionFoldersXMLRepository extends AbstractXMLRepository<Connec
         return settings.getUserSettingsDirectory() + FILE_PATH;
     }
 
-    private List<ConnectionsFolder> open() {
+    public List<ConnectionsFolder> open(String filePath) {
 
-        ensureFileExists();
-        return (List<ConnectionsFolder>)read(filePath(), new ConnectionsFolderHandler());
+        return (List<ConnectionsFolder>) read(filePath, new ConnectionsFolderHandler());
     }
 
+    private List<ConnectionsFolder> open() {
+        
+        ensureFileExists();
+        return open(filePath());
+    }
+    
     private boolean namesValid() {
 
         for (ConnectionsFolder driver : folders()) {
@@ -130,8 +158,7 @@ public class ConnectionFoldersXMLRepository extends AbstractXMLRepository<Connec
             if (nameExists(driver, driver.getName())) {
 
                 throw new RepositoryException(
-                        String.format("The driver name %s already exists.", 
-                                driver.getName()));
+                        String.format("The driver name %s already exists.", driver.getName()));
             }
             
         }
@@ -251,11 +278,10 @@ public class ConnectionFoldersXMLRepository extends AbstractXMLRepository<Connec
 
             if (!(input instanceof ConnectionsFolderInputSource)) {
 
-                throw new SAXException(
-                        "Parser can only accept a ConnectionsFolderInputSource");
+                throw new SAXException("Parser can only accept a ConnectionsFolderInputSource");
             }
             
-            parse((ConnectionsFolderInputSource)input);
+            parse((ConnectionsFolderInputSource) input);
         }
         
         public void parse(ConnectionsFolderInputSource input) throws IOException, SAXException {

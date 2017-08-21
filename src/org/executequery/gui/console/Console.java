@@ -49,13 +49,6 @@ import org.executequery.gui.console.commands.HomeCommand;
 import org.executequery.gui.console.commands.PwdCommand;
 import org.underworldlabs.util.SystemProperties;
 
-/* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
- *           resetting of CVS revision numbers.
- * ----------------------------------------------------------
- */
-
 /**
  * An internal console which provide different kinds of
  * prompts and which allows to execute both internal and
@@ -66,8 +59,8 @@ import org.underworldlabs.util.SystemProperties;
  *
  * @author   Romain Guy
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class Console extends JScrollPane {
     
@@ -323,10 +316,10 @@ public class Console extends JScrollPane {
                 promptType = DOS_PROMPT;
                 osType = WINDOWS_OS;
             }
-            else if(osName.indexOf("OS/2") != -1) {
-                promptType = DEFAULT_PROMPT;
-                osType = UNIX_OS;
-            }
+//            else if(osName.indexOf("OS/2") != -1) {
+//                promptType = DEFAULT_PROMPT;
+//                osType = UNIX_OS;
+//            }
             else {
                 promptType = DEFAULT_PROMPT;
                 osType = UNIX_OS;

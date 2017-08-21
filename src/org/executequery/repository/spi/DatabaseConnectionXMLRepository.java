@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 
-import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseConnectionFactory;
@@ -43,7 +42,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public class DatabaseConnectionXMLRepository extends AbstractXMLRepository<DatabaseConnection>
+public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWriter<DatabaseConnection>
                                              implements DatabaseConnectionRepository {
 
     private static final String FILE_PATH = "savedconnections.xml";
@@ -57,6 +56,23 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLRepository<Datab
         return connections();
     }
 
+    @Override
+    public DatabaseConnection add(DatabaseConnection databaseConnection) {
+
+        String name = databaseConnection.getName();
+        
+        int count = 1;
+        while (nameExists(null, name)) {
+
+            name += "_" + (count++);
+        }
+
+        databaseConnection.setName(name);
+        connections().add(databaseConnection);
+        
+        return databaseConnection;
+    }
+    
     public DatabaseConnection findById(String id) {
 
         for (DatabaseConnection connection : connections()) {
@@ -105,12 +121,16 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLRepository<Datab
 
         if (namesValid()) {
             
-            write(filePath(), new DatabaseConnectionParser(),
-                    new DatabaseConnectionInputSource(connections));
+            save(filePath(), connections);
         }
 
     }
 
+    public void save(String path, List<DatabaseConnection> databaseConnections) {
+        
+        write(path, new DatabaseConnectionParser(), new DatabaseConnectionInputSource(databaseConnections));
+    }
+    
     public String getId() {
 
         return REPOSITORY_ID;
@@ -134,19 +154,24 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLRepository<Datab
 
     private List<DatabaseConnection> open() {
 
-        try {
-        
-            ensureFileExists();
-            return (List<DatabaseConnection>) read(filePath(), new DatabaseConnectionHandler());
+        ensureFileExists();
+        return open(filePath());
+    }
 
+    public List<DatabaseConnection> open(String filePath) {
+        
+        try {
+            
+            return (List<DatabaseConnection>) read(filePath, new DatabaseConnectionHandler());
+            
         } catch (RepositoryException e) {
             
             Log.error("Error reading saved connections file - " + e.getMessage(), e);
             return new ArrayList<DatabaseConnection>(0);
         }
-
+        
     }
-
+    
     private void ensureFileExists() {
 
         File file = new File(filePath());

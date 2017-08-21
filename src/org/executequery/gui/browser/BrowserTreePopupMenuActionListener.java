@@ -37,7 +37,7 @@ import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.importexport.ImportExportDelimitedPanel;
 import org.executequery.gui.importexport.ImportExportExcelPanel;
-import org.executequery.gui.importexport.ImportExportProcess;
+import org.executequery.gui.importexport.ImportExportDataProcess;
 import org.executequery.gui.importexport.ImportExportXMLPanel;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.actions.ActionBuilder;
@@ -46,8 +46,8 @@ import org.underworldlabs.swing.actions.ReflectiveAction;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
@@ -143,23 +143,23 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     }
     
     public void exportExcel(ActionEvent e) {
-        importExportDialog(ImportExportProcess.EXCEL);
+        importExportDialog(ImportExportDataProcess.EXCEL);
     }
 
     public void importXml(ActionEvent e) {
-        importExportDialog(ImportExportProcess.IMPORT_XML);
+        importExportDialog(ImportExportDataProcess.IMPORT_XML);
     }
 
     public void exportXml(ActionEvent e) {
-        importExportDialog(ImportExportProcess.EXPORT_XML);
+        importExportDialog(ImportExportDataProcess.EXPORT_XML);
     }
 
     public void importDelimited(ActionEvent e) {
-        importExportDialog(ImportExportProcess.IMPORT_DELIMITED);
+        importExportDialog(ImportExportDataProcess.IMPORT_DELIMITED);
     }
 
     public void exportDelimited(ActionEvent e) {
-        importExportDialog(ImportExportProcess.EXPORT_DELIMITED);
+        importExportDialog(ImportExportDataProcess.EXPORT_DELIMITED);
     }
 
     public void exportSQL(ActionEvent e) {
@@ -206,38 +206,38 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             GUIUtilities.showWaitCursor();
             switch (transferType) {
 
-                case ImportExportProcess.EXPORT_DELIMITED:
+                case ImportExportDataProcess.EXPORT_DELIMITED:
                     dialog = new BaseDialog("Export Data", false, false);
                     panel = new ImportExportDelimitedPanel(
-                                    dialog, ImportExportProcess.EXPORT,
+                                    dialog, ImportExportDataProcess.EXPORT,
                                     dc, schemaName, tableName);
                     break;
 
-                case ImportExportProcess.IMPORT_DELIMITED:
+                case ImportExportDataProcess.IMPORT_DELIMITED:
                     dialog = new BaseDialog("Import Data", false, false);
                     panel = new ImportExportDelimitedPanel(
-                                    dialog, ImportExportProcess.IMPORT,
+                                    dialog, ImportExportDataProcess.IMPORT,
                                     dc, schemaName, tableName);
                     break;
 
-                case ImportExportProcess.EXPORT_XML:
+                case ImportExportDataProcess.EXPORT_XML:
                     dialog = new BaseDialog("Export XML", false, false);
                     panel = new ImportExportXMLPanel(
-                                    dialog, ImportExportProcess.EXPORT,
+                                    dialog, ImportExportDataProcess.EXPORT,
                                     dc, schemaName, tableName);
                     break;
 
-                case ImportExportProcess.IMPORT_XML:
+                case ImportExportDataProcess.IMPORT_XML:
                     dialog = new BaseDialog("Import XML", false, false);
                     panel = new ImportExportXMLPanel(
-                                    dialog, ImportExportProcess.IMPORT,
+                                    dialog, ImportExportDataProcess.IMPORT,
                                     dc, schemaName, tableName);
                     break;
 
-                case ImportExportProcess.EXCEL:
+                case ImportExportDataProcess.EXCEL:
                     dialog = new BaseDialog("Export Excel Spreadsheet", false, false);
                     panel = new ImportExportExcelPanel(
-                                    dialog, ImportExportProcess.EXPORT,
+                                    dialog, ImportExportDataProcess.EXPORT,
                                     dc, schemaName, tableName);
                     break;
 

@@ -55,8 +55,8 @@ import org.xml.sax.helpers.AttributesImpl;
 /** <p>Performs the 'work' during the export XML process.
  *
  *  @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  *  @author Dragan Vasic
  */
 public class ExportXMLWorker extends AbstractImportExportWorker 
@@ -80,7 +80,7 @@ public class ExportXMLWorker extends AbstractImportExportWorker
      *
      * @param the parent for this process
      */
-    public ExportXMLWorker(ImportExportProcess parent,
+    public ExportXMLWorker(ImportExportDataProcess parent,
                            ImportExportProgressPanel exportingDialog) {
         super(parent, exportingDialog);
         transferData();
@@ -165,7 +165,7 @@ public class ExportXMLWorker extends AbstractImportExportWorker
                 
                 DataTransferObject obj = (DataTransferObject)transfers.get(i);
                 
-                if (fileFormat == ImportExportProcess.SINGLE_FILE) {
+                if (fileFormat == ImportExportDataProcess.SINGLE_FILE) {
 
                     tablesArray = parent.getSelectedTables();
 
@@ -201,7 +201,7 @@ public class ExportXMLWorker extends AbstractImportExportWorker
 
             finish();
 
-            if (fileFormat == ImportExportProcess.SINGLE_FILE) {
+            if (fileFormat == ImportExportDataProcess.SINGLE_FILE) {
                 setTableCount(tablesArray.length);
             } else {
                 setTableCount(transfersCount);
@@ -350,7 +350,7 @@ public class ExportXMLWorker extends AbstractImportExportWorker
                 // for multiple table loop
                 handler.startDocument();
                 
-                if (xmlFormat == ImportExportProcess.SCHEMA_ELEMENT) {
+                if (xmlFormat == ImportExportDataProcess.SCHEMA_ELEMENT) {
                     atts.addAttribute(EMPTY, NAME, NAME, attType1,
                                       input.getSchemaName());
                     atts.addAttribute(EMPTY, schemaUrlAtt, schemaUrlAtt,
@@ -365,7 +365,7 @@ public class ExportXMLWorker extends AbstractImportExportWorker
                     atts.removeAttribute(atts.getIndex(schemaUrlAtt));
                     atts.removeAttribute(atts.getIndex(schemaUserAtt));
                     
-                } else if (xmlFormat == ImportExportProcess.TABLE_ELEMENT) {
+                } else if (xmlFormat == ImportExportDataProcess.TABLE_ELEMENT) {
                     indent_2a = indent_1;
                     indent_1a = newLine_s;
                 }
@@ -412,7 +412,7 @@ public class ExportXMLWorker extends AbstractImportExportWorker
                         cols[i] = columns.elementAt(i).toString().toLowerCase();
                     }
                     
-                    if (xmlFormat == ImportExportProcess.SCHEMA_ELEMENT) {
+                    if (xmlFormat == ImportExportDataProcess.SCHEMA_ELEMENT) {
                         handler.ignorableWhitespace(indent_1a.toCharArray(), 0,
                                                     indent_1a.length());
                     }
@@ -518,7 +518,7 @@ public class ExportXMLWorker extends AbstractImportExportWorker
                     appendProgressText(outputBuffer);
                 }
                 
-                if (xmlFormat == ImportExportProcess.SCHEMA_ELEMENT) {
+                if (xmlFormat == ImportExportDataProcess.SCHEMA_ELEMENT) {
                     handler.ignorableWhitespace(newLine_s.toCharArray(), 0, 1);
                     handler.endElement(nsu, rootElement, rootElement);
                 }

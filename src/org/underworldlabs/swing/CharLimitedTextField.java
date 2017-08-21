@@ -27,18 +27,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 
-/* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
- *           resetting of CVS revision numbers.
- * ----------------------------------------------------------
- */
-
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class CharLimitedTextField extends JTextField {
 
@@ -47,9 +40,7 @@ public class CharLimitedTextField extends JTextField {
     
     public CharLimitedTextField(int maxLength) {
         this.maxLength = maxLength;
-        if (charLimitedDocument == null) {
-            charLimitedDocument = new CharLimitedDocument();
-        }
+        this.charLimitedDocument = new CharLimitedDocument();
     }
     
     public void setMaxLength(int maxLength) {

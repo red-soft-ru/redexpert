@@ -32,8 +32,8 @@ import org.apache.commons.lang.StringUtils;
 /** 
  * 
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class SQLFormatter {
 
@@ -424,8 +424,8 @@ public class SQLFormatter {
         out();
         indent++;
         newline();
-        parenCounts.addLast(new Integer(parensSinceSelect));
-        afterByOrFromOrSelects.addLast(new Boolean(afterByOrSetOrFromOrSelect));
+        parenCounts.addLast(Integer.valueOf(parensSinceSelect));
+        afterByOrFromOrSelects.addLast(Boolean.valueOf(afterByOrSetOrFromOrSelect));
         parensSinceSelect = 0;
         afterByOrSetOrFromOrSelect = true;
     }

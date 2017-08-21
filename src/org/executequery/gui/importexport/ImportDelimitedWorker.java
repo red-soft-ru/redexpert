@@ -48,8 +48,8 @@ import org.underworldlabs.util.MiscUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1767 $
+ * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
  */
 public class ImportDelimitedWorker extends AbstractImportExportWorker {
 
@@ -65,7 +65,7 @@ public class ImportDelimitedWorker extends AbstractImportExportWorker {
      *
      * @param the parent for this process
      */
-    public ImportDelimitedWorker(ImportExportProcess parent,
+    public ImportDelimitedWorker(ImportExportDataProcess parent,
                                  ImportExportProgressPanel importingDialog) {
         super(parent, importingDialog);
         transferData();
@@ -96,7 +96,7 @@ public class ImportDelimitedWorker extends AbstractImportExportWorker {
 
         // are we halting on any error
         int onError = getParent().getOnError();
-        haltOnError = (onError == ImportExportProcess.STOP_TRANSFER);
+        haltOnError = (onError == ImportExportDataProcess.STOP_TRANSFER);
 
         boolean isBatch = getParent().runAsBatchProcess();
 
@@ -815,7 +815,7 @@ public class ImportDelimitedWorker extends AbstractImportExportWorker {
                     if (tableRowCount != tableInsertCount) {
                         conn.rollback();
 
-                        if (onError == ImportExportProcess.STOP_TRANSFER) {
+                        if (onError == ImportExportDataProcess.STOP_TRANSFER) {
                             getParent().cancelTransfer();
                             processResult = FAILED;
                             throw new InterruptedException();
@@ -827,7 +827,7 @@ public class ImportDelimitedWorker extends AbstractImportExportWorker {
 
                 boolean doCommit = true;
                 if (failed && !isBatch &&
-                        rollbackSize != ImportExportProcess.COMMIT_END_OF_ALL_FILES) {
+                        rollbackSize != ImportExportDataProcess.COMMIT_END_OF_ALL_FILES) {
 
                     int yesNo = GUIUtilities.displayYesNoDialog(
                                     "The process completed with errors.\n" +
@@ -839,7 +839,7 @@ public class ImportDelimitedWorker extends AbstractImportExportWorker {
 
                 // do the commit if ok from above
                 // and if rollback size selected is end of file
-                if (rollbackSize == ImportExportProcess.COMMIT_END_OF_FILE) {
+                if (rollbackSize == ImportExportDataProcess.COMMIT_END_OF_FILE) {
                     if (doCommit) {
                         conn.commit();
                         totalInsertCount += commitCount;
@@ -863,7 +863,7 @@ public class ImportDelimitedWorker extends AbstractImportExportWorker {
 
             // commit the last remaining block or where
             // set to commit at the end of all files
-            if (rollbackSize != ImportExportProcess.COMMIT_END_OF_FILE) {
+            if (rollbackSize != ImportExportDataProcess.COMMIT_END_OF_FILE) {
                 setProgressStatus(100);
                 boolean doCommit = true;
                 if (errorCount > 0 && errorCount != totalRecordCount) {

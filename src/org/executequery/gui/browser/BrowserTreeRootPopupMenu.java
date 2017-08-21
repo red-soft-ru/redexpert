@@ -41,8 +41,12 @@ public class BrowserTreeRootPopupMenu extends JPopupMenu {
         addSeparator();
         add(createMenuItem("Sort Connections", "sortConnections", treePanel));
         add(createMenuItem("Search Nodes...", "searchNodes", treePanel));
-    }
 
+        addSeparator();
+        add(createMenuItem("Export", "exportConnections", treePanel));
+        add(createMenuItem("Import", "importConnections", treePanel));
+    }
+    
     private JMenuItem createMenuItem(String text,
                                      String actionCommand,
                                      ActionListener listener) {
@@ -54,7 +58,3 @@ public class BrowserTreeRootPopupMenu extends JPopupMenu {
     }
 
 }
-
-
-
-

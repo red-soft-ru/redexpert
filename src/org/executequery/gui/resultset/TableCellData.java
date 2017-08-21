@@ -21,7 +21,6 @@
 package org.executequery.gui.resultset;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -36,8 +35,8 @@ import org.executequery.log.Log;
 /**
  * 
  * @author Takis Diakoumis
- * @version $Revision: 1487 $
- * @date $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version $Revision: 1766 $
+ * @date $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  * @deprecated
  */
 public final class TableCellData {
@@ -138,9 +137,6 @@ public final class TableCellData {
     	}
     	
     	Blob blob = (Blob) value;
-
-    	InputStream binaryStream = null;
-    	
     	try {
 
     		lobValue = blob.getBytes(1, (int) blob.length());
@@ -153,18 +149,6 @@ public final class TableCellData {
 			}
 
 			return e.getMessage();
-
-		} finally {
-			
-			try {
-			
-				if (binaryStream != null) {
-					
-					binaryStream.close();
-				}
-				
-			} catch (IOException e) {}
-			
 		}
     	
     	return lobValue;

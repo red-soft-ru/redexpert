@@ -25,8 +25,8 @@ import javax.swing.table.AbstractTableModel;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class ColumnIndexTableModel extends AbstractTableModel {
     
@@ -76,7 +76,7 @@ public class ColumnIndexTableModel extends AbstractTableModel {
             case 2:
                 return cid.getIndexedColumn();
             case 3:
-                return new Boolean(cid.isNonUnique());
+                return Boolean.valueOf(cid.isNonUnique());
             default:
                 return null;
         }
@@ -86,13 +86,13 @@ public class ColumnIndexTableModel extends AbstractTableModel {
         ColumnIndex cid = data[row];        
         switch (col) {
             case 1:
-                cid.setIndexName((String)value);
+                cid.setIndexName((String) value);
                 break;
             case 2:
-                cid.setIndexedColumn((String)value);
+                cid.setIndexedColumn((String) value);
                 break;
             case 3:
-                cid.setNonUnique(((Boolean)value).booleanValue());
+                cid.setNonUnique(((Boolean) value).booleanValue());
                 break;
         }
         

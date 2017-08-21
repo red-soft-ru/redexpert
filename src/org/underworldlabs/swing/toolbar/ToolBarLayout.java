@@ -26,7 +26,6 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.LayoutManager2;
 import java.awt.Rectangle;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,11 +33,14 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class ToolBarLayout implements LayoutManager2 {
     
@@ -574,9 +576,14 @@ public class ToolBarLayout implements LayoutManager2 {
         }
         
         public boolean equals(Object obj) {
-            return this.equals(obj);
+            return EqualsBuilder.reflectionEquals(this, obj);
         }
         
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this);
+        }
+                
         public void setFirstLayout(boolean firstLayout) {
             this.firstLayout = firstLayout;
         }

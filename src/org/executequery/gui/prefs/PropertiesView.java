@@ -42,8 +42,8 @@ import org.underworldlabs.util.SystemProperties;
 /** <p>The view properties panel.
  *
  *  @author   Takis Diakoumis
- * @version  $Revision: 1512 $
- * @date     $Date: 2015-09-27 21:23:07 +1000 (Sun, 27 Sep 2015) $
+ * @version  $Revision: 1766 $
+ * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
  */
 public class PropertiesView extends AbstractPropertiesBasePanel {
     
@@ -70,14 +70,14 @@ public class PropertiesView extends AbstractPropertiesBasePanel {
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 "Status bar",
-                new Boolean(SystemProperties.getProperty("user", key)));
+                Boolean.valueOf(SystemProperties.getProperty("user", key)));
 
         key = "system.display.console";
         preferences[count++] = new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 "System console",
-                new Boolean(SystemProperties.getProperty("user", key)));
+                Boolean.valueOf(SystemProperties.getProperty("user", key)));
 
         key = "system.display.jdbclogger";
         preferences[count++] = new UserPreference(
@@ -91,21 +91,21 @@ public class PropertiesView extends AbstractPropertiesBasePanel {
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 "Connections",
-                new Boolean(SystemProperties.getProperty("user", key)));
+                Boolean.valueOf(SystemProperties.getProperty("user", key)));
 
         key = "system.display.drivers";
         preferences[count++] = new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 "Drivers",
-                new Boolean(SystemProperties.getProperty("user", key)));
+                Boolean.valueOf(SystemProperties.getProperty("user", key)));
 
         key = "system.display.systemprops";
         preferences[count++] = new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 "System properties palette",
-                new Boolean(SystemProperties.getProperty("user", key)));
+                Boolean.valueOf(SystemProperties.getProperty("user", key)));
 
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);

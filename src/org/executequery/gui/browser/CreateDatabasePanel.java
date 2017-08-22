@@ -847,7 +847,7 @@ public class CreateDatabasePanel extends ActionPanel
 
         EventMediator.fireEvent(
                 new DefaultConnectionRepositoryEvent(
-                        this, ConnectionRepositoryEvent.CONNECTION_MODIFIED, null));
+                        this, ConnectionRepositoryEvent.CONNECTION_MODIFIED,(DatabaseConnection) null));
 
         return true;
     }

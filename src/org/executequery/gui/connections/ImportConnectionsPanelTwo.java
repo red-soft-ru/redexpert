@@ -44,6 +44,7 @@ public class ImportConnectionsPanelTwo extends ActionPanel {
 
         progressBar = ProgressBarFactory.create(true);
         ((JComponent) progressBar).setPreferredSize(new Dimension(1, 22));
+        progressBar.fillWhenStopped();
         
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0;
@@ -63,13 +64,14 @@ public class ImportConnectionsPanelTwo extends ActionPanel {
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.gridwidth = 1;
-        gbc.insets.top = 5;
         gbc.weightx = 1.0;
+        gbc.insets.bottom = 20;
+        gbc.fill = GridBagConstraints.BOTH;
         add((JComponent) progressBar, gbc);
         gbc.gridy++;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
-        gbc.insets.top = 0;
+        gbc.insets.top = 10;
         gbc.insets.right = 0;
         gbc.insets.left = 0;
         gbc.fill = GridBagConstraints.BOTH;

@@ -39,18 +39,10 @@ public class ExportConnectionsPanelOne extends ActionPanel {
     public ExportConnectionsPanelOne() {
 
         super(new GridBagLayout());
-        try  {
-
-            init();
-
-        } catch (Exception e) {
-          
-            e.printStackTrace();
-        }
-
+        init();
     }
     
-    private void init() throws Exception {
+    private void init() {
         
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Database Connections");
         

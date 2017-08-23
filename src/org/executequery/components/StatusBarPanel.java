@@ -29,13 +29,13 @@ import org.underworldlabs.swing.AbstractStatusBarPanel;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1770 $
+ * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
  */
 public class StatusBarPanel extends AbstractStatusBarPanel {
     
     /** the status bar panel fixed height */
-    private static final int HEIGHT = 22;    
+    private static final int HEIGHT = 26;    
     
     /** <p>Creates a new instance with the specified values
      *  within respective values.

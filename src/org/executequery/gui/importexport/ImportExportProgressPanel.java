@@ -20,21 +20,29 @@
 
 package org.executequery.gui.importexport;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.BorderFactory;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import org.executequery.GUIUtilities;
 
 import org.executequery.components.LoggingOutputPane;
+import org.executequery.gui.GUIConstants;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.sql.SqlMessages;
+import org.underworldlabs.swing.ProgressBar;
+import org.underworldlabs.swing.ProgressBarFactory;
 
 /** 
  * The progress display during an import/export
@@ -43,8 +51,8 @@ import org.executequery.sql.SqlMessages;
  *
  * @deprecated use NewImportExportProgressPanel
  * @author   Takis Diakoumis
- * @version  $Revision: 1767 $
- * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
+ * @version  $Revision: 1770 $
+ * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
  */
 public class ImportExportProgressPanel extends JPanel
                                        implements ActionListener {
@@ -62,25 +70,21 @@ public class ImportExportProgressPanel extends JPanel
     private ImportExportDataProcess parent;
     
     /** Constructs a new instance with the specified
-     *  worker as the initiater and controller, and the
+     *  worker as the initiator and controller, and the
      *  whether the process is an export process.
      *
      *  @param The worker for this process
      *  @param Whether this is a export process
      */
     public ImportExportProgressPanel(ImportExportDataProcess parent) {
+
         super(new GridBagLayout());
-        try {
-            this.parent = parent;
-            jbInit();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+        this.parent = parent;
+        init();
     }
     
     /** Initializes the state of this instance. */
-    private void jbInit() throws Exception {
+    private void init() {
         
         JLabel transferLabel = new JLabel("Importing Data...");        
         if (parent.getTransferType() == ImportExportDataProcess.EXPORT) {
@@ -91,7 +95,9 @@ public class ImportExportProgressPanel extends JPanel
         output.setBackground(getBackground());
         
         progressBar = new JProgressBar(0, 100);
-        stopButton = new JButton("Stop");
+        progressBar.setBorder(BorderFactory.createLineBorder(GUIUtilities.getDefaultBorderColour()));
+        
+        stopButton = WidgetFactory.createButton("Stop");
         stopButton.addActionListener(this);
         
         GridBagConstraints gbc = new GridBagConstraints();
@@ -107,7 +113,6 @@ public class ImportExportProgressPanel extends JPanel
         gbc.insets.right = 0;
         gbc.gridwidth = 1;
         gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
         add(progressBar, gbc);
         gbc.gridx = 1;
         gbc.weightx = 0;
@@ -117,7 +122,7 @@ public class ImportExportProgressPanel extends JPanel
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.weighty = 1.0;
-        gbc.insets.top = 0;
+        gbc.insets.top = 5;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         add(new JScrollPane(output), gbc);

@@ -37,8 +37,8 @@ import org.executequery.gui.WidgetFactory;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1767 $
- * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
+ * @version  $Revision: 1769 $
+ * @date     $Date: 2017-08-21 00:13:31 +1000 (Mon, 21 Aug 2017) $
  */
 public class ImportExportDelimitedPanel_4 extends JPanel 
                                           implements ActionListener {
@@ -77,7 +77,7 @@ public class ImportExportDelimitedPanel_4 extends JPanel
         this.parent = parent;
         
         try {
-            jbInit();
+            init();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -86,7 +86,7 @@ public class ImportExportDelimitedPanel_4 extends JPanel
     
     /** <p>Initialises the state of this instance and
      *  lays out components on the panel. */
-    private void jbInit() throws Exception {
+    private void init() throws Exception {
 
         JLabel rollbackLabel = new JLabel("Rollback Segment Size:");
         

@@ -25,24 +25,17 @@ public class ExportConnectionsPanelThree extends ActionPanel {
     public ExportConnectionsPanelThree() {
 
         super(new GridBagLayout());
-        try  {
-
-            init();
-
-        } catch (Exception e) {
-          
-            e.printStackTrace();
-        }
-
+        init();
     }
     
-    private void init() throws Exception {
+    private void init() { 
 
         textArea = new JTextArea();
         textArea.setMargin(new Insets(5,5,5,5));
         textArea.setEditable(false);
 
         progressBar = ProgressBarFactory.create(true);
+        progressBar.fillWhenStopped();
         ((JComponent) progressBar).setPreferredSize(new Dimension(1, 24));
         
         GridBagConstraints gbc = new GridBagConstraints();
@@ -63,13 +56,14 @@ public class ExportConnectionsPanelThree extends ActionPanel {
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.gridwidth = 1;
-        gbc.insets.top = 5;
         gbc.weightx = 1.0;
+        gbc.insets.bottom = 20;
+        gbc.fill = GridBagConstraints.BOTH;
         add((JComponent) progressBar, gbc);
         gbc.gridy++;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
-        gbc.insets.top = 0;
+        gbc.insets.top = 10;
         gbc.insets.right = 0;
         gbc.insets.left = 0;
         gbc.fill = GridBagConstraints.BOTH;

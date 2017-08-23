@@ -36,8 +36,8 @@ import org.underworldlabs.swing.util.IconUtilities;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1767 $
- * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
+ * @version  $Revision: 1770 $
+ * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
  */
 public class ActionUtilities {
     
@@ -66,6 +66,24 @@ public class ActionUtilities {
                                        Icon icon,
                                        String toolTipText) {
         JButton item = new DefaultButton(icon);
+        item.setMargin(new Insets(1, 1, 1, 1));
+
+        item.setToolTipText(toolTipText);
+        item.setActionCommand(command);
+        
+        if (actionListener != null) {
+            item.addActionListener(actionListener);
+        }
+        
+        return item;
+    }
+
+    public static JButton createToolbarButton(ActionListener actionListener, 
+                                       String command,
+                                       Icon icon,
+                                       String toolTipText) {
+        
+        JButton item = new DefaultToolbarButton(icon);
         item.setMargin(new Insets(1, 1, 1, 1));
 
         item.setToolTipText(toolTipText);

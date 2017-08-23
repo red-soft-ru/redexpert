@@ -65,8 +65,8 @@ import org.underworldlabs.util.MiscUtils;
 /** 
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1770 $
+ * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
  */
 public class ManageShortcutsPanel extends DefaultActionButtonsPanel 
                                   implements ListSelectionListener {
@@ -132,7 +132,7 @@ public class ManageShortcutsPanel extends DefaultActionButtonsPanel
 
         addContentPanel(panel);
         
-        setPreferredSize(new Dimension(600, 350));
+        setPreferredSize(new Dimension(650, 400));
     }
 
     private JButton createCancelButton() {
@@ -441,13 +441,13 @@ public class ManageShortcutsPanel extends DefaultActionButtonsPanel
         
         JPanel panel = new JPanel(new GridBagLayout());
 
-        JButton addButton = ActionUtilities.createButton(
+        JButton addButton = ActionUtilities.createToolbarButton(
                 this, 
                 "addShortcut",
                 GUIUtilities.loadIcon("ShortcutAdd16.png"), 
                 "Add shortcut");
 
-        JButton deleteButton = ActionUtilities.createButton(
+        JButton deleteButton = ActionUtilities.createToolbarButton(
                 this, 
                 "deleteShortcut",
                 GUIUtilities.loadIcon("ShortcutDelete16.png"),

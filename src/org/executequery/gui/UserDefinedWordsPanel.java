@@ -49,8 +49,8 @@ import org.underworldlabs.util.MiscUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1770 $
+ * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
  */
 public class UserDefinedWordsPanel extends DefaultActionButtonsPanel
                                    implements FocusComponentPanel,
@@ -104,7 +104,7 @@ public class UserDefinedWordsPanel extends DefaultActionButtonsPanel
         
         JPanel tablePanel = new JPanel(new GridBagLayout());
         
-        Dimension dim = new Dimension(300, 350);
+        Dimension dim = new Dimension(350, 350);
         
         userModel = new KeywordModel(definedTypes, true);
         userTable = new DefaultTable(userModel);
@@ -151,7 +151,7 @@ public class UserDefinedWordsPanel extends DefaultActionButtonsPanel
         newWordField = WidgetFactory.createTextField();
         actionToField(newWordField, "addWord");
 
-        addButton = new JButton("Add");
+        addButton = WidgetFactory.createButton("Add");
         actionToButton(addButton, "addWord");
         
         JPanel addPanel = new JPanel(new GridBagLayout());

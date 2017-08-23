@@ -24,18 +24,10 @@ public class ExportConnectionsPanelTwo extends ActionPanel {
     public ExportConnectionsPanelTwo() {
 
         super(new GridBagLayout());
-        try  {
-
-            init();
-
-        } catch (Exception e) {
-          
-            e.printStackTrace();
-        }
-
+        init();
     }
     
-    private void init() throws Exception {
+    private void init() {
         
         fileNameField = WidgetFactory.createTextField();
 

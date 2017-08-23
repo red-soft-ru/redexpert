@@ -51,8 +51,8 @@ import org.executequery.gui.DefaultTable;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1767 $
- * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
+ * @version  $Revision: 1770 $
+ * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
  */
 public class ImportExportPanel_3 extends JPanel {
     
@@ -71,21 +71,16 @@ public class ImportExportPanel_3 extends JPanel {
     public ImportExportPanel_3(ImportExportDataProcess parent) {
         super(new GridBagLayout());
         this.parent = parent;
-        try {
-            init();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }        
+        init();
     }
     
-    private void init() throws Exception {
+    private void init() {
 
-        JLabel label = new JLabel("Select respective data files for " +
-                                  "the tables to be processed.");
+        JLabel label = new JLabel("Select respective data files for the tables to be processed.");
         
         // build the table and add to a scroll pane
         table = new DefaultTable();
-        table.setRowHeight(23);
+        table.setRowHeight(28);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setColumnSelectionAllowed(false);
         table.getTableHeader().setReorderingAllowed(false);

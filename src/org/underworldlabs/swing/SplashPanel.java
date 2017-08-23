@@ -45,8 +45,8 @@ import org.underworldlabs.swing.plaf.UIUtils;
  * components.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1769 $
+ * @date     $Date: 2017-08-21 00:13:31 +1000 (Mon, 21 Aug 2017) $
  */
 public class SplashPanel extends Canvas {
     
@@ -143,7 +143,7 @@ public class SplashPanel extends Canvas {
 
             tracker.waitForAll();
 
-        } catch(Exception e) {
+        } catch(InterruptedException e) {
         
             e.printStackTrace();
         }
@@ -178,6 +178,7 @@ public class SplashPanel extends Canvas {
         
     }
     
+    @Override
     public synchronized void paint(Graphics g) {
 
         Dimension size = getSize();
@@ -249,14 +250,15 @@ public class SplashPanel extends Canvas {
         // wait a moment
         try {
         
-            Thread.sleep(600);
+            Thread.sleep(700);
 //            Thread.sleep(90000);
 
-        } catch (Exception e) {}
+        } catch (InterruptedException e) {}
 
         window.dispose();
     }
     
+    @Override
     public void update(Graphics g) {
 
         paint(g);

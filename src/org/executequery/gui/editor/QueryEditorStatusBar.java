@@ -31,8 +31,8 @@ import org.underworldlabs.swing.ProgressBarFactory;
  * Query Editor status bar panel.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1770 $
+ * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
  */
 public class QueryEditorStatusBar extends AbstractStatusBarPanel {
     
@@ -43,19 +43,17 @@ public class QueryEditorStatusBar extends AbstractStatusBarPanel {
     private ProgressBar progressBar;
     
     /** the status bar panel fixed height */
-    private static final int HEIGHT = 22;
+    private static final int HEIGHT = 26;
     
     public QueryEditorStatusBar() {
         super(HEIGHT);
-        try {
-            jbInit();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        init();
     }
     
-    private void jbInit() throws Exception {
+    private void init() {
+        
         caretBuffer = new StringBuffer();
+     
         // setup the progress bar
         progressBar = ProgressBarFactory.create(false, true);
 

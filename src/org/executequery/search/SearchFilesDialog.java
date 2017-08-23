@@ -53,8 +53,8 @@ import org.underworldlabs.swing.DisabledField;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1770 $
+ * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
  */
 public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchView {
     
@@ -88,6 +88,7 @@ public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchV
     private FileSearch fileSearch;
     
     public SearchFilesDialog() {
+        
         super(GUIUtilities.getParentFrame(), "Search Files", false);
         
         try {
@@ -96,8 +97,8 @@ public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchV
             e.printStackTrace();
         }
         
-        
         pack();
+        setResizable(true);
         this.setLocation(GUIUtilities.getLocationForDialog(this.getSize()));
         setVisible(true);
         requestFocus();
@@ -271,7 +272,7 @@ public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchV
         fileSearch = new FileSearch(this);
         
         panel.setBorder(BorderFactory.createEtchedBorder());
-        panel.setPreferredSize(new Dimension(490,460));
+        panel.setPreferredSize(new Dimension(550, 500));
         
         Container c = this.getContentPane();
         c.setLayout(new GridBagLayout());

@@ -33,6 +33,7 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
 import org.executequery.components.LoggingOutputPane;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.sql.SqlMessages;
 
 /*
@@ -45,8 +46,8 @@ import org.executequery.sql.SqlMessages;
  * types - XML or delimited.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1769 $
+ * @date     $Date: 2017-08-21 00:13:31 +1000 (Mon, 21 Aug 2017) $
  */
 public class NewImportExportProgressPanel extends AbstractImportExportPanel
                                        implements ActionListener, ImportExportMonitor {
@@ -80,7 +81,7 @@ public class NewImportExportProgressPanel extends AbstractImportExportPanel
         output.setBackground(getBackground());
         
         progressBar = new JProgressBar(0, 100);
-        stopButton = new JButton("Stop");
+        stopButton = WidgetFactory.createButton("Stop");
         stopButton.addActionListener(this);
         
         GridBagConstraints gbc = new GridBagConstraints();
@@ -96,7 +97,6 @@ public class NewImportExportProgressPanel extends AbstractImportExportPanel
         gbc.insets.right = 0;
         gbc.gridwidth = 1;
         gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
         add(progressBar, gbc);
         gbc.gridx = 1;
         gbc.weightx = 0;
@@ -106,7 +106,7 @@ public class NewImportExportProgressPanel extends AbstractImportExportPanel
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.weighty = 1.0;
-        gbc.insets.top = 0;
+        gbc.insets.top = 5;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         add(new JScrollPane(output), gbc);

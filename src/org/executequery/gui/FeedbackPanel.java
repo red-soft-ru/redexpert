@@ -44,7 +44,6 @@ import org.executequery.repository.RepositoryException;
 import org.executequery.repository.UserFeedback;
 import org.executequery.repository.UserFeedbackRepository;
 import org.executequery.repository.spi.UserFeedbackRepositoryImpl;
-import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.InterruptibleProgressDialog;
 import org.underworldlabs.swing.util.Interruptible;
 import org.underworldlabs.swing.util.SwingWorker;
@@ -55,8 +54,8 @@ import org.underworldlabs.util.SystemProperties;
  * Base feedback panel for comments, requests and bugs.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1770 $
+ * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
  */
 public class FeedbackPanel extends DefaultActionButtonsPanel
                            implements ActionListener,
@@ -96,20 +95,13 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
     /** Creates a new instance of FeedbackPanel */
     public FeedbackPanel(ActionContainer parent, int feedbackType) {
 
-        try {
+        this.parent = parent;
+        this.feedbackType = feedbackType;
 
-            this.parent = parent;
-            this.feedbackType = feedbackType;
-
-            init();
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
+        init();
     }
 
-    private void init() throws Exception {
+    private void init() {
 
         String labelText = generateLabelText();
 
@@ -171,8 +163,8 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         basePanel.add(new JScrollPane(commentsField), gbc);
 
-        JButton cancelButton = new DefaultButton("Cancel");
-        JButton sendButton = new DefaultButton("Send");
+        JButton cancelButton = WidgetFactory.createButton("Cancel");
+        JButton sendButton = WidgetFactory.createButton("Send");
 
         sendButton.addActionListener(this);
         cancelButton.addActionListener(this);
@@ -180,7 +172,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         addActionButton(sendButton);
         addActionButton(cancelButton);
 
-        setPreferredSize(new Dimension(700, 450));
+        setPreferredSize(new Dimension(700, 480));
 
         addContentPanel(basePanel);
     }

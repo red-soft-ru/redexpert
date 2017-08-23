@@ -113,7 +113,7 @@ public abstract class DefaultActionButtonsPanel extends BaseActionPanel {
             gbc.gridx++;
             gbc.weightx = 0;
 
-            gbc.insets.top = 5;
+            gbc.insets.top = 7;
             gbc.insets.bottom = 5;
             gbc.insets.left = 5;
             
@@ -124,7 +124,6 @@ public abstract class DefaultActionButtonsPanel extends BaseActionPanel {
                 gbc.weightx = 1.0;
             }
 
-            buttons.get(i).getPreferredSize();
             buttonPanel.add(buttons.get(i), gbc);
         }
 
@@ -163,7 +162,7 @@ public abstract class DefaultActionButtonsPanel extends BaseActionPanel {
 
         expandButtonsToFill = false;
         
-        buttons = new ArrayList<JButton>();
+        buttons = new ArrayList<>();
         
         buttonPanel = new JPanel(new GridBagLayout());
         addActionButtonsPanel(buttonPanel);
@@ -176,13 +175,3 @@ public abstract class DefaultActionButtonsPanel extends BaseActionPanel {
     private static final int EMPTY_BORDER_WIDTH = 4;
     
 }
-
-
-
-
-
-
-
-
-
-

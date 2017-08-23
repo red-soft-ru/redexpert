@@ -48,8 +48,8 @@ import org.underworldlabs.util.SystemProperties;
  * System About panel.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1770 $
+ * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
  */
 public class AboutPanel extends BaseDialog
                         implements ActiveComponent,
@@ -495,12 +495,9 @@ public class AboutPanel extends BaseDialog
 
             renderingHintsForText(g2d);
 
-            AlphaComposite ac = AlphaComposite.getInstance(
-                                            AlphaComposite.SRC_OVER, alpha);
-            g2d.setComposite(ac);
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
 
             g2d.drawImage(background, 0, 0, WIDTH, HEIGHT, this);
-
             g2d.drawImage(eqImage, imageX - 1, imageY - 1, this);
 
             if (stageOneComplete) {

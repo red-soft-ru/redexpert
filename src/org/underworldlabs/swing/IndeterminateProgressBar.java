@@ -34,8 +34,8 @@ import org.underworldlabs.swing.plaf.UIUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1768 $
- * @date     $Date: 2017-08-20 21:33:48 +1000 (Sun, 20 Aug 2017) $
+ * @version  $Revision: 1770 $
+ * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
  */
 public class IndeterminateProgressBar extends JComponent
                                       implements Runnable, ProgressBar {
@@ -47,6 +47,9 @@ public class IndeterminateProgressBar extends JComponent
     
     private boolean inProgress;
     private boolean paintBorder;
+    
+    private boolean stopped;
+    private boolean fillWhenStopped;
     
     private Timer timer;
     
@@ -64,22 +67,22 @@ public class IndeterminateProgressBar extends JComponent
         Color foregroundColour = UIManager.getColor("ProgressBar.foreground");
         
         if (UIUtils.isNativeMacLookAndFeel()) {
-        	foregroundColour = UIManager.getColor("Focus.color");
+            foregroundColour = UIManager.getColor("Focus.color");
         }
         
-		setScrollbarColour(foregroundColour);
+        setScrollbarColour(foregroundColour);
 		
         createTimer();
     }
 
-	private void createTimer() {
-		timer = new Timer(25, new ActionListener() {
+    private void createTimer() {
+        timer = new Timer(25, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 run();
             }
         });
         timer.setInitialDelay(0);
-	}
+    }
     
     public void run() {
         animationOffset++;
@@ -94,6 +97,7 @@ public class IndeterminateProgressBar extends JComponent
             timer.stop();
         }
         inProgress = false;
+        stopped = true;
         repaint();
     }
 
@@ -124,6 +128,7 @@ public class IndeterminateProgressBar extends JComponent
     }
     
     public void paintComponent(Graphics g) {
+        
     	UIUtils.antialias(g);
     	
         int width = getWidth();
@@ -142,15 +147,22 @@ public class IndeterminateProgressBar extends JComponent
         } else {
             
             // draw the default border
-            paintBorder(g);
-            y1 = height;
-            y4 = height - 1;
+//            paintBorder(g);
+//            y1 = height;
+//            y4 = height - 1;
         }
         
         if (!inProgress) {
+
+            if (stopped && fillWhenStopped) {
+                
+                g.setColor(getScrollbarColour());
+                g.fillRect(0, 0, width, height);
+            }
+            
             return;
         }
-        
+
         // set the polygon points
         int[] xPosns = {0, 0, 0, 0};
         int[] yPosns = {y1, 1, 1, y1};
@@ -172,6 +184,11 @@ public class IndeterminateProgressBar extends JComponent
             
         }
         
+    }
+
+    @Override
+    public void fillWhenStopped() {
+        this.fillWhenStopped = true;
     }
 
     public Color getScrollbarColour() {

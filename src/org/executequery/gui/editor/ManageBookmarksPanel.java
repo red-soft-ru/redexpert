@@ -64,8 +64,8 @@ import org.underworldlabs.util.MiscUtils;
 /** 
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1770 $
+ * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
  */
 public class ManageBookmarksPanel extends DefaultActionButtonsPanel 
                                   implements ListSelectionListener {
@@ -133,7 +133,7 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
 
         addContentPanel(panel);
         
-        setPreferredSize(new Dimension(700, 500));
+        setPreferredSize(new Dimension(800, 500));
     }
 
     private JButton createCancelButton() {
@@ -308,6 +308,7 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
         return true;
     }
 
+    @Override
     public void valueChanged(ListSelectionEvent e) {
 
         if (lastSelectedIndex != -1) {
@@ -397,9 +398,7 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
 
         Object[] bookmarks = modelFromList().toArray();
         
-        List<QueryBookmark> bookmarkList = 
-            new ArrayList<QueryBookmark>(bookmarks.length);
-        
+        List<QueryBookmark> bookmarkList = new ArrayList<>(bookmarks.length);
         for (Object bookmark : bookmarks) {
             
             bookmarkList.add((QueryBookmark)bookmark);
@@ -490,25 +489,25 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
         
         JPanel panel = new JPanel(new GridBagLayout());
 
-        JButton upButton = ActionUtilities.createButton(
+        JButton upButton = ActionUtilities.createToolbarButton(
                 this, 
                 "Up16.png", 
                 "Move selection up", 
                 "moveUp");
 
-        JButton downButton = ActionUtilities.createButton(
+        JButton downButton = ActionUtilities.createToolbarButton(
                 this, 
                 "Down16.png", 
                 "Move selection down", 
                 "moveDown");
 
-        JButton addButton = ActionUtilities.createButton(
+        JButton addButton = ActionUtilities.createToolbarButton(
                 this, 
                 "addBookmark",
                 GUIUtilities.loadIcon("AddBookmark16.png"), 
                 "Add bookmark");
 
-        JButton deleteButton = ActionUtilities.createButton(
+        JButton deleteButton = ActionUtilities.createToolbarButton(
                 this, 
                 "deleteBookmark",
                 GUIUtilities.loadIcon("DeleteBookmark16.png"),

@@ -67,10 +67,28 @@ public class DefaultButton extends JButton {
     @Override
     public Dimension getPreferredSize() {
 
+        validateDimension();
+        
         Dimension preferredSize = super.getPreferredSize();
         preferredSize.height = getHeight();
 
         return preferredSize;
+    }
+
+    private void validateDimension() {
+
+        if (!isPreferredSizeSet()) {
+
+            Dimension preferredSizeUI = getUI().getPreferredSize(this);
+            
+            Dimension size = new Dimension(
+                    Math.max(preferredSizeUI.width, getWidth()), 
+                    Math.max(preferredSizeUI.height, getHeight()));
+    
+            setPreferredSize(size);
+            setMinimumSize(size);
+        }
+
     }
 
     @Override

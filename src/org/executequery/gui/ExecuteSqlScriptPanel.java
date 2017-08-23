@@ -67,8 +67,8 @@ import org.underworldlabs.util.MiscUtils;
 /** 
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1766 $
- * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
+ * @version  $Revision: 1770 $
+ * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
  */
 public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
                                   implements NamedView,
@@ -143,7 +143,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         button.addActionListener(this);
         button.setMnemonic('r');
 
-        logOutputCheckBox = new JCheckBox("<html>&nbsp;&nbsp;<i>Note:</i> This will slow down the process significantly </html>");
+        logOutputCheckBox = new JCheckBox("<html>&nbsp;&nbsp;<i>Note:</i> This can slow down the process significantly </html>");
         
         JPanel mainPanel = new JPanel(new GridBagLayout());
         
@@ -153,8 +153,8 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         gbc.gridheight = 1;
         gbc.insets.top = 7;
         gbc.insets.bottom = 5;
-        gbc.insets.right = 5;
-        gbc.insets.left = 5;
+        gbc.insets.right = 10;
+        gbc.insets.left = 10;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         mainPanel.add(new JLabel("Connection:"), gbc);
         gbc.gridx = 1;
@@ -193,18 +193,18 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.insets.top = 5;
-        gbc.insets.left = 5;
+        gbc.insets.left = 10;
         mainPanel.add(new JLabel("Log output:"), gbc);
         gbc.gridx = 1;
         gbc.insets.top = 2;
         gbc.insets.left = 0;
-        mainPanel.add(logOutputCheckBox, gbc);        
+        mainPanel.add(logOutputCheckBox, gbc);
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.weighty = 1.0;
         gbc.weightx = 1.0;
         gbc.insets.top = 5;
-        gbc.insets.left = 5;
+        gbc.insets.left = 10;
         gbc.insets.bottom = 0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.BOTH;
@@ -288,12 +288,14 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         return true;
     }
     
+    @Override
     public boolean tabViewClosing() {
 
         cleanup();
         return true;
     }
 
+    @Override
     public void cleanup() {
 
         combosGroup.close();
@@ -323,11 +325,13 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         }
     }
 
+    @Override
     public boolean canHandleEvent(ApplicationEvent event) {
 
         return (event instanceof DefaultKeywordEvent) || (event instanceof ConnectionEvent);
     }
 
+    @Override
     public Component getDefaultFocusComponent() {
 
         return fileNameField;
@@ -337,6 +341,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
             final boolean enableCommit, final boolean enableRollback) {
 
         GUIUtils.invokeLater(new Runnable() {
+           @Override
            public void run() {
                startButton.setEnabled(enableStart);
                stopButton.setEnabled(enableStop);                
@@ -537,7 +542,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         combosGroup.connectionClosed(connectionEvent.getDatabaseConnection());
     }
 
-    private static final int STATUS_BAR_HEIGHT = 21;
+    private static final int STATUS_BAR_HEIGHT = 26;
 
     private ProgressBar progressBar;
     

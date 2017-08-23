@@ -55,8 +55,8 @@ import org.underworldlabs.swing.actions.ReflectiveAction;
  * <p>Find replace for text components.
  * 
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1770 $
+ * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
  */
 public class FindReplaceDialog extends DefaultActionButtonsPanel
                                implements ActionListener,
@@ -88,23 +88,17 @@ public class FindReplaceDialog extends DefaultActionButtonsPanel
     
     public FindReplaceDialog(ActionContainer parent, int type) {
         
-        this.parent = parent;
-        
-        try {
-            init();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-        
+        this.parent = parent;        
+        init();
         setFindReplace(type == REPLACE);
     }
     
-    private void init() throws Exception {
+    private void init() {
 
         JPanel optionsPanel = new JPanel(new GridBagLayout());
         optionsPanel.setBorder(BorderFactory.createTitledBorder("Options"));
         
-        Dimension optionsDim = new Dimension(500, 120);
+        Dimension optionsDim = new Dimension(600, 140);
         optionsPanel.setPreferredSize(optionsDim);
         
         TextEditor textFunction = GUIUtilities.getTextEditorInFocus();
@@ -397,13 +391,4 @@ public class FindReplaceDialog extends DefaultActionButtonsPanel
     }
         
 }
-
-
-
-
-
-
-
-
-
 

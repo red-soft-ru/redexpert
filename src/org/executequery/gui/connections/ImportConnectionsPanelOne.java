@@ -24,18 +24,10 @@ public class ImportConnectionsPanelOne extends ActionPanel {
     public ImportConnectionsPanelOne() {
 
         super(new GridBagLayout());
-        try  {
-
-            init();
-
-        } catch (Exception e) {
-          
-            e.printStackTrace();
-        }
-
+        init();
     }
     
-    private void init() throws Exception {
+    private void init() {
         
         fileNameField = WidgetFactory.createTextField();
 

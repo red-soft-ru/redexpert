@@ -46,8 +46,8 @@ import org.underworldlabs.util.MiscUtils;
  * Acts as a wrapper to the actual data source and JDBC driver.
  *
  * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+ * @version  $Revision: 1486 $
+ * @date     $Date: 2015-08-23 22:06:18 +1000 (Sun, 23 Aug 2015) $
  */
 @SuppressWarnings({ "rawtypes" })
 public class ConnectionDataSource implements DataSource, DatabaseDataSource {

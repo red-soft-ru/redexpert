@@ -46,8 +46,8 @@ import org.underworldlabs.swing.ProgressBarFactory;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1766 $
- * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
+ * @version  $Revision: 1770 $
+ * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
  */
 public class ConnectionProgressDialog extends JDialog
                                       implements Runnable,
@@ -66,27 +66,19 @@ public class ConnectionProgressDialog extends JDialog
 
         super(GUIUtilities.getParentFrame(), "Connecting...", true);
         this.connectonBuilder = connectonBuilder;
-
-        try {
-
-            init();
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-
+        init();
     }
 
     public void run() {
+        
         progressBar.start();
         setVisible(true);
     }
 
-    private void init() throws Exception {
+    private void init() {
 
         progressBar = ProgressBarFactory.create(true, true);
-        ((JComponent) progressBar).setPreferredSize(new Dimension(260, 18));
+        ((JComponent) progressBar).setPreferredSize(new Dimension(280, 20));
 
         JPanel base = new JPanel(new GridBagLayout());
 
@@ -100,7 +92,7 @@ public class ConnectionProgressDialog extends JDialog
         gbc.insets = ins;
         base.add(connectionNameLabel, gbc);
         gbc.gridy = 1;
-        gbc.insets.top = 0;
+        gbc.insets.top = 5;
         base.add(((JComponent) progressBar), gbc);
         gbc.gridy = 2;
         gbc.weighty = 1.0;

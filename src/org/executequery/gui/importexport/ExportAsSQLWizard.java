@@ -43,15 +43,15 @@ import org.underworldlabs.swing.wizard.DefaultWizardProcessModel;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1770 $
+ * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
  */
 public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
                                implements ActiveComponent, ImportExportWizard {
 
     public static final String TITLE = "Export as SQL";
-    
-    private static final Dimension panelSize = new Dimension(525, 340);
+
+    private static final Dimension panelSize = new Dimension(580, 420);
 
     private ExportAsSQLDataModel exportDataModel;
     

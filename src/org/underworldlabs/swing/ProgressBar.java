@@ -28,6 +28,8 @@ public interface ProgressBar {
 	
 	void cleanup();
 	
+    void fillWhenStopped();
+        
 }
 
 

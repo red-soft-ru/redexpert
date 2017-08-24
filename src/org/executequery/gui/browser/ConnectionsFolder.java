@@ -112,7 +112,12 @@ public class ConnectionsFolder {
         DatabaseConnectionRepository repository = connectionsRepository();
         for (String id : connections) {
         
-            list.add(repository.findById(id));
+            DatabaseConnection databaseConnection = repository.findById(id);
+            if (databaseConnection != null) {
+             
+                list.add(databaseConnection);
+            }
+
         }
 
         return list;

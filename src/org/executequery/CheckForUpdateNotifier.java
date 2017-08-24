@@ -44,8 +44,8 @@ import org.underworldlabs.swing.util.SwingWorker;
  * Checks to see if a newer version of Execute Query is available. 
  * 
  * @author   Takis Diakoumis
- * @version  $Revision: 1770 $
- * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
+ * @version  $Revision: 1771 $
+ * @date     $Date: 2017-08-21 22:12:15 +1000 (Mon, 21 Aug 2017) $
  */
 public class CheckForUpdateNotifier implements Interruptible {
 

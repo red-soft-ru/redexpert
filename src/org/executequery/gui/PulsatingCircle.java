@@ -27,9 +27,9 @@ import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import java.util.Timer;
 import java.util.TimerTask;
+
 import javax.swing.ImageIcon;
 
 /**
@@ -63,7 +63,7 @@ public class PulsatingCircle extends ImageIcon {
                     try {
 
                         Thread.sleep(750);
-                        
+
                     } catch (InterruptedException e) {}
 
                 }
@@ -76,10 +76,10 @@ public class PulsatingCircle extends ImageIcon {
                         alpha = 0.0f;
                         goingUp = true;
                     }
-                
+
                 } else {
                     
-                    alpha += 0.020f;
+                    alpha += 0.025f;
                     if (alpha > 1.0f) {
                         
                         alpha = 1.0f;

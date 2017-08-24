@@ -33,8 +33,8 @@ import javax.swing.table.TableCellRenderer;
  * typically in system preferences etc.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1774 $
+ * @date     $Date: 2017-08-24 21:50:47 +1000 (Thu, 24 Aug 2017) $
  */
 public class ColourTableCellRenderer extends JLabel
                                      implements TableCellRenderer {
@@ -59,16 +59,19 @@ public class ColourTableCellRenderer extends JLabel
                                                    int row, 
                                                    int col) {
         
-        Color colour = (Color)value;
+        Color colour = (Color) value;
         
         int red = colour.getRed();
         int green = colour.getGreen();
         int blue = colour.getBlue();
 
         if (isSelected) {
+            
             setBackground(table.getSelectionBackground());
             setForeground(table.getSelectionForeground());
+
         } else {
+        
             setBackground(table.getBackground());
             setForeground(table.getForeground());
         }

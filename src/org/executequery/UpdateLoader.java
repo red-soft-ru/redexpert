@@ -97,7 +97,7 @@ public class UpdateLoader extends JFrame {
         scrollPane = new JScrollPane();
         scrollPane.setViewportView(outText);
 
-        restartButton = new JButton("Restart");
+        restartButton = new JButton("Restart now");
         restartButton.setEnabled(false);
         restartButton.addActionListener(new ActionListener() {
 
@@ -153,7 +153,7 @@ public class UpdateLoader extends JFrame {
                             cleanup();
                             restartButton.setEnabled(true);
                             outText.setText(outText.getText() + "\nUpdate Finished!");
-                            cancelButton.setText("Close");
+                            cancelButton.setText("Restart later");
                         } catch (Exception ex) {
                             ex.printStackTrace();
                             JOptionPane.showMessageDialog(null, "An error occurred while preforming update!");

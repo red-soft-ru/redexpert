@@ -60,9 +60,6 @@ public class UserManagerPanel extends javax.swing.JPanel {
             execute_w = true;
             databaseBox.setSelectedIndex(0);
         }
-        jTabbedPane1.setSelectedIndex(1);
-        jTabbedPane1.setSelectedIndex(2);
-        jTabbedPane1.setSelectedIndex(0);
     }
 
     // Variables declaration - do not modify
@@ -805,6 +802,11 @@ public class UserManagerPanel extends javax.swing.JPanel {
             membershipPanel.setVisible(false);
             rolesPanel.setVisible(false);
         }
+        int ind=jTabbedPane1.getSelectedIndex();
+        jTabbedPane1.setSelectedIndex(1);
+        jTabbedPane1.setSelectedIndex(2);
+        jTabbedPane1.setSelectedIndex(0);
+        jTabbedPane1.setSelectedIndex(ind);
     }
 
     void create_membership() {

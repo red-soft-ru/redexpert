@@ -2,6 +2,7 @@ package org.executequery.gui.browser;
 
 import biz.redsoft.IFBUser;
 import org.executequery.GUIUtilities;
+import org.underworldlabs.swing.NumberTextField;
 
 /**
  * Created by mikhan808 on 20.02.2017.
@@ -30,6 +31,7 @@ public class WindowAddUser extends javax.swing.JPanel {
     edit = true;
     this.user = user;
     nameTextField.setText(user.getUserName());
+    nameTextField.setEnabled(false);
     firstNameField.setText(user.getFirstName());
     middleNameField.setText(user.getMiddleName());
     lastNameField.setText(user.getLastName());
@@ -54,8 +56,8 @@ public class WindowAddUser extends javax.swing.JPanel {
     lastNameField = new javax.swing.JTextField();
     jScrollPane1 = new javax.swing.JScrollPane();
     descriptionField = new javax.swing.JTextArea();
-    userIDField = new javax.swing.JTextField();
-    groupIDField = new javax.swing.JTextField();
+    userIDField = new NumberTextField();
+    groupIDField = new NumberTextField();
     jLabel1 = new javax.swing.JLabel();
     jLabel2 = new javax.swing.JLabel();
     jLabel3 = new javax.swing.JLabel();
@@ -154,7 +156,7 @@ public class WindowAddUser extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(userIDField, javax.swing.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)
-                            .addComponent(groupIDField))
+                            .addComponent(groupIDField, javax.swing.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE))
                         .addGap(43, 43, 43))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jScrollPane1)
@@ -200,7 +202,7 @@ public class WindowAddUser extends javax.swing.JPanel {
                                     .addComponent(jLabel7))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(groupIDField, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(groupIDField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jLabel8))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(lastNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -220,24 +222,39 @@ public class WindowAddUser extends javax.swing.JPanel {
   }// </editor-fold>//GEN-END:initComponents
 
   private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
+    if(!nameTextField.getText().equals(""))
+    {
     if (new String(passTextField.getPassword()).equals(new String(confirmField.getPassword()))) {
       ump.userAdd.setUserName(nameTextField.getText());
-      ump.userAdd.setPassword(new String(passTextField.getPassword()));
       ump.userAdd.setFirstName(firstNameField.getText());
       ump.userAdd.setMiddleName(middleNameField.getText());
       ump.userAdd.setLastName(lastNameField.getText());
       ump.userAdd.setUserId(Integer.parseInt(userIDField.getText()));
       ump.userAdd.setGroupId(Integer.parseInt(groupIDField.getText()));
       if (edit) {
+        if(passTextField.getPassword().length>0)
+          ump.userAdd.setPassword(new String(passTextField.getPassword()));
         ump.editUser();
+        GUIUtilities.closeSelectedTab();
       } else {
-
-        ump.addUser();
+        if(passTextField.getPassword().length>0) {
+          ump.userAdd.setPassword(new String(passTextField.getPassword()));
+          ump.addUser();
+          GUIUtilities.closeSelectedTab();
+        }
+        else{
+          GUIUtilities.displayErrorMessage("Password can not be empty");
+        }
 
       }
-      GUIUtilities.closeSelectedTab();
+
     } else {
       GUIUtilities.displayErrorMessage("Passwords do not match");
+    }
+    }
+    else
+    {
+      GUIUtilities.displayErrorMessage("Username can not be empty");
     }
   }//GEN-LAST:event_okButtonActionPerformed
 
@@ -251,7 +268,7 @@ public class WindowAddUser extends javax.swing.JPanel {
   private javax.swing.JPasswordField confirmField;
   private javax.swing.JTextArea descriptionField;
   private javax.swing.JTextField firstNameField;
-  private javax.swing.JTextField groupIDField;
+  private NumberTextField groupIDField;
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
   private javax.swing.JLabel jLabel3;
@@ -267,7 +284,7 @@ public class WindowAddUser extends javax.swing.JPanel {
   private javax.swing.JTextField nameTextField;
   private javax.swing.JButton okButton;
   private javax.swing.JPasswordField passTextField;
-  private javax.swing.JTextField userIDField;
+  private NumberTextField userIDField;
   // End of variables declaration//GEN-END:variables
   UserManagerPanel ump;
 }

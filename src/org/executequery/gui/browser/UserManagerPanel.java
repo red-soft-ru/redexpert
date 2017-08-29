@@ -20,6 +20,8 @@ import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -58,6 +60,9 @@ public class UserManagerPanel extends javax.swing.JPanel {
             execute_w = true;
             databaseBox.setSelectedIndex(0);
         }
+        jTabbedPane1.setSelectedIndex(1);
+        jTabbedPane1.setSelectedIndex(2);
+        jTabbedPane1.setSelectedIndex(0);
     }
 
     // Variables declaration - do not modify
@@ -117,6 +122,7 @@ public class UserManagerPanel extends javax.swing.JPanel {
         usersPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jScrollPane2 = new javax.swing.JScrollPane();
+        membershipTable = new javax.swing.JTable();
         jScrollPane3 = new JScrollPane(membershipTable, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         usersTable = new javax.swing.JTable();
         rolesTable = new JTable();
@@ -253,7 +259,7 @@ public class UserManagerPanel extends javax.swing.JPanel {
                                         .addComponent(addUserButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(editUserButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(deleteUserButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(refreshUsersButton, javax.swing.GroupLayout.Alignment.TRAILING))
+                                        .addComponent(refreshUsersButton, javax.swing.GroupLayout.Alignment.TRAILING,javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addContainerGap())
         );
         usersPanelLayout.setVerticalGroup(
@@ -266,8 +272,9 @@ public class UserManagerPanel extends javax.swing.JPanel {
                                 .addComponent(editUserButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(deleteUserButton)
-                                .addGap(18, 18, 18)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(refreshUsersButton)
+                                .addGap(18, 18, 18)
                                 .addContainerGap(47, Short.MAX_VALUE))
         );
 

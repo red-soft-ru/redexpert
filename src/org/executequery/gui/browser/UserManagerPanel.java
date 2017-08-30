@@ -13,7 +13,11 @@ import org.executequery.components.table.RoleTableModel;
 import org.executequery.components.table.RowHeaderRenderer;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
+import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
@@ -100,6 +104,7 @@ public class UserManagerPanel extends javax.swing.JPanel {
     Vector<String> role_names;
     public IFBUser userAdd;
     ResultSet result;
+    DatabaseConnection dbc;
     // End of variables declaration
     /**
      * This method is called from within the constructor to initialize the form.
@@ -518,9 +523,11 @@ public class UserManagerPanel extends javax.swing.JPanel {
     }
 
 
+
     private void databaseBoxActionPerformed(java.awt.event.ActionEvent evt) {
 
         if (execute_w) {
+            dbc=listConnections.get(databaseBox.getSelectedIndex());
             if (listConnections.get(databaseBox.getSelectedIndex()).isConnected())
                 refresh();
             else {
@@ -553,9 +560,23 @@ public class UserManagerPanel extends javax.swing.JPanel {
     void editUserButtonActionPerformed(java.awt.event.ActionEvent evt) {
         int ind = usersTable.getSelectedRow();
         if (ind >= 0) {
+            String desc="";
+            try {
+                Statement state = con.createStatement();
+                result = state.executeQuery("SELECT SEC$DESCRIPTION FROM SEC$USERS WHERE SEC$USER_NAME='"+
+                        ((IFBUser) (users.values().toArray()[ind])).getUserName()+"'");
+                if(result.next())
+                    desc=result.getString(1);
+            }
+            catch (Exception e)
+            {
+                Log.error(e.getMessage());
+            }
+            if (desc==null)
+                desc="";
             GUIUtilities.addCentralPane("Edit user",
                     UserManagerPanel.FRAME_ICON,
-                    new WindowAddUser(this, ((IFBUser) (users.values().toArray()[ind]))),
+                    new WindowAddUser(this, ((IFBUser) (users.values().toArray()[ind])),desc),
                     null,
                     true);
         }
@@ -570,7 +591,6 @@ public class UserManagerPanel extends javax.swing.JPanel {
     }
 
     void refreshUserButtonActionPerformed(java.awt.event.ActionEvent evt) {
-
         refresh();
     }
 
@@ -867,9 +887,35 @@ public class UserManagerPanel extends javax.swing.JPanel {
                 DatabaseDriverRepository.REPOSITORY_ID);
     }
 
-    public void addUser() {
+    public void addUser(String description) {
         try {
             userManager.add(userAdd);
+            DatabaseHost host= new DefaultDatabaseHost(dbc);
+            String version=host.getDatabaseProductName();
+            if(version!=null)
+            {
+                int number=0;
+                for (int i=0;i<version.length();i++)
+                {
+                    if (Character.isDigit(version.charAt(i)))
+                    {
+                        number=Character.getNumericValue(version.charAt(i));
+                        break;
+                    }
+                }
+                if (number>=3)
+                {
+                    try {
+                        String query="COMMENT ON USER "+userAdd.getUserName()+ " is '"+description+"'";
+                        Statement st = con.createStatement();
+                        st.executeQuery(query);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.error(e.getMessage());
+                    }
+                }
+            }
             refresh();
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
@@ -891,9 +937,35 @@ public class UserManagerPanel extends javax.swing.JPanel {
         }
     }
 
-    public void editUser() {
+    public void editUser(String description) {
         try {
             userManager.update(userAdd);
+            DatabaseHost host= new DefaultDatabaseHost(dbc);
+            String version=host.getDatabaseProductName();
+            if(version!=null)
+            {
+                int number=0;
+                for (int i=0;i<version.length();i++)
+                {
+                    if (Character.isDigit(version.charAt(i)))
+                    {
+                        number=Character.getNumericValue(version.charAt(i));
+                        break;
+                    }
+                }
+                if (number>=3)
+                {
+                    try {
+                        String query="COMMENT ON USER "+userAdd.getUserName()+ " is '"+description+"'";
+                        Statement st = con.createStatement();
+                        st.executeQuery(query);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.error(e.getMessage());
+                    }
+                }
+            }
             refresh();
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());

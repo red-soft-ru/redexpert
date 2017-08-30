@@ -24,7 +24,7 @@ public class WindowAddUser extends javax.swing.JPanel {
   IFBUser user;
   boolean edit;
 
-  public WindowAddUser(UserManagerPanel u, IFBUser user) {
+  public WindowAddUser(UserManagerPanel u, IFBUser user,String description) {
 
     initComponents();
     ump = u;
@@ -37,6 +37,7 @@ public class WindowAddUser extends javax.swing.JPanel {
     lastNameField.setText(user.getLastName());
     groupIDField.setText(Integer.toString(user.getGroupId()));
     userIDField.setText(Integer.toString(user.getUserId()));
+    descriptionField.setText(description);
   }
 
   /**
@@ -234,12 +235,12 @@ public class WindowAddUser extends javax.swing.JPanel {
       if (edit) {
         if(passTextField.getPassword().length>0)
           ump.userAdd.setPassword(new String(passTextField.getPassword()));
-        ump.editUser();
+        ump.editUser(descriptionField.getText());
         GUIUtilities.closeSelectedTab();
       } else {
         if(passTextField.getPassword().length>0) {
           ump.userAdd.setPassword(new String(passTextField.getPassword()));
-          ump.addUser();
+          ump.addUser(descriptionField.getText());
           GUIUtilities.closeSelectedTab();
         }
         else{

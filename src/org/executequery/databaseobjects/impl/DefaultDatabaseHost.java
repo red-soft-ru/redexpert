@@ -76,7 +76,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      *
      * @param databaseConnection the connection wrapper
      */
-    DefaultDatabaseHost(DatabaseConnection databaseConnection) {
+    public DefaultDatabaseHost(DatabaseConnection databaseConnection) {
         this.databaseConnection = databaseConnection;
     }
 

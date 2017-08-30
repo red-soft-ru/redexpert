@@ -356,15 +356,15 @@
 			<plugin>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
-					<execution>
-						<phase>process-sources</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/lib</outputDirectory>
-						</configuration>
-					</execution>
+				  <execution>
+				    <phase>package</phase>
+				    <goals>
+				      <goal>copy-dependencies</goal>
+				    </goals>
+				    <configuration>
+				      <outputDirectory>${project.build.directory}/lib</outputDirectory>
+				    </configuration>
+				  </execution>
 				</executions>
 			</plugin>
 

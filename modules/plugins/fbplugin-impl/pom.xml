@@ -16,12 +16,9 @@
 	<!-- project dependencies -->
 	<dependencies>
 		<dependency>
-			<groupId>biz.redsoft</groupId>
+			<groupId>org.executequery</groupId>
 			<artifactId>fbplugin</artifactId>
 			<version>1.0</version>
-			<scope>system</scope>
-			<systemPath>${pom.basedir}/../../../lib/fbplugin.jar</systemPath>
-			<type>jar</type>
 		</dependency>
 		
 		<dependency>

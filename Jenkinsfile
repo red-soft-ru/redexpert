@@ -1,10 +1,13 @@
-import java.text.SimpleDateFormat 
+@Library('jenkins_pipeline_utils')
+
+import ru.redsoft.jenkins.Pipeline;
+import ru.redsoft.jenkins.Git;
+import ru.redsoft.jenkins.ReleaseHub;
 
 String release_hub_project = 'red_expert'
 String rev
 String version
 String vcs_url
-def utils
 String branch = env.BRANCH_NAME
 
 properties([
@@ -21,11 +24,9 @@ node('master')
     stage('Prepare')
     {
 
-        utils = fileLoader.fromGit('utils', 'http://git.red-soft.biz/utils/jenkins_pipeline_utils.git', 'master', null, '')
-
         checkout scm
 
-        rev = utils.getGitRevision(wd)
+        rev = Git.getGitRevision(wd)
 
         def matcher = (new File(wd + '/src/org/executequery/eq.system.properties').text =~ /(?sm).*re\.version=(?<version>\d+((\.\d+)*)?).*/)
         if (!matcher.matches())
@@ -33,16 +34,17 @@ node('master')
             throw new Exception("Unable obtain version")
         }
         version = matcher.group('version')
-        version += "." + utils.getBuildNo(release_hub_project, version)
+        version += "." + ReleaseHub.getBuildNo(release_hub_project, version)
         matcher = null
         
         vcs_url = "https://github.com/redsoftbiz/executequery/commit/" + rev
         
+
         println("rev=${rev}")
         println("version=${version}")
         println("vcs_url=${vcs_url}")
     }
-    
+
     stage('Create source dist')
     {
         sh "VERSION=${version} ci/prepare-src.sh"       
@@ -87,20 +89,20 @@ node('master')
         sh "echo file dist-src/RedExpert-${version}-src.zip zip src >> artifacts"
         sh "echo end >> artifacts"
 
-        utils.deployAndRegister(release_hub_project, version, wd+'/artifacts', env.BUILD_URL, vcs_url, 'red_expert', wd, '', '', branch)
+        ReleaseHub.deployToReleaseHub(release_hub_project, version, env.BUILD_URL, rev, wd+'/artifacts', wd, 'red_expert', '', '', branch)
         
-        utils.defaultSuccessActions()
+        Pipeline.defaultSuccessActions(currentBuild)
     }
 }
 
 } // try
 catch (any)
 {
-    utils.defaultFailureActions(any)
+    Pipeline.defaultFailureActions(currentBuild, any)
 }
 finally
 {
-    mail(to: utils.defaultEmailAddresses(),
-         subject: utils.defaultEmailSubject(version, rev),
-         body: utils.defaultEmailBody(vcs_url, release_hub_project, version));
+    mail(to: Pipeline.defaultEmailAddresses(),
+         subject: Pipeline.defaultEmailSubject(currentBuild, version, rev),
+         body: Pipeline.defaultEmailBody(currentBuild, vcs_url, release_hub_project, version));
 }

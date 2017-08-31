@@ -52,6 +52,7 @@ import javax.swing.table.AbstractTableModel;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.util.SystemResources;
 import org.underworldlabs.swing.AbstractBaseDialog;
@@ -287,9 +288,9 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
 
             shortcutKey = (ShortcutKey)tableModel.getShortcut(row);
 
-            JButton okButton = new JButton("OK");
-            JButton clearButton = new JButton("Clear");
-            JButton cancelButton = new JButton("Cancel");
+            JButton okButton = new JButton(Bundles.get("common.ok.button"));
+            JButton clearButton = new JButton(Bundles.get("common.clear.button"));
+            JButton cancelButton = new JButton(Bundles.get("common.cancel.button"));
             
             okButton.addActionListener(this);
             clearButton.addActionListener(this);

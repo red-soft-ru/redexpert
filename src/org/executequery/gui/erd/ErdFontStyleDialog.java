@@ -49,6 +49,7 @@ import javax.swing.event.ListSelectionListener;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.GUIUtils;
 
@@ -160,8 +161,8 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
         tableNameCombo.setPreferredSize(comboDim);
         columnNameCombo.setPreferredSize(comboDim);
         
-        JButton cancelButton = new DefaultPanelButton("Cancel");
-        JButton okButton = new DefaultPanelButton("OK");
+        JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
+        JButton okButton = new DefaultPanelButton(Bundles.get("common.ok.button"));
         
         cancelButton.addActionListener(this);
         okButton.addActionListener(this);

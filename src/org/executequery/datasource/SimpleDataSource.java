@@ -45,8 +45,8 @@ import org.underworldlabs.util.MiscUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1774 $
- * @date     $Date: 2017-08-24 21:50:47 +1000 (Thu, 24 Aug 2017) $
+ * @version  $Revision: 1776 $
+ * @date     $Date: 2017-08-29 22:59:07 +1000 (Tue, 29 Aug 2017) $
  */
 @SuppressWarnings({ "rawtypes" })
 public class SimpleDataSource implements DataSource, DatabaseDataSource {
@@ -116,8 +116,8 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
             advancedProperties.put(key, properties.get(key));
         }
         
-        if (advancedProperties.size() > 0) {
-            
+        if (!advancedProperties.isEmpty()) {
+
             Log.debug("Using advanced properties :: " + advancedProperties);
         }
         

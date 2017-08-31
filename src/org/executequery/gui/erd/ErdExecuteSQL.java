@@ -40,6 +40,7 @@ import javax.swing.JTextArea;
 import javax.swing.border.Border;
 
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 import org.executequery.sql.QueryDelegate;
 import org.executequery.sql.QueryDispatcher;
 import org.underworldlabs.swing.FlatSplitPane;
@@ -121,7 +122,7 @@ public class ErdExecuteSQL extends ErdPrintableDialog
         splitPane.setDividerLocation(0.5);
         splitPane.setDividerSize(5);
         
-        closeButton = new JButton("Close");
+        closeButton = new JButton(Bundles.get("common.close.button"));
         cancelButton = new JButton("Execute");
         
         Dimension btnDim = new Dimension(80, 30);

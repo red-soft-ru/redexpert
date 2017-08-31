@@ -45,7 +45,7 @@ public class MenuItemXMLRepository extends AbstractXMLResourceReaderWriter<MenuI
 
         try {
      
-            return (List<MenuItem>)readResource(resourcePath(), new MenuItemHandler());
+            return (List<MenuItem>) readResource(resourcePath(), new MenuItemHandler());
 
         } catch (RepositoryException e) {
 
@@ -82,6 +82,7 @@ public class MenuItemXMLRepository extends AbstractXMLResourceReaderWriter<MenuI
 
             menuItem.setMnemonic(attrs.getValue(MNEMONIC));
             menuItem.setName(attrs.getValue(NAME));
+            menuItem.setPropertyKey(attrs.getValue(PROPERTY_KEY));
 
             if (attrs.getValue(INDEX) != null) {
                 
@@ -149,7 +150,7 @@ public class MenuItemXMLRepository extends AbstractXMLResourceReaderWriter<MenuI
         private static final String TOOL_TIP = "tool-tip";
         private static final String ACTION_COMMAND = "action-command";
         private static final String ACCEL_KEY = "accel-key";
-        private static final String PROPERTY_KEY = "property-key";
+        private static final String PROPERTY_KEY = "key";
 
     } // MenuItemHandler
 

@@ -23,6 +23,7 @@ package org.executequery.util;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
+import org.apache.commons.lang.StringUtils;
 import org.executequery.log.Log;
 
 /**
@@ -41,11 +42,16 @@ public class StringBundle {
     private String packageName;
     
     /** Creates a new instance of StringBundle */
+    public StringBundle(ResourceBundle bundle) {
+        this(bundle, null);
+    }
+
+    /** Creates a new instance of StringBundle */
     public StringBundle(ResourceBundle bundle, String packageName) {
         this.bundle = bundle;
         this.packageName = packageName;
     }
-
+    
     /**
      * Returns the string from the bundle referenced by the
      * specified key value.
@@ -54,7 +60,10 @@ public class StringBundle {
      * @return the string value
      */
     public String getString(String key) {
-        return bundle.getString(key);
+        if (bundle.containsKey(key)) {
+            return bundle.getString(key);
+        }
+        return StringUtils.EMPTY;
     }
 
     /**
@@ -116,14 +125,3 @@ public class StringBundle {
     }
     
 }
-
-
-
-
-
-
-
-
-
-
-

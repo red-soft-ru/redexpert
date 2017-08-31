@@ -36,12 +36,13 @@ import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.menu.MainMenu;
 import org.underworldlabs.swing.menu.MainMenuItem;
+import org.underworldlabs.swing.util.MenuScroller;
 
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1775 $
+ * @date     $Date: 2017-08-27 22:51:41 +1000 (Sun, 27 Aug 2017) $
  */
 public class ConnectionsMenu extends MainMenu 
                              implements ConnectionRepositoryListener {
@@ -52,8 +53,9 @@ public class ConnectionsMenu extends MainMenu
         
         super();
         
-        createConnectionMenu();
+        MenuScroller.setScrollerFor(this, 20, 100, 3, 0);
         
+        createConnectionMenu();
         EventMediator.registerListener(this);
     }
 
@@ -148,13 +150,4 @@ public class ConnectionsMenu extends MainMenu
     }
 
 }
-
-
-
-
-
-
-
-
-
 

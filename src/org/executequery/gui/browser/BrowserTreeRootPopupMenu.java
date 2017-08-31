@@ -25,6 +25,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
+import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 
 public class BrowserTreeRootPopupMenu extends JPopupMenu {
@@ -43,18 +44,26 @@ public class BrowserTreeRootPopupMenu extends JPopupMenu {
         add(createMenuItem("Search Nodes...", "searchNodes", treePanel));
 
         addSeparator();
-        add(createMenuItem("Export", "exportConnections", treePanel));
-        add(createMenuItem("Import", "importConnections", treePanel));
+        add(createMenuItem("export-connections-command"));
+        add(createMenuItem("import-connections-command"));
     }
     
-    private JMenuItem createMenuItem(String text,
-                                     String actionCommand,
-                                     ActionListener listener) {
+    private JMenuItem createMenuItem(String actionId) {
 
+        JMenuItem menuItem = MenuItemFactory.createMenuItem(ActionBuilder.get(actionId));
+        menuItem.setIcon(null);
+
+        return menuItem;
+    }
+
+    private JMenuItem createMenuItem(String text,
+            String actionCommand,
+            ActionListener listener) {
+        
         JMenuItem menuItem = MenuItemFactory.createMenuItem(text);
         menuItem.setActionCommand(actionCommand);
         menuItem.addActionListener(listener);
         return menuItem;
     }
-
+    
 }

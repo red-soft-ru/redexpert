@@ -31,6 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import org.executequery.localization.Bundles;
 import org.underworldlabs.util.FileUtils;
 
 /**
@@ -67,7 +68,7 @@ public class InformationDialog extends ActionDialog {
             textArea.setEditable(false);
 
             JPanel panel = new JPanel(new GridBagLayout());
-            JButton closeButton = new DefaultPanelButton(this, "Close", "dispose");
+            JButton closeButton = new DefaultPanelButton(this, Bundles.get("common.close.button"), "dispose");
 
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets.top = 5;

@@ -84,7 +84,7 @@ public class ExecuteQueryMenu extends JMenuBar {
 
                 if (parent instanceof JMenu) {
 
-                    JMenu jMenu = (JMenu)parent;
+                    JMenu jMenu = (JMenu) parent;
                     
                     if (!menuItem.hasIndex()) {
                     
@@ -101,7 +101,6 @@ public class ExecuteQueryMenu extends JMenuBar {
             }
             
             JMenuItem jMenuItem = jMenuItemFactory.createJMenuItem(parent, menuItem);
-
             if (jMenuItem instanceof JMenu) {
 
                 buildMenuForParent(jMenuItem, menuItem.getChildren());

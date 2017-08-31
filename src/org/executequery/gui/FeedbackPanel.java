@@ -40,6 +40,7 @@ import javax.swing.SwingUtilities;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.RepositoryException;
 import org.executequery.repository.UserFeedback;
 import org.executequery.repository.UserFeedbackRepository;
@@ -163,8 +164,8 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         basePanel.add(new JScrollPane(commentsField), gbc);
 
-        JButton cancelButton = WidgetFactory.createButton("Cancel");
-        JButton sendButton = WidgetFactory.createButton("Send");
+        JButton cancelButton = WidgetFactory.createButton(Bundles.get("common.cancel.button"));
+        JButton sendButton = WidgetFactory.createButton(Bundles.get("common.send.button"));
 
         sendButton.addActionListener(this);
         cancelButton.addActionListener(this);

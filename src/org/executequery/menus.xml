@@ -5,8 +5,8 @@
     File:         menus.xml
     Author:       Takis Diakoumis
     Description:  Menu and menu item definitions
-    Date:         $Date$
-    Version:      $Revision$
+    Date:         $Date: 2017-08-27 22:51:41 +1000 (Sun, 27 Aug 2017) $
+    Version:      $Revision: 1775 $
     =======================================================================
 -->
 
@@ -14,6 +14,7 @@
 <menus>
 
     <menu name="File"
+          key="menu.file"
           mnemonic="F"
           class="org.underworldlabs.swing.menu.MainMenu">
 
@@ -52,6 +53,7 @@
     </menu>
 
     <menu name="Edit"
+          key="menu.edit"
           class="org.underworldlabs.swing.menu.MainMenu"
           mnemonic="E">
 
@@ -70,22 +72,26 @@
           <menu-item id="separator"/>
 
           <menu name="Insert"
+                key="menu.edit.insert"
                 class="org.underworldlabs.swing.menu.MainMenu"
                 mnemonic="I">
           
               <menu-item id="text-selection-command" 
                          name="Line After"
+                         key="menu.edit.insert.line-after"
                          class="org.underworldlabs.swing.menu.MainMenuItem"
                          mnemonic="A"
                          action-command="insertAfter"/>
 
               <menu-item id="text-selection-command" 
+                         key="menu.edit.insert.line-before"
                          name="Line Before"
                          class="org.underworldlabs.swing.menu.MainMenuItem"
                          mnemonic="B"
                          action-command="insertBefore"/>
 
-              <menu-item id="text-selection-command" 
+              <menu-item id="text-selection-command"
+                         key="menu.edit.insert.from-file"
                          name="From File"
                          class="org.underworldlabs.swing.menu.MainMenuItem"
                          mnemonic="F"
@@ -94,22 +100,26 @@
           </menu>
 
           <menu name="Delete"
+                key="menu.edit.delete"
                 class="org.underworldlabs.swing.menu.MainMenu"
                 mnemonic="D">
           
               <menu-item id="text-selection-command" 
+                         key="menu.edit.delete.selection"
                          name="Selection"
                          class="org.underworldlabs.swing.menu.MainMenuItem"
                          mnemonic="S"
                          action-command="deleteSelection"/>
 
               <menu-item id="text-selection-command" 
+                         key="menu.edit.delete.line"
                          name="Line"
                          class="org.underworldlabs.swing.menu.MainMenuItem"
                          mnemonic="L"
                          action-command="deleteLine"/>
 
               <menu-item id="text-selection-command" 
+                         key="menu.edit.delete.word"
                          name="Word"
                          class="org.underworldlabs.swing.menu.MainMenuItem"
                          mnemonic="W"
@@ -130,6 +140,7 @@
           <menu-item id="separator"/>
 
           <menu name="Change Case"
+                key="menu.edit.change-case"
                 class="org.underworldlabs.swing.menu.MainMenu"
                 mnemonic="C">
           
@@ -150,6 +161,7 @@
           <menu-item id="separator"/>
                          
           <menu-item id="text-selection-command" 
+                     key="menu.edit.select-all"
                      name="Select All"
                      class="org.underworldlabs.swing.menu.MainMenuItem"
                      mnemonic="S"
@@ -157,6 +169,7 @@
                      action-command="selectAll"/>
 
           <menu-item id="text-selection-command" 
+                     key="menu.edit.select-none"
                      name="Select None"
                      class="org.underworldlabs.swing.menu.MainMenuItem"
                      mnemonic="N"
@@ -166,6 +179,7 @@
     </menu>
 
     <menu name="Search"
+          key="menu.search"
           class="org.underworldlabs.swing.menu.MainMenu"
           mnemonic="S">
 
@@ -197,10 +211,12 @@
     </menu>
 
     <menu name="View"
+          key="menu.view"
           mnemonic="V"
           class="org.executequery.gui.menu.ViewMenu">
 
           <menu-item name="Output Console"
+                     key="menu.view.output-console"
                      class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                      mnemonic="C"
                      action-command="viewConsole"
@@ -215,6 +231,7 @@
                      tool-tip="Opens the jdbc logger panel"/>
 
           <menu-item name="Connections"
+                     key="menu.view.connections"
                      class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                      mnemonic="N"
                      action-command="viewConnections"
@@ -222,6 +239,7 @@
                      tool-tip="Opens the saved connections panel"/>
 
           <menu-item name="Keywords"
+                     key="menu.view.keywords"
                      class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                      mnemonic="K"
                      listener="org.executequery.actions.viewcommands.ViewOptionsCommand"
@@ -230,6 +248,7 @@
                      tool-tip="Opens the keywords search and insert panel"/>
 
           <menu-item name="SQL State Codes"
+                     key="menu.view.sql-codes"
                      class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                      mnemonic="Q"
                      action-command="viewSqlStateCodes"
@@ -237,6 +256,7 @@
                      tool-tip="Opens the SQL State Codes docked panel"/>
 
           <menu-item name="Drivers"
+                     key="menu.view.drivers"
                      class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                      mnemonic="D"
                      action-command="viewDrivers"
@@ -244,6 +264,7 @@
                      tool-tip="Opens JDBC drivers panel"/>
 
           <menu-item name="System Properties"
+                     key="menu.view.system-properties"
                      class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                      mnemonic="P"
                      action-command="viewSystemProperties"
@@ -251,6 +272,7 @@
                      tool-tip="Opens the system properties palette"/>
 
           <menu-item name="Notepad"
+                     key="menu.view.notepad"
                      class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                      mnemonic="O"
                      action-command="viewNotepad"
@@ -258,6 +280,7 @@
                      tool-tip="Displays the text notepad"/>
                      
           <menu-item name="Status Bar"
+                     key="menu.view.status-bar"
                      class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                      mnemonic="S"
                      action-command="viewStatusBar"
@@ -267,34 +290,40 @@
           <menu-item id="separator"/>
 
           <menu name="Tool Bars"
+                key="menu.view.tool-bars"
                 class="org.executequery.gui.menu.ToolBarsViewMenu"
                 mnemonic="T">
           
               <menu-item name="File Tool Bar"
+                         key="menu.view.tool-bars.file-tool-bar"
                          class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                          mnemonic="F"
                          action-command="viewFileTools"
                          tool-tip="Displays the File tool bar"/>
 
               <menu-item name="Edit Tool Bar"
+                         key="menu.view.tool-bars.edit-tool-bar"
                          class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                          mnemonic="E"
                          action-command="viewEditTools"
                          tool-tip="Displays the Edit tool bar"/>
 
               <menu-item name="Search Tool Bar"
+                         key="menu.view.tool-bars.search-tool-bar"
                          class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                          mnemonic="S"
                          action-command="viewSearchTools"
                          tool-tip="Displays the View tool bar"/>
 
               <menu-item name="Database Tool Bar"
+                         key="menu.view.tool-bars.database-tool-bar"
                          class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                          mnemonic="D"
                          action-command="viewDatabaseTools"
                          tool-tip="Displays the database tool bar"/>
 
               <menu-item name="Browser Tool Bar"
+                         key="menu.view.tool-bars.browser-tool-bar"
                          class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                          mnemonic="B"
                          action-command="viewBrowserTools"
@@ -302,12 +331,14 @@
                          tool-tip="Displays the browser tool bar"/>
 
               <menu-item name="Import/Export Tool Bar"
+                         key="menu.view.tool-bars.import-export-tool-bar"
                          class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                          mnemonic="X"
                          action-command="viewImportExportTools"
                          tool-tip="Displays the import/export tool bar"/>
 
               <menu-item name="System Tool Bar"
+                         key="menu.view.system-tool-bar"
                          class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                          mnemonic="S"
                          action-command="viewSystemTools"
@@ -322,16 +353,19 @@
           </menu>
 
           <menu name="Query Editor"
+                key="menu.view.query-editor"
                 class="org.executequery.gui.menu.QueryEditorViewMenu"
                 mnemonic="Q">
 
               <menu-item name="Status Bar"
+                         key="menu.view.query-editor.status-bar"
                          class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                          mnemonic="S"
                          action-command="viewEditorStatusBar"
                          tool-tip="Display the editor's status bar"/>
 
               <menu-item name="Line Numbers"
+                         key="menu.view.query-editor.line-numbers"
                          class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                          mnemonic="L"
                          action-command="viewEditorLineNumbers"
@@ -342,18 +376,28 @@
     </menu>
 
     <menu name="Database"
+          key="menu.database"
           class="org.underworldlabs.swing.menu.MainMenu"
           mnemonic="D">
 
           <menu name="Connections..."
+                key="menu.database.connections"
                 class="org.executequery.gui.menu.ConnectionsMenu">
 
               <menu-item id="connect-command"
                          index="0"
                          class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
+              <menu-item id="export-connections-command"
+                         index="1"
+                         class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+              <menu-item id="import-connections-command"
+                         index="2"
+                         class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
               <menu-item id="separator"
-                         index="1"/>
+                         index="3"/>
 
           </menu>
 		  
@@ -389,6 +433,7 @@
                      class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
           <menu name="Generate ERD"
+                key="menu.database.generate-erd"
                 class="org.underworldlabs.swing.menu.MainMenu"
                 mnemonic="G">
 
@@ -404,6 +449,7 @@
 
 
     <menu name="Tools"
+          key="menu.tools"
           class="org.underworldlabs.swing.menu.MainMenu"
           mnemonic="T">
 
@@ -423,6 +469,7 @@
           <menu-item id="separator"/>
 
           <menu name="Import Data"
+                key="menu.tools.import-data"
                 class="org.underworldlabs.swing.menu.MainMenu"
                 mnemonic="I">
 
@@ -435,6 +482,7 @@
           </menu>
 
           <menu name="Export Data"
+                key="menu.tools.export-data"
                 class="org.underworldlabs.swing.menu.MainMenu"
                 mnemonic="X">
 
@@ -455,10 +503,12 @@
           <menu-item id="separator"/>
 
           <menu name="System Logs"
+                key="menu.tools.system-logs"
                 class="org.underworldlabs.swing.menu.MainMenu"
                 mnemonic="L">
 
               <menu-item id="application-logs-command"
+                         key="menu.tools.system-logs.application"
                          name="System Output Log"
                          class="org.underworldlabs.swing.menu.MainMenuItem"
                          mnemonic="S"
@@ -466,6 +516,7 @@
                          tool-tip="View the system output log"/>
 
               <menu-item id="application-logs-command"
+                         key="menu.tools.system-logs.data-export"
                          name="Data Export Log"
                          class="org.underworldlabs.swing.menu.MainMenuItem"
                          mnemonic="X"
@@ -473,6 +524,7 @@
                          tool-tip="View the data export log"/>
 
               <menu-item id="application-logs-command"
+                         key="menu.tools.system-logs.data-import"
                          name="Data Import Log"
                          class="org.underworldlabs.swing.menu.MainMenuItem"
                          mnemonic="I"
@@ -482,17 +534,20 @@
               <menu-item id="separator"/>
 
               <menu name="Reset Logs"
+                    key="menu.tools.system-logs-reset-logs"
                     class="org.underworldlabs.swing.menu.MainMenu"
                     mnemonic="R">
 
                   <menu-item id="application-logs-command"
-                         name="System Output Log"
+                             key="menu.tools.system-logs-reset-logs.application"
+                             name="System Output Log"
                              class="org.underworldlabs.swing.menu.MainMenuItem"
                              mnemonic="S"
                              action-command="resetSystemLog"
                              tool-tip="Reset the system output log"/>
 
                   <menu-item id="application-logs-command"
+                             key="menu.tools.system-logs-reset-logs.export"
                              name="Data Export Log"
                              class="org.underworldlabs.swing.menu.MainMenuItem"
                              mnemonic="X"
@@ -500,6 +555,7 @@
                              tool-tip="Reset the data export log"/>
 
                   <menu-item id="application-logs-command"
+                             key="menu.tools.system-logs-reset-logs.import"
                              name="Data Import Log"
                              class="org.underworldlabs.swing.menu.MainMenuItem"
                              mnemonic="I"
@@ -509,6 +565,7 @@
                   <menu-item id="separator"/>
 
                   <menu-item id="application-logs-command"
+                             key="menu.tools.system-logs-reset-logs.all"
                              name="Reset All"
                              class="org.underworldlabs.swing.menu.MainMenuItem"
                              mnemonic="A"
@@ -533,6 +590,7 @@
     </menu>
 
     <menu name="Window"
+          key="menu.window"
           class="org.underworldlabs.swing.menu.MainMenu"
           mnemonic="W">
 
@@ -559,16 +617,19 @@
     </menu>
 
     <menu name="Help"
+          key="menu.help"
           class="org.underworldlabs.swing.menu.MainMenu"
           mnemonic="H">
 
           <menu-item id="help-command"
+                     key="menu.help.contents"
                      name="Help Contents"
                      class="org.underworldlabs.swing.menu.MainMenuItem"
                      mnemonic="H"
                      accel-key="F1"/>
 
           <menu-item id="help-command"
+                     key="menu.help.search"
                      name="Search for help on"
                      class="org.underworldlabs.swing.menu.MainMenuItem"
                      mnemonic="S"
@@ -592,22 +653,26 @@
                      class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
           <menu name="Feedback"
+                key="menu.help.feedback"
                 class="org.underworldlabs.swing.menu.MainMenu"
                 mnemonic="F">
 
               <menu-item id="feedback-command"
+                         key="menu.help.feedback.user-comments"
                          name="User Comments"
                          class="org.underworldlabs.swing.menu.MainMenuItem"
                          mnemonic="C"
                          action-command="userComments"/>
 
               <menu-item id="feedback-command"
+                         key="menu.help.feedback.feature-request"
                          name="Feature Request"
                          class="org.underworldlabs.swing.menu.MainMenuItem"
                          mnemonic="F"
                          action-command="featureRequest"/>
 
               <menu-item id="feedback-command"
+                         key="menu.help.feedback.report-bug"
                          name="Report Bug"
                          class="org.underworldlabs.swing.menu.MainMenuItem"
                          mnemonic="B"

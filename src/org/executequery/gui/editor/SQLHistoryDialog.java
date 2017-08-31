@@ -49,6 +49,7 @@ import org.executequery.gui.DefaultList;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.text.SQLTextPane;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.repository.SqlCommandHistoryRepository;
 import org.underworldlabs.swing.AbstractBaseDialog;
@@ -124,19 +125,18 @@ public class SQLHistoryDialog extends AbstractBaseDialog
      */
     private void init() throws Exception {
 
-        JButton cancelButton = createButton("Cancel", null);       
-        JButton selectButton = createButton("Select", 
+        JButton cancelButton = createButton(Bundles.get("common.cancel.button"), null);       
+        JButton selectButton = createButton(Bundles.get("common.select.button"), 
                 "Pastes the selected queries into the Query Editor");
-        JButton copyButton = createButton("Copy", 
+        JButton copyButton = createButton(Bundles.get("common.copy.button"), 
                 "Copies the selected queries to the system clipboard");
         JButton insertAtCursorButton = createButton("Insert at Cursor", 
                 "Inserts the selected queries at the cursor position within the Query Editor");
-        JButton clearButton = createButton("Clear", 
+        JButton clearButton = createButton(Bundles.get("common.clear.button"), 
                 "Clears and resets ALL SQL history");
 
         newEditorCheck = new JCheckBox("Open in new Query Editor");
-        newEditorCheck.setToolTipText(
-                "Select to paste the query in a new Query Editor panel");
+        newEditorCheck.setToolTipText("Select to paste the query in a new Query Editor panel");
         
         textPane = new SQLTextPane();
         textPane.setEditable(false);

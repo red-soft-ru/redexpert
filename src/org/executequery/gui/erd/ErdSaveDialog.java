@@ -68,6 +68,7 @@ import org.executequery.imageio.ImageWriterInfo;
 import org.executequery.imageio.JpegImageWriterInfo;
 import org.executequery.imageio.PngImageWriterInfo;
 import org.executequery.imageio.SvgImageWriterInfo;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.FileSelector;
 import org.underworldlabs.swing.NumberTextField;
@@ -292,8 +293,8 @@ public class ErdSaveDialog extends AbstractBaseDialog
         base.setBorder(BorderFactory.createEtchedBorder());
         base.setPreferredSize(new Dimension(400, 300));
         
-        JButton saveButton = new DefaultPanelButton("Save");
-        JButton cancelButton = new DefaultPanelButton("Cancel");
+        JButton saveButton = new DefaultPanelButton(Bundles.get("common.save.button"));
+        JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
         
         cancelButton.addActionListener(this);
         saveButton.addActionListener(this);

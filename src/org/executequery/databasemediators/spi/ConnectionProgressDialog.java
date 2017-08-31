@@ -39,6 +39,7 @@ import javax.swing.SwingUtilities;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.ConnectionBuilder;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.ProgressBar;
 import org.underworldlabs.swing.ProgressBarFactory;
@@ -154,7 +155,7 @@ public class ConnectionProgressDialog extends JDialog
 
         public CancelButton() {
 
-            super("Cancel");
+            super(Bundles.get("common.cancel.button"));
             setMargin(Constants.EMPTY_INSETS);
         }
 

@@ -31,6 +31,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 import org.underworldlabs.swing.util.MenuBuilder;
@@ -114,7 +115,7 @@ public class ErdPopupMenu extends JPopupMenu implements ActionListener {
         JMenuItem help = MenuItemFactory.createMenuItem(ActionBuilder.get("help-command"));
         help.setIcon(null);
         help.setActionCommand("erd");
-        help.setText("Help");
+        help.setText(Bundles.get("common.help.button"));
         
         add(newMenu);
         addSeparator();

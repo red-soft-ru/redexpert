@@ -58,13 +58,11 @@ import org.executequery.event.DefaultConnectionsFolderRepositoryEvent;
 import org.executequery.event.UserPreferenceEvent;
 import org.executequery.event.UserPreferenceListener;
 import org.executequery.gui.AbstractDockedTabActionPanel;
-import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
 import org.executequery.gui.browser.tree.SchemaTree;
-import org.executequery.gui.connections.ImportConnectionsPanel;
 import org.executequery.repository.ConnectionFoldersRepository;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
@@ -78,8 +76,8 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1768 $
- * @date     $Date: 2017-08-20 21:33:48 +1000 (Sun, 20 Aug 2017) $
+ * @version  $Revision: 1775 $
+ * @date     $Date: 2017-08-27 22:51:41 +1000 (Sun, 27 Aug 2017) $
  */
 public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
                                   implements ConnectionListener,
@@ -295,51 +293,13 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     }
     
     private ConnectionsFolderNode asConnectionsFolderNode(Object object) {
-        return (ConnectionsFolderNode)object;
+        return (ConnectionsFolderNode) object;
     }
 
     private DatabaseHostNode asDatabaseHostNode(Object object) {
-        return (DatabaseHostNode)object;
+        return (DatabaseHostNode) object;
     }
 
-    public void exportConnections() {
-        
-        try {
-
-            GUIUtilities.showWaitCursor();
-
-            BaseDialog dialog = new BaseDialog(ExportConnectionsPanel.TITLE, true);
-            org.executequery.gui.connections.ExportConnectionsPanel panel = new org.executequery.gui.connections.ExportConnectionsPanel(dialog);
-            
-            dialog.addDisplayComponentWithEmptyBorder(panel);
-            dialog.display();
-
-        } finally {
-          
-            GUIUtilities.showNormalCursor();
-        }
-        
-    }
-    
-    public void importConnections() {
-
-        try {
-
-            GUIUtilities.showWaitCursor();
-
-            BaseDialog dialog = new BaseDialog(ImportConnectionsPanel.TITLE, true);
-            ImportConnectionsPanel panel = new ImportConnectionsPanel(dialog);
-            
-            dialog.addDisplayComponentWithEmptyBorder(panel);
-            dialog.display();
-
-        } finally {
-          
-            GUIUtilities.showNormalCursor();
-        }
-
-    }
-    
     @SuppressWarnings("rawtypes")
     public void sortConnections() {
 

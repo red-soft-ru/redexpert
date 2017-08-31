@@ -32,6 +32,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 
+import org.executequery.localization.Bundles;
+
 /* ----------------------------------------------------------
  * CVS NOTE: Changes to the CVS repository prior to the 
  *           release of version 3.0.0beta1 has meant a 
@@ -69,7 +71,7 @@ public class ErdSQLViewer extends ErdPrintableDialog {
         sqlText.setPreferredSize(new Dimension(530,175));
         sqlText.setBorder(BorderFactory.createEtchedBorder());
         
-        JButton cancelButton = new JButton("Close");
+        JButton cancelButton = new JButton(Bundles.get("common.close.button"));
         JButton okButton = new JButton("Execute");
         
         Dimension btnDim = new Dimension(80, 30);

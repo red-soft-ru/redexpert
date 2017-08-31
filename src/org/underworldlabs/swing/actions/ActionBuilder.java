@@ -39,6 +39,8 @@ import javax.swing.KeyStroke;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.commons.lang.StringUtils;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.util.MiscUtils;
@@ -53,8 +55,8 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1775 $
+ * @date     $Date: 2017-08-27 22:51:41 +1000 (Sun, 27 Aug 2017) $
  */
 public final class ActionBuilder {
     
@@ -113,28 +115,10 @@ public final class ActionBuilder {
 
             if (command.hasAccelerator()) {
 
-                inputMap.put((KeyStroke)command.getValue(
-                                            Action.ACCELERATOR_KEY), actionId);
+                inputMap.put((KeyStroke) command.getValue(Action.ACCELERATOR_KEY), actionId);
             }
             
         }
-        
-//        Set actionSet = actionsMap.keySet();
-//
-//        for (Iterator i = actionSet.iterator(); i.hasNext();) {
-//
-//            command = (BaseActionCommand)actionsMap.get(i.next());
-//            actionId = command.getActionId();
-//            actionMap.put(actionId, command);
-//
-//            if (command.hasAccelerator()) {
-//
-//                inputMap.put((KeyStroke)command.getValue(
-//                                            Action.ACCELERATOR_KEY), actionId);
-//
-//            }
-//
-//        } 
         
     }
 
@@ -183,9 +167,9 @@ public final class ActionBuilder {
      * @param inputMap - the input map to bind to
      * @param shortcuts - the new shortcut keys
      */
-    public static void updateUserDefinedShortcuts(InputMap inputMap, 
-                                                  Properties shortcuts) {
+    public static void updateUserDefinedShortcuts(InputMap inputMap, Properties shortcuts) {
         if (shortcuts == null) {
+
             return;
         }
         buildUserKeymap(shortcuts, inputMap);
@@ -203,39 +187,46 @@ public final class ActionBuilder {
      * Returns the action with the specified key name.
      */
     public static Action get(Object key) {
-        return (Action)actionsMap.get(key);
+        
+        return (Action) actionsMap.get(key);
     }
     
     private static Map<String, Action> loadActions(String path) {
+        
         InputStream input = null;
         ClassLoader cl = ActionBuilder.class.getClassLoader();
         
         if (cl != null) {
+          
             input = cl.getResourceAsStream(path);
-        }
-        else {
+
+        } else {
+        
             input = ClassLoader.getSystemResourceAsStream(path);
         }
         
         try {
+            
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
             
             SAXParser parser = factory.newSAXParser();
             ActionHandler handler = new ActionHandler();
             parser.parse(input, handler);
+        
             return handler.getActions();
-        } 
-        catch (Exception e) {
+        
+        } catch (Exception e) {
+         
             e.printStackTrace();
             throw new InternalError();
-        }
-        finally {
+
+        } finally {
             try {
                 if (input != null) {
                     input.close();
                 }
-            } catch (IOException ioExc) {}
+            } catch (IOException e) {}
         }
         
     }
@@ -274,8 +265,12 @@ public final class ActionBuilder {
             if (localName.equals(ACTION)) {
                 
                 actionCommand = new BaseActionCommand();
-                actionCommand.setActionId(attrs.getValue(ID));
-                actionCommand.putValue(Action.NAME, attrs.getValue(NAME));
+                
+                String id = attrs.getValue(ID);
+                actionCommand.setActionId(id);
+                
+                String name = attrs.getValue(NAME);
+                actionCommand.putValue(Action.NAME, nameOrBundleValue(id, name));
                 
                 value = attrs.getValue(MNEMONIC);
                 if (!MiscUtils.isNull(value)) {
@@ -331,16 +326,18 @@ public final class ActionBuilder {
                     */
                 }
 
-                actionCommand.putValue(Action.SHORT_DESCRIPTION, attrs.getValue(DESCRIPTION));
+                String description = attrs.getValue(DESCRIPTION);
+                actionCommand.putValue(Action.SHORT_DESCRIPTION, descriptionOrBundleValue(id, description));
+
                 actionCommand.setCommand(attrs.getValue(EXECUTE_CLASS));                
             } 
             
         }
 
-        public void endElement(String nameSpaceURI, String localName,
-                               String qName) {
+        public void endElement(String nameSpaceURI, String localName, String qName) {
             
             if (localName.equals(ACTION)) {
+
                 map.put(actionCommand.getActionId(), actionCommand);
             } 
             
@@ -357,6 +354,27 @@ public final class ActionBuilder {
         public void error(SAXParseException spe) throws SAXException {
             throw new SAXException(spe.getMessage());
         }
+        
+        private String nameOrBundleValue(String id, String name) {
+            
+            String value = Bundles.get("action." + id);
+            if (StringUtils.isNotBlank(value)) {
+                
+                return value;
+            }
+            return name;
+        }
+
+        private String descriptionOrBundleValue(String id, String description) {
+            
+            String value = Bundles.get("action." + id + ".description");
+            if (StringUtils.isNotBlank(value)) {
+                
+                return value;
+            }
+            return description;
+        }
+        
         
     } // ActionHandler
     

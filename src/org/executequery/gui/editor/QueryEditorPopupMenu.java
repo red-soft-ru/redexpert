@@ -36,6 +36,7 @@ import javax.swing.KeyStroke;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.UserPreferencesManager;
+import org.executequery.localization.Bundles;
 import org.executequery.sql.QueryDelegate;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.actions.ReflectiveAction;
@@ -230,7 +231,7 @@ public class QueryEditorPopupMenu extends JPopupMenu
 
     private JMenuItem createHelpMenuItem() {
 
-        JMenuItem menuItem = createExecuteActionMenuItem("help-command", "Help");
+        JMenuItem menuItem = createExecuteActionMenuItem("help-command", Bundles.get("common.help.button"));
         menuItem.setActionCommand("qedit");
         return menuItem;
     }

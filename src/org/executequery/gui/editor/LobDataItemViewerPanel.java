@@ -48,6 +48,7 @@ import org.executequery.gui.DefaultActionButtonsPanel;
 import org.executequery.gui.resultset.BlobRecordDataItem;
 import org.executequery.gui.resultset.LobRecordDataItem;
 import org.executequery.io.ByteArrayFileWriter;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 
 public class LobDataItemViewerPanel extends DefaultActionButtonsPanel 
@@ -137,10 +138,10 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
         contentPanel.add(descriptionLabel, BorderLayout.SOUTH);
         
-        JButton closeButton = new JButton("Close");
+        JButton closeButton = new JButton(Bundles.get("common.close.button"));
         closeButton.setActionCommand("close");
 
-        JButton saveButton = new JButton("Save As");
+        JButton saveButton = new JButton(Bundles.get("common.save-as.button"));
         saveButton.setActionCommand("save");
         
         saveButton.addActionListener(this);

@@ -46,6 +46,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.gui.GeneratedScriptViewer;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.util.SwingWorker;
@@ -451,7 +452,7 @@ public class CreateTableScriptsGenerator {
             transferProg = new JProgressBar(1, max);
             transferProg.setPreferredSize(new Dimension(230, 20));
             
-            cancButton = new JButton("Cancel");
+            cancButton = new JButton(Bundles.get("common.cancel.button"));
             cancButton.addActionListener(this);
             
             JPanel base = new JPanel(new GridBagLayout());

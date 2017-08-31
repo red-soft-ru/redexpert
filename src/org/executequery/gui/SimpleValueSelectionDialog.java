@@ -44,6 +44,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractBaseDialog;
 
 /**
@@ -89,8 +90,8 @@ public class SimpleValueSelectionDialog {
         public SelectionDialog(String title, String[] values) {
             super(GUIUtilities.getParentFrame(), title, true);
 
-            JButton cancel = new DefaultPanelButton("Cancel");
-            JButton ok = new DefaultPanelButton("OK");
+            JButton cancel = new DefaultPanelButton(Bundles.get("common.cancel.button"));
+            JButton ok = new DefaultPanelButton(Bundles.get("common.ok.button"));
 
             cancel.addActionListener(this);
             ok.addActionListener(this);

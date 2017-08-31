@@ -23,6 +23,7 @@ package org.executequery.gui.menu;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.underworldlabs.util.MiscUtils;
 
 public class MenuItem {
@@ -198,11 +199,10 @@ public class MenuItem {
     public boolean hasIndex() {
         return (index != -1);
     }
+
+    public boolean hasPropertyKey() {
+        return StringUtils.isNotBlank(propertyKey);
+    }
     
 }
-
-
-
-
-
 

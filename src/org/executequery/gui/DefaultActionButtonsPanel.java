@@ -31,6 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.border.Border;
 
 import org.executequery.components.BaseActionPanel;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ActionBuilder;
 
 public abstract class DefaultActionButtonsPanel extends BaseActionPanel {
@@ -74,7 +75,7 @@ public abstract class DefaultActionButtonsPanel extends BaseActionPanel {
         JButton helpButton = new DefaultPanelButton();
 
         helpButton.setAction(ActionBuilder.get("help-command"));
-        helpButton.setText("Help");
+        helpButton.setText(Bundles.get("common.help.button"));
         helpButton.setActionCommand(command);
         helpButton.setIcon(null);
 

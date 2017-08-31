@@ -5,251 +5,241 @@
     File:         toolbars-default.xml
     Author:       Takis Diakoumis
     Description:  Toolbar buttons and layout defaults file
-    Date:         $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
-    Version:      $Revision: 1487 $
+    Date:         $Date: 2017-08-27 22:51:41 +1000 (Sun, 27 Aug 2017) $
+    Version:      $Revision: 1775 $
     =======================================================================
 -->
 
-<!-- next id = 46 -->
+<!-- 
+
+    separator definition:
+    
+    <button id="29">
+        <visible>false</visible>
+        <order>3</order>
+    </button>
+
+ -->
+
+<!-- next id = 48 -->
 
 <system-toolbars>
 
-   <toolbar name="File Tools" visible="true">
+    <toolbar name="File Tools" visible="true">
 
-      <constraints>
+        <constraints>
 
-        <row>0</row>
-        <position>0</position>
-        <loc-x>0</loc-x>
-        <resize-offset-x>-1</resize-offset-x>
-        <minimum-width>-1</minimum-width>
-        <preferred-width>-1</preferred-width>
-        <current-width>0</current-width>
+            <row>0</row>
+            <position>0</position>
+            <loc-x>0</loc-x>
+            <resize-offset-x>-1</resize-offset-x>
+            <minimum-width>-1</minimum-width>
+            <preferred-width>-1</preferred-width>
+            <current-width>0</current-width>
 
-      </constraints>
+        </constraints>
 
-      <buttons>
+        <buttons>
 
-        <button id="0"  action-id="new-command">
-          <visible>true</visible>
-          <order>0</order>
-        </button>
+            <button id="0" action-id="new-command">
+                <visible>true</visible>
+                <order>0</order>
+            </button>
 
-        <button id="1"  action-id="open-command">
-          <visible>true</visible>
-          <order>1</order>
-        </button>
+            <button id="1" action-id="open-command">
+                <visible>true</visible>
+                <order>1</order>
+            </button>
 
-        <button id="2" action-id="save-command">
-          <visible>true</visible>
-          <order>2</order>
-        </button>
+            <button id="2" action-id="save-command">
+                <visible>true</visible>
+                <order>2</order>
+            </button>
 
-        <button id="29">
-          <visible>true</visible>
-          <order>3</order>
-        </button>
+            <button id="29">
+                <visible>true</visible>
+                <order>3</order>
+            </button>
 
-        <button id="3" action-id="print-command">
-          <visible>true</visible>
-          <order>4</order>
-        </button>
+            <button id="3" action-id="print-command">
+                <visible>true</visible>
+                <order>4</order>
+            </button>
 
-        <button id="4" action-id="print-preview-command">
-          <visible>true</visible>
-          <order>5</order>
-        </button>
+            <button id="4" action-id="print-preview-command">
+                <visible>true</visible>
+                <order>5</order>
+            </button>
 
-        <button id="20" action-id="save-as-command">
-          <visible>false</visible>
-          <order>1000</order>
-        </button>
+            <button id="20" action-id="save-as-command">
+                <visible>false</visible>
+                <order>1000</order>
+            </button>
 
-        <button id="18" action-id="page-setup-command">
-          <visible>false</visible>
-          <order>1000</order>
-        </button>
+            <button id="18" action-id="page-setup-command">
+                <visible>false</visible>
+                <order>1000</order>
+            </button>
 
-      </buttons>
+        </buttons>
 
-   </toolbar>
+    </toolbar>
 
-   <toolbar name="Edit Tools" visible="true">
+    <toolbar name="Edit Tools" visible="true">
 
-      <constraints>
+        <constraints>
 
-        <row>0</row>
-        <position>1</position>
-        <loc-x>-1</loc-x>
-        <resize-offset-x>-1</resize-offset-x>
-        <minimum-width>-1</minimum-width>
-        <preferred-width>-1</preferred-width>
-        <current-width>0</current-width>
+            <row>0</row>
+            <position>1</position>
+            <loc-x>-1</loc-x>
+            <resize-offset-x>-1</resize-offset-x>
+            <minimum-width>-1</minimum-width>
+            <preferred-width>-1</preferred-width>
+            <current-width>0</current-width>
 
-      </constraints>
+        </constraints>
 
-      <buttons>
+        <buttons>
 
-        <button id="5" action-id="cut-command">
-          <visible>true</visible>
-          <order>0</order>
-        </button>
+            <button id="5" action-id="cut-command">
+                <visible>true</visible>
+                <order>0</order>
+            </button>
 
-        <button id="11" action-id="copy-command">
-          <visible>true</visible>
-          <order>1</order>
-        </button>
+            <button id="11" action-id="copy-command">
+                <visible>true</visible>
+                <order>1</order>
+            </button>
 
-        <button id="6" action-id="paste-command">
-          <visible>true</visible>
-          <order>2</order>
-        </button>
+            <button id="6" action-id="paste-command">
+                <visible>true</visible>
+                <order>2</order>
+            </button>
 
-        <button id="29">
-          <visible>true</visible>
-          <order>3</order>
-        </button>
+            <button id="29">
+                <visible>true</visible>
+                <order>3</order>
+            </button>
 
-        <button id="7"  action-id="undo-command">
-          <visible>true</visible>
-          <order>4</order>
-        </button>
+            <button id="7" action-id="undo-command">
+                <visible>true</visible>
+                <order>4</order>
+            </button>
 
-        <button id="8" action-id="redo-command">
-          <visible>true</visible>
-          <order>5</order>
-        </button>
+            <button id="8" action-id="redo-command">
+                <visible>true</visible>
+                <order>5</order>
+            </button>
 
-      </buttons>
+        </buttons>
 
-   </toolbar>
+    </toolbar>
 
-   <toolbar name="Search Tools" visible="false">
+    <toolbar name="Search Tools" visible="false">
 
-      <constraints>
+        <constraints>
 
-        <row>-1</row>
-        <position>-1</position>
-        <loc-x>-1</loc-x>
-        <resize-offset-x>-1</resize-offset-x>
-        <minimum-width>-1</minimum-width>
-        <preferred-width>-1</preferred-width>
-        <current-width>0</current-width>
+            <row>-1</row>
+            <position>-1</position>
+            <loc-x>-1</loc-x>
+            <resize-offset-x>-1</resize-offset-x>
+            <minimum-width>-1</minimum-width>
+            <preferred-width>-1</preferred-width>
+            <current-width>0</current-width>
 
-      </constraints>
+        </constraints>
 
-      <buttons>
+        <buttons>
 
-        <button id="17" action-id="find-command">
-          <visible>true</visible>
-          <order>0</order>
-        </button>
+            <button id="17" action-id="find-command">
+                <visible>true</visible>
+                <order>0</order>
+            </button>
 
-        <button id="30" action-id="find-next-command">
-          <visible>true</visible>
-          <order>1</order>
-        </button>
+            <button id="30" action-id="find-next-command">
+                <visible>true</visible>
+                <order>1</order>
+            </button>
 
-        <button id="19" action-id="replace-command">
-          <visible>true</visible>
-          <order>2</order>
-        </button>
+            <button id="19" action-id="replace-command">
+                <visible>true</visible>
+                <order>2</order>
+            </button>
 
-        <button id="28" action-id="goto-command">
-          <visible>true</visible>
-          <order>3</order>
-        </button>
+            <button id="28" action-id="goto-command">
+                <visible>true</visible>
+                <order>3</order>
+            </button>
 
-        <button id="35" action-id="find-in-files">
-          <visible>false</visible>
-          <order>1000</order>
-        </button>
+            <button id="35" action-id="find-in-files">
+                <visible>false</visible>
+                <order>1000</order>
+            </button>
 
-      </buttons>
+        </buttons>
 
-   </toolbar>
+    </toolbar>
 
-   <toolbar name="Browser Tools" visible="true">
+    <toolbar name="Browser Tools" visible="true">
 
-      <constraints>
+        <constraints>
 
-        <row>0</row>
-        <position>3</position>
-        <loc-x>-1</loc-x>
-        <resize-offset-x>-1</resize-offset-x>
-        <minimum-width>-1</minimum-width>
-        <preferred-width>-1</preferred-width>
-        <current-width>0</current-width>
+            <row>0</row>
+            <position>3</position>
+            <loc-x>-1</loc-x>
+            <resize-offset-x>-1</resize-offset-x>
+            <minimum-width>-1</minimum-width>
+            <preferred-width>-1</preferred-width>
+            <current-width>0</current-width>
 
-      </constraints>
+        </constraints>
 
-      <buttons>
+        <buttons>
 
-        <button id="37" action-id="insert-row-command">
-          <visible>true</visible>
-          <order>0</order>
-        </button>
+            <button id="37" action-id="insert-row-command">
+                <visible>true</visible>
+                <order>0</order>
+            </button>
 
-        <button id="38" action-id="delete-row-command">
-          <visible>true</visible>
-          <order>1</order>
-        </button>
+            <button id="38" action-id="delete-row-command">
+                <visible>true</visible>
+                <order>1</order>
+            </button>
 
-        <!--
-        <button id="40" action-id="reload-node-command">
-          <visible>false</visible>
-          <order>1000</order>
-        </button>
-        -->
+            <button id="39" action-id="drop-object-command">
+                <visible>true</visible>
+                <order>2</order>
+            </button>
 
-        <button id="39" action-id="drop-object-command">
-          <visible>true</visible>
-          <order>2</order>
-        </button>
+        </buttons>
 
-      </buttons>
+    </toolbar>
 
-   </toolbar>
+    <toolbar name="Database Tools" visible="true">
 
-   <toolbar name="Database Tools" visible="true">
+        <constraints>
 
-      <constraints>
+            <row>0</row>
+            <position>2</position>
+            <loc-x>-1</loc-x>
+            <resize-offset-x>-1</resize-offset-x>
+            <minimum-width>-1</minimum-width>
+            <preferred-width>-1</preferred-width>
+            <current-width>0</current-width>
 
-        <row>0</row>
-        <position>2</position>
-        <loc-x>-1</loc-x>
-        <resize-offset-x>-1</resize-offset-x>
-        <minimum-width>-1</minimum-width>
-        <preferred-width>-1</preferred-width>
-        <current-width>0</current-width>
+        </constraints>
 
-      </constraints>
+        <buttons>
 
-      <buttons>
+            <button id="9" action-id="connect-command">
+                <visible>false</visible>
+                <order>0</order>
+            </button>
 
-        <button id="9" action-id="connect-command">
-          <visible>false</visible>
-          <order>0</order>
-        </button>
-
-        <!--
-        <button id="10" action-id="manage-conns-command">
-          <visible>true</visible>
-          <order>1</order>
-        </button>
-        -->
-
-        <button id="12" action-id="editor-command">
-          <visible>true</visible>
-          <order>1</order>
-        </button>
-
-        <!--
-        <button id="13" action-id="browser-command">
-          <visible>false</visible>
-          <order>4</order>
-        </button>
-        -->
+            <button id="12" action-id="editor-command">
+                <visible>true</visible>
+                <order>1</order>
+            </button>
 
         <button id="20" action-id="create-database-command">
           <visible>true</visible>
@@ -292,153 +282,129 @@
           <order>1000</order>
         </button>
 
-        <button id="31" action-id="user-keywords-command">
-          <visible>false</visible>
-          <order>1000</order>
-        </button>
+            <button id="31" action-id="user-keywords-command">
+                <visible>false</visible>
+                <order>1000</order>
+            </button>
 
-        <!--
-        <button id="33" action-id="database-disconnect-command">
-          <visible>false</visible>
-          <order>1000</order>
-        </button>
-        -->
+            <button id="34" action-id="console-command">
+                <visible>false</visible>
+                <order>1000</order>
+            </button>
 
-        <button id="34" action-id="console-command">
-          <visible>false</visible>
-          <order>1000</order>
-        </button>
+        </buttons>
 
-      </buttons>
+    </toolbar>
 
-   </toolbar>
+    <toolbar name="Import/Export Tools" visible="true">
 
-   <toolbar name="Import/Export Tools" visible="true">
+        <constraints>
 
-      <constraints>
+            <row>0</row>
+            <position>6</position>
+            <loc-x>346</loc-x>
+            <resize-offset-x>341</resize-offset-x>
+            <minimum-width>-1</minimum-width>
+            <preferred-width>-1</preferred-width>
+            <current-width>0</current-width>
 
-        <row>0</row>
-        <position>6</position>
-        <loc-x>346</loc-x>
-        <resize-offset-x>341</resize-offset-x>
-        <minimum-width>-1</minimum-width>
-        <preferred-width>-1</preferred-width>
-        <current-width>0</current-width>
+        </constraints>
 
-      </constraints>
+        <buttons>
 
-      <buttons>
+            <button id="45" action-id="export-sql-command">
+                >
+                <visible>true</visible>
+                <order>1000</order>
+            </button>
 
-        <button id="45" action-id="export-sql-command">>
-          <visible>true</visible>
-          <order>1000</order>
-        </button>
+            <button id="24" action-id="import-delimited-command">
+                <visible>true</visible>
+                <order>1000</order>
+            </button>
 
-        <button id="24" action-id="import-delimited-command">
-          <visible>true</visible>
-          <order>1000</order>
-        </button>
+            <button id="26" action-id="export-delimited-command">
+                <visible>true</visible>
+                <order>1000</order>
+            </button>
 
-        <button id="26" action-id="export-delimited-command">
-          <visible>true</visible>
-          <order>1000</order>
-        </button>
+            <button id="25" action-id="import-xml-command">
+                <visible>true</visible>
+                <order>1000</order>
+            </button>
 
-        <button id="25" action-id="import-xml-command">
-          <visible>true</visible>
-          <order>1000</order>
-        </button>
+            <button id="27" action-id="export-xml-command">
+                <visible>true</visible>
+                <order>1000</order>
+            </button>
 
-        <button id="27" action-id="export-xml-command">
-          <visible>true</visible>
-          <order>1000</order>
-        </button>
+            <button id="36" action-id="export-excel-command">
+                <visible>false</visible>
+                <order>1000</order>
+            </button>
 
-        <button id="36" action-id="export-excel-command">
-          <visible>false</visible>
-          <order>1000</order>
-        </button>
+            <button id="29">
+                <visible>false</visible>
+                <order>3</order>
+            </button>
 
-      </buttons>
+            <button id="46" action-id="export-connections-command">
+                <visible>false</visible>
+                <order>1000</order>
+            </button>
 
-   </toolbar>
+            <button id="47" action-id="import-connections-command">
+                <visible>false</visible>
+                <order>1000</order>
+            </button>
 
-   <toolbar name="System Tools" visible="true">
+        </buttons>
 
-      <constraints>
+    </toolbar>
 
-        <row>0</row>
-        <position>3</position>
-        <loc-x>489</loc-x>
-        <resize-offset-x>477</resize-offset-x>
-        <minimum-width>-1</minimum-width>
-        <preferred-width>-1</preferred-width>
-        <current-width>0</current-width>
+    <toolbar name="System Tools" visible="true">
 
-      </constraints>
+        <constraints>
 
-      <buttons>
+            <row>0</row>
+            <position>3</position>
+            <loc-x>489</loc-x>
+            <resize-offset-x>477</resize-offset-x>
+            <minimum-width>-1</minimum-width>
+            <preferred-width>-1</preferred-width>
+            <current-width>0</current-width>
 
-        <button id="14" action-id="preferences-command">
-          <visible>true</visible>
-          <order>0</order>
-        </button>
+        </constraints>
 
-        <button id="15"  action-id="help-command">
-          <visible>true</visible>
-          <order>1</order>
-        </button>
+        <buttons>
 
-        <button id="16" action-id="about-command">
-          <visible>true</visible>
-          <order>2</order>
-        </button>
-        <button id="44" action-id="visit-eq-command">
-          <visible>false</visible>
-          <order>1000</order>
-        </button>
+            <button id="14" action-id="preferences-command">
+                <visible>true</visible>
+                <order>0</order>
+            </button>
 
-        <button id="32" action-id="heap-memory-command">
-          <visible>false</visible>
-          <order>1000</order>
-        </button>
+            <button id="15" action-id="help-command">
+                <visible>true</visible>
+                <order>1</order>
+            </button>
 
-      </buttons>
+            <button id="16" action-id="about-command">
+                <visible>true</visible>
+                <order>2</order>
+            </button>
 
-   </toolbar>
+            <button id="44" action-id="visit-eq-command">
+                <visible>false</visible>
+                <order>1000</order>
+            </button>
 
-   <!--
-   <toolbar name="Open Windows" visible="true">
+            <button id="32" action-id="heap-memory-command">
+                <visible>false</visible>
+                <order>1000</order>
+            </button>
 
-      <constraints>
+        </buttons>
 
-        <row>1</row>
-        <position>0</position>
-        <loc-x>0</loc-x>
-        <resize-offset-x>-1</resize-offset-x>
-        <minimum-width>150</minimum-width>
-        <preferred-width>250</preferred-width>
-        <current-width>0</current-width>
+    </toolbar>
 
-      </constraints>
-
-   </toolbar>
-   -->
-   <!--
-   <toolbar name="Component Tools" visible="true">
-
-      <constraints>
-
-        <row>1</row>
-        <position>1</position>
-        <loc-x>250</loc-x>
-        <resize-offset-x>-1</resize-offset-x>
-        <minimum-width>445</minimum-width>
-        <preferred-width>-1</preferred-width>
-        <current-width>0</current-width>
-
-      </constraints>
-
-   </toolbar>
-   -->
 </system-toolbars>

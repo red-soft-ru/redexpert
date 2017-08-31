@@ -43,6 +43,7 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.DefaultActionButtonsPanel;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.resultset.SimpleRecordDataItem;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.util.FileUtils;
 
@@ -96,9 +97,9 @@ public class SimpleDataItemViewerPanel extends DefaultActionButtonsPanel {
 
         contentPanel.add(descriptionLabel, BorderLayout.SOUTH);
         
-        JButton closeButton = create("Close", "close");
+        JButton closeButton = create(Bundles.get("common.close.button"), "close");
         JButton copyButton = create("Copy to Clipboard", "copy");
-        JButton saveButton = create("Save As", "save");
+        JButton saveButton = create(Bundles.get("common.save-as.button"), "save");
         
         addActionButton(copyButton);        
         addActionButton(saveButton);

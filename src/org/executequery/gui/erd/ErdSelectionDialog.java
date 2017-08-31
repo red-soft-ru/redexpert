@@ -33,6 +33,7 @@ import javax.swing.JDialog;
 
 import org.executequery.GUIUtilities;
 import org.executequery.gui.DefaultPanelButton;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractBaseDialog;
 
 /**
@@ -69,8 +70,8 @@ public class ErdSelectionDialog extends AbstractBaseDialog {
         
         selectionPanel = new ErdSelectionPanel();
         
-        JButton addButton = new DefaultPanelButton("Add");
-        JButton cancelButton = new DefaultPanelButton("Cancel");
+        JButton addButton = new DefaultPanelButton(Bundles.get("common.add.button"));
+        JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
         
         ActionListener btnListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {

@@ -44,6 +44,7 @@ import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.localization.Bundles;
 
 /**
  *
@@ -152,8 +153,8 @@ public class ErdDeleteRelationshipDialog extends ErdPrintableDialog
     }
     
     private void jbInit() throws Exception {
-        JButton deleteButton = new DefaultPanelButton("Delete");
-        JButton cancelButton = new DefaultPanelButton("Cancel");
+        JButton deleteButton = new DefaultPanelButton(Bundles.get("common.delete.button"));
+        JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
         
         cancelButton.addActionListener(this);
         deleteButton.addActionListener(this);

@@ -40,8 +40,8 @@ import org.underworldlabs.swing.plaf.UIUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1569 $
- * @date     $Date: 2016-02-03 12:33:44 +1100 (Wed, 03 Feb 2016) $
+ * @version  $Revision: 1776 $
+ * @date     $Date: 2017-08-29 22:59:07 +1000 (Tue, 29 Aug 2017) $
  */
 public class HeapMemoryPanel extends JPanel 
                              implements ActionListener {
@@ -117,7 +117,7 @@ public class HeapMemoryPanel extends JPanel
         
         startMeasure(progressBarModel, progressBar);
         
-        setPreferredSize(new Dimension(339, 168));
+        setPreferredSize(new Dimension(450, 200));
         add(base, new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
                                          GridBagConstraints.SOUTHEAST,
                                          GridBagConstraints.BOTH,

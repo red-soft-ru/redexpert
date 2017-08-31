@@ -40,6 +40,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.TextFieldPanel;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.util.DateUtils;
 
@@ -122,8 +123,8 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
     }
     
     private void jbInit() throws Exception {
-        JButton createButton = new DefaultPanelButton("Add");
-        JButton cancelButton = new DefaultPanelButton("Cancel");
+        JButton createButton = new DefaultPanelButton(Bundles.get("common.add.button"));
+        JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
         
         ActionListener btnListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {

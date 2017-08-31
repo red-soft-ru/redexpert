@@ -36,6 +36,7 @@ import javax.swing.UIManager;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 
 public class ShowPasswordDialog extends BaseDialog implements ActionListener {
 
@@ -47,7 +48,7 @@ public class ShowPasswordDialog extends BaseDialog implements ActionListener {
         super("Password", true);
         this.password = password;
         
-        JButton okButton = WidgetFactory.createPanelButton("Close", null, this);
+        JButton okButton = WidgetFactory.createPanelButton(Bundles.get("common.close.button"), null, this);
         JButton copyButton = WidgetFactory.createPanelButton("Copy to Clipboard", 
                 "Copies the selected query to the system clipboard", this, COPY_COMMAND);
 

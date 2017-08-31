@@ -31,6 +31,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.gui.ActionContainer;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.wizard.DefaultWizardProcessModel;
@@ -455,7 +456,7 @@ public class ImportExportExcelPanel extends WizardProcessPanel
      */
     private boolean doPrevious() {
         // make sure the cancel button says cancel
-        setCancelButtonText("Cancel");
+        setCancelButtonText(Bundles.get("common.cancel.button"));
         return true;
     }
 

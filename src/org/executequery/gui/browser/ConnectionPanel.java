@@ -68,6 +68,7 @@ import org.executequery.gui.FormPanelButton;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.drivers.DialogDriverPanel;
 import org.executequery.log.Log;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
@@ -609,7 +610,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         advPropsPanel.add(scroller, gbc);        
         
         // transaction isolation
-        txApplyButton =  WidgetFactory.createInlineFieldButton("Apply", "transactionLevelChanged");        
+        txApplyButton =  WidgetFactory.createInlineFieldButton(Bundles.get("common.apply.button"), "transactionLevelChanged");        
         txApplyButton.setToolTipText("Apply this level to all open connections of this type");
         txApplyButton.setEnabled(false);
         txApplyButton.addActionListener(this);

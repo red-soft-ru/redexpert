@@ -37,6 +37,7 @@ import javax.swing.JTabbedPane;
 
 import org.executequery.ActiveComponent;
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.HeapMemoryPanel;
@@ -48,8 +49,8 @@ import org.underworldlabs.util.SystemProperties;
  * System About panel.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1770 $
- * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
+ * @version  $Revision: 1775 $
+ * @date     $Date: 2017-08-27 22:51:41 +1000 (Sun, 27 Aug 2017) $
  */
 public class AboutPanel extends BaseDialog
                         implements ActiveComponent,
@@ -66,15 +67,11 @@ public class AboutPanel extends BaseDialog
     public AboutPanel() {
 
         super(TITLE, true);
-
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        init();
     }
 
-    private void jbInit() throws Exception {
+    private void init() {
+
         tabPane = new JTabbedPane();
         tabPane.add("System", systemDetails());
         tabPane.add("Resources", systemResources());
@@ -154,10 +151,11 @@ public class AboutPanel extends BaseDialog
     }
 
     private JPanel addButtonPanel() {
+
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         buttonPanel.setPreferredSize(new Dimension(350, 50));
 
-        JButton okButton = new DefaultPanelButton("OK");
+        JButton okButton = new DefaultPanelButton(Bundles.get("common.ok.button"));
         okButton.setMnemonic('O');
 
         GridBagConstraints gbc = new GridBagConstraints();

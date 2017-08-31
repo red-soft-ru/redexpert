@@ -42,6 +42,7 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.scriptgenerators.BaseScriptGeneratorPanel;
 import org.executequery.gui.scriptgenerators.CreateTableScriptsGenerator;
 import org.executequery.gui.scriptgenerators.ScriptGenerator;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.AbstractBaseDialog;
 
@@ -91,8 +92,8 @@ public class ErdScriptGenerator extends BaseScriptGeneratorPanel
     
     private void jbInit() throws Exception {
 
-        cancelButton = new DefaultPanelButton("Cancel");
-        generateButton = new DefaultPanelButton("Generate");
+        cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
+        generateButton = new DefaultPanelButton(Bundles.get("common.generate.button"));
         
         Insets btnInsets = new Insets(0,0,0,0);
         cancelButton.setMargin(btnInsets);

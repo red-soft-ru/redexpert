@@ -49,6 +49,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.LinkButton;
 import org.underworldlabs.swing.actions.ReflectiveAction;
 
@@ -158,8 +159,8 @@ public class MoveConnectionToFolderDialog extends BaseDialog {
 
     private JPanel buttonPanel(ReflectiveAction action) {
 
-        JButton okButton = new DefaultPanelButton(action, "OK", "move");
-        JButton cancelButton = new DefaultPanelButton(action, "Cancel", "cancel");
+        JButton okButton = new DefaultPanelButton(action, Bundles.get("common.ok.button"), "move");
+        JButton cancelButton = new DefaultPanelButton(action, Bundles.get("common.cancel.button"), "cancel");
 
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();

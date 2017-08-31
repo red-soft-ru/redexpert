@@ -109,12 +109,3 @@ public abstract class AbstractBaseDialog extends JDialog {
     
 }
 
-
-
-
-
-
-
-
-
-

@@ -36,6 +36,7 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.gui.ActionContainer;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.wizard.DefaultWizardProcessModel;
@@ -389,7 +390,7 @@ public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
     private boolean doPrevious() {
         
         
-        setCancelButtonText("Cancel");
+        setCancelButtonText(Bundles.get("common.cancel.button"));
         setCancelButtonEnabled(true);
 
         return true;

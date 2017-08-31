@@ -38,6 +38,7 @@ import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableFunctionPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
+import org.executequery.localization.Bundles;
 
 /**
  *
@@ -109,8 +110,8 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
         Container c = this.getContentPane();
         c.setLayout(new BorderLayout());
         
-        JButton cancelButton = new DefaultPanelButton("Cancel");
-        JButton okButton = new DefaultPanelButton("Create");
+        JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
+        JButton okButton = new DefaultPanelButton(Bundles.get("common.create.button"));
         
         ActionListener btnListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {

@@ -47,6 +47,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.DisabledField;
 
@@ -153,7 +154,7 @@ public class SearchFilesDialog extends AbstractBaseDialog implements FileSearchV
         browseButton.setPreferredSize(new Dimension(85, 22));
         
         JButton findButton = new DefaultPanelButton("Find");
-        JButton cancelButton = new DefaultPanelButton("Close");
+        JButton cancelButton = new DefaultPanelButton(Bundles.get("common.close.button"));
         
         resultsList = new JList();
         resultsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

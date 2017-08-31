@@ -73,6 +73,7 @@ import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.table.TableConstraintFunction;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextEditor;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -257,8 +258,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         tabPane.addChangeListener(this);
         
         // apply/cancel buttons
-        applyButton = new DefaultPanelButton("Apply");
-        cancelButton = new DefaultPanelButton("Cancel");
+        applyButton = new DefaultPanelButton(Bundles.get("common.apply.button"));
+        cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
 
         applyButton.addActionListener(this);
         cancelButton.addActionListener(this);

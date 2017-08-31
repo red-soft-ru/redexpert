@@ -35,6 +35,7 @@ import javax.swing.JRadioButton;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.DefaultPanelButton;
+import org.executequery.localization.Bundles;
 import org.executequery.print.PrintPreviewer;
 import org.executequery.print.PrintingSupport;
 import org.underworldlabs.swing.util.SwingWorker;
@@ -93,7 +94,7 @@ public class PrintSelectDialog extends JPanel {
 
         JButton okButton = new DefaultPanelButton(commandType == PRINT_PREVIEW ? 
                                        "Preview" : "Print");
-        JButton cancelButton = new DefaultPanelButton("Cancel");
+        JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
         
         queryRadio = new JRadioButton("SQL Query Text Area", true);
         resultsRadio = new JRadioButton("SQL Table Results Panel");

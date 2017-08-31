@@ -40,6 +40,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractBaseDialog;
 
 /**
@@ -82,7 +83,7 @@ public class SaveOnExitDialog extends AbstractBaseDialog
     private void init() throws Exception {
         
         JButton saveButton = new JButton("Save Selected");
-        JButton cancelButton = new JButton("Cancel");
+        JButton cancelButton = new JButton(Bundles.get("common.cancel.button"));
         JButton discardButton = new JButton("Discard All");
         
         Insets buttonInsets = new Insets(0,0,0,0);

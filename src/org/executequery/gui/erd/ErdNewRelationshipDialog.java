@@ -46,6 +46,7 @@ import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.localization.Bundles;
 
 /**
  *
@@ -102,8 +103,8 @@ public class ErdNewRelationshipDialog extends ErdPrintableDialog {
     }
     
     private void jbInit() throws Exception {
-        JButton createButton = new DefaultPanelButton("Create");
-        JButton cancelButton = new DefaultPanelButton("Cancel");
+        JButton createButton = new DefaultPanelButton(Bundles.get("common.create.button"));
+        JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
         
         ActionListener btnListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -118,7 +119,8 @@ public class ErdNewRelationshipDialog extends ErdPrintableDialog {
         nameField = WidgetFactory.createTextField();
         nameField.addKeyListener(new KeyAdapter() {
             public void keyReleased(KeyEvent e) {
-                setSQLText(); }
+                setSQLText(); 
+            }
         });
         
         ErdTable[] tables = parent.getAllComponentsArray();

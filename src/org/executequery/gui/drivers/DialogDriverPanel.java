@@ -35,6 +35,7 @@ import org.executequery.databasemediators.spi.DatabaseDriverFactoryImpl;
 import org.executequery.event.DatabaseDriverEvent;
 import org.executequery.event.DefaultDatabaseDriverEvent;
 import org.executequery.gui.ActionDialog;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.repository.RepositoryException;
@@ -66,7 +67,7 @@ public class DialogDriverPanel extends ActionDialog {
     
     private JPanel createButtonsPanel() {
 
-        return new SimpleButtonsPanel(this, "Save", "populateAndSave", "Cancel", "dispose");
+        return new SimpleButtonsPanel(this, Bundles.get("common.save.button"), "populateAndSave", Bundles.get("common.cancel.button"), "dispose");
     }
 
     public void populateAndSave() {
@@ -79,9 +80,7 @@ public class DialogDriverPanel extends ActionDialog {
 
             if (driverNameExists(driver)) {
 
-                String message = String.format(
-                        "The driver name %s already exists.", driver.getName());
-
+                String message = String.format("The driver name %s already exists.", driver.getName());
                 GUIUtilities.displayErrorMessage(message);
                 
                 return;

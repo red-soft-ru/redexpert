@@ -55,6 +55,7 @@ import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.resultset.ResultSetColumnHeader;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.LinkButton;
 import org.underworldlabs.swing.actions.ReflectiveAction;
 import org.underworldlabs.swing.table.TableSorter;
@@ -144,8 +145,8 @@ public class VisibleResultSetColumnsDialog extends BaseDialog {
 
     private JPanel buttonPanel(ReflectiveAction action) {
 
-        JButton okButton = new DefaultPanelButton(action, "OK", "update");
-        JButton cancelButton = new DefaultPanelButton(action, "Cancel", "cancel");
+        JButton okButton = new DefaultPanelButton(action, Bundles.get("common.ok.button"), "update");
+        JButton cancelButton = new DefaultPanelButton(action, Bundles.get("common.cancel.button"), "cancel");
 
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();

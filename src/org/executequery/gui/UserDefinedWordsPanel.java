@@ -41,6 +41,7 @@ import javax.swing.table.AbstractTableModel;
 
 import org.executequery.ApplicationException;
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.RolloverButton;
@@ -224,14 +225,14 @@ public class UserDefinedWordsPanel extends DefaultActionButtonsPanel
         newWord = newWord.trim().toUpperCase();
         if (Collections.binarySearch(sql92Types, newWord) >= 0) {
             GUIUtilities.displayWarningMessage(
-            "The word entered is already part of the SQL92 keyword list.\n");
+                    "The word entered is already part of the SQL92 keyword list.\n");
             newWordField.selectAll();
             newWordField.requestFocus();
             return;
         }
         else if (Collections.binarySearch(userModel.getWords(), newWord) >= 0) {
             GUIUtilities.displayWarningMessage(
-            "The word entered is already part of the user defined keyword list.\n");
+                    "The word entered is already part of the user defined keyword list.\n");
             newWordField.selectAll();
             newWordField.requestFocus();
             return;
@@ -282,7 +283,7 @@ public class UserDefinedWordsPanel extends DefaultActionButtonsPanel
 
     private JButton createCancelButton() {
 
-        JButton button = new DefaultPanelButton("Cancel");
+        JButton button = new DefaultPanelButton(Bundles.get("common.cancel.button"));
         
         button.setActionCommand("cancel");
         button.addActionListener(this);
@@ -292,7 +293,7 @@ public class UserDefinedWordsPanel extends DefaultActionButtonsPanel
     
     private JButton createSaveButton() {
 
-        JButton button = new DefaultPanelButton("Save");
+        JButton button = new DefaultPanelButton(Bundles.get("common.save.button"));
         
         button.setActionCommand("save");
         button.addActionListener(this);

@@ -5,8 +5,8 @@
     File:         actions.xml
     Author:       Takis Diakoumis
     Description:  Action definitions file for menus, toolbars, etc.
-    Date:         $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
-    Version:      $Revision: 1487 $
+    Date:         $Date: 2017-08-27 22:51:41 +1000 (Sun, 27 Aug 2017) $
+    Version:      $Revision: 1775 $
     =======================================================================
 -->
 
@@ -730,6 +730,17 @@
           large-icon="/org/executequery/icons/DatabaseConnect24.png"
           execute-class="org.executequery.actions.databasecommands.ConnectCommand"/>
 
+  <action id="import-connections-command"
+          name="Import Connections"
+          mnemonic="m"
+          small-icon="/org/executequery/icons/ImportConnections16.png"
+          execute-class="org.executequery.actions.databasecommands.ImportConnectionsCommand"/>
+
+  <action id="export-connections-command"
+          name="Export Connections"
+          mnemonic="x"
+          small-icon="/org/executequery/icons/ExportConnections16.png"
+          execute-class="org.executequery.actions.databasecommands.ExportConnectionsCommand"/>
 
   <action id="console-command"
           name="System Console Window"

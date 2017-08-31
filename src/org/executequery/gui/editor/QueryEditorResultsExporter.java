@@ -64,6 +64,7 @@ import org.executequery.gui.importexport.ImportExportDataProcess;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.gui.resultset.ResultSetTableModelToXMLWriter;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.CharLimitedTextField;
 import org.underworldlabs.swing.actions.ActionUtilities;
@@ -75,8 +76,8 @@ import org.underworldlabs.util.MiscUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1767 $
- * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
+ * @version  $Revision: 1776 $
+ * @date     $Date: 2017-08-29 22:59:07 +1000 (Tue, 29 Aug 2017) $
  */
 public class QueryEditorResultsExporter extends AbstractBaseDialog {
     
@@ -129,8 +130,8 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         browseButton.setText("Browse");
         browseButton.setActionCommand("browse");
         
-        JButton okButton = new DefaultPanelButton(action, "OK", "export");
-        JButton cancelButton = new DefaultPanelButton(action, "Cancel", "cancel");
+        JButton okButton = new DefaultPanelButton(action, Bundles.get("common.ok.button"), "export");
+        JButton cancelButton = new DefaultPanelButton(action, Bundles.get("common.cancel.button"), "cancel");
         
         columnHeadersCheck = new JCheckBox("Include column names as first row");
         applyQuotesCheck = new JCheckBox("Use double quotes for char/varchar/longvarchar columns", true);
@@ -146,9 +147,12 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         gbc.insets.left = 5;
         btnPanel.add(cancelButton, gbc);
 
+        int labelInsetsTop = 10;
+        int fieldInsetsTop = 5;
+        
         // the base panel
         JPanel base = new JPanel(new GridBagLayout());
-        gbc.insets = new Insets(8,5,5,5);
+        gbc.insets = new Insets(10, 5, 10, 5);
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -161,15 +165,16 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         base.add(columnHeadersCheck, gbc);
         gbc.gridy++;
 
+        gbc.insets.bottom = 10;
         base.add(applyQuotesCheck, gbc);
         gbc.gridy++;
 
         gbc.gridwidth = 1;
         gbc.insets.bottom = 0;
-        gbc.insets.top = 6;
+        gbc.insets.top = labelInsetsTop;
         base.add(new JLabel("File Format:"), gbc);
         gbc.gridx = 1;
-        gbc.insets.top = 2;
+        gbc.insets.top = fieldInsetsTop;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         base.add(typeCombo, gbc);
@@ -177,31 +182,31 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         gbc.gridx = 0;
         gbc.gridwidth = 1;
         gbc.insets.bottom = 0;
-        gbc.insets.top = 6;
+        gbc.insets.top = labelInsetsTop;
         base.add(new JLabel("Delimiter:"), gbc);
         gbc.gridx = 1;
-        gbc.insets.top = 2;
+        gbc.insets.top = fieldInsetsTop;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         base.add(delimCombo, gbc);
         gbc.gridx = 0;
         gbc.gridy++;
-        gbc.insets.top = 5;
+        gbc.insets.top = labelInsetsTop;
         gbc.gridwidth = 1;
         gbc.fill = GridBagConstraints.NONE;
         base.add(new JLabel("Custom:"), gbc);
         gbc.gridx = 1;
-        gbc.insets.top = 2;
+        gbc.insets.top = fieldInsetsTop;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         base.add(customDelimField, gbc);        
-        gbc.insets.top = 6;
         gbc.gridx = 0;
         gbc.gridy++;
         gbc.gridwidth = 1;
+        gbc.insets.top = labelInsetsTop;
         gbc.fill = GridBagConstraints.NONE;
         base.add(new JLabel("File Path:"), gbc);
-        gbc.insets.top = 5;
+        gbc.insets.top = fieldInsetsTop;
         gbc.weightx = 1.0;
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -222,7 +227,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         base.add(btnPanel, gbc);
         
-        Dimension baseDim = new Dimension(550, 240);
+        Dimension baseDim = new Dimension(650, 280);
         base.setPreferredSize(baseDim);
 
         base.setBorder(BorderFactory.createEtchedBorder());

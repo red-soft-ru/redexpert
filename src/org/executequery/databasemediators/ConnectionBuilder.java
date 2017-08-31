@@ -25,8 +25,8 @@ import org.underworldlabs.jdbc.DataSourceException;
 /**
  * 
  * @author Takis Diakoumis
- * @version $Revision: 1487 $
- * @date $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version $Revision: 1776 $
+ * @date $Date: 2017-08-29 22:59:07 +1000 (Tue, 29 Aug 2017) $
  */
 public interface ConnectionBuilder {
 
@@ -45,13 +45,3 @@ public interface ConnectionBuilder {
     String getErrorMessage();
     
 }
-
-
-
-
-
-
-
-
-
-

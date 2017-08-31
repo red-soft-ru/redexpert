@@ -56,6 +56,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputListener;
 
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 import org.underworldlabs.swing.plaf.UIUtils;
 
@@ -752,7 +753,7 @@ public class ScrollingTabPane extends AbstractTabPane
             }
             setFont(popupMenuFont);
             
-            close = MenuItemFactory.createMenuItem("Close");
+            close = MenuItemFactory.createMenuItem(Bundles.get("common.close.button"));
             closeAll = MenuItemFactory.createMenuItem("Close All");
             closeOther = MenuItemFactory.createMenuItem("Close Others");
             

@@ -286,13 +286,3 @@ public class AddQueryBookmarkPanel extends DefaultActionButtonsPanel
     }
 
 }
-
-
-
-
-
-
-
-
-
-

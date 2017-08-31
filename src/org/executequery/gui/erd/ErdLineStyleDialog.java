@@ -49,6 +49,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.ColourChooserButton;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.plaf.UIUtils;
 
@@ -156,8 +157,8 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
         arrowCombo = WidgetFactory.createComboBox(arrowIcons);
         arrowCombo.setRenderer(renderer);
         
-        JButton cancelButton = new DefaultPanelButton("Cancel");
-        JButton okButton = new DefaultPanelButton("OK");
+        JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
+        JButton okButton = new DefaultPanelButton(Bundles.get("common.ok.button"));
         
         ActionListener btnListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {

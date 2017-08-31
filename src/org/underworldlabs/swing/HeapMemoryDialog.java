@@ -35,8 +35,8 @@ import javax.swing.JDialog;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1776 $
+ * @date     $Date: 2017-08-29 22:59:07 +1000 (Tue, 29 Aug 2017) $
  */
 public class HeapMemoryDialog extends JDialog 
                               implements ActionListener {
@@ -45,23 +45,16 @@ public class HeapMemoryDialog extends JDialog
     
     public HeapMemoryDialog(Frame owner) {
         super(owner, "Java Heap Memory", false);        
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        init();
     }
 
     public HeapMemoryDialog(Dialog owner) {
         super(owner, "Java Heap Memory", false);
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        init();
     }
 
-    private void jbInit() {
+    private void init() {
+
         heapPanel = new HeapMemoryPanel();
         
         JButton closeButton = new JButton("Close");
@@ -102,7 +95,5 @@ public class HeapMemoryDialog extends JDialog
     }
     
 }
-
-
 
 

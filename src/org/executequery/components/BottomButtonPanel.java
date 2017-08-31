@@ -30,6 +30,7 @@ import javax.swing.JPanel;
 
 import org.executequery.actions.othercommands.CancelCommand;
 import org.executequery.gui.DefaultPanelButton;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ActionBuilder;
 
 /** <p>Simple button panel with help, ok, cancel buttons.
@@ -94,7 +95,7 @@ public class BottomButtonPanel extends JPanel {
         }
 
         helpButton.setAction(ActionBuilder.get("help-command"));
-        helpButton.setText("Help");
+        helpButton.setText(localisedHelpLabel());
         helpButton.setActionCommand(helpActionCommand);
         helpButton.setIcon(null);
         
@@ -110,7 +111,7 @@ public class BottomButtonPanel extends JPanel {
         this(false);
         okButton.addActionListener(okListener);
         helpButton.setAction(helpAction);
-        helpButton.setText("Help");
+        helpButton.setText(localisedHelpLabel());
 
         if (okText != null) {
             okButton.setText(okText);
@@ -121,13 +122,13 @@ public class BottomButtonPanel extends JPanel {
         this(false);
         okButton.setAction(okAction);
         helpButton.setAction(helpAction);
-        helpButton.setText("Help");
+        helpButton.setText(localisedHelpLabel());
     }
-    
+
     private void init() throws Exception {
         
-        helpButton = new DefaultPanelButton("Help");
-        okButton = new DefaultPanelButton("OK");
+        helpButton = new DefaultPanelButton(localisedHelpLabel());
+        okButton = new DefaultPanelButton(Bundles.get("common.ok.button"));
         cancelButton = new DefaultPanelButton(new CancelCommand(isDialog));
         
         GridBagConstraints gbc = new GridBagConstraints();
@@ -177,14 +178,9 @@ public class BottomButtonPanel extends JPanel {
         helpButton.setAction(a);
     }
     
+    private String localisedHelpLabel() {
+        return Bundles.get("common.help.button");
+    }
+
 }
-
-
-
-
-
-
-
-
-
 

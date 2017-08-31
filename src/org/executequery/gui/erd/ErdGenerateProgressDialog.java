@@ -40,6 +40,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.gui.GenerateErdPanel;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.util.SwingWorker;
@@ -126,7 +127,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
     private void jbInit() {
         JPanel base = new JPanel(new GridBagLayout());
         
-        cancelButton = new JButton("Cancel");
+        cancelButton = new JButton(Bundles.get("common.cancel.button"));
         cancelButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 worker.interrupt(); }

@@ -21,7 +21,6 @@
 package org.executequery.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -91,8 +90,8 @@ import org.underworldlabs.util.MiscUtils;
 /** 
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1541 $
- * @date     $Date: 2015-11-18 10:52:54 +1100 (Wed, 18 Nov 2015) $
+ * @version  $Revision: 1776 $
+ * @date     $Date: 2017-08-29 22:59:07 +1000 (Tue, 29 Aug 2017) $
  */
 public class ExportResultSetPanel extends DefaultTabViewActionPanel
                                   implements NamedView,
@@ -127,19 +126,10 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
     public ExportResultSetPanel() {
 
         super(new BorderLayout());
-
-        try  {
-
-            init();
-
-        } catch (Exception e) {
-          
-            e.printStackTrace();
-        }
-
+        init();
     }
     
-    private void init() throws Exception {
+    private void init() {
         
         fileNameField = WidgetFactory.createTextField();
         connectionsCombo = WidgetFactory.createComboBox();

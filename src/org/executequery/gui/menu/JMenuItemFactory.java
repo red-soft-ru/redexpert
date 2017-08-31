@@ -25,6 +25,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
+import org.apache.commons.lang.StringUtils;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.menu.MenuItemFactory;
@@ -38,63 +40,83 @@ public class JMenuItemFactory {
         JMenuItem jMenuItem = createMenuItemForImpl(menuItem.getImplementingClass());
 
         try {
-        if (jMenuItem instanceof JMenu) {
-
-            jMenuItem.setText(menuItem.getName());
-            jMenuItem.setMnemonic(menuItem.getMnemonicChar());
-
-            if (parent != null) {
-
+            
+            if (jMenuItem instanceof JMenu) {
+    
+                jMenuItem.setText(nameOrBundleValue(menuItem));
+                jMenuItem.setMnemonic(menuItem.getMnemonicChar());
+    
+                if (parent != null) {
+    
+                    addMenuItemToParent(parent, menuItem, jMenuItem);
+                }
+    
+            } else {
+    
+                if (menuItem.hasId()) {
+    
+                    jMenuItem.setAction(actionForMenuItem(menuItem));
+                }
+    
+                if (menuItem.hasName()) {
+                    
+                    jMenuItem.setText(menuItem.getName());
+                }
+    
+                if (menuItem.hasActionCommand()) {
+    
+                    jMenuItem.setActionCommand(menuItem.getActionCommand());
+                }
+                
+                if (menuItem.isAcceleratorKeyNull() && menuItem.getId() == null) {
+    
+                    jMenuItem.setAccelerator(null);
+    
+                } else {
+                    
+                    jMenuItem.setAccelerator(keyStrokeForMenuItem(menuItem));
+                }
+                
+                if (menuItem.hasMnemonic()) {
+                    
+                    jMenuItem.setMnemonic(menuItem.getMnemonicChar());
+                }
+                
+                if (menuItem.hasToolTip()) {
+    
+                    jMenuItem.setToolTipText(menuItem.getToolTip());
+                }
+                
                 addMenuItemToParent(parent, menuItem, jMenuItem);
             }
 
-        } else {
-
-            if (menuItem.hasId()) {
-
-                jMenuItem.setAction(actionForMenuItem(menuItem));
-            }
-
-            if (menuItem.hasName()) {
-                
-                jMenuItem.setText(menuItem.getName());
-            }
-
-            if (menuItem.hasActionCommand()) {
-
-                jMenuItem.setActionCommand(menuItem.getActionCommand());
-            }
-            
-            if (menuItem.isAcceleratorKeyNull() && menuItem.getId() == null) {
-
-                jMenuItem.setAccelerator(null);
-
-            } else {
-                
-                jMenuItem.setAccelerator(keyStrokeForMenuItem(menuItem));
-            }
-            
-            if (menuItem.hasMnemonic()) {
-                
-                jMenuItem.setMnemonic(menuItem.getMnemonicChar());
-            }
-            
-            if (menuItem.hasToolTip()) {
-
-                jMenuItem.setToolTipText(menuItem.getToolTip());
-            }
-            
-            addMenuItemToParent(parent, menuItem, jMenuItem);
+        } catch (Exception e) {
+        
+            e.printStackTrace();
+            System.out.println(menuItem.getImplementingClass());
         }
-
-        }catch (Exception e) {e.printStackTrace();
-        System.out.println(menuItem.getImplementingClass());}
         
         jMenuItem.setIcon(null);
         
         return jMenuItem;
     }
 
+    private String nameOrBundleValue(MenuItem menuItem) {
+        
+        if (menuItem.hasPropertyKey()) {
+            
+            String key = menuItem.getPropertyKey();
+            String value = Bundles.get(key);
+            if (StringUtils.isNotBlank(value)) {
+                
+                return value;
+            }
+            
+        }
+            
+        return menuItem.getName();
+    }
+    
     private void addMenuItemToParent(JMenuItem parent, MenuItem menuItem, JMenuItem jMenuItem) {
 
         if (menuItem.hasIndex()) {

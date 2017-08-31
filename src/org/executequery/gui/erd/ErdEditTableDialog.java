@@ -52,6 +52,7 @@ import org.executequery.gui.table.EditTablePanel;
 import org.executequery.gui.table.TableConstraintFunction;
 import org.executequery.gui.table.TableFunction;
 import org.executequery.gui.table.TableModifier;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
 
@@ -111,8 +112,8 @@ public class ErdEditTableDialog extends ErdPrintableDialog
     
     private void jbInit() throws Exception {
         
-        JButton closeButton = new DefaultPanelButton("Close");
-        JButton applyButton = new DefaultPanelButton("Apply");
+        JButton closeButton = new DefaultPanelButton(Bundles.get("common.close.button"));
+        JButton applyButton = new DefaultPanelButton(Bundles.get("common.apply.button"));
         
         ActionListener btnListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {

@@ -35,6 +35,7 @@ import org.executequery.databaseobjects.DatabaseSource;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.editor.QueryEditor;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.GUIUtils;
@@ -274,7 +275,7 @@ public class GenerateScriptsWizard extends WizardProcessPanel
      */
     private boolean doPrevious() {
         // make sure the cancel button says cancel
-        setCancelButtonText("Cancel");
+        setCancelButtonText(Bundles.get("common.cancel.button"));
         return true;
     }
     

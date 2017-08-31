@@ -43,6 +43,7 @@ import javax.swing.JTextField;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.FormPanelButton;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.MultiLineLabel;
 
@@ -283,7 +284,7 @@ public class ImportXMLPanel_4 extends JPanel {
             sampleArea.setEditable(false);
             sampleArea.setFont(new Font("monospaced", Font.PLAIN, 12));
             
-            JButton closeButton = new FormPanelButton("Close");
+            JButton closeButton = new FormPanelButton(Bundles.get("common.close.button"));
             closeButton.addActionListener(this);
 
             Container c = this.getContentPane();

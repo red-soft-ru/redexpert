@@ -449,6 +449,29 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>native2ascii-maven-plugin</artifactId>
+        <version>1.0-beta-1</version>
+        <configuration>
+          <dest>${project.build.directory}</dest>
+          <src>${pom.basedir}/../../src</src>
+        </configuration>
+        <executions>
+          <execution>
+            <id>native2ascii-utf8</id>
+            <goals>
+              <goal>native2ascii</goal>
+            </goals>
+            <configuration>
+              <encoding>UTF8</encoding>
+              <includes>
+                <include>**/*.properties</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 </project>

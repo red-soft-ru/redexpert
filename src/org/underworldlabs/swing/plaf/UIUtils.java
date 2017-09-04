@@ -1,7 +1,7 @@
 /*
  * UIUtils.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -44,8 +44,8 @@ import org.underworldlabs.swing.plaf.smoothgradient.SmoothGradientLookAndFeel;
  * colours, icons etc.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1536 $
- * @date     $Date: 2015-10-15 14:51:18 +1100 (Thu, 15 Oct 2015) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class UIUtils {
            
@@ -465,6 +465,7 @@ public class UIUtils {
     
     private UIUtils() {}
 }
+
 
 
 

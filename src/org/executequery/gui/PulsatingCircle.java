@@ -17,6 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
 package org.executequery.gui;
 
 import java.awt.AlphaComposite;
@@ -132,3 +133,4 @@ public class PulsatingCircle extends ImageIcon {
     }
     
 }
+

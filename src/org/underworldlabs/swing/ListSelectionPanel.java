@@ -1,7 +1,7 @@
 /*
  * ListSelectionPanel.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -43,8 +43,8 @@ import org.underworldlabs.swing.util.IconUtilities;
  * List selection panel base.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1530 $
- * @date     $Date: 2015-10-13 11:02:42 +1100 (Tue, 13 Oct 2015) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class ListSelectionPanel extends ActionPanel
@@ -410,3 +410,4 @@ public class ListSelectionPanel extends ActionPanel
     }
     
 }
+

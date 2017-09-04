@@ -1,7 +1,7 @@
 /*
  * AbstractTabPane.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,18 +27,21 @@ import java.awt.Component;
 import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
+
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.plaf.UIUtils;
 
 /**
  * Abstract tab pane base.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1496 $
- * @date     $Date: 2015-09-17 17:09:08 +1000 (Thu, 17 Sep 2015) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public abstract class AbstractTabPane extends JPanel
                                       implements TabPane {
@@ -238,7 +241,7 @@ public abstract class AbstractTabPane extends JPanel
     public void setTabTitleForComponent(Component component, String title) {
         int index = indexOfComponent(component);
         if (index == -1) {
-            throw new IndexOutOfBoundsException("Tab pane component not found.");
+            throw new IndexOutOfBoundsException(bundledString("error.notFound"));
         }
         setTabTitleAt(index, title);
     }
@@ -297,7 +300,7 @@ public abstract class AbstractTabPane extends JPanel
         //Log.debug("Setting tab title at: " + index + " to: " + title);
         
         if (components == null || components.isEmpty()) {
-            throw new IndexOutOfBoundsException("Tab pane is empty.");
+            throw new IndexOutOfBoundsException(Bundles.get(AbstractTabPane.class, "error.paneEmpty"));
         }
         TabComponent tabComponent = components.get(index);
         tabComponent.setTitle(title);
@@ -355,7 +358,7 @@ public abstract class AbstractTabPane extends JPanel
      */
     public void setToolTipTextAt(int index, String toolTipText) {
         if (components == null || components.isEmpty()) {
-            throw new IndexOutOfBoundsException("Tab pane is empty.");
+            throw new IndexOutOfBoundsException(Bundles.get(AbstractTabPane.class, "error.paneEmpty"));
         }
         TabComponent tabComponent = components.get(index);
         tabComponent.setToolTip(toolTipText);
@@ -373,7 +376,7 @@ public abstract class AbstractTabPane extends JPanel
     public void setToolTipTextForComponent(Component component, String toolTipText) {
         int index = indexOfComponent(component);
         if (index == -1) {
-            throw new IndexOutOfBoundsException("Tab pane component not found.");
+            throw new IndexOutOfBoundsException(Bundles.get(AbstractTabPane.class, "error.notFound"));
         }
         setToolTipTextAt(index, toolTipText);
     }
@@ -648,9 +651,9 @@ public abstract class AbstractTabPane extends JPanel
         return insets;
     }
 
+    protected String bundledString(String key) {
+        return Bundles.get(getClass(), key);
+    }
+
 }
-
-
-
-
 

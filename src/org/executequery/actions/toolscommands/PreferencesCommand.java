@@ -1,7 +1,7 @@
 /*
  * PreferencesCommand.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,8 +30,8 @@ import org.executequery.gui.prefs.PropertiesPanel;
 /** <p>Executes the Tools | Preferences command.
  *
  *  @author   Takis Diakoumis
- *  @version  $Revision: 1500 $
- *  @date     $Date: 2015-09-20 21:20:04 +1000 (Sun, 20 Sep 2015) $
+ *  @version  $Revision: 1780 $
+ *  @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class PreferencesCommand extends OpenFrameCommand
                                 implements BaseCommand {
@@ -51,4 +51,5 @@ public class PreferencesCommand extends OpenFrameCommand
     }
     
 }
+
 

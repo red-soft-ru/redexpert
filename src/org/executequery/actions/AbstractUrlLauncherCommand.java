@@ -1,7 +1,7 @@
 /*
  * AbstractUrlLauncherCommand.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,16 +24,16 @@ import java.awt.event.ActionEvent;
 
 import org.executequery.ApplicationException;
 import org.executequery.GUIUtilities;
+import org.executequery.actions.othercommands.AbstractBaseCommand;
 import org.executequery.util.SystemWebBrowserLauncher;
-import org.underworldlabs.swing.actions.BaseCommand;
 
 /** 
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
-public abstract class AbstractUrlLauncherCommand implements BaseCommand {
+public abstract class AbstractUrlLauncherCommand extends AbstractBaseCommand {
 
     public void execute(ActionEvent e) {
         
@@ -44,7 +44,7 @@ public abstract class AbstractUrlLauncherCommand implements BaseCommand {
         } catch (ApplicationException applicationException) {
             
             GUIUtilities.displayExceptionErrorDialog(
-                    "Error launching local web browser:\n" + 
+                    bundledString("error.launchBrowser") +
                     applicationException.getMessage(), applicationException);
             
         }
@@ -54,14 +54,4 @@ public abstract class AbstractUrlLauncherCommand implements BaseCommand {
     public abstract String url();
     
 }
-
-
-
-
-
-
-
-
-
-
 

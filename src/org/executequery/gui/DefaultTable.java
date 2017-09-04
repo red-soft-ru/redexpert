@@ -1,7 +1,7 @@
 /*
  * DefaultTable.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -36,8 +36,8 @@ import org.underworldlabs.swing.table.DefaultTableHeaderRenderer;
  * Default table display using a custom header renderer and fixed min sizes.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1546 $
- * @date     $Date: 2015-12-22 15:54:37 +1100 (Tue, 22 Dec 2015) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class DefaultTable extends JTable implements StandardTable {
     
@@ -91,4 +91,5 @@ public class DefaultTable extends JTable implements StandardTable {
     }
 
 }
+
 

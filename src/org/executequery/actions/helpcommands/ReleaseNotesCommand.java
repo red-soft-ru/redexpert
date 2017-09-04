@@ -1,7 +1,7 @@
 /*
  * ReleaseNotesCommand.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,6 +21,7 @@
 package org.executequery.actions.helpcommands;
 
 import java.awt.event.ActionEvent;
+
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.InformationDialog;
 import org.underworldlabs.swing.actions.BaseCommand;
@@ -29,29 +30,17 @@ import org.underworldlabs.swing.actions.BaseCommand;
  * The Help | Release Notes command execution.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class ReleaseNotesCommand extends OpenFrameCommand
                                  implements BaseCommand {
     
     public void execute(ActionEvent e) {
-        new InformationDialog("Release Notes", 
+
+        new InformationDialog(bundledString("ReleaseNotes"),
                 "org/executequery/release.notes", InformationDialog.RESOURCE_PATH_VALUE);
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -1,7 +1,7 @@
 /*
  * ApplicationLogsCommand.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -35,11 +35,10 @@ import org.underworldlabs.swing.actions.ReflectiveAction;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
-public class ApplicationLogsCommand extends ReflectiveAction
-                                    implements BaseCommand {
+public class ApplicationLogsCommand extends ReflectiveAction implements BaseCommand {
 
     public void execute(ActionEvent e) {
 
@@ -48,8 +47,7 @@ public class ApplicationLogsCommand extends ReflectiveAction
 
     public void resetAllLogs(ActionEvent e) {
 
-        String message = "Are you sure you want to reset ALL system logs?";
-
+        String message = bundledString("messageResetAll");
         if (confirmReset(message)) {
 
             logRepository().resetAll();
@@ -142,20 +140,20 @@ public class ApplicationLogsCommand extends ReflectiveAction
 
     private boolean resetLogConfirmed(int type) {
 
-        String message = "Are you sure you want to reset the ";
+        String message = bundledString("messageReset");
 
         switch (type) {
 
             case LogRepository.ACTIVITY:
-                message += "system activity log?";
+                message += bundledString("systemActivityLog");
                 break;
 
             case LogRepository.EXPORT:
-                message += "data export log?";
+                message += bundledString("dataExportLog");
                 break;
 
             case LogRepository.IMPORT:
-                message += "data import log?";
+                message += bundledString("dataImportLog");
                 break;
 
         }
@@ -169,13 +167,4 @@ public class ApplicationLogsCommand extends ReflectiveAction
     }
 
 }
-
-
-
-
-
-
-
-
-
 

@@ -1,7 +1,7 @@
 /*
  * AbstractImportExportWorker.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -46,13 +46,12 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.LogRepository;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.sql.spi.LiquibaseDatabaseFactory;
 import org.executequery.util.Base64;
-import org.executequery.util.StringBundle;
-import org.executequery.util.SystemResources;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.util.MiscUtils;
@@ -64,8 +63,8 @@ import liquibase.database.Database;
  * Abstract import/export worker class.
  *
  * @author   Takis Diakoumis Dragan Vasic
- * @version  $Revision: 1767 $
- * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public abstract class AbstractImportExportWorker implements ImportExportWorker {
 
@@ -132,14 +131,10 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
     /** Indicates an included column */
     protected final String INCLUDED_COLUMN = "includedColumn";
 
-    /** string resource loader */
-    private StringBundle bundle;
-
     public AbstractImportExportWorker(ImportExportDataProcess parent,
                                       ImportExportProgressPanel progress) {
         this.parent = parent;
         this.progress = progress;
-        bundle = SystemResources.loadBundle(AbstractImportExportWorker.class);
         outputBuffer = new StringBuilder();
     }
 
@@ -505,7 +500,7 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
                         catch (Exception e) {
                             throw new IllegalArgumentException(
                                     "[ " + MiscUtils.getExceptionName(e) + " ] " +
-                                    getBundle().getString("AbstractImportExportWorker.dateConversionError"));
+                                    Bundles.get("AbstractImportExportWorker.dateConversionError"));
                         }
 
                     }
@@ -539,9 +534,9 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
      */
     protected String displayDateFormatDialog() {
         return GUIUtilities.displayInputMessage(
-                getBundle().getString(
+                Bundles.get(
                     "AbstractImportExportWorker.dateFormatDialogTitle"),
-                getBundle().getString(
+                Bundles.get(
                     "AbstractImportExportWorker.dateFormatDialog"));
     }
 
@@ -557,7 +552,7 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
         if (format == null || format.length() == 0) {
 
             int yesNo = GUIUtilities.displayConfirmDialog(
-                    getBundle().getString("AsbtractImportExportWorker.cancelProcessConfirm"));
+                    Bundles.get("AsbtractImportExportWorker.cancelProcessConfirm"));
 
             if (yesNo == JOptionPane.YES_OPTION) {
                 cancelTransfer();
@@ -698,13 +693,13 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
         else if (e instanceof SQLException) {
             outputBuffer.append(e.getMessage());
             SQLException _e = (SQLException)e;
-            outputBuffer.append(getBundle().getString(
+            outputBuffer.append(Bundles.get(
                     "AbstractImportExportWorker.errorCode",
                     String.valueOf(_e.getErrorCode())));
 
             String state = _e.getSQLState();
             if (state != null) {
-                outputBuffer.append(getBundle().getString(
+                outputBuffer.append(Bundles.get(
                         "AbstractImportExportWorker.stateCode", state));
             }
 
@@ -728,24 +723,24 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
         sb.append("---------------------------\n");
 
         if (result == SUCCESS) {
-            sb.append(getBundle().getString("AbstractImportExportWorker.processCompletedSuccessfully"));
+            sb.append(Bundles.get("AbstractImportExportWorker.processCompletedSuccessfully"));
         }
         else if (result == CANCELLED) {
-            sb.append(getBundle().getString("AbstractImportExportWorker.processCancelled"));
+            sb.append(Bundles.get("AbstractImportExportWorker.processCancelled"));
         }
         else if (result == FAILED) {
-            sb.append(getBundle().getString("AbstractImportExportWorker.processCompletedWithErrors"));
+            sb.append(Bundles.get("AbstractImportExportWorker.processCompletedWithErrors"));
         }
 
-        sb.append(getBundle().getString("AbstractImportExportWorker.totalDuration"));
+        sb.append(Bundles.get("AbstractImportExportWorker.totalDuration"));
         sb.append(getFormattedDuration());
-        sb.append(getBundle().getString("AbstractImportExportWorker.totalTablesProcessed"));
+        sb.append(Bundles.get("AbstractImportExportWorker.totalTablesProcessed"));
         sb.append(tableCount);
-        sb.append(getBundle().getString("AbstractImportExportWorker.totalRecordsProcessed"));
+        sb.append(Bundles.get("AbstractImportExportWorker.totalRecordsProcessed"));
         sb.append(recordCount);
-        sb.append(getBundle().getString("AbstractImportExportWorker.totalRecordsTransferred"));
+        sb.append(Bundles.get("AbstractImportExportWorker.totalRecordsTransferred"));
         sb.append(recordCountProcessed);
-        sb.append(getBundle().getString("AbstractImportExportWorker.errors"));
+        sb.append(Bundles.get("AbstractImportExportWorker.errors"));
         sb.append(errorCount);
 
         appendProgressText(sb.toString());
@@ -762,9 +757,9 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
     protected void appendFileInfo(File file) {
     	
     	StringBuilder sb = new StringBuilder();
-        sb.append(getBundle().getString("AbstractImportExportWorker.outputFileName"));
+        sb.append(Bundles.get("AbstractImportExportWorker.outputFileName"));
         sb.append(file.getName());
-        sb.append(getBundle().getString("AbstractImportExportWorker.outputFileSize"));
+        sb.append(Bundles.get("AbstractImportExportWorker.outputFileSize"));
         sb.append(new DecimalFormat("###,###.###").format(MiscUtils.bytesToMegaBytes(file.length())));
     	sb.append("Mb");
     	
@@ -934,13 +929,6 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
         this.result = result;
     }
 
-    /**
-     * Retrieves the string resource bundle.
-     */
-    protected StringBundle getBundle() {
-        return bundle;
-    }
-
     protected final DateFormat createDateFormatter() {
 
         return createDateFormatter(getDateFormatPattern());
@@ -986,6 +974,7 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
 
 
 }
+
 
 
 

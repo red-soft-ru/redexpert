@@ -1,7 +1,7 @@
 /*
  * ManageShortcutsPanel.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -54,8 +54,6 @@ import org.executequery.gui.text.SQLTextPane;
 import org.executequery.repository.EditorSQLShortcut;
 import org.executequery.repository.EditorSQLShortcuts;
 import org.executequery.repository.RepositoryException;
-import org.executequery.util.StringBundle;
-import org.executequery.util.SystemResources;
 import org.underworldlabs.swing.DefaultMutableListModel;
 import org.underworldlabs.swing.FlatSplitPane;
 import org.underworldlabs.swing.MutableValueJList;
@@ -65,8 +63,8 @@ import org.underworldlabs.util.MiscUtils;
 /** 
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1770 $
- * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class ManageShortcutsPanel extends DefaultActionButtonsPanel 
                                   implements ListSelectionListener {
@@ -80,8 +78,6 @@ public class ManageShortcutsPanel extends DefaultActionButtonsPanel
     private JList list;
 
     private SQLTextPane textPane;
-
-    private StringBundle bundle;
 
     private int lastSelectedIndex = -1;
     
@@ -359,17 +355,6 @@ public class ManageShortcutsPanel extends DefaultActionButtonsPanel
         return shortcutList;
     }
 
-    private StringBundle bundle() {
-        if (bundle == null) {
-            bundle = SystemResources.loadBundle(ManageShortcutsPanel.class);
-        }
-        return bundle;
-    }
-
-    private String bundleString(String key) {
-        return bundle().getString("ManageShortcutsPanel." + key);
-    }
-
     private DefaultListModel modelFromList() {
 
         return (DefaultListModel)list.getModel();
@@ -483,6 +468,7 @@ public class ManageShortcutsPanel extends DefaultActionButtonsPanel
     }
 
 }
+
 
 
 

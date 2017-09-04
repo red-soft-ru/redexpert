@@ -1,7 +1,7 @@
 /*
  * DockedTabPane.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -45,7 +45,6 @@ import javax.swing.UIManager;
 import javax.swing.event.MouseInputListener;
 
 import org.executequery.gui.GUIConstants;
-import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 import org.underworldlabs.swing.plaf.UIUtils;
 
@@ -53,8 +52,8 @@ import org.underworldlabs.swing.plaf.UIUtils;
  * Left, right and bottom docked tab pane.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1766 $
- * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class DockedTabPane extends AbstractTabPane {
     
@@ -911,9 +910,9 @@ public class DockedTabPane extends AbstractTabPane {
                                         deriveFont(Font.PLAIN, 10);
             setFont(font);
             
-            close = MenuItemFactory.createMenuItem(Bundles.get("common.close.button"));
-            minimise = MenuItemFactory.createMenuItem("Minimize");
-            minimiseAll = MenuItemFactory.createMenuItem("Minimize All");
+            close = MenuItemFactory.createMenuItem(bundledString("menuItem.close"));
+            minimise = MenuItemFactory.createMenuItem(bundledString("menuItem.minimize"));
+            minimiseAll = MenuItemFactory.createMenuItem(bundledString("menuItem.minimizeAll"));
             
             close.addActionListener(this);
             minimiseAll.addActionListener(this);
@@ -958,3 +957,4 @@ public class DockedTabPane extends AbstractTabPane {
     }
 
 }
+

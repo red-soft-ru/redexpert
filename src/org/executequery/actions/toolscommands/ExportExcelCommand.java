@@ -1,7 +1,7 @@
 /*
  * ExportExcelCommand.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,18 +23,18 @@ package org.executequery.actions.toolscommands;
 import java.awt.event.ActionEvent;
 
 import org.executequery.GUIUtilities;
-import org.underworldlabs.swing.actions.BaseCommand;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.BaseDialog;
-import org.executequery.gui.importexport.ImportExportExcelPanel;
 import org.executequery.gui.importexport.ImportExportDataProcess;
+import org.executequery.gui.importexport.ImportExportExcelPanel;
+import org.underworldlabs.swing.actions.BaseCommand;
 
 /** 
  * Execution for Export Excel
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1767 $
- * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class ExportExcelCommand extends OpenFrameCommand
                                 implements BaseCommand {
@@ -49,11 +49,11 @@ public class ExportExcelCommand extends OpenFrameCommand
             return;
         }
         
-        if (!isDialogOpen("Export Excel Spreadsheet")) {
+        if (!isDialogOpen(bundledString("title"))) {
             GUIUtilities.showWaitCursor();
             try {
                 BaseDialog dialog = 
-                        createDialog("Export Excel Spreadsheet", false, false);
+                        createDialog(bundledString("title"), false, false);
                 ImportExportExcelPanel panel = 
                         new ImportExportExcelPanel(dialog, ImportExportDataProcess.EXPORT);
                 dialog.addDisplayComponent(panel);
@@ -67,17 +67,4 @@ public class ExportExcelCommand extends OpenFrameCommand
     }
     
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 

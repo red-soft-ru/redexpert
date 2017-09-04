@@ -1,7 +1,7 @@
 /*
  * ConnectionsTreePanel.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -76,8 +76,8 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1775 $
- * @date     $Date: 2017-08-27 22:51:41 +1000 (Sun, 27 Aug 2017) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
                                   implements ConnectionListener,
@@ -1957,4 +1957,5 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     }
     
 }
+
 

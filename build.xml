@@ -30,8 +30,8 @@
 			<fileset dir="${src.path}" excludes="**/*.java **/*.properties" />
 		</copy>
 
-        <native2ascii encoding="UTF-8" src="${src.path}"
-					          dest="${compile.outdir}" includes="**/*.properties" ext=".properties" />
+		<native2ascii encoding="UTF-8" src="${src.path}"
+					  dest="${compile.outdir}" includes="**/*.properties" ext=".properties" />
         
         <copy file="${src.path}/org/executequery/release.notes" tofile="${dist.outdir}/README.txt"/>
 

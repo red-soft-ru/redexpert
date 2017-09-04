@@ -1,7 +1,7 @@
 /*
  * ImportExportXMLPanel_1.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -35,8 +35,8 @@ import org.underworldlabs.swing.MultiLineLabel;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1767 $
- * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class ImportExportXMLPanel_1 extends AbstractImportExportPanelOne  {
     
@@ -112,11 +112,11 @@ public class ImportExportXMLPanel_1 extends AbstractImportExportPanelOne  {
         int type = parent.getTransferType();
         if (type == ImportExportDataProcess.EXPORT) {
           
-            importExportTip = getString("ImportExportXMLPanel.exportTip");
+            importExportTip = bundledString("ImportExportXMLPanel.exportTip");
 
         } else if (type == ImportExportDataProcess.IMPORT) {
             
-            importExportTip = getString("ImportExportXMLPanel.importTip");
+            importExportTip = bundledString("ImportExportXMLPanel.importTip");
         }
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -182,6 +182,7 @@ public class ImportExportXMLPanel_1 extends AbstractImportExportPanelOne  {
     }
     
 }
+
 
 
 

@@ -1,7 +1,7 @@
 /*
  * ConnectionPoolImpl.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -38,8 +38,8 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1521 $
- * @date     $Date: 2015-10-06 16:24:41 +1100 (Tue, 06 Oct 2015) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class ConnectionPoolImpl extends AbstractConnectionPool implements PooledConnectionListener {
 
@@ -491,6 +491,7 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
     }
 
 }
+
 
 
 

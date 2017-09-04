@@ -1,7 +1,7 @@
 /*
  * ImportExportPanelThree.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -51,8 +51,8 @@ import org.executequery.gui.DefaultTable;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class ImportExportPanelThree extends AbstractImportExportPanel {
 
@@ -82,7 +82,7 @@ public class ImportExportPanelThree extends AbstractImportExportPanel {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5,5,5,5);
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        add(new JLabel(getString("ImportExportPanelThree.label")), gbc);
+        add(new JLabel(bundledString("ImportExportPanelThree.label")), gbc);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridy = 1;
         gbc.insets.top = 0;
@@ -209,7 +209,7 @@ public class ImportExportPanelThree extends AbstractImportExportPanel {
                 }
             });
             
-            browseButtonText = getString("ImportExportPanelThree.browseButton");
+            browseButtonText = bundledString("ImportExportPanelThree.browseButton");
         }
         
         public Component getTableCellEditorComponent(JTable table, 
@@ -238,11 +238,11 @@ public class ImportExportPanelThree extends AbstractImportExportPanel {
                 
                 if (isExport()) {
 
-                    dialogTitle = getString("ImportExportPanelThree.exportFileDialogTitle");
+                    dialogTitle = bundledString("ImportExportPanelThree.exportFileDialogTitle");
                     
                 } else {
                     
-                    dialogTitle = getString("ImportExportPanelThree.importFileDialogTitle");
+                    dialogTitle = bundledString("ImportExportPanelThree.importFileDialogTitle");
                 }
                 
                 fileChooser.setDialogTitle(dialogTitle);
@@ -260,7 +260,7 @@ public class ImportExportPanelThree extends AbstractImportExportPanel {
                     if (file == null || (!file.exists() && !file.isFile())) {
 
                         GUIUtilities.displayErrorMessage(
-                                getString("ImportExportPanelThree.invalidFileName"));
+                                bundledString("ImportExportPanelThree.invalidFileName"));
                     }
                     
                 } else {
@@ -481,7 +481,7 @@ public class ImportExportPanelThree extends AbstractImportExportPanel {
     class BrowseButtonRenderer extends JButton implements TableCellRenderer {
         
         public BrowseButtonRenderer() {
-            setText(getString("ImportExportPanelThree.browseButton"));
+            setText(bundledString("ImportExportPanelThree.browseButton"));
             setMargin(new Insets(1,1,1,1));
         }
         
@@ -493,6 +493,7 @@ public class ImportExportPanelThree extends AbstractImportExportPanel {
     } // BrowseButtonRenderer
 
 }
+
 
 
 

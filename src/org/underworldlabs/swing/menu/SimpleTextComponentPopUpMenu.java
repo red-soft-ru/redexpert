@@ -1,7 +1,7 @@
 /*
  * SimpleTextComponentPopUpMenu.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -38,8 +38,8 @@ import org.underworldlabs.swing.actions.ReflectiveAction;
  * The text utilities popup menu function
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1496 $
- * @date     $Date: 2015-09-17 17:09:08 +1000 (Thu, 17 Sep 2015) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class SimpleTextComponentPopUpMenu extends JPopupMenu {
     
@@ -141,6 +141,7 @@ public class SimpleTextComponentPopUpMenu extends JPopupMenu {
     } // class PopupListener
     
 }
+
 
 
 

@@ -1,7 +1,7 @@
 /*
  * FeedbackCommand.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,15 +34,14 @@ import org.executequery.log.Log;
  * Command to open the feedback dialog.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1770 $
- * @date     $Date: 2017-08-21 22:01:25 +1000 (Mon, 21 Aug 2017) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class FeedbackCommand extends AbstractBaseCommand {
     
     public void execute(ActionEvent e) {
 
         String actionCommand = e.getActionCommand();
-        
         try {
 
             Method method = getClass().getMethod(
@@ -50,7 +49,8 @@ public class FeedbackCommand extends AbstractBaseCommand {
             
             method.invoke(this, e);
 
-        } catch (SecurityException | NoSuchMethodException | IllegalArgumentException | IllegalAccessException | InvocationTargetException e1) {
+        } catch (SecurityException | NoSuchMethodException | IllegalArgumentException 
+                | IllegalAccessException | InvocationTargetException e1) {
             
             handleException(e1);
         }
@@ -59,32 +59,30 @@ public class FeedbackCommand extends AbstractBaseCommand {
 
     private void handleException(Throwable e) {
 
-        Log.error("Error executing feedback command:", e);
+        Log.error(bundledString("errorExecutingFeedbackCommand"), e);
     }
 
     public void featureRequest(ActionEvent e) {
         
-        showDialog(FeedbackPanel.FEATURE_REQUEST, "Feature Request");
+        showDialog(FeedbackPanel.FEATURE_REQUEST, bundledString("featureRequest"));
     }
 
     public void userComments(ActionEvent e) {
         
-        showDialog(FeedbackPanel.USER_COMMENTS, "User Comments");
+        showDialog(FeedbackPanel.USER_COMMENTS, bundledString("userComments"));
     }
 
     public void bugReport(ActionEvent e) {
         
-        showDialog(FeedbackPanel.BUG_REPORT, "Report Bug");
+        showDialog(FeedbackPanel.BUG_REPORT, bundledString("reportBug"));
     }
 
     private void showDialog(int type, String title) {
         
         GUIUtilities.showWaitCursor();
-
         try {
 
             BaseDialog dialog = new BaseDialog(title, true, true);
-
             FeedbackPanel panel = new FeedbackPanel(dialog, type);
             
             dialog.addDisplayComponent(panel);
@@ -97,13 +95,4 @@ public class FeedbackCommand extends AbstractBaseCommand {
     }
 
 }
-
-
-
-
-
-
-
-
-
 

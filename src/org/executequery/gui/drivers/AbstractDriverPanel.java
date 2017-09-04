@@ -1,7 +1,7 @@
 /*
  * AbstractDriverPanel.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -55,10 +55,9 @@ import org.executequery.datasource.DatabaseDefinition;
 import org.executequery.gui.SimpleValueSelectionDialog;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.DefaultInlineFieldButton;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseDefinitionCache;
-import org.executequery.util.StringBundle;
-import org.executequery.util.SystemResources;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.DefaultFieldLabel;
@@ -70,8 +69,6 @@ import org.underworldlabs.util.MiscUtils;
 public abstract class AbstractDriverPanel extends JPanel
                                           implements ItemListener,
                                                      DriverPanel {
-
-    private StringBundle bundle;
 
     private JTextField nameField;
     private JTextField descField;
@@ -92,8 +89,6 @@ public abstract class AbstractDriverPanel extends JPanel
     public AbstractDriverPanel() {
 
         super(new BorderLayout());
-
-        bundle = SystemResources.loadBundle(AbstractDriverPanel.class);
         init();
     }
 
@@ -660,22 +655,13 @@ public abstract class AbstractDriverPanel extends JPanel
         return databaseDriver;
     }
 
-    protected final StringBundle getBundle() {
-        return bundle;
-    }
-
     protected final String getString(String key) {
-        return getBundle().getString(key);
+        return Bundles.get(key);
     }
 
     protected final String getString(String key, Object args) {
-        return getBundle().getString(key, args);
+        return Bundles.get(key, args);
     }
 
 }
-
-
-
-
-
 

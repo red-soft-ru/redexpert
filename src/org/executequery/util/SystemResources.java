@@ -1,7 +1,7 @@
 /*
  * SystemResources.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -53,14 +53,13 @@ import org.underworldlabs.util.MiscUtils;
  * are also retrieved and maintained here.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class SystemResources {
 
     /** resource bundle cache */
-    private static Map<String,StringBundle> bundles = 
-                            new HashMap<String,StringBundle>();
+    private static Map<String,StringBundle> bundles = new HashMap<String,StringBundle>();
 
     /**
      * Loads the resource bundle for the specified class.
@@ -70,6 +69,7 @@ public class SystemResources {
      *
      * @param clazz the clazz to load the bundle for
      * @return the wrapped resource bundle
+     * @deprecated use Bundles
      */
     public static StringBundle loadBundle(Class<?> clazz) {
         String clazzName = clazz.getName();
@@ -78,8 +78,9 @@ public class SystemResources {
         String key = packageName.replaceAll("\\.", "/");
         if (!bundles.containsKey(key)) {
             String path = key + "/resource/resources";
+            Locale locale = new Locale(System.getProperty("user.language"));
             ResourceBundle bundle = 
-                    ResourceBundle.getBundle(path, Locale.getDefault());
+                    ResourceBundle.getBundle(path, locale);
             bundles.put(key, new StringBundle(bundle, key));
         }
 
@@ -603,6 +604,7 @@ public class SystemResources {
     }
     
 }
+
 
 
 

@@ -1,7 +1,7 @@
 /*
  * AddToUserDefinedKeywordsCommand.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,8 +30,8 @@ import org.executequery.repository.RepositoryCache;
 /** 
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class AddToUserDefinedKeywordsCommand extends AbstractQueryEditorCommand {
 
@@ -52,12 +52,12 @@ public class AddToUserDefinedKeywordsCommand extends AbstractQueryEditorCommand 
                     if (!keywordRepository.contains(wordAtCursor)) {
 
                         keywordRepository.addUserDefinedKeyword(wordAtCursor);
-                        Log.info("Keyword [ " + wordAtCursor + 
-                                " ] added to user defined keyword list.");
+                        Log.info(bundledString("log.addKeyword1") + wordAtCursor +
+                                bundledString("log.addKeyword2"));
                         
                     } else {
                         
-                        Log.info("Keyword already exists as a part of the defined keyword list.");
+                        Log.info(bundledString("log.errorAddKeyword"));
                     }
                     
                 }
@@ -69,8 +69,4 @@ public class AddToUserDefinedKeywordsCommand extends AbstractQueryEditorCommand 
     }
 
 }
-
-
-
-
 

@@ -1,7 +1,7 @@
 /*
  * ExportDelimitedCommand.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,18 +23,18 @@ package org.executequery.actions.toolscommands;
 import java.awt.event.ActionEvent;
 
 import org.executequery.GUIUtilities;
-import org.underworldlabs.swing.actions.BaseCommand;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.BaseDialog;
-import org.executequery.gui.importexport.ImportExportDelimitedPanel;
 import org.executequery.gui.importexport.ImportExportDataProcess;
+import org.executequery.gui.importexport.ImportExportDelimitedPanel;
+import org.underworldlabs.swing.actions.BaseCommand;
 
 /** 
  * Performs the action for the 'Export to Delimited File' feature.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1767 $
- * @date     $Date: 2017-08-16 22:26:50 +1000 (Wed, 16 Aug 2017) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class ExportDelimitedCommand extends OpenFrameCommand
                                     implements BaseCommand {
@@ -49,32 +49,24 @@ public class ExportDelimitedCommand extends OpenFrameCommand
             return;
         }
         
-        if (!isDialogOpen("Export Data")) {
+        if (!isDialogOpen(bundledString("title"))) {
+
             GUIUtilities.showWaitCursor();
             try {
                 BaseDialog dialog = 
-                        createDialog("Export Data", false, false);
+                        createDialog(bundledString("title"), false, false);
                 ImportExportDelimitedPanel panel = 
                         new ImportExportDelimitedPanel(dialog, ImportExportDataProcess.EXPORT);
                 dialog.addDisplayComponent(panel);
                 dialog.display();
-            }
-            finally {
+
+            } finally {
                 GUIUtilities.showNormalCursor();
             }
+
         }
 
     }
     
 }
-
-
-
-
-
-
-
-
-
-
 

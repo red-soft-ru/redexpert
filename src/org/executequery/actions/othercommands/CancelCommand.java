@@ -1,7 +1,7 @@
 /*
  * CancelCommand.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,14 +31,15 @@ import org.executequery.localization.Bundles;
  *  the desktop.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class CancelCommand extends AbstractBaseCommand {
     
     private boolean isDialog;
     
     public CancelCommand() {
+        
         this(false);
     }
 
@@ -47,6 +48,7 @@ public class CancelCommand extends AbstractBaseCommand {
      * cancel command or otherwise.
      */
     public CancelCommand(boolean isDialog) {
+        
         super(Bundles.get("common.cancel.button"));
         this.isDialog = isDialog;
     }
@@ -57,13 +59,13 @@ public class CancelCommand extends AbstractBaseCommand {
      *  @param the <code>ActionEvent</code> initiating this command
      */
     public void execute(ActionEvent e) {
-        if (isDialog) {
-            GUIUtilities.closeSelectedDialog();
-        } else {
-            //GUIUtilities.closeSelectedInternalFrame();
-        }
-    }
-    
-}
 
+    	if (isDialog) {
+            
+        	GUIUtilities.closeSelectedDialog();        
+        }
+
+    }
+
+}
 

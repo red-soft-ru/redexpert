@@ -1,7 +1,7 @@
 /*
  * AbstractPropertiesBasePanel.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -41,8 +41,8 @@ import org.underworldlabs.util.SystemProperties;
  * User preferences base panel.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1512 $
- * @date     $Date: 2015-09-27 21:23:07 +1000 (Sun, 27 Sep 2015) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 abstract class AbstractPropertiesBasePanel extends JPanel
                                      implements UserPreferenceFunction, 
@@ -120,4 +120,5 @@ abstract class AbstractPropertiesBasePanel extends JPanel
     }
 
 }
+
 

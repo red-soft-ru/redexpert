@@ -1,7 +1,7 @@
 /*
  * DelegatingResultSet.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -61,7 +61,7 @@ import java.util.Map;
  * @author Glenn L. Nielsen
  * @author James House
  * @author Dirk Verbeeck
- * @version $Revision: 1487 $
+ * @version $Revision: 1780 $
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
 class DelegatingResultSet implements ResultSet {
@@ -1103,4 +1103,5 @@ class DelegatingResultSet implements ResultSet {
 	}
 
 }
+
 

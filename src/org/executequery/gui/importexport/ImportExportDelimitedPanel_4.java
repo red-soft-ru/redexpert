@@ -1,7 +1,7 @@
 /*
  * ImportExportDelimitedPanel_4.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -37,8 +37,8 @@ import org.executequery.gui.WidgetFactory;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1769 $
- * @date     $Date: 2017-08-21 00:13:31 +1000 (Mon, 21 Aug 2017) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class ImportExportDelimitedPanel_4 extends JPanel 
                                           implements ActionListener {
@@ -273,6 +273,7 @@ public class ImportExportDelimitedPanel_4 extends JPanel
     }
     
 }
+
 
 
 

@@ -7,6 +7,10 @@ eq.jar
 /.settings/
 /executequery.iml
 RedExpert.jar
+/classes/
+/temp/
+.classpath
+.project
 
 red-expert\.iml
 

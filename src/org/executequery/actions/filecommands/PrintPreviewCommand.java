@@ -1,7 +1,7 @@
 /*
  * PrintPreviewCommand.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,21 +25,22 @@ import java.awt.event.ActionEvent;
 import javax.swing.JPanel;
 
 import org.executequery.GUIUtilities;
+import org.executequery.actions.othercommands.AbstractBaseCommand;
 import org.executequery.gui.BaseDialog;
-import org.executequery.gui.editor.QueryEditor;
-import org.executequery.print.*;
 import org.executequery.gui.editor.PrintSelectDialog;
+import org.executequery.gui.editor.QueryEditor;
+import org.executequery.print.PrintFunction;
+import org.executequery.print.PrintPreviewer;
 import org.underworldlabs.swing.GUIUtils;
-import org.underworldlabs.swing.actions.BaseCommand;
 import org.underworldlabs.swing.util.SwingWorker;
 
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1487 $
- * @date     $Date: 2015-08-23 22:21:42 +1000 (Sun, 23 Aug 2015) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
-public class PrintPreviewCommand implements BaseCommand {
+public class PrintPreviewCommand extends AbstractBaseCommand {
     
     public void execute(ActionEvent e) {
         
@@ -105,7 +106,7 @@ public class PrintPreviewCommand implements BaseCommand {
                         printFunction.getPrintable(), printFunction.getPrintJobName());
             } 
             
-            return "Done";
+            return bundledString("done");
         
         } finally {
 
@@ -115,13 +116,5 @@ public class PrintPreviewCommand implements BaseCommand {
     }
     
 }
-
-
-
-
-
-
-
-
 
 

@@ -1,7 +1,7 @@
 /*
  * ApplicationLauncher.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 
 import javax.swing.JComponent;
@@ -60,8 +61,8 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1769 $
- * @date     $Date: 2017-08-21 00:13:31 +1000 (Mon, 21 Aug 2017) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class ApplicationLauncher {
 
@@ -250,12 +251,16 @@ public class ApplicationLauncher {
     private boolean hasLocaleSettings() {
 
         String language = userProperties().getStringProperty("locale.language");
-        String country = userProperties().getStringProperty("locale.country");
-        String timezone = userProperties().getStringProperty("locale.timezone");
+//        String country = userProperties().getStringProperty("locale.country");
+//        String timezone = userProperties().getStringProperty("locale.timezone");
 
+        /*
         return !(MiscUtils.isNull(language))
                 && !(MiscUtils.isNull(country))
                 && !(MiscUtils.isNull(timezone));
+        */
+        
+        return StringUtils.isNotBlank(language);
     }
 
     private void loadLookAndFeel(LookAndFeelLoader loader) {
@@ -353,6 +358,9 @@ public class ApplicationLauncher {
         System.setProperty("user.country", stringUserProperty("locale.country"));
         System.setProperty("user.language", stringUserProperty("locale.language"));
         System.setProperty("user.timezone", stringUserProperty("locale.timezone"));
+        
+        Locale.setDefault(new Locale(stringUserProperty("locale.language")));
+        
     }
 
     private void printVersionInfo() {
@@ -559,4 +567,5 @@ public class ApplicationLauncher {
 
     
 }
+
 

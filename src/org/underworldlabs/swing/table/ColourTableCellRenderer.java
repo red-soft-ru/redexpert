@@ -1,7 +1,7 @@
 /*
  * ColourTableCellRenderer.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,8 +33,8 @@ import javax.swing.table.TableCellRenderer;
  * typically in system preferences etc.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1774 $
- * @date     $Date: 2017-08-24 21:50:47 +1000 (Thu, 24 Aug 2017) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class ColourTableCellRenderer extends JLabel
                                      implements TableCellRenderer {
@@ -126,6 +126,7 @@ class ColourSwatchIcon extends ImageIcon {
     }
     
 } // class ColourSwatchIcon
+
 
 
 

@@ -1,7 +1,7 @@
 /*
  * ScrollingTabPane.java
  *
- * Copyright (C) 2002-2015 Takis Diakoumis
+ * Copyright (C) 2002-2017 Takis Diakoumis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -56,7 +56,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputListener;
 
-import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 import org.underworldlabs.swing.plaf.UIUtils;
 
@@ -64,8 +63,8 @@ import org.underworldlabs.swing.plaf.UIUtils;
  * Central tab pane with scroll and menu buttons.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1766 $
- * @date     $Date: 2017-08-14 23:34:37 +1000 (Mon, 14 Aug 2017) $
+ * @version  $Revision: 1780 $
+ * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class ScrollingTabPane extends AbstractTabPane 
                               implements SwingConstants {
@@ -753,9 +752,9 @@ public class ScrollingTabPane extends AbstractTabPane
             }
             setFont(popupMenuFont);
             
-            close = MenuItemFactory.createMenuItem(Bundles.get("common.close.button"));
-            closeAll = MenuItemFactory.createMenuItem("Close All");
-            closeOther = MenuItemFactory.createMenuItem("Close Others");
+            close = MenuItemFactory.createMenuItem(bundledString("menuItem.close"));
+            closeAll = MenuItemFactory.createMenuItem(bundledString("menuItem.closeAll"));
+            closeOther = MenuItemFactory.createMenuItem(bundledString("menuItem.closeOthers"));
             
             close.addActionListener(this);
             closeAll.addActionListener(this);
@@ -1388,3 +1387,4 @@ public class ScrollingTabPane extends AbstractTabPane
     }
     
 }
+

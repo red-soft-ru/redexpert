@@ -179,10 +179,6 @@ public class GrantManagerPanel extends JPanel {
             .addComponent(refreshButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        leftPanel.setBorder(BorderFactory.createMatteBorder(3, 3, 3, 3, new Color(158, 132, 35)));
-
-        jLabel1.setBackground(new Color(86, 86, 86));
-        jLabel1.setForeground(new Color(0, 0, 0));
         jLabel1.setText("Priveleges for");
         jLabel1.setOpaque(true);
 
@@ -218,10 +214,6 @@ public class GrantManagerPanel extends JPanel {
                 .addComponent(jScrollPane1))
         );
 
-        rightPanel.setBorder(BorderFactory.createMatteBorder(3, 3, 3, 3, new Color(158, 132, 35)));
-
-        jLabel2.setBackground(new Color(86, 86, 86));
-        jLabel2.setForeground(new Color(0, 0, 0));
         jLabel2.setText("Grants on");
         jLabel2.setOpaque(true);
 
@@ -336,11 +328,7 @@ public class GrantManagerPanel extends JPanel {
             }
         });
         jScrollPane2.setViewportView(tablePrivileges);
-
-        downPanel.setForeground(new Color(0, 0, 0));
-
-        labelTable.setBackground(new Color(86, 86, 86));
-        labelTable.setForeground(new Color(0, 0, 0));
+        
         labelTable.setText("Columns of ");
         labelTable.setOpaque(true);
 

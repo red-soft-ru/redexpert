@@ -23,7 +23,7 @@ public class WindowAddRole extends JPanel {
         nameTextField = new JTextField();
         okButton = new JButton();
         jLabel1 = new JLabel();
-        jLabel1.setText("Name");
+        jLabel1.setText(ump.bundleString("RoleName"));
         okButton.setText("OK");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

@@ -21,6 +21,7 @@ import org.executequery.gui.browser.BrowserController;
 import org.executequery.gui.browser.managment.FrameLogin;
 import org.executequery.gui.browser.managment.WindowAddRole;
 import org.executequery.gui.browser.managment.WindowAddUser;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
@@ -96,7 +97,7 @@ public class UserManagerPanel extends JPanel {
     boolean execute_w;
     Icon gr, no, adm;
     Connection con;
-    public static final String TITLE = "User manager";
+    public static final String TITLE = Bundles.get(UserManagerPanel.class,"UserManager");
     public static final String FRAME_ICON = "user_manager_16.png";
     public IFBUserManager userManager;
     public BrowserController controller;
@@ -147,9 +148,9 @@ public class UserManagerPanel extends JPanel {
 
         jPanel1.setName("upPanel"); // NOI18N
 
-        databaseLabel.setText("database");
+        databaseLabel.setText(bundleString("database"));
 
-        serverLabel.setText("server");
+        serverLabel.setText(bundleString("server"));
 
         databaseBox.setEditable(true);
         databaseBox.addActionListener(new java.awt.event.ActionListener() {
@@ -210,41 +211,41 @@ public class UserManagerPanel extends JPanel {
         ));
         jScrollPane2.setViewportView(rolesTable);
 
-        addUserButton.setText("Add");
+        addUserButton.setText(bundleString("Add"));
         addUserButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addUserButtonActionPerformed(evt);
             }
         });
-        addRoleButton.setText("Add");
+        addRoleButton.setText(bundleString("Add"));
         addRoleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addRoleButtonActionPerformed(evt);
             }
         });
 
-        editUserButton.setText("Edit");
+        editUserButton.setText(bundleString("Edit"));
         editUserButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editUserButtonActionPerformed(evt);
             }
         });
 
-        deleteUserButton.setText("Delete");
+        deleteUserButton.setText(bundleString("Delete"));
         deleteUserButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteUserButtonActionPerformed(evt);
             }
         });
 
-        deleteRoleButton.setText("Delete");
+        deleteRoleButton.setText(bundleString("Delete"));
         deleteRoleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteRoleButtonActionPerformed(evt);
             }
         });
 
-        refreshUsersButton.setText("Refresh");
+        refreshUsersButton.setText(bundleString("Refresh"));
         refreshUsersButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 refreshUserButtonActionPerformed(evt);
@@ -260,10 +261,10 @@ public class UserManagerPanel extends JPanel {
                                 .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
                                 .addGap(18, 18, 18)
                                 .addGroup(usersPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addComponent(addUserButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 71, GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(editUserButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 71, GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(deleteUserButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 71, GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(refreshUsersButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 71, GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(addUserButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 120, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(editUserButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 120, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(deleteUserButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 120, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(refreshUsersButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 120, GroupLayout.PREFERRED_SIZE))
                                 .addContainerGap())
         );
         usersPanelLayout.setVerticalGroup(
@@ -282,7 +283,7 @@ public class UserManagerPanel extends JPanel {
                                 .addContainerGap(47, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Users", usersPanel);
+        jTabbedPane1.addTab(bundleString("Users"), usersPanel);
 
         GroupLayout rolesPanelLayout = new GroupLayout(rolesPanel);
         rolesPanel.setLayout(rolesPanelLayout);
@@ -292,8 +293,8 @@ public class UserManagerPanel extends JPanel {
                                 .addComponent(jScrollPane2, GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
                                 .addGap(18, 18, 18)
                                 .addGroup(rolesPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addComponent(addRoleButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 71, GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(deleteRoleButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 71, GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(addRoleButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 120, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(deleteRoleButton, GroupLayout.Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 120, GroupLayout.PREFERRED_SIZE))
                                 .addContainerGap())
         );
 
@@ -309,7 +310,7 @@ public class UserManagerPanel extends JPanel {
                                 .addContainerGap(47, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Roles", rolesPanel);
+        jTabbedPane1.addTab(bundleString("Roles"), rolesPanel);
 
 
         membershipTable.setModel(new RoleTableModel(
@@ -381,7 +382,7 @@ public class UserManagerPanel extends JPanel {
                                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("Membership", membershipPanel);
+        jTabbedPane1.addTab(bundleString("Membership"), membershipPanel);
 
 
         GroupLayout layout = new GroupLayout(this);
@@ -400,7 +401,7 @@ public class UserManagerPanel extends JPanel {
                                 .addComponent(jTabbedPane1, GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.getAccessibleContext().setAccessibleName("Users");
+        jTabbedPane1.getAccessibleContext().setAccessibleName(bundleString("Users"));
     }// </editor-fold>
 
     void init_user_manager() {
@@ -537,9 +538,9 @@ public class UserManagerPanel extends JPanel {
                         new Object[][]{
 
                         },
-                        new String[]{
-                                "User name", "First name", "Middle name", "Last name"
-                        }
+                        bundleStrings(new String[]{
+                                "UserName", "FirstName", "MiddleName", "LastName"
+                        })
                 ));
                 JFrame frame_pass = new FrameLogin(this, listConnections.get(databaseBox.getSelectedIndex()).getUserName(),
                         listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
@@ -552,7 +553,7 @@ public class UserManagerPanel extends JPanel {
     }
 
     void addUserButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        GUIUtilities.addCentralPane("Add user",
+        GUIUtilities.addCentralPane(bundleString("AddUser"),
                 UserManagerPanel.FRAME_ICON,
                 new WindowAddUser(this),
                 null,
@@ -576,7 +577,7 @@ public class UserManagerPanel extends JPanel {
             }
             if (desc==null)
                 desc="";
-            GUIUtilities.addCentralPane("Edit user",
+            GUIUtilities.addCentralPane(bundleString("EditUser"),
                     UserManagerPanel.FRAME_ICON,
                     new WindowAddUser(this, ((IFBUser) (users.values().toArray()[ind])),desc),
                     null,
@@ -585,7 +586,7 @@ public class UserManagerPanel extends JPanel {
     }
 
     void addRoleButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        GUIUtilities.addCentralPane("Add role",
+        GUIUtilities.addCentralPane(bundleString("AddRole"),
                 UserManagerPanel.FRAME_ICON,
                 new WindowAddRole(this),
                 null,
@@ -599,7 +600,7 @@ public class UserManagerPanel extends JPanel {
     void deleteUserButtonActionPerformed(java.awt.event.ActionEvent evt) {
         int ind = usersTable.getSelectedRow();
         if (ind >= 0) {
-            if (GUIUtilities.displayConfirmDialog("Are you sure that you want to delete user?") == 0) {
+            if (GUIUtilities.displayConfirmDialog(bundleString("message.confirm-delete-user")) == 0) {
                 try {
                     userManager.delete(((IFBUser) (users.values().toArray()[ind])));
                 } catch (Exception e) {
@@ -614,7 +615,7 @@ public class UserManagerPanel extends JPanel {
         int ind = rolesTable.getSelectedRow();
         if (ind >= 0) {
             String role = (String) ((RoleTableModel) rolesTable.getModel()).getValueAt(ind, 0);
-            if (GUIUtilities.displayConfirmDialog("Are you sure that you want to delete role " + role + "?") == 0)
+            if (GUIUtilities.displayConfirmDialog( bundleString("message.confirm-delete-role")+ role + "?") == 0)
                 try {
                     Statement state = con.createStatement();
                     state.execute("DROP ROLE " + role);
@@ -760,9 +761,9 @@ public class UserManagerPanel extends JPanel {
                     new Object[][]{
 
                     },
-                    new String[]{
-                            "User name", "First name", "Middle name", "Last name"
-                    }
+                    bundleStrings(new String[]{
+                            "UserName", "FirstName", "MiddleName", "LastName"
+                    })
             ));
             user_names.clear();
             for (IFBUser u : users.values()) {
@@ -803,9 +804,9 @@ public class UserManagerPanel extends JPanel {
                         new Object[][]{
 
                         },
-                        new String[]{
-                                "Role name", "Owner"
-                        }
+                        bundleStrings(new String[]{
+                                "RoleName", "Owner"
+                        })
                 ));
                 role_names.clear();
                 while (result.next()) {
@@ -930,8 +931,6 @@ public class UserManagerPanel extends JPanel {
             Statement state = con.createStatement();
             if (!state.execute("CREATE ROLE " + role))
                 GUIUtilities.displayInformationMessage("Succes");
-            else
-                GUIUtilities.displayErrorMessage("Error");
             refresh();
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
@@ -975,6 +974,16 @@ public class UserManagerPanel extends JPanel {
         }
     }
 
+public String bundleString(String key)
+{
+    return Bundles.get(UserManagerPanel.class,key);
+}
+private String[] bundleStrings(String[] key)
+    {
+        for(int i=0;i<key.length;i++)
+            key[i]=bundleString(key[i]);
+        return key;
+    }
 
 
 }

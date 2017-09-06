@@ -2,6 +2,7 @@ package org.executequery.gui.browser.managment;
 
 import org.executequery.gui.browser.managment.FrameListener;
 import org.executequery.gui.browser.UserManagerPanel;
+import org.executequery.localization.Bundles;
 
 import javax.swing.*;
 
@@ -66,12 +67,12 @@ public class FrameLogin extends JFrame {
             }
         });
 
-        Username_label.setText("Username");
+        Username_label.setText(bundleString("UserName"));
 
-        Password_label.setText("Password");
+        Password_label.setText(bundleString("Password"));
         Password_label.setToolTipText("");
 
-        Role_Label.setText("Role");
+        Role_Label.setText(bundleString("Role"));
         this.addWindowListener(new FrameListener(this));
 
 
@@ -125,6 +126,10 @@ public class FrameLogin extends JFrame {
         ump.userManager.setPassword(new String(passw_field.getPassword()));
         ump.refresh();
         this.dispose();
+    }
+    private String bundleString(String key)
+    {
+        return Bundles.get(UserManagerPanel.class,key);
     }
 
     /**

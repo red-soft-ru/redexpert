@@ -3,6 +3,7 @@ package org.executequery.gui.browser.managment;
 import biz.redsoft.IFBUser;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.browser.UserManagerPanel;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.NumberTextField;
 
 /**
@@ -82,32 +83,32 @@ public class WindowAddUser extends javax.swing.JPanel {
 
     groupIDField.setText("0");
 
-    jLabel1.setText("Name");
+    jLabel1.setText(bundleString("UserName"));
 
-    jLabel2.setText("Password");
+    jLabel2.setText(bundleString("Password"));
 
-    jLabel3.setText("ConfirmPassword");
+    jLabel3.setText(bundleString("ConfirmPassword"));
 
-    jLabel4.setText("First name");
+    jLabel4.setText(bundleString("FirstName"));
 
-    jLabel5.setText("Middle name");
+    jLabel5.setText(bundleString("MiddleName"));
 
-    jLabel6.setText("Last name");
+    jLabel6.setText(bundleString("LastName"));
 
-    jLabel7.setText("User ID");
+    jLabel7.setText(bundleString("UserID"));
 
-    jLabel8.setText("Group ID");
+    jLabel8.setText(bundleString("GroupID"));
 
-    jLabel9.setText("Description");
+    jLabel9.setText(bundleString("Description"));
 
-    okButton.setText("OK");
+    okButton.setText(bundleString("OK"));
     okButton.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         okButtonActionPerformed(evt);
       }
     });
 
-    cancelButton.setText("Cancel");
+    cancelButton.setText(bundleString("Cancel"));
     cancelButton.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         cancelButtonActionPerformed(evt);
@@ -247,25 +248,28 @@ public class WindowAddUser extends javax.swing.JPanel {
           GUIUtilities.closeSelectedTab();
         }
         else{
-          GUIUtilities.displayErrorMessage("Password can not be empty");
+          GUIUtilities.displayErrorMessage(bundleString("error.empty-pwd"));
         }
 
       }
 
     } else {
-      GUIUtilities.displayErrorMessage("Passwords do not match");
+      GUIUtilities.displayErrorMessage(bundleString("error.pwds-not-match"));
     }
     }
     else
     {
-      GUIUtilities.displayErrorMessage("Username can not be empty");
+      GUIUtilities.displayErrorMessage(bundleString("error.empty-name"));
     }
   }//GEN-LAST:event_okButtonActionPerformed
 
   private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
     GUIUtilities.closeSelectedTab();
   }//GEN-LAST:event_cancelButtonActionPerformed
-
+  private String bundleString(String key)
+  {
+    return Bundles.get(getClass(),key);
+  }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton cancelButton;

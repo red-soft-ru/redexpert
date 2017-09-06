@@ -11,8 +11,9 @@ import javax.swing.*;
 public class WindowAddRole extends JPanel {
     public WindowAddRole(UserManagerPanel u)
     {
-        initComponents();
         ump=u;
+        initComponents();
+
     }
     UserManagerPanel ump;
     JTextField nameTextField;

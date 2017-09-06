@@ -34,12 +34,12 @@ public class WindowAddRole extends JPanel {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(null);
         //layout.setHorizontalGroup();
-        okButton.setSize(50,20);
+        okButton.setSize(100,40);
         okButton.setLocation(50,100);
-        jLabel1.setSize(50,25);
+        jLabel1.setSize(100,30);
         jLabel1.setLocation(50,50);
-        nameTextField.setSize(500,25);
-        nameTextField.setLocation(100,50);
+        nameTextField.setSize(500,30);
+        nameTextField.setLocation(150,50);
         this.add(okButton);
         this.add(jLabel1);
         this.add(nameTextField);

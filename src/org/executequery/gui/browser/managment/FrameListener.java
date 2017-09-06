@@ -1,4 +1,4 @@
-package org.executequery.gui.browser;
+package org.executequery.gui.browser.managment;
 
 import javax.swing.*;
 import java.awt.event.WindowEvent;

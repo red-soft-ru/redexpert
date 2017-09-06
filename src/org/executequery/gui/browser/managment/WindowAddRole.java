@@ -1,13 +1,14 @@
-package org.executequery.gui.browser;
+package org.executequery.gui.browser.managment;
 
 import org.executequery.GUIUtilities;
+import org.executequery.gui.browser.UserManagerPanel;
 
 import javax.swing.*;
 
 /**
  * Created by mikhan808 on 15.03.2017.
  */
-public class WindowAddRole extends javax.swing.JPanel {
+public class WindowAddRole extends JPanel {
     public WindowAddRole(UserManagerPanel u)
     {
         initComponents();
@@ -19,9 +20,9 @@ public class WindowAddRole extends javax.swing.JPanel {
     JLabel jLabel1;
     private void initComponents()
     {
-        nameTextField = new javax.swing.JTextField();
-        okButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
+        nameTextField = new JTextField();
+        okButton = new JButton();
+        jLabel1 = new JLabel();
         jLabel1.setText("Name");
         okButton.setText("OK");
         okButton.addActionListener(new java.awt.event.ActionListener() {
@@ -29,7 +30,7 @@ public class WindowAddRole extends javax.swing.JPanel {
                 okButtonActionPerformed(evt);
             }
         });
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(null);
         //layout.setHorizontalGroup();
         okButton.setSize(50,20);

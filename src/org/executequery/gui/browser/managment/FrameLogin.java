@@ -1,8 +1,9 @@
-package org.executequery.gui.browser;
+package org.executequery.gui.browser.managment;
+
+import org.executequery.gui.browser.managment.FrameListener;
+import org.executequery.gui.browser.UserManagerPanel;
 
 import javax.swing.*;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 
 /**
  * Created by mikhan808 on 05.06.2017.
@@ -10,12 +11,12 @@ import java.awt.event.WindowListener;
 
 
 
-public class  FrameLogin extends javax.swing.JFrame {
+public class FrameLogin extends JFrame {
 
     /**
      * Creates new form NewJFrame
      */
-    public  FrameLogin(UserManagerPanel u) {
+    public FrameLogin(UserManagerPanel u) {
         initComponents();
         ump=u;
     }
@@ -26,7 +27,7 @@ public class  FrameLogin extends javax.swing.JFrame {
         Username_field.setText(user);
 
     }
-    public FrameLogin(UserManagerPanel u,String user,String passw)
+    public FrameLogin(UserManagerPanel u, String user, String passw)
     {
         this(u,user);
         passw_field.setText(passw);
@@ -42,20 +43,20 @@ public class  FrameLogin extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">
     private void initComponents() {
 
-        jPasswordField1 = new javax.swing.JPasswordField();
-        Username_field = new javax.swing.JTextField();
-        passw_field = new javax.swing.JPasswordField();
-        Role_Field = new javax.swing.JTextField();
-        buttonOK = new javax.swing.JButton();
-        Username_label = new javax.swing.JLabel();
-        Password_label = new javax.swing.JLabel();
-        Role_Label = new javax.swing.JLabel();
+        jPasswordField1 = new JPasswordField();
+        Username_field = new JTextField();
+        passw_field = new JPasswordField();
+        Role_Field = new JTextField();
+        buttonOK = new JButton();
+        Username_label = new JLabel();
+        Password_label = new JLabel();
+        Role_Label = new JLabel();
 
         jPasswordField1.setText("jPasswordField1");
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        Role_Field.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
+        Role_Field.setHorizontalAlignment(JTextField.TRAILING);
         Role_Field.setToolTipText("");
 
         buttonOK.setText("OK");
@@ -74,42 +75,42 @@ public class  FrameLogin extends javax.swing.JFrame {
         this.addWindowListener(new FrameListener(this));
 
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
                                 .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(Username_field, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                        .addComponent(Username_field, GroupLayout.PREFERRED_SIZE, 130, GroupLayout.PREFERRED_SIZE)
                                         .addComponent(Username_label))
                                 .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(passw_field, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                        .addComponent(passw_field, GroupLayout.PREFERRED_SIZE, 129, GroupLayout.PREFERRED_SIZE)
                                         .addComponent(Password_label))
                                 .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                         .addComponent(Role_Field)
                                         .addGroup(layout.createSequentialGroup()
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                                         .addComponent(Role_Label)
                                                         .addComponent(buttonOK))
                                                 .addGap(0, 30, Short.MAX_VALUE)))
                                 .addContainerGap())
         );
         layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
                                 .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                         .addComponent(Username_label)
                                         .addComponent(Password_label)
                                         .addComponent(Role_Label))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(Username_field, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(passw_field, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(Role_Field, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                        .addComponent(Username_field, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(passw_field, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(Role_Field, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                                 .addGap(18, 18, 18)
                                 .addComponent(buttonOK)
                                 .addContainerGap(22, Short.MAX_VALUE))
@@ -136,9 +137,9 @@ public class  FrameLogin extends javax.swing.JFrame {
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
@@ -148,7 +149,7 @@ public class  FrameLogin extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger( FrameLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
             java.util.logging.Logger.getLogger( FrameLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger( FrameLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
@@ -163,13 +164,13 @@ public class  FrameLogin extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify
-    private javax.swing.JLabel Password_label;
-    private javax.swing.JTextField Role_Field;
-    private javax.swing.JLabel Role_Label;
-    private javax.swing.JTextField Username_field;
-    private javax.swing.JLabel Username_label;
-    private javax.swing.JButton buttonOK;
-    private javax.swing.JPasswordField jPasswordField1;
-    private javax.swing.JPasswordField passw_field;
+    private JLabel Password_label;
+    private JTextField Role_Field;
+    private JLabel Role_Label;
+    private JTextField Username_field;
+    private JLabel Username_label;
+    private JButton buttonOK;
+    private JPasswordField jPasswordField1;
+    private JPasswordField passw_field;
     // End of variables declaration
 }

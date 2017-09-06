@@ -1,4 +1,6 @@
-package org.executequery.gui.browser;
+package org.executequery.gui.browser.managment;
+
+import org.executequery.gui.browser.GrantManagerPanel;
 
 public class ThreadOfGrantManager implements Runnable{
     public ThreadOfGrantManager(GrantManagerPanel Brp)

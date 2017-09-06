@@ -1,7 +1,8 @@
-package org.executequery.gui.browser;
+package org.executequery.gui.browser.managment;
 
 import biz.redsoft.IFBUser;
 import org.executequery.GUIUtilities;
+import org.executequery.gui.browser.UserManagerPanel;
 import org.underworldlabs.swing.NumberTextField;
 
 /**
@@ -24,7 +25,7 @@ public class WindowAddUser extends javax.swing.JPanel {
   IFBUser user;
   boolean edit;
 
-  public WindowAddUser(UserManagerPanel u, IFBUser user,String description) {
+  public WindowAddUser(UserManagerPanel u, IFBUser user, String description) {
 
     initComponents();
     ump = u;

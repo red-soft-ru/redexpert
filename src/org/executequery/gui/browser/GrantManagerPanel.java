@@ -12,15 +12,14 @@ import org.executequery.components.table.BrowserTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
+import org.executequery.gui.browser.BrowserConstants;
+import org.executequery.gui.browser.managment.ThreadOfGrantManager;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
-import javax.xml.bind.annotation.XmlType;
 import java.awt.*;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -36,7 +35,7 @@ import java.util.Vector;
  *
  * @author mikhan808
  */
-public class GrantManagerPanel extends javax.swing.JPanel {
+public class GrantManagerPanel extends JPanel {
 
     /**
      * Creates new form GrantManagerPanel
@@ -111,83 +110,83 @@ public class GrantManagerPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        upPanel = new javax.swing.JPanel();
-        databaseBox = new javax.swing.JComboBox<>();
-        refreshButton = new javax.swing.JButton();
-        leftPanel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        userBox = new javax.swing.JComboBox<>();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        userList = new javax.swing.JList<>();
-        rightPanel = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
-        revoke_v = new javax.swing.JButton();
-        revoke_g = new javax.swing.JButton();
-        revoke_all = new javax.swing.JButton();
-        grant_v = new javax.swing.JButton();
-        grant_g = new javax.swing.JButton();
-        grant_all = new javax.swing.JButton();
-        grant_option_v = new javax.swing.JButton();
-        grant_option_g = new javax.swing.JButton();
-        grant_option_all = new javax.swing.JButton();
-        objectBox = new javax.swing.JComboBox<>();
-        filterBox = new javax.swing.JComboBox<>();
-        filterField = new javax.swing.JTextField();
-        jCheckBox1 = new javax.swing.JCheckBox();
-        systemCheck = new javax.swing.JCheckBox();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        tablePrivileges = new javax.swing.JTable();
-        downPanel = new javax.swing.JPanel();
-        labelTable = new javax.swing.JLabel();
-        revoke_v1 = new javax.swing.JButton();
-        revoke_g1 = new javax.swing.JButton();
-        grant_v1 = new javax.swing.JButton();
-        grant_g1 = new javax.swing.JButton();
-        grant_option_v1 = new javax.swing.JButton();
-        grant_option_g1 = new javax.swing.JButton();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        jTable2 = new javax.swing.JTable();
-        jProgressBar1 = new javax.swing.JProgressBar();
-        cancelButton = new javax.swing.JButton();
+        upPanel = new JPanel();
+        databaseBox = new JComboBox<>();
+        refreshButton = new JButton();
+        leftPanel = new JPanel();
+        jLabel1 = new JLabel();
+        userBox = new JComboBox<>();
+        jScrollPane1 = new JScrollPane();
+        userList = new JList<>();
+        rightPanel = new JPanel();
+        jLabel2 = new JLabel();
+        revoke_v = new JButton();
+        revoke_g = new JButton();
+        revoke_all = new JButton();
+        grant_v = new JButton();
+        grant_g = new JButton();
+        grant_all = new JButton();
+        grant_option_v = new JButton();
+        grant_option_g = new JButton();
+        grant_option_all = new JButton();
+        objectBox = new JComboBox<>();
+        filterBox = new JComboBox<>();
+        filterField = new JTextField();
+        jCheckBox1 = new JCheckBox();
+        systemCheck = new JCheckBox();
+        jScrollPane2 = new JScrollPane();
+        tablePrivileges = new JTable();
+        downPanel = new JPanel();
+        labelTable = new JLabel();
+        revoke_v1 = new JButton();
+        revoke_g1 = new JButton();
+        grant_v1 = new JButton();
+        grant_g1 = new JButton();
+        grant_option_v1 = new JButton();
+        grant_option_g1 = new JButton();
+        jScrollPane3 = new JScrollPane();
+        jTable2 = new JTable();
+        jProgressBar1 = new JProgressBar();
+        cancelButton = new JButton();
 
-        databaseBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        databaseBox.setModel(new DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         databaseBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 databaseBoxActionPerformed(evt);
             }
         });
 
-        refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/Refresh16.png"))); // NOI18N
+        refreshButton.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/Refresh16.png"))); // NOI18N
         refreshButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 refreshButtonActionPerformed(evt);
             }
         });
 
-        javax.swing.GroupLayout upPanelLayout = new javax.swing.GroupLayout(upPanel);
+        GroupLayout upPanelLayout = new GroupLayout(upPanel);
         upPanel.setLayout(upPanelLayout);
         upPanelLayout.setHorizontalGroup(
-            upPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            upPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(upPanelLayout.createSequentialGroup()
-                .addComponent(databaseBox, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(databaseBox, GroupLayout.PREFERRED_SIZE, 203, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(refreshButton, GroupLayout.PREFERRED_SIZE, 53, GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         upPanelLayout.setVerticalGroup(
-            upPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(databaseBox, javax.swing.GroupLayout.DEFAULT_SIZE, 41, Short.MAX_VALUE)
-            .addComponent(refreshButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            upPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addComponent(databaseBox, GroupLayout.DEFAULT_SIZE, 41, Short.MAX_VALUE)
+            .addComponent(refreshButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        leftPanel.setBorder(javax.swing.BorderFactory.createMatteBorder(3, 3, 3, 3, new java.awt.Color(158, 132, 35)));
+        leftPanel.setBorder(BorderFactory.createMatteBorder(3, 3, 3, 3, new Color(158, 132, 35)));
 
-        jLabel1.setBackground(new java.awt.Color(86, 86, 86));
-        jLabel1.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel1.setBackground(new Color(86, 86, 86));
+        jLabel1.setForeground(new Color(0, 0, 0));
         jLabel1.setText("Priveleges for");
         jLabel1.setOpaque(true);
 
-        userBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Users", "Roles", "Views", "Triggers", "Procedures" }));
+        userBox.setModel(new DefaultComboBoxModel<>(new String[] { "Users", "Roles", "Views", "Triggers", "Procedures" }));
         userBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 userBoxActionPerformed(evt);
@@ -201,102 +200,102 @@ public class GrantManagerPanel extends javax.swing.JPanel {
         });
         jScrollPane1.setViewportView(userList);
 
-        javax.swing.GroupLayout leftPanelLayout = new javax.swing.GroupLayout(leftPanel);
+        GroupLayout leftPanelLayout = new GroupLayout(leftPanel);
         leftPanel.setLayout(leftPanelLayout);
         leftPanelLayout.setHorizontalGroup(
-            leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(userBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
+            leftPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(userBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, GroupLayout.Alignment.TRAILING)
         );
         leftPanelLayout.setVerticalGroup(
-            leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            leftPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(leftPanelLayout.createSequentialGroup()
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(userBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(userBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1))
         );
 
-        rightPanel.setBorder(javax.swing.BorderFactory.createMatteBorder(3, 3, 3, 3, new java.awt.Color(158, 132, 35)));
+        rightPanel.setBorder(BorderFactory.createMatteBorder(3, 3, 3, 3, new Color(158, 132, 35)));
 
-        jLabel2.setBackground(new java.awt.Color(86, 86, 86));
-        jLabel2.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel2.setBackground(new Color(86, 86, 86));
+        jLabel2.setForeground(new Color(0, 0, 0));
         jLabel2.setText("Grants on");
         jLabel2.setOpaque(true);
 
-        revoke_v.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_vertical.png"))); // NOI18N
+        revoke_v.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_vertical.png"))); // NOI18N
         revoke_v.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 revoke_vActionPerformed(evt);
             }
         });
 
-        revoke_g.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_gorisont.png"))); // NOI18N
+        revoke_g.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_gorisont.png"))); // NOI18N
         revoke_g.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 revoke_gActionPerformed(evt);
             }
         });
 
-        revoke_all.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_all.png"))); // NOI18N
+        revoke_all.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_all.png"))); // NOI18N
         revoke_all.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 revoke_allActionPerformed(evt);
             }
         });
 
-        grant_v.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/grant_vertical.png"))); // NOI18N
+        grant_v.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_vertical.png"))); // NOI18N
         grant_v.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 grant_vActionPerformed(evt);
             }
         });
 
-        grant_g.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/grant_gorisont.png"))); // NOI18N
+        grant_g.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_gorisont.png"))); // NOI18N
         grant_g.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 grant_gActionPerformed(evt);
             }
         });
 
-        grant_all.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/grant_all.png"))); // NOI18N
+        grant_all.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_all.png"))); // NOI18N
         grant_all.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 grant_allActionPerformed(evt);
             }
         });
 
-        grant_option_v.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_vertical.png"))); // NOI18N
+        grant_option_v.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_vertical.png"))); // NOI18N
         grant_option_v.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 grant_option_vActionPerformed(evt);
             }
         });
 
-        grant_option_g.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_gorisont.png"))); // NOI18N
+        grant_option_g.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_gorisont.png"))); // NOI18N
         grant_option_g.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 grant_option_gActionPerformed(evt);
             }
         });
 
-        grant_option_all.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_all.png"))); // NOI18N
+        grant_option_all.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_all.png"))); // NOI18N
         grant_option_all.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 grant_option_allActionPerformed(evt);
             }
         });
 
-        objectBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "All objects", "Tables", "Views", "Procedures" }));
+        objectBox.setModel(new DefaultComboBoxModel<>(new String[] { "All objects", "Tables", "Views", "Procedures" }));
         objectBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 objectBoxActionPerformed(evt);
             }
         });
 
-        filterBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Display all", "Granted only", "Non-granted only" }));
+        filterBox.setModel(new DefaultComboBoxModel<>(new String[] { "Display all", "Granted only", "Non-granted only" }));
         filterBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filterBoxActionPerformed(evt);
@@ -338,49 +337,49 @@ public class GrantManagerPanel extends javax.swing.JPanel {
         });
         jScrollPane2.setViewportView(tablePrivileges);
 
-        downPanel.setForeground(new java.awt.Color(0, 0, 0));
+        downPanel.setForeground(new Color(0, 0, 0));
 
-        labelTable.setBackground(new java.awt.Color(86, 86, 86));
-        labelTable.setForeground(new java.awt.Color(0, 0, 0));
+        labelTable.setBackground(new Color(86, 86, 86));
+        labelTable.setForeground(new Color(0, 0, 0));
         labelTable.setText("Columns of ");
         labelTable.setOpaque(true);
 
-        revoke_v1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_vertical.png"))); // NOI18N
+        revoke_v1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_vertical.png"))); // NOI18N
         revoke_v1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 revoke_v1ActionPerformed(evt);
             }
         });
 
-        revoke_g1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_gorisont.png"))); // NOI18N
+        revoke_g1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_gorisont.png"))); // NOI18N
         revoke_g1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 revoke_g1ActionPerformed(evt);
             }
         });
 
-        grant_v1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/grant_vertical.png"))); // NOI18N
+        grant_v1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_vertical.png"))); // NOI18N
         grant_v1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 grant_v1ActionPerformed(evt);
             }
         });
 
-        grant_g1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/grant_gorisont.png"))); // NOI18N
+        grant_g1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/grant_gorisont.png"))); // NOI18N
         grant_g1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 grant_g1ActionPerformed(evt);
             }
         });
 
-        grant_option_v1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_vertical.png"))); // NOI18N
+        grant_option_v1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_vertical.png"))); // NOI18N
         grant_option_v1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 grant_option_v1ActionPerformed(evt);
             }
         });
 
-        grant_option_g1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_gorisont.png"))); // NOI18N
+        grant_option_g1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/admin_option_gorisont.png"))); // NOI18N
         grant_option_g1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 grant_option_g1ActionPerformed(evt);
@@ -402,41 +401,41 @@ public class GrantManagerPanel extends javax.swing.JPanel {
         });
         jScrollPane3.setViewportView(jTable2);
 
-        javax.swing.GroupLayout downPanelLayout = new javax.swing.GroupLayout(downPanel);
+        GroupLayout downPanelLayout = new GroupLayout(downPanel);
         downPanel.setLayout(downPanelLayout);
         downPanelLayout.setHorizontalGroup(
-            downPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(labelTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addComponent(labelTable, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(downPanelLayout.createSequentialGroup()
                 .addComponent(revoke_v1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(revoke_g1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(grant_v1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(grant_g1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(grant_option_v1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(grant_option_g1)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(jScrollPane3, GroupLayout.Alignment.TRAILING)
         );
         downPanelLayout.setVerticalGroup(
-            downPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(downPanelLayout.createSequentialGroup()
-                .addComponent(labelTable, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(downPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(downPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addComponent(labelTable, GroupLayout.PREFERRED_SIZE, 16, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addGroup(downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                         .addComponent(revoke_v1)
-                        .addComponent(revoke_g1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(grant_v1, javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(grant_g1, javax.swing.GroupLayout.Alignment.TRAILING))
-                    .addComponent(grant_option_v1, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(grant_option_g1, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(revoke_g1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(grant_v1, GroupLayout.Alignment.TRAILING)
+                        .addComponent(grant_g1, GroupLayout.Alignment.TRAILING))
+                    .addComponent(grant_option_v1, GroupLayout.Alignment.TRAILING)
+                    .addComponent(grant_option_g1, GroupLayout.Alignment.TRAILING))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, GroupLayout.PREFERRED_SIZE, 114, GroupLayout.PREFERRED_SIZE))
         );
 
         cancelButton.setText("Cancel fill");
@@ -446,66 +445,66 @@ public class GrantManagerPanel extends javax.swing.JPanel {
             }
         });
 
-        javax.swing.GroupLayout rightPanelLayout = new javax.swing.GroupLayout(rightPanel);
+        GroupLayout rightPanelLayout = new GroupLayout(rightPanel);
         rightPanel.setLayout(rightPanelLayout);
         rightPanelLayout.setHorizontalGroup(
-            rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jScrollPane2)
-            .addComponent(downPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(downPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(rightPanelLayout.createSequentialGroup()
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(objectBox, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(objectBox, GroupLayout.Alignment.LEADING, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(rightPanelLayout.createSequentialGroup()
                                 .addComponent(revoke_v)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(revoke_g)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(revoke_all)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                             .addGroup(rightPanelLayout.createSequentialGroup()
                                 .addComponent(grant_v)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(grant_g)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(grant_all)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(grant_option_v))
-                            .addComponent(filterBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(filterBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                             .addGroup(rightPanelLayout.createSequentialGroup()
                                 .addGap(6, 6, 6)
                                 .addComponent(grant_option_g)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(grant_option_all)
                                 .addGap(0, 0, Short.MAX_VALUE))
                             .addGroup(rightPanelLayout.createSequentialGroup()
                                 .addGap(9, 9, 9)
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                     .addGroup(rightPanelLayout.createSequentialGroup()
                                         .addComponent(jCheckBox1)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(cancelButton))
                                     .addComponent(filterField)))))
                     .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                             .addComponent(systemCheck)
-                            .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 900, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jProgressBar1, GroupLayout.PREFERRED_SIZE, 900, GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         rightPanelLayout.setVerticalGroup(
-            rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(rightPanelLayout.createSequentialGroup()
                 .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                         .addComponent(revoke_v)
-                        .addComponent(revoke_g, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(revoke_g, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(revoke_all)
                         .addComponent(grant_v)
                         .addComponent(grant_g))
@@ -513,45 +512,45 @@ public class GrantManagerPanel extends javax.swing.JPanel {
                     .addComponent(grant_option_v)
                     .addComponent(grant_option_g)
                     .addComponent(grant_option_all))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(objectBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(filterBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(filterField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(objectBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(filterBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(filterField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jCheckBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addComponent(jCheckBox1, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
                             .addComponent(systemCheck))
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                     .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jProgressBar1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addComponent(cancelButton))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, GroupLayout.DEFAULT_SIZE, 247, GroupLayout.DEFAULT_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(downPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(downPanel, GroupLayout.PREFERRED_SIZE, 142, GroupLayout.PREFERRED_SIZE))
         );
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(upPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addComponent(upPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(leftPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(rightPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(leftPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(rightPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(upPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(rightPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(leftPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(upPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                    .addComponent(rightPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(leftPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -1461,44 +1460,44 @@ public class GrantManagerPanel extends javax.swing.JPanel {
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton cancelButton;
-    private javax.swing.JComboBox<String> databaseBox;
-    private javax.swing.JPanel downPanel;
-    private javax.swing.JComboBox<String> filterBox;
-    private javax.swing.JTextField filterField;
-    private javax.swing.JButton grant_all;
-    private javax.swing.JButton grant_g;
-    private javax.swing.JButton grant_g1;
-    private javax.swing.JButton grant_option_all;
-    private javax.swing.JButton grant_option_g;
-    private javax.swing.JButton grant_option_g1;
-    private javax.swing.JButton grant_option_v;
-    private javax.swing.JButton grant_option_v1;
-    private javax.swing.JButton grant_v;
-    private javax.swing.JButton grant_v1;
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JProgressBar jProgressBar1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTable jTable2;
-    private javax.swing.JLabel labelTable;
-    private javax.swing.JPanel leftPanel;
-    private javax.swing.JComboBox<String> objectBox;
-    private javax.swing.JButton refreshButton;
-    private javax.swing.JButton revoke_all;
-    private javax.swing.JButton revoke_g;
-    private javax.swing.JButton revoke_g1;
-    private javax.swing.JButton revoke_v;
-    private javax.swing.JButton revoke_v1;
-    private javax.swing.JPanel rightPanel;
-    private javax.swing.JCheckBox systemCheck;
-    private javax.swing.JTable tablePrivileges;
-    private javax.swing.JPanel upPanel;
-    private javax.swing.JComboBox<String> userBox;
-    private javax.swing.JList<String> userList;
+    private JButton cancelButton;
+    private JComboBox<String> databaseBox;
+    private JPanel downPanel;
+    private JComboBox<String> filterBox;
+    private JTextField filterField;
+    private JButton grant_all;
+    private JButton grant_g;
+    private JButton grant_g1;
+    private JButton grant_option_all;
+    private JButton grant_option_g;
+    private JButton grant_option_g1;
+    private JButton grant_option_v;
+    private JButton grant_option_v1;
+    private JButton grant_v;
+    private JButton grant_v1;
+    private JCheckBox jCheckBox1;
+    private JLabel jLabel1;
+    private JLabel jLabel2;
+    private JProgressBar jProgressBar1;
+    private JScrollPane jScrollPane1;
+    private JScrollPane jScrollPane2;
+    private JScrollPane jScrollPane3;
+    private JTable jTable2;
+    private JLabel labelTable;
+    private JPanel leftPanel;
+    private JComboBox<String> objectBox;
+    private JButton refreshButton;
+    private JButton revoke_all;
+    private JButton revoke_g;
+    private JButton revoke_g1;
+    private JButton revoke_v;
+    private JButton revoke_v1;
+    private JPanel rightPanel;
+    private JCheckBox systemCheck;
+    private JTable tablePrivileges;
+    private JPanel upPanel;
+    private JComboBox<String> userBox;
+    private JList<String> userList;
     // End of variables declaration//GEN-END:variables
 
 }

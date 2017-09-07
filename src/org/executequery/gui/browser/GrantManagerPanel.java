@@ -14,6 +14,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.gui.browser.managment.ThreadOfGrantManager;
+import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.util.MiscUtils;
@@ -32,7 +33,6 @@ import java.util.Map;
 import java.util.Vector;
 
 /**
- *
  * @author mikhan808
  */
 public class GrantManagerPanel extends JPanel {
@@ -51,11 +51,11 @@ public class GrantManagerPanel extends JPanel {
         relType = new Vector<>();
         relSystem = new Vector<Boolean>();
         relGranted = new Vector<Boolean>();
-        fieldName=new Vector<>();
-        fieldType=new Vector<>();
+        fieldName = new Vector<>();
+        fieldType = new Vector<>();
         BrowserTableCellRenderer bctr = new BrowserTableCellRenderer();
         tablePrivileges.setDefaultRenderer(Object.class, bctr);
-        jTable2.setDefaultRenderer(Object.class,bctr);
+        jTable2.setDefaultRenderer(Object.class, bctr);
         enabled_dBox = true;
         setEnableElements(true);
         load_connections();
@@ -166,23 +166,23 @@ public class GrantManagerPanel extends JPanel {
         GroupLayout upPanelLayout = new GroupLayout(upPanel);
         upPanel.setLayout(upPanelLayout);
         upPanelLayout.setHorizontalGroup(
-            upPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(upPanelLayout.createSequentialGroup()
-                .addComponent(databaseBox, GroupLayout.PREFERRED_SIZE, 203, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(refreshButton, GroupLayout.PREFERRED_SIZE, 53, GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                upPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(upPanelLayout.createSequentialGroup()
+                                .addComponent(databaseBox, GroupLayout.PREFERRED_SIZE, 203, GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(refreshButton, GroupLayout.PREFERRED_SIZE, 53, GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
         );
         upPanelLayout.setVerticalGroup(
-            upPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(databaseBox, GroupLayout.DEFAULT_SIZE, 41, Short.MAX_VALUE)
-            .addComponent(refreshButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                upPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(databaseBox, GroupLayout.DEFAULT_SIZE, 41, Short.MAX_VALUE)
+                        .addComponent(refreshButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         jLabel1.setText("Priveleges for");
         jLabel1.setOpaque(true);
 
-        userBox.setModel(new DefaultComboBoxModel<>(new String[] { "Users", "Roles", "Views", "Triggers", "Procedures" }));
+        userBox.setModel(new DefaultComboBoxModel<>(new String[]{"Users", "Roles", "Views", "Triggers", "Procedures"}));
         userBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 userBoxActionPerformed(evt);
@@ -199,19 +199,19 @@ public class GrantManagerPanel extends JPanel {
         GroupLayout leftPanelLayout = new GroupLayout(leftPanel);
         leftPanel.setLayout(leftPanelLayout);
         leftPanelLayout.setHorizontalGroup(
-            leftPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(userBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jScrollPane1, GroupLayout.Alignment.TRAILING)
+                leftPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(jLabel1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(userBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, GroupLayout.Alignment.TRAILING)
         );
         leftPanelLayout.setVerticalGroup(
-            leftPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(leftPanelLayout.createSequentialGroup()
-                .addComponent(jLabel1)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(userBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1))
+                leftPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(leftPanelLayout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(userBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane1))
         );
 
         jLabel2.setText("Grants on");
@@ -280,14 +280,14 @@ public class GrantManagerPanel extends JPanel {
             }
         });
 
-        objectBox.setModel(new DefaultComboBoxModel<>(new String[] { "All objects", "Tables", "Views", "Procedures" }));
+        objectBox.setModel(new DefaultComboBoxModel<>(new String[]{"All objects", "Tables", "Views", "Procedures"}));
         objectBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 objectBoxActionPerformed(evt);
             }
         });
 
-        filterBox.setModel(new DefaultComboBoxModel<>(new String[] { "Display all", "Granted only", "Non-granted only" }));
+        filterBox.setModel(new DefaultComboBoxModel<>(new String[]{"Display all", "Granted only", "Non-granted only"}));
         filterBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filterBoxActionPerformed(evt);
@@ -315,12 +315,12 @@ public class GrantManagerPanel extends JPanel {
         });
 
         tablePrivileges.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+                new Object[][]{
 
-            },
-            new String [] {
+                },
+                new String[]{
 
-            }
+                }
         ));
         tablePrivileges.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -328,7 +328,7 @@ public class GrantManagerPanel extends JPanel {
             }
         });
         jScrollPane2.setViewportView(tablePrivileges);
-        
+
         labelTable.setText("Columns of ");
         labelTable.setOpaque(true);
 
@@ -375,12 +375,12 @@ public class GrantManagerPanel extends JPanel {
         });
 
         jTable2.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+                new Object[][]{
 
-            },
-            new String [] {
+                },
+                new String[]{
 
-            }
+                }
         ));
         jTable2.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -392,38 +392,38 @@ public class GrantManagerPanel extends JPanel {
         GroupLayout downPanelLayout = new GroupLayout(downPanel);
         downPanel.setLayout(downPanelLayout);
         downPanelLayout.setHorizontalGroup(
-            downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(labelTable, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(downPanelLayout.createSequentialGroup()
-                .addComponent(revoke_v1)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(revoke_g1)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(grant_v1)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(grant_g1)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(grant_option_v1)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(grant_option_g1)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(jScrollPane3, GroupLayout.Alignment.TRAILING)
+                downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(labelTable, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(downPanelLayout.createSequentialGroup()
+                                .addComponent(revoke_v1)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(revoke_g1)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(grant_v1)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(grant_g1)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(grant_option_v1)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(grant_option_g1)
+                                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jScrollPane3, GroupLayout.Alignment.TRAILING)
         );
         downPanelLayout.setVerticalGroup(
-            downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(downPanelLayout.createSequentialGroup()
-                .addComponent(labelTable, GroupLayout.PREFERRED_SIZE, 16, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addGroup(downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
-                        .addComponent(revoke_v1)
-                        .addComponent(revoke_g1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(grant_v1, GroupLayout.Alignment.TRAILING)
-                        .addComponent(grant_g1, GroupLayout.Alignment.TRAILING))
-                    .addComponent(grant_option_v1, GroupLayout.Alignment.TRAILING)
-                    .addComponent(grant_option_g1, GroupLayout.Alignment.TRAILING))
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jScrollPane3, GroupLayout.PREFERRED_SIZE, 114, GroupLayout.PREFERRED_SIZE))
+                downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(downPanelLayout.createSequentialGroup()
+                                .addComponent(labelTable, GroupLayout.PREFERRED_SIZE, 16, GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                        .addGroup(downPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                                .addComponent(revoke_v1)
+                                                .addComponent(revoke_g1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(grant_v1, GroupLayout.Alignment.TRAILING)
+                                                .addComponent(grant_g1, GroupLayout.Alignment.TRAILING))
+                                        .addComponent(grant_option_v1, GroupLayout.Alignment.TRAILING)
+                                        .addComponent(grant_option_g1, GroupLayout.Alignment.TRAILING))
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jScrollPane3, GroupLayout.PREFERRED_SIZE, 114, GroupLayout.PREFERRED_SIZE))
         );
 
         cancelButton.setText("Cancel fill");
@@ -436,110 +436,110 @@ public class GrantManagerPanel extends JPanel {
         GroupLayout rightPanelLayout = new GroupLayout(rightPanel);
         rightPanel.setLayout(rightPanelLayout);
         rightPanelLayout.setHorizontalGroup(
-            rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jScrollPane2)
-            .addComponent(downPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(rightPanelLayout.createSequentialGroup()
-                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(objectBox, GroupLayout.Alignment.LEADING, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addComponent(revoke_v)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(revoke_g)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(revoke_all)))
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
-                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addComponent(grant_v)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(grant_g)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(grant_all)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(grant_option_v))
-                            .addComponent(filterBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addGap(6, 6, 6)
-                                .addComponent(grant_option_g)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(grant_option_all)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addGap(9, 9, 9)
+                rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(jLabel2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jScrollPane2)
+                        .addComponent(downPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(rightPanelLayout.createSequentialGroup()
                                 .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                        .addComponent(jCheckBox1)
-                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(cancelButton))
-                                    .addComponent(filterField)))))
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addComponent(systemCheck)
-                            .addComponent(jProgressBar1, GroupLayout.PREFERRED_SIZE, 900, GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                                        .addGroup(rightPanelLayout.createSequentialGroup()
+                                                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.TRAILING, false)
+                                                        .addComponent(objectBox, GroupLayout.Alignment.LEADING, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                        .addGroup(rightPanelLayout.createSequentialGroup()
+                                                                .addComponent(revoke_v)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(revoke_g)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(revoke_all)))
+                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                                        .addGroup(rightPanelLayout.createSequentialGroup()
+                                                                .addComponent(grant_v)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(grant_g)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(grant_all)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(grant_option_v))
+                                                        .addComponent(filterBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                        .addGroup(rightPanelLayout.createSequentialGroup()
+                                                                .addGap(6, 6, 6)
+                                                                .addComponent(grant_option_g)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(grant_option_all)
+                                                                .addGap(0, 0, Short.MAX_VALUE))
+                                                        .addGroup(rightPanelLayout.createSequentialGroup()
+                                                                .addGap(9, 9, 9)
+                                                                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                                        .addGroup(rightPanelLayout.createSequentialGroup()
+                                                                                .addComponent(jCheckBox1)
+                                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                                                .addComponent(cancelButton))
+                                                                        .addComponent(filterField)))))
+                                        .addGroup(rightPanelLayout.createSequentialGroup()
+                                                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                        .addComponent(systemCheck)
+                                                        .addComponent(jProgressBar1, GroupLayout.PREFERRED_SIZE, 900, GroupLayout.PREFERRED_SIZE))
+                                                .addGap(0, 0, Short.MAX_VALUE)))
+                                .addContainerGap())
         );
         rightPanelLayout.setVerticalGroup(
-            rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(rightPanelLayout.createSequentialGroup()
-                .addComponent(jLabel2)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
-                        .addComponent(revoke_v)
-                        .addComponent(revoke_g, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(revoke_all)
-                        .addComponent(grant_v)
-                        .addComponent(grant_g))
-                    .addComponent(grant_all)
-                    .addComponent(grant_option_v)
-                    .addComponent(grant_option_g)
-                    .addComponent(grant_option_all))
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(objectBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(filterBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(filterField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addComponent(jCheckBox1, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(systemCheck))
-                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addComponent(jProgressBar1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addComponent(cancelButton))))
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, GroupLayout.DEFAULT_SIZE, 247, GroupLayout.DEFAULT_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(downPanel, GroupLayout.PREFERRED_SIZE, 142, GroupLayout.PREFERRED_SIZE))
+                rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(rightPanelLayout.createSequentialGroup()
+                                .addComponent(jLabel2)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                        .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                                .addComponent(revoke_v)
+                                                .addComponent(revoke_g, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(revoke_all)
+                                                .addComponent(grant_v)
+                                                .addComponent(grant_g))
+                                        .addComponent(grant_all)
+                                        .addComponent(grant_option_v)
+                                        .addComponent(grant_option_g)
+                                        .addComponent(grant_option_all))
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                        .addComponent(objectBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(filterBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(filterField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                        .addGroup(rightPanelLayout.createSequentialGroup()
+                                                .addGroup(rightPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                        .addComponent(jCheckBox1, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(systemCheck))
+                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                .addGroup(rightPanelLayout.createSequentialGroup()
+                                                        .addComponent(jProgressBar1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(cancelButton))))
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane2, GroupLayout.DEFAULT_SIZE, 247, GroupLayout.DEFAULT_SIZE)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(downPanel, GroupLayout.PREFERRED_SIZE, 142, GroupLayout.PREFERRED_SIZE))
         );
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(upPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(leftPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(rightPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(upPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(leftPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(rightPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(upPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-                    .addComponent(rightPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(leftPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(0, 0, 0))
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(upPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                                        .addComponent(rightPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(leftPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGap(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -694,8 +694,7 @@ public class GrantManagerPanel extends JPanel {
                     }
                 }
             }
-            if(row>=0)
-            {
+            if (row >= 0) {
                 setVisiblePanelOfTable(!relType.elementAt(row).equals(objectBox.getItemAt(3)));
             }
         }
@@ -705,23 +704,23 @@ public class GrantManagerPanel extends JPanel {
         // TODO add your handling code here:
         if (enableElements) {
             int row = tablePrivileges.getSelectedRow();
-            int row2=jTable2.getSelectedRow();
+            int row2 = jTable2.getSelectedRow();
             if (evt.getClickCount() > 1) {
                 int col = jTable2.getSelectedColumn();
                 if (col > 1) {
                     if (((Icon) jTable2.getValueAt(row2, col)).equals(gr)) {
 
 
-                        grant_on_role(2, row, col,row2);
+                        grant_on_role(2, row, col, row2);
 
 
                     } else if (((Icon) jTable2.getValueAt(row2, col)).equals(adm)) {
 
-                        grant_on_role(0, row, col,row2);
+                        grant_on_role(0, row, col, row2);
 
                     } else {
 
-                        grant_on_role(1, row, col,row2);
+                        grant_on_role(1, row, col, row2);
 
                     }
                 }
@@ -735,8 +734,8 @@ public class GrantManagerPanel extends JPanel {
         int col = jTable2.getSelectedColumn();
         int row2 = obj_index;
         if (col > 1)
-            for (int row = 0; row < fieldName.size() ; row++) {
-                grant_on_role(0, row2, col,row);
+            for (int row = 0; row < fieldName.size(); row++) {
+                grant_on_role(0, row2, col, row);
             }
     }//GEN-LAST:event_revoke_v1ActionPerformed
 
@@ -744,19 +743,20 @@ public class GrantManagerPanel extends JPanel {
         // TODO add your handling code here:
         int row = jTable2.getSelectedRow();
         int row2 = obj_index;
-        if (row>=0)
+        if (row >= 0)
             for (int col = 2; col < 4; col++) {
-                grant_on_role(0, row2, col,row);
+                grant_on_role(0, row2, col, row);
             }
     }//GEN-LAST:event_revoke_g1ActionPerformed
 
     private void grant_v1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_grant_v1ActionPerformed
         // TODO add your handling code here:
         int col = jTable2.getSelectedColumn();
-        int row2 = obj_index;;
+        int row2 = obj_index;
+        ;
         if (col > 1)
-            for (int row = 0; row < fieldName.size() ; row++) {
-                grant_on_role(1, row2, col,row);
+            for (int row = 0; row < fieldName.size(); row++) {
+                grant_on_role(1, row2, col, row);
             }
     }//GEN-LAST:event_grant_v1ActionPerformed
 
@@ -764,9 +764,9 @@ public class GrantManagerPanel extends JPanel {
         // TODO add your handling code here:
         int row = jTable2.getSelectedRow();
         int row2 = obj_index;
-        if (row>=0)
+        if (row >= 0)
             for (int col = 2; col < 4; col++) {
-                grant_on_role(1, row2, col,row);
+                grant_on_role(1, row2, col, row);
             }
     }//GEN-LAST:event_grant_g1ActionPerformed
 
@@ -775,8 +775,8 @@ public class GrantManagerPanel extends JPanel {
         int col = jTable2.getSelectedColumn();
         int row2 = obj_index;
         if (col > 1)
-            for (int row = 0; row < fieldName.size() ; row++) {
-                grant_on_role(2, row2, col,row);
+            for (int row = 0; row < fieldName.size(); row++) {
+                grant_on_role(2, row2, col, row);
             }
     }//GEN-LAST:event_grant_option_v1ActionPerformed
 
@@ -785,9 +785,9 @@ public class GrantManagerPanel extends JPanel {
 
         int row = jTable2.getSelectedRow();
         int row2 = obj_index;
-        if (row>=0)
+        if (row >= 0)
             for (int col = 2; col < 4; col++) {
-                grant_on_role(2, row2, col,row);
+                grant_on_role(2, row2, col, row);
             }
     }//GEN-LAST:event_grant_option_g1ActionPerformed
 
@@ -817,11 +817,14 @@ public class GrantManagerPanel extends JPanel {
             case 1:
                 get_roles();
                 break;
-            case 2:get_views_for_userlist();
-            break;
-            case 3:get_triggers_for_userlist();
-            break;
-            case 4:get_procedures_for_userlist();
+            case 2:
+                get_views_for_userlist();
+                break;
+            case 3:
+                get_triggers_for_userlist();
+                break;
+            case 4:
+                get_procedures_for_userlist();
                 break;
             default:
                 break;
@@ -897,11 +900,10 @@ public class GrantManagerPanel extends JPanel {
         }
     }
 
-    void get_views_for_userlist()
-    {
+    void get_views_for_userlist() {
         try {
             Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            String query="Select RDB$RELATION_NAME from RDB$RELATIONS" +
+            String query = "Select RDB$RELATION_NAME from RDB$RELATIONS" +
                     " WHERE RDB$RELATION_TYPE = 1 order by 1";
             ResultSet result = st.executeQuery(query);
             while (result.next()) {
@@ -913,11 +915,11 @@ public class GrantManagerPanel extends JPanel {
             System.out.println(e.getMessage());
         }
     }
-    void get_triggers_for_userlist()
-    {
+
+    void get_triggers_for_userlist() {
         try {
             Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            String query="Select RDB$TRIGGER_NAME from RDB$TRIGGERS order by 1";
+            String query = "Select RDB$TRIGGER_NAME from RDB$TRIGGERS order by 1";
             ResultSet result = st.executeQuery(query);
             while (result.next()) {
                 String role = result.getString(1);
@@ -928,11 +930,12 @@ public class GrantManagerPanel extends JPanel {
             System.out.println(e.getMessage());
         }
     }
-    void get_procedures_for_userlist()
-    {
+
+    void get_procedures_for_userlist() {
         try {
             Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            String query="Select RDB$PROCEDURE_NAME from RDB$PROCEDURES order by 1";;
+            String query = "Select RDB$PROCEDURE_NAME from RDB$PROCEDURES order by 1";
+            ;
             ResultSet result = st.executeQuery(query);
             while (result.next()) {
                 String role = result.getString(1);
@@ -943,6 +946,7 @@ public class GrantManagerPanel extends JPanel {
             System.out.println(e.getMessage());
         }
     }
+
     void load_table() {
 
         tablePrivileges.setModel(new RoleTableModel(headers, 0));
@@ -957,8 +961,8 @@ public class GrantManagerPanel extends JPanel {
         if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 3)
             getProcedures();
         jProgressBar1.setMaximum(relName.size());
-        for (int i = 0; i < relName.size() && !enableElements; i++) {
-            jProgressBar1.setValue(i);
+        for (int i = 0, g = 0; i < relName.size() && !enableElements; g++, i++) {
+            jProgressBar1.setValue(g);
             try {
                 Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
@@ -972,16 +976,33 @@ public class GrantManagerPanel extends JPanel {
                 roleData.add(obj);
                 for (int k = 0; k < 7; k++)
                     roleData.add(no);
-                ((RoleTableModel) tablePrivileges.getModel()).addRow(roleData);
+                boolean adding = true;
                 while (rs1.next()) {
-                    String grant = rs1.getString(1).trim();
-                    int ind = grants.indexOf(grant);
-                    if (ind != 7)
-                        if (rs1.getObject(2).equals(0)) {
-                            tablePrivileges.setValueAt(gr, i, ind + 1);
-                        } else
-                            ((RoleTableModel) tablePrivileges.getModel()).setValueAt(adm, i, ind + 1);
+                    relGranted.set(i, true);
+                    if (filterBox.getSelectedIndex() == 0 || (filterBox.getSelectedIndex() == 1) == relGranted.elementAt(i)) {
+                        try {
+                            String grant = rs1.getString(1).trim();
+                            int ind = grants.indexOf(grant);
+                            if (ind != 7) {
+                                Object gr_opt = rs1.getObject(2);
+                                if (gr_opt == null)
+                                    gr_opt = 0;
+                                if (gr_opt.equals(0)) {
+                                    roleData.set(ind + 1, gr);
+                                } else
+                                    roleData.set(ind + 1, adm);
+                            }
+                        } catch (Exception e) {
+                            Log.error(e.getMessage());
+                        }
+                    } else {
+                        removeRow(i);
+                        i--;
+                        adding = false;
+                        break;
+                    }
                 }
+                if (adding) ((RoleTableModel) tablePrivileges.getModel()).addRow(roleData);
                 st.close();
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
@@ -992,17 +1013,16 @@ public class GrantManagerPanel extends JPanel {
 
     }
 
-    void load_table2(String rname)
-    {
+    void load_table2(String rname) {
         jTable2.setModel(new RoleTableModel(headers2, 0));
-        fieldName=new Vector<>();
-        fieldType=new Vector<>();
+        fieldName = new Vector<>();
+        fieldType = new Vector<>();
         try {
             Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            String query="Select RF.RDB$FIELD_NAME,F.RDB$FIELD_TYPE\n"+
-            "from RDB$RELATION_FIELDS AS RF left join RDB$FIELDS AS F\n"+
-            "ON F.RDB$FIELD_NAME=RF.RDB$FIELD_SOURCE\n"+
-            "WHERE RF.RDB$RELATION_NAME='"+rname+"'";
+            String query = "Select RF.RDB$FIELD_NAME,F.RDB$FIELD_TYPE\n" +
+                    "from RDB$RELATION_FIELDS AS RF left join RDB$FIELDS AS F\n" +
+                    "ON F.RDB$FIELD_NAME=RF.RDB$FIELD_SOURCE\n" +
+                    "WHERE RF.RDB$RELATION_NAME='" + rname + "'";
             ResultSet rs = state.executeQuery(query);
             while (rs.next()) {
                 String name = rs.getString(1).trim();
@@ -1015,57 +1035,56 @@ public class GrantManagerPanel extends JPanel {
             GUIUtilities.displayErrorMessage(e.getMessage());
         }
         for (int i = 0; i < fieldName.size(); i++)
-        try {
-            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
-                    "where (rdb$Relation_name='" + rname + "') and (rdb$user='" + userList.getSelectedValue().trim() + "') and\n"+
-                    "(RDB$FIELD_NAME='"+fieldName.elementAt(i)+"')";
-            ResultSet rs1 = st.executeQuery(s);
-            Vector<Object> roleData = new Vector<Object>();
-            roleData.add(fieldName.elementAt(i));
-            roleData.add(fieldType.elementAt(i));
-            for (int k = 0; k < 2; k++)
-                roleData.add(no);
-            ((RoleTableModel) jTable2.getModel()).addRow(roleData);
-            while (rs1.next()) {
-                String grant = rs1.getString(1).trim();
-                int ind = grants.indexOf(grant);
-                if (ind ==1)
-                    if (rs1.getObject(2).equals(0)) {
-                        jTable2.setValueAt(gr, i, 2);
-                    } else
-                        ((RoleTableModel) jTable2.getModel()).setValueAt(adm, i, 2);
-                if (ind ==5)
-                    if (rs1.getObject(2).equals(0)) {
-                        jTable2.setValueAt(gr, i, 3);
-                    } else
-                        ((RoleTableModel) jTable2.getModel()).setValueAt(adm, i, 3);
+            try {
+                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
+                        "where (rdb$Relation_name='" + rname + "') and (rdb$user='" + userList.getSelectedValue().trim() + "') and\n" +
+                        "(RDB$FIELD_NAME='" + fieldName.elementAt(i) + "')";
+                ResultSet rs1 = st.executeQuery(s);
+                Vector<Object> roleData = new Vector<Object>();
+                roleData.add(fieldName.elementAt(i));
+                roleData.add(fieldType.elementAt(i));
+                for (int k = 0; k < 2; k++)
+                    roleData.add(no);
+                ((RoleTableModel) jTable2.getModel()).addRow(roleData);
+                while (rs1.next()) {
+                    String grant = rs1.getString(1).trim();
+                    int ind = grants.indexOf(grant);
+                    if (ind == 1)
+                        if (rs1.getObject(2).equals(0)) {
+                            jTable2.setValueAt(gr, i, 2);
+                        } else
+                            ((RoleTableModel) jTable2.getModel()).setValueAt(adm, i, 2);
+                    if (ind == 5)
+                        if (rs1.getObject(2).equals(0)) {
+                            jTable2.setValueAt(gr, i, 3);
+                        } else
+                            ((RoleTableModel) jTable2.getModel()).setValueAt(adm, i, 3);
+                }
+
+            } catch (Exception e) {
+                Log.error(e.getMessage());
             }
-
-        } catch (Exception e) {
-            GUIUtilities.displayErrorMessage(e.getMessage());
-        }
-
     }
 
     void getTables() {
-        String query="Select RDB$RELATION_NAME,RDB$SYSTEM_FLAG from RDB$RELATIONS" +
+        String query = "Select RDB$RELATION_NAME,RDB$SYSTEM_FLAG from RDB$RELATIONS" +
                 " WHERE RDB$RELATION_TYPE != 1 order by 1";
         String type = objectBox.getItemAt(1);
-        add_relations(query,type);
+        add_relations(query, type);
     }
 
     void getViews() {
-        String query="Select RDB$RELATION_NAME,RDB$SYSTEM_FLAG from RDB$RELATIONS" +
+        String query = "Select RDB$RELATION_NAME,RDB$SYSTEM_FLAG from RDB$RELATIONS" +
                 " WHERE RDB$RELATION_TYPE = 1 order by 1";
         String type = objectBox.getItemAt(2);
-        add_relations(query,type);
+        add_relations(query, type);
     }
 
     void getProcedures() {
-        String query="Select RDB$PROCEDURE_NAME,RDB$SYSTEM_FLAG from RDB$PROCEDURES order by 1";
+        String query = "Select RDB$PROCEDURE_NAME,RDB$SYSTEM_FLAG from RDB$PROCEDURES order by 1";
         String type = objectBox.getItemAt(3);
-        add_relations(query,type);
+        add_relations(query, type);
     }
 
     void removeRow(int i) {
@@ -1081,13 +1100,13 @@ public class GrantManagerPanel extends JPanel {
         relSystem.add(system_flag);
         relGranted.add(grant_flag);
     }
-    void add_relations(String query,String type)
-    {
+
+    void add_relations(String query, String type) {
         try {
             Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             ResultSet rs = state.executeQuery(query);
-            Vector<String>rname=new Vector<>();
-            Vector<Boolean>sflag=new Vector<>();
+            Vector<String> rname = new Vector<>();
+            Vector<Boolean> sflag = new Vector<>();
             while (rs.next()) {
                 String name = rs.getString(1).trim();
                 boolean system_flag = rs.getInt(2) == 1;
@@ -1095,13 +1114,12 @@ public class GrantManagerPanel extends JPanel {
                 sflag.addElement(system_flag);
             }
             state.close();
-            for(int i=0;i<rname.size();i++)
-            {   String name = rname.elementAt(i);
+            for (int i = 0; i < rname.size(); i++) {
+                String name = rname.elementAt(i);
                 boolean system_flag = sflag.elementAt(i);
-                boolean granted_flag = isGranted(name,userList.getSelectedValue());
+                boolean granted_flag = false;
                 if (!system_flag || system_flag == systemCheck.isSelected()) {
-                    if (!jCheckBox1.isSelected() == name.contains(filterField.getText())
-                            && (filterBox.getSelectedIndex() == 0 || (filterBox.getSelectedIndex() == 1) == granted_flag))
+                    if (!jCheckBox1.isSelected() == name.contains(filterField.getText()))
                         addRow(name, type, system_flag, granted_flag);
                 }
             }
@@ -1109,6 +1127,7 @@ public class GrantManagerPanel extends JPanel {
             GUIUtilities.displayErrorMessage(e.getMessage());
         }
     }
+
     void setEnableElements(boolean enable) {
         enableElements = enable;
         databaseBox.setEnabled(enable);
@@ -1314,14 +1333,15 @@ public class GrantManagerPanel extends JPanel {
                     break;
             }
     }
-    void grant_on_role(int grantt, int row, int col,int row2) {
+
+    void grant_on_role(int grantt, int row, int col, int row2) {
         if (row < tablePrivileges.getRowCount())
             switch (grantt) {
                 case 0:
                     try {
                         Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                        st.execute("REVOKE " + headers2[col] + " ("+fieldName.elementAt(row2)+")"
-                            +" ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";");
+                        st.execute("REVOKE " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
+                                + " ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";");
                         jTable2.setValueAt(no, row2, col);
                         st.close();
                     } catch (Exception e) {
@@ -1332,8 +1352,8 @@ public class GrantManagerPanel extends JPanel {
                     if (((Icon) jTable2.getValueAt(row2, col)).equals(adm)) {
                         try {
                             Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                            st.execute("REVOKE "  + headers2[col] + " ("+fieldName.elementAt(row2)+")"
-                                    +" ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";");
+                            st.execute("REVOKE " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
+                                    + " ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";");
                             jTable2.setValueAt(no, row2, col);
                             st.close();
                         } catch (Exception e) {
@@ -1342,8 +1362,8 @@ public class GrantManagerPanel extends JPanel {
 
                         try {
                             Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                            st.execute("GRANT " + headers2[col] + " ("+fieldName.elementAt(row2)+")"
-                                +" ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";");
+                            st.execute("GRANT " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
+                                    + " ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";");
                             jTable2.setValueAt(gr, row2, col);
                             st.close();
                         } catch (Exception e) {
@@ -1353,8 +1373,8 @@ public class GrantManagerPanel extends JPanel {
                     } else
                         try {
                             Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                            st.execute("GRANT " + headers2[col] + " ("+fieldName.elementAt(row2)+")"
-                                +" ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";");
+                            st.execute("GRANT " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
+                                    + " ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";");
                             jTable2.setValueAt(gr, row2, col);
                             st.close();
                         } catch (Exception e) {
@@ -1364,8 +1384,8 @@ public class GrantManagerPanel extends JPanel {
                 case 2:
                     try {
                         Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                        st.execute("GRANT " + headers2[col] + " ("+fieldName.elementAt(row2)+")"
-                            +" ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;");
+                        st.execute("GRANT " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
+                                + " ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;");
                         jTable2.setValueAt(adm, row2, col);
                         st.close();
                     } catch (Exception e) {
@@ -1384,36 +1404,33 @@ public class GrantManagerPanel extends JPanel {
         }
     }
 
-    boolean isGranted(String name, String user)
-    {
+    boolean isGranted(String name, String user) {
         try {
             Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
-                "where (rdb$Relation_name='" + name + "') and (rdb$user='" + user + "')";
+                    "where (rdb$Relation_name='" + name + "') and (rdb$user='" + user + "')";
             ResultSet rs1 = st.executeQuery(s);
             boolean isGranted = rs1.next();
             st.close();
             return isGranted;
-        } catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             return false;
         }
 
     }
-    void setVisiblePanelOfTable(boolean flag)
-    {
-        if(flag)
-        {
-            int row=tablePrivileges.getSelectedRow();
-            labelTable.setText("Columns of ["+relName.elementAt(row)+"]");
+
+    void setVisiblePanelOfTable(boolean flag) {
+        if (flag) {
+            int row = tablePrivileges.getSelectedRow();
+            labelTable.setText("Columns of [" + relName.elementAt(row) + "]");
             load_table2(relName.elementAt(row));
-            obj_index=row;
-        }
-        else
-        {
+            obj_index = row;
+        } else {
             labelTable.setText("Columns of ");
             jTable2.setModel(new RoleTableModel(headers2, 0));
         }
+
     }
 
     String getTypeField(int type) {
@@ -1444,6 +1461,7 @@ public class GrantManagerPanel extends JPanel {
                 return "UNKNOWN";
         }
     }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton cancelButton;
     private JComboBox<String> databaseBox;

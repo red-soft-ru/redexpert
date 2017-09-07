@@ -1060,8 +1060,9 @@ public class GrantManagerPanel extends JPanel {
                             jTable2.setValueAt(gr, i, 3);
                         } else
                             ((RoleTableModel) jTable2.getModel()).setValueAt(adm, i, 3);
-                }
 
+                }
+                st.close();
             } catch (Exception e) {
                 Log.error(e.getMessage());
             }

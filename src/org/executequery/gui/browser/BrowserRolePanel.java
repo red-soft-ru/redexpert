@@ -3,6 +3,8 @@ package org.executequery.gui.browser;
 //import com.sun.glass.ui.Application;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTableCellRenderer;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.impl.DefaultDatabaseRole;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
@@ -27,6 +29,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
     public static final String NAME = "BrowserRolePanel";
     public BrowserController controller;
     Action act;
+    StatementExecutor querySender;
     enum Action
     {
         NO_ALL_GRANTS_TO_OBJECT,
@@ -64,8 +67,8 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
         controller=contr;
        // ConnectionManager.
         try {
-            con = ConnectionManager.getConnection(controller.getDatabaseConnection());
-
+            //con = ConnectionManager.getConnection(controller.getDatabaseConnection());
+            querySender=new DefaultStatementExecutor(controller.getDatabaseConnection(),true);
         }
         catch(Exception e)
         {
@@ -75,14 +78,15 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
         create_roles_list(ddr.getName());
     }
 
-    Connection con;
+    //Connection con;
     Statement state;
     ResultSet rs;
     Boolean enableGrant;
     void initComponents()
     {
         try {
-            con = ConnectionManager.getConnection(controller.getDatabaseConnection());
+            //con = ConnectionManager.getConnection(controller.getDatabaseConnection());
+            querySender=new DefaultStatementExecutor(controller.getDatabaseConnection(),true);
         }
         catch(Exception e)
         {
@@ -283,8 +287,9 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
     void create_roles_list()
     {
         try {
-            Statement st = con.createStatement();
-            ResultSet result = st.executeQuery("SELECT RDB$ROLE_NAME FROM RDB$ROLES");
+            //Statement st = con.createStatement();
+            String query="SELECT RDB$ROLE_NAME FROM RDB$ROLES";
+            ResultSet result = querySender.execute(query,true).getResultSet();
             roles=new Vector<>();
             while (result.next())
             {
@@ -293,6 +298,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
 
 
             }
+            querySender.releaseResources();
             jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(roles));
             jComboBox1.setSelectedIndex(0);
 
@@ -306,8 +312,9 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
     {
         enableGrant=false;
         try {
-            Statement st = con.createStatement();
-            ResultSet result = st.executeQuery("SELECT RDB$ROLE_NAME FROM RDB$ROLES");
+            //Statement st = con.createStatement();
+            String query="SELECT RDB$ROLE_NAME FROM RDB$ROLES";
+            ResultSet result = querySender.execute(query,true).getResultSet();
             roles=new Vector<>();
             while (result.next())
             {
@@ -316,6 +323,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
 
 
             }
+            querySender.releaseResources();
             jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(roles));
             jComboBox1.setSelectedItem(selectedRole);
 
@@ -345,8 +353,9 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
         try {
             if(objectBox.getSelectedIndex()==0 || objectBox.getSelectedIndex()==1 )
             {
-                state = con.createStatement();
-                rs = state.executeQuery("Select RDB$RELATION_NAME from RDB$RELATIONS WHERE RDB$RELATION_TYPE != 1");
+                //state = con.createStatement();
+                String query="Select RDB$RELATION_NAME from RDB$RELATIONS WHERE RDB$RELATION_TYPE != 1";
+                rs = querySender.execute(query,true).getResultSet();
                 while (rs.next()) {
                     String name = rs.getString(1);
                     if (jCheckBox1.isSelected()) {
@@ -361,11 +370,13 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
 
 
                 }
+                querySender.releaseResources();
             }
             if(objectBox.getSelectedIndex()==0 || objectBox.getSelectedIndex()==3 )
             {
-                state = con.createStatement();
-                rs = state.executeQuery("Select DISTINCT RDB$VIEW_NAME from RDB$VIEW_RELATIONS");
+                //state = con.createStatement();
+                String query="Select DISTINCT RDB$VIEW_NAME from RDB$VIEW_RELATIONS";
+                rs = querySender.execute(query,true).getResultSet();
                 while (rs.next()) {
                     String name = rs.getString(1);
                     if (jCheckBox1.isSelected()) {
@@ -380,11 +391,13 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
 
 
                 }
+                querySender.releaseResources();
             }
             if(objectBox.getSelectedIndex()==0 || objectBox.getSelectedIndex()==2 )
             {
-                state = con.createStatement();
-                rs = state.executeQuery("Select RDB$PROCEDURE_NAME from RDB$PROCEDURES");
+                //state = con.createStatement();
+                String query="Select RDB$PROCEDURE_NAME from RDB$PROCEDURES";
+                rs = querySender.execute(query,true).getResultSet();
                 while (rs.next()) {
                     String name = rs.getString(1);
                     if (jCheckBox1.isSelected()) {
@@ -399,6 +412,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
 
 
                 }
+                querySender.releaseResources();
             }
             progBar.setMaximum(relName.size());
             for(int i=0;i<relName.size()&&!enableGrant;i++)
@@ -407,10 +421,10 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
                 try {
 
 
-                    Statement st = con.createStatement();
+                    //Statement st = con.createStatement();
                     String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
                             "where (rdb$grant_option is not null) and (rdb$Relation_name='"+relName.elementAt(i)+"') and (rdb$user='"+jComboBox1.getSelectedItem()+"')";
-                    ResultSet rs1=st.executeQuery(s);
+                    ResultSet rs1=querySender.execute(s,true).getResultSet();
                     Vector<Object> roleData= new Vector<Object>();
 
                     roleData.add(relName.elementAt(i));
@@ -433,6 +447,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
                             ((RoleTableModel) rolesTable.getModel()).setValueAt(adm,i,ind+1);
 
                     }
+                    querySender.releaseResources();
                     //((RoleTableModel) rolesTable.getModel()).addRow(roleData);
                     //((RoleTableModel) rolesTable.getModel())
 
@@ -474,15 +489,19 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
             case 0:
                 try {
 
-                    Statement st = con.createStatement();
+                    //Statement st = con.createStatement();
                     if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
                         if (!headers[col].equals("Execute")) {
-                            st.execute("REVOKE " + headers[col] + " ON \"" + relName.elementAt(row) + "\" FROM \"" + jComboBox1.getSelectedItem() + "\";");
+                            String query="REVOKE " + headers[col] + " ON \"" + relName.elementAt(row) + "\" FROM \"" + jComboBox1.getSelectedItem() + "\";";
+                            querySender.execute(query,true);
                             rolesTable.setValueAt(no, row, col);
+                            querySender.releaseResources();
                         }
                         } else if (headers[col].equals("Execute")) {
-                        st.execute("REVOKE " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" FROM \"" + jComboBox1.getSelectedItem() + "\";");
+                        String query="REVOKE " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" FROM \"" + jComboBox1.getSelectedItem() + "\";";
+                        querySender.execute(query,true);
                         rolesTable.setValueAt(no, row, col);
+                        querySender.releaseResources();
                     }
 
                 } catch (Exception e) {
@@ -493,16 +512,19 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
                 if (((Icon) rolesTable.getValueAt(row, col)).equals(adm)) {
                     try {
 
-                        Statement st = con.createStatement();
+                        //Statement st = con.createStatement();
                         if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
                             if (!headers[col].equals("Execute")) {
-                                st.execute("REVOKE " + headers[col] + " ON \"" + relName.elementAt(row) + "\" FROM \"" + jComboBox1.getSelectedItem() + "\";");
+                                String query="REVOKE " + headers[col] + " ON \"" + relName.elementAt(row) + "\" FROM \"" + jComboBox1.getSelectedItem() + "\";";
+                                querySender.execute(query,true);
                                 rolesTable.setValueAt(no, row, col);
+                                querySender.releaseResources();
                             }
-                            } else if (headers[col].equals("Execute")) {
-
-                            st.execute("REVOKE " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" FROM \"" + jComboBox1.getSelectedItem() + "\";");
+                        } else if (headers[col].equals("Execute")) {
+                            String query="REVOKE " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" FROM \"" + jComboBox1.getSelectedItem() + "\";";
+                            querySender.execute(query,true);
                             rolesTable.setValueAt(no, row, col);
+                            querySender.releaseResources();
                         }
 
                     } catch (Exception e) {
@@ -511,14 +533,18 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
 
                     try {
 
-                        Statement st = con.createStatement();
+                        //Statement st = con.createStatement();
                         if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
                             if (!headers[col].equals("Execute")) {
-                                st.execute("GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";");
+                                String query="GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";";
+                                querySender.execute(query,true);
+                                querySender.releaseResources();
                                 rolesTable.setValueAt(gr, row, col);
                             }
                         } else if (headers[col].equals("Execute")) {
-                            st.execute("GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";");
+                            String query="GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";";
+                            querySender.execute(query,true);
+                            querySender.releaseResources();
                             rolesTable.setValueAt(gr, row, col);
                         }
 
@@ -529,30 +555,38 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
                 }else
                     try {
 
-                        Statement st = con.createStatement();
+                        //Statement st = con.createStatement();
                         if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
                             if (!headers[col].equals("Execute")) {
-                                st.execute("GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";");
+                                String query="GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";";
+                                querySender.execute(query,true);
+                                querySender.releaseResources();
                                 rolesTable.setValueAt(gr, row, col);
                             }
-                            } else if (headers[col].equals("Execute"))
-                        {st.execute("GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";");
-
-                        rolesTable.setValueAt(gr, row, col);}
+                        } else if (headers[col].equals("Execute")) {
+                            String query = "GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";";
+                            querySender.execute(query, true);
+                            querySender.releaseResources();
+                            rolesTable.setValueAt(gr, row, col);
+                        }
                     } catch (Exception e) {
                         GUIUtilities.displayErrorMessage(e.getMessage());
                     }
                 break;
             case 2:try {
 
-                Statement st = con.createStatement();
+                //Statement st = con.createStatement();
                 if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
                     if (!headers[col].equals("Execute")) {
-                        st.execute("GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\" WITH GRANT OPTION;");
+                        String query="GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\" WITH GRANT OPTION;";
+                        querySender.execute(query, true);
+                        querySender.releaseResources();
                         rolesTable.setValueAt(adm, row, col);
                     }
                     } else if (headers[col].equals("Execute")) {
-                    st.execute("GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\" WITH GRANT OPTION;");
+                    String query="GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\" WITH GRANT OPTION;";
+                    querySender.execute(query, true);
+                    querySender.releaseResources();
                     rolesTable.setValueAt(adm, row, col);
                 }
 

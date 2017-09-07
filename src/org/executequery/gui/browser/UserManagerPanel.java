@@ -19,6 +19,7 @@ import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.gui.browser.BrowserController;
 import org.executequery.gui.browser.managment.FrameLogin;
+import org.executequery.gui.browser.managment.ThreadOfUserManager;
 import org.executequery.gui.browser.managment.WindowAddRole;
 import org.executequery.gui.browser.managment.WindowAddUser;
 import org.executequery.localization.Bundles;
@@ -54,8 +55,10 @@ public class UserManagerPanel extends JPanel {
         user_names = new Vector<String>();
         role_names = new Vector<String>();
         initComponents();
+        setEnableElements(true);
         listConnections = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
         init_user_manager();
+        enableElements=true;
         for (DatabaseConnection dc : listConnections) {
             databaseBox.addItem(dc.getName());
             if (dc.isConnected()) {
@@ -94,7 +97,10 @@ public class UserManagerPanel extends JPanel {
     private JPanel usersPanel;
     private JTable usersTable;
     private JTable rolesTable;
+    private JProgressBar jProgressBar1;
+    private JButton cancelButton;
     boolean execute_w;
+    boolean enableElements;
     Icon gr, no, adm;
     Connection con;
     public static final String TITLE = Bundles.get(UserManagerPanel.class,"UserManager");
@@ -108,6 +114,13 @@ public class UserManagerPanel extends JPanel {
     public IFBUser userAdd;
     ResultSet result;
     DatabaseConnection dbc;
+    enum Action {
+        REFRESH,
+        GET_USERS,
+        GET_ROLES,
+        GET_MEMBERSHIP
+    }
+    Action act;
     // End of variables declaration
     /**
      * This method is called from within the constructor to initialize the form.
@@ -143,8 +156,17 @@ public class UserManagerPanel extends JPanel {
         grantButton = new JButton();
         adminButton = new JButton();
         no_grantButton = new JButton();
+        jProgressBar1 = new JProgressBar();
+        cancelButton = new JButton();
 
         setName(""); // NOI18N
+
+        cancelButton.setText(bundleString("cancelButton"));
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
 
         jPanel1.setName("upPanel"); // NOI18N
 
@@ -169,11 +191,13 @@ public class UserManagerPanel extends JPanel {
                                 .addContainerGap()
                                 .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                                         .addComponent(databaseLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(serverLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addComponent(serverLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(cancelButton,GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addGap(18, 18, 18)
                                 .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                         .addComponent(serverBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(databaseBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addComponent(databaseBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(jProgressBar1,0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -187,6 +211,10 @@ public class UserManagerPanel extends JPanel {
                                 .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                         .addComponent(serverLabel)
                                         .addComponent(serverBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                        .addComponent(cancelButton,0,GroupLayout.DEFAULT_SIZE,Short.MAX_VALUE)
+                                        .addComponent(jProgressBar1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                                 .addContainerGap(26, Short.MAX_VALUE))
         );
 
@@ -532,7 +560,10 @@ public class UserManagerPanel extends JPanel {
         if (execute_w) {
             dbc=listConnections.get(databaseBox.getSelectedIndex());
             if (listConnections.get(databaseBox.getSelectedIndex()).isConnected())
-                refresh();
+            {
+                act=Action.REFRESH;
+                execute_thread();
+            }
             else {
                 usersTable.setModel(new RoleTableModel(
                         new Object[][]{
@@ -550,6 +581,10 @@ public class UserManagerPanel extends JPanel {
                 frame_pass.setLocation(width / 2 - frame_pass.getWidth() / 2, height / 2 - frame_pass.getHeight() / 2);
             }
         }
+    }
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        // TODO add your handling code here:
+        setEnableElements(true);
     }
 
     void addUserButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -595,7 +630,8 @@ public class UserManagerPanel extends JPanel {
     }
 
     void refreshUserButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        refresh();
+        act=Action.REFRESH;
+        execute_thread();
     }
 
     void deleteUserButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -607,7 +643,8 @@ public class UserManagerPanel extends JPanel {
                 } catch (Exception e) {
                     System.out.println(e.toString());
                 }
-                refresh();
+                act=Action.REFRESH;
+                execute_thread();
             }
         }
     }
@@ -621,7 +658,8 @@ public class UserManagerPanel extends JPanel {
                     Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                     state.execute("DROP ROLE " + role);
                     state.close();
-                    refresh();
+                    act=Action.REFRESH;
+                    execute_thread();
                 } catch (Exception e) {
                     GUIUtilities.displayErrorMessage(e.getMessage());
                     System.out.println(e.toString());
@@ -633,7 +671,7 @@ public class UserManagerPanel extends JPanel {
         // TODO add your handling code here:
         int row = membershipTable.getSelectedRow();
         int col = membershipTable.getSelectedColumn();
-        if (col >= 0) {
+        if(!enableElements)if (col >= 0) {
             try {
                 Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
@@ -656,7 +694,7 @@ public class UserManagerPanel extends JPanel {
         // TODO add your handling code here:
         int row = membershipTable.getSelectedRow();
         int col = membershipTable.getSelectedColumn();
-        if (col >= 0) {
+        if(!enableElements)if (col >= 0) {
             try {
                 Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
@@ -680,7 +718,8 @@ public class UserManagerPanel extends JPanel {
         // TODO add your handling code here:
         int row = membershipTable.getSelectedRow();
         int col = membershipTable.getSelectedColumn();
-        if (col >= 0) {
+        if (col >= 0)
+        if (!enableElements){
             try {
                 Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
@@ -696,7 +735,7 @@ public class UserManagerPanel extends JPanel {
         if (evt.getClickCount() > 1) {
             int row = membershipTable.getSelectedRow();
             int col = membershipTable.getSelectedColumn();
-            if (col >= 0) {
+            if(!enableElements)if (col >= 0) {
                 if (((Icon) membershipTable.getValueAt(row, col)).equals(gr)) {
                     grant_with_admin(row, col);
                 } else if (((Icon) membershipTable.getValueAt(row, col)).equals(adm)) {
@@ -707,7 +746,23 @@ public class UserManagerPanel extends JPanel {
             }
         }
     }
-
+    void setEnableElements(boolean enable) {
+        enableElements = enable;
+        cancelButton.setVisible(!enable);
+        jProgressBar1.setVisible(!enable);
+        if (enable)
+            jProgressBar1.setValue(0);
+    }
+    public void run() {
+        switch (act) {
+            case REFRESH:
+                if (!enableElements)
+                refresh();
+                break;
+            default:
+                break;
+        }
+    }
     void grant_with_admin(int row, int col) {
         if (col >= 0) {
             try {
@@ -807,30 +862,7 @@ public class UserManagerPanel extends JPanel {
             userManager.setUser(listConnections.get(databaseBox.getSelectedIndex()).getUserName());
             userManager.setPassword(listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
             getUsersPanel();
-            try {
-                Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                result = state.executeQuery("SELECT RDB$ROLE_NAME,RDB$OWNER_NAME FROM RDB$ROLES ORDER BY" +
-                        " RDB$ROLE_NAME");
-                rolesTable.setModel(new RoleTableModel(
-                        new Object[][]{
-
-                        },
-                        bundleStrings(new String[]{
-                                "RoleName", "Owner"
-                        })
-                ));
-                role_names.clear();
-                while (result.next()) {
-                    String rol = result.getString(1).trim();
-                    role_names.add(rol);
-                    user_names.add(rol);
-                    Object[] roleData = new Object[]{rol, result.getObject(2)};
-                    ((RoleTableModel) rolesTable.getModel()).addRow(roleData);
-                }
-                state.close();
-            } catch (Exception e) {
-                GUIUtilities.displayErrorMessage(e.toString());
-            }
+            get_roles();
             create_membership();
         } else {
             getUsersPanel();
@@ -842,15 +874,43 @@ public class UserManagerPanel extends JPanel {
         jTabbedPane1.setSelectedIndex(2);
         jTabbedPane1.setSelectedIndex(0);
         jTabbedPane1.setSelectedIndex(ind);
+        setEnableElements(true);
     }
+    void get_roles()
+    {
+        try {
+            Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            result = state.executeQuery("SELECT RDB$ROLE_NAME,RDB$OWNER_NAME FROM RDB$ROLES ORDER BY" +
+                    " RDB$ROLE_NAME");
+            rolesTable.setModel(new RoleTableModel(
+                    new Object[][]{
 
+                    },
+                    bundleStrings(new String[]{
+                            "RoleName", "Owner"
+                    })
+            ));
+            role_names.clear();
+            while (result.next()) {
+                String rol = result.getString(1).trim();
+                role_names.add(rol);
+                user_names.add(rol);
+                Object[] roleData = new Object[]{rol, result.getObject(2)};
+                ((RoleTableModel) rolesTable.getModel()).addRow(roleData);
+            }
+            state.close();
+        } catch (Exception e) {
+            GUIUtilities.displayErrorMessage(e.toString());
+        }
+    }
     void create_membership() {
         membershipTable.setModel(new RoleTableModel(
                 new Object[][]{},
                 role_names.toArray()
         ));
-
-        for (int i = 0; i < user_names.size(); i++) {
+        jProgressBar1.setMaximum(user_names.size());
+        for (int i = 0; i < user_names.size()&&!enableElements; i++) {
+            jProgressBar1.setValue(i);
             try {
                 Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 ResultSet rs1 = st.executeQuery("select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION,rdb$Relation_name from RDB$USER_PRIVILEGES\n" +
@@ -933,7 +993,8 @@ public class UserManagerPanel extends JPanel {
                     }
                 }
             }
-            refresh();
+            act=Action.REFRESH;
+            execute_thread();
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
             System.out.println(e.toString());
@@ -946,7 +1007,8 @@ public class UserManagerPanel extends JPanel {
             if (!state.execute("CREATE ROLE " + role))
                 GUIUtilities.displayInformationMessage("Succes");
             state.close();
-            refresh();
+            act=Action.REFRESH;
+            execute_thread();
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
             System.out.println(e.toString());
@@ -983,10 +1045,19 @@ public class UserManagerPanel extends JPanel {
                     }
                 }
             }
-            refresh();
+            act=Action.REFRESH;
+            execute_thread();
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
             System.out.println(e.toString());
+        }
+    }
+    void execute_thread() {
+        if (enableElements) {
+            setEnableElements(false);
+            Runnable r = new ThreadOfUserManager(this);
+            Thread t = new Thread(r);
+            t.start();
         }
     }
 

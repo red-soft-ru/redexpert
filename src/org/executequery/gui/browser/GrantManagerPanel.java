@@ -1003,7 +1003,8 @@ public class GrantManagerPanel extends JPanel {
                         break;
                     }
                 }
-                if (adding) ((RoleTableModel) tablePrivileges.getModel()).addRow(roleData);
+                if (adding)
+                    ((RoleTableModel) tablePrivileges.getModel()).addRow(roleData);
                 st.close();
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());

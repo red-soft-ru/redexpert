@@ -14,6 +14,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.gui.browser.managment.ThreadOfGrantManager;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
@@ -41,6 +42,7 @@ public class GrantManagerPanel extends JPanel {
      * Creates new form GrantManagerPanel
      */
     public GrantManagerPanel() {
+        setName("GrantManagerPanel");
         gr = GUIUtilities.loadIcon(BrowserConstants.GRANT_IMAGE);
         no = GUIUtilities.loadIcon(BrowserConstants.NO_GRANT_IMAGE);
         adm = GUIUtilities.loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
@@ -1007,6 +1009,8 @@ public class GrantManagerPanel extends JPanel {
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
+            if(GUIUtilities.getCentralPane(TITLE)==null)
+                setEnableElements(true);
         }
         setEnableElements(true);
         setVisiblePanelOfTable(false);
@@ -1172,7 +1176,23 @@ public class GrantManagerPanel extends JPanel {
                 for (int row = 0; row < relName.size() && !enableElements; row++) {
                     jProgressBar1.setValue(row);
                     for (col = 1; col < headers.length; col++)
+                    {
+                        if(GUIUtilities.getCentralPane(TITLE)==null)
+                            if (GUIUtilities.displayConfirmDialog(bundleString("message.terminate-grant")) == 0)
+                            {
+                                setEnableElements(true);
+                                break;
+                            }
+                            else
+                            {
+                                GUIUtilities.addCentralPane(GrantManagerPanel.TITLE,
+                                        GrantManagerPanel.FRAME_ICON,
+                                        this,
+                                        null,
+                                        true);
+                            }
                         grant_on_role(1, row, col);
+                    }
                 }
                 jProgressBar1.setValue(0);
                 setEnableElements(true);
@@ -1182,8 +1202,20 @@ public class GrantManagerPanel extends JPanel {
                 jProgressBar1.setMaximum(relName.size());
                 for (int row = 0; row < relName.size() && !enableElements; row++) {
                     jProgressBar1.setValue(row);
-                    for (col = 1; col < headers.length; col++)
+                    for (col = 1; col < headers.length; col++) {
+                        if (GUIUtilities.getCentralPane(TITLE) == null)
+                            if (GUIUtilities.displayConfirmDialog(bundleString("message.terminate-grant")) == 0) {
+                                setEnableElements(true);
+                                break;
+                            } else {
+                                GUIUtilities.addCentralPane(GrantManagerPanel.TITLE,
+                                        GrantManagerPanel.FRAME_ICON,
+                                        this,
+                                        null,
+                                        true);
+                            }
                         grant_on_role(2, row, col);
+                    }
                 }
                 jProgressBar1.setValue(0);
                 setEnableElements(true);
@@ -1192,8 +1224,20 @@ public class GrantManagerPanel extends JPanel {
                 jProgressBar1.setMaximum(relName.size());
                 for (int row = 0; row < relName.size() && !enableElements; row++) {
                     jProgressBar1.setValue(row);
-                    for (col = 1; col < headers.length; col++)
+                    for (col = 1; col < headers.length; col++) {
+                        if (GUIUtilities.getCentralPane(TITLE) == null)
+                            if (GUIUtilities.displayConfirmDialog(bundleString("message.terminate-grant")) == 0) {
+                                setEnableElements(true);
+                                break;
+                            } else {
+                                GUIUtilities.addCentralPane(GrantManagerPanel.TITLE,
+                                        GrantManagerPanel.FRAME_ICON,
+                                        this,
+                                        null,
+                                        true);
+                            }
                         grant_on_role(0, row, col);
+                    }
                 }
                 jProgressBar1.setValue(0);
                 setEnableElements(true);
@@ -1204,6 +1248,17 @@ public class GrantManagerPanel extends JPanel {
                 if (col > 0)
                     for (int row = 0; row < relName.size() && !enableElements; row++) {
                         jProgressBar1.setValue(row);
+                        if (GUIUtilities.getCentralPane(TITLE) == null)
+                            if (GUIUtilities.displayConfirmDialog(bundleString("message.terminate-grant")) == 0) {
+                                setEnableElements(true);
+                                break;
+                            } else {
+                                GUIUtilities.addCentralPane(GrantManagerPanel.TITLE,
+                                        GrantManagerPanel.FRAME_ICON,
+                                        this,
+                                        null,
+                                        true);
+                            }
                         grant_on_role(1, row, col);
                     }
                 jProgressBar1.setValue(0);
@@ -1215,6 +1270,20 @@ public class GrantManagerPanel extends JPanel {
                 if (col > 0)
                     for (int row = 0; row < relName.size() && !enableElements; row++) {
                         jProgressBar1.setValue(row);
+                        if(GUIUtilities.getCentralPane(TITLE)==null)
+                            if (GUIUtilities.displayConfirmDialog(bundleString("message.terminate-grant")) == 0)
+                            {
+                                setEnableElements(true);
+                                break;
+                            }
+                            else
+                            {
+                                GUIUtilities.addCentralPane(GrantManagerPanel.TITLE,
+                                        GrantManagerPanel.FRAME_ICON,
+                                        this,
+                                        null,
+                                        true);
+                            }
                         grant_on_role(2, row, col);
                     }
                 jProgressBar1.setValue(0);
@@ -1226,6 +1295,20 @@ public class GrantManagerPanel extends JPanel {
                 if (col > 0)
                     for (int row = 0; row < relName.size() && !enableElements; row++) {
                         jProgressBar1.setValue(row);
+                        if(GUIUtilities.getCentralPane(TITLE)==null)
+                            if (GUIUtilities.displayConfirmDialog(bundleString("message.terminate-grant")) == 0)
+                            {
+                                setEnableElements(true);
+                                break;
+                            }
+                            else
+                            {
+                                GUIUtilities.addCentralPane(GrantManagerPanel.TITLE,
+                                        GrantManagerPanel.FRAME_ICON,
+                                        this,
+                                        null,
+                                        true);
+                            }
                         grant_on_role(0, row, col);
                     }
                 jProgressBar1.setValue(0);
@@ -1236,6 +1319,7 @@ public class GrantManagerPanel extends JPanel {
 
     void grant_on_role(int grantt, int row, int col) {
         if (row < tablePrivileges.getRowCount())
+            if(!headers[col].equals("Usage"))
             switch (grantt) {
                 case 0:
                     try {
@@ -1462,6 +1546,12 @@ public class GrantManagerPanel extends JPanel {
                 return "UNKNOWN";
         }
     }
+
+    public String bundleString(String key)
+    {
+        return Bundles.get(GrantManagerPanel.class,key);
+    }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton cancelButton;

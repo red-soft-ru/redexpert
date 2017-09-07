@@ -22,12 +22,15 @@ public class GrantManagerCommands extends OpenFrameCommand implements BaseComman
                 break;
             }
         }
-        if (execute_w)
-        GUIUtilities.addCentralPane(GrantManagerPanel.TITLE,
-                GrantManagerPanel.FRAME_ICON,
-                new GrantManagerPanel(),
-                null,
-                true);
+        if (execute_w) {
+            if (GUIUtilities.getCentralPane(GrantManagerPanel.TITLE)==null)
+            GUIUtilities.addCentralPane(GrantManagerPanel.TITLE,
+                    GrantManagerPanel.FRAME_ICON,
+                    new GrantManagerPanel(),
+                    null,
+                    true);
+            else GUIUtilities.setSelectedCentralPane(GrantManagerPanel.TITLE);
+        }
         else GUIUtilities.displayErrorMessage("No connections available!");
     }
 }

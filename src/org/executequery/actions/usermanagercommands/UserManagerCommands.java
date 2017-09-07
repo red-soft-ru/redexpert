@@ -14,12 +14,13 @@ public class UserManagerCommands extends OpenFrameCommand implements BaseCommand
 
     public void execute(ActionEvent e) {
 
-
+        if (GUIUtilities.getCentralPane(UserManagerPanel.TITLE)==null)
         GUIUtilities.addCentralPane(UserManagerPanel.TITLE,
                 UserManagerPanel.FRAME_ICON,
                 new UserManagerPanel(),
                 null,
                 true);
+        else GUIUtilities.setSelectedCentralPane(UserManagerPanel.TITLE);
     }
 }
 

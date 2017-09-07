@@ -42,7 +42,6 @@ public class GrantManagerPanel extends JPanel {
      * Creates new form GrantManagerPanel
      */
     public GrantManagerPanel() {
-        setName("GrantManagerPanel");
         gr = GUIUtilities.loadIcon(BrowserConstants.GRANT_IMAGE);
         no = GUIUtilities.loadIcon(BrowserConstants.NO_GRANT_IMAGE);
         adm = GUIUtilities.loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
@@ -70,8 +69,6 @@ public class GrantManagerPanel extends JPanel {
     public static final String FRAME_ICON = "grant_manager_16.png";
     List<DatabaseConnection> listConnections;
     Connection con;
-    //Statement state;
-    //ResultSet rs;
     DefaultListModel userlistModel;
     boolean enabled_dBox;
     boolean enableElements;
@@ -87,6 +84,8 @@ public class GrantManagerPanel extends JPanel {
     Vector<String> fieldName;
     Vector<String> fieldType;
     int obj_index;
+    int col_execute=5;
+    int col_usage=7;
 
     enum Action {
         NO_ALL_GRANTS_TO_OBJECT,
@@ -170,14 +169,14 @@ public class GrantManagerPanel extends JPanel {
         upPanelLayout.setHorizontalGroup(
                 upPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(upPanelLayout.createSequentialGroup()
-                                .addComponent(databaseBox, GroupLayout.PREFERRED_SIZE, 203, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(databaseBox, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(refreshButton, GroupLayout.PREFERRED_SIZE, 53, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(refreshButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
                                 .addGap(0, 0, Short.MAX_VALUE))
         );
         upPanelLayout.setVerticalGroup(
                 upPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addComponent(databaseBox, GroupLayout.DEFAULT_SIZE, 41, Short.MAX_VALUE)
+                        .addComponent(databaseBox, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
                         .addComponent(refreshButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
@@ -1164,7 +1163,21 @@ public class GrantManagerPanel extends JPanel {
         if (enable)
             jProgressBar1.setValue(0);
     }
+    void isClose()
+    {
+        if (GUIUtilities.getCentralPane(TITLE) == null)
+            if (GUIUtilities.displayConfirmDialog(bundleString("message.terminate-grant")) == 0) {
+                setEnableElements(true);
 
+            } else {
+                GUIUtilities.addCentralPane(GrantManagerPanel.TITLE,
+                        GrantManagerPanel.FRAME_ICON,
+                        this,
+                        null,
+                        true);
+            }
+
+    }
     public void run() {
         int col;
         switch (act) {
@@ -1173,26 +1186,12 @@ public class GrantManagerPanel extends JPanel {
                 break;
             case ALL_GRANTS_TO_ALL_OBJECTS: {
                 jProgressBar1.setMaximum(relName.size());
-                for (int row = 0; row < relName.size() && !enableElements; row++) {
+                for (int row = 0; row < relName.size() && !enableElements; row++)
+                {
                     jProgressBar1.setValue(row);
-                    for (col = 1; col < headers.length; col++)
-                    {
-                        if(GUIUtilities.getCentralPane(TITLE)==null)
-                            if (GUIUtilities.displayConfirmDialog(bundleString("message.terminate-grant")) == 0)
-                            {
-                                setEnableElements(true);
-                                break;
-                            }
-                            else
-                            {
-                                GUIUtilities.addCentralPane(GrantManagerPanel.TITLE,
-                                        GrantManagerPanel.FRAME_ICON,
-                                        this,
-                                        null,
-                                        true);
-                            }
-                        grant_on_role(1, row, col);
-                    }
+                    isClose();
+                    grant_all_on_role(1, row);
+
                 }
                 jProgressBar1.setValue(0);
                 setEnableElements(true);
@@ -1200,44 +1199,24 @@ public class GrantManagerPanel extends JPanel {
             break;
             case ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION:
                 jProgressBar1.setMaximum(relName.size());
-                for (int row = 0; row < relName.size() && !enableElements; row++) {
+                for (int row = 0; row < relName.size() && !enableElements; row++)
+                {
                     jProgressBar1.setValue(row);
-                    for (col = 1; col < headers.length; col++) {
-                        if (GUIUtilities.getCentralPane(TITLE) == null)
-                            if (GUIUtilities.displayConfirmDialog(bundleString("message.terminate-grant")) == 0) {
-                                setEnableElements(true);
-                                break;
-                            } else {
-                                GUIUtilities.addCentralPane(GrantManagerPanel.TITLE,
-                                        GrantManagerPanel.FRAME_ICON,
-                                        this,
-                                        null,
-                                        true);
-                            }
-                        grant_on_role(2, row, col);
-                    }
+                    isClose();
+                    grant_all_on_role(2, row);
+
                 }
                 jProgressBar1.setValue(0);
                 setEnableElements(true);
                 break;
             case NO_ALL_GRANTS_TO_ALL_OBJECTS:
                 jProgressBar1.setMaximum(relName.size());
-                for (int row = 0; row < relName.size() && !enableElements; row++) {
+                for (int row = 0; row < relName.size() && !enableElements; row++)
+                {
                     jProgressBar1.setValue(row);
-                    for (col = 1; col < headers.length; col++) {
-                        if (GUIUtilities.getCentralPane(TITLE) == null)
-                            if (GUIUtilities.displayConfirmDialog(bundleString("message.terminate-grant")) == 0) {
-                                setEnableElements(true);
-                                break;
-                            } else {
-                                GUIUtilities.addCentralPane(GrantManagerPanel.TITLE,
-                                        GrantManagerPanel.FRAME_ICON,
-                                        this,
-                                        null,
-                                        true);
-                            }
-                        grant_on_role(0, row, col);
-                    }
+                    isClose();
+                    grant_all_on_role(0, row);
+
                 }
                 jProgressBar1.setValue(0);
                 setEnableElements(true);
@@ -1248,17 +1227,7 @@ public class GrantManagerPanel extends JPanel {
                 if (col > 0)
                     for (int row = 0; row < relName.size() && !enableElements; row++) {
                         jProgressBar1.setValue(row);
-                        if (GUIUtilities.getCentralPane(TITLE) == null)
-                            if (GUIUtilities.displayConfirmDialog(bundleString("message.terminate-grant")) == 0) {
-                                setEnableElements(true);
-                                break;
-                            } else {
-                                GUIUtilities.addCentralPane(GrantManagerPanel.TITLE,
-                                        GrantManagerPanel.FRAME_ICON,
-                                        this,
-                                        null,
-                                        true);
-                            }
+                        isClose();
                         grant_on_role(1, row, col);
                     }
                 jProgressBar1.setValue(0);
@@ -1270,20 +1239,7 @@ public class GrantManagerPanel extends JPanel {
                 if (col > 0)
                     for (int row = 0; row < relName.size() && !enableElements; row++) {
                         jProgressBar1.setValue(row);
-                        if(GUIUtilities.getCentralPane(TITLE)==null)
-                            if (GUIUtilities.displayConfirmDialog(bundleString("message.terminate-grant")) == 0)
-                            {
-                                setEnableElements(true);
-                                break;
-                            }
-                            else
-                            {
-                                GUIUtilities.addCentralPane(GrantManagerPanel.TITLE,
-                                        GrantManagerPanel.FRAME_ICON,
-                                        this,
-                                        null,
-                                        true);
-                            }
+                        isClose();
                         grant_on_role(2, row, col);
                     }
                 jProgressBar1.setValue(0);
@@ -1295,20 +1251,7 @@ public class GrantManagerPanel extends JPanel {
                 if (col > 0)
                     for (int row = 0; row < relName.size() && !enableElements; row++) {
                         jProgressBar1.setValue(row);
-                        if(GUIUtilities.getCentralPane(TITLE)==null)
-                            if (GUIUtilities.displayConfirmDialog(bundleString("message.terminate-grant")) == 0)
-                            {
-                                setEnableElements(true);
-                                break;
-                            }
-                            else
-                            {
-                                GUIUtilities.addCentralPane(GrantManagerPanel.TITLE,
-                                        GrantManagerPanel.FRAME_ICON,
-                                        this,
-                                        null,
-                                        true);
-                            }
+                        isClose();
                         grant_on_role(0, row, col);
                     }
                 jProgressBar1.setValue(0);
@@ -1316,108 +1259,243 @@ public class GrantManagerPanel extends JPanel {
                 break;
         }
     }
+    void revoke_execute(int row)
+    {
+        try {
+            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            String query="REVOKE EXECUTE ON PROCEDURE \"" + relName.elementAt(row) + "\" FROM \""
+                    + userList.getSelectedValue() + "\";";
+            st.execute(query);
+            tablePrivileges.setValueAt(no, row, col_execute);
+            st.close();
+        }
+        catch(Exception e)
+        {
+            Log.error(e.getMessage());
+        }
+    }
+    void grant_execute(int row)
+    {
+        try {
+            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            String query="GRANT EXECUTE ON PROCEDURE \"" +
+                    relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";";
+            st.execute(query);
+            tablePrivileges.setValueAt(gr, row, col_execute);
+            st.close();
+        }
+        catch(Exception e)
+        {
+            Log.error(e.getMessage());
+        }
+    }
+    void grant_execute_admin(int row)
+    {
+        try {
+            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            String query="GRANT EXECUTE ON PROCEDURE \"" + relName.elementAt(row) +
+                    "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;";
+            st.execute(query);
+            tablePrivileges.setValueAt(adm, row, col_execute);
+            st.close();
+        }
+        catch(Exception e)
+        {
+            Log.error(e.getMessage());
+        }
+    }
+    void revoke_all(int row)
+    {
+        try {
+            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            String query="REVOKE ALL ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";";
+            st.execute(query);
+            for (int i=1;i<headers.length;i++)
+                if(i!=col_execute&&i!=col_usage)
+                    tablePrivileges.setValueAt(no, row, i);
+            st.close();
+        }
+        catch(Exception e)
+        {
+            Log.error(e.getMessage());
+            for (int i= 1;i<headers.length;i++)
+            {
+                revoke(row,i);
+            }
+
+        }
+    }
+    void grant_all(int row)
+    {
+        try {
+            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            String query="GRANT ALL ON \"" + relName.elementAt(row)
+                    + "\" TO \"" + userList.getSelectedValue() + "\";";
+            st.execute(query);
+            for (int i=1;i<headers.length;i++)
+                if(i!=col_execute&&i!=col_usage)
+                    tablePrivileges.setValueAt(gr, row, i);
+            st.close();
+        }
+        catch(Exception e)
+        {
+            Log.error(e.getMessage());
+            for (int i= 1;i<headers.length;i++)
+            {
+                grant(row,i);
+            }
+
+        }
+    }
+
+    void grant_all_admin(int row)
+    {
+        try {
+            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            String query="GRANT ALL ON \"" + relName.elementAt(row)
+                    + "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;";
+            st.execute(query);
+            for (int i=1;i<headers.length;i++)
+                if(i!=col_execute&&i!=col_usage)
+                    tablePrivileges.setValueAt(adm, row, i);
+            st.close();
+        }
+        catch(Exception e)
+        {
+            Log.error(e.getMessage());
+            for (int i= 1;i<headers.length;i++)
+            {
+                grant_admin(row,i);
+            }
+
+        }
+    }
+
+
+    void revoke(int row,int col)
+    {
+        try {
+
+            if (col>0&&col<headers.length&&col!=col_execute&&col!=col_usage)
+            {
+                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                String query="REVOKE " + headers[col] + " ON \"" + relName.elementAt(row)
+                        + "\" FROM \"" + userList.getSelectedValue() + "\";";
+                st.execute(query);
+                tablePrivileges.setValueAt(no, row, col);
+                st.close();
+            }
+
+        } catch (Exception e) {
+            Log.error(e.getMessage());
+        }
+    }
+    void grant(int row,int col)
+    {
+        try {
+
+            if (col>0&&col<headers.length&&col!=col_execute&&col!=col_usage)
+            {
+                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                String query="GRANT " + headers[col] + " ON \"" + relName.elementAt(row)
+                        + "\" TO \"" + userList.getSelectedValue() + "\";";
+                st.execute(query);
+                tablePrivileges.setValueAt(no, row, col);
+                st.close();
+            }
+
+        } catch (Exception e) {
+            Log.error(e.getMessage());
+        }
+    }
+    void grant_admin(int row,int col)
+    {
+        try {
+
+            if (col>0&&col<headers.length&&col!=col_execute&&col!=col_usage)
+            {
+                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                String query="GRANT " + headers[col] + " ON \"" + relName.elementAt(row)
+                        + "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;";
+                st.execute(query);
+                tablePrivileges.setValueAt(adm, row, col);
+                st.close();
+            }
+
+        } catch (Exception e) {
+            Log.error(e.getMessage());
+        }
+    }
+    void grant_all_on_role(int grantt, int row) {
+        if (row < tablePrivileges.getRowCount())
+                switch (grantt) {
+                    case 0:
+                        if (!relType.elementAt(row).equals(objectBox.getItemAt(3)))
+                        {
+                            revoke_all(row);
+                        } else
+                            {
+                                revoke_execute(row);
+                            }
+                        break;
+                    case 1:
+                        if (!relType.elementAt(row).equals(objectBox.getItemAt(3)))
+                        {
+                            revoke_all(row);
+                            grant_all(row);
+                        } else
+                        {
+                            revoke_execute(row);
+                            grant_execute(row);
+                        }
+
+                        break;
+                    case 2:
+                        if (!relType.elementAt(row).equals(objectBox.getItemAt(3)))
+                        {
+                            grant_all_admin(row);
+                        } else
+                        {
+                            grant_execute_admin(row);
+                        }
+                        break;
+                }
+    }
 
     void grant_on_role(int grantt, int row, int col) {
         if (row < tablePrivileges.getRowCount())
-            if(!headers[col].equals("Usage"))
             switch (grantt) {
                 case 0:
-                    try {
-
-                        Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                         if (!relType.elementAt(row).equals(objectBox.getItemAt(3))) {
-                            if (!headers[col].equals("Execute")) {
-                                st.execute("REVOKE " + headers[col] + " ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";");
-                                tablePrivileges.setValueAt(no, row, col);
-                                st.close();
-                            }
+                            revoke(row,col);
                         } else if (headers[col].equals("Execute")) {
-                            st.execute("REVOKE " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";");
-                            tablePrivileges.setValueAt(no, row, col);
-                            st.close();
+                            revoke_execute(row);
                         }
-
-                    } catch (Exception e) {
-                        System.out.println(e.getMessage());
-                    }
-                    break;
+                        break;
                 case 1:
                     if (((Icon) tablePrivileges.getValueAt(row, col)).equals(adm)) {
-                        try {
-
-                            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                             if (!relType.elementAt(row).equals(objectBox.getItemAt(3))) {
-                                if (!headers[col].equals("Execute")) {
-                                    st.execute("REVOKE " + headers[col] + " ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";");
-                                    tablePrivileges.setValueAt(no, row, col);
-                                    st.close();
-                                }
+                                revoke(row,col);
                             } else if (headers[col].equals("Execute")) {
-                                st.execute("REVOKE " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";");
-                                tablePrivileges.setValueAt(no, row, col);
-                                st.close();
+                               revoke_execute(row);
                             }
-
-                        } catch (Exception e) {
-                            System.out.println(e.getMessage());
                         }
-
-                        try {
-                            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                            if (!relType.elementAt(row).equals(objectBox.getItemAt(3))) {
-                                if (!headers[col].equals("Execute")) {
-                                    st.execute("GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";");
-                                    tablePrivileges.setValueAt(gr, row, col);
-                                    st.close();
-                                }
-                            } else if (headers[col].equals("Execute")) {
-                                st.execute("GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";");
-                                tablePrivileges.setValueAt(gr, row, col);
-                                st.close();
-                            }
-
-                        } catch (Exception e) {
-                            System.out.println(e.getMessage());
-                        }
-
-                    } else
-                        try {
-                            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                            if (!relType.elementAt(row).equals(objectBox.getItemAt(3))) {
-                                if (!headers[col].equals("Execute")) {
-                                    st.execute("GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";");
-                                    tablePrivileges.setValueAt(gr, row, col);
-                                    st.close();
-                                }
-                            } else if (headers[col].equals("Execute")) {
-                                st.execute("GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";");
-                                tablePrivileges.setValueAt(gr, row, col);
-                                st.close();
-                            }
-                        } catch (Exception e) {
-                            System.out.println(e.getMessage());
-                        }
+                    if (!relType.elementAt(row).equals(objectBox.getItemAt(3))) {
+                        grant(row,col);
+                    } else if (headers[col].equals("Execute")) {
+                        grant_execute(row);
+                    }
                     break;
                 case 2:
-                    try {
-                        Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                        if (!relType.elementAt(row).equals(objectBox.getItemAt(3))) {
-                            if (!headers[col].equals("Execute")) {
-                                st.execute("GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;");
-                                tablePrivileges.setValueAt(adm, row, col);
-                                st.close();
-                            }
-                        } else if (headers[col].equals("Execute")) {
-                            st.execute("GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;");
-                            tablePrivileges.setValueAt(adm, row, col);
-                            st.close();
-                        }
-                    } catch (Exception e) {
-                        System.out.println(e.getMessage());
+                    if (!relType.elementAt(row).equals(objectBox.getItemAt(3))) {
+                        grant_admin(row,col);
+                    } else if (headers[col].equals("Execute")) {
+                        grant_execute_admin(row);
                     }
                     break;
             }
     }
+
 
     void grant_on_role(int grantt, int row, int col, int row2) {
         if (row < tablePrivileges.getRowCount())

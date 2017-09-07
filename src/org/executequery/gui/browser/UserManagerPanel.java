@@ -565,11 +565,12 @@ public class UserManagerPanel extends JPanel {
         if (ind >= 0) {
             String desc="";
             try {
-                Statement state = con.createStatement();
+                Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 result = state.executeQuery("SELECT SEC$DESCRIPTION FROM SEC$USERS WHERE SEC$USER_NAME='"+
                         ((IFBUser) (users.values().toArray()[ind])).getUserName()+"'");
                 if(result.next())
                     desc=result.getString(1);
+                state.close();
             }
             catch (Exception e)
             {
@@ -617,8 +618,9 @@ public class UserManagerPanel extends JPanel {
             String role = (String) ((RoleTableModel) rolesTable.getModel()).getValueAt(ind, 0);
             if (GUIUtilities.displayConfirmDialog( bundleString("message.confirm-delete-role")+ role + "?") == 0)
                 try {
-                    Statement state = con.createStatement();
+                    Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                     state.execute("DROP ROLE " + role);
+                    state.close();
                     refresh();
                 } catch (Exception e) {
                     GUIUtilities.displayErrorMessage(e.getMessage());
@@ -633,14 +635,16 @@ public class UserManagerPanel extends JPanel {
         int col = membershipTable.getSelectedColumn();
         if (col >= 0) {
             try {
-                Statement st = con.createStatement();
+                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
+                st.close();
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
             try {
-                Statement st = con.createStatement();
+                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("GRANT " + role_names.elementAt(col) + " TO " + user_names.elementAt(row) + ";");
+                st.close();
                 create_membership();
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
@@ -654,14 +658,16 @@ public class UserManagerPanel extends JPanel {
         int col = membershipTable.getSelectedColumn();
         if (col >= 0) {
             try {
-                Statement st = con.createStatement();
+                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
+                st.close();
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
             try {
-                Statement st = con.createStatement();
+                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("GRANT " + role_names.elementAt(col) + " TO " + user_names.elementAt(row) + " WITH ADMIN OPTION;");
+                st.close();
                 create_membership();
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
@@ -676,8 +682,9 @@ public class UserManagerPanel extends JPanel {
         int col = membershipTable.getSelectedColumn();
         if (col >= 0) {
             try {
-                Statement st = con.createStatement();
+                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
+                st.close();
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
@@ -704,16 +711,17 @@ public class UserManagerPanel extends JPanel {
     void grant_with_admin(int row, int col) {
         if (col >= 0) {
             try {
-                Statement st = con.createStatement();
+                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
-
+                st.close();
 
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
             try {
-                Statement st = con.createStatement();
+                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("GRANT " + role_names.elementAt(col) + " TO " + user_names.elementAt(row) + " WITH ADMIN OPTION;");
+                st.close();
                 create_membership();
 
             } catch (Exception e) {
@@ -725,14 +733,16 @@ public class UserManagerPanel extends JPanel {
     void grant_to(int row, int col) {
         if (col >= 0) {
             try {
-                Statement st = con.createStatement();
+                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
+                st.close();
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
             try {
-                Statement st = con.createStatement();
+                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("GRANT " + role_names.elementAt(col) + " TO " + user_names.elementAt(row) + ";");
+                st.close();
                 create_membership();
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
@@ -743,8 +753,9 @@ public class UserManagerPanel extends JPanel {
     void revoke_grant(int row, int col) {
         if (col >= 0) {
             try {
-                Statement st = con.createStatement();
+                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
+                st.close();
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
@@ -797,7 +808,7 @@ public class UserManagerPanel extends JPanel {
             userManager.setPassword(listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
             getUsersPanel();
             try {
-                Statement state = con.createStatement();
+                Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 result = state.executeQuery("SELECT RDB$ROLE_NAME,RDB$OWNER_NAME FROM RDB$ROLES ORDER BY" +
                         " RDB$ROLE_NAME");
                 rolesTable.setModel(new RoleTableModel(
@@ -816,6 +827,7 @@ public class UserManagerPanel extends JPanel {
                     Object[] roleData = new Object[]{rol, result.getObject(2)};
                     ((RoleTableModel) rolesTable.getModel()).addRow(roleData);
                 }
+                state.close();
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.toString());
             }
@@ -840,7 +852,7 @@ public class UserManagerPanel extends JPanel {
 
         for (int i = 0; i < user_names.size(); i++) {
             try {
-                Statement st = con.createStatement();
+                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 ResultSet rs1 = st.executeQuery("select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION,rdb$Relation_name from RDB$USER_PRIVILEGES\n" +
                         "where (RDB$USER='" + user_names.elementAt(i) + "') and (rdb$object_type=8 or rdb$object_type=13)");
                 Vector<Object> roleData = new Vector<Object>();
@@ -857,6 +869,7 @@ public class UserManagerPanel extends JPanel {
                         roleData.set(ind, adm);
 
                 }
+                st.close();
                 ((RoleTableModel) membershipTable.getModel()).addRow(roleData);
 
             } catch (Exception e) {
@@ -910,8 +923,9 @@ public class UserManagerPanel extends JPanel {
                 {
                     try {
                         String query="COMMENT ON USER "+userAdd.getUserName()+ " is '"+description+"'";
-                        Statement st = con.createStatement();
+                        Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                         st.executeQuery(query);
+                        st.close();
                     }
                     catch (Exception e)
                     {
@@ -928,9 +942,10 @@ public class UserManagerPanel extends JPanel {
 
     public void addRole(String role) {
         try {
-            Statement state = con.createStatement();
+            Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             if (!state.execute("CREATE ROLE " + role))
                 GUIUtilities.displayInformationMessage("Succes");
+            state.close();
             refresh();
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
@@ -958,8 +973,9 @@ public class UserManagerPanel extends JPanel {
                 {
                     try {
                         String query="COMMENT ON USER "+userAdd.getUserName()+ " is '"+description+"'";
-                        Statement st = con.createStatement();
+                        Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                         st.executeQuery(query);
+                        st.close();
                     }
                     catch (Exception e)
                     {

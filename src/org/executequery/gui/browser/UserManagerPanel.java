@@ -672,22 +672,10 @@ public class UserManagerPanel extends JPanel {
         int row = membershipTable.getSelectedRow();
         int col = membershipTable.getSelectedColumn();
         if(enableElements)if (col >= 0) {
-            try {
-                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
-                st.close();
-            } catch (Exception e) {
-                GUIUtilities.displayErrorMessage(e.getMessage());
+            if (((Icon) membershipTable.getValueAt(row, col)).equals(adm)) {
+                revoke_grant(row, col);
             }
-            try {
-                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                st.execute("GRANT " + role_names.elementAt(col) + " TO " + user_names.elementAt(row) + ";");
-                st.close();
-                act=Action.GET_MEMBERSHIP;
-                execute_thread();
-            } catch (Exception e) {
-                GUIUtilities.displayErrorMessage(e.getMessage());
-            }
+            grant_to(row,col);
         }
     }
 
@@ -696,22 +684,8 @@ public class UserManagerPanel extends JPanel {
         int row = membershipTable.getSelectedRow();
         int col = membershipTable.getSelectedColumn();
         if(enableElements)if (col >= 0) {
-            try {
-                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
-                st.close();
-            } catch (Exception e) {
-                GUIUtilities.displayErrorMessage(e.getMessage());
-            }
-            try {
-                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                st.execute("GRANT " + role_names.elementAt(col) + " TO " + user_names.elementAt(row) + " WITH ADMIN OPTION;");
-                st.close();
-                act=Action.GET_MEMBERSHIP;
-                execute_thread();
-            } catch (Exception e) {
-                GUIUtilities.displayErrorMessage(e.getMessage());
-            }
+
+            grant_with_admin(row,col);
         }
 
     }
@@ -722,15 +696,7 @@ public class UserManagerPanel extends JPanel {
         int col = membershipTable.getSelectedColumn();
         if (col >= 0)
         if (enableElements){
-            try {
-                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
-                st.close();
-            } catch (Exception e) {
-                GUIUtilities.displayErrorMessage(e.getMessage());
-            }
-            act=Action.GET_MEMBERSHIP;
-            execute_thread();
+            revoke_grant(row,col);
         }
     }
 
@@ -775,7 +741,7 @@ public class UserManagerPanel extends JPanel {
         if (col >= 0) {
             try {
                 Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                st.execute("GRANT " + role_names.elementAt(col) + " TO " + user_names.elementAt(row) + " WITH ADMIN OPTION;");
+                st.execute("GRANT \"" + role_names.elementAt(col) + "\" TO \"" + user_names.elementAt(row) + "\" WITH ADMIN OPTION;");
                 st.close();
                 act=Action.GET_MEMBERSHIP;
                 execute_thread();
@@ -797,7 +763,8 @@ public class UserManagerPanel extends JPanel {
             }*/
             try {
                 Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                st.execute("GRANT " + role_names.elementAt(col) + " TO " + user_names.elementAt(row) + ";");
+                String query="GRANT \"" + role_names.elementAt(col) + "\" TO \"" + user_names.elementAt(row) + "\";";
+                st.execute(query);
                 st.close();
                 act=Action.GET_MEMBERSHIP;
                 execute_thread();
@@ -811,7 +778,7 @@ public class UserManagerPanel extends JPanel {
         if (col >= 0) {
             try {
                 Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
+                st.execute("REVOKE \"" + role_names.elementAt(col) + "\" FROM \"" + user_names.elementAt(row) + "\";");
                 st.close();
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());

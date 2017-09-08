@@ -1401,7 +1401,7 @@ public class GrantManagerPanel extends JPanel {
                 String query="GRANT " + headers[col] + " ON \"" + relName.elementAt(row)
                         + "\" TO \"" + userList.getSelectedValue() + "\";";
                 st.execute(query);
-                tablePrivileges.setValueAt(no, row, col);
+                tablePrivileges.setValueAt(gr, row, col);
                 st.close();
             }
 

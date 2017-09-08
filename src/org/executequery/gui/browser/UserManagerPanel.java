@@ -715,6 +715,7 @@ public class UserManagerPanel extends JPanel {
             }
         }
     }
+
     void setEnableElements(boolean enable) {
         enableElements = enable;
         cancelButton.setVisible(!enable);
@@ -722,6 +723,7 @@ public class UserManagerPanel extends JPanel {
         if (enable)
             jProgressBar1.setValue(0);
     }
+
     public void run() {
         switch (act) {
             case REFRESH:
@@ -833,16 +835,14 @@ public class UserManagerPanel extends JPanel {
             userManager.setUser(listConnections.get(databaseBox.getSelectedIndex()).getUserName());
             userManager.setPassword(listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
             getUsersPanel();
-            update();
             get_roles();
-            update();
             create_membership();
         } else {
             getUsersPanel();
             membershipPanel.setVisible(false);
             rolesPanel.setVisible(false);
         }
-       update();
+        update();
         setEnableElements(true);
     }
     void get_roles()
@@ -886,8 +886,13 @@ public class UserManagerPanel extends JPanel {
                 new Object[][]{},
                 role_names.toArray()
         ));
+
+        update();
+
+        boolean first = true;
+
         jProgressBar1.setMaximum(user_names.size());
-        for (int i = 0; i < user_names.size()&&!enableElements; i++) {
+        for (int i = 0; i < user_names.size() && !enableElements; i++) {
             jProgressBar1.setValue(i);
             try {
                 Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
@@ -909,34 +914,34 @@ public class UserManagerPanel extends JPanel {
                 }
                 st.close();
                 ((RoleTableModel) membershipTable.getModel()).addRow(roleData);
-               // update();
 
+                // need update UI
+                if (first) {
+                    int sizer = 0;
+                    for (int j = 0; j < role_names.size(); j++) {
+                        int temper = role_names.elementAt(j).length() * 8;
+                        String s = role_names.elementAt(j);
+                        membershipTable.getColumn(s).setMinWidth(temper);
+                        sizer += temper;
+                    }
 
+                    JList rowHeader = new JList(user_names);
+                    rowHeader.setFixedCellWidth(150);
+                    rowHeader.setFixedCellHeight(membershipTable.getRowHeight());
+                    rowHeader.setCellRenderer(new RowHeaderRenderer(membershipTable));
+                    jScrollPane3.setRowHeaderView(rowHeader);
+                    int wid = jScrollPane3.getPreferredSize().width;
+                    if (sizer > wid)
+                        membershipTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+                    else
+                        membershipTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+                    first = false;
+                }
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
         }
-        int sizer = 0;
-        for (int i = 0; i < role_names.size(); i++) {
-            int temper = role_names.elementAt(i).length() * 8;
-            membershipTable.getColumn(role_names.elementAt(i)).setMinWidth(temper);
-            sizer += temper;
-        }
-
-        JList rowHeader = new JList(user_names);
-        rowHeader.setFixedCellWidth(150);
-        rowHeader.setFixedCellHeight(membershipTable.getRowHeight());
-        rowHeader.setCellRenderer(new RowHeaderRenderer(membershipTable));
-        jScrollPane3.setRowHeaderView(rowHeader);
-        int wid = jScrollPane3.getPreferredSize().width;
-        if (sizer > wid)
-            membershipTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        else
-            membershipTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-
     }
-
-
 
     private DatabaseDriverRepository driverRepository() {
         return (DatabaseDriverRepository) RepositoryCache.load(
@@ -1032,6 +1037,7 @@ public class UserManagerPanel extends JPanel {
             System.out.println(e.toString());
         }
     }
+
     void execute_thread() {
         if (enableElements) {
             setEnableElements(false);
@@ -1041,18 +1047,15 @@ public class UserManagerPanel extends JPanel {
         }
     }
 
-public String bundleString(String key)
-{
-    return Bundles.get(UserManagerPanel.class,key);
-}
-private String[] bundleStrings(String[] key)
-    {
+    public String bundleString(String key) {
+        return Bundles.get(UserManagerPanel.class,key);
+    }
+
+    private String[] bundleStrings(String[] key) {
         for(int i=0;i<key.length;i++)
             key[i]=bundleString(key[i]);
         return key;
     }
-
-
 }
 
 

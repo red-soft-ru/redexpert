@@ -671,7 +671,7 @@ public class UserManagerPanel extends JPanel {
         // TODO add your handling code here:
         int row = membershipTable.getSelectedRow();
         int col = membershipTable.getSelectedColumn();
-        if(!enableElements)if (col >= 0) {
+        if(enableElements)if (col >= 0) {
             try {
                 Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
@@ -683,7 +683,8 @@ public class UserManagerPanel extends JPanel {
                 Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("GRANT " + role_names.elementAt(col) + " TO " + user_names.elementAt(row) + ";");
                 st.close();
-                create_membership();
+                act=Action.GET_MEMBERSHIP;
+                execute_thread();
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
@@ -694,7 +695,7 @@ public class UserManagerPanel extends JPanel {
         // TODO add your handling code here:
         int row = membershipTable.getSelectedRow();
         int col = membershipTable.getSelectedColumn();
-        if(!enableElements)if (col >= 0) {
+        if(enableElements)if (col >= 0) {
             try {
                 Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
@@ -706,7 +707,8 @@ public class UserManagerPanel extends JPanel {
                 Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("GRANT " + role_names.elementAt(col) + " TO " + user_names.elementAt(row) + " WITH ADMIN OPTION;");
                 st.close();
-                create_membership();
+                act=Action.GET_MEMBERSHIP;
+                execute_thread();
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
@@ -719,7 +721,7 @@ public class UserManagerPanel extends JPanel {
         int row = membershipTable.getSelectedRow();
         int col = membershipTable.getSelectedColumn();
         if (col >= 0)
-        if (!enableElements){
+        if (enableElements){
             try {
                 Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
@@ -727,7 +729,8 @@ public class UserManagerPanel extends JPanel {
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
-            create_membership();
+            act=Action.GET_MEMBERSHIP;
+            execute_thread();
         }
     }
 
@@ -735,7 +738,7 @@ public class UserManagerPanel extends JPanel {
         if (evt.getClickCount() > 1) {
             int row = membershipTable.getSelectedRow();
             int col = membershipTable.getSelectedColumn();
-            if(!enableElements)if (col >= 0) {
+            if(enableElements)if (col >= 0) {
                 if (((Icon) membershipTable.getValueAt(row, col)).equals(gr)) {
                     grant_with_admin(row, col);
                 } else if (((Icon) membershipTable.getValueAt(row, col)).equals(adm)) {
@@ -759,6 +762,11 @@ public class UserManagerPanel extends JPanel {
                 if (!enableElements)
                 refresh();
                 break;
+            case GET_MEMBERSHIP:
+                if (!enableElements) {
+                    create_membership();
+                    setEnableElements(true);
+                }
             default:
                 break;
         }
@@ -767,18 +775,10 @@ public class UserManagerPanel extends JPanel {
         if (col >= 0) {
             try {
                 Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
-                st.close();
-
-            } catch (Exception e) {
-                GUIUtilities.displayErrorMessage(e.getMessage());
-            }
-            try {
-                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("GRANT " + role_names.elementAt(col) + " TO " + user_names.elementAt(row) + " WITH ADMIN OPTION;");
                 st.close();
-                create_membership();
-
+                act=Action.GET_MEMBERSHIP;
+                execute_thread();
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
@@ -787,18 +787,20 @@ public class UserManagerPanel extends JPanel {
 
     void grant_to(int row, int col) {
         if (col >= 0) {
-            try {
+            /*try {
                 Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                st.execute("REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";");
+                String query="REVOKE " + role_names.elementAt(col) + " FROM " + user_names.elementAt(row) + ";";
+                st.execute(query);
                 st.close();
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
-            }
+            }*/
             try {
                 Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 st.execute("GRANT " + role_names.elementAt(col) + " TO " + user_names.elementAt(row) + ";");
                 st.close();
-                create_membership();
+                act=Action.GET_MEMBERSHIP;
+                execute_thread();
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
@@ -814,7 +816,8 @@ public class UserManagerPanel extends JPanel {
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
-            create_membership();
+            act=Action.GET_MEMBERSHIP;
+            execute_thread();
         }
     }
 
@@ -836,6 +839,7 @@ public class UserManagerPanel extends JPanel {
                 user_names.add(u.getUserName().trim());
                 Object[] rowData = new Object[]{u.getUserName(), u.getFirstName(), u.getMiddleName(), u.getLastName()};
                 ((RoleTableModel) usersTable.getModel()).addRow(rowData);
+                //update();
             }
         } catch (Exception e) {
             System.out.println(e.toString());
@@ -862,18 +866,16 @@ public class UserManagerPanel extends JPanel {
             userManager.setUser(listConnections.get(databaseBox.getSelectedIndex()).getUserName());
             userManager.setPassword(listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
             getUsersPanel();
+            update();
             get_roles();
+            update();
             create_membership();
         } else {
             getUsersPanel();
             membershipPanel.setVisible(false);
             rolesPanel.setVisible(false);
         }
-        int ind=jTabbedPane1.getSelectedIndex();
-        jTabbedPane1.setSelectedIndex(1);
-        jTabbedPane1.setSelectedIndex(2);
-        jTabbedPane1.setSelectedIndex(0);
-        jTabbedPane1.setSelectedIndex(ind);
+       update();
         setEnableElements(true);
     }
     void get_roles()
@@ -897,11 +899,20 @@ public class UserManagerPanel extends JPanel {
                 user_names.add(rol);
                 Object[] roleData = new Object[]{rol, result.getObject(2)};
                 ((RoleTableModel) rolesTable.getModel()).addRow(roleData);
+                //update();
             }
             state.close();
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.toString());
         }
+    }
+    void update()
+    {
+        int ind=jTabbedPane1.getSelectedIndex();
+        jTabbedPane1.setSelectedIndex(1);
+        jTabbedPane1.setSelectedIndex(2);
+        jTabbedPane1.setSelectedIndex(0);
+        jTabbedPane1.setSelectedIndex(ind);
     }
     void create_membership() {
         membershipTable.setModel(new RoleTableModel(
@@ -931,6 +942,8 @@ public class UserManagerPanel extends JPanel {
                 }
                 st.close();
                 ((RoleTableModel) membershipTable.getModel()).addRow(roleData);
+               // update();
+
 
             } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());

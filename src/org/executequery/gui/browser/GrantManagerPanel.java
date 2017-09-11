@@ -11,6 +11,8 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.gui.browser.managment.ThreadOfGrantManager;
@@ -65,7 +67,7 @@ public class GrantManagerPanel extends JPanel {
 
     }
 
-    public static final String TITLE = "Grant manager";
+    public static final String TITLE = Bundles.get(GrantManagerPanel.class,"GrantManager");
     public static final String FRAME_ICON = "grant_manager_16.png";
     List<DatabaseConnection> listConnections;
     Connection con;
@@ -77,13 +79,14 @@ public class GrantManagerPanel extends JPanel {
     Vector<Boolean> relSystem;
     Vector<Boolean> relGranted;
     String grants = "SUDIXRGA";
-    String[] headers = {"Object", "Select", "Update", "Delete", "Insert", "Execute", "References", "Usage"};
-    String[] headers2 = {"Field", "Type", "Update", "References"};
+    String[] headers = {bundleString("Object"), "Select", "Update", "Delete", "Insert", "Execute", "References", "Usage"};
+    String[] headers2 = {bundleString("Field"),bundleString( "Type"), "Update", "References"};
     Icon gr, no, adm;
     Action act;
     Vector<String> fieldName;
     Vector<String> fieldType;
     int obj_index;
+    StatementExecutor querySender;
     int col_execute=5;
     int col_usage=7;
 
@@ -180,10 +183,10 @@ public class GrantManagerPanel extends JPanel {
                         .addComponent(refreshButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        jLabel1.setText("Priveleges for");
+        jLabel1.setText(bundleString("PrivelegesFor"));
         jLabel1.setOpaque(true);
 
-        userBox.setModel(new DefaultComboBoxModel<>(new String[]{"Users", "Roles", "Views", "Triggers", "Procedures"}));
+        userBox.setModel(new DefaultComboBoxModel<>(bundleStrings(new String[]{"Users", "Roles", "Views", "Triggers", "Procedures"})));
         userBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 userBoxActionPerformed(evt);
@@ -215,7 +218,7 @@ public class GrantManagerPanel extends JPanel {
                                 .addComponent(jScrollPane1))
         );
 
-        jLabel2.setText("Grants on");
+        jLabel2.setText(bundleString("GrantsOn"));
         jLabel2.setOpaque(true);
 
         revoke_v.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_vertical.png"))); // NOI18N
@@ -281,14 +284,14 @@ public class GrantManagerPanel extends JPanel {
             }
         });
 
-        objectBox.setModel(new DefaultComboBoxModel<>(new String[]{"All objects", "Tables", "Views", "Procedures"}));
+        objectBox.setModel(new DefaultComboBoxModel<>(bundleStrings(new String[]{"AllObjects", "Tables", "Views", "Procedures"})));
         objectBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 objectBoxActionPerformed(evt);
             }
         });
 
-        filterBox.setModel(new DefaultComboBoxModel<>(new String[]{"Display all", "Granted only", "Non-granted only"}));
+        filterBox.setModel(new DefaultComboBoxModel<>(bundleStrings(new String[]{"DisplayAll", "GrantedOnly", "Non-grantedOnly"})));
         filterBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filterBoxActionPerformed(evt);
@@ -301,14 +304,14 @@ public class GrantManagerPanel extends JPanel {
             }
         });
 
-        jCheckBox1.setText("Invert filter");
+        jCheckBox1.setText(bundleString("InvertFilter"));
         jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jCheckBox1ActionPerformed(evt);
             }
         });
 
-        systemCheck.setText("Show system tables");
+        systemCheck.setText(bundleString("ShowSystemTables"));
         systemCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 systemCheckActionPerformed(evt);
@@ -330,7 +333,7 @@ public class GrantManagerPanel extends JPanel {
         });
         jScrollPane2.setViewportView(tablePrivileges);
 
-        labelTable.setText("Columns of ");
+        labelTable.setText(bundleString("ColumnsOf"));
         labelTable.setOpaque(true);
 
         revoke_v1.setIcon(new ImageIcon(getClass().getResource("/org/executequery/icons/no_grant_vertical.png"))); // NOI18N
@@ -427,7 +430,7 @@ public class GrantManagerPanel extends JPanel {
                                 .addComponent(jScrollPane3, GroupLayout.PREFERRED_SIZE, 114, GroupLayout.PREFERRED_SIZE))
         );
 
-        cancelButton.setText("Cancel fill");
+        cancelButton.setText(bundleString("CancelFill"));
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -546,8 +549,10 @@ public class GrantManagerPanel extends JPanel {
 
     private void databaseBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_databaseBoxActionPerformed
         // TODO add your handling code here:
-        if (enabled_dBox)
+        if (enabled_dBox) {
+            querySender = new DefaultStatementExecutor(listConnections.get(databaseBox.getSelectedIndex()), true);
             con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
+        }
     }//GEN-LAST:event_databaseBoxActionPerformed
 
     private void userBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userBoxActionPerformed
@@ -885,67 +890,45 @@ public class GrantManagerPanel extends JPanel {
     }
 
     void get_roles() {
-        try {
-            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            ResultSet result = st.executeQuery("SELECT RDB$ROLE_NAME FROM RDB$ROLES order by 1");
-            while (result.next()) {
-                String role = result.getString(1);
-                userlistModel.addElement(role);
 
-
-            }
-            st.close();
-            int i = 0;
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+            //Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            String query="SELECT RDB$ROLE_NAME FROM RDB$ROLES order by 1";
+            get_user_list(query);
     }
 
     void get_views_for_userlist() {
-        try {
-            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+
+            //Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             String query = "Select RDB$RELATION_NAME from RDB$RELATIONS" +
                     " WHERE RDB$RELATION_TYPE = 1 order by 1";
-            ResultSet result = st.executeQuery(query);
+            get_user_list(query);
+    }
+
+    void get_user_list(String query) {
+        try {
+            //Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+
+            ResultSet result = querySender.execute(query,true).getResultSet();
             while (result.next()) {
                 String role = result.getString(1);
                 userlistModel.addElement(role);
             }
-            st.close();
+            querySender.releaseResources();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
-
     void get_triggers_for_userlist() {
-        try {
-            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+
             String query = "Select RDB$TRIGGER_NAME from RDB$TRIGGERS order by 1";
-            ResultSet result = st.executeQuery(query);
-            while (result.next()) {
-                String role = result.getString(1);
-                userlistModel.addElement(role);
-            }
-            st.close();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+            get_user_list(query);
     }
 
     void get_procedures_for_userlist() {
-        try {
-            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            String query = "Select RDB$PROCEDURE_NAME from RDB$PROCEDURES order by 1";
-            ;
-            ResultSet result = st.executeQuery(query);
-            while (result.next()) {
-                String role = result.getString(1);
-                userlistModel.addElement(role);
-            }
-            st.close();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+
+        //Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+        String query = "Select RDB$PROCEDURE_NAME from RDB$PROCEDURES order by 1";
+        get_user_list(query);
     }
 
     void load_table() {
@@ -965,11 +948,11 @@ public class GrantManagerPanel extends JPanel {
         for (int i = 0, g = 0; i < relName.size() && !enableElements; g++, i++) {
             jProgressBar1.setValue(g);
             try {
-                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                //Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
                         "where (rdb$Relation_name='" + relName.elementAt(i) + "') and (rdb$user='"
                         + userList.getSelectedValue().trim() + "') and (RDB$FIELD_NAME IS NULL)";
-                ResultSet rs1 = st.executeQuery(s);
+                ResultSet rs1 = querySender.execute(s,true).getResultSet();
                 Vector<Object> roleData = new Vector<Object>();
                 Object[] obj = {relName.elementAt(i), Color.BLACK};
                 if (relSystem.elementAt(i))
@@ -1005,10 +988,15 @@ public class GrantManagerPanel extends JPanel {
                 }
                 if (adding)
                     ((RoleTableModel) tablePrivileges.getModel()).addRow(roleData);
-                st.close();
-            } catch (Exception e) {
+                querySender.releaseResources();
+            }
+            catch (NullPointerException e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
+            catch (Exception e) {
+                GUIUtilities.displayErrorMessage(e.getMessage());
+            }
+
             if(GUIUtilities.getCentralPane(TITLE)==null)
                 setEnableElements(true);
         }
@@ -1022,29 +1010,29 @@ public class GrantManagerPanel extends JPanel {
         fieldName = new Vector<>();
         fieldType = new Vector<>();
         try {
-            Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            //Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             String query = "Select RF.RDB$FIELD_NAME,F.RDB$FIELD_TYPE\n" +
                     "from RDB$RELATION_FIELDS AS RF left join RDB$FIELDS AS F\n" +
                     "ON F.RDB$FIELD_NAME=RF.RDB$FIELD_SOURCE\n" +
                     "WHERE RF.RDB$RELATION_NAME='" + rname + "'";
-            ResultSet rs = state.executeQuery(query);
+            ResultSet rs = querySender.execute(query,true).getResultSet();
             while (rs.next()) {
                 String name = rs.getString(1).trim();
                 String type = getTypeField(rs.getInt(2));
                 fieldName.addElement(name);
                 fieldType.addElement(type);
             }
-            state.close();
+            querySender.releaseResources();
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
         }
         for (int i = 0; i < fieldName.size(); i++)
             try {
-                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                //Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
                         "where (rdb$Relation_name='" + rname + "') and (rdb$user='" + userList.getSelectedValue().trim() + "') and\n" +
                         "(RDB$FIELD_NAME='" + fieldName.elementAt(i) + "')";
-                ResultSet rs1 = st.executeQuery(s);
+                ResultSet rs1 = querySender.execute(s,true).getResultSet();
                 Vector<Object> roleData = new Vector<Object>();
                 roleData.add(fieldName.elementAt(i));
                 roleData.add(fieldType.elementAt(i));
@@ -1066,7 +1054,7 @@ public class GrantManagerPanel extends JPanel {
                             ((RoleTableModel) jTable2.getModel()).setValueAt(adm, i, 3);
 
                 }
-                st.close();
+                querySender.releaseResources();
             } catch (Exception e) {
                 Log.error(e.getMessage());
             }
@@ -1108,8 +1096,8 @@ public class GrantManagerPanel extends JPanel {
 
     void add_relations(String query, String type) {
         try {
-            Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            ResultSet rs = state.executeQuery(query);
+            //Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            ResultSet rs = querySender.execute(query,true).getResultSet();
             Vector<String> rname = new Vector<>();
             Vector<Boolean> sflag = new Vector<>();
             while (rs.next()) {
@@ -1118,7 +1106,7 @@ public class GrantManagerPanel extends JPanel {
                 rname.addElement(name);
                 sflag.addElement(system_flag);
             }
-            state.close();
+            querySender.releaseResources();
             for (int i = 0; i < rname.size(); i++) {
                 String name = rname.elementAt(i);
                 boolean system_flag = sflag.elementAt(i);
@@ -1260,172 +1248,138 @@ public class GrantManagerPanel extends JPanel {
                 break;
         }
     }
-    void revoke_execute(int row)
+    void grant_query(String query,Icon icon,int row, int col,JTable t)
     {
         try {
-            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            String query="REVOKE EXECUTE ON PROCEDURE \"" + relName.elementAt(row) + "\" FROM \""
-                    + userList.getSelectedValue() + "\";";
-            st.execute(query);
-            tablePrivileges.setValueAt(no, row, col_execute);
-            st.close();
+            //Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            querySender.execute(query,true);
+            t.setValueAt(icon, row, col);
+            querySender.releaseResources();
         }
         catch(Exception e)
         {
             Log.error(e.getMessage());
         }
+    }
+
+    void revoke_execute(int row)
+    {
+
+            //Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            String query="REVOKE EXECUTE ON PROCEDURE \"" + relName.elementAt(row) + "\" FROM \""
+                    + userList.getSelectedValue() + "\";";
+            grant_query(query,no,row,col_execute,tablePrivileges);
+
     }
     void grant_execute(int row)
     {
-        try {
-            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+
+            //Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             String query="GRANT EXECUTE ON PROCEDURE \"" +
                     relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";";
-            st.execute(query);
-            tablePrivileges.setValueAt(gr, row, col_execute);
-            st.close();
-        }
-        catch(Exception e)
-        {
-            Log.error(e.getMessage());
-        }
+            grant_query(query,gr,row,col_execute,tablePrivileges);
+
     }
     void grant_execute_admin(int row)
     {
-        try {
-            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+        //Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             String query="GRANT EXECUTE ON PROCEDURE \"" + relName.elementAt(row) +
                     "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;";
-            st.execute(query);
-            tablePrivileges.setValueAt(adm, row, col_execute);
-            st.close();
+        grant_query(query,adm,row,col_execute,tablePrivileges);
+
+    }
+    void grant_all_query(String query,Icon icon,int row,int grantt)
+    {
+        try {
+            //Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+
+            querySender.execute(query,true);
+            for (int i=1;i<headers.length;i++)
+                if(i!=col_execute&&i!=col_usage)
+                    tablePrivileges.setValueAt(icon, row, i);
+            querySender.releaseResources();
         }
         catch(Exception e)
         {
             Log.error(e.getMessage());
+            for (int i= 1;i<headers.length;i++)
+            {
+                grant_case(grantt,row,i);
+            }
+
+        }
+    }
+    void grant_case(int grantt,int row,int col)
+    {
+        switch (grantt)
+        {
+            case 0:revoke(row,col);
+                break;
+            case 1:grant(row,col);
+                break;
+            case 2:grant_admin(row,col);
+                break;
         }
     }
     void revoke_all(int row)
     {
-        try {
-            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            String query="REVOKE ALL ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";";
-            st.execute(query);
-            for (int i=1;i<headers.length;i++)
-                if(i!=col_execute&&i!=col_usage)
-                    tablePrivileges.setValueAt(no, row, i);
-            st.close();
-        }
-        catch(Exception e)
-        {
-            Log.error(e.getMessage());
-            for (int i= 1;i<headers.length;i++)
-            {
-                revoke(row,i);
-            }
 
-        }
+            String query="REVOKE ALL ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";";
+           grant_all_query(query,no,row,0);
+
     }
     void grant_all(int row)
     {
-        try {
-            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+        //Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             String query="GRANT ALL ON \"" + relName.elementAt(row)
                     + "\" TO \"" + userList.getSelectedValue() + "\";";
-            st.execute(query);
-            for (int i=1;i<headers.length;i++)
-                if(i!=col_execute&&i!=col_usage)
-                    tablePrivileges.setValueAt(gr, row, i);
-            st.close();
-        }
-        catch(Exception e)
-        {
-            Log.error(e.getMessage());
-            for (int i= 1;i<headers.length;i++)
-            {
-                grant(row,i);
-            }
-
-        }
+            grant_all_query(query,gr,row,1);
     }
 
     void grant_all_admin(int row)
     {
-        try {
-            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+        //Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
             String query="GRANT ALL ON \"" + relName.elementAt(row)
                     + "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;";
-            st.execute(query);
-            for (int i=1;i<headers.length;i++)
-                if(i!=col_execute&&i!=col_usage)
-                    tablePrivileges.setValueAt(adm, row, i);
-            st.close();
-        }
-        catch(Exception e)
-        {
-            Log.error(e.getMessage());
-            for (int i= 1;i<headers.length;i++)
-            {
-                grant_admin(row,i);
-            }
-
-        }
+        grant_all_query(query,adm,row,2);
     }
 
 
     void revoke(int row,int col)
     {
-        try {
 
             if (col>0&&col<headers.length&&col!=col_execute&&col!=col_usage)
             {
-                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                //Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 String query="REVOKE " + headers[col] + " ON \"" + relName.elementAt(row)
                         + "\" FROM \"" + userList.getSelectedValue() + "\";";
-                st.execute(query);
-                tablePrivileges.setValueAt(no, row, col);
-                st.close();
+                grant_query(query,no,row,col,tablePrivileges);
             }
 
-        } catch (Exception e) {
-            Log.error(e.getMessage());
-        }
     }
     void grant(int row,int col)
     {
-        try {
 
-            if (col>0&&col<headers.length&&col!=col_execute&&col!=col_usage)
-            {
-                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                String query="GRANT " + headers[col] + " ON \"" + relName.elementAt(row)
+
+            if (col>0&&col<headers.length&&col!=col_execute&&col!=col_usage) {
+               // Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                String query = "GRANT " + headers[col] + " ON \"" + relName.elementAt(row)
                         + "\" TO \"" + userList.getSelectedValue() + "\";";
-                st.execute(query);
-                tablePrivileges.setValueAt(gr, row, col);
-                st.close();
+                grant_query(query, gr, row, col,tablePrivileges);
             }
-
-        } catch (Exception e) {
-            Log.error(e.getMessage());
-        }
     }
     void grant_admin(int row,int col)
     {
-        try {
 
             if (col>0&&col<headers.length&&col!=col_execute&&col!=col_usage)
             {
-                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                //Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
                 String query="GRANT " + headers[col] + " ON \"" + relName.elementAt(row)
                         + "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;";
-                st.execute(query);
-                tablePrivileges.setValueAt(adm, row, col);
-                st.close();
+                grant_query(query,adm,row,col,tablePrivileges);
             }
 
-        } catch (Exception e) {
-            Log.error(e.getMessage());
-        }
+
     }
     void grant_all_on_role(int grantt, int row) {
         if (row < tablePrivileges.getRowCount())
@@ -1499,62 +1453,38 @@ public class GrantManagerPanel extends JPanel {
 
 
     void grant_on_role(int grantt, int row, int col, int row2) {
+        String query;
         if (row < tablePrivileges.getRowCount())
             switch (grantt) {
                 case 0:
-                    try {
-                        Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                        st.execute("REVOKE " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
-                                + " ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";");
-                        jTable2.setValueAt(no, row2, col);
-                        st.close();
-                    } catch (Exception e) {
-                        System.out.println(e.getMessage());
-                    }
+
+                        //Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                        query="REVOKE " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
+                                + " ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";";
+                        grant_query(query,no,row2,col,jTable2);
+
                     break;
                 case 1:
                     if (((Icon) jTable2.getValueAt(row2, col)).equals(adm)) {
-                        try {
-                            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                            st.execute("REVOKE " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
-                                    + " ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";");
-                            jTable2.setValueAt(no, row2, col);
-                            st.close();
-                        } catch (Exception e) {
-                            System.out.println(e.getMessage());
-                        }
+                        query = "REVOKE " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
+                                + " ON \"" + relName.elementAt(row) + "\" FROM \"" + userList.getSelectedValue() + "\";";
+                        grant_query(query, no, row2, col, jTable2);
 
-                        try {
-                            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                            st.execute("GRANT " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
-                                    + " ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";");
-                            jTable2.setValueAt(gr, row2, col);
-                            st.close();
-                        } catch (Exception e) {
-                            System.out.println(e.getMessage());
-                        }
+                    }
 
-                    } else
-                        try {
-                            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                            st.execute("GRANT " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
-                                    + " ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";");
-                            jTable2.setValueAt(gr, row2, col);
-                            st.close();
-                        } catch (Exception e) {
-                            System.out.println(e.getMessage());
-                        }
+
+                            //Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                            query="GRANT " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
+                                    + " ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\";";
+                            grant_query(query, gr, row2, col, jTable2);
+
                     break;
                 case 2:
-                    try {
-                        Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                        st.execute("GRANT " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
-                                + " ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;");
-                        jTable2.setValueAt(adm, row2, col);
-                        st.close();
-                    } catch (Exception e) {
-                        System.out.println(e.getMessage());
-                    }
+
+                       // Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                        query="GRANT " + headers2[col] + " (" + fieldName.elementAt(row2) + ")"
+                                + " ON \"" + relName.elementAt(row) + "\" TO \"" + userList.getSelectedValue() + "\" WITH GRANT OPTION;";
+                        grant_query(query, adm, row2, col, jTable2);
                     break;
             }
     }
@@ -1568,30 +1498,16 @@ public class GrantManagerPanel extends JPanel {
         }
     }
 
-    boolean isGranted(String name, String user) {
-        try {
-            Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
-                    "where (rdb$Relation_name='" + name + "') and (rdb$user='" + user + "')";
-            ResultSet rs1 = st.executeQuery(s);
-            boolean isGranted = rs1.next();
-            st.close();
-            return isGranted;
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
 
-    }
 
     void setVisiblePanelOfTable(boolean flag) {
         if (flag) {
             int row = tablePrivileges.getSelectedRow();
-            labelTable.setText("Columns of [" + relName.elementAt(row) + "]");
+            labelTable.setText(bundleString("ColumnsOf")+"[" + relName.elementAt(row) + "]");
             load_table2(relName.elementAt(row));
             obj_index = row;
         } else {
-            labelTable.setText("Columns of ");
+            labelTable.setText(bundleString("ColumnsOf"));
             jTable2.setModel(new RoleTableModel(headers2, 0));
         }
 
@@ -1629,6 +1545,16 @@ public class GrantManagerPanel extends JPanel {
     public String bundleString(String key)
     {
         return Bundles.get(GrantManagerPanel.class,key);
+    }
+
+    public String[] bundleStrings(String[] key)
+    {
+        for(int i=0;i<key.length;i++)
+        {
+            if (key.length>0)
+            key[i]=bundleString(key[i]);
+        }
+        return key;
     }
 
 

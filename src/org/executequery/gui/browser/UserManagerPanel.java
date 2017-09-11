@@ -914,6 +914,7 @@ public class UserManagerPanel extends JPanel {
                 }
                 st.close();
                 ((RoleTableModel) membershipTable.getModel()).addRow(roleData);
+                isClose();
 
                 // need update UI
                 if (first) {
@@ -1055,6 +1056,14 @@ public class UserManagerPanel extends JPanel {
         for(int i=0;i<key.length;i++)
             key[i]=bundleString(key[i]);
         return key;
+    }
+    void isClose()
+    {
+        if (GUIUtilities.getCentralPane(TITLE) == null)
+                setEnableElements(true);
+
+
+
     }
 }
 

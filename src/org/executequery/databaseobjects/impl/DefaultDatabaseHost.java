@@ -119,7 +119,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     public void close() {
         if (connection != null) {
             databaseMetaData = null;
-            ConnectionManager.close(getDatabaseConnection(), connection);
+            //ConnectionManager.close(getDatabaseConnection(), connection);
             connection = null;
         }
     }

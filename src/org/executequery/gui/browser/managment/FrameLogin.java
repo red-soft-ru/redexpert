@@ -19,6 +19,7 @@ public class FrameLogin extends JFrame {
      */
     public FrameLogin(UserManagerPanel u) {
         initComponents();
+        setResizable(false);
         ump=u;
     }
     UserManagerPanel ump;

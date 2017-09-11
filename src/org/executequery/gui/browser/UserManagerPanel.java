@@ -31,6 +31,7 @@ import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -113,6 +114,7 @@ public class UserManagerPanel extends JPanel {
     Vector<String> role_names;
     public IFBUser userAdd;
     ResultSet result;
+    int version;
     DatabaseConnection dbc;
     enum Action {
         REFRESH,
@@ -434,6 +436,7 @@ public class UserManagerPanel extends JPanel {
 
     void init_user_manager() {
         if(con==null) {
+            version=2;
             DatabaseDriver dd = null;
             List<DatabaseDriver> dds = driverRepository().findAll();
             for (DatabaseDriver d : dds) {
@@ -514,6 +517,22 @@ public class UserManagerPanel extends JPanel {
             URL[] urls = new URL[0];
             Class clazzdb = null;
             Object odb = null;
+            DatabaseHost host= new DefaultDatabaseHost(dbc);
+            String vers=host.getDatabaseProductVersion();
+            version=2;
+            if(vers!=null) {
+                int number = 0;
+                for (int i = 0; i < vers.length(); i++) {
+                    if (Character.isDigit(vers.charAt(i))) {
+                        number = Character.getNumericValue(vers.charAt(i));
+                        break;
+                    }
+                }
+                if (number >= 3)
+                    version=3;
+
+            }
+
             try {
                 urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
                 ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
@@ -535,11 +554,17 @@ public class UserManagerPanel extends JPanel {
             urls = new URL[0];
             clazzdb = null;
             odb = null;
+            String loadedClass;
+            if(version==3)
+                loadedClass="biz.redsoft.FB3UserManagerImpl";
+            else loadedClass="biz.redsoft.FBUserManagerImpl";
             try {
                 urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
                 ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
-                clazzdb = cl.loadClass("biz.redsoft.FBUserManagerImpl");
-                odb = clazzdb.newInstance();
+                clazzdb = cl.loadClass(loadedClass);
+                if(version==3)
+                odb = clazzdb.getConstructor(Connection.class).newInstance(con);
+                else  odb = clazzdb.newInstance();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             } catch (IllegalAccessException e) {
@@ -547,6 +572,10 @@ public class UserManagerPanel extends JPanel {
             } catch (InstantiationException e) {
                 e.printStackTrace();
             } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
                 e.printStackTrace();
             }
             this.userManager = (IFBUserManager)odb;
@@ -590,7 +619,7 @@ public class UserManagerPanel extends JPanel {
     void addUserButtonActionPerformed(java.awt.event.ActionEvent evt) {
         GUIUtilities.addCentralPane(bundleString("AddUser"),
                 UserManagerPanel.FRAME_ICON,
-                new WindowAddUser(this),
+                new WindowAddUser(this,version),
                 null,
                 true);
     }
@@ -598,24 +627,9 @@ public class UserManagerPanel extends JPanel {
     void editUserButtonActionPerformed(java.awt.event.ActionEvent evt) {
         int ind = usersTable.getSelectedRow();
         if (ind >= 0) {
-            String desc="";
-            try {
-                Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                result = state.executeQuery("SELECT SEC$DESCRIPTION FROM SEC$USERS WHERE SEC$USER_NAME='"+
-                        ((IFBUser) (users.values().toArray()[ind])).getUserName()+"'");
-                if(result.next())
-                    desc=result.getString(1);
-                state.close();
-            }
-            catch (Exception e)
-            {
-                Log.error(e.getMessage());
-            }
-            if (desc==null)
-                desc="";
             GUIUtilities.addCentralPane(bundleString("EditUser"),
                     UserManagerPanel.FRAME_ICON,
-                    new WindowAddUser(this, ((IFBUser) (users.values().toArray()[ind])),desc),
+                    new WindowAddUser(this, ((IFBUser) (users.values().toArray()[ind])),version),
                     null,
                     true);
         }
@@ -949,36 +963,9 @@ public class UserManagerPanel extends JPanel {
                 DatabaseDriverRepository.REPOSITORY_ID);
     }
 
-    public void addUser(String description) {
+    public void addUser() {
         try {
             userManager.add(userAdd);
-            DatabaseHost host= new DefaultDatabaseHost(dbc);
-            String version=host.getDatabaseProductName();
-            if(version!=null)
-            {
-                int number=0;
-                for (int i=0;i<version.length();i++)
-                {
-                    if (Character.isDigit(version.charAt(i)))
-                    {
-                        number=Character.getNumericValue(version.charAt(i));
-                        break;
-                    }
-                }
-                if (number>=3)
-                {
-                    try {
-                        String query="COMMENT ON USER "+userAdd.getUserName()+ " is '"+description+"'";
-                        Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                        st.executeQuery(query);
-                        st.close();
-                    }
-                    catch (Exception e)
-                    {
-                        Log.error(e.getMessage());
-                    }
-                }
-            }
             act=Action.REFRESH;
             execute_thread();
         } catch (Exception e) {
@@ -1001,36 +988,9 @@ public class UserManagerPanel extends JPanel {
         }
     }
 
-    public void editUser(String description) {
+    public void editUser() {
         try {
             userManager.update(userAdd);
-            DatabaseHost host= new DefaultDatabaseHost(dbc);
-            String version=host.getDatabaseProductName();
-            if(version!=null)
-            {
-                int number=0;
-                for (int i=0;i<version.length();i++)
-                {
-                    if (Character.isDigit(version.charAt(i)))
-                    {
-                        number=Character.getNumericValue(version.charAt(i));
-                        break;
-                    }
-                }
-                if (number>=3)
-                {
-                    try {
-                        String query="COMMENT ON USER "+userAdd.getUserName()+ " is '"+description+"'";
-                        Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-                        st.executeQuery(query);
-                        st.close();
-                    }
-                    catch (Exception e)
-                    {
-                        Log.error(e.getMessage());
-                    }
-                }
-            }
             act=Action.REFRESH;
             execute_thread();
         } catch (Exception e) {

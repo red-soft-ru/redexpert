@@ -20,13 +20,6 @@
 
 package org.executequery.gui.scriptgenerators;
 
-import java.awt.Dimension;
-import java.awt.event.ItemEvent;
-import java.io.IOException;
-import java.util.List;
-
-import javax.swing.JPanel;
-
 import org.executequery.ActiveComponent;
 import org.executequery.GUIUtilities;
 import org.executequery.components.ItemSelectionListener;
@@ -43,6 +36,14 @@ import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.wizard.DefaultWizardProcessModel;
 import org.underworldlabs.swing.wizard.WizardProcessPanel;
 import org.underworldlabs.util.FileUtils;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * Base panel for the generate scripts process.
@@ -109,6 +110,30 @@ public class GenerateScriptsWizard extends WizardProcessPanel
         
         combosGroup = new TableSelectionCombosGroup(
                 firstPanel.getConnectionsCombo(), secondPanel.getSchemasCombo());
+
+        // TODO I'm not sure about this, but another item listener not working when the scheme item selected
+        secondPanel.getSchemasCombo().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+
+                    DatabaseSource source = getSelectedSource();
+
+                    if (source != null) {
+
+                        List<NamedObject> tables = combosGroup.tablesForSchema(source);
+                        secondPanel.schemaSelectionChanged(tables);
+                    }
+
+                } catch (DataSourceException ex) {
+
+                    Log.error("Error on table selection for index", ex);
+
+                } finally {
+
+                    parent.unblock();
+                }
+            }
+        });
         combosGroup.addItemSelectionListener(this);
 
         model.addPanel(firstPanel);

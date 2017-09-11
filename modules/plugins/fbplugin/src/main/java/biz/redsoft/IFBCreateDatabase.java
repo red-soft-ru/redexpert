@@ -5,7 +5,7 @@ import java.sql.SQLException;
 /**
  * Created by Vasiliy on 05.04.2017.
  */
-public interface ICreateDatabase {
+public interface IFBCreateDatabase {
 
     void setServer(String server);
 

@@ -487,7 +487,7 @@ public class QueryDispatcher {
                         try {
                             urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
                             ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
-                            clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformance");
+                            clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformanceImpl");
                             odb = clazzdb.newInstance();
                         } catch (ClassNotFoundException e) {
                             e.printStackTrace();
@@ -721,7 +721,7 @@ public class QueryDispatcher {
             try {
                 urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
                 ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
-                clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformance");
+                clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformanceImpl");
                 odb = clazzdb.newInstance();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
@@ -775,7 +775,7 @@ public class QueryDispatcher {
                 try {
                     urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
                     ClassLoader cl = new URLClassLoader(urls, resultSet.getClass().getClassLoader());
-                    clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformance");
+                    clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformanceImpl");
                     odb = clazzdb.newInstance();
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();

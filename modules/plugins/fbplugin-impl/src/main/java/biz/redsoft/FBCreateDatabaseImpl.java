@@ -9,7 +9,7 @@ import java.sql.SQLException;
 
 /*** Created by Vasiliy on 05.04.2017.
  */
-public class CreateDatabase implements ICreateDatabase {
+public class FBCreateDatabaseImpl implements IFBCreateDatabase {
     private String server;
     private int port;
     private String user;

@@ -12,16 +12,16 @@ import static org.firebirdsql.gds.VaxEncoding.iscVaxInteger2;
 /**
  * Created by vasiliy on 12.01.17.
  */
-public class FBPerformanceInfoProcessor implements InfoProcessor<FBPerformanceInfo> {
+public class FBPerformanceInfoProcessorImpl implements InfoProcessor<FBPerformanceInfoImpl> {
 
-    FBPerformanceInfo out = null;
+    FBPerformanceInfoImpl out = null;
 
     @Override
-    public FBPerformanceInfo process(byte[] info) throws SQLException {
+    public FBPerformanceInfoImpl process(byte[] info) throws SQLException {
         if (info.length == 0) {
             throw new SQLException("Response buffer for database information request is empty");
         }
-        FBPerformanceInfo out = new FBPerformanceInfo();
+        FBPerformanceInfoImpl out = new FBPerformanceInfoImpl();
         int value;
         int len;
         int i = 0;

@@ -11,7 +11,7 @@ import java.sql.SQLException;
 /**
  * Created by Vasiliy on 4/6/2017.
  */
-public class FBDatabasePerformance implements IFBDatabasePerformance {
+public class FBDatabasePerformanceImpl implements IFBDatabasePerformance {
 
     byte perfomanceInfoBytes[] =
             {
@@ -32,14 +32,14 @@ public class FBDatabasePerformance implements IFBDatabasePerformance {
     }
 
     @Override
-    public FBPerformanceInfo getPerformanceInfo() throws SQLException {
+    public FBPerformanceInfoImpl getPerformanceInfo() throws SQLException {
         byte[] databaseInfo = null;
-        FBPerformanceInfo performanceInfo = null;
+        FBPerformanceInfoImpl performanceInfo = null;
         if (fbConnection.getMetaData().getDriverMajorVersion() >= 3) {
 
             databaseInfo = fbConnection.getFbDatabase().getDatabaseInfo(perfomanceInfoBytes, 256);
 
-            FBPerformanceInfoProcessor fbPerformanceInfoProcessor = new FBPerformanceInfoProcessor();
+            FBPerformanceInfoProcessorImpl fbPerformanceInfoProcessor = new FBPerformanceInfoProcessorImpl();
             performanceInfo = fbPerformanceInfoProcessor.process(databaseInfo);
         }
 

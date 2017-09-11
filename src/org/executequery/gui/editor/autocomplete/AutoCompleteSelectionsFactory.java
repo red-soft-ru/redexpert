@@ -106,7 +106,7 @@ public class AutoCompleteSelectionsFactory {
                     try {
                         urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
                         ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
-                        clazzdb = cl.loadClass("biz.redsoft.FBDatabaseConnection");
+                        clazzdb = cl.loadClass("biz.redsoft.FBDatabaseConnectionImpl");
                         odb = clazzdb.newInstance();
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();

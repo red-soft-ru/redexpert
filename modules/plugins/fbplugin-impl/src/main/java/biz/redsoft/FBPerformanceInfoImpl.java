@@ -3,7 +3,7 @@ package biz.redsoft;
 /**
  * Created by vasiliy on 12.01.17.
  */
-public class FBPerformanceInfo implements IFBPerformanceInfo{
+public class FBPerformanceInfoImpl implements IFBPerformanceInfo{
     private long perfFetches;
     private long perfMarks;
     private long perfReads;
@@ -14,7 +14,7 @@ public class FBPerformanceInfo implements IFBPerformanceInfo{
     private long perfBuffers;
     private long perfPageSize;
 
-    FBPerformanceInfo() {
+    FBPerformanceInfoImpl() {
 
     }
 
@@ -91,7 +91,7 @@ public class FBPerformanceInfo implements IFBPerformanceInfo{
     }
 
     public IFBPerformanceInfo processInfo(IFBPerformanceInfo before, IFBPerformanceInfo after) {
-        FBPerformanceInfo resultInfo = new FBPerformanceInfo();
+        FBPerformanceInfoImpl resultInfo = new FBPerformanceInfoImpl();
 
         resultInfo.setPerfBuffers(after.getPerfBuffers());
         resultInfo.setPerfCurrentMemory(after.getPerfCurrentMemory());

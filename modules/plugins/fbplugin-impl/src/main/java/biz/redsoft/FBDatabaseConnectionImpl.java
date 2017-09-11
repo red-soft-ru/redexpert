@@ -8,7 +8,7 @@ import java.sql.SQLException;
 /**
  * Created by Vasiliy on 4/6/2017.
  */
-public class FBDatabaseConnection implements IFBDatabaseConnection {
+public class FBDatabaseConnectionImpl implements IFBDatabaseConnection {
 
     private FBConnection fbConnection = null;
 

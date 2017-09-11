@@ -28,7 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import biz.redsoft.IDatabaseMetadata;
+import biz.redsoft.IFBDatabaseMetadata;
 import org.executequery.databaseobjects.DatabaseExecutable;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
@@ -287,9 +287,9 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 try {
                     urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
                     ClassLoader cl = new URLClassLoader(urls, dmd.getClass().getClassLoader());
-                    clazzdb = cl.loadClass("biz.redsoft.DatabaseMetadata");
+                    clazzdb = cl.loadClass("biz.redsoft.FBDatabaseMetadataImpl");
                     odb = clazzdb.newInstance();
-                    IDatabaseMetadata db = (IDatabaseMetadata)odb;
+                    IFBDatabaseMetadata db = (IFBDatabaseMetadata)odb;
 
                     procedureSourceCode = db.getProcedureSourceCode(dmd, getName());
 

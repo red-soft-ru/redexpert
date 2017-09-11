@@ -8,7 +8,7 @@ import java.sql.SQLException;
 /**
  * Created by Vasiliy on 4/6/2017.
  */
-public class DatabaseMetadata implements IDatabaseMetadata {
+public class FBDatabaseMetadataImpl implements IFBDatabaseMetadata {
     @Override
     public String getProcedureSourceCode(DatabaseMetaData databaseMetaData, String s) throws SQLException {
         String procedureSourceCode = "";

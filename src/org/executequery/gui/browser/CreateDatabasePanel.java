@@ -1,6 +1,6 @@
 package org.executequery.gui.browser;
 
-import biz.redsoft.ICreateDatabase;
+import biz.redsoft.IFBCreateDatabase;
 import org.executequery.Constants;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
@@ -752,7 +752,7 @@ public class CreateDatabasePanel extends ActionPanel
 
             urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
             ClassLoader cl = new URLClassLoader(urls, o.getClass().getClassLoader());
-            clazzdb = cl.loadClass("biz.redsoft.CreateDatabase");
+            clazzdb = cl.loadClass("biz.redsoft.FBCreateDatabaseImpl");
             odb = clazzdb.newInstance();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -764,7 +764,7 @@ public class CreateDatabasePanel extends ActionPanel
             e.printStackTrace();
         }
 
-        ICreateDatabase db = (ICreateDatabase) odb;
+        IFBCreateDatabase db = (IFBCreateDatabase) odb;
         db.setServer(server);
         db.setPort(port);
         db.setUser(userField.getText());

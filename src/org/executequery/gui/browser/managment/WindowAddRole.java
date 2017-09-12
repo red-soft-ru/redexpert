@@ -9,16 +9,16 @@ import javax.swing.*;
  * Created by mikhan808 on 15.03.2017.
  */
 public class WindowAddRole extends JPanel {
-    public WindowAddRole(UserManagerPanel u) {
-        ump = u;
-        initComponents();
-
-    }
 
     UserManagerPanel ump;
     JTextField nameTextField;
     JButton okButton;
     JLabel jLabel1;
+
+    public WindowAddRole(UserManagerPanel u) {
+        ump = u;
+        initComponents();
+    }
 
     private void initComponents() {
         nameTextField = new JTextField();

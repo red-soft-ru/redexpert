@@ -42,5 +42,5 @@ public interface IFBPerformanceInfo {
 
     IFBPerformanceInfo processInfo(IFBPerformanceInfo before, IFBPerformanceInfo after);
 
-    public String getPerformanceInfo();
+    String getPerformanceInfo();
 }

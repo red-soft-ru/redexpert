@@ -5,13 +5,14 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
 public class FrameListener implements WindowListener {
-    public FrameListener(JFrame frame)
-    {
-        fram=frame;
-        fram.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
-    }
     JFrame fram;
+
+    public FrameListener(JFrame frame) {
+        fram = frame;
+        fram.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+    }
+
     @Override
     public void windowOpened(WindowEvent windowEvent) {
 
@@ -25,7 +26,6 @@ public class FrameListener implements WindowListener {
 
     @Override
     public void windowClosed(WindowEvent windowEvent) {
-
 
     }
 

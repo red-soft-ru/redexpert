@@ -3,7 +3,7 @@ package biz.redsoft;
 /**
  * Created by vasiliy on 12.01.17.
  */
-public class FBPerformanceInfoImpl implements IFBPerformanceInfo{
+public class FBPerformanceInfoImpl implements IFBPerformanceInfo {
     private long perfFetches;
     private long perfMarks;
     private long perfReads;

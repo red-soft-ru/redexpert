@@ -48,7 +48,7 @@ public class FBDatabasePerformanceImpl implements IFBDatabasePerformance {
 
     @Override
     public String getLastExecutedPlan(ResultSet resultSet) throws SQLException {
-        FBResultSet fbResultSet = (FBResultSet)resultSet;
+        FBResultSet fbResultSet = (FBResultSet) resultSet;
         return fbResultSet.getExecutionPlan();
     }
 

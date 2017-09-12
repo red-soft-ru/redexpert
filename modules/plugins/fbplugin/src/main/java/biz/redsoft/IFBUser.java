@@ -7,50 +7,50 @@ import java.util.Map;
  */
 public interface IFBUser {
 
-  void setUserName(String userName);
+    void setUserName(String userName);
 
-  String getUserName();
+    String getUserName();
 
-  void setPassword(String password);
+    void setPassword(String password);
 
-  String getPassword();
+    String getPassword();
 
-  void setFirstName(String firstName);
+    void setFirstName(String firstName);
 
-  String getFirstName();
+    String getFirstName();
 
-  void setMiddleName(String middleName);
+    void setMiddleName(String middleName);
 
-  String getMiddleName();
+    String getMiddleName();
 
-  void setLastName(String lastName);
+    void setLastName(String lastName);
 
-  String getLastName();
+    String getLastName();
 
-  void setGroupId(int groupId);
+    void setGroupId(int groupId);
 
-  int getGroupId();
+    int getGroupId();
 
-  void setUserId(int userId);
+    void setUserId(int userId);
 
-  int getUserId();
+    int getUserId();
 
-  void setDescription(String description);
+    void setDescription(String description);
 
-  String getDescription();
+    String getDescription();
 
-  void setActive(boolean active);
+    void setActive(boolean active);
 
-  Boolean getActive();
+    Boolean getActive();
 
-  void setTag(String tag,String value);
+    void setTag(String tag, String value);
 
-  void setTags(Map<String,String> tags);
+    void setTags(Map<String, String> tags);
 
-  void dropTag(String tag);
+    void dropTag(String tag);
 
-  String getTag(String tag);
+    String getTag(String tag);
 
-  Map<String,String> getTags();
+    Map<String, String> getTags();
 
 }

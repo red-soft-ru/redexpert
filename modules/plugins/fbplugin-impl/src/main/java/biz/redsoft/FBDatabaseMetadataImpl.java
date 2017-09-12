@@ -11,8 +11,8 @@ import java.sql.SQLException;
 public class FBDatabaseMetadataImpl implements IFBDatabaseMetadata {
     @Override
     public String getProcedureSourceCode(DatabaseMetaData databaseMetaData, String s) throws SQLException {
-        String procedureSourceCode = "";
-        FBDatabaseMetaData fbMetaData = (FBDatabaseMetaData)databaseMetaData;
+        String procedureSourceCode;
+        FBDatabaseMetaData fbMetaData = (FBDatabaseMetaData) databaseMetaData;
         procedureSourceCode = fbMetaData.getProcedureSourceCode(s);
 
         return procedureSourceCode;

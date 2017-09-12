@@ -9,9 +9,9 @@ import java.sql.SQLException;
  */
 public interface IFBDatabasePerformance {
 
-    public void setConnection(Connection connection) throws SQLException;
+    void setConnection(Connection connection) throws SQLException;
 
-    public IFBPerformanceInfo getPerformanceInfo() throws SQLException;
+    IFBPerformanceInfo getPerformanceInfo() throws SQLException;
 
-    public String getLastExecutedPlan(ResultSet rs) throws SQLException;
+    String getLastExecutedPlan(ResultSet rs) throws SQLException;
 }

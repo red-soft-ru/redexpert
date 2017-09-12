@@ -71,6 +71,5 @@ public class FBCreateDatabaseImpl implements IFBCreateDatabase {
         db = factory.connect(connectionInfo);
         db.createDatabase();
         db.close();
-
     }
 }

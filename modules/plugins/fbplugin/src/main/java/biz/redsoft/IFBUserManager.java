@@ -9,31 +9,31 @@ import java.util.Map;
  */
 public interface IFBUserManager {
 
-  void setUser(String user);
+    void setUser(String user);
 
-  String getUser();
+    String getUser();
 
-  void setPassword(String password);
+    void setPassword(String password);
 
-  String getPassword();
+    String getPassword();
 
-  void setDatabase(String database);
+    void setDatabase(String database);
 
-  String getDatabase();
+    String getDatabase();
 
-  String getHost();
+    String getHost();
 
-  void setHost(String host);
+    void setHost(String host);
 
-  int getPort();
+    int getPort();
 
-  void setPort(int port);
+    void setPort(int port);
 
-  void add(IFBUser user) throws SQLException, IOException;
+    void add(IFBUser user) throws SQLException, IOException;
 
-  void delete(IFBUser user) throws SQLException, IOException;
+    void delete(IFBUser user) throws SQLException, IOException;
 
-  void update(IFBUser user) throws SQLException, IOException;
+    void update(IFBUser user) throws SQLException, IOException;
 
-  Map<String, IFBUser> getUsers() throws SQLException, IOException;
+    Map<String, IFBUser> getUsers() throws SQLException, IOException;
 }

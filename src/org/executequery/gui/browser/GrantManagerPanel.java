@@ -801,13 +801,14 @@ public class GrantManagerPanel extends JPanel {
         enabled_dBox = false;
         databaseBox.removeAllItems();
         listConnections = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
-        for (DatabaseConnection dc : listConnections) {
-            if (dc.isConnected()) {
-                databaseBox.addItem(dc.getName());
+        for (int i=0;i<listConnections.size();i++) {
+            if (listConnections.get(i).isConnected()) {
+                databaseBox.addItem(listConnections.get(i).getName());
                 enabled_dBox = true;
-                databaseBox.setSelectedItem(dc.getName());
+                databaseBox.setSelectedItem(listConnections.get(i).getName());
             } else {
-                listConnections.remove(dc);
+                listConnections.remove(i);
+                i--;
             }
         }
     }

@@ -4,6 +4,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.browser.GrantManagerPanel;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.actions.BaseCommand;
@@ -31,6 +32,6 @@ public class GrantManagerCommands extends OpenFrameCommand implements BaseComman
                     true);
             else GUIUtilities.setSelectedCentralPane(GrantManagerPanel.TITLE);
         }
-        else GUIUtilities.displayErrorMessage("No connections available!");
+        else GUIUtilities.displayErrorMessage(Bundles.get(GrantManagerPanel.class,"message.notConnected"));
     }
 }

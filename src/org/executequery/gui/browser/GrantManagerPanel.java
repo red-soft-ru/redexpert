@@ -31,6 +31,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -789,16 +790,23 @@ public class GrantManagerPanel extends JPanel {
     void load_connections() {
         enabled_dBox = false;
         databaseBox.removeAllItems();
-        listConnections = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
-        for (int i = 0; i < listConnections.size(); i++) {
-            if (listConnections.get(i).isConnected()) {
-                databaseBox.addItem(listConnections.get(i).getName());
+        List<DatabaseConnection> cons;
+        listConnections=new ArrayList<DatabaseConnection>();
+        cons = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
+        boolean connected=false;
+        for (int i=0;i<cons.size();i++) {
+            if (cons.get(i).isConnected()) {
+                connected=true;
+                databaseBox.addItem(cons.get(i).getName());
+                listConnections.add(cons.get(i));
                 enabled_dBox = true;
-                databaseBox.setSelectedItem(listConnections.get(i).getName());
-            } else {
-                listConnections.remove(i);
-                i--;
+                databaseBox.setSelectedItem(cons.get(i).getName());
             }
+        }
+        if(!connected)
+        {
+            GUIUtilities.displayErrorMessage(bundleString("message.notConnected"));
+            GUIUtilities.closeSelectedTab();
         }
     }
 

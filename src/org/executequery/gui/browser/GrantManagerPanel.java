@@ -798,6 +798,7 @@ public class GrantManagerPanel extends JPanel {
 
     public void load_connections() {
         enabled_dBox = false;
+        setEnableElements(true);
         databaseBox.removeAllItems();
         List<DatabaseConnection> cons;
         listConnections = new ArrayList<DatabaseConnection>();
@@ -987,8 +988,13 @@ public class GrantManagerPanel extends JPanel {
                     ((RoleTableModel) tablePrivileges.getModel()).addRow(roleData);
                 querySender.releaseResources();
             } catch (NullPointerException e) {
-                GUIUtilities.displayErrorMessage(e.getMessage());
-            } catch (Exception e) {
+                Log.error(bundleString("connection.close"));
+            }
+            catch (SQLException e)
+            {
+                Log.error(e.getMessage());
+            }
+            catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
 
@@ -1245,7 +1251,15 @@ public class GrantManagerPanel extends JPanel {
             querySender.execute(query, true);
             t.setValueAt(icon, row, col);
             querySender.releaseResources();
-        } catch (Exception e) {
+        }
+        catch (NullPointerException e) {
+            Log.error(bundleString("connection.close"));
+        }
+        catch (SQLException e)
+        {
+            Log.error(e.getMessage());
+        }
+        catch (Exception e) {
             Log.error(e.getMessage());
         }
     }

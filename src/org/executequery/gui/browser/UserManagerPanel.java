@@ -115,6 +115,7 @@ public class UserManagerPanel extends JPanel {
     }
 
     public void load_connections() {
+        setEnableElements(true);
         con = null;
         init_user_manager();
         execute_w = false;
@@ -963,8 +964,21 @@ public class UserManagerPanel extends JPanel {
                         membershipTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
                     first = false;
                 }
-            } catch (Exception e) {
-                GUIUtilities.displayErrorMessage(e.getMessage());
+            }
+            catch (ArrayIndexOutOfBoundsException e)
+            {
+                Log.error("Error index  out of bounds");
+            }
+            catch (NullPointerException e)
+            {
+
+            }
+            catch (SQLException e)
+            {
+                Log.error(e.getMessage());
+            }
+            catch (Exception e) {
+                Log.error(e.getMessage());
             }
         }
     }

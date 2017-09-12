@@ -7,6 +7,7 @@ package org.executequery.gui.browser;
 
 import biz.redsoft.IFBUser;
 import biz.redsoft.IFBUserManager;
+import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
@@ -14,7 +15,11 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.datasource.ConnectionManager;
+import org.executequery.event.ApplicationEvent;
+import org.executequery.event.ConnectionEvent;
+import org.executequery.event.ConnectionListener;
 import org.executequery.gui.browser.BrowserConstants;
+import org.executequery.gui.browser.managment.GrantManagerConnectionListener;
 import org.executequery.gui.browser.managment.ThreadOfGrantManager;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -79,6 +84,8 @@ public class GrantManagerPanel extends JPanel {
     private JPanel upPanel;
     private JComboBox<String> userBox;
     private JList<String> userList;
+    boolean connected;
+    public DatabaseConnection dbc;
 
     /**
      * Creates new form GrantManagerPanel
@@ -129,6 +136,7 @@ public class GrantManagerPanel extends JPanel {
     StatementExecutor querySender;
     int col_execute = 5;
     int col_usage = 7;
+
 
     enum Action {
         NO_ALL_GRANTS_TO_OBJECT,
@@ -584,6 +592,7 @@ public class GrantManagerPanel extends JPanel {
     private void databaseBoxActionPerformed(java.awt.event.ActionEvent evt) {
         if (enabled_dBox) {
             querySender = new DefaultStatementExecutor(listConnections.get(databaseBox.getSelectedIndex()), true);
+            dbc = listConnections.get(databaseBox.getSelectedIndex());
             con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
         }
     }
@@ -787,54 +796,55 @@ public class GrantManagerPanel extends JPanel {
             }
     }
 
-    void load_connections() {
+    public void load_connections() {
         enabled_dBox = false;
         databaseBox.removeAllItems();
         List<DatabaseConnection> cons;
-        listConnections=new ArrayList<DatabaseConnection>();
+        listConnections = new ArrayList<DatabaseConnection>();
         cons = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
-        boolean connected=false;
-        for (int i=0;i<cons.size();i++) {
+        connected = false;
+        for (int i = 0; i < cons.size(); i++) {
             if (cons.get(i).isConnected()) {
-                connected=true;
+                connected = true;
                 databaseBox.addItem(cons.get(i).getName());
                 listConnections.add(cons.get(i));
                 enabled_dBox = true;
                 databaseBox.setSelectedItem(cons.get(i).getName());
             }
         }
-        if(!connected)
-        {
+        if (!connected) {
             GUIUtilities.displayErrorMessage(bundleString("message.notConnected"));
-            GUIUtilities.closeSelectedTab();
+            GUIUtilities.closeTab(TITLE);
         }
     }
 
     void load_userList() {
-        userlistModel = new DefaultListModel();
-        userList.setModel(userlistModel);
-        int ind_userBox = userBox.getSelectedIndex();
-        switch (ind_userBox) {
-            case 0:
-                get_users();
-                break;
-            case 1:
-                get_roles();
-                break;
-            case 2:
-                get_views_for_userlist();
-                break;
-            case 3:
-                get_triggers_for_userlist();
-                break;
-            case 4:
-                get_procedures_for_userlist();
-                break;
-            default:
-                break;
+        if (connected) {
+            userlistModel = new DefaultListModel();
+            userList.setModel(userlistModel);
+            int ind_userBox = userBox.getSelectedIndex();
+            switch (ind_userBox) {
+                case 0:
+                    get_users();
+                    break;
+                case 1:
+                    get_roles();
+                    break;
+                case 2:
+                    get_views_for_userlist();
+                    break;
+                case 3:
+                    get_triggers_for_userlist();
+                    break;
+                case 4:
+                    get_procedures_for_userlist();
+                    break;
+                default:
+                    break;
+            }
+            if (userlistModel.size() > 0)
+                userList.setSelectedIndex(0);
         }
-        if (userlistModel.size() > 0)
-            userList.setSelectedIndex(0);
     }
 
     IFBUserManager getUserManager(IFBUserManager userManager, DatabaseConnection dc) {

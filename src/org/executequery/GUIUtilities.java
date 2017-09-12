@@ -69,6 +69,7 @@ import org.executequery.gui.SystemOutputPanel;
 import org.executequery.gui.SystemPropertiesDockedTab;
 import org.executequery.gui.UndoableComponent;
 import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.managment.GrantManagerConnectionListener;
 import org.executequery.gui.drivers.DriversTreePanel;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.jdbclogger.JdbcLoggerPanel;
@@ -217,6 +218,7 @@ public final class GUIUtilities {
         EventMediator.registerListener(new HttpProxyUserPreferenceListener());
         EventMediator.registerListener(new LogUserPreferenceListener(errLogger, outLogger));
         EventMediator.registerListener(new KeyboardShortcutsUserPreferenceListener());
+        EventMediator.registerListener(new GrantManagerConnectionListener());
     }
 
     public static void initPanels() {
@@ -424,6 +426,12 @@ public final class GUIUtilities {
 
         desktopMediator.closeSelectedTab();
     }
+
+    public static void closeTab(String name)
+    {
+        closeDockedComponent(name, SwingConstants.CENTER);
+    }
+
 
     /**
      * Closed the specfied docked component with name at the specified position.

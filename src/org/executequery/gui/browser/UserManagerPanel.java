@@ -86,7 +86,7 @@ public class UserManagerPanel extends JPanel {
     public IFBUser userAdd;
     ResultSet result;
     int version;
-    DatabaseConnection dbc;
+    public DatabaseConnection dbc;
 
     enum Action {
         REFRESH,
@@ -109,8 +109,17 @@ public class UserManagerPanel extends JPanel {
         role_names = new Vector<String>();
         initComponents();
         setEnableElements(true);
-        listConnections = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
+        load_connections();
+
+
+    }
+
+    public void load_connections() {
+        con = null;
         init_user_manager();
+        execute_w = false;
+        databaseBox.removeAllItems();
+        listConnections = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
         enableElements = true;
         for (DatabaseConnection dc : listConnections) {
             databaseBox.addItem(dc.getName());
@@ -120,8 +129,12 @@ public class UserManagerPanel extends JPanel {
             }
         }
         if (!execute_w) {
+            if (databaseBox.getItemCount() == 0)
+                databaseBox.addItem("");
             execute_w = true;
             databaseBox.setSelectedIndex(0);
+
+
         }
     }
 
@@ -572,10 +585,28 @@ public class UserManagerPanel extends JPanel {
     private void databaseBoxActionPerformed(java.awt.event.ActionEvent evt) {
 
         if (execute_w) {
-            dbc = listConnections.get(databaseBox.getSelectedIndex());
-            if (listConnections.get(databaseBox.getSelectedIndex()).isConnected()) {
-                act = Action.REFRESH;
-                execute_thread();
+            if (listConnections.size() > 0) {
+                dbc = listConnections.get(databaseBox.getSelectedIndex());
+                if (listConnections.get(databaseBox.getSelectedIndex()).isConnected()) {
+                    act = Action.REFRESH;
+                    execute_thread();
+
+                } else {
+                    usersTable.setModel(new RoleTableModel(
+                            new Object[][]{
+
+                            },
+                            bundleStrings(new String[]{
+                                    "UserName", "FirstName", "MiddleName", "LastName"
+                            })
+                    ));
+                    JFrame frame_pass = new FrameLogin(this, listConnections.get(databaseBox.getSelectedIndex()).getUserName(),
+                            listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
+                    frame_pass.setVisible(true);
+                    int width = Toolkit.getDefaultToolkit().getScreenSize().width;
+                    int height = Toolkit.getDefaultToolkit().getScreenSize().height;
+                    frame_pass.setLocation(width / 2 - frame_pass.getWidth() / 2, height / 2 - frame_pass.getHeight() / 2);
+                }
             } else {
                 usersTable.setModel(new RoleTableModel(
                         new Object[][]{
@@ -585,8 +616,8 @@ public class UserManagerPanel extends JPanel {
                                 "UserName", "FirstName", "MiddleName", "LastName"
                         })
                 ));
-                JFrame frame_pass = new FrameLogin(this, listConnections.get(databaseBox.getSelectedIndex()).getUserName(),
-                        listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
+                JFrame frame_pass = new FrameLogin(this, "",
+                        "");
                 frame_pass.setVisible(true);
                 int width = Toolkit.getDefaultToolkit().getScreenSize().width;
                 int height = Toolkit.getDefaultToolkit().getScreenSize().height;
@@ -803,28 +834,42 @@ public class UserManagerPanel extends JPanel {
             serverBox.removeAllItems();
             serverBox.addItem(listConnections.get(databaseBox.getSelectedIndex()).getHost());
         }
-        userManager.setDatabase(listConnections.get(databaseBox.getSelectedIndex()).getSourceName());
-        userManager.setHost(listConnections.get(databaseBox.getSelectedIndex()).getHost());
-        userManager.setPort(listConnections.get(databaseBox.getSelectedIndex()).getPortInt());
-        if (listConnections.get(databaseBox.getSelectedIndex()).isConnected()) {
-            rolesPanel.setVisible(true);
-            membershipPanel.setVisible(true);
-            con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
-            init_user_manager();
+        if (listConnections.size() > 0) {
             userManager.setDatabase(listConnections.get(databaseBox.getSelectedIndex()).getSourceName());
             userManager.setHost(listConnections.get(databaseBox.getSelectedIndex()).getHost());
             userManager.setPort(listConnections.get(databaseBox.getSelectedIndex()).getPortInt());
-            userManager.setUser(listConnections.get(databaseBox.getSelectedIndex()).getUserName());
-            userManager.setPassword(listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
-            getUsersPanel();
-            get_roles();
-            create_membership();
+
+            if (listConnections.get(databaseBox.getSelectedIndex()).isConnected()) {
+                if (jTabbedPane1.getTabCount() < 2) {
+                    jTabbedPane1.addTab(bundleString("Roles"), rolesPanel);
+                    jTabbedPane1.addTab(bundleString("Membership"), membershipPanel);
+                }
+                con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
+                init_user_manager();
+                userManager.setDatabase(listConnections.get(databaseBox.getSelectedIndex()).getSourceName());
+                userManager.setHost(listConnections.get(databaseBox.getSelectedIndex()).getHost());
+                userManager.setPort(listConnections.get(databaseBox.getSelectedIndex()).getPortInt());
+                userManager.setUser(listConnections.get(databaseBox.getSelectedIndex()).getUserName());
+                userManager.setPassword(listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
+                getUsersPanel();
+                get_roles();
+                create_membership();
+                update();
+            } else {
+                getUsersPanel();
+                if (jTabbedPane1.getTabCount() > 1) {
+                    jTabbedPane1.remove(rolesPanel);
+                    jTabbedPane1.remove(membershipPanel);
+                }
+            }
         } else {
             getUsersPanel();
-            membershipPanel.setVisible(false);
-            rolesPanel.setVisible(false);
+            if (jTabbedPane1.getTabCount() > 1) {
+                jTabbedPane1.remove(rolesPanel);
+                jTabbedPane1.remove(membershipPanel);
+            }
         }
-        update();
+
         setEnableElements(true);
     }
 

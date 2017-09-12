@@ -606,6 +606,7 @@ public class GrantManagerPanel extends JPanel {
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
         // TODO add your handling code here:
+        load_connections();
         load_userList();
     }//GEN-LAST:event_refreshButtonActionPerformed
 

@@ -9,18 +9,18 @@ import javax.swing.*;
  * Created by mikhan808 on 15.03.2017.
  */
 public class WindowAddRole extends JPanel {
-    public WindowAddRole(UserManagerPanel u)
-    {
-        ump=u;
+    public WindowAddRole(UserManagerPanel u) {
+        ump = u;
         initComponents();
 
     }
+
     UserManagerPanel ump;
     JTextField nameTextField;
     JButton okButton;
     JLabel jLabel1;
-    private void initComponents()
-    {
+
+    private void initComponents() {
         nameTextField = new JTextField();
         okButton = new JButton();
         jLabel1 = new JLabel();
@@ -32,21 +32,35 @@ public class WindowAddRole extends JPanel {
             }
         });
         GroupLayout layout = new GroupLayout(this);
-        this.setLayout(null);
-        //layout.setHorizontalGroup();
-        okButton.setSize(100,40);
-        okButton.setLocation(50,100);
-        jLabel1.setSize(100,30);
-        jLabel1.setLocation(50,50);
-        nameTextField.setSize(500,30);
-        nameTextField.setLocation(150,50);
-        this.add(okButton);
-        this.add(jLabel1);
-        this.add(nameTextField);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel1)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(nameTextField, GroupLayout.PREFERRED_SIZE, 300, GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(okButton, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                        )
+        );
+        layout.setVerticalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                        .addComponent(okButton)
+                                        .addComponent(nameTextField, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(jLabel1)
+                                )
+
+                        )
+        );
 
     }
-    private void okButtonActionPerformed(java.awt.event.ActionEvent evt)
-    {
+
+    private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {
         ump.addRole(nameTextField.getText());
         GUIUtilities.closeSelectedTab();
     }

@@ -12,13 +12,17 @@ public class FBUserImpl implements IFBUser {
 
     private FBUser fbUser;
     private String description;
+    private String plugin;
     private boolean active;
+    private boolean admin;
     private Map<String, String> tags;
 
     public FBUserImpl() {
         fbUser = new FBUser();
         active = true;
         tags = new HashMap<>();
+        admin=false;
+        plugin="";
     }
 
     @Override
@@ -134,5 +138,25 @@ public class FBUserImpl implements IFBUser {
     @Override
     public Map<String, String> getTags() {
         return tags;
+    }
+
+    @Override
+    public void setAdministrator(boolean Administrator) {
+        admin=Administrator;
+    }
+
+    @Override
+    public Boolean getAdministrator() {
+        return admin;
+    }
+
+    @Override
+    public void setPlugin(String Plugin) {
+        plugin=Plugin;
+    }
+
+    @Override
+    public String getPlugin() {
+        return plugin;
     }
 }

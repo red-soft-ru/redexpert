@@ -53,4 +53,12 @@ public interface IFBUser {
 
     Map<String, String> getTags();
 
+    void setAdministrator(boolean Administrator);
+
+    Boolean getAdministrator();
+
+    void setPlugin(String Plugin);
+
+    String getPlugin();
+
 }

@@ -31,6 +31,9 @@ public class WindowAddUser extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JLabel tagLabel;
+    private JLabel pluginLabel;
+    private JTextField pluginField;
+    private JCheckBox adminBox;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField lastNameField;
     private javax.swing.JTextField middleNameField;
@@ -77,6 +80,9 @@ public class WindowAddUser extends javax.swing.JPanel {
         userIDField.setText(Integer.toString(user.getUserId()));
         descriptionField.setText(user.getDescription());
         activeBox.setSelected(user.getActive());
+        pluginField.setText(user.getPlugin());
+        pluginField.setEnabled(false);
+        adminBox.setSelected(user.getAdministrator());
         for (String tag : user.getTags().keySet()) {
             ((DefaultTableModel) tagTable.getModel()).addRow(new Object[]{tag, user.getTag(tag)});
         }
@@ -111,6 +117,9 @@ public class WindowAddUser extends javax.swing.JPanel {
         activeBox = new JCheckBox();
         addTag = new JButton();
         deleteTag = new JButton();
+        pluginLabel=new JLabel();
+        pluginField=new JTextField();
+        adminBox=new JCheckBox();
 
         //setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -154,6 +163,11 @@ public class WindowAddUser extends javax.swing.JPanel {
         jLabel8.setText(bundleString("GroupID"));
 
         jLabel9.setText(bundleString("Description"));
+
+        pluginLabel.setText(bundleString("Plugin"));
+
+        adminBox.setText(bundleString("Administrator"));
+
         tagLabel.setText(bundleString("Tags"));
 
         okButton.setText(bundleString("OK"));
@@ -208,7 +222,11 @@ public class WindowAddUser extends javax.swing.JPanel {
                                                         .addComponent(jLabel7))
                                                 .addGroup(layout.createSequentialGroup()
                                                         .addContainerGap()
-                                                        .addComponent(jLabel8)))
+                                                        .addComponent(jLabel8))
+                                                .addGroup(layout.createSequentialGroup()
+                                                        .addContainerGap()
+                                                        .addComponent(pluginLabel))
+                                        )
                                         .addGap(18, 18, 18)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                                 .addComponent(nameTextField)
@@ -219,7 +237,9 @@ public class WindowAddUser extends javax.swing.JPanel {
                                                 .addComponent(lastNameField, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
                                                 .addComponent(userIDField)
                                                 .addComponent(groupIDField)
+                                                .addComponent(pluginField)
                                                 .addComponent(activeBox)
+                                                .addComponent(adminBox)
                                         ))
                                 .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -285,7 +305,13 @@ public class WindowAddUser extends javax.swing.JPanel {
                                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                                                 .addComponent(groupIDField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                 .addComponent(jLabel8))
+                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                                .addComponent(pluginField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addComponent(pluginLabel))
+                                                        .addGap(18,18,18)
                                                         .addComponent(activeBox)
+                                                        .addGap(18,18,18)
+                                                        .addComponent(adminBox)
                                                 ))
                                         .addGroup(layout.createSequentialGroup()
                                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -325,6 +351,9 @@ public class WindowAddUser extends javax.swing.JPanel {
             tagTable.setVisible(false);
             addTag.setVisible(false);
             deleteTag.setVisible(false);
+            adminBox.setVisible(false);
+            pluginField.setVisible(false);
+            pluginLabel.setVisible(false);
         }
     }
 
@@ -338,6 +367,8 @@ public class WindowAddUser extends javax.swing.JPanel {
                 ump.userAdd.setUserId(Integer.parseInt(userIDField.getText()));
                 ump.userAdd.setGroupId(Integer.parseInt(groupIDField.getText()));
                 ump.userAdd.setActive(activeBox.isSelected());
+                ump.userAdd.setPlugin(pluginField.getText());
+                ump.userAdd.setAdministrator(adminBox.isSelected());
                 ump.userAdd.setDescription(descriptionField.getText());
                 Map<String, String> tags = new HashMap<>();
                 for (int i = 0; i < tagTable.getRowCount(); i++) {

@@ -1,9 +1,8 @@
 package biz.redsoft;
 
-import org.firebirdsql.management.FBUser;
+
 import org.firebirdsql.management.FBUserManager;
-import org.firebirdsql.management.User;
-import sun.rmi.runtime.Log;
+
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -77,54 +76,91 @@ public class FB3UserManagerImpl implements IFBUserManager {
 
     @Override
     public void add(IFBUser user) throws SQLException, IOException {
-        String query = "CREATE USER " + user.getUserName() + "\n" +
-                "PASSWORD '" + user.getPassword() + "'";
-        execute_query(query);
-        update(user);
+        String query;
+        if (!user.getPlugin().equals("")) {
+            query = "CREATE USER " + user.getUserName() + "\n" +
+                    "PASSWORD '" + user.getPassword() + "'\n" +
+                    "USING PLUGIN " + user.getPlugin();
+            execute_query(query);
+        } else {
+            query = "CREATE USER " + user.getUserName() + "\n" +
+                    "PASSWORD '" + user.getPassword() + "'";
+            execute_query(query);
+        }
+        update(user,true);
     }
 
     @Override
     public void delete(IFBUser user) throws SQLException, IOException {
-        String query = "DROP USER " + user.getUserName() + "\n";
+        String query;
+        if (user.getPlugin().equals(""))
+             query = "DROP USER \"" + user.getUserName() + "\"\n";
+        else
+            query = "DROP USER \"" + user.getUserName() + "\"\n"+
+                    "USING PLUGIN "+user.getPlugin();
         execute_query(query);
 
     }
 
     @Override
     public void update(IFBUser user) throws SQLException, IOException {
-        String query = "CREATE OR ALTER USER " + user.getUserName() + "\n" +
-                " FIRSTNAME '" + user.getFirstName() + "'\n" +
-                " MIDDLENAME '" + user.getMiddleName() + "'\n" +
-                " LASTNAME '" + user.getLastName() + "'";
-        execute_query(query);
-        if (user.getPassword() != "") {
-            query = "CREATE OR ALTER USER " + user.getUserName() + "\n" +
-                    " PASSWORD '" + user.getPassword() + "'\n";
+      update(user,false);
+
+    }
+
+    void update(IFBUser user, boolean create) throws SQLException, IOException {
+        IFBUser user1;
+        if (create) {
+            user1=new FBUserImpl();
+            user1.setUserName(user.getUserName().toUpperCase());
+        }
+        else
+            user1 = getUsers().get(user.getUserName()+":"+user.getPlugin());
+        user.setUserName(user1.getUserName());
+        if (!user.equals(user1)) {
+            String query = "ALTER USER \"" + user.getUserName() + "\"";
+            if (user.getFirstName() != user1.getFirstName())
+                query += "\nFIRSTNAME '" + user.getFirstName() + "'";
+            if (user.getMiddleName() != user1.getMiddleName())
+                query += "\nMIDDLENAME '" + user.getMiddleName() + "'";
+            if (user.getLastName() != user1.getLastName())
+                query += "\nLASTNAME '" + user.getLastName() + "'";
+            if (user.getPassword() != "") {
+                query += "\nPASSWORD '" + user.getPassword() + "'\n";
+            }
+            if (user.getActive()) {
+                query += "\nACTIVE";
+            } else {
+                query +=
+                        "\nINACTIVE";
+            }
+            if (user.getAdministrator() != user1.getAdministrator())
+                if (user.getAdministrator()) {
+                    query += "\nGRANT ADMIN ROLE";
+                } else {
+                    query += "\nREVOKE ADMIN ROLE";
+                }
+            if (!user.getPlugin().equals(""))
+                query += "\nUSING PLUGIN " + user.getPlugin();
+            Map<String, String> tags1 = getTags(user.getUserName());
+            Map<String, String> tags = user.getTags();
+            if (!tags.equals(tags1)) {
+                query += "\nTAGS (";
+                for (String tag : tags1.keySet()) {
+                    if (!tags.containsKey(tag)) {
+                        query += "DROP " + tag + " , ";
+                    }
+                }
+                for (String tag : tags.keySet()) {
+                    query += tag + " = '" + tags.get(tag) + "' , ";
+                }
+                query = query.substring(0, query.lastIndexOf(","));
+                query += " )";
+            }
+            execute_query(query);
+            query = "COMMENT ON USER \"" + user.getUserName() + "\" is '" + user.getDescription() + "'";
             execute_query(query);
         }
-        if (user.getActive()) {
-            query = "CREATE OR ALTER USER " + user.getUserName() + "\n" +
-                    " ACTIVE";
-            execute_query(query);
-        } else {
-            query = "CREATE OR ALTER USER " + user.getUserName() + "\n" +
-                    " INACTIVE";
-            execute_query(query);
-        }
-        Map<String, String> tags = getTags(user.getUserName());
-        for (String tag : tags.keySet()) {
-            query = "CREATE OR ALTER USER " + user.getUserName() + "\n" +
-                    "TAGS (DROP " + tag + ")";
-            execute_query(query);
-        }
-        tags = user.getTags();
-        for (String tag : tags.keySet()) {
-            query = "CREATE OR ALTER USER " + user.getUserName() + "\n" +
-                    "TAGS (" + tag + " = '" + tags.get(tag) + "')";
-            execute_query(query);
-        }
-        query = "COMMENT ON USER " + user.getUserName() + " is '" + user.getDescription() + "'";
-        execute_query(query);
     }
 
     @Override
@@ -158,15 +194,25 @@ public class FB3UserManagerImpl implements IFBUserManager {
             try {
                 value.setActive(result.getBoolean(5));
             } catch (NullPointerException e) {
-                value.setActive(true);
+                value.setActive(false);
+            }
+            try {
+                value.setAdministrator(result.getBoolean(5));
+            } catch (NullPointerException e) {
+                value.setAdministrator(false);
             }
             try {
                 value.setDescription(result.getString(7));
             } catch (NullPointerException e) {
                 value.setDescription("");
             }
+            try {
+                value.setPlugin(result.getString(8));
+            } catch (NullPointerException e) {
+                value.setPlugin("");
+            }
             value.setTags(getTags(key));
-            mUsers.put(key, value);
+            mUsers.put(key+":"+value.getPlugin(), value);
         }
         state.close();
 

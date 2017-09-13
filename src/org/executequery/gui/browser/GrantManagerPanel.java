@@ -916,6 +916,7 @@ public class GrantManagerPanel extends JPanel {
                 String role = result.getString(1);
                 userlistModel.addElement(role);
             }
+            result.close();
             querySender.releaseResources();
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -985,6 +986,7 @@ public class GrantManagerPanel extends JPanel {
                         break;
                     }
                 }
+                rs1.close();
                 if (adding)
                     ((RoleTableModel) tablePrivileges.getModel()).addRow(roleData);
                 querySender.releaseResources();
@@ -1021,6 +1023,7 @@ public class GrantManagerPanel extends JPanel {
                 fieldName.addElement(name);
                 fieldType.addElement(type);
             }
+            rs.close();
             querySender.releaseResources();
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
@@ -1052,6 +1055,7 @@ public class GrantManagerPanel extends JPanel {
                             ((RoleTableModel) jTable2.getModel()).setValueAt(adm, i, 3);
 
                 }
+                rs1.close();
                 querySender.releaseResources();
             } catch (Exception e) {
                 Log.error(e.getMessage());
@@ -1104,6 +1108,7 @@ public class GrantManagerPanel extends JPanel {
                 rname.addElement(name);
                 sflag.addElement(system_flag);
             }
+            rs.close();
             querySender.releaseResources();
             for (int i = 0; i < rname.size(); i++) {
                 String name = rname.elementAt(i);

@@ -592,6 +592,7 @@ public class GrantManagerPanel extends JPanel {
     private void databaseBoxActionPerformed(java.awt.event.ActionEvent evt) {
         if (enabled_dBox) {
             querySender = new DefaultStatementExecutor(listConnections.get(databaseBox.getSelectedIndex()), true);
+            querySender.setCommitMode(true);
             dbc = listConnections.get(databaseBox.getSelectedIndex());
             con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
         }

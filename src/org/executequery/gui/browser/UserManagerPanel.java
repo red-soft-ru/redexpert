@@ -964,20 +964,13 @@ public class UserManagerPanel extends JPanel {
                         membershipTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
                     first = false;
                 }
-            }
-            catch (ArrayIndexOutOfBoundsException e)
-            {
+            } catch (ArrayIndexOutOfBoundsException e) {
                 Log.error("Error index  out of bounds");
-            }
-            catch (NullPointerException e)
-            {
+            } catch (NullPointerException e) {
 
-            }
-            catch (SQLException e)
-            {
+            } catch (SQLException e) {
                 Log.error(e.getMessage());
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 Log.error(e.getMessage());
             }
         }

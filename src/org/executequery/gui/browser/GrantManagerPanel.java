@@ -990,12 +990,9 @@ public class GrantManagerPanel extends JPanel {
                 querySender.releaseResources();
             } catch (NullPointerException e) {
                 Log.error(bundleString("connection.close"));
-            }
-            catch (SQLException e)
-            {
+            } catch (SQLException e) {
                 Log.error(e.getMessage());
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 GUIUtilities.displayErrorMessage(e.getMessage());
             }
 
@@ -1252,15 +1249,11 @@ public class GrantManagerPanel extends JPanel {
             querySender.execute(query, true);
             t.setValueAt(icon, row, col);
             querySender.releaseResources();
-        }
-        catch (NullPointerException e) {
+        } catch (NullPointerException e) {
             Log.error(bundleString("connection.close"));
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             Log.error(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Log.error(e.getMessage());
         }
     }

@@ -142,20 +142,31 @@ public class FB3UserManagerImpl implements IFBUserManager {
                 }
             if (!user.getPlugin().equals(""))
                 query += "\nUSING PLUGIN " + user.getPlugin();
-            Map<String, String> tags1 = getTags(user.getUserName());
             Map<String, String> tags = user.getTags();
-            if (!tags.equals(tags1)) {
+            if(create&&tags.size()>0)
+            {
                 query += "\nTAGS (";
-                for (String tag : tags1.keySet()) {
-                    if (!tags.containsKey(tag)) {
-                        query += "DROP " + tag + " , ";
-                    }
-                }
                 for (String tag : tags.keySet()) {
                     query += tag + " = '" + tags.get(tag) + "' , ";
                 }
                 query = query.substring(0, query.lastIndexOf(","));
                 query += " )";
+            }
+            else {
+                Map<String, String> tags1 = getTags(user.getUserName(),user.getPlugin());
+                if (!tags.equals(tags1)) {
+                    query += "\nTAGS (";
+                    for (String tag : tags1.keySet()) {
+                        if (!tags.containsKey(tag)) {
+                            query += "DROP " + tag + " , ";
+                        }
+                    }
+                    for (String tag : tags.keySet()) {
+                        query += tag + " = '" + tags.get(tag) + "' , ";
+                    }
+                    query = query.substring(0, query.lastIndexOf(","));
+                    query += " )";
+                }
             }
             execute_query(query);
             query = "COMMENT ON USER \"" + user.getUserName() + "\" is '" + user.getDescription() + "'";
@@ -207,11 +218,11 @@ public class FB3UserManagerImpl implements IFBUserManager {
                 value.setDescription("");
             }
             try {
-                value.setPlugin(result.getString(8));
+                value.setPlugin(result.getString(8).trim());
             } catch (NullPointerException e) {
                 value.setPlugin("");
             }
-            value.setTags(getTags(key));
+            value.setTags(getTags(key,value.getPlugin()));
             mUsers.put(key+":"+value.getPlugin(), value);
         }
         state.close();
@@ -219,12 +230,12 @@ public class FB3UserManagerImpl implements IFBUserManager {
         return mUsers;
     }
 
-    private Map<String, String> getTags(String name) {
+    private Map<String, String> getTags(String name, String Plugin) {
         Map<String, String> tags = new HashMap<>();
         try {
 
             Statement state1 = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            String query = "SELECT * FROM SEC$USER_ATTRIBUTES WHERE SEC$USER_NAME = '" + name + "' ";
+            String query = "SELECT * FROM SEC$USER_ATTRIBUTES WHERE SEC$USER_NAME = '" + name + "' and SEC$PLUGIN = '"+Plugin+"'";
             ResultSet result1 = state1.executeQuery(query);
             while (result1.next()) {
                 tags.put(result1.getString(2), result1.getString(3));

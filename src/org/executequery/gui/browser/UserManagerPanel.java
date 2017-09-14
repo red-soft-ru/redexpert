@@ -31,6 +31,7 @@ import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -981,15 +982,12 @@ public class UserManagerPanel extends JPanel {
                 DatabaseDriverRepository.REPOSITORY_ID);
     }
 
-    public void addUser() {
-        try {
+    public void addUser()throws SQLException,IOException {
+
             userManager.add(userAdd);
             act = Action.REFRESH;
             execute_thread();
-        } catch (Exception e) {
-            GUIUtilities.displayErrorMessage(e.getMessage());
-            System.out.println(e.toString());
-        }
+
     }
 
     public void addRole(String role) {
@@ -1006,15 +1004,12 @@ public class UserManagerPanel extends JPanel {
         }
     }
 
-    public void editUser() {
-        try {
+    public void editUser()throws SQLException,IOException {
+
             userManager.update(userAdd);
             act = Action.REFRESH;
             execute_thread();
-        } catch (Exception e) {
-            GUIUtilities.displayErrorMessage(e.getMessage());
-            System.out.println(e.toString());
-        }
+
     }
 
     void execute_thread() {

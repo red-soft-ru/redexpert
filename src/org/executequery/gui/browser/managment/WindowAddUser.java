@@ -117,9 +117,9 @@ public class WindowAddUser extends javax.swing.JPanel {
         activeBox = new JCheckBox();
         addTag = new JButton();
         deleteTag = new JButton();
-        pluginLabel=new JLabel();
-        pluginField=new JTextField();
-        adminBox=new JCheckBox();
+        pluginLabel = new JLabel();
+        pluginField = new JTextField();
+        adminBox = new JCheckBox();
 
         //setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -308,9 +308,9 @@ public class WindowAddUser extends javax.swing.JPanel {
                                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                                                 .addComponent(pluginField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                 .addComponent(pluginLabel))
-                                                        .addGap(18,18,18)
+                                                        .addGap(18, 18, 18)
                                                         .addComponent(activeBox)
-                                                        .addGap(18,18,18)
+                                                        .addGap(18, 18, 18)
                                                         .addComponent(adminBox)
                                                 ))
                                         .addGroup(layout.createSequentialGroup()
@@ -378,13 +378,24 @@ public class WindowAddUser extends javax.swing.JPanel {
                 if (edit) {
                     if (passTextField.getPassword().length > 0)
                         ump.userAdd.setPassword(new String(passTextField.getPassword()));
-                    ump.editUser();
-                    GUIUtilities.closeSelectedTab();
+                    try {
+                        ump.editUser();
+                        GUIUtilities.closeSelectedTab();
+                    } catch (Exception e) {
+                        GUIUtilities.displayErrorMessage(e.getMessage());
+
+                    }
+
                 } else {
                     if (passTextField.getPassword().length > 0) {
                         ump.userAdd.setPassword(new String(passTextField.getPassword()));
-                        ump.addUser();
-                        GUIUtilities.closeSelectedTab();
+                        try {
+                            ump.addUser();
+                            GUIUtilities.closeSelectedTab();
+                        } catch (Exception e) {
+                            GUIUtilities.displayErrorMessage(e.getMessage());
+                        }
+
                     } else {
                         GUIUtilities.displayErrorMessage(bundleString("error.empty-pwd"));
                     }

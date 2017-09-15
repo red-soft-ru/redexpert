@@ -15,3 +15,9 @@ RedExpert.jar
 red-expert\.iml
 
 RedExpert\.iml
+
+*.iml
+
+lib/fbplugin\.jar
+
+lib/fbplugin-impl\.jar

@@ -1,6 +1,7 @@
 package org.executequery.gui.browser.comparer;
 
 import org.executequery.databasemediators.spi.StatementExecutor;
+import org.underworldlabs.util.MiscUtils;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -312,7 +313,7 @@ public class Dependencies {
             return scriptPart;
         }
 
-        if (c && field.equals("")) {
+        if (c && MiscUtils.isNull(field)) {
             return scriptPart;
         }
 

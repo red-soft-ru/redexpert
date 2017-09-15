@@ -257,6 +257,11 @@
           <order>8</order>
         </button>
 
+        <button id="47" action-id="comparerDB-command">
+            <visible>true</visible>
+            <order>9</order>
+        </button>
+
         <button id="21" action-id="create-table-command">
           <visible>true</visible>
           <order>3</order>

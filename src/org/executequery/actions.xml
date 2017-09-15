@@ -827,7 +827,7 @@
           small-icon="/org/executequery/icons/user_manager_16.png"
           large-icon="/org/executequery/icons/user_manager_32.png"
           description="User Manager"
-          execute-class="org.executequery.actions.usermanagercommands.UserManagerCommands"/>
+          execute-class="org.executequery.actions.toolscommands.UserManagerCommands"/>
   <action id="grant-manager-command"
           name="Grant Manager"
           mnemonic="GM"
@@ -835,7 +835,16 @@
           small-icon="/org/executequery/icons/grant_manager_16.png"
           large-icon="/org/executequery/icons/grant_manager_32.png"
           description="Grant Manager"
-          execute-class="org.executequery.actions.usermanagercommands.GrantManagerCommands"/>
+          execute-class="org.executequery.actions.toolscommands.GrantManagerCommands"/>
+
+  <action id="comparerDB-command"
+          name="Comparer DB"
+          mnemonic="CDB"
+          accel-editable="true"
+          small-icon="/org/executequery/icons/ComparerDB_16.png"
+          large-icon="/org/executequery/icons/ComparerDB_32.png"
+          description="Comparer DB"
+          execute-class="org.executequery.actions.toolscommands.ComparerDBCommands"/>
 
 
 </actions>

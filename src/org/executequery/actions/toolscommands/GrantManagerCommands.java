@@ -1,4 +1,4 @@
-package org.executequery.actions.usermanagercommands;
+package org.executequery.actions.toolscommands;
 
 import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;

@@ -246,14 +246,14 @@ public class ConnectionPanel extends AbstractConnectionPanel
         // create the basic props panel
 
         List<String> auth = new ArrayList<>();
-        auth.add("Basic");
+        auth.add(bundleString("BasicAu"));
         auth.add("GSS");
         authCombo = new JComboBox(auth.toArray());
         authCombo.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED)
             {
                 Object selectedItem = e.getItem();
-                if (selectedItem.toString().equalsIgnoreCase("basic")) {
+                if (selectedItem.toString().equalsIgnoreCase(bundleString("BasicAu"))) {
                     basicPanel.setVisible(true);
                 }
                 else if (selectedItem.toString().equalsIgnoreCase("gss")) {
@@ -263,14 +263,14 @@ public class ConnectionPanel extends AbstractConnectionPanel
         });
 
         List<String> methods = new ArrayList<>();
-        methods.add("Standard");
+        methods.add(bundleString("Standard"));
         methods.add("JDBC");
         methodCombo = new JComboBox(methods.toArray());
         methodCombo.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED)
             {
                 Object selectedItem = e.getItem();
-                if (selectedItem.toString().equalsIgnoreCase("standard")) {
+                if (selectedItem.toString().equalsIgnoreCase(bundleString("Standard"))) {
                     standardPanel.setVisible(true);
                     jdbcUrlPanel.setVisible(false);
                 }
@@ -320,14 +320,14 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbc.gridx = 0;
 
         statusLabel = new DefaultFieldLabel();
-        addLabelFieldPair(mainPanel, "Status:", 
-                statusLabel, "Current connection status", gbc);
+        addLabelFieldPair(mainPanel, bundleString("statusLabel"),
+                                statusLabel, bundleString("statusLabel.tool-tip"), gbc);
 
         addDriverFields(mainPanel, gbc);
         
         gbc.insets.bottom = 5;
-        addLabelFieldPair(mainPanel, "Connection Name (Database Alias):",
-                nameField, "A friendly name for this connection", gbc);
+        addLabelFieldPair(mainPanel, bundleString("nameField"),
+                nameField, bundleString("nameField.tool-tip"), gbc);
 
 //        addLabelFieldPair(mainPanel, "Authentication:",
 //                authCombo, "Available authentications", gbc);
@@ -343,7 +343,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         bgbc.anchor = GridBagConstraints.NORTHWEST;
         bgbc.insets = new Insets(5, 5, 5, 5);
 
-        JLabel userLabel = new DefaultFieldLabel("User Name:");
+        JLabel userLabel = new DefaultFieldLabel( bundleString("userField"));
         bgbc.gridx = 0;
         bgbc.gridwidth = 1;
         bgbc.weightx = 0;
@@ -354,7 +354,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         bgbc.weightx = 0.25;
         basicPanel.add(userField, bgbc);
 
-        JLabel passwordLabel = new DefaultFieldLabel("Password:");
+        JLabel passwordLabel = new DefaultFieldLabel(bundleString("passwordField"));
         bgbc.gridx = 2;
         bgbc.gridwidth = 1;
         bgbc.weightx = 0;
@@ -371,16 +371,16 @@ public class ConnectionPanel extends AbstractConnectionPanel
 //        addLabelFieldPair(basicPanel, "Password:",
 //                passwordField, "Login password", gbc);
 
-        JButton showPassword = new LinkButton("Show Password");
+        JButton showPassword = new LinkButton( bundleString("ShowPassword"));
         showPassword.setActionCommand("showPassword");
         showPassword.addActionListener(this);
 
         JPanel passwordOptionsPanel = new JPanel(new GridBagLayout());
         addComponents(passwordOptionsPanel,
                 new ComponentToolTipPair[]{
-                        new ComponentToolTipPair(savePwdCheck, "Store the password with the connection information"),
-                        new ComponentToolTipPair(encryptPwdCheck, "Encrypt the password when saving"),
-                        new ComponentToolTipPair(showPassword, "Show the password in plain text")});
+                        new ComponentToolTipPair(savePwdCheck, bundleString("StorePassword.tool-tip")),
+                        new ComponentToolTipPair(encryptPwdCheck, bundleString("EncryptPassword.tool-tip")),
+                        new ComponentToolTipPair(showPassword, bundleString("ShowPassword.tool-tip"))});
 
 //        gbc.gridy++;
 //        gbc.gridx = 1;
@@ -392,7 +392,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         bgbc.weightx = 0.1;
         basicPanel.add(passwordOptionsPanel, bgbc);
 
-        JLabel charsetLabel = new DefaultFieldLabel("Character Set:");
+        JLabel charsetLabel = new DefaultFieldLabel(bundleString("CharacterSet"));
         bgbc.gridy = 2;
         bgbc.gridx = 0;
         bgbc.gridwidth = 1;
@@ -405,7 +405,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         bgbc.weightx = 0.25;
         basicPanel.add(charsetsCombo, bgbc);
 
-        JLabel roleLabel = new DefaultFieldLabel("Role:");
+        JLabel roleLabel = new DefaultFieldLabel(bundleString("Role"));
         bgbc.gridy = 2;
         bgbc.gridx = 2;
         bgbc.gridwidth = 1;
@@ -418,8 +418,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
         bgbc.weightx = 0.5;
         basicPanel.add(roleField, bgbc);
 
-        addLabelFieldPair(mainPanel, "Connection parameters:",
-                methodCombo, "Specify connection parameters or JDBC string", gbc);
+        addLabelFieldPair(mainPanel, bundleString("ConnectionParameters"),
+                methodCombo, bundleString("ConnectionParameters.tool-tip"), gbc);
 
         standardPanel = new JPanel(new GridBagLayout());
         GridBagConstraints sgbc = new GridBagConstraints();
@@ -427,7 +427,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         sgbc.anchor = GridBagConstraints.NORTHWEST;
         sgbc.insets = new Insets(5, 5, 5, 5);
 
-        JLabel hostLabel = new DefaultFieldLabel("Server(Host) Name(IP):");
+        JLabel hostLabel = new DefaultFieldLabel(bundleString("hostField"));
         sgbc.gridx = 0;
         sgbc.gridwidth = 1;
         sgbc.weightx = 0;
@@ -438,7 +438,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         sgbc.weightx = 0.25;
         standardPanel.add(hostField, sgbc);
 
-        JLabel portLabel = new DefaultFieldLabel("Port:");
+        JLabel portLabel = new DefaultFieldLabel(bundleString("portField"));
         sgbc.gridx = 2;
         sgbc.insets.left = 5;
         sgbc.weightx = 0;
@@ -449,13 +449,13 @@ public class ConnectionPanel extends AbstractConnectionPanel
         sgbc.weightx = 0.1;
         standardPanel.add(portField, sgbc);
 
-        JLabel dataSourceLabel = new DefaultFieldLabel("Database File:");
+        JLabel dataSourceLabel = new DefaultFieldLabel(bundleString("sourceField"));
         sgbc.gridx = 4;
         sgbc.insets.left = 5;
         sgbc.weightx = 0;
         standardPanel.add(dataSourceLabel, sgbc);
 
-        JButton openFile = new JButton("Choose file");
+        JButton openFile = new JButton(bundleString("ChooseFile"));
         openFile.addActionListener(new ActionListener() {
             FileChooserDialog fileChooser = new FileChooserDialog();
             @Override
@@ -486,7 +486,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
 //        addLabelFieldPair(mainPanel, "Authentication:",
 //                authCombo, "Available authentications", gbc);
-        JLabel authLabel = new DefaultFieldLabel("Authentication:");
+        JLabel authLabel = new DefaultFieldLabel(bundleString("Authentication"));
         sgbc.gridy = 1;
         sgbc.gridx = 0;
         sgbc.gridwidth = 1;
@@ -523,7 +523,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         jgbc.anchor = GridBagConstraints.NORTHWEST;
         jgbc.insets = new Insets(5, 5, 5, 5);
 
-        JLabel urlLabel = new DefaultFieldLabel("JDBC URL:");
+        JLabel urlLabel = new DefaultFieldLabel(bundleString("urlField"));
         jgbc.gridx = 0;
         jgbc.gridwidth = 1;
         jgbc.weightx = 0;
@@ -545,8 +545,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
         mainPanel.add(jdbcUrlPanel, gbc);
         jdbcUrlPanel.setVisible(false);
 
-        connectButton = createButton("Connect", CONNECT_ACTION_COMMAND, 'T');
-        disconnectButton = createButton("Disconnect", "disconnect", 'D');
+        connectButton = createButton(Bundles.getCommon("connect.button"), CONNECT_ACTION_COMMAND, 'T');
+        disconnectButton = createButton(Bundles.getCommon("disconnect.button"), "disconnect", 'D');
 
         JPanel buttons = new JPanel(new GridBagLayout());
         gbc.gridy++;

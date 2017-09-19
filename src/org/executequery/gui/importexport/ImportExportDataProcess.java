@@ -43,8 +43,8 @@ import org.executequery.gui.browser.ColumnData;
  * that is each process.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1784 $
+ * @date     $Date: 2017-09-19 00:55:31 +1000 (Tue, 19 Sep 2017) $
  */
 public interface ImportExportDataProcess {
     
@@ -267,6 +267,8 @@ public interface ImportExportDataProcess {
      */
     boolean includeColumnNames();
 
+    boolean quoteCharacterValues();
+    
     /** 
      * Retrieves the selected type of delimiter within
      * the file to be used with this process.

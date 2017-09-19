@@ -25,21 +25,22 @@ import java.awt.event.ActionListener;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 
 public class BrowserTreeFolderPopupMenu extends JPopupMenu {
 
     public BrowserTreeFolderPopupMenu(ConnectionsTreePanel treePanel) {
 
-        add(createMenuItem("New Connection", "newConnection", treePanel));
-        add(createMenuItem("Delete Folder", "deleteConnection", treePanel));
+        add(createMenuItem(bundleString("NewConnection"), "newConnection", treePanel));
+        add(createMenuItem(bundleString("DeleteFolder"), "deleteConnection", treePanel));
         addSeparator();
 
-        add(createMenuItem("Connect All", "connectAll", treePanel));
-        add(createMenuItem("Disconnect All", "disconnectAll", treePanel));
+        add(createMenuItem(bundleString("ConnectAll"), "connectAll", treePanel));
+        add(createMenuItem(bundleString("DisconnectAll"), "disconnectAll", treePanel));
 
         addSeparator();
-        add(createMenuItem("Sort Connections", "sortConnections", treePanel));
+        add(createMenuItem(bundleString("SortConnections"), "sortConnections", treePanel));
     }
 
     private JMenuItem createMenuItem(String text,
@@ -51,10 +52,11 @@ public class BrowserTreeFolderPopupMenu extends JPopupMenu {
         menuItem.addActionListener(listener);
         return menuItem;
     }
+    
+    private String bundleString(String key) {
+        
+        return Bundles.get(getClass(),key);
+    }
 
 }
-
-
-
-
 

@@ -36,13 +36,14 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.nodes.DatabaseCatalogNode;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1783 $
+ * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 class BrowserTreePopupMenu extends JPopupMenu {
 
@@ -68,39 +69,39 @@ class BrowserTreePopupMenu extends JPopupMenu {
 
         this.listener = listener;
         
-        connect = createMenuItem("Connect", "connect", listener);
+        connect = createMenuItem(bundleString("connect"), "connect", listener);
         add(connect);
-        disconnect = createMenuItem("Disconnect", "disconnect", listener);
+        disconnect = createMenuItem(bundleString("disconnect"), "disconnect", listener);
         add(disconnect);
 
         addSeparator();
 
-        reload = createMenuItem("Reload", "reload", listener);
+        reload = createMenuItem(bundleString("reload"), "reload", listener);
         add(reload);
-        recycleConnection = createMenuItem("Recycle this Connection", "recycle", listener);
+        recycleConnection = createMenuItem(bundleString("recycle"), "recycle", listener);
         add(recycleConnection);
 
         addSeparator();
 
         showDefaultCatalogsAndSchemas = createCheckBoxMenuItem(
-                "Show only default Catalog or Schema", 
+                bundleString("switchDefaultCatalogAndSchemaDisplay"),
                 "switchDefaultCatalogAndSchemaDisplay", listener);
         add(showDefaultCatalogsAndSchemas);
 
         addSeparator();
 
-        addNewConnection = createMenuItem("New Connection", "addNewConnection", listener);
+        addNewConnection = createMenuItem(bundleString("addNewConnection"), "addNewConnection", listener);
         add(addNewConnection);
-        duplicate = createMenuItem("Duplicate", "duplicate", listener);
+        duplicate = createMenuItem(bundleString("duplicate"), "duplicate", listener);
         add(duplicate);
-        duplicateWithSource = createMenuItem("Duplicate source", "duplicateWithSource", listener);
+        duplicateWithSource = createMenuItem(bundleString("duplicateWithSource"), "duplicateWithSource", listener);
         add(duplicateWithSource);
-        delete = createMenuItem("Delete", "delete", listener);
+        delete = createMenuItem(bundleString("delete"), "delete", listener);
         add(delete);
 
         addSeparator();
 
-        copyName = createMenuItem("Copy Name", "copyName", listener);
+        copyName = createMenuItem(bundleString("copyName"), "copyName", listener);
         add(copyName);
         
         createSqlMenu(listener);
@@ -108,8 +109,8 @@ class BrowserTreePopupMenu extends JPopupMenu {
         createImportMenu(listener);
 
         addSeparator();
-        add(createMenuItem("Move to folder...", "moveToFolder", listener));
-        add(createMenuItem("Connection Properties", "properties", listener));
+        add(createMenuItem(bundleString("moveToFolder"), "moveToFolder", listener));
+        add(createMenuItem(bundleString("properties"), "properties", listener));
     }
 
     public void show(Component invoker, int x, int y) {
@@ -188,27 +189,27 @@ class BrowserTreePopupMenu extends JPopupMenu {
         if (listener.hasCurrentSelection()) {
 
             String name = listener.getCurrentSelection().getName();
-            connect.setText("Connect Data Source " + name);
-            disconnect.setText("Disconnect Data Source " + name);
-            delete.setText("Remove Data Source " + name);
-            duplicate.setText("Create Duplicate of Connection " + name);
+            connect.setText(bundleString("connectText" )+ name);
+            disconnect.setText(bundleString("disconnectText") + name);
+            delete.setText(bundleString("deleteText") + name);
+            duplicate.setText(bundleString("duplicateText") + name);
             
             // eeekkk...
             if (isCatalog(currentPathComponent) && asDatabaseCatalog(currentPathComponent).getHost().supportsCatalogsInTableDefinitions()) {
                 
                 duplicateWithSource.setEnabled(true);
-                duplicateWithSource.setText("Create Connection with Data Source as " + currentPathComponent.toString());
+                duplicateWithSource.setText(bundleString("duplicateWithSourceText1") + currentPathComponent.toString());
 
             } else {
 
-                duplicateWithSource.setText("Create Connection with Selected Data Source");
+                duplicateWithSource.setText(bundleString("duplicateWithSourceText2"));
                 duplicateWithSource.setEnabled(false);
             }
 
             if (label != null) {
-                reload.setText("Reload " + label);
+                reload.setText(bundleString("reload")+" " + label);
             } else {
-                reload.setText("Reload");
+                reload.setText(bundleString("reload"));
             }
 
         }
@@ -231,27 +232,27 @@ class BrowserTreePopupMenu extends JPopupMenu {
     }
 
     private void createImportMenu(ActionListener listener) {
-        importData = MenuItemFactory.createMenu("Import Data");
-        importData.add(createMenuItem("Import from XML File", "importXml", listener));
-        importData.add(createMenuItem("Import from Delimited File", "importDelimited", listener));
+        importData = MenuItemFactory.createMenu(bundleString("ImportData"));
+        importData.add(createMenuItem(bundleString("importXml"), "importXml", listener));
+        importData.add(createMenuItem(bundleString("importDelimited"), "importDelimited", listener));
         add(importData);
     }
 
     private void createExportMenu(ActionListener listener) {
-        exportData = MenuItemFactory.createMenu("Export Data");
-        exportData.add(createMenuItem("Export as SQL", "exportSQL", listener));
-        exportData.add(createMenuItem("Export to XML File", "exportXml", listener));
-        exportData.add(createMenuItem("Export to Delimited File", "exportDelimited", listener));
-        exportData.add(createMenuItem("Export to Excel Spreadsheet", "exportExcel", listener));
+        exportData = MenuItemFactory.createMenu(bundleString("ExportData"));
+        exportData.add(createMenuItem(bundleString("exportSQL"), "exportSQL", listener));
+        exportData.add(createMenuItem(bundleString("exportXml"), "exportXml", listener));
+        exportData.add(createMenuItem(bundleString("exportDelimited"), "exportDelimited", listener));
+        exportData.add(createMenuItem(bundleString("exportExcel"), "exportExcel", listener));
         add(exportData);
     }
 
     private void createSqlMenu(ActionListener listener) {
-        sql = MenuItemFactory.createMenu("SQL");
-        sql.add(createMenuItem("SELECT statement", "selectStatement", listener));
-        sql.add(createMenuItem("INSERT statement", "insertStatement", listener));
-        sql.add(createMenuItem("UPDATE statement", "updateStatement", listener));
-        sql.add(createMenuItem("CREATE TABLE statement", "createTableStatement", listener));            
+        sql = MenuItemFactory.createMenu(bundleString("SQL"));
+        sql.add(createMenuItem(bundleString("selectStatement"), "selectStatement", listener));
+        sql.add(createMenuItem(bundleString("insertStatement"), "insertStatement", listener));
+        sql.add(createMenuItem(bundleString("updateStatement"), "updateStatement", listener));
+        sql.add(createMenuItem(bundleString("createTableStatement"), "createTableStatement", listener));
         add(sql);
     }
 
@@ -273,6 +274,10 @@ class BrowserTreePopupMenu extends JPopupMenu {
 
     protected TreePath getCurrentPath() {
         return listener.getCurrentPath();
+    }
+
+    private String bundleString(String key) {
+        return Bundles.get(getClass(), key);
     }
 
 }

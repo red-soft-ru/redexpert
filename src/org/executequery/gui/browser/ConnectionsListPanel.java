@@ -56,6 +56,7 @@ import org.executequery.event.ConnectionRepositoryListener;
 import org.executequery.gui.SortableColumnsTable;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.localization.Bundles;
 import org.executequery.print.TablePrinter;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
@@ -65,8 +66,8 @@ import org.underworldlabs.swing.table.AbstractSortableTableModel;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1783 $
+ * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 public class ConnectionsListPanel extends AbstractFormObjectViewPanel
                                   implements MouseListener,
@@ -115,12 +116,12 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         tcm.getColumn(0).setCellRenderer(new ConnectCellRenderer());
 
         // new connection button
-        JButton button = WidgetFactory.createButton("New Connection");
+        JButton button = WidgetFactory.createButton(Bundles.getCommon("newConnection.button"));
         button.addActionListener(this);
 
         JPanel tablePanel = new JPanel(new GridBagLayout());
         tablePanel.add(new JScrollPane(table), getPanelConstraints());
-        tablePanel.setBorder(BorderFactory.createTitledBorder("Available Connections"));
+        tablePanel.setBorder(BorderFactory.createTitledBorder(bundleString("AvailableConnections")));
 
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -130,13 +131,12 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        panel.add(new JLabel("User defined database connection parameters."), gbc);
+        panel.add(new JLabel(bundleString("label1")), gbc);
         gbc.gridy++;
         gbc.gridwidth = 1;
         gbc.insets.top = 0;
         gbc.fill = GridBagConstraints.NONE;
-        panel.add(new JLabel("Select the New Connection button to add a new " +
-                             "connection to the system"), gbc);
+        panel.add(new JLabel(bundleString("label2")), gbc);
         gbc.gridx = 1;
         gbc.insets.left = 0;
         gbc.insets.bottom = 0;
@@ -150,7 +150,7 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         panel.add(tablePanel, gbc);
 
-        setHeaderText("Database Connections");
+        setHeaderText(Bundles.getCommon("database-connections"));
         setHeaderIcon(GUIUtilities.loadIcon("DatabaseConnect24.png"));
         setContentPanel(panel);
 
@@ -389,7 +389,7 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
     public void cleanup() {}
 
     public Printable getPrintable() {
-        return new TablePrinter(table, "Database Connections", false);
+        return new TablePrinter(table, Bundles.getCommon("database-connections"), false);
     }
 
     /** The table's popup menu function */
@@ -400,13 +400,13 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         private JMenuItem properties;
 
         public PopMenu() {
-            connect = MenuItemFactory.createMenuItem("Connect");
+            connect = MenuItemFactory.createMenuItem(Bundles.getCommon("connect.button"));
             connect.addActionListener(this);
 
-            disconnect = MenuItemFactory.createMenuItem("Disconnect");
+            disconnect = MenuItemFactory.createMenuItem(Bundles.getCommon("disconnect.button"));
             disconnect.addActionListener(this);
 
-            properties = MenuItemFactory.createMenuItem("Properties");
+            properties = MenuItemFactory.createMenuItem(Bundles.getCommon("properties"));
             properties.addActionListener(this);
 
             add(connect);
@@ -472,8 +472,8 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
     private class ConnectionsTableModel extends AbstractSortableTableModel {
 
         private List<DatabaseConnection> values;
-        private String[] header = {"", "Connection Name", "Host",
-                                   "Data Source", "User", "Driver", "Charset"};
+        private String[] header = Bundles.get(ConnectionsListPanel.class,new String[]{"", "ConnectionName", "Host",
+                                   "DataSource", "User", "Driver"});
 
         public ConnectionsTableModel(List<DatabaseConnection> values) {
             this.values = values;
@@ -566,10 +566,10 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
 
             if (connected != null && connected) {
                 setIcon(connectedImage);
-                setToolTipText("Connected (double-click icon to disconnect)");
+                setToolTipText(bundleString("connectedImage.tool-tip"));
             } else {
                 setIcon(notConnectedImage);
-                setToolTipText("Disconnected (double-click icon to connect)");
+                setToolTipText(bundleString("notConnectedImage.tool-tip"));
             }
 
             if (isSelected) {

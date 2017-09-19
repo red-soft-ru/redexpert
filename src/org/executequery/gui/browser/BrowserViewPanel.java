@@ -29,14 +29,15 @@ import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.gui.forms.FormObjectViewContainer;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
+import org.executequery.localization.Bundles;
 import org.executequery.print.PrintFunction;
 
 /**
  * Base panel for browser tree selection views.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1783 $
+ * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 public class BrowserViewPanel extends FormObjectViewContainer 
                               implements TabView,
@@ -44,7 +45,7 @@ public class BrowserViewPanel extends FormObjectViewContainer
                                          TextEditorContainer {
     
     /** The title to be applied to the <code>JInternalFrame</code> */
-    public static final String TITLE = "Database Browser";
+    public static final String TITLE = Bundles.getCommon("database-browser");
 
     /** The icon to be applied to the <code>JInternalFrame</code> */
     public static final String FRAME_ICON = "DBmag16.png";
@@ -177,7 +178,7 @@ public class BrowserViewPanel extends FormObjectViewContainer
      * @return the print job's name
      */
     public String getPrintJobName() {
-        return "Red Expert - Database Browser";
+        return bundleString("JobName");
     }
     
     /** 

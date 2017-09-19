@@ -37,8 +37,8 @@ import org.executequery.gui.WidgetFactory;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1784 $
+ * @date     $Date: 2017-09-19 00:55:31 +1000 (Tue, 19 Sep 2017) $
  */
 public class ImportExportDelimitedPanel_4 extends JPanel 
                                           implements ActionListener {
@@ -51,6 +51,8 @@ public class ImportExportDelimitedPanel_4 extends JPanel
     
     /** The rollback combo box */
     private JComboBox rollbackCombo;
+
+    private JCheckBox applyQuotesCheck;
     
     /** The include column names as first row check box */
     private JCheckBox columnNamesFirstRow;
@@ -99,12 +101,14 @@ public class ImportExportDelimitedPanel_4 extends JPanel
 
         String[] rolls = {"50", "100", "500", "1000", "5000",
                           "10000", "50000", "End of File", "End of all Files"};
+
         rollbackCombo = WidgetFactory.createComboBox(rolls);
         rollbackCombo.setSelectedIndex(2);
         rollbackCombo.addActionListener(this);
         
         batchCheck = new JCheckBox("Run as a batch process");
         trimCheck = new JCheckBox("Trim whitespace");
+        applyQuotesCheck = new JCheckBox("Use double quotes for char/varchar/longvarchar columns", true);
         columnNamesFirstRow = new JCheckBox("Column names as first row");
         
         Dimension comboDim = new Dimension(140, 20);
@@ -162,6 +166,8 @@ public class ImportExportDelimitedPanel_4 extends JPanel
         add(batchCheck, gbc);
         gbc.gridy++;
         add(columnNamesFirstRow, gbc);
+        gbc.gridy++;
+        add(applyQuotesCheck, gbc);
         gbc.weighty = 1;
         gbc.gridy++;
         gbc.insets.left = 10;
@@ -234,6 +240,10 @@ public class ImportExportDelimitedPanel_4 extends JPanel
      */
     public String getDelimiter() {
         return delimCombo.getSelectedItem().toString();        
+    }
+    
+    public boolean quoteCharacterValues() {
+        return applyQuotesCheck.isSelected();
     }
     
     public boolean includeColumnNames() {

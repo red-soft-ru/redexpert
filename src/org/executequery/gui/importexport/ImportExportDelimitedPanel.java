@@ -42,8 +42,8 @@ import org.underworldlabs.swing.wizard.WizardProcessPanel;
  * Import export to delimited file parent object.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1784 $
+ * @date     $Date: 2017-09-19 00:55:31 +1000 (Tue, 19 Sep 2017) $
  */
 public class ImportExportDelimitedPanel extends WizardProcessPanel
                                         implements ImportExportDataProcess,
@@ -202,6 +202,10 @@ public class ImportExportDelimitedPanel extends WizardProcessPanel
         return fourthPanel.getRollbackSize();
     }
     
+    public boolean quoteCharacterValues() {
+        return fourthPanel.quoteCharacterValues();
+    }
+
     public boolean includeColumnNames() {
         return fourthPanel.includeColumnNames();
     }

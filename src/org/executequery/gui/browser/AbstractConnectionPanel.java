@@ -26,6 +26,7 @@ import java.awt.LayoutManager;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.ActionPanel;
 import org.underworldlabs.swing.DefaultFieldLabel;
 
@@ -113,7 +114,12 @@ public abstract class AbstractConnectionPanel extends ActionPanel {
         }
         
     }
-    
+
+    protected String bundleString(String key) {
+        
+        return Bundles.get(getClass(), key);
+    }
+
 }
 
 

@@ -20,15 +20,17 @@
 
 package org.executequery.gui.browser;
 
-/** 
+import org.executequery.localization.Bundles;
+
+/**
  *  Reuseable constants for construction and reference
  *  to the tree structure within the Database Browser Panel.<br>
  *  This is purely a convenience class due to the large
  *  use of the same String objects in many places.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1783 $
+ * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 public class BrowserConstants {
     
@@ -65,16 +67,16 @@ public class BrowserConstants {
 
     
     // same index as node values above
-    public static final String[] META_TYPES = {"FUNCTION",
+    public static final String[] META_TYPES = Bundles.get(BrowserConstants.class,new String[]{"FUNCTION",
                                                "INDEX",
                                                "PROCEDURE",
                                                "SEQUENCE",
                                                "SYNONYM",
-                                               "SYSTEM TABLE",
+                                               "SYSTEM-TABLE",
                                                "TABLE",
                                                "TRIGGER",
                                                "VIEW",
-                                               "SYSTEM FUNCTIONS"};
+                                               "SYSTEM FUNCTIONS"});
     
     // ------------------------------------------
     // to add a new node - ALL icons must be in same order as META_TYPES
@@ -96,35 +98,35 @@ public class BrowserConstants {
     /** The String 'All Types' */
     //  String ALL_TYPES = "All Types";
     /** The String 'All Types Closed' */
-    public static final String ALL_TYPES_CLOSED = "All Types Closed";
+    public static final String ALL_TYPES_CLOSED = bundleString("ALL_TYPES_CLOSED");
 
     /** The String 'Functions' */
-    public static final String SYSTEM_FUNCTIONS_STRING = "System Functions";
+    public static final String SYSTEM_FUNCTIONS_STRING = bundleString("SYSTEM_FUNCTIONS_STRING");
 
     /** The String 'Functions' */
-    public static final String FUNCTIONS_STRING = "Functions";
+    public static final String FUNCTIONS_STRING = bundleString("FUNCTIONS_STRING");
     /** The String 'Indexes' */
-    public static final String INDEXES_STRING = "Indexes";
+    public static final String INDEXES_STRING = bundleString("INDEXES_STRING");
     /** The String 'Packages' */
     //String PACKAGES_STRING = "Packages";
     /** The String 'Procedures' */
-    public static final String PROCEDURES_STRING = "Procedures";
+    public static final String PROCEDURES_STRING = bundleString("PROCEDURES_STRING");
     /** The String 'Sequences' */
-    public static final String SEQUENCES_STRING = "Sequences";
+    public static final String SEQUENCES_STRING = bundleString("SEQUENCES_STRING");
     /** The String 'Synonyms' */
-    public static final String SYNONYMS_STRING = "Synonyms";
+    public static final String SYNONYMS_STRING = bundleString("SYNONYMS_STRING");
     /** The String 'System Tables' */
-    public static final String SYSTEM_TABLES_STRING = "System Tables";
+    public static final String SYSTEM_TABLES_STRING = bundleString("SYSTEM_TABLES_STRING");
     /** The String 'Tables' */
-    public static final String TABLES_STRING = "Tables";
+    public static final String TABLES_STRING = bundleString("TABLES_STRING");
     /** The String 'Triggers' */
-    public static final String TRIGGERS_STRING = "Triggers";
+    public static final String TRIGGERS_STRING = bundleString("TRIGGERS_STRING");
     /** The String 'Views' */
-    public static final String VIEWS_STRING = "Views";
+    public static final String VIEWS_STRING = bundleString("VIEWS_STRING");
     /** The String 'Source' */
-    public static final String SOURCE_STRING = "Source";
+    public static final String SOURCE_STRING = bundleString("SOURCE_STRING");
     /** The String 'Schema' */
-    public static final String SCHEMA_STRING = "Schema";
+    public static final String SCHEMA_STRING = bundleString("SCHEMA_STRING");
     
     // -----------------------------
     // image icons for tree nodes
@@ -257,7 +259,11 @@ public class BrowserConstants {
                                                 PACKAGE_IMAGE,
                                                 ROLE_IMAGE
                                                };
-    
+
+    private static String bundleString(String key) {
+
+        return Bundles.get(BrowserConstants.class, key);
+    }
 }
 
 

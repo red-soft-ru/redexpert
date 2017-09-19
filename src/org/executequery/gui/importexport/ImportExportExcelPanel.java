@@ -40,8 +40,8 @@ import org.underworldlabs.swing.wizard.WizardProcessPanel;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1784 $
+ * @date     $Date: 2017-09-19 00:55:31 +1000 (Tue, 19 Sep 2017) $
  */
 public class ImportExportExcelPanel extends WizardProcessPanel
                                     implements ImportExportDataProcess,
@@ -320,6 +320,11 @@ public class ImportExportExcelPanel extends WizardProcessPanel
         return fourthPanel.includeColumnNamesRowOne();
     }
     
+    @Override
+    public boolean quoteCharacterValues() {
+        return false;
+    }
+    
     /**
      * Returns whether to trim whitespace on column data values.
      *
@@ -555,18 +560,3 @@ public class ImportExportExcelPanel extends WizardProcessPanel
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

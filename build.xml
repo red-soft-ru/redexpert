@@ -26,6 +26,7 @@
         <delete dir="${compile.outdir}" quiet="true"/>
 		<mkdir dir="${compile.outdir}" />
 
+
 		<copy todir="${compile.outdir}">
 			<fileset dir="${src.path}" excludes="**/*.java **/*.properties" />
 		</copy>
@@ -35,7 +36,9 @@
         
         <copy file="${src.path}/org/executequery/release.notes" tofile="${dist.outdir}/README.txt"/>
 
+
 	</target>
+
 
 	<target name="compile" depends="init">
 
@@ -68,9 +71,9 @@
 
         </jar>
 
-        <delete dir="${compile.outdir}" quiet="true"/>
+		<delete dir="${compile.outdir}" quiet="true"/>
 
-	</target>
+    </target>
 
 	<target name="exe" depends="jar">
 		<taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar

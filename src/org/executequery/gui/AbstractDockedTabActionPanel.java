@@ -23,14 +23,15 @@ package org.executequery.gui;
 import java.awt.LayoutManager;
 import org.executequery.GUIUtilities;
 import org.executequery.base.DockedTabView;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.ActionPanel;
 
 /**
  * Abstract tab action panel.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1783 $
+ * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 public abstract class AbstractDockedTabActionPanel extends ActionPanel 
                                                    implements DockedTabView {
@@ -112,20 +113,11 @@ public abstract class AbstractDockedTabActionPanel extends ActionPanel
         return true;
     }
 
+    protected String bundleString(String key)
+    {
+        return Bundles.get(getClass(),key);
+    }
+
     
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -60,7 +60,7 @@ public class JMenuItemFactory {
     
                 if (menuItem.hasName()) {
                     
-                    jMenuItem.setText(menuItem.getName());
+                    jMenuItem.setText(nameOrBundleValue(menuItem));
                 }
     
                 if (menuItem.hasActionCommand()) {
@@ -84,7 +84,7 @@ public class JMenuItemFactory {
                 
                 if (menuItem.hasToolTip()) {
     
-                    jMenuItem.setToolTipText(menuItem.getToolTip());
+                    jMenuItem.setToolTipText(toolTipOrBundleValue(menuItem));
                 }
                 
                 addMenuItemToParent(parent, menuItem, jMenuItem);
@@ -115,6 +115,22 @@ public class JMenuItemFactory {
         }
             
         return menuItem.getName();
+    }
+
+    private String toolTipOrBundleValue(MenuItem menuItem) {
+
+        if (menuItem.hasPropertyKey()) {
+
+            String key = menuItem.getPropertyKey();
+            String value = Bundles.get(key+".description");
+            if (StringUtils.isNotBlank(value)) {
+
+                return value;
+            }
+
+        }
+
+        return menuItem.getToolTip();
     }
     
     private void addMenuItemToParent(JMenuItem parent, MenuItem menuItem, JMenuItem jMenuItem) {

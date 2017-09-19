@@ -28,6 +28,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.ErrorMessagePublisher;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.InterruptibleProgressDialog;
 import org.underworldlabs.swing.util.Interruptible;
@@ -74,7 +75,7 @@ public class DatabaseObjectChangeProvider implements Interruptible {
 
     private boolean apply() {
 
-        int yesNo = GUIUtilities.displayConfirmCancelDialog("Do you wish to apply your changes?");
+        int yesNo = GUIUtilities.displayConfirmCancelDialog(Bundles.getCommon("message.apply-changes"));
         if (yesNo == JOptionPane.NO_OPTION) {
 
             table().revert();

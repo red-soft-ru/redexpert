@@ -32,8 +32,8 @@ import org.apache.commons.lang.StringUtils;
  * sizes, scales and key referencing meta data.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1784 $
+ * @date     $Date: 2017-09-19 00:55:31 +1000 (Tue, 19 Sep 2017) $
  */
 public class ColumnData implements Serializable {
     
@@ -245,6 +245,12 @@ public class ColumnData implements Serializable {
         return sqlType == Types.DATE ||
                 sqlType == Types.TIME ||
                 sqlType == Types.TIMESTAMP;
+    }
+    
+    public boolean isCharacterType() {
+        return sqlType == Types.CHAR ||
+                sqlType == Types.VARCHAR ||
+                sqlType == Types.LONGVARCHAR;
     }
     
     public boolean isNonPrecisionType() {

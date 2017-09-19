@@ -63,6 +63,7 @@ import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
 import org.executequery.gui.browser.tree.SchemaTree;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.ConnectionFoldersRepository;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
@@ -76,15 +77,15 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1783 $
+ * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
                                   implements ConnectionListener,
                                              ConnectionRepositoryListener,
                                              UserPreferenceListener {
 
-    public static final String TITLE = "Connections";
+    public static final String TITLE = Bundles.get(ConnectionsTreePanel.class,"Connections");
 
     private SchemaTree tree;
 
@@ -509,8 +510,8 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     private void deleteFolder(ConnectionsFolderNode folder) {
 
         int yesNo = GUIUtilities.displayConfirmCancelDialog(
-                "Are you sure you want to delete the folder " + folder + 
-                " ?\nAny connections within this folder will also be deleted.");
+                bundleString("message.confirm-delete-folder1") + folder +
+                        bundleString("message.confirm-delete-folder1"));
 
         if (yesNo != JOptionPane.YES_OPTION) {
         
@@ -541,7 +542,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     public void deleteConnection(DatabaseHostNode node) {
 
         int yesNo = GUIUtilities.displayConfirmCancelDialog(
-                        "Are you sure you want to delete the connection " +
+                bundleString("message.confirm-delete-connection") +
                         node + " ?");
 
         if (yesNo != JOptionPane.YES_OPTION) {
@@ -799,7 +800,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
      */
     public ConnectionsFolder newFolder() {
 
-        String name = GUIUtilities.displayInputMessage("New Folder", "Folder Name:");
+        String name = GUIUtilities.displayInputMessage(bundleString("NewFolder"), bundleString("FolderName"));
         if (!JOptionPane.UNINITIALIZED_VALUE.equals(name)) {
          
             ConnectionsFolder folder = new ConnectionsFolder(name);
@@ -843,7 +844,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
      */
     public void newConnection() {
         
-        String name = buildConnectionName("New Connection");
+        String name = buildConnectionName(Bundles.getCommon("newConnection.button"));
         newConnection(databaseConnectionFactory().create(name));
     }
     
@@ -1587,7 +1588,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
                 }
 
                 int yesNo = GUIUtilities.displayConfirmDialog(
-                                   "Are you sure you want to drop " + dbObject + "?");
+                        bundleString("message.confirm-delete-object"));
 
                 if (yesNo == JOptionPane.NO_OPTION) {
 
@@ -1605,8 +1606,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
                 } catch (DataSourceException e) {
 
                     StringBuilder sb = new StringBuilder();
-                    sb.append("An error occurred removing the selected object.").
-                       append("\n\nThe system returned:\n").
+                    sb.append(bundleString("error.delete-object")).
                        append(e.getExtendedMessage());
 
                     GUIUtilities.displayExceptionErrorDialog(sb.toString(), e);

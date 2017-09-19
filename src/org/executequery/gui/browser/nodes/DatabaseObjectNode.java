@@ -29,13 +29,14 @@ import javax.swing.tree.MutableTreeNode;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.DatabaseObjectChangeProvider;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 
 /** 
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1783 $
+ * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 public class DatabaseObjectNode extends DefaultMutableTreeNode {
     
@@ -300,16 +301,11 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
     public String toString() {
         return getDisplayName();
     }
+
+    protected String bundleString(String key) {
+    
+        return Bundles.get(getClass(), key);
+    }
     
 }
-
-
-
-
-
-
-
-
-
-
 

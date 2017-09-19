@@ -38,6 +38,7 @@ import javax.swing.text.Position;
 import javax.swing.tree.TreePath;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.localization.Bundles;
 
 /**
  *
@@ -47,8 +48,8 @@ import org.apache.commons.lang.StringUtils;
  * Usage: new TreeFindAction().install(tree);
  *
  * @author   Santhosh Kumar, Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1783 $
+ * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 public class TreeFindAction extends FindAction<TreePath> {
 
@@ -56,7 +57,7 @@ public class TreeFindAction extends FindAction<TreePath> {
 
 	    super();
 	    
-        putValue(Action.SHORT_DESCRIPTION, "Search nodes...");
+        putValue(Action.SHORT_DESCRIPTION, Bundles.get("BrowserTreeRootPopupMenu.searchNodes"));
     }
 
     protected boolean changed(JComponent comp, String searchString, Position.Bias bias) {

@@ -88,8 +88,8 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1783 $
+ * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                                       implements ActionListener,
@@ -186,7 +186,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         // column indexes panel
         JPanel indexesPanel = new JPanel(new BorderLayout());
-        indexesPanel.setBorder(BorderFactory.createTitledBorder("Table Indexes"));
+        indexesPanel.setBorder(BorderFactory.createTitledBorder(bundleString("table-indexes")));
         indexesPanel.add(new JScrollPane(columnIndexTable), BorderLayout.CENTER);
 
         // table meta data table
@@ -203,13 +203,13 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         
         // alter sql text panel
         alterSqlText = new SimpleSqlTextPanel();
-        alterSqlText.setBorder(BorderFactory.createTitledBorder("Alter Table"));
+        alterSqlText.setBorder(BorderFactory.createTitledBorder(bundleString("alter-table")));
         alterSqlText.setPreferredSize(new Dimension(100, 100));
         alterSqlText.getEditorTextComponent().addFocusListener(this);
 
         // create sql text panel
         createSqlText = new SimpleSqlTextPanel();
-        createSqlText.setBorder(BorderFactory.createTitledBorder("Create Table"));
+        createSqlText.setBorder(BorderFactory.createTitledBorder(bundleString("create-table")));
         createSqlText.getEditorTextComponent().addFocusListener(this);
         
         // sql text split pane
@@ -221,12 +221,12 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         
         constraintsTable = new EditableColumnConstraintTable();
         JPanel constraintsPanel = new JPanel(new BorderLayout());
-        constraintsPanel.setBorder(BorderFactory.createTitledBorder("Table Keys"));
+        constraintsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("table-keys")));
         constraintsPanel.add(new JScrollPane(constraintsTable), BorderLayout.CENTER);
         
         descriptionTable = new EditableDatabaseTable();
         JPanel descTablePanel = new JPanel(new GridBagLayout());
-        descTablePanel.setBorder(BorderFactory.createTitledBorder("Table Columns"));
+        descTablePanel.setBorder(BorderFactory.createTitledBorder(bundleString("table-columns")));
         descTablePanel.add(
                 new JScrollPane(descriptionTable),
                 new GridBagConstraints(
@@ -246,14 +246,14 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         tabPane = new JTabbedPane();
         tabPane.setModel(model);
 
-        tabPane.add("Description", descTablePanel);
-        tabPane.add("Constraints", constraintsPanel);
-        tabPane.add("Indexes", indexesPanel);
-        tabPane.add("Privileges", tablePrivilegePanel);
-        tabPane.add("References", referencesPanel);
-        tabPane.add("Data", tableDataPanel);
-        tabPane.add("SQL", splitPane);
-        tabPane.add("Meta Data", metaDataPanel);
+        tabPane.add(Bundles.getCommon("description"), descTablePanel);
+        tabPane.add(Bundles.getCommon("constraints"), constraintsPanel);
+        tabPane.add(Bundles.getCommon("indexes"), indexesPanel);
+        tabPane.add(Bundles.getCommon("privileges"), tablePrivilegePanel);
+        tabPane.add(Bundles.getCommon("references"), referencesPanel);
+        tabPane.add(Bundles.getCommon("data"), tableDataPanel);
+        tabPane.add(Bundles.getCommon("SQL"), splitPane);
+        tabPane.add(Bundles.getCommon("metadata"), metaDataPanel);
         
         tabPane.addChangeListener(this);
         
@@ -273,7 +273,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridx = 0;
         gbc.gridy = 0;
-        base.add(new JLabel("Table Name:"), gbc);
+        base.add(new JLabel(bundleString("table-name")), gbc);
         gbc.insets.left = 5;
         gbc.insets.right = 5;
         gbc.gridx = 1;
@@ -311,7 +311,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.WEST;
-        base.add(new JLabel("Data Row Count:"), gbc);
+        base.add(new JLabel(bundleString("row-count")), gbc);
         gbc.gridx = 2;
         gbc.insets.top = 0;
         gbc.weightx = 1.0;
@@ -344,7 +344,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         setContentPanel(base);
         setHeaderIcon(GUIUtilities.loadIcon("DatabaseTable24.png"));
-        setHeaderText("Database Table");
+        setHeaderText(bundleString("db-table"));
         
         // register for keyword changes
         EventMediator.registerListener(this);
@@ -440,30 +440,30 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             
             case 0:
                 return new TablePrinter(descriptionTable,
-                                        "Table: " + table.getName());
+                                        bundleString("description-table") + table.getName());
                 
             case 1:
                 return new TablePrinter(constraintsTable,
-                                        "Constraints for table: " + table.getName(), false);
+                        bundleString("constraints-table") + table.getName(), false);
                 
             case 2:
                 return new TablePrinter(columnIndexTable,
-                                        "Indexes for table: " + table.getName());
+                        bundleString("indexes-table") + table.getName());
                 
             case 3:
                 return new TablePrinter(tablePrivilegePanel.getTable(),
-                                        "Access rights for table: " + table.getName());
+                        bundleString("privileges-table") + table.getName());
                 
             case 4:
                 return referencesPanel.getPrintable();
 
             case 5:
                 return new TablePrinter(tableDataPanel.getTable(),
-                                        "Table Data: " + table.getName());
+                        bundleString("data-table") + table.getName());
 
             case 7:
                 return new TablePrinter(metaDataPanel.getTable(),
-                                        "Table Meta Data: " + table.getName());
+                        bundleString("metadata-table") + table.getName());
 
             default:
                 return null;
@@ -751,11 +751,11 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
             if (SystemProperties.getBooleanProperty("user", "browser.query.row.count")) {
             
-                updateRowCount("Querying...");
+                updateRowCount(bundleString("quering"));
 
             } else {
                 
-                updateRowCount("Option Disabled");
+                updateRowCount(bundleString("option-disabled"));
             }
             
             referencesLoaded = false;

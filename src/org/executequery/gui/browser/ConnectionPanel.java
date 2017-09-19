@@ -85,8 +85,8 @@ import org.underworldlabs.util.MiscUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1783 $
+ * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 public class ConnectionPanel extends AbstractConnectionPanel 
                              implements DatabaseDriverListener,
@@ -295,8 +295,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         nameField.addFocusListener(new ConnectionNameFieldListener(this));
         
-        savePwdCheck = ActionUtilities.createCheckBox("Store Password", "setStorePassword");
-        encryptPwdCheck = ActionUtilities.createCheckBox("Encrypt Password", "setEncryptPassword");
+        savePwdCheck = ActionUtilities.createCheckBox(bundleString("StorePassword"), "setStorePassword");
+        encryptPwdCheck = ActionUtilities.createCheckBox(bundleString("EncryptPassword"), "setEncryptPassword");
         
         savePwdCheck.addActionListener(this);
         encryptPwdCheck.addActionListener(this);
@@ -587,7 +587,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         
         // advanced jdbc properties
         JPanel advPropsPanel = new JPanel(new GridBagLayout());
-        advPropsPanel.setBorder(BorderFactory.createTitledBorder("JDBC Properties"));
+        advPropsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("JDBCProperties")));
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
@@ -599,10 +599,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         advPropsPanel.add(
-                new DefaultFieldLabel("Enter any key/value pair properties for this connection"), gbc);
+                new DefaultFieldLabel(bundleString("advPropsPanel.text1")), gbc);
         gbc.gridy++;
         advPropsPanel.add(
-                new DefaultFieldLabel("Refer to the relevant JDBC driver documentation for possible entries"), gbc);
+                new DefaultFieldLabel(bundleString("advPropsPanel.text2")), gbc);
         gbc.gridy++;
         gbc.insets.bottom = 10;
         gbc.weighty = 1.0;
@@ -611,20 +611,20 @@ public class ConnectionPanel extends AbstractConnectionPanel
         
         // transaction isolation
         txApplyButton =  WidgetFactory.createInlineFieldButton(Bundles.get("common.apply.button"), "transactionLevelChanged");        
-        txApplyButton.setToolTipText("Apply this level to all open connections of this type");
+        txApplyButton.setToolTipText(bundleString("txApplyButton.tool-tip"));
         txApplyButton.setEnabled(false);
         txApplyButton.addActionListener(this);
 
         // add a dummy select value to the tx levels
         String[] txLevels = new String[Constants.TRANSACTION_LEVELS.length + 1];
-        txLevels[0] = "Database Default";
+        txLevels[0] = bundleString("DatabaseDefault");
         for (int i = 1; i < txLevels.length; i++) {
             txLevels[i] = Constants.TRANSACTION_LEVELS[i - 1];
         }
         txCombo = WidgetFactory.createComboBox(txLevels);
 
         JPanel advTxPanel = new JPanel(new GridBagLayout());
-        advTxPanel.setBorder(BorderFactory.createTitledBorder("Transaction Isolation"));
+        advTxPanel.setBorder(BorderFactory.createTitledBorder(bundleString("TransactionIsolation")));
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.insets.top = 0;
@@ -637,19 +637,18 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbc.fill = GridBagConstraints.BOTH;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         advTxPanel.add(
-                new DefaultFieldLabel("Default transaction isolation level for this connection"), gbc);
+                new DefaultFieldLabel(bundleString("advTxPanel.Text1")), gbc);
         gbc.gridy++;
         gbc.insets.bottom = 10;
         advTxPanel.add(
-                new DefaultFieldLabel("Note: the selected isolation level " +
-                           "will apply to ALL open connections of this type."), gbc);        
+                new DefaultFieldLabel(bundleString("advTxPanel.Text2")), gbc);
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.gridwidth = 1;
         gbc.insets.top = 0;
         gbc.insets.left = 10;
         gbc.weightx = 0;
-        advTxPanel.add(new DefaultFieldLabel("Isolation Level:"), gbc);
+        advTxPanel.add(new DefaultFieldLabel(bundleString("IsolationLevel")), gbc);
         gbc.gridx = 1;
         gbc.insets.left = 5;
         gbc.weightx = 1.0;
@@ -673,9 +672,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
         sshTunnelConnectionPanel = new SSHTunnelConnectionPanel();
         
         tabPane = new JTabbedPane(JTabbedPane.BOTTOM);
-        tabPane.addTab("Basic", scrollPane);
-        tabPane.addTab("Advanced", advancedPanel);
-        tabPane.addTab("SSH Tunnel", sshTunnelConnectionPanel);
+        tabPane.addTab(bundleString("Basic"), scrollPane);
+        tabPane.addTab(bundleString("Advanced"), advancedPanel);
+        tabPane.addTab(bundleString("SSHTunnel"), sshTunnelConnectionPanel);
 
         tabPane.addChangeListener(this);
         
@@ -802,7 +801,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         int size = jdbcDrivers.size();
 
         String[] driverNames = new String[size + 1];
-        driverNames[0] = "Select...";
+        driverNames[0] = bundleString("selectDriver");
 
         for (int i = 0; i < size; i++) {
 
@@ -839,21 +838,19 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
                 String txLevel = txCombo.getSelectedItem().toString();
                 GUIUtilities.displayInformationMessage(
-                        "The transaction isolation level " + txLevel + 
-                        " was applied successfully.");
+                        bundleString("message.level-change1") + txLevel +
+                                bundleString("message.level-change2"));
             }
             catch (DataSourceException e) {
                 GUIUtilities.displayWarningMessage(
-                        "The selected isolation level could not be applied.\n" +
-                        "The JDBC driver returned:\n\n" +
+                        bundleString("warning.DataSourceException.level-change") +
                         e.getMessage() + "\n\n");
             }
             catch (Exception e) {}
         }
         else {
             GUIUtilities.displayWarningMessage(
-                    "The specified driver for this connection does " +
-                    "not support transactions.\nThis feature is unavailable.");
+                    bundleString("warning.level-change"));
         }
     }
     
@@ -881,8 +878,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
         String name = nameField.getText().trim();
         if (databaseConnectionRepository().nameExists(databaseConnection, name)) {
 
-            GUIUtilities.displayErrorMessage("The name [ " + name 
-                    + " ] entered for this connection already exists");        	
+            GUIUtilities.displayErrorMessage(bundleString("error.nameExist1") + name
+                    + bundleString("error.nameExist2"));
             return true;
         }
 
@@ -910,7 +907,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         
         // make sure a name has been entered
         if (nameField.getText().trim().length() == 0) {
-            GUIUtilities.displayErrorMessage("You must enter a name for this connection");
+            GUIUtilities.displayErrorMessage(bundleString("error.emptyName"));
             return;
         }
 
@@ -921,7 +918,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         
         // check a driver is selected
         if (driverCombo.getSelectedIndex() == 0) {
-            GUIUtilities.displayErrorMessage("You must select a driver");
+            GUIUtilities.displayErrorMessage(bundleString("error.emptyDriver"));
             return;
         }
 
@@ -931,7 +928,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
             String port = portField.getText();
             if (!StringUtils.isNumeric(port)) {
                     
-                GUIUtilities.displayErrorMessage("Invalid port number");
+                GUIUtilities.displayErrorMessage(bundleString("error.invalidPort"));
                 return;                    
             }
 
@@ -968,8 +965,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 } catch (DataSourceException e) {
 
                     GUIUtilities.displayWarningMessage(
-                            "The selected isolation level could not be applied.\n" +
-                            "The JDBC driver returned:\n\n" +
+                            bundleString("warning.DataSourceException.level-change") +
                             e.getMessage() + "\n\n");
                 }
 
@@ -1014,9 +1010,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         } catch (DataSourceException e) {
 
             StringBuilder sb = new StringBuilder();
-            sb.append("The connection to the database could not be established.");
-            sb.append("\nPlease ensure all required fields have been entered ");
-            sb.append("correctly and try again.\n\nThe system returned:\n");
+            sb.append(Bundles.getCommon("error.connection"));
             sb.append(e.getExtendedMessage());
             GUIUtilities.displayExceptionErrorDialog(sb.toString(), e);
 
@@ -1110,7 +1104,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         }
         catch (DataSourceException e) {
             GUIUtilities.displayErrorMessage(
-                    "Error disconnecting from data source:\n" + e.getMessage());
+                    bundleString("error.disconnect") + e.getMessage());
         }
     }
     
@@ -1234,12 +1228,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
             int count = ConnectionManager.getOpenConnectionCount(databaseConnection);
 
-            statusLabel.setText("Connected [ " + count +
-                    (count > 1 ? " connections open ]" : " connection open ]") );
+            statusLabel.setText(bundleString("status.Connected") + count +
+                    (count > 1 ? bundleString("status.Connected.connections") : bundleString("status.Connected.connection")) );
 
         } else {
 
-            statusLabel.setText("Not Connected");
+            statusLabel.setText(bundleString("status.NotConnected"));
         }
 
         paintStatusLabel();
@@ -1529,7 +1523,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
     
     private class JdbcPropertiesTableModel extends AbstractTableModel {
         
-        protected String[] header = {"Name", "Value", ""};
+        protected String[] header = Bundles.getCommons(new String[]{"key", "value", ""});
         
         public JdbcPropertiesTableModel() {
             advancedProperties = new String[20][2];
@@ -1584,7 +1578,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbc.insets.top = 0;
         gbc.insets.left = 10;
         gbc.weightx = 0;
-        panel.add(new DefaultFieldLabel("JDBC Driver:"), gbc);
+        panel.add(new DefaultFieldLabel(bundleString("driverField")), gbc);
         gbc.gridx = 1;
         gbc.insets.left = 5;
         gbc.insets.right = 5;
@@ -1592,9 +1586,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbc.insets.top = 0;
         panel.add(driverCombo, gbc);
 
-        driverCombo.setToolTipText("The JDBC driver to be used for this database");
+        driverCombo.setToolTipText(bundleString("driverField.tool-tip"));
 
-        JButton button = WidgetFactory.createInlineFieldButton("New Driver");
+        JButton button = WidgetFactory.createInlineFieldButton(bundleString("addNewDriver"));
         button.setActionCommand("addNewDriver");
         button.addActionListener(this);
         button.setMnemonic('r');
@@ -1700,7 +1694,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 setUI(new javax.swing.plaf.basic.BasicButtonUI());
             } catch (NullPointerException nullExc) {}
 
-            setToolTipText("Clear this key/value pair");
+            setToolTipText(bundleString("delete.tool-tip"));
         }
         
         public Component getTableCellRendererComponent(JTable table, Object value,

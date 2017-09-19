@@ -25,6 +25,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 
@@ -32,16 +33,16 @@ public class BrowserTreeRootPopupMenu extends JPopupMenu {
 
     public BrowserTreeRootPopupMenu(ConnectionsTreePanel treePanel) {
 
-        add(createMenuItem("New Folder", "newFolder", treePanel));
-        add(createMenuItem("New Connection", "newConnection", treePanel));
+        add(createMenuItem(bundleString("NewFolder"), "newFolder", treePanel));
+        add(createMenuItem(bundleString("NewConnection"), "newConnection", treePanel));
         addSeparator();
 
-        add(createMenuItem("Connect All", "connectAll", treePanel));
-        add(createMenuItem("Disconnect All", "disconnectAll", treePanel));
+        add(createMenuItem(bundleString("ConnectAll"), "connectAll", treePanel));
+        add(createMenuItem(bundleString("DisconnectAll"), "disconnectAll", treePanel));
 
         addSeparator();
-        add(createMenuItem("Sort Connections", "sortConnections", treePanel));
-        add(createMenuItem("Search Nodes...", "searchNodes", treePanel));
+        add(createMenuItem(bundleString("SortConnections"), "sortConnections", treePanel));
+        add(createMenuItem(bundleString("searchNodes"), "searchNodes", treePanel));
 
         addSeparator();
         add(createMenuItem("export-connections-command"));
@@ -64,6 +65,11 @@ public class BrowserTreeRootPopupMenu extends JPopupMenu {
         menuItem.setActionCommand(actionCommand);
         menuItem.addActionListener(listener);
         return menuItem;
+    }
+
+    private String bundleString(String key) {
+
+        return Bundles.get(getClass(), key);
     }
     
 }

@@ -45,7 +45,6 @@ public class DatabaseTableNode extends DatabaseObjectNode {
 
         return nodes;
     }
-    
     private DatabaseTable databaseTable() {
         
         return (DatabaseTable) getDatabaseObject();
@@ -79,7 +78,7 @@ public class DatabaseTableNode extends DatabaseObjectNode {
         @Override
         public String getName() {
             
-            return "Columns";
+            return bundleString("columns");
         }
         
         @Override
@@ -102,7 +101,7 @@ public class DatabaseTableNode extends DatabaseObjectNode {
         @Override
         public String getName() {
             
-            return "Foreign Keys";
+            return bundleString("foreign-keys");
         }
 
         @Override
@@ -124,7 +123,7 @@ public class DatabaseTableNode extends DatabaseObjectNode {
         @Override
         public String getName() {
             
-            return "Primary Keys";
+            return bundleString("primary-keys");
         }
 
         @Override
@@ -146,7 +145,7 @@ public class DatabaseTableNode extends DatabaseObjectNode {
         @Override
         public String getName() {
             
-            return "Indexes";
+            return bundleString("indexes");
         }
      
         @Override

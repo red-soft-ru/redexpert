@@ -26,16 +26,17 @@ import java.util.List;
 import javax.swing.tree.MutableTreeNode;
 
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.localization.Bundles;
 
 /** 
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1783 $
+ * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 public class RootDatabaseObjectNode extends DatabaseObjectNode {
     
-    private static final String NAME = "Database Connections";
+    private static final String NAME = Bundles.getCommon("database-connections");
     
     private List<DatabaseHostNode> hostNodes = new ArrayList<DatabaseHostNode>();
 

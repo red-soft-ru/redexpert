@@ -38,8 +38,8 @@ import org.underworldlabs.swing.util.SwingWorker;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1784 $
+ * @date     $Date: 2017-09-19 00:55:31 +1000 (Tue, 19 Sep 2017) $
  */
 public class ExportDelimitedWorker extends AbstractImportExportWorker {
     
@@ -117,6 +117,8 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
             // include the column names
             boolean includeColumnNames = getParent().includeColumnNames();
 
+            boolean quoteCharacterValues = getParent().quoteCharacterValues();
+            
             // row data output buffer
             StringBuilder rowData = new StringBuilder(5000);
 
@@ -228,7 +230,18 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
                             value = formatString(value);
                         }
 
+                        boolean isCharType = column.isCharacterType();
+                        if (isCharType && quoteCharacterValues) {
+                            
+                            rowData.append("\"");                            
+                        }
+                        
                         rowData.append(value);
+
+                        if (isCharType && quoteCharacterValues) {
+                            
+                            rowData.append("\"");                            
+                        }
 
                         if (j != columnCount) {
 

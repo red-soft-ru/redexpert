@@ -30,6 +30,7 @@ import org.executequery.databaseobjects.impl.SystemDatabaseFunction;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextPane;
+import org.executequery.localization.Bundles;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;

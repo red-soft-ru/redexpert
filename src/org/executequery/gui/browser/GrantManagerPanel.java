@@ -12,6 +12,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.datasource.ConnectionManager;
@@ -911,7 +912,7 @@ public class GrantManagerPanel extends JPanel {
 
     void get_user_list(String query) {
         try {
-            ResultSet result = querySender.execute(query, true).getResultSet();
+            ResultSet result = querySender.execute(QueryTypes.SELECT,query, -1).getResultSet();
             while (result.next()) {
                 String role = result.getString(1);
                 userlistModel.addElement(role);
@@ -952,7 +953,7 @@ public class GrantManagerPanel extends JPanel {
                 String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
                         "where (rdb$Relation_name='" + relName.elementAt(i) + "') and (rdb$user='"
                         + userList.getSelectedValue().trim() + "') and (RDB$FIELD_NAME IS NULL)";
-                ResultSet rs1 = querySender.execute(s, true).getResultSet();
+                ResultSet rs1 = querySender.execute(QueryTypes.SELECT,s, -1).getResultSet();
                 Vector<Object> roleData = new Vector<Object>();
                 Object[] obj = {relName.elementAt(i), Color.BLACK};
                 if (relSystem.elementAt(i))
@@ -1016,7 +1017,7 @@ public class GrantManagerPanel extends JPanel {
                     "from RDB$RELATION_FIELDS AS RF left join RDB$FIELDS AS F\n" +
                     "ON F.RDB$FIELD_NAME=RF.RDB$FIELD_SOURCE\n" +
                     "WHERE RF.RDB$RELATION_NAME='" + rname + "'";
-            ResultSet rs = querySender.execute(query, true).getResultSet();
+            ResultSet rs = querySender.execute(QueryTypes.SELECT,query, -1).getResultSet();
             while (rs.next()) {
                 String name = rs.getString(1).trim();
                 String type = getTypeField(rs.getInt(2));
@@ -1033,7 +1034,7 @@ public class GrantManagerPanel extends JPanel {
                 String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
                         "where (rdb$Relation_name='" + rname + "') and (rdb$user='" + userList.getSelectedValue().trim() + "') and\n" +
                         "(RDB$FIELD_NAME='" + fieldName.elementAt(i) + "')";
-                ResultSet rs1 = querySender.execute(s, true).getResultSet();
+                ResultSet rs1 = querySender.execute(QueryTypes.SELECT,s, -1).getResultSet();
                 Vector<Object> roleData = new Vector<Object>();
                 roleData.add(fieldName.elementAt(i));
                 roleData.add(fieldType.elementAt(i));
@@ -1097,11 +1098,11 @@ public class GrantManagerPanel extends JPanel {
     }
 
     void add_relations(String query, String type) {
+        Vector<String> rname = new Vector<>();
+        Vector<Boolean> sflag = new Vector<>();
         try {
             //Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            ResultSet rs = querySender.execute(query, true).getResultSet();
-            Vector<String> rname = new Vector<>();
-            Vector<Boolean> sflag = new Vector<>();
+            ResultSet rs = querySender.execute(QueryTypes.SELECT,query, -1).getResultSet();
             while (rs.next()) {
                 String name = rs.getString(1).trim();
                 boolean system_flag = rs.getInt(2) == 1;
@@ -1119,7 +1120,13 @@ public class GrantManagerPanel extends JPanel {
                         addRow(name, type, system_flag, granted_flag);
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (SQLException e)
+        {
+            GUIUtilities.displayErrorMessage(e.getMessage());
+
+        }
+        catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
         }
     }
@@ -1251,7 +1258,7 @@ public class GrantManagerPanel extends JPanel {
 
     void grant_query(String query, Icon icon, int row, int col, JTable t) {
         try {
-            querySender.execute(query, true);
+            querySender.execute(QueryTypes.GRANT,query, -1);
             t.setValueAt(icon, row, col);
             querySender.releaseResources();
         } catch (NullPointerException e) {
@@ -1286,7 +1293,7 @@ public class GrantManagerPanel extends JPanel {
 
     void grant_all_query(String query, Icon icon, int row, int grantt) {
         try {
-            querySender.execute(query, true);
+            querySender.execute(QueryTypes.GRANT,query, -1);
             for (int i = 1; i < headers.length; i++)
                 if (i != col_execute && i != col_usage)
                     tablePrivileges.setValueAt(icon, row, i);

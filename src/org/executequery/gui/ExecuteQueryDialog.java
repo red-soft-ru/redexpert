@@ -14,6 +14,8 @@ import org.executequery.sql.SqlMessages;
 import org.executequery.sql.SqlStatementResult;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -89,8 +91,18 @@ public class ExecuteQueryDialog extends BaseDialog {
         errorLabel.setText(bundleString("error"));
 
         copyQueryButton.setText(bundleString("copyQuery"));
+        copyQueryButton.addActionListener(new ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                copyQueryButtonActionPerformed(evt);
+            }
+        });
 
         copyErrorButton.setText(bundleString("copyError"));
+        copyErrorButton.addActionListener(new ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                copyErrorButtonActionPerformed(evt);
+            }
+        });
 
         commitButton.setText(bundleString("commit"));
         commitButton.addActionListener(new ActionListener() {
@@ -168,6 +180,30 @@ public class ExecuteQueryDialog extends BaseDialog {
                         )
         );
         addDisplayComponent(mainPanel);
+    }
+
+    private void copyErrorButtonActionPerformed(ActionEvent evt) {
+        try
+        {
+            errorPane.selectAll();
+            errorPane.copy();
+        }
+        catch (Exception e)
+        {
+            GUIUtilities.displayErrorMessage(e.getMessage());
+        }
+    }
+
+    private void copyQueryButtonActionPerformed(ActionEvent evt) {
+        try
+        {
+            queryPane.selectAll();
+            queryPane.copy();
+        }
+        catch (Exception e)
+        {
+            GUIUtilities.displayErrorMessage(e.getMessage());
+        }
     }
 
     private void commitButtonActionPerformed(ActionEvent evt) {

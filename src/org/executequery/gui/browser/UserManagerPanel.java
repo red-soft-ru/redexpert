@@ -123,11 +123,13 @@ public class UserManagerPanel extends JPanel {
         databaseBox.removeAllItems();
         listConnections = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
         enableElements = true;
+        boolean selected=false;
         for (DatabaseConnection dc : listConnections) {
             databaseBox.addItem(dc.getName());
-            if (dc.isConnected()) {
+            if (dc.isConnected()&&!selected) {
                 execute_w = true;
                 databaseBox.setSelectedItem(dc.getName());
+                selected =true;
             }
         }
         if (!execute_w) {
@@ -744,6 +746,15 @@ public class UserManagerPanel extends JPanel {
 
     void setEnableElements(boolean enable) {
         enableElements = enable;
+        addUserButton.setEnabled(enable);
+        editUserButton.setEnabled(enable);
+        deleteUserButton.setEnabled(enable);
+        refreshUsersButton.setEnabled(enable);
+        addRoleButton.setEnabled(enable);
+        deleteRoleButton.setEnabled(enable);
+        grantButton.setEnabled(enable);
+        adminButton.setEnabled(enable);
+        no_grantButton.setEnabled(enable);
         cancelButton.setVisible(!enable);
         jProgressBar1.setVisible(!enable);
         if (enable)

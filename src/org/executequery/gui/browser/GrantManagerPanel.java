@@ -988,6 +988,8 @@ public class GrantManagerPanel extends JPanel {
                     }
                 }
                 rs1.close();
+                if(adding)
+                adding=(filterBox.getSelectedIndex() == 0 || (filterBox.getSelectedIndex() == 1) == relGranted.elementAt(i));
                 if (adding)
                     ((RoleTableModel) tablePrivileges.getModel()).addRow(roleData);
                 querySender.releaseResources();

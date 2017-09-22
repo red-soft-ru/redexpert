@@ -950,9 +950,9 @@ public class GrantManagerPanel extends JPanel {
         for (int i = 0, g = 0; i < relName.size() && !enableElements; g++, i++) {
             jProgressBar1.setValue(g);
             try {
-                String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
+                String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION,RDB$FIELD_NAME from RDB$USER_PRIVILEGES\n" +
                         "where (rdb$Relation_name='" + relName.elementAt(i) + "') and (rdb$user='"
-                        + userList.getSelectedValue().trim() + "') and (RDB$FIELD_NAME IS NULL)";
+                        + userList.getSelectedValue().trim() + "')";
                 ResultSet rs1 = querySender.execute(QueryTypes.SELECT,s, -1).getResultSet();
                 Vector<Object> roleData = new Vector<Object>();
                 Object[] obj = {relName.elementAt(i), Color.BLACK};
@@ -966,16 +966,18 @@ public class GrantManagerPanel extends JPanel {
                     relGranted.set(i, true);
                     if (filterBox.getSelectedIndex() == 0 || (filterBox.getSelectedIndex() == 1) == relGranted.elementAt(i)) {
                         try {
-                            String grant = rs1.getString(1).trim();
-                            int ind = grants.indexOf(grant);
-                            if (ind != 7) {
-                                Object gr_opt = rs1.getObject(2);
-                                if (gr_opt == null)
-                                    gr_opt = 0;
-                                if (gr_opt.equals(0)) {
-                                    roleData.set(ind + 1, gr);
-                                } else
-                                    roleData.set(ind + 1, adm);
+                            if(rs1.getString(3)==null) {
+                                String grant = rs1.getString(1).trim();
+                                int ind = grants.indexOf(grant);
+                                if (ind != 7) {
+                                    Object gr_opt = rs1.getObject(2);
+                                    if (gr_opt == null)
+                                        gr_opt = 0;
+                                    if (gr_opt.equals(0)) {
+                                        roleData.set(ind + 1, gr);
+                                    } else
+                                        roleData.set(ind + 1, adm);
+                                }
                             }
                         } catch (Exception e) {
                             Log.error(e.getMessage());

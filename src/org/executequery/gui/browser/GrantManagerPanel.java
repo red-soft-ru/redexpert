@@ -596,6 +596,7 @@ public class GrantManagerPanel extends JPanel {
             querySender.setCommitMode(true);
             dbc = listConnections.get(databaseBox.getSelectedIndex());
             con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
+            load_userList();
         }
     }
 
@@ -642,7 +643,6 @@ public class GrantManagerPanel extends JPanel {
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {
         load_connections();
-        load_userList();
     }
 
     private void revoke_vActionPerformed(java.awt.event.ActionEvent evt) {
@@ -799,8 +799,13 @@ public class GrantManagerPanel extends JPanel {
     }
 
     public void load_connections() {
+        boolean selected=databaseBox.getSelectedIndex()>=0;
         enabled_dBox = false;
         setEnableElements(true);
+        String item="";
+        if(selected)
+            item=databaseBox.getItemAt(databaseBox.getSelectedIndex());
+        selected=selected&&item!="Item 1";
         databaseBox.removeAllItems();
         List<DatabaseConnection> cons;
         listConnections = new ArrayList<DatabaseConnection>();
@@ -812,12 +817,20 @@ public class GrantManagerPanel extends JPanel {
                 databaseBox.addItem(cons.get(i).getName());
                 listConnections.add(cons.get(i));
                 enabled_dBox = true;
-                databaseBox.setSelectedItem(cons.get(i).getName());
+                if(!selected)
+                {
+                    item=cons.get(i).getName();
+                    selected=true;
+                }
             }
         }
         if (!connected) {
             GUIUtilities.displayErrorMessage(bundleString("message.notConnected"));
             GUIUtilities.closeTab(TITLE);
+        }
+        else
+        {
+            databaseBox.setSelectedItem(item);
         }
     }
 
@@ -983,8 +996,6 @@ public class GrantManagerPanel extends JPanel {
                             Log.error(e.getMessage());
                         }
                     } else {
-                        removeRow(i);
-                        i--;
                         adding = false;
                         break;
                     }
@@ -994,6 +1005,11 @@ public class GrantManagerPanel extends JPanel {
                 adding=(filterBox.getSelectedIndex() == 0 || (filterBox.getSelectedIndex() == 1) == relGranted.elementAt(i));
                 if (adding)
                     ((RoleTableModel) tablePrivileges.getModel()).addRow(roleData);
+                else
+                {
+                    removeRow(i);
+                    i--;
+                }
                 querySender.releaseResources();
             } catch (NullPointerException e) {
                 Log.error(bundleString("connection.close"));

@@ -25,6 +25,8 @@ public class ExecuteQueryDialog extends BaseDialog {
 
     String query;
 
+    Boolean commitResult=false;
+
     StatementExecutor querySender;
 
     DatabaseConnection dc;
@@ -209,10 +211,16 @@ public class ExecuteQueryDialog extends BaseDialog {
     private void commitButtonActionPerformed(ActionEvent evt) {
         try {
             querySender.execute(QueryTypes.COMMIT, "commit");
+            commitResult=true;
             super.finished();
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
         }
+    }
+
+    public boolean getCommit()
+    {
+        return commitResult;
     }
 
     private void rollbackButtonActionPerformed(ActionEvent evt) {

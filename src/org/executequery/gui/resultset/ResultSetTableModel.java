@@ -40,6 +40,9 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.table.AbstractSortableTableModel;
 import org.underworldlabs.util.MiscUtils;
 
+import javax.swing.*;
+import javax.swing.table.TableColumn;
+
 /**
  * The sql result set table model.
  *
@@ -722,6 +725,26 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         }
 
     }
+
+    public int getColumnIndex(String column)
+    {
+        int ind =-1;
+        for (int i=0;i<visibleColumnHeaders.size();i++)
+        {
+            if (visibleColumnHeaders.get(i).getName().equals(column))
+            {
+                ind=i;
+                break;
+            }
+        }
+        return ind;
+    }
+
+    public void AddRow(List<RecordDataItem> row)
+    {
+        tableData.add(row);
+    }
+
 
     public String getColumnNameHint(int column) {
 

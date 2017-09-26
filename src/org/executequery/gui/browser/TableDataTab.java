@@ -20,30 +20,17 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.sql.Types;
+import java.util.*;
 import java.util.List;
 import java.util.Timer;
-import java.util.TimerTask;
 
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -54,6 +41,9 @@ import org.executequery.Constants;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.components.CancelButton;
+import org.executequery.databasemediators.QueryTypes;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.TableDataChange;
@@ -61,11 +51,11 @@ import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultUserPreferenceEvent;
 import org.executequery.event.UserPreferenceEvent;
 import org.executequery.event.UserPreferenceListener;
+import org.executequery.gui.BaseDialog;
+import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.editor.ResultSetTableContainer;
 import org.executequery.gui.editor.ResultSetTablePopupMenu;
-import org.executequery.gui.resultset.RecordDataItem;
-import org.executequery.gui.resultset.ResultSetTable;
-import org.executequery.gui.resultset.ResultSetTableModel;
+import org.executequery.gui.resultset.*;
 import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -78,6 +68,7 @@ import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.table.SortableHeaderRenderer;
 import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 /**
@@ -126,6 +117,10 @@ public class TableDataTab extends JPanel
     private boolean alwaysShowCanEditNotePanel;
    
     private InterruptibleProcessPanel cancelPanel;
+
+    private JPanel buttonsEditingPanel;
+
+    StatementExecutor querySender;
     
     public TableDataTab(boolean displayRowCount) {
 
@@ -149,7 +144,8 @@ public class TableDataTab extends JPanel
             
             initRowCountPanel();
         }
-        
+        createButtonsEditingPanel();
+
         canEditTableNotePanel = createCanEditTableNotePanel();
         canEditTableNoteConstraints = new GridBagConstraints(1, 1, 1, 1, 1.0, 0,
                 GridBagConstraints.NORTHWEST,
@@ -318,9 +314,10 @@ public class TableDataTab extends JPanel
     
     private List<String> primaryKeyColumns = new ArrayList<String>(0);
     private List<String> foreignKeyColumns = new ArrayList<String>(0);
+    List<org.executequery.databaseobjects.impl.ColumnConstraint> foreigns;
 
     private Object setTableResultsPanel(DatabaseObject databaseObject) {
-        
+        querySender= new DefaultStatementExecutor(databaseObject.getHost().getDatabaseConnection(),true);
         tableDataChanges.clear();
         primaryKeyColumns.clear();
         foreignKeyColumns.clear();
@@ -342,9 +339,11 @@ public class TableDataTab extends JPanel
                 }
 
                 if (databaseTable.hasForeignKey()) {
-                	
-                	foreignKeyColumns = databaseTable.getForeignKeyColumnNames();
+
+                    foreignKeyColumns = databaseTable.getForeignKeyColumnNames();
+                    foreigns = databaseTable.getForeignKeys();
                 }
+                else foreigns=new ArrayList<>();
                 
                 if (primaryKeyColumns.isEmpty()) {
                     
@@ -367,6 +366,7 @@ public class TableDataTab extends JPanel
 
                 createResultSetTable();
             }
+
             tableModel.setNonEditableColumns(primaryKeyColumns);
 
             TableSorter sorter = new TableSorter(tableModel);
@@ -438,11 +438,18 @@ public class TableDataTab extends JPanel
             }
 
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            
+            if (foreigns.size()>0)
+                for (org.executequery.databaseobjects.impl.ColumnConstraint key:foreigns)
+                {
+                    Vector items=itemsForeign(key);
+                    table.setComboboxColumn(tableModel.getColumnIndex(key.getColumnName()),items);
+                }
+
+
             scroller.getViewport().add(table);
             removeAll();
 
-            add(canEditTableNotePanel, canEditTableNoteConstraints);
+            add(/*canEditTableNotePanel*/buttonsEditingPanel, canEditTableNoteConstraints);
             add(scroller, scrollerConstraints);
             
             if (displayRowCount && SystemProperties.getBooleanProperty("user", "browser.query.row.count")) {
@@ -472,6 +479,25 @@ public class TableDataTab extends JPanel
         repaint();
 
         return "done";
+    }
+
+    Vector itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key)
+    {
+        String query="SELECT distinct "+key.getReferencedColumn() + " FROM " + key.getReferencedTable() + " order by 1";
+        Vector items=new Vector();
+        try {
+            ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
+            while (rs.next())
+            {
+                items.add(rs.getObject(1));
+            }
+        }
+        catch (Exception e)
+        {
+            Log.error(e.getMessage());
+        }
+        items.add(null);
+        return items;
     }
 
     private void initialiseModel() {
@@ -532,6 +558,175 @@ public class TableDataTab extends JPanel
         table = new ResultSetTable();
         table.addMouseListener(new ResultSetTablePopupMenu(table, this));
         setTableProperties();
+    }
+    void insert_record(List<JComponent> components,List<String> types,BaseDialog dialog) {
+        String query = "INSERT INTO " + databaseObject.getNameForQuery() + " VALUES (";
+        for (int i = 0; i < components.size(); i++) {
+            String value="";
+            ResultSetColumnHeader rsch=tableModel.getColumnHeaders().get(i);
+            int sqlType=rsch.getDataType();
+            boolean str=false;
+            switch (sqlType) {
+
+                case Types.LONGVARCHAR:
+                case Types.LONGNVARCHAR:
+                case Types.CHAR:
+                case Types.NCHAR:
+                case Types.VARCHAR:
+                case Types.NVARCHAR:
+                case Types.CLOB:
+                    value="'";
+                    str=true;
+                    break;
+                    default:break;
+            }
+            if (types.get(i) == "Text") {
+                if (MiscUtils.isNull(((JTextField) components.get(i)).getText()))
+                    value = "NULL";
+                else {
+                    value += ((JTextField) components.get(i)).getText();
+                }
+            } else {
+
+                if (MiscUtils.isNull( String.valueOf(((JComboBox) components.get(i)).getSelectedItem())))
+                    value = "NULL";
+                else {
+                    value += String.valueOf(((JComboBox) components.get(i)).getSelectedItem());
+                }
+
+            }
+            if(str&&value!="NULL")
+                value+="'";
+            query=query+" "+value+" ,";
+
+        }
+        query=query.substring(0,query.lastIndexOf(","));
+        query=query+")";
+        ExecuteQueryDialog eqd=new ExecuteQueryDialog("Insert record",query,databaseObject.getHost().getDatabaseConnection(),true);
+        eqd.display();
+        if(eqd.getCommit()) {
+            dialog.finished();
+            loadDataForTable(databaseObject);
+        }
+    }
+
+    void add_record(ActionEvent actionEvent)
+    {
+        int cols = tableModel.getColumnCount();
+        List<RecordDataItem> row=new ArrayList<>();
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc= new GridBagConstraints();
+        GridBagConstraints gbcLabel= new GridBagConstraints();
+        gbcLabel.gridx=0;
+        gbc.gridx=1;
+        gbcLabel.gridheight=1;
+        gbc.gridheight=1;
+        gbcLabel.gridwidth=1;
+        gbc.gridwidth=1;
+        gbcLabel.weightx=0;
+        gbc.weightx=1.0;
+        gbcLabel.weighty=0;
+        gbc.weighty=0;
+        gbcLabel.gridy=-1;
+        gbc.gridy=-1;
+        gbcLabel.fill=GridBagConstraints.NONE;
+        gbc.fill=GridBagConstraints.HORIZONTAL;
+        gbcLabel.anchor=GridBagConstraints.WEST;
+        gbc.anchor=GridBagConstraints.WEST;
+        gbcLabel.ipadx=0;
+        gbc.ipadx=0;
+        gbcLabel.ipady=0;
+        gbc.ipady=0;
+        gbcLabel.insets=new Insets(5,5,5,5);
+        gbc.insets=new Insets(5,5,5,5);
+        List<Integer> fgns=new ArrayList<>();
+        List<Vector> f_items=new ArrayList<>();
+        if (foreigns.size()>0)
+            for (org.executequery.databaseobjects.impl.ColumnConstraint key:foreigns)
+            {
+                f_items.add(itemsForeign(key));
+                fgns.add(tableModel.getColumnIndex(key.getColumnName()));
+            }
+        List<JComponent> components=new ArrayList<>();
+        List<String> types=new ArrayList<>();
+        for(int i=0;i<cols;i++)
+        {
+            ResultSetColumnHeader rsch =tableModel.getColumnHeaders().get(i);
+            int type=rsch.getDataType();
+            String typeName = rsch.getDataTypeName();
+            String name = rsch.getName();
+            JComponent field;
+            JLabel label=new JLabel(name);
+            gbcLabel.gridy++;
+            gbc.gridy++;
+            panel.add(label,gbcLabel);
+
+
+            if(fgns.contains(i))
+            {
+                field=new JComboBox(new DefaultComboBoxModel(f_items.get(fgns.indexOf(i))));
+                types.add("Combo");
+            }
+            else
+            {
+                field = new JTextField(15);
+                types.add("Text");
+            }
+            panel.add(field,gbc);
+            components.add(field);
+        }
+
+        BaseDialog dialog =new BaseDialog("Adding record",true,panel);
+        gbcLabel.gridy++;
+        gbc.gridy++;
+        gbcLabel.weightx=0;
+        gbcLabel.fill=GridBagConstraints.HORIZONTAL;
+        JButton b_cancel=new JButton("Cancel");
+        b_cancel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                dialog.finished();
+            }
+        });
+        JButton b_ok=new JButton("Ok");
+        b_ok.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                insert_record(components,types,dialog);
+            }
+        });
+        panel.add(b_cancel,gbcLabel);
+        panel.add(b_ok,gbc);
+        dialog.display();
+
+        //tableModel.AddRow(row);
+    }
+
+    private void createButtonsEditingPanel()
+    {
+        buttonsEditingPanel= new JPanel(new GridBagLayout());
+        JButton button=new JButton();
+        button.setIcon(GUIUtilities.loadIcon("add_16.png"));
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                add_record(actionEvent);
+            }
+        });
+        GridBagConstraints gbc = new GridBagConstraints(0,0,1,1,0,0,
+                GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(5, 5, 5, 5), 0, 0);
+        buttonsEditingPanel.add(button,gbc);
+        JButton button1=new JButton();
+        button1.setIcon(GUIUtilities.loadIcon("delete_16.png"));
+        GridBagConstraints gbc1 = new GridBagConstraints(1,0,1,1,0,0,
+                GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(5,5,5,5), 0, 0);
+        buttonsEditingPanel.add(button1,gbc1);
+        JPanel panel=new JPanel();
+        GridBagConstraints gbc3 = new GridBagConstraints(4,0,1,1,1.0,1.0,
+                GridBagConstraints.CENTER,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0), 0, 0);
+        buttonsEditingPanel.add(panel,gbc3);
+
+
     }
 
     private void initRowCountPanel() {

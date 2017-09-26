@@ -30,9 +30,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
-import javax.swing.BorderFactory;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -62,7 +60,11 @@ public class ResultSetTable extends JTable implements StandardTable {
     private DefaultCellEditor defaultCellEditor;
 
     private DefaultCellEditor multiLineCellEditor;
-    
+
+    List<Integer> comboboxColumns;
+
+
+
     private ResultsTableColumnModel columnModel;
 
     private ResultSetTableCellRenderer cellRenderer;
@@ -96,16 +98,39 @@ public class ResultSetTable extends JTable implements StandardTable {
         setDefaultOptions();
     }
 
+    public void setModel(TableModel model)
+    {
+        super.setModel(model);
+        setDefaultColumnOptions();
+
+    }
+
     private void setDefaultOptions() {
+
 
         setColumnSelectionAllowed(true);
         columnModel = new ResultsTableColumnModel();
         setColumnModel(columnModel);
+        setDefaultColumnOptions();
 
         cellRenderer = new ResultSetTableCellRenderer();
         cellRenderer.setFont(getFont());
 
         applyUserPreferences();
+    }
+
+    private void setDefaultColumnOptions() {
+
+        comboboxColumns=new ArrayList<>();
+        int cols=dataModel.getColumnCount();
+        if(columnModel!=null) {
+            columnModel.init_tcs(cols);
+        }
+
+        /*cellRenderer = new ResultSetTableCellRenderer();
+        cellRenderer.setFont(getFont());*/
+
+
     }
 
     protected JTableHeader createDefaultTableHeader() {
@@ -409,6 +434,11 @@ public class ResultSetTable extends JTable implements StandardTable {
         }
     }
 
+    public Boolean isComboColumn(int index)
+    {
+        return comboboxColumns.contains(index);
+    }
+
     public TableCellRenderer getCellRenderer(int row, int column) {
         return cellRenderer;
     }
@@ -416,6 +446,17 @@ public class ResultSetTable extends JTable implements StandardTable {
     public TableCellEditor getCellEditor(int row, int column) {
         
         RecordDataItem value = (RecordDataItem) getValueAt(row, column);
+        if(isComboColumn(column))
+        {
+            JComboBox comboBox = new JComboBox(((JComboBox)((DefaultCellEditor)columnModel.getComboColumn(column).getCellEditor()).getComponent()).getModel());
+            if(value.getValue()==null)
+                comboBox.setSelectedIndex(0);
+            else
+            comboBox.setSelectedItem(value.getValue());
+            TableCellEditor editor=new DefaultCellEditor (comboBox);
+            return editor;
+        }
+
         int sqlType = value.getDataType();
         switch (sqlType) {
 
@@ -450,16 +491,46 @@ public class ResultSetTable extends JTable implements StandardTable {
 
         }
     }
-
+    public void setComboboxColumn(int ind,Vector<Object> items)
+    {
+        comboboxColumns.add(ind);
+        TableColumn column = new TableColumn();
+        JComboBox comboBox = new JComboBox();
+        comboBox.setModel(new DefaultComboBoxModel(items));
+        column.setCellEditor (new DefaultCellEditor (comboBox));
+        columnModel.setColumn(column,ind);
+    }
     class ResultsTableColumnModel extends DefaultTableColumnModel {
+        Vector<TableColumn> tcs;
 
         // dumb work-around for update issue noted
+        public void init_tcs(int cols)
+        {
+            tcs= new Vector<TableColumn>();
+            for(int i=0;i<cols;i++)
+            {
+                tcs.add(new TableColumn());
+            }
+        }
+
         public TableColumn getColumn(int columnIndex) {
             try {
                 return super.getColumn(columnIndex);
             } catch (Exception e) {
                 return dummyColumn;
             }
+        }
+        public TableColumn getComboColumn(int columnIndex)
+        {
+            try {
+                return tcs.elementAt(columnIndex);
+            } catch (Exception e) {
+                return dummyColumn;
+            }
+        }
+        public void setColumn(TableColumn column,int index)
+        {
+            tcs.set(index,column);
         }
 
     } // class ResultsTableColumnModel

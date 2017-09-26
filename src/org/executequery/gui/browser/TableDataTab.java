@@ -702,6 +702,59 @@ public class TableDataTab extends JPanel
         //tableModel.AddRow(row);
     }
 
+    void delete_record()
+    {
+        int row = table.getSelectedRow();
+        if (row>=0)
+        {
+            String query = "DELETE FROM " + databaseObject.getNameForQuery() + " WHERE ";
+            for (int i = 0; i < tableModel.getColumnHeaders().size(); i++) {
+                String value = "";
+                ResultSetColumnHeader rsch = tableModel.getColumnHeaders().get(i);
+                int sqlType = rsch.getDataType();
+                boolean str = false;
+                switch (sqlType) {
+
+                    case Types.LONGVARCHAR:
+                    case Types.LONGNVARCHAR:
+                    case Types.CHAR:
+                    case Types.NCHAR:
+                    case Types.VARCHAR:
+                    case Types.NVARCHAR:
+                    case Types.CLOB:
+                        value = "'";
+                        str = true;
+                        break;
+                    default:
+                        break;
+                }
+                String temp=String.valueOf (tableModel.getValueAt(row,i));
+                if(temp==null)
+                {
+                    value="NULL";
+                }
+                else
+                value +=temp;
+                if (str && value != "NULL")
+                    value += "'";
+                //if(value=="'null'")
+                if(value=="NULL")
+                    query = query + " (" +rsch.getName()+" IS "+ value + " )";
+                else
+                query = query + " (" +rsch.getName()+" = "+ value + " )";
+                if(i!=tableModel.getColumnHeaders().size()-1)
+                    query+=" and";
+
+
+            }
+            ExecuteQueryDialog eqd = new ExecuteQueryDialog("Delete record", query, databaseObject.getHost().getDatabaseConnection(), true);
+            eqd.display();
+            if (eqd.getCommit()) {
+                loadDataForTable(databaseObject);
+            }
+        }
+    }
+
     private void createButtonsEditingPanel()
     {
         buttonsEditingPanel= new JPanel(new GridBagLayout());
@@ -718,6 +771,12 @@ public class TableDataTab extends JPanel
         buttonsEditingPanel.add(button,gbc);
         JButton button1=new JButton();
         button1.setIcon(GUIUtilities.loadIcon("delete_16.png"));
+        button1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                delete_record();
+            }
+        });
         GridBagConstraints gbc1 = new GridBagConstraints(1,0,1,1,0,0,
                 GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(5,5,5,5), 0, 0);
         buttonsEditingPanel.add(button1,gbc1);

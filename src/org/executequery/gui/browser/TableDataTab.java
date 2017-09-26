@@ -676,7 +676,12 @@ public class TableDataTab extends JPanel
             components.add(field);
         }
 
-        BaseDialog dialog =new BaseDialog("Adding record",true,panel);
+        JScrollPane scroll=new JScrollPane();
+        scroll.setViewportView(panel);
+        JPanel mainPane=new JPanel(new GridBagLayout());
+        mainPane.add(scroll,new GridBagConstraints(0,0,1,1,1,1,
+                GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0, 0, 0, 0), 0, 0));
+        BaseDialog dialog =new BaseDialog("Adding record",true,mainPane);
         gbcLabel.gridy++;
         gbc.gridy++;
         gbcLabel.weightx=0;

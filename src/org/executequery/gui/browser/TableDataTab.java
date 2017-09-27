@@ -59,11 +59,7 @@ import org.executequery.gui.resultset.*;
 import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.DisabledField;
-import org.underworldlabs.swing.LinkButton;
-import org.underworldlabs.swing.ProgressBar;
-import org.underworldlabs.swing.ProgressBarFactory;
-import org.underworldlabs.swing.UpdatableLabel;
+import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.table.SortableHeaderRenderer;
 import org.underworldlabs.swing.table.TableSorter;
@@ -765,7 +761,7 @@ public class TableDataTab extends JPanel
     private void createButtonsEditingPanel()
     {
         buttonsEditingPanel= new JPanel(new GridBagLayout());
-        JButton button=new JButton();
+        RolloverButton button=new RolloverButton();
         button.setIcon(GUIUtilities.loadIcon("add_16.png"));
         button.addActionListener(new ActionListener() {
             @Override
@@ -776,7 +772,7 @@ public class TableDataTab extends JPanel
         GridBagConstraints gbc = new GridBagConstraints(0,0,1,1,0,0,
                 GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(5, 5, 5, 5), 0, 0);
         buttonsEditingPanel.add(button,gbc);
-        JButton button1=new JButton();
+        RolloverButton button1=new RolloverButton();
         button1.setIcon(GUIUtilities.loadIcon("delete_16.png"));
         button1.addActionListener(new ActionListener() {
             @Override

@@ -1,8 +1,8 @@
 --- Execute Query - RELEASE NOTES ---
 
-Date: 19 September 2017
+Date: 27 September 2017
 
-Summary of changes - v4.4.0 Build 5473:
+Summary of changes - v4.4.0 Build 5476:
 ----------------------------------------
 
 - Added selective connection and folder import and export.
@@ -10,7 +10,8 @@ Summary of changes - v4.4.0 Build 5473:
 - New splash and about images.
 - Added fixed height scroller to connections menu.
 - Added localisation support Part 1 - limited RU support provided by Red Soft.
-- Added option to quote char/varchar values on delimited export.
+- Added option to quote char/varchar values on delimited export and result set 
+  export.
 
 
 Summary of changes - v4.3.4 Build 5463:
@@ -558,4 +559,4 @@ Thank you for trying Execute Query.
 
 Takis Diakoumis
 takisd@executequery.org
-19 September 2017
+27 September 2017

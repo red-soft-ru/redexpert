@@ -108,6 +108,8 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
 
     private JComboBox delimiterCombo;
 
+    private JCheckBox applyQuotesCheck;
+    
     private JTextField fileNameField;
 
     private JCheckBox includeColumNamesCheck;
@@ -120,7 +122,7 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
     
     private SqlTextPaneStatusBar statusBar;
     private MinimumWidthActionButton stopButton;
-
+    
     private static final KeyStroke EXECUTE_KEYSTROKE = KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0);
     
     public ExportResultSetPanel() {
@@ -141,6 +143,7 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
         combosGroup = new TableSelectionCombosGroup(connectionsCombo);
 
         includeColumNamesCheck = new JCheckBox("Include column names as first row");
+        applyQuotesCheck = new JCheckBox("Use double quotes for char/varchar/longvarchar columns", true);
         
         sqlText = new SimpleSqlTextPanel();
 //        sqlText.getTextPane().setBackground(Color.WHITE);
@@ -215,7 +218,12 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.insets.top = 2;
         gbc.insets.left = 5;
+        gbc.insets.bottom = 0;
         mainPanel.add(includeColumNamesCheck, gbc);
+        gbc.gridy++;
+        gbc.insets.top = 0;
+        mainPanel.add(applyQuotesCheck, gbc);
+        gbc.insets.top = 5;
         gbc.gridy++;
         gbc.insets.bottom = 10;
         mainPanel.add(new JLabel(instructionNote()), gbc);
@@ -541,7 +549,8 @@ public class ExportResultSetPanel extends DefaultTabViewActionPanel
 
         ResultSetDelimitedFileWriter writer = new ResultSetDelimitedFileWriter(); 
         return writer.write(fileNameField.getText(), 
-                delimiterCombo.getSelectedItem().toString(), resultSet, includeColumNamesCheck.isSelected());
+                delimiterCombo.getSelectedItem().toString(), resultSet, 
+                includeColumNamesCheck.isSelected(), applyQuotesCheck.isSelected());
     }
 
     // ------------------------------------------------

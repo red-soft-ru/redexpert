@@ -146,7 +146,7 @@ public class TableDataTab extends JPanel
         canEditTableNoteConstraints = new GridBagConstraints(1, 1, 1, 1, 1.0, 0,
                 GridBagConstraints.NORTHWEST,
                 GridBagConstraints.HORIZONTAL,
-                new Insets(5, 5, 0, 5), 0, 0);
+                new Insets(0, 0, 0, 5), 0, 0);
 
         scroller = new JScrollPane();
         scrollerConstraints = new GridBagConstraints(1, 2, 1, 1, 1.0, 1.0,

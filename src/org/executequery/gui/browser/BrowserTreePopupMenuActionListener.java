@@ -21,6 +21,7 @@
 package org.executequery.gui.browser;
 
 import java.awt.event.ActionEvent;
+import java.lang.reflect.Array;
 
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
@@ -34,7 +35,10 @@ import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.BaseDialog;
+import org.executequery.gui.CreateTablePanel;
+import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.importexport.ImportExportDelimitedPanel;
 import org.executequery.gui.importexport.ImportExportExcelPanel;
 import org.executequery.gui.importexport.ImportExportDataProcess;
@@ -67,6 +71,61 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     protected void postActionPerformed(ActionEvent e) {
         currentSelection = null;
         currentPath = null;
+    }
+
+    public void deleteObject(ActionEvent e)
+    {
+        if(currentPath!=null&&currentSelection!=null)
+        {
+            DatabaseObjectNode node=(DatabaseObjectNode) currentPath.getLastPathComponent();
+            String query="DROP "+NamedObject.META_TYPES[node.getType()]+" "+node.getName();
+            ExecuteQueryDialog eqd= new ExecuteQueryDialog("Dropping object",query,currentSelection,true);
+            eqd.display();
+            if(eqd.getCommit())
+            treePanel.reloadPath(currentPath.getParentPath());
+        }
+
+    }
+
+    public void createObject(ActionEvent e)
+    {
+        if(currentPath!=null&&currentSelection!=null)
+        {
+            DatabaseObjectNode node=(DatabaseObjectNode)currentPath.getLastPathComponent();
+            int type=node.getType();
+            if(type==NamedObject.META_TAG)
+                for (int i=0;i<NamedObject.META_TYPES.length;i++)
+                    if(NamedObject.META_TYPES[i]==node.getName())
+                    {
+                        type=i;
+                        break;
+                    }
+            switch (type)
+            {
+                case NamedObject.TABLE:
+                    if (GUIUtilities.isDialogOpen(CreateTablePanel.TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateTablePanel.TITLE);
+
+                    }{
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateTablePanel.TITLE, false);
+                            CreateTablePanel panel = new CreateTablePanel(dialog);
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                        }
+                        finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
+                default:GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
+                break;
+            }
+        }
+
     }
 
     public void addNewConnection(ActionEvent e) {

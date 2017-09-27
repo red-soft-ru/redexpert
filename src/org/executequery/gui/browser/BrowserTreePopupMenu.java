@@ -51,6 +51,8 @@ class BrowserTreePopupMenu extends JPopupMenu {
     private JMenuItem connect;
     private JMenuItem disconnect;
     private JMenuItem reload;
+    private JMenuItem createObject;
+    private JMenuItem deleteObject;
     private JMenuItem duplicate;
     private JMenuItem duplicateWithSource;
     private JMenuItem delete;
@@ -80,6 +82,13 @@ class BrowserTreePopupMenu extends JPopupMenu {
         add(reload);
         recycleConnection = createMenuItem(bundleString("recycle"), "recycle", listener);
         add(recycleConnection);
+
+        addSeparator();
+
+        createObject=createMenuItem(bundleString("create"),"createObject",listener);
+        add(createObject);
+        deleteObject=createMenuItem(bundleString("delete"),"deleteObject",listener);
+        add(deleteObject);
 
         addSeparator();
 
@@ -168,6 +177,8 @@ class BrowserTreePopupMenu extends JPopupMenu {
                             ((DatabaseHostNode)node).isDefaultCatalogsAndSchemasOnly());
                     
                     recycleConnection.setEnabled(!canConnect);
+                    deleteObject.setEnabled(false);
+                    createObject.setEnabled(false);
                 } 
                 else {
 
@@ -176,6 +187,29 @@ class BrowserTreePopupMenu extends JPopupMenu {
                     reload.setEnabled(true);
                     recycleConnection.setEnabled(false);
                     showDefaultCatalogsAndSchemas.setEnabled(false);
+                    int type=node.getType();
+                    boolean deleteObjectEnabled=type>=0&&type<NamedObject.META_TYPES.length;
+                    if(deleteObjectEnabled)
+                        deleteObjectEnabled=!NamedObject.META_TYPES[type].contains("SYSTEM");
+                    boolean createObjectEnabled=deleteObjectEnabled||type==NamedObject.META_TAG;
+                    if(type==NamedObject.META_TAG)
+                        createObjectEnabled=!node.getName().contains("SYSTEM");
+                    deleteObject.setEnabled(deleteObjectEnabled);
+                    createObject.setEnabled(createObjectEnabled);
+                    if(deleteObjectEnabled)
+                    {
+                        deleteObject.setText(bundleString("delete")+" "+node.toString());
+                    }
+                    if(createObjectEnabled)
+                    {
+                        String str="";
+                        if(type==NamedObject.META_TAG)
+                            str=node.getName();
+                        else
+                            str=NamedObject.META_TYPES[node.getType()];
+                        createObject.setText(bundleString("create")+" "+str);
+                    }
+
 
                     boolean importExport = (node.getType() == NamedObject.TABLE);
                     sql.setEnabled(importExport);

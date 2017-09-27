@@ -356,6 +356,7 @@ public class TableDataTab extends JPanel
             if (!isDatabaseTable()) {
              
                 canEditTableNotePanel.setVisible(false);
+                buttonsEditingPanel.setVisible(false);
             }
 
             Log.debug("Retrieving data for table - " + databaseObject.getName());
@@ -438,6 +439,7 @@ public class TableDataTab extends JPanel
             }
 
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            if (foreigns!=null)
             if (foreigns.size()>0)
                 for (org.executequery.databaseobjects.impl.ColumnConstraint key:foreigns)
                 {

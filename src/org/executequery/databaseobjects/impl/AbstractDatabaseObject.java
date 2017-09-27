@@ -404,7 +404,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             }
 
             connection = getHost().getTemporaryConnection();
-            statement = connection.createStatement();
+            statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY,ResultSet.HOLD_CURSORS_OVER_COMMIT);
 
             rs = statement.executeQuery(query);
             return new TransactionAgnosticResultSet(connection, statement, rs);

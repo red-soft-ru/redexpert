@@ -770,7 +770,7 @@ public class TableDataTab extends JPanel
             }
         });
         GridBagConstraints gbc = new GridBagConstraints(0,0,1,1,0,0,
-                GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(5, 5, 5, 5), 0, 0);
+                GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(0, 0, 0, 0), 0, 0);
         buttonsEditingPanel.add(button,gbc);
         RolloverButton button1=new RolloverButton();
         button1.setIcon(GUIUtilities.loadIcon("delete_16.png"));
@@ -781,7 +781,7 @@ public class TableDataTab extends JPanel
             }
         });
         GridBagConstraints gbc1 = new GridBagConstraints(1,0,1,1,0,0,
-                GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(5,5,5,5), 0, 0);
+                GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(0,0,0,0), 0, 0);
         buttonsEditingPanel.add(button1,gbc1);
         JPanel panel=new JPanel();
         GridBagConstraints gbc3 = new GridBagConstraints(4,0,1,1,1.0,1.0,

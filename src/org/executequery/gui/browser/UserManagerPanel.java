@@ -16,6 +16,7 @@ import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
+import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.gui.browser.BrowserController;
 import org.executequery.gui.browser.managment.FrameLogin;
@@ -172,8 +173,6 @@ public class UserManagerPanel extends JPanel {
         no_grantButton = new JButton();
         jProgressBar1 = new JProgressBar();
         cancelButton = new JButton();
-
-        setName(""); // NOI18N
 
         cancelButton.setText(bundleString("cancelButton"));
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -596,6 +595,11 @@ public class UserManagerPanel extends JPanel {
                     execute_thread();
 
                 } else {
+                    if(jTabbedPane1.getTabCount()>1)
+                    {
+                        jTabbedPane1.remove(rolesPanel);
+                        jTabbedPane1.remove(membershipPanel);
+                    }
                     usersTable.setModel(new RoleTableModel(
                             new Object[][]{
 
@@ -654,11 +658,19 @@ public class UserManagerPanel extends JPanel {
     }
 
     void addRoleButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        GUIUtilities.addCentralPane(bundleString("AddRole"),
-                UserManagerPanel.FRAME_ICON,
-                new WindowAddRole(this),
-                null,
-                true);
+        try {
+            GUIUtilities.showWaitCursor();
+            BaseDialog dialog =
+                    new BaseDialog(WindowAddRole.TITLE, true);
+            WindowAddRole panel = new WindowAddRole(dialog,dbc);
+            dialog.addDisplayComponentWithEmptyBorder(panel);
+            dialog.display();
+            act = Action.REFRESH;
+            execute_thread();
+        }
+        finally {
+            GUIUtilities.showNormalCursor();
+        }
     }
 
     void refreshUserButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -999,20 +1011,6 @@ public class UserManagerPanel extends JPanel {
             act = Action.REFRESH;
             execute_thread();
 
-    }
-
-    public void addRole(String role) {
-        try {
-            Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-            if (!state.execute("CREATE ROLE " + role))
-                GUIUtilities.displayInformationMessage("Succes");
-            state.close();
-            act = Action.REFRESH;
-            execute_thread();
-        } catch (Exception e) {
-            GUIUtilities.displayErrorMessage(e.getMessage());
-            System.out.println(e.toString());
-        }
     }
 
     public void editUser()throws SQLException,IOException {

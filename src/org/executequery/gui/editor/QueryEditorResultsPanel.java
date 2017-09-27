@@ -570,6 +570,15 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
             case QueryTypes.SELECT_INTO:
                 rText = "Statement executed successfully.";
                 break;
+            case QueryTypes.CREATE_ROLE:
+                rText = "Role created.";
+                break;
+            case QueryTypes.REVOKE:
+                rText = "Revoke succeeded.";
+                break;
+            case QueryTypes.DROP_OBJECT:
+                rText = "Object dropped.";
+                break;
             case QueryTypes.UNKNOWN:
             case QueryTypes.EXECUTE:
                 if (result > -1) {

@@ -1012,6 +1012,9 @@ public class DefaultStatementExecutor implements StatementExecutor {
             case QueryTypes.CREATE_PROCEDURE:
             case QueryTypes.GRANT:
             case QueryTypes.CREATE_SYNONYM:
+            case QueryTypes.CREATE_ROLE:
+            case QueryTypes.REVOKE:
+            case QueryTypes.DROP_OBJECT:
                 return updateRecords(query);
 
             case QueryTypes.UNKNOWN:

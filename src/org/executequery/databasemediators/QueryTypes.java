@@ -87,6 +87,12 @@ public final class QueryTypes {
     /** show table */
     public static final int SHOW_TABLES = 30;
 
+    public static final int REVOKE=31;
+
+    public static final int CREATE_ROLE=32;
+
+    public static final int DROP_OBJECT=33;
+
     private QueryTypes() {}
 
 }

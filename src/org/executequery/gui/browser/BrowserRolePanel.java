@@ -226,6 +226,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
         layout.setHorizontalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
+                                .addGap(18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addGroup(layout.createSequentialGroup()
                                                 .addComponent(jCheckBox1)
@@ -261,6 +262,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
         layout.setVerticalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
+                                .addGap(10)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                         .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(objectBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -862,6 +864,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
     }
     @Override
     public void cleanup() {
+        setEnableGrant(true);
 
     }
 
@@ -872,7 +875,7 @@ public class BrowserRolePanel  extends AbstractFormObjectViewPanel  {
 
     @Override
     public String getLayoutName() {
-        return null;
+        return NAME;
     }
 }
 

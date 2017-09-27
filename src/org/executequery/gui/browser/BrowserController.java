@@ -415,19 +415,16 @@ public class BrowserController {
                     return domainPanel;
                 case NamedObject.ROLE:
                     BrowserRolePanel rolePanel = null;
-                    if (!GUIUtilities.isPanelOpen(BrowserRolePanel.NAME)) {
+                    if (!viewPanel.containsPanel(BrowserRolePanel.NAME)) {
                         rolePanel = new BrowserRolePanel(this);
-                        GUIUtilities.addCentralPane(BrowserRolePanel.NAME,UserManagerPanel.FRAME_ICON,
-                                rolePanel,null,true);
-                    }
+                        viewPanel.addToLayout(rolePanel);
+            }
                     else {
-                        rolePanel = (BrowserRolePanel)GUIUtilities.
-                                getCentralPane(BrowserRolePanel.NAME);
-                        GUIUtilities.setSelectedCentralPane(BrowserRolePanel.NAME);
+                        rolePanel = (BrowserRolePanel)viewPanel.
+                                getFormObjectView(BrowserRolePanel.NAME);
                     }
-
                     rolePanel.setValues((DefaultDatabaseRole) databaseObject,this);
-                    return null;
+                    return rolePanel;
                 case NamedObject.EXCEPTION:
                     BrowserExceptionPanel exceptionPanel = null;
                     if (!viewPanel.containsPanel(BrowserExceptionPanel.NAME)) {

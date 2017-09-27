@@ -235,7 +235,23 @@ public final class DerivedQuery {
             
             type = QueryTypes.SHOW_TABLES;
 
-        } else {
+        }
+        else if (query.indexOf("CREATE ROLE ") == 0) {
+
+            type = QueryTypes.CREATE_ROLE;
+
+        }
+        else if (query.indexOf("DROP ") == 0) {
+
+            type = QueryTypes.DROP_OBJECT;
+
+        }
+        else if (query.indexOf("REVOKE ") == 0) {
+
+            type = QueryTypes.REVOKE;
+
+        }
+        else {
             
             type = QueryTypes.UNKNOWN;
         }

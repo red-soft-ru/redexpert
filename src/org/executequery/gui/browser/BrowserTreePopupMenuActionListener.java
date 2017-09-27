@@ -37,6 +37,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.CreateTablePanel;
 import org.executequery.gui.ExecuteQueryDialog;
+import org.executequery.gui.browser.managment.WindowAddRole;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.importexport.ImportExportDelimitedPanel;
@@ -115,10 +116,25 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             CreateTablePanel panel = new CreateTablePanel(dialog);
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
                         }
                         finally {
                             GUIUtilities.showNormalCursor();
                         }
+                    }
+                    break;
+                case NamedObject.ROLE:
+                    try {
+                        GUIUtilities.showWaitCursor();
+                        BaseDialog dialog =
+                                new BaseDialog(WindowAddRole.TITLE, true);
+                        WindowAddRole panel = new WindowAddRole(dialog,currentSelection);
+                        dialog.addDisplayComponentWithEmptyBorder(panel);
+                        dialog.display();
+                        treePanel.reloadPath(currentPath.getParentPath());
+                    }
+                    finally {
+                        GUIUtilities.showNormalCursor();
                     }
                     break;
                 default:GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));

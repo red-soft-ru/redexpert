@@ -358,7 +358,7 @@ public class WindowAddUser extends javax.swing.JPanel {
     }
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-        if (!nameTextField.getText().equals("")) {
+        if (!nameTextField.getText().trim().equals("")) {
             if (new String(passTextField.getPassword()).equals(new String(confirmField.getPassword()))) {
                 ump.userAdd.setUserName(nameTextField.getText());
                 ump.userAdd.setFirstName(firstNameField.getText());

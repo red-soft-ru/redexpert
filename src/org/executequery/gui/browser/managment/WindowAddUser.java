@@ -8,6 +8,7 @@ import org.underworldlabs.swing.NumberTextField;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -91,8 +92,67 @@ public class WindowAddUser extends javax.swing.JPanel {
     private void initComponents() {
 
         nameTextField = new javax.swing.JTextField();
+        nameTextField.setTransferHandler(null);
+        nameTextField.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() == KeyEvent.VK_SPACE || (e.getKeyChar() >= 'А' && e.getKeyChar() <= 'я'))
+                    e.consume();
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+
+        });
         passTextField = new javax.swing.JPasswordField();
+        passTextField.setTransferHandler(null);
+        passTextField.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() == KeyEvent.VK_SPACE)
+                    e.consume();
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+        });
         confirmField = new javax.swing.JPasswordField();
+        confirmField.setTransferHandler(null);
+        confirmField.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() == KeyEvent.VK_SPACE)
+                    e.consume();
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+
+        });
         firstNameField = new javax.swing.JTextField();
         middleNameField = new javax.swing.JTextField();
         lastNameField = new javax.swing.JTextField();
@@ -360,16 +420,16 @@ public class WindowAddUser extends javax.swing.JPanel {
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         if (!nameTextField.getText().trim().equals("")) {
             if (new String(passTextField.getPassword()).equals(new String(confirmField.getPassword()))) {
-                ump.userAdd.setUserName(nameTextField.getText());
-                ump.userAdd.setFirstName(firstNameField.getText());
-                ump.userAdd.setMiddleName(middleNameField.getText());
-                ump.userAdd.setLastName(lastNameField.getText());
+                ump.userAdd.setUserName(nameTextField.getText().trim());
+                ump.userAdd.setFirstName(firstNameField.getText().trim());
+                ump.userAdd.setMiddleName(middleNameField.getText().trim());
+                ump.userAdd.setLastName(lastNameField.getText().trim());
                 ump.userAdd.setUserId(Integer.parseInt(userIDField.getText()));
                 ump.userAdd.setGroupId(Integer.parseInt(groupIDField.getText()));
                 ump.userAdd.setActive(activeBox.isSelected());
-                ump.userAdd.setPlugin(pluginField.getText());
+                ump.userAdd.setPlugin(pluginField.getText().trim());
                 ump.userAdd.setAdministrator(adminBox.isSelected());
-                ump.userAdd.setDescription(descriptionField.getText());
+                ump.userAdd.setDescription(descriptionField.getText().trim());
                 Map<String, String> tags = new HashMap<>();
                 for (int i = 0; i < tagTable.getRowCount(); i++) {
                     tags.put((String) ((DefaultTableModel) tagTable.getModel()).getValueAt(i, 0), (String) ((DefaultTableModel) tagTable.getModel()).getValueAt(i, 1));

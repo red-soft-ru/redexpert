@@ -63,18 +63,18 @@ import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.table.SortableHeaderRenderer;
 import org.underworldlabs.swing.table.TableSorter;
+import org.underworldlabs.swing.toolbar.PanelToolBar;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @author Takis Diakoumis
+ * @version $Revision: 1780 $
+ * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
-public class TableDataTab extends JPanel 
-    implements ResultSetTableContainer, TableModelListener, UserPreferenceListener {
+public class TableDataTab extends JPanel
+        implements ResultSetTableContainer, TableModelListener, UserPreferenceListener {
 
     private ResultSetTableModel tableModel;
 
@@ -85,7 +85,7 @@ public class TableDataTab extends JPanel
     private DatabaseObject databaseObject;
 
     private boolean executing = false;
-    
+
     private SwingWorker worker;
 
     private boolean cancelled;
@@ -97,7 +97,7 @@ public class TableDataTab extends JPanel
     private GridBagConstraints rowCountPanelConstraints;
 
     private GridBagConstraints canEditTableNoteConstraints;
-    
+
     private DisabledField rowCountField;
 
     private JPanel rowCountPanel;
@@ -107,17 +107,17 @@ public class TableDataTab extends JPanel
     private List<TableDataChange> tableDataChanges;
 
     private JPanel canEditTableNotePanel;
-    
+
     private JLabel canEditTableLabel;
-    
+
     private boolean alwaysShowCanEditNotePanel;
-   
+
     private InterruptibleProcessPanel cancelPanel;
 
     private JPanel buttonsEditingPanel;
 
     StatementExecutor querySender;
-    
+
     public TableDataTab(boolean displayRowCount) {
 
         super(new GridBagLayout());
@@ -137,7 +137,7 @@ public class TableDataTab extends JPanel
     private void init() throws Exception {
 
         if (displayRowCount) {
-            
+
             initRowCountPanel();
         }
         createButtonsEditingPanel();
@@ -150,9 +150,9 @@ public class TableDataTab extends JPanel
 
         scroller = new JScrollPane();
         scrollerConstraints = new GridBagConstraints(1, 2, 1, 1, 1.0, 1.0,
-                                GridBagConstraints.SOUTHEAST,
-                                GridBagConstraints.BOTH,
-                                new Insets(5, 5, 5, 5), 0, 0);
+                GridBagConstraints.SOUTHEAST,
+                GridBagConstraints.BOTH,
+                new Insets(5, 5, 5, 5), 0, 0);
 
         rowCountPanelConstraints = new GridBagConstraints(1, 3, 1, 1, 1.0, 0,
                 GridBagConstraints.SOUTHWEST,
@@ -163,20 +163,20 @@ public class TableDataTab extends JPanel
                 GridBagConstraints.CENTER,
                 GridBagConstraints.BOTH,
                 new Insets(5, 5, 5, 5), 0, 0);
-        
+
         tableDataChanges = new ArrayList<TableDataChange>();
         alwaysShowCanEditNotePanel = SystemProperties.getBooleanProperty(
                 Constants.USER_PROPERTIES_KEY, "browser.always.show.table.editable.label");
-        
+
         cancelPanel = new InterruptibleProcessPanel("Executing query for data...");
-        
+
         EventMediator.registerListener(this);
     }
 
     private JPanel createCanEditTableNotePanel() {
 
         final JPanel panel = new JPanel(new GridBagLayout());
-        
+
         canEditTableLabel = new UpdatableLabel();
         JButton hideButton = new LinkButton(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -185,18 +185,18 @@ public class TableDataTab extends JPanel
             }
         });
         hideButton.setText("Hide");
-        
+
         JButton alwaysHideButton = new LinkButton(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
 
                 panel.setVisible(false);
                 alwaysShowCanEditNotePanel = false;
 
-                SystemProperties.setBooleanProperty(Constants.USER_PROPERTIES_KEY, 
+                SystemProperties.setBooleanProperty(Constants.USER_PROPERTIES_KEY,
                         "browser.always.show.table.editable.label", false);
 
                 EventMediator.fireEvent(new DefaultUserPreferenceEvent(TableDataTab.this, null, UserPreferenceEvent.ALL));
-                
+
             }
         });
         alwaysHideButton.setText("Always Hide");
@@ -217,18 +217,18 @@ public class TableDataTab extends JPanel
         panel.add(alwaysHideButton, gbc);
 
         panel.setBorder(UIUtils.getDefaultLineBorder());
-        
+
         return panel;
     }
 
     private Timer timer;
-    
+
     public void loadDataForTable(final DatabaseObject databaseObject) {
 
         addInProgressPanel();
 
         if (timer != null) {
-            
+
             timer.cancel();
         }
 
@@ -241,9 +241,9 @@ public class TableDataTab extends JPanel
                 load(databaseObject);
             }
         }, 600);
-        
+
     }
-    
+
     private void load(final DatabaseObject databaseObject) {
 
         if (worker != null) {
@@ -265,6 +265,7 @@ public class TableDataTab extends JPanel
                     return "done";
                 }
             }
+
             public void finished() {
 
                 executing = false;
@@ -278,22 +279,22 @@ public class TableDataTab extends JPanel
     private void addInProgressPanel() {
 
         ThreadUtils.invokeLater(new Runnable() {
-            
+
             @Override
             public void run() {
 
                 removeAll();
                 add(cancelPanel, scrollerConstraints);
-                
+
                 repaint();
                 cancelPanel.start();
             }
         });
-        
+
     }
 
     private void cancel() {
-        
+
         if (executing) {
             try {
 
@@ -301,23 +302,23 @@ public class TableDataTab extends JPanel
                 cancelStatement();
 
             } finally {
-                
+
                 cancelled = true;
             }
         }
-        
+
     }
-    
+
     private List<String> primaryKeyColumns = new ArrayList<String>(0);
     private List<String> foreignKeyColumns = new ArrayList<String>(0);
     List<org.executequery.databaseobjects.impl.ColumnConstraint> foreigns;
 
     private Object setTableResultsPanel(DatabaseObject databaseObject) {
-        querySender= new DefaultStatementExecutor(databaseObject.getHost().getDatabaseConnection(),true);
+        querySender = new DefaultStatementExecutor(databaseObject.getHost().getDatabaseConnection(), true);
         tableDataChanges.clear();
         primaryKeyColumns.clear();
         foreignKeyColumns.clear();
-        
+
         this.databaseObject = databaseObject;
         try {
 
@@ -331,32 +332,31 @@ public class TableDataTab extends JPanel
                 if (databaseTable.hasPrimaryKey()) {
 
                     primaryKeyColumns = databaseTable.getPrimaryKeyColumnNames();
-					canEditTableLabel.setText("This table has a primary key(s) and data may be edited here");
+                    canEditTableLabel.setText("This table has a primary key(s) and data may be edited here");
                 }
 
                 if (databaseTable.hasForeignKey()) {
 
                     foreignKeyColumns = databaseTable.getForeignKeyColumnNames();
                     foreigns = databaseTable.getForeignKeys();
-                }
-                else foreigns=new ArrayList<>();
-                
+                } else foreigns = new ArrayList<>();
+
                 if (primaryKeyColumns.isEmpty()) {
-                    
+
                     canEditTableLabel.setText("This table has no primary keys defined and is not editable here");
                 }
-                
+
                 canEditTableNotePanel.setVisible(alwaysShowCanEditNotePanel);
             }
 
             if (!isDatabaseTable()) {
-             
+
                 canEditTableNotePanel.setVisible(false);
                 buttonsEditingPanel.setVisible(false);
             }
 
             Log.debug("Retrieving data for table - " + databaseObject.getName());
-            
+
             ResultSet resultSet = databaseObject.getData(true);
             tableModel.createTable(resultSet);
             if (table == null) {
@@ -371,77 +371,76 @@ public class TableDataTab extends JPanel
             sorter.setTableHeader(table.getTableHeader());
 
             if (isDatabaseTable()) {
-	            
-	            SortableHeaderRenderer renderer = new SortableHeaderRenderer(sorter) {
-	            	
-	            	private ImageIcon primaryKeyIcon = GUIUtilities.loadIcon(BrowserConstants.PRIMARY_COLUMNS_IMAGE); 
-	            	private ImageIcon foreignKeyIcon = GUIUtilities.loadIcon(BrowserConstants.FOREIGN_COLUMNS_IMAGE); 
-	            	
-	            	@Override
-	            	public Component getTableCellRendererComponent(JTable table,
-	            			Object value, boolean isSelected, boolean hasFocus,
-	            			int row, int column) {
-	
-	            		DefaultTableCellRenderer renderer = (DefaultTableCellRenderer) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-	            		
-	            		Icon keyIcon = iconForValue(value);
-	            		if (keyIcon != null) {
-	            		
-		            		Icon icon = renderer.getIcon();
-		            		if (icon != null) {
-		            			
-		            			BufferedImage image = new BufferedImage(icon.getIconWidth() + keyIcon.getIconWidth() + 2, 
-		            					Math.max(keyIcon.getIconHeight(), icon.getIconHeight()), BufferedImage.TYPE_INT_ARGB);
-		            			
-		            			Graphics graphics = image.getGraphics();
-		            			keyIcon.paintIcon(null, graphics, 0, 0);
-		            			icon.paintIcon(null, graphics, keyIcon.getIconWidth() + 2, 5);
-		
-		            			setIcon(new ImageIcon(image));
 
-		            		} else {
-		            			
-		            			setIcon(keyIcon);
-		            		}
+                SortableHeaderRenderer renderer = new SortableHeaderRenderer(sorter) {
 
-	            		}
-	            		
-						return renderer;
-	            	}
-	            	
-	            	private ImageIcon iconForValue(Object value) {
-	            		
-	            		if (value != null) {
-	            			
-	            			String name = value.toString();
-	            			if (primaryKeyColumns.contains(name)) {
-	            				
-	            				return primaryKeyIcon;
-	            			
-	            			} else if (foreignKeyColumns.contains(name)) {
-	            				
-	            				return foreignKeyIcon;
-	            			}
-	            			
-	            		}
-	            		
-	            		return null;
-	            	}
-	            	
-	            	
-	            };
-	            sorter.setTableHeaderRenderer(renderer);
-            
+                    private ImageIcon primaryKeyIcon = GUIUtilities.loadIcon(BrowserConstants.PRIMARY_COLUMNS_IMAGE);
+                    private ImageIcon foreignKeyIcon = GUIUtilities.loadIcon(BrowserConstants.FOREIGN_COLUMNS_IMAGE);
+
+                    @Override
+                    public Component getTableCellRendererComponent(JTable table,
+                                                                   Object value, boolean isSelected, boolean hasFocus,
+                                                                   int row, int column) {
+
+                        DefaultTableCellRenderer renderer = (DefaultTableCellRenderer) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+                        Icon keyIcon = iconForValue(value);
+                        if (keyIcon != null) {
+
+                            Icon icon = renderer.getIcon();
+                            if (icon != null) {
+
+                                BufferedImage image = new BufferedImage(icon.getIconWidth() + keyIcon.getIconWidth() + 2,
+                                        Math.max(keyIcon.getIconHeight(), icon.getIconHeight()), BufferedImage.TYPE_INT_ARGB);
+
+                                Graphics graphics = image.getGraphics();
+                                keyIcon.paintIcon(null, graphics, 0, 0);
+                                icon.paintIcon(null, graphics, keyIcon.getIconWidth() + 2, 5);
+
+                                setIcon(new ImageIcon(image));
+
+                            } else {
+
+                                setIcon(keyIcon);
+                            }
+
+                        }
+
+                        return renderer;
+                    }
+
+                    private ImageIcon iconForValue(Object value) {
+
+                        if (value != null) {
+
+                            String name = value.toString();
+                            if (primaryKeyColumns.contains(name)) {
+
+                                return primaryKeyIcon;
+
+                            } else if (foreignKeyColumns.contains(name)) {
+
+                                return foreignKeyIcon;
+                            }
+
+                        }
+
+                        return null;
+                    }
+
+
+                };
+                sorter.setTableHeaderRenderer(renderer);
+
             }
 
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            if (foreigns!=null)
-            if (foreigns.size()>0)
-                for (org.executequery.databaseobjects.impl.ColumnConstraint key:foreigns)
-                {
-                    Vector items=itemsForeign(key);
-                    table.setComboboxColumn(tableModel.getColumnIndex(key.getColumnName()),items);
-                }
+            if (foreigns != null)
+                if (foreigns.size() > 0)
+                    for (org.executequery.databaseobjects.impl.ColumnConstraint key : foreigns) {
+                        Vector items = itemsForeign(key);
+                        table.setComboboxColumn(tableModel.getColumnIndex(key.getColumnName()), items);
+                    }
 
 
             scroller.getViewport().add(table);
@@ -449,21 +448,21 @@ public class TableDataTab extends JPanel
 
             add(/*canEditTableNotePanel*/buttonsEditingPanel, canEditTableNoteConstraints);
             add(scroller, scrollerConstraints);
-            
+
             if (displayRowCount && SystemProperties.getBooleanProperty("user", "browser.query.row.count")) {
-                
+
                 add(rowCountPanel, rowCountPanelConstraints);
                 rowCountField.setText(String.valueOf(sorter.getRowCount()));
             }
-            
+
         } catch (DataSourceException e) {
 
             if (!cancelled) {
-             
+
                 addErrorLabel(e);
-            
+
             } else {
-                
+
                 addCancelledLabel();
             }
 
@@ -479,19 +478,15 @@ public class TableDataTab extends JPanel
         return "done";
     }
 
-    Vector itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key)
-    {
-        String query="SELECT distinct "+key.getReferencedColumn() + " FROM " + key.getReferencedTable() + " order by 1";
-        Vector items=new Vector();
+    Vector itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
+        String query = "SELECT distinct " + key.getReferencedColumn() + " FROM " + key.getReferencedTable() + " order by 1";
+        Vector items = new Vector();
         try {
             ResultSet rs = querySender.execute(QueryTypes.SELECT, query).getResultSet();
-            while (rs.next())
-            {
+            while (rs.next()) {
                 items.add(rs.getObject(1));
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Log.error(e.getMessage());
         }
         items.add(null);
@@ -499,7 +494,7 @@ public class TableDataTab extends JPanel
     }
 
     private void initialiseModel() {
-    
+
         if (tableModel == null) {
 
             tableModel = new ResultSetTableModel(SystemProperties.getIntProperty("user", "browser.max.records"));
@@ -524,7 +519,7 @@ public class TableDataTab extends JPanel
         }
 
         sb.append(" ]</center></p><p><center><i>(Note: Data will not always be available for all object types)</i></center></p></body></html>");
-        
+
         addErrorPanel(sb);
     }
 
@@ -557,13 +552,14 @@ public class TableDataTab extends JPanel
         table.addMouseListener(new ResultSetTablePopupMenu(table, this));
         setTableProperties();
     }
-    void insert_record(List<JComponent> components,List<String> types,BaseDialog dialog) {
+
+    void insert_record(List<JComponent> components, List<String> types, BaseDialog dialog) {
         String query = "INSERT INTO " + databaseObject.getNameForQuery() + " VALUES (";
         for (int i = 0; i < components.size(); i++) {
-            String value="";
-            ResultSetColumnHeader rsch=tableModel.getColumnHeaders().get(i);
-            int sqlType=rsch.getDataType();
-            boolean str=false;
+            String value = "";
+            ResultSetColumnHeader rsch = tableModel.getColumnHeaders().get(i);
+            int sqlType = rsch.getDataType();
+            boolean str = false;
             switch (sqlType) {
 
                 case Types.LONGVARCHAR:
@@ -573,10 +569,11 @@ public class TableDataTab extends JPanel
                 case Types.VARCHAR:
                 case Types.NVARCHAR:
                 case Types.CLOB:
-                    value="'";
-                    str=true;
+                    value = "'";
+                    str = true;
                     break;
-                    default:break;
+                default:
+                    break;
             }
             if (types.get(i) == "Text") {
                 if (MiscUtils.isNull(((JTextField) components.get(i)).getText()))
@@ -586,130 +583,122 @@ public class TableDataTab extends JPanel
                 }
             } else {
 
-                if (MiscUtils.isNull( String.valueOf(((JComboBox) components.get(i)).getSelectedItem())))
+                if (MiscUtils.isNull(String.valueOf(((JComboBox) components.get(i)).getSelectedItem())))
                     value = "NULL";
                 else {
                     value += String.valueOf(((JComboBox) components.get(i)).getSelectedItem());
                 }
 
             }
-            if(str&&value!="NULL")
-                value+="'";
-            query=query+" "+value+" ,";
+            if (str && value != "NULL")
+                value += "'";
+            query = query + " " + value + " ,";
 
         }
-        query=query.substring(0,query.lastIndexOf(","));
-        query=query+")";
-        ExecuteQueryDialog eqd=new ExecuteQueryDialog("Insert record",query,databaseObject.getHost().getDatabaseConnection(),true);
+        query = query.substring(0, query.lastIndexOf(","));
+        query = query + ")";
+        ExecuteQueryDialog eqd = new ExecuteQueryDialog("Insert record", query, databaseObject.getHost().getDatabaseConnection(), true);
         eqd.display();
-        if(eqd.getCommit()) {
+        if (eqd.getCommit()) {
             dialog.finished();
             loadDataForTable(databaseObject);
         }
     }
 
-    void add_record(ActionEvent actionEvent)
-    {
+    void add_record(ActionEvent actionEvent) {
         int cols = tableModel.getColumnCount();
-        List<RecordDataItem> row=new ArrayList<>();
+        List<RecordDataItem> row = new ArrayList<>();
         JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc= new GridBagConstraints();
-        GridBagConstraints gbcLabel= new GridBagConstraints();
-        gbcLabel.gridx=0;
-        gbc.gridx=1;
-        gbcLabel.gridheight=1;
-        gbc.gridheight=1;
-        gbcLabel.gridwidth=1;
-        gbc.gridwidth=1;
-        gbcLabel.weightx=0;
-        gbc.weightx=1.0;
-        gbcLabel.weighty=0;
-        gbc.weighty=0;
-        gbcLabel.gridy=-1;
-        gbc.gridy=-1;
-        gbcLabel.fill=GridBagConstraints.NONE;
-        gbc.fill=GridBagConstraints.HORIZONTAL;
-        gbcLabel.anchor=GridBagConstraints.WEST;
-        gbc.anchor=GridBagConstraints.WEST;
-        gbcLabel.ipadx=0;
-        gbc.ipadx=0;
-        gbcLabel.ipady=0;
-        gbc.ipady=0;
-        gbcLabel.insets=new Insets(5,5,5,5);
-        gbc.insets=new Insets(5,5,5,5);
-        List<Integer> fgns=new ArrayList<>();
-        List<Vector> f_items=new ArrayList<>();
-        if (foreigns.size()>0)
-            for (org.executequery.databaseobjects.impl.ColumnConstraint key:foreigns)
-            {
+        GridBagConstraints gbc = new GridBagConstraints();
+        GridBagConstraints gbcLabel = new GridBagConstraints();
+        gbcLabel.gridx = 0;
+        gbc.gridx = 1;
+        gbcLabel.gridheight = 1;
+        gbc.gridheight = 1;
+        gbcLabel.gridwidth = 1;
+        gbc.gridwidth = 1;
+        gbcLabel.weightx = 0;
+        gbc.weightx = 1.0;
+        gbcLabel.weighty = 0;
+        gbc.weighty = 0;
+        gbcLabel.gridy = -1;
+        gbc.gridy = -1;
+        gbcLabel.fill = GridBagConstraints.NONE;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbcLabel.anchor = GridBagConstraints.WEST;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbcLabel.ipadx = 0;
+        gbc.ipadx = 0;
+        gbcLabel.ipady = 0;
+        gbc.ipady = 0;
+        gbcLabel.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(5, 5, 5, 5);
+        List<Integer> fgns = new ArrayList<>();
+        List<Vector> f_items = new ArrayList<>();
+        if (foreigns.size() > 0)
+            for (org.executequery.databaseobjects.impl.ColumnConstraint key : foreigns) {
                 f_items.add(itemsForeign(key));
                 fgns.add(tableModel.getColumnIndex(key.getColumnName()));
             }
-        List<JComponent> components=new ArrayList<>();
-        List<String> types=new ArrayList<>();
-        for(int i=0;i<cols;i++)
-        {
-            ResultSetColumnHeader rsch =tableModel.getColumnHeaders().get(i);
-            int type=rsch.getDataType();
+        List<JComponent> components = new ArrayList<>();
+        List<String> types = new ArrayList<>();
+        for (int i = 0; i < cols; i++) {
+            ResultSetColumnHeader rsch = tableModel.getColumnHeaders().get(i);
+            int type = rsch.getDataType();
             String typeName = rsch.getDataTypeName();
             String name = rsch.getName();
             JComponent field;
-            JLabel label=new JLabel(name);
+            JLabel label = new JLabel(name);
             gbcLabel.gridy++;
             gbc.gridy++;
-            panel.add(label,gbcLabel);
+            panel.add(label, gbcLabel);
 
 
-            if(fgns.contains(i))
-            {
-                field=new JComboBox(new DefaultComboBoxModel(f_items.get(fgns.indexOf(i))));
+            if (fgns.contains(i)) {
+                field = new JComboBox(new DefaultComboBoxModel(f_items.get(fgns.indexOf(i))));
                 types.add("Combo");
-            }
-            else
-            {
+            } else {
                 field = new JTextField(15);
                 types.add("Text");
             }
-            panel.add(field,gbc);
+            panel.add(field, gbc);
             components.add(field);
         }
 
-        JScrollPane scroll=new JScrollPane();
+        JScrollPane scroll = new JScrollPane();
         scroll.setViewportView(panel);
-        JPanel mainPane=new JPanel(new GridBagLayout());
-        mainPane.add(scroll,new GridBagConstraints(0,0,1,1,1,1,
-                GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0, 0, 0, 0), 0, 0));
-        BaseDialog dialog =new BaseDialog("Adding record",true,mainPane);
+        JPanel mainPane = new JPanel(new GridBagLayout());
+        mainPane.add(scroll, new GridBagConstraints(0, 0, 1, 1, 1, 1,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+        BaseDialog dialog = new BaseDialog("Adding record", true, mainPane);
         gbcLabel.gridy++;
         gbc.gridy++;
-        gbcLabel.weightx=0;
-        gbcLabel.fill=GridBagConstraints.HORIZONTAL;
-        JButton b_cancel=new JButton("Cancel");
+        gbcLabel.weightx = 0;
+        gbcLabel.fill = GridBagConstraints.HORIZONTAL;
+        JButton b_cancel = new JButton("Cancel");
         b_cancel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 dialog.finished();
             }
         });
-        JButton b_ok=new JButton("Ok");
+        JButton b_ok = new JButton("Ok");
         b_ok.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                insert_record(components,types,dialog);
+                insert_record(components, types, dialog);
             }
         });
-        panel.add(b_cancel,gbcLabel);
-        panel.add(b_ok,gbc);
+        panel.add(b_cancel, gbcLabel);
+        panel.add(b_ok, gbc);
         dialog.display();
 
         //tableModel.AddRow(row);
     }
 
-    void delete_record()
-    {
+    void delete_record() {
         int row = table.getSelectedRow();
-        if (row>=0)
-        {
+        if (row >= 0) {
             String query = "DELETE FROM " + databaseObject.getNameForQuery() + " WHERE ";
             for (int i = 0; i < tableModel.getColumnHeaders().size(); i++) {
                 String value = "";
@@ -731,22 +720,20 @@ public class TableDataTab extends JPanel
                     default:
                         break;
                 }
-                String temp=String.valueOf (tableModel.getValueAt(row,i));
-                if(temp==null)
-                {
-                    value="NULL";
-                }
-                else
-                value +=temp;
+                String temp = String.valueOf(tableModel.getValueAt(row, i));
+                if (temp == null) {
+                    value = "NULL";
+                } else
+                    value += temp;
                 if (str && value != "NULL")
                     value += "'";
                 //if(value=="'null'")
-                if(value=="NULL")
-                    query = query + " (" +rsch.getName()+" IS "+ value + " )";
+                if (value == "NULL")
+                    query = query + " (" + rsch.getName() + " IS " + value + " )";
                 else
-                query = query + " (" +rsch.getName()+" = "+ value + " )";
-                if(i!=tableModel.getColumnHeaders().size()-1)
-                    query+=" and";
+                    query = query + " (" + rsch.getName() + " = " + value + " )";
+                if (i != tableModel.getColumnHeaders().size() - 1)
+                    query += " and";
 
 
             }
@@ -758,37 +745,30 @@ public class TableDataTab extends JPanel
         }
     }
 
-    private void createButtonsEditingPanel()
-    {
-        buttonsEditingPanel= new JPanel(new GridBagLayout());
-        RolloverButton button=new RolloverButton();
-        button.setIcon(GUIUtilities.loadIcon("add_16.png"));
-        button.addActionListener(new ActionListener() {
+    private void createButtonsEditingPanel() {
+        buttonsEditingPanel = new JPanel(new GridBagLayout());
+        PanelToolBar bar = new PanelToolBar();
+        RolloverButton addRolloverButton = new RolloverButton();
+        addRolloverButton.setIcon(GUIUtilities.loadIcon("add_16.png"));
+        addRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 add_record(actionEvent);
             }
         });
-        GridBagConstraints gbc = new GridBagConstraints(0,0,1,1,0,0,
-                GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(0, 0, 0, 0), 0, 0);
-        buttonsEditingPanel.add(button,gbc);
-        RolloverButton button1=new RolloverButton();
-        button1.setIcon(GUIUtilities.loadIcon("delete_16.png"));
-        button1.addActionListener(new ActionListener() {
+        bar.add(addRolloverButton);
+        RolloverButton deleteRolloverButton = new RolloverButton();
+        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("delete_16.png"));
+        deleteRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 delete_record();
             }
         });
-        GridBagConstraints gbc1 = new GridBagConstraints(1,0,1,1,0,0,
-                GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(0,0,0,0), 0, 0);
-        buttonsEditingPanel.add(button1,gbc1);
-        JPanel panel=new JPanel();
-        GridBagConstraints gbc3 = new GridBagConstraints(4,0,1,1,1.0,1.0,
-                GridBagConstraints.CENTER,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0), 0, 0);
-        buttonsEditingPanel.add(panel,gbc3);
-
-
+        bar.add(deleteRolloverButton);
+        GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
+                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
+        buttonsEditingPanel.add(bar, gbc3);
     }
 
     private void initRowCountPanel() {
@@ -808,10 +788,10 @@ public class TableDataTab extends JPanel
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets.right = 0;
-        rowCountPanel.add(rowCountField, gbc);        
+        rowCountPanel.add(rowCountField, gbc);
     }
 
-    
+
     /**
      * Whether a SQL SELECT statement is currently being executed by this class.
      *
@@ -822,7 +802,9 @@ public class TableDataTab extends JPanel
         return executing;
     }
 
-    /** Cancels the currently executing statement. */
+    /**
+     * Cancels the currently executing statement.
+     */
     public void cancelStatement() {
 
         if (worker != null) {
@@ -834,14 +816,16 @@ public class TableDataTab extends JPanel
             @Override
             public Object construct() {
 
-                databaseObject.cancelStatement();                
+                databaseObject.cancelStatement();
                 return "done";
             }
         };
         worker.start();
     }
 
-    /** Sets default table display properties. */
+    /**
+     * Sets default table display properties.
+     */
     public void setTableProperties() {
 
         if (table == null) {
@@ -879,24 +863,21 @@ public class TableDataTab extends JPanel
 
                 List<RecordDataItem> rowDataForRow = tableModel.getRowDataForRow(row);
                 for (RecordDataItem recordDataItem : rowDataForRow) {
-    				
-                	if (recordDataItem.isChanged()) {
-                		
-                		Log.debug("Change detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
-                		
-                		asDatabaseTable().addTableDataChange(new TableDataChange(rowDataForRow));
-                		return;
-                	}
-    
-    			}
 
+                    if (recordDataItem.isChanged()) {
+
+                        Log.debug("Change detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
+
+                        asDatabaseTable().addTableDataChange(new TableDataChange(rowDataForRow));
+                        return;
+                    }
+                }
             }
         }
-
     }
 
     private DatabaseTable asDatabaseTable() {
-        
+
         if (isDatabaseTable()) {
 
             return (DatabaseTable) this.databaseObject;
@@ -921,12 +902,12 @@ public class TableDataTab extends JPanel
     public void preferencesChanged(UserPreferenceEvent event) {
 
         alwaysShowCanEditNotePanel = SystemProperties.getBooleanProperty(
-                Constants.USER_PROPERTIES_KEY, "browser.always.show.table.editable.label");        
+                Constants.USER_PROPERTIES_KEY, "browser.always.show.table.editable.label");
     }
 
-    
+
     class InterruptibleProcessPanel extends JPanel implements ActionListener {
-        
+
         private ProgressBar progressBar;
 
         public InterruptibleProcessPanel(String labelText) {
@@ -949,20 +930,20 @@ public class TableDataTab extends JPanel
             gbc.gridy = 2;
             add(cancelButton, gbc);
 
-            setBorder(UIUtils.getDefaultLineBorder());            
+            setBorder(UIUtils.getDefaultLineBorder());
         }
-  
+
         public void start() {
-            
+
             progressBar.start();
         }
-        
+
         public void actionPerformed(ActionEvent e) {
 
             progressBar.stop();
             cancel();
         }
-        
+
     }
 
 }

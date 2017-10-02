@@ -210,7 +210,7 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
      *
      * @return the columns
      */
-    public List<DatabaseColumn> getColumns() throws DataSourceException {
+    public synchronized List<DatabaseColumn> getColumns() throws DataSourceException {
 
         if (!isMarkedForReload() && columns != null) {
 

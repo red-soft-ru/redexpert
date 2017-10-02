@@ -1,12 +1,17 @@
 package org.executequery;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.executequery.log.Log;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -130,14 +135,110 @@ public class UpdateLoader extends JFrame {
         this.dispose();
     }
 
-    void update() {
-        this.setTitle("Updating from " + repo);
-        outText.setText("Contacting Download Server...");
-        if (!repo.isEmpty())
-            this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
-        else
-            this.downloadLink = binaryZipUrl;
-        download();
+    JSONObject getJsonObject(String Url)
+    {
+
+        String text="";
+
+        try {
+
+
+            HttpClient client=new HttpClient();
+            //HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            GetMethod get=new GetMethod(Url);
+            client.executeMethod(get);
+
+            BufferedReader br = new BufferedReader(
+                   new InputStreamReader(get.getResponseBodyAsStream()));
+
+            String inputLine;
+
+
+            while ((inputLine = br.readLine()) != null) {
+                text+=inputLine+"\n";
+            }
+
+            br.close();
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new JSONObject(text);
+    }
+    JSONArray getJsonArray(String Url)
+    {
+        URL url;
+        String text="";
+
+        try {
+
+            HttpClient client=new HttpClient();
+            //HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            GetMethod get=new GetMethod(Url);
+            client.executeMethod(get);
+
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(get.getResponseBodyAsStream()));
+
+            String inputLine;
+
+
+            while ((inputLine = br.readLine()) != null) {
+                text+=inputLine+"\n";
+            }
+
+            br.close();
+
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new JSONArray(text);
+    }
+
+    JSONObject getJsonObjectFromArray(JSONArray mas,String key,String value)
+    {
+        for(int i=0;i<mas.length();i++)
+        {
+            String prop=mas.getJSONObject(i).getString(key);
+            if (prop.contentEquals(value))
+                return mas.getJSONObject(i);
+        }
+        return null;
+
+    }
+
+    String getJsonPropertyFromUrl(String Url,String key)
+    {
+
+        return getJsonObject(Url).getString(key);
+    }
+
+    void update(boolean unstable) {
+        if(unstable)
+        {
+            this.setTitle("Updating");
+            outText.setText("Contacting Download Server...");
+            JSONObject obj=getJsonObjectFromArray(getJsonArray(
+                    "http://builds.red-soft.biz/api/artifacts/by_build/?project=red_expert&version="+version),
+                    "artifact_id",
+                    "red_expert:red_expert:"+version+":zip:bin");
+            downloadLink="http://builds.red-soft.biz/"+obj.getString("file");
+        }
+        else {
+            this.setTitle("Updating from " + repo);
+            outText.setText("Contacting Download Server...");
+            if (!repo.isEmpty())
+                this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
+            else
+                this.downloadLink = binaryZipUrl;
+        }
+            download();
+
     }
 
     private void download() {
@@ -311,6 +412,10 @@ public class UpdateLoader extends JFrame {
         return false;
     }
 
+    public void setVersion(String version)
+    {
+        this.version=version;
+    }
 
     public String getVersion() {
         return version;

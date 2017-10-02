@@ -106,6 +106,13 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
                     "Check for update on startup",
                     Boolean.valueOf(stringUserProperty(key))));
 
+        key = "startup.unstableversions.load";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Load unstable versions",
+                Boolean.valueOf(stringUserProperty(key))));
+
         key = "system.log.level";
         list.add(new UserPreference(
                     UserPreference.STRING_TYPE,

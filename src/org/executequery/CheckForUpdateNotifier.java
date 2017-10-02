@@ -22,11 +22,18 @@ package org.executequery;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.*;
 
+import jdk.nashorn.internal.parser.JSONParser;
 import org.executequery.components.SimpleHtmlContentPane;
 import org.executequery.components.StatusBarPanel;
 import org.executequery.gui.PulsatingCircle;
@@ -34,6 +41,8 @@ import org.executequery.gui.InformationDialog;
 import org.executequery.log.Log;
 import org.executequery.repository.LatestVersionRepository;
 import org.executequery.repository.RepositoryCache;
+import org.executequery.util.UserProperties;
+import org.json.JSONObject;
 import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.InterruptibleProgressDialog;
@@ -78,59 +87,105 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         worker.start();
     }
+    boolean unstable=false;
     
     private void startupCheck() {
+
+
 
         ApplicationContext instance = ApplicationContext.getInstance();
 
         String repo = instance.getRepo();
 
         if (!repo.isEmpty()) {
+            checkFromRepo(repo);
 
-            Log.info("Checking for new version update from " + repo + " ...");
-
-            // updating from repository to latest version
-            updateLoader = new UpdateLoader(repo);
-            if (updateLoader.isNeedUpdate()) {
-                version = new ApplicationVersion(updateLoader.getVersion(), null);
-                setDownloadNotifierInStatusBar();
-            } else {
-                if (updateLoader.getVersion() != null)
-                    Log.info("Red Expert is up to date.");
-            }
         } else {
+            unstable = UserProperties.getInstance().getBooleanProperty("startup.unstableversions.load");
+            if(unstable)
+            {
+                try{
+                    checkUnstable();
+                }
+                catch (Exception e)
+                {
+                    Log.error(e.getMessage());
+                    checkRelease();
 
-            try {
-
-                Log.info("Checking for new version update from https://github.com/redsoftbiz/executequery/releases ...");
-
-                version = getVersionInfo();
-
-                if (isNewVersion(version)) {
-
-                    logNewVersonInfo();
-                    setNotifierInStatusBar();
-
-                    String binaryZip = getBinaryUrl();
-                    if (!binaryZip.isEmpty()) {
-                        updateLoader = new UpdateLoader("");
-                        updateLoader.setBinaryZipUrl(binaryZip);
-                        setDownloadNotifierInStatusBar();
-                    }
-
-                } else {
-
-                    Log.info("Red Expert is up to date.");
                 }
 
-            } catch (ApplicationException e) {
-
-                Log.warning("Error checking for update: " + e.getMessage());
             }
+            else checkRelease();
+
+
 
         }
         
     }
+
+    void checkRelease()
+    {
+        try {
+
+            Log.info("Checking for new version update from https://github.com/redsoftbiz/executequery/releases ...");
+
+            version = getVersionInfo();
+
+            if (isNewVersion(version)) {
+
+                logNewVersonInfo();
+                setNotifierInStatusBar();
+
+                String binaryZip = getBinaryUrl();
+                if (!binaryZip.isEmpty()) {
+                    updateLoader = new UpdateLoader("");
+                    updateLoader.setBinaryZipUrl(binaryZip);
+                    setDownloadNotifierInStatusBar();
+                }
+
+            } else {
+
+                Log.info("Red Expert is up to date.");
+            }
+
+        } catch (ApplicationException e) {
+
+            Log.warning("Error checking for update: " + e.getMessage());
+        }
+    }
+
+    void checkUnstable()
+    {
+        updateLoader = new UpdateLoader("");
+        version=new ApplicationVersion(updateLoader.getJsonPropertyFromUrl("http://builds.red-soft.biz/api/builds/latest/?project=red_expert&branch=master","version"),null);
+        if(isNewVersion(version))
+        {
+
+            updateLoader.setVersion(version.getVersion());
+            setDownloadNotifierInStatusBar();
+
+        }
+        else
+        {
+
+            Log.info("Red Expert is up to date.");
+        }
+    }
+
+     void checkFromRepo(String repo)
+     {
+         Log.info("Checking for new version update from " + repo + " ...");
+
+         // updating from repository to latest version
+         updateLoader = new UpdateLoader(repo);
+         if (updateLoader.isNeedUpdate()) {
+             version = new ApplicationVersion(updateLoader.getVersion(), null);
+             setDownloadNotifierInStatusBar();
+         } else {
+             if (updateLoader.getVersion() != null)
+                 Log.info("Red Expert is up to date.");
+         }
+     }
 
     private void setDownloadNotifierInStatusBar() {
         JLabel label = getUpdateNotificationLabel();
@@ -144,6 +199,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         label.setToolTipText(newVersionAvailableText());
 
         statusBar().setThirdLabelText("Update available");
+        Log.info("The application needs to be updated");
     }
 
     private void setNotifierInStatusBar() {
@@ -228,7 +284,7 @@ public class CheckForUpdateNotifier implements Interruptible {
                     public Object construct() {
 
                         updateLoader.setVisible(true);
-                        updateLoader.update();
+                        updateLoader.update(unstable);
 
                         return Constants.WORKER_SUCCESS;
                     }

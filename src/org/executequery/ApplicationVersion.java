@@ -44,7 +44,7 @@ public final class ApplicationVersion {
         if (anotherVersion != null && version != null) {
             int newVersion = Integer.valueOf(version.replaceAll("\\.", ""));
             int currentVersion = Integer.valueOf(anotherVersion.replaceAll("\\.", ""));
-            return (newVersion > currentVersion);
+            return (newVersion != currentVersion);
         }
         
         return false;

@@ -135,68 +135,53 @@ public class UpdateLoader extends JFrame {
         this.dispose();
     }
 
-    JSONObject getJsonObject(String Url)
+    JSONObject getJsonObject(String Url) throws IOException
     {
 
         String text="";
-
-        try {
-
-
-            HttpClient client=new HttpClient();
+        HttpClient client=new HttpClient();
             //HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            GetMethod get=new GetMethod(Url);
-            client.executeMethod(get);
+        GetMethod get=new GetMethod(Url);
+        client.executeMethod(get);
 
-            BufferedReader br = new BufferedReader(
+        BufferedReader br = new BufferedReader(
                    new InputStreamReader(get.getResponseBodyAsStream()));
 
-            String inputLine;
+        String inputLine;
 
 
-            while ((inputLine = br.readLine()) != null) {
-                text+=inputLine+"\n";
-            }
-
-            br.close();
-
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        while ((inputLine = br.readLine()) != null) {
+            text+=inputLine+"\n";
         }
+
+        br.close();
+
+
+
         return new JSONObject(text);
     }
-    JSONArray getJsonArray(String Url)
+    JSONArray getJsonArray(String Url)throws IOException
     {
         URL url;
         String text="";
 
-        try {
-
-            HttpClient client=new HttpClient();
+        HttpClient client=new HttpClient();
             //HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            GetMethod get=new GetMethod(Url);
-            client.executeMethod(get);
+        GetMethod get=new GetMethod(Url);
+        client.executeMethod(get);
 
-            BufferedReader br = new BufferedReader(
+        BufferedReader br = new BufferedReader(
                     new InputStreamReader(get.getResponseBodyAsStream()));
 
-            String inputLine;
+        String inputLine;
 
 
-            while ((inputLine = br.readLine()) != null) {
+        while ((inputLine = br.readLine()) != null) {
                 text+=inputLine+"\n";
             }
 
-            br.close();
+        br.close();
 
-
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         return new JSONArray(text);
     }
 
@@ -212,7 +197,7 @@ public class UpdateLoader extends JFrame {
 
     }
 
-    String getJsonPropertyFromUrl(String Url,String key)
+    String getJsonPropertyFromUrl(String Url,String key)throws IOException
     {
 
         return getJsonObject(Url).getString(key);
@@ -223,11 +208,18 @@ public class UpdateLoader extends JFrame {
         {
             this.setTitle("Updating");
             outText.setText("Contacting Download Server...");
-            JSONObject obj=getJsonObjectFromArray(getJsonArray(
-                    "http://builds.red-soft.biz/api/artifacts/by_build/?project=red_expert&version="+version),
-                    "artifact_id",
-                    "red_expert:red_expert:"+version+":zip:bin");
-            downloadLink="http://builds.red-soft.biz/"+obj.getString("file");
+            try {
+
+                JSONObject obj = getJsonObjectFromArray(getJsonArray(
+                        "http://builds.red-soft.biz/api/artifacts/by_build/?project=red_expert&version=" + version),
+                        "artifact_id",
+                        "red_expert:red_expert:" + version + ":zip:bin");
+                downloadLink = "http://builds.red-soft.biz/" + obj.getString("file");
+            }
+            catch (Exception e)
+            {
+                Log.error(e.getMessage());
+            }
         }
         else {
             this.setTitle("Updating from " + repo);

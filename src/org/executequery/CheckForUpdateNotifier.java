@@ -109,7 +109,7 @@ public class CheckForUpdateNotifier implements Interruptible {
                 }
                 catch (Exception e)
                 {
-                    Log.error(e.getMessage());
+                    Log.error("No access:"+e.getMessage());
                     checkRelease();
 
                 }
@@ -154,7 +154,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         }
     }
 
-    void checkUnstable()
+    void checkUnstable()throws IOException
     {
         updateLoader = new UpdateLoader("");
         version=new ApplicationVersion(updateLoader.getJsonPropertyFromUrl("http://builds.red-soft.biz/api/builds/latest/?project=red_expert&branch=master","version"),null);

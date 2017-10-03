@@ -21,6 +21,7 @@
 package org.executequery.gui.browser;
 
 import java.sql.SQLException;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -47,6 +48,7 @@ import org.executequery.gui.forms.FormObjectView;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
+import org.omg.CORBA.SystemException;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
@@ -247,11 +249,12 @@ public class BrowserController {
      */
     public synchronized void valueChanged_(DatabaseObjectNode node) {
 
-//        treePanel.setInProcess(true);
+        treePanel.setInProcess(true);
 
         try {
 
             FormObjectView panel = buildPanelView(node);
+
             if (panel != null) {
 
                 viewPanel.setView(panel);
@@ -260,7 +263,7 @@ public class BrowserController {
 
         } finally {
 
-//            treePanel.setInProcess(false);
+            treePanel.setInProcess(false);
         }
 
     }
@@ -418,7 +421,7 @@ public class BrowserController {
                     if (!viewPanel.containsPanel(BrowserRolePanel.NAME)) {
                         rolePanel = new BrowserRolePanel(this);
                         viewPanel.addToLayout(rolePanel);
-            }
+                    }
                     else {
                         rolePanel = (BrowserRolePanel)viewPanel.
                                 getFormObjectView(BrowserRolePanel.NAME);

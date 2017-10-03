@@ -246,34 +246,41 @@ public class TableDataTab extends JPanel
 
     private void load(final DatabaseObject databaseObject) {
 
-        if (worker != null) {
+        ConnectionsTreePanel treePanel = (ConnectionsTreePanel)GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+        synchronized (treePanel) {
+            treePanel.getTree().setEnabled(false);
+            if (worker != null) {
 
-            cancel();
-            worker.interrupt();
-        }
+                cancel();
+                worker.interrupt();
+            }
 
-        worker = new SwingWorker() {
-            public Object construct() {
-                try {
+            worker = new SwingWorker() {
 
-                    executing = true;
-                    return setTableResultsPanel(databaseObject);
+                public Object construct() {
+                    try {
+                        executing = true;
+                        return setTableResultsPanel(databaseObject);
 
-                } catch (Exception e) {
+                    } catch (Exception e) {
 
-                    addErrorLabel(e);
-                    return "done";
+                        addErrorLabel(e);
+                        return "done";
+                    }
                 }
-            }
 
-            public void finished() {
+                public void finished() {
 
-                executing = false;
-                cancelled = false;
-            }
+                    executing = false;
+                    cancelled = false;
 
-        };
-        worker.start();
+                    ConnectionsTreePanel treePanel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+                    treePanel.getTree().setEnabled(true);
+                }
+
+            };
+            worker.start();
+        }
     }
 
     private void addInProgressPanel() {

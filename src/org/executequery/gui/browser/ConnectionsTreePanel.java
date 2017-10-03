@@ -20,8 +20,7 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.BorderLayout;
-import java.awt.Point;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -29,10 +28,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.swing.Action;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -86,6 +82,10 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
                                              UserPreferenceListener {
 
     public static final String TITLE = Bundles.get(ConnectionsTreePanel.class,"Connections");
+
+    public SchemaTree getTree() {
+        return tree;
+    }
 
     private SchemaTree tree;
 
@@ -1347,6 +1347,10 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
             enableButtons(false, false, true, false);
         }
 
+        final ConnectionsTreePanel c = this;
+
+        c.setInProcess(true);
+
         worker = new SwingWorker() {
             public Object construct() {
                 try {
@@ -1364,6 +1368,8 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
             public void finished() {
                 tree.finishedLoadingNode();
                 treeExpanding = false;
+
+                c.setInProcess(false);
             }
         };
         worker.start();

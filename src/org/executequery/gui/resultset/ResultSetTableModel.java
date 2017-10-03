@@ -139,7 +139,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         return query;
     }
 
-    public void createTable(ResultSet resultSet) {
+    public synchronized void createTable(ResultSet resultSet) {
 
         if (!isOpenAndValid(resultSet)) {
 

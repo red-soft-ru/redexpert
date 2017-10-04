@@ -15,7 +15,7 @@ import java.util.List;
 public class GrantManagerCommands extends OpenFrameCommand implements BaseCommand {
 
     public void execute(ActionEvent e) {
-        boolean execute_w=false;
+        boolean execute_w = false;
         List<DatabaseConnection> listConnections = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
         for (DatabaseConnection dc : listConnections) {
             if (dc.isConnected()) {
@@ -24,14 +24,15 @@ public class GrantManagerCommands extends OpenFrameCommand implements BaseComman
             }
         }
         if (execute_w) {
-            if (GUIUtilities.getCentralPane(GrantManagerPanel.TITLE)==null)
-            GUIUtilities.addCentralPane(GrantManagerPanel.TITLE,
-                    GrantManagerPanel.FRAME_ICON,
-                    new GrantManagerPanel(),
-                    null,
-                    true);
-            else GUIUtilities.setSelectedCentralPane(GrantManagerPanel.TITLE);
-        }
-        else GUIUtilities.displayErrorMessage(Bundles.get(GrantManagerPanel.class,"message.notConnected"));
+            if (GUIUtilities.getCentralPane(GrantManagerPanel.TITLE) == null)
+                GUIUtilities.addCentralPane(GrantManagerPanel.TITLE,
+                        GrantManagerPanel.FRAME_ICON,
+                        new GrantManagerPanel(),
+                        null,
+                        true);
+            else
+                GUIUtilities.setSelectedCentralPane(GrantManagerPanel.TITLE);
+        } else
+            GUIUtilities.displayErrorMessage(Bundles.get(GrantManagerPanel.class, "message.notConnected"));
     }
 }

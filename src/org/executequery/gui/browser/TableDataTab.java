@@ -249,7 +249,7 @@ public class TableDataTab extends JPanel
 
     private void load(final DatabaseObject databaseObject) {
 
-        ConnectionsTreePanel treePanel = (ConnectionsTreePanel)GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+        ConnectionsTreePanel treePanel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
         synchronized (treePanel) {
             treePanel.getTree().setEnabled(false);
             if (worker != null) {
@@ -370,11 +370,10 @@ public class TableDataTab extends JPanel
                 ResultSet resultSet = databaseObject.getData(true);
                 tableModel.createTable(resultSet);
 
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
+                Log.error("Error retrieving data for table - " + databaseObject.getName() + ". Try to rebuild table model.");
                 ResultSet resultSet = databaseObject.getMetaData();
-                tableModel.createTableFromMetaData(resultSet,databaseObject.getHost().getDatabaseConnection());
+                tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection());
             }
 
 
@@ -572,35 +571,39 @@ public class TableDataTab extends JPanel
         setTableProperties();
     }
 
-    void insert_record(List<JComponent> components, List<Integer> types,List<ResultSetColumnHeader> rschs, BaseDialog dialog) {
-        String query = "INSERT INTO " + databaseObject.getNameForQuery() ;
+    void insert_record(List<JComponent> components, List<Integer> types, List<ResultSetColumnHeader> rschs, BaseDialog dialog) {
+        String query = "INSERT INTO " + databaseObject.getNameForQuery();
         String columns = "(";
-        String values=" VALUES (";
+        String values = " VALUES (";
         for (int i = 0; i < components.size(); i++) {
             String value = "";
             String component_value;
-            JComponent component=components.get(i);
+            JComponent component = components.get(i);
             int sqlType;
             ResultSetColumnHeader rsch = rschs.get(i);
-            columns+=rsch.getName();
-            if(i!=components.size()-1)
-                columns+=" , ";
+            columns += rsch.getName();
+            if (i != components.size() - 1)
+                columns += " , ";
             sqlType = rsch.getDataType();
-            int type=types.get(i);
+            int type = types.get(i);
             boolean str = false;
-            switch (type)
-            {
-                case 2017:component_value=String.valueOf(((JComboBox) component).getSelectedItem());
+            switch (type) {
+                case 2017:
+                    component_value = String.valueOf(((JComboBox) component).getSelectedItem());
                     break;
-               case Types.DATE:component_value=((DatePicker)component).getDateStringOrEmptyString();
+                case Types.DATE:
+                    component_value = ((DatePicker) component).getDateStringOrEmptyString();
                     break;
-                case Types.TIMESTAMP:component_value=((DateTimePicker)component).datePicker.getDateStringOrEmptyString()+" "+
-                        ((DateTimePicker)component).timePicker.getTimeStringOrEmptyString();
+                case Types.TIMESTAMP:
+                    component_value = ((DateTimePicker) component).datePicker.getDateStringOrEmptyString() + " " +
+                            ((DateTimePicker) component).timePicker.getTimeStringOrEmptyString();
                     break;
-                case Types.TIME:component_value=((DateTimePicker)component).timePicker.getTimeStringOrEmptyString();
-                break;
-                default:component_value=((JTextField) component).getText();
-                break;
+                case Types.TIME:
+                    component_value = ((DateTimePicker) component).timePicker.getTimeStringOrEmptyString();
+                    break;
+                default:
+                    component_value = ((JTextField) component).getText();
+                    break;
             }
             switch (sqlType) {
 
@@ -620,22 +623,22 @@ public class TableDataTab extends JPanel
                 default:
                     break;
             }
-                if (MiscUtils.isNull(component_value))
-                    value = "NULL";
-                else {
-                    value +=component_value;
-                }
+            if (MiscUtils.isNull(component_value))
+                value = "NULL";
+            else {
+                value += component_value;
+            }
 
             if (str && value != "NULL")
                 value += "'";
             values = values + " " + value;
-            if(i<components.size()-1)
-            values+=",";
+            if (i < components.size() - 1)
+                values += ",";
 
         }
-        columns+=")";
-        values+=")";
-        query = query + columns+" "+values;
+        columns += ")";
+        values += ")";
+        query = query + columns + " " + values;
         ExecuteQueryDialog eqd = new ExecuteQueryDialog("Insert record", query, databaseObject.getHost().getDatabaseConnection(), true);
         eqd.display();
         if (eqd.getCommit()) {
@@ -674,18 +677,18 @@ public class TableDataTab extends JPanel
         gbc.insets = new Insets(5, 5, 5, 5);
         List<Integer> fgns = new ArrayList<>();
         List<Vector> f_items = new ArrayList<>();
-        if(foreigns!=null)
-        if (foreigns.size() > 0)
-            for (org.executequery.databaseobjects.impl.ColumnConstraint key : foreigns) {
-                f_items.add(itemsForeign(key));
-                fgns.add(tableModel.getColumnIndex(key.getColumnName()));
-            }
+        if (foreigns != null)
+            if (foreigns.size() > 0)
+                for (org.executequery.databaseobjects.impl.ColumnConstraint key : foreigns) {
+                    f_items.add(itemsForeign(key));
+                    fgns.add(tableModel.getColumnIndex(key.getColumnName()));
+                }
         List<JComponent> components = new ArrayList<>();
         List<Integer> types = new ArrayList<>();
-        List<ResultSetColumnHeader> rschs=new ArrayList<>();
+        List<ResultSetColumnHeader> rschs = new ArrayList<>();
         for (int i = 0; i < cols; i++) {
             ResultSetColumnHeader rsch = tableModel.getColumnHeaders().get(i);
-            if(!databaseObject.getColumns().get(i).isGenerated()) {
+            if (!databaseObject.getColumns().get(i).isGenerated()) {
                 rschs.add(rsch);
                 int type = rsch.getDataType();
                 String typeName = rsch.getDataTypeName();
@@ -700,12 +703,15 @@ public class TableDataTab extends JPanel
                     types.add(2017);
                 } else {
                     switch (type) {
-                    case Types.DATE: field=new DatePicker();
-                    break;
-                    case Types.TIMESTAMP: field=new DateTimePicker();
-                    break;
-                    case Types.TIME:field=new TimePicker();
-                    break;
+                        case Types.DATE:
+                            field = new DatePicker();
+                            break;
+                        case Types.TIMESTAMP:
+                            field = new DateTimePicker();
+                            break;
+                        case Types.TIME:
+                            field = new TimePicker();
+                            break;
                         default:
                             field = new JTextField(14);
                             break;
@@ -738,7 +744,7 @@ public class TableDataTab extends JPanel
         b_ok.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                insert_record(components, types,rschs, dialog);
+                insert_record(components, types, rschs, dialog);
             }
         });
         panel.add(b_cancel, gbcLabel);

@@ -423,7 +423,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             try {
 
                 statement.cancel();
-                statement.close();
+                if (!statement.isClosed())
+                    statement.close();
                 statement = null;
 
             } catch (SQLException e) {

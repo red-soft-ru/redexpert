@@ -369,7 +369,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             clearData();
             return;
         }
-        StatementExecutor executor=new DefaultStatementExecutor(dc,true);
+        StatementExecutor executor = new DefaultStatementExecutor(dc, true);
 
         try {
             resetMetaData();
@@ -377,33 +377,33 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             columnHeaders.clear();
             visibleColumnHeaders.clear();
             tableData.clear();
-            String tableName="";
+            String tableName = "";
             int zeroBaseIndex = 0;
-            int g=1;
+            int g = 1;
             //int count = rsmd.getColumnCount();
             //for (int i = 1; i <= count; i++)
-            while(resultSet.next()){
+            while (resultSet.next()) {
 
                 zeroBaseIndex = g - 1;
 
                 columnHeaders.add(
                         new ResultSetColumnHeader(zeroBaseIndex,
-                               resultSet.getString(4),
+                                resultSet.getString(4),
                                 resultSet.getString(4),
                                 resultSet.getInt(5),
                                 resultSet.getString(6)
                         ));
-                tableName=resultSet.getString(3);
+                tableName = resultSet.getString(3);
                 g++;
             }
-            Statement st=resultSet.getStatement();
-            if(resultSet!=null)
-            resultSet.close();
-            if(st!=null)
-                if(st.isClosed()) {
+            Statement st = resultSet.getStatement();
+            if (resultSet != null)
+                resultSet.close();
+            if (st != null)
+                if (st.isClosed()) {
                     st.close();
                 }
-            int count=g-1;
+            int count = g - 1;
 
             int recordCount = 0;
             interrupted = false;
@@ -414,34 +414,29 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             }*/
             //List<String> errorCols=new ArrayList<>();
             String sql = "SELECT ";
-            for(int i=0;i<count;i++)
-            {
-                try
-                {
-                    String query="SELECT "+columnHeaders.get(i).getName()+" FROM "+tableName;
-                    SqlStatementResult result=executor.execute(QueryTypes.SELECT,query);
-                    ResultSet rs=result.getResultSet();
-                    if (rs!=null)
-                    sql+=columnHeaders.get(i).getName();
-                    else
-                    {
-                        sql+="'"+result.getErrorMessage()+"' as " + columnHeaders.get(i).getName();
+            for (int i = 0; i < count; i++) {
+                try {
+                    String query = "SELECT " + columnHeaders.get(i).getName() + " FROM " + tableName;
+                    SqlStatementResult result = executor.execute(QueryTypes.SELECT, query);
+                    ResultSet rs = result.getResultSet();
+                    if (rs != null)
+                        sql += columnHeaders.get(i).getName();
+                    else {
+                        sql += "'" + result.getErrorMessage() + "' as " + columnHeaders.get(i).getName();
                         columnHeaders.get(i).setEditable(false);
                     }
 
-                }
-                catch(Exception e)
-                {
+                } catch (Exception e) {
                     Log.error(e.getMessage());
 
                 }
-                if(i<count-1)
-                    sql+=", ";
+                if (i < count - 1)
+                    sql += ", ";
                 executor.releaseResources();
 
             }
-            sql+=" FROM "+tableName;
-            resultSet=executor.execute(QueryTypes.SELECT,sql).getResultSet();
+            sql += " FROM " + tableName;
+            resultSet = executor.execute(QueryTypes.SELECT, sql).getResultSet();
             List<RecordDataItem> rowData;
             long time = System.currentTimeMillis();
 
@@ -607,7 +602,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
         } finally {
 
-           executor.releaseResources();
+            executor.releaseResources();
         }
 
     }

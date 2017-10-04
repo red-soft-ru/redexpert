@@ -754,7 +754,7 @@ public class ScrollingTabPane extends AbstractTabPane
             
             close = MenuItemFactory.createMenuItem(bundledString("menuItem.close"));
             closeAll = MenuItemFactory.createMenuItem(bundledString("menuItem.closeAll"));
-            closeOther = MenuItemFactory.createMenuItem(bundledString("menuItem.closeOthers"));
+            closeOther = MenuItemFactory.createMenuItem(bundledString("menuItem.closeOther"));
             
             close.addActionListener(this);
             closeAll.addActionListener(this);

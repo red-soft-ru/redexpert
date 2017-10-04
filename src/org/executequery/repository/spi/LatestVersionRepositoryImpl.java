@@ -45,7 +45,7 @@ import org.underworldlabs.util.SystemProperties;
  */
 public class LatestVersionRepositoryImpl implements LatestVersionRepository {
 
-    private static final String ADDRESS = "github.com";
+    private static final String ADDRESS = "api.github.com";
     private String binaryZipUrl = "";
     
     public String getId() {

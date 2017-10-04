@@ -707,7 +707,7 @@ public class TableDataTab extends JPanel
                     case Types.TIME:field=new TimePicker();
                     break;
                         default:
-                            field = new JTextField();
+                            field = new JTextField(14);
                             break;
                     }
                     types.add(rsch.getDataType());

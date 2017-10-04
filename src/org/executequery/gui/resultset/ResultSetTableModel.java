@@ -35,6 +35,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.gui.ErrorMessagePublisher;
 import org.executequery.log.Log;
+import org.executequery.sql.SqlStatementResult;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.table.AbstractSortableTableModel;
@@ -418,17 +419,21 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                 try
                 {
                     String query="SELECT "+columnHeaders.get(i).getName()+" FROM "+tableName;
-                    ResultSet rs=executor.execute(QueryTypes.SELECT,query).getResultSet();
-                    if (rs.next())
-                    //errorCols.add("");
+                    SqlStatementResult result=executor.execute(QueryTypes.SELECT,query);
+                    ResultSet rs=result.getResultSet();
+                    if (rs!=null)
                     sql+=columnHeaders.get(i).getName();
+                    else
+                    {
+                        sql+="'"+result.getErrorMessage()+"' as " + columnHeaders.get(i).getName();
+                        columnHeaders.get(i).setEditable(false);
+                    }
 
                 }
                 catch(Exception e)
                 {
-                    //errorCols.add(e.getMessage());
-                    sql+="'"+e.getMessage()+"' as " + columnHeaders.get(i).getName();
-                    columnHeaders.get(i).setEditable(false);
+                    Log.error(e.getMessage());
+
                 }
                 if(i<count-1)
                     sql+=", ";

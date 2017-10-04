@@ -23,16 +23,16 @@ package org.executequery.gui.resultset;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
+import java.sql.*;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.QueryTypes;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.gui.ErrorMessagePublisher;
 import org.executequery.log.Log;
 import org.executequery.util.UserProperties;
@@ -357,6 +357,252 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                 } catch (SQLException e) {}
 
             }
+        }
+
+    }
+
+    public synchronized void createTableFromMetaData(ResultSet resultSet, DatabaseConnection dc) {
+
+        if (!isOpenAndValid(resultSet)) {
+
+            clearData();
+            return;
+        }
+        StatementExecutor executor=new DefaultStatementExecutor(dc,true);
+
+        try {
+            resetMetaData();
+
+            columnHeaders.clear();
+            visibleColumnHeaders.clear();
+            tableData.clear();
+            String tableName="";
+            int zeroBaseIndex = 0;
+            int g=1;
+            //int count = rsmd.getColumnCount();
+            //for (int i = 1; i <= count; i++)
+            while(resultSet.next()){
+
+                zeroBaseIndex = g - 1;
+
+                columnHeaders.add(
+                        new ResultSetColumnHeader(zeroBaseIndex,
+                               resultSet.getString(4),
+                                resultSet.getString(4),
+                                resultSet.getInt(5),
+                                resultSet.getString(6)
+                        ));
+                tableName=resultSet.getString(3);
+                g++;
+            }
+            Statement st=resultSet.getStatement();
+            if(resultSet!=null)
+            resultSet.close();
+            if(st!=null)
+                if(st.isClosed()) {
+                    st.close();
+                }
+            int count=g-1;
+
+            int recordCount = 0;
+            interrupted = false;
+
+            /*if (holdMetaData) {
+
+                setMetaDataVectors(rsmd);
+            }*/
+            //List<String> errorCols=new ArrayList<>();
+            String sql = "SELECT ";
+            for(int i=0;i<count;i++)
+            {
+                try
+                {
+                    String query="SELECT "+columnHeaders.get(i).getName()+" FROM "+tableName;
+                    ResultSet rs=executor.execute(QueryTypes.SELECT,query).getResultSet();
+                    if (rs.next())
+                    //errorCols.add("");
+                    sql+=columnHeaders.get(i).getName();
+
+                }
+                catch(Exception e)
+                {
+                    //errorCols.add(e.getMessage());
+                    sql+="'"+e.getMessage()+"' as " + columnHeaders.get(i).getName();
+                    columnHeaders.get(i).setEditable(false);
+                }
+                if(i<count-1)
+                    sql+=", ";
+                executor.releaseResources();
+
+            }
+            sql+=" FROM "+tableName;
+            resultSet=executor.execute(QueryTypes.SELECT,sql).getResultSet();
+            List<RecordDataItem> rowData;
+            long time = System.currentTimeMillis();
+
+            while (resultSet.next()) {
+
+                if (interrupted || Thread.interrupted()) {
+
+                    throw new InterruptedException();
+                }
+
+                recordCount++;
+                rowData = new ArrayList<RecordDataItem>(count);
+
+                for (int i = 1; i <= count; i++) {
+
+                    zeroBaseIndex = i - 1;
+
+                    ResultSetColumnHeader header = columnHeaders.get(zeroBaseIndex);
+                    RecordDataItem value = recordDataItemFactory.create(header);
+
+                    try {
+
+                        int dataType = header.getDataType();
+                        switch (dataType) {
+
+                            // some drivers (informix for example)
+                            // was noticed to return the hashcode from
+                            // getObject for -1 data types (eg. longvarchar).
+                            // force string for these - others stick with
+                            // getObject() for default value formatting
+
+                            case Types.CHAR:
+                            case Types.VARCHAR:
+                                value.setValue(resultSet.getString(i));
+                                break;
+                            case Types.DATE:
+                                value.setValue(resultSet.getDate(i));
+                                break;
+                            case Types.TIME:
+                                value.setValue(resultSet.getTime(i));
+                                break;
+                            case Types.TIMESTAMP:
+                                value.setValue(resultSet.getTimestamp(i));
+                                break;
+                            case Types.LONGVARCHAR:
+                            case Types.CLOB:
+                                value.setValue(resultSet.getClob(i));
+                                break;
+                            case Types.LONGVARBINARY:
+                            case Types.VARBINARY:
+                            case Types.BINARY:
+                                value.setValue(resultSet.getBytes(i));
+                                break;
+                            case Types.BLOB:
+                                value.setValue(resultSet.getBlob(i));
+                                break;
+                            case Types.BIT:
+                            case Types.TINYINT:
+                            case Types.SMALLINT:
+                            case Types.INTEGER:
+                            case Types.BIGINT:
+                            case Types.FLOAT:
+                            case Types.REAL:
+                            case Types.DOUBLE:
+                            case Types.NUMERIC:
+                            case Types.DECIMAL:
+                            case Types.NULL:
+                            case Types.OTHER:
+                            case Types.JAVA_OBJECT:
+                            case Types.DISTINCT:
+                            case Types.STRUCT:
+                            case Types.ARRAY:
+                            case Types.REF:
+                            case Types.DATALINK:
+                            case Types.BOOLEAN:
+                            case Types.ROWID:
+                            case Types.NCHAR:
+                            case Types.NVARCHAR:
+                            case Types.LONGNVARCHAR:
+                            case Types.NCLOB:
+                            case Types.SQLXML:
+
+                                // use getObject for all other known types
+
+                                value.setValue(resultSet.getObject(i));
+                                break;
+
+                            default:
+
+                                // otherwise try as string
+
+                                asStringOrObject(value, resultSet, i);
+                                break;
+                        }
+
+                    } catch (Exception e) {
+
+                        try {
+
+                            // ... and on dump, resort to string
+                            value.setValue(resultSet.getString(i));
+
+                        } catch (SQLException sqlException) {
+
+                            // catch-all SQLException - yes, this is hideous
+
+                            // noticed with invalid date formatted values in mysql
+
+                            value.setValue("<Error - " + sqlException.getMessage() + ">");
+                        }
+                    }
+
+                    if (resultSet.wasNull()) {
+
+                        value.setNull();
+                    }
+
+                    rowData.add(value);
+                }
+
+                tableData.add(rowData);
+
+                if (recordCount == maxRecords) {
+
+                    break;
+                }
+
+            }
+
+            if (Log.isTraceEnabled()) {
+
+                Log.trace("Finished populating table model - " + recordCount + " rows - [ "
+                        + MiscUtils.formatDuration(System.currentTimeMillis() - time) + "]");
+            }
+
+            fireTableStructureChanged();
+
+        } catch (SQLException e) {
+
+            System.err.println("SQL error populating table model at: " + e.getMessage());
+            Log.debug("Table model error - " + e.getMessage(), e);
+
+        } catch (Exception e) {
+
+            if (e instanceof InterruptedException) {
+
+                Log.debug("ResultSet generation interrupted.", e);
+
+            } else {
+
+                String message = e.getMessage();
+                if (StringUtils.isBlank(message)) {
+
+                    System.err.println("Exception populating table model.");
+
+                } else {
+
+                    System.err.println("Exception populating table model at: " + message);
+                }
+
+                Log.debug("Table model error - ", e);
+            }
+
+        } finally {
+
+           executor.releaseResources();
         }
 
     }

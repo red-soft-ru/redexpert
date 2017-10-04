@@ -363,9 +363,18 @@ public class TableDataTab extends JPanel
             }
 
             Log.debug("Retrieving data for table - " + databaseObject.getName());
+            try {
+                ResultSet resultSet = databaseObject.getData(true);
+                tableModel.createTable(resultSet);
 
-            ResultSet resultSet = databaseObject.getData(true);
-            tableModel.createTable(resultSet);
+            }
+            catch (Exception e)
+            {
+                ResultSet resultSet = databaseObject.getMetaData();
+                tableModel.createTableFromMetaData(resultSet,databaseObject.getHost().getDatabaseConnection());
+            }
+
+
             if (table == null) {
 
                 createResultSetTable();

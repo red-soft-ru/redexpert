@@ -36,6 +36,9 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 
+import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.DateTimePicker;
+import com.github.lgooddatepicker.components.TimePicker;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.EventMediator;
@@ -569,13 +572,36 @@ public class TableDataTab extends JPanel
         setTableProperties();
     }
 
-    void insert_record(List<JComponent> components, List<String> types, BaseDialog dialog) {
-        String query = "INSERT INTO " + databaseObject.getNameForQuery() + " VALUES (";
+    void insert_record(List<JComponent> components, List<Integer> types,List<ResultSetColumnHeader> rschs, BaseDialog dialog) {
+        String query = "INSERT INTO " + databaseObject.getNameForQuery() ;
+        String columns = "(";
+        String values=" VALUES (";
         for (int i = 0; i < components.size(); i++) {
             String value = "";
-            ResultSetColumnHeader rsch = tableModel.getColumnHeaders().get(i);
-            int sqlType = rsch.getDataType();
+            String component_value;
+            JComponent component=components.get(i);
+            int sqlType;
+            ResultSetColumnHeader rsch = rschs.get(i);
+            columns+=rsch.getName();
+            if(i!=components.size()-1)
+                columns+=" , ";
+            sqlType = rsch.getDataType();
+            int type=types.get(i);
             boolean str = false;
+            switch (type)
+            {
+                case 2017:component_value=String.valueOf(((JComboBox) component).getSelectedItem());
+                    break;
+               case Types.DATE:component_value=((DatePicker)component).getDateStringOrEmptyString();
+                    break;
+                case Types.TIMESTAMP:component_value=((DateTimePicker)component).datePicker.getDateStringOrEmptyString()+" "+
+                        ((DateTimePicker)component).timePicker.getTimeStringOrEmptyString();
+                    break;
+                case Types.TIME:component_value=((DateTimePicker)component).timePicker.getTimeStringOrEmptyString();
+                break;
+                default:component_value=((JTextField) component).getText();
+                break;
+            }
             switch (sqlType) {
 
                 case Types.LONGVARCHAR:
@@ -585,34 +611,31 @@ public class TableDataTab extends JPanel
                 case Types.VARCHAR:
                 case Types.NVARCHAR:
                 case Types.CLOB:
+                case Types.DATE:
+                case Types.TIME:
+                case Types.TIMESTAMP:
                     value = "'";
                     str = true;
                     break;
                 default:
                     break;
             }
-            if (types.get(i) == "Text") {
-                if (MiscUtils.isNull(((JTextField) components.get(i)).getText()))
+                if (MiscUtils.isNull(component_value))
                     value = "NULL";
                 else {
-                    value += ((JTextField) components.get(i)).getText();
-                }
-            } else {
-
-                if (MiscUtils.isNull(String.valueOf(((JComboBox) components.get(i)).getSelectedItem())))
-                    value = "NULL";
-                else {
-                    value += String.valueOf(((JComboBox) components.get(i)).getSelectedItem());
+                    value +=component_value;
                 }
 
-            }
             if (str && value != "NULL")
                 value += "'";
-            query = query + " " + value + " ,";
+            values = values + " " + value;
+            if(i<components.size()-1)
+            values+=",";
 
         }
-        query = query.substring(0, query.lastIndexOf(","));
-        query = query + ")";
+        columns+=")";
+        values+=")";
+        query = query + columns+" "+values;
         ExecuteQueryDialog eqd = new ExecuteQueryDialog("Insert record", query, databaseObject.getHost().getDatabaseConnection(), true);
         eqd.display();
         if (eqd.getCommit()) {
@@ -651,34 +674,47 @@ public class TableDataTab extends JPanel
         gbc.insets = new Insets(5, 5, 5, 5);
         List<Integer> fgns = new ArrayList<>();
         List<Vector> f_items = new ArrayList<>();
+        if(foreigns!=null)
         if (foreigns.size() > 0)
             for (org.executequery.databaseobjects.impl.ColumnConstraint key : foreigns) {
                 f_items.add(itemsForeign(key));
                 fgns.add(tableModel.getColumnIndex(key.getColumnName()));
             }
         List<JComponent> components = new ArrayList<>();
-        List<String> types = new ArrayList<>();
+        List<Integer> types = new ArrayList<>();
+        List<ResultSetColumnHeader> rschs=new ArrayList<>();
         for (int i = 0; i < cols; i++) {
             ResultSetColumnHeader rsch = tableModel.getColumnHeaders().get(i);
-            int type = rsch.getDataType();
-            String typeName = rsch.getDataTypeName();
-            String name = rsch.getName();
-            JComponent field;
-            JLabel label = new JLabel(name);
-            gbcLabel.gridy++;
-            gbc.gridy++;
-            panel.add(label, gbcLabel);
-
-
-            if (fgns.contains(i)) {
-                field = new JComboBox(new DefaultComboBoxModel(f_items.get(fgns.indexOf(i))));
-                types.add("Combo");
-            } else {
-                field = new JTextField(15);
-                types.add("Text");
+            if(!databaseObject.getColumns().get(i).isGenerated()) {
+                rschs.add(rsch);
+                int type = rsch.getDataType();
+                String typeName = rsch.getDataTypeName();
+                String name = rsch.getName();
+                JComponent field;
+                JLabel label = new JLabel(name);
+                gbcLabel.gridy++;
+                gbc.gridy++;
+                panel.add(label, gbcLabel);
+                if (fgns.contains(i)) {
+                    field = new JComboBox(new DefaultComboBoxModel(f_items.get(fgns.indexOf(i))));
+                    types.add(2017);
+                } else {
+                    switch (type) {
+                    case Types.DATE: field=new DatePicker();
+                    break;
+                    case Types.TIMESTAMP: field=new DateTimePicker();
+                    break;
+                    case Types.TIME:field=new TimePicker();
+                    break;
+                        default:
+                            field = new JTextField();
+                            break;
+                    }
+                    types.add(rsch.getDataType());
+                }
+                panel.add(field, gbc);
+                components.add(field);
             }
-            panel.add(field, gbc);
-            components.add(field);
         }
 
         JScrollPane scroll = new JScrollPane();
@@ -702,7 +738,7 @@ public class TableDataTab extends JPanel
         b_ok.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                insert_record(components, types, dialog);
+                insert_record(components, types,rschs, dialog);
             }
         });
         panel.add(b_cancel, gbcLabel);

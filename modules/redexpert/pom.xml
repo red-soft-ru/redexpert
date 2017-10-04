@@ -215,6 +215,12 @@
       <version>20170516</version>
     </dependency>
 
+    <dependency>
+      <groupId>com.github.lgooddatepicker</groupId>
+      <artifactId>LGoodDatePicker</artifactId>
+      <version>10.3.1</version>
+    </dependency>
+
   </dependencies>
 
   <build>

@@ -178,7 +178,7 @@ public class FB3UserManagerImpl implements IFBUserManager {
     public Map<String, IFBUser> getUsers() throws SQLException, IOException {
         Map<String, IFBUser> mUsers = new TreeMap<>();
 
-        Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+        Statement state = con.createStatement();
         String query = "SELECT * FROM SEC$USERS";
         ResultSet result = state.executeQuery(query);
         while (result.next()) {
@@ -234,7 +234,7 @@ public class FB3UserManagerImpl implements IFBUserManager {
         Map<String, String> tags = new HashMap<>();
         try {
 
-            Statement state1 = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            Statement state1 = con.createStatement();
             String query = "SELECT * FROM SEC$USER_ATTRIBUTES WHERE SEC$USER_NAME = '" + name + "' and SEC$PLUGIN = '"+Plugin+"'";
             ResultSet result1 = state1.executeQuery(query);
             while (result1.next()) {

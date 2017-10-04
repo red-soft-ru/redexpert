@@ -334,10 +334,9 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
             return statementResult;
         }
-        if(keepAlive)
-            stmnt = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY,ResultSet.HOLD_CURSORS_OVER_COMMIT);
-        else
-            stmnt = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
+
+        stmnt = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
+
         if (fetchSize != -1) {
 
             stmnt.setFetchSize(fetchSize);

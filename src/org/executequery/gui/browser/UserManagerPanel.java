@@ -57,6 +57,7 @@ public class UserManagerPanel extends JPanel {
     private JButton editUserButton;
     private JButton grantButton;
     private JPanel jPanel1;
+    private JPanel interruptPanel;
     private JScrollPane jScrollPane1;
     private JScrollPane jScrollPane2;
     private JScrollPane jScrollPane3;
@@ -112,8 +113,6 @@ public class UserManagerPanel extends JPanel {
         initComponents();
         setEnableElements(true);
         load_connections();
-
-
     }
 
     public void load_connections() {
@@ -147,6 +146,7 @@ public class UserManagerPanel extends JPanel {
     private void initComponents() {
 
         jPanel1 = new JPanel();
+        interruptPanel = new JPanel();
         databaseLabel = new JLabel();
         serverLabel = new JLabel();
         databaseBox = new JComboBox<>();
@@ -196,6 +196,12 @@ public class UserManagerPanel extends JPanel {
 
         serverBox.setEditable(true);
 
+        interruptPanel.setLayout(new GridBagLayout());
+        interruptPanel.add(jProgressBar1, new GridBagConstraints(0, 0, 1, 1, 1, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+        interruptPanel.add(cancelButton, new GridBagConstraints(1, 0, 1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+
         GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -204,13 +210,11 @@ public class UserManagerPanel extends JPanel {
                                 .addContainerGap()
                                 .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                                         .addComponent(databaseLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(serverLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(cancelButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addComponent(serverLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addGap(18, 18, 18)
                                 .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                         .addComponent(serverBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(databaseBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(jProgressBar1, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addComponent(databaseBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -224,11 +228,7 @@ public class UserManagerPanel extends JPanel {
                                 .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                         .addComponent(serverLabel)
                                         .addComponent(serverBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                .addGap(18, 18, 18)
-                                .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                        .addComponent(cancelButton, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(jProgressBar1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                .addContainerGap(26, Short.MAX_VALUE))
+                                .addContainerGap())
         );
 
         jTabbedPane1.setToolTipText("");
@@ -418,20 +418,21 @@ public class UserManagerPanel extends JPanel {
 
         jTabbedPane1.addTab(bundleString("Membership"), membershipPanel);
 
-
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(jPanel1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(interruptPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jTabbedPane1)
         );
         layout.setVerticalGroup(
                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
                                 .addComponent(jPanel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addGap(31, 31, 31)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addContainerGap()
+                                .addComponent(interruptPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap()
                                 .addComponent(jTabbedPane1, GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
         );
 
@@ -699,7 +700,7 @@ public class UserManagerPanel extends JPanel {
             String role = (String) ((RoleTableModel) rolesTable.getModel()).getValueAt(ind, 0);
             if (GUIUtilities.displayConfirmDialog(bundleString("message.confirm-delete-role") + role + "?") == 0)
                 try {
-                    Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                    Statement state = con.createStatement();
                     state.execute("DROP ROLE " + role);
                     state.close();
                     act = Action.REFRESH;
@@ -756,7 +757,18 @@ public class UserManagerPanel extends JPanel {
         }
     }
 
+    public void enableComponents(Container container, boolean enable) {
+        Component[] components = container.getComponents();
+        for (Component component : components) {
+            component.setEnabled(enable);
+            if (component instanceof Container) {
+                enableComponents((Container)component, enable);
+            }
+        }
+    }
+
     void setEnableElements(boolean enable) {
+        enableComponents(GUIUtilities.getParentFrame(), enable);
         enableElements = enable;
         addUserButton.setEnabled(enable);
         editUserButton.setEnabled(enable);
@@ -768,6 +780,7 @@ public class UserManagerPanel extends JPanel {
         adminButton.setEnabled(enable);
         no_grantButton.setEnabled(enable);
         cancelButton.setVisible(!enable);
+        cancelButton.setEnabled(!enable);
         jProgressBar1.setVisible(!enable);
         if (enable)
             jProgressBar1.setValue(0);
@@ -792,7 +805,7 @@ public class UserManagerPanel extends JPanel {
     void grant_with_admin(int row, int col) {
         if (col >= 0) {
             try {
-                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                Statement st = con.createStatement();
                 st.execute("GRANT \"" + role_names.elementAt(col) + "\" TO \"" + user_names.elementAt(row) + "\" WITH ADMIN OPTION;");
                 st.close();
                 act = Action.GET_MEMBERSHIP;
@@ -806,7 +819,7 @@ public class UserManagerPanel extends JPanel {
     void grant_to(int row, int col) {
         if (col >= 0) {
             try {
-                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                Statement st = con.createStatement();
                 String query = "GRANT \"" + role_names.elementAt(col) + "\" TO \"" + user_names.elementAt(row) + "\";";
                 st.execute(query);
                 st.close();
@@ -821,7 +834,7 @@ public class UserManagerPanel extends JPanel {
     void revoke_grant(int row, int col) {
         if (col >= 0) {
             try {
-                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                Statement st = con.createStatement();
                 st.execute("REVOKE \"" + role_names.elementAt(col) + "\" FROM \"" + user_names.elementAt(row) + "\";");
                 st.close();
             } catch (Exception e) {
@@ -900,7 +913,7 @@ public class UserManagerPanel extends JPanel {
 
     void get_roles() {
         try {
-            Statement state = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+            Statement state = con.createStatement();
             result = state.executeQuery("SELECT RDB$ROLE_NAME,RDB$OWNER_NAME FROM RDB$ROLES ORDER BY" +
                     " RDB$ROLE_NAME");
             rolesTable.setModel(new RoleTableModel(
@@ -945,7 +958,7 @@ public class UserManagerPanel extends JPanel {
         for (int i = 0; i < user_names.size() && !enableElements; i++) {
             jProgressBar1.setValue(i);
             try {
-                Statement st = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+                Statement st = con.createStatement();
                 ResultSet rs1 = st.executeQuery("select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION,rdb$Relation_name from RDB$USER_PRIVILEGES\n" +
                         "where (RDB$USER='" + user_names.elementAt(i) + "') and (rdb$object_type=8 or rdb$object_type=13)");
                 Vector<Object> roleData = new Vector<Object>();

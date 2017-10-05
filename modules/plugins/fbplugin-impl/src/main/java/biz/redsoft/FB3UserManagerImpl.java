@@ -222,10 +222,14 @@ public class FB3UserManagerImpl implements IFBUserManager {
             } catch (NullPointerException e) {
                 value.setPlugin("");
             }
-            value.setTags(getTags(key,value.getPlugin()));
+            //value.setTags(getTags(key,value.getPlugin()));
             mUsers.put(key+":"+value.getPlugin(), value);
         }
         state.close();
+        for(IFBUser u:mUsers.values())
+        {
+            u.setTags(getTags(u.getUserName(),u.getPlugin()));
+        }
 
         return mUsers;
     }

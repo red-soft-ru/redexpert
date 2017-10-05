@@ -87,35 +87,34 @@ public class FB3UserManagerImpl implements IFBUserManager {
                     "PASSWORD '" + user.getPassword() + "'";
             execute_query(query);
         }
-        update(user,true);
+        update(user, true);
     }
 
     @Override
     public void delete(IFBUser user) throws SQLException, IOException {
         String query;
         if (user.getPlugin().equals(""))
-             query = "DROP USER \"" + user.getUserName() + "\"\n";
+            query = "DROP USER \"" + user.getUserName() + "\"\n";
         else
-            query = "DROP USER \"" + user.getUserName() + "\"\n"+
-                    "USING PLUGIN "+user.getPlugin();
+            query = "DROP USER \"" + user.getUserName() + "\"\n" +
+                    "USING PLUGIN " + user.getPlugin();
         execute_query(query);
 
     }
 
     @Override
     public void update(IFBUser user) throws SQLException, IOException {
-      update(user,false);
+        update(user, false);
 
     }
 
     void update(IFBUser user, boolean create) throws SQLException, IOException {
         IFBUser user1;
         if (create) {
-            user1=new FBUserImpl();
+            user1 = new FBUserImpl();
             user1.setUserName(user.getUserName().toUpperCase());
-        }
-        else
-            user1 = getUsers().get(user.getUserName()+":"+user.getPlugin());
+        } else
+            user1 = getUsers().get(user.getUserName() + ":" + user.getPlugin());
         user.setUserName(user1.getUserName());
         if (!user.equals(user1)) {
             String query = "ALTER USER \"" + user.getUserName() + "\"";
@@ -143,17 +142,15 @@ public class FB3UserManagerImpl implements IFBUserManager {
             if (!user.getPlugin().equals(""))
                 query += "\nUSING PLUGIN " + user.getPlugin();
             Map<String, String> tags = user.getTags();
-            if(create&&tags.size()>0)
-            {
+            if (create && tags.size() > 0) {
                 query += "\nTAGS (";
                 for (String tag : tags.keySet()) {
                     query += tag + " = '" + tags.get(tag) + "' , ";
                 }
                 query = query.substring(0, query.lastIndexOf(","));
                 query += " )";
-            }
-            else {
-                Map<String, String> tags1 = getTags(user.getUserName(),user.getPlugin());
+            } else {
+                Map<String, String> tags1 = getTags(user.getUserName(), user.getPlugin());
                 if (!tags.equals(tags1)) {
                     query += "\nTAGS (";
                     for (String tag : tags1.keySet()) {
@@ -223,12 +220,11 @@ public class FB3UserManagerImpl implements IFBUserManager {
                 value.setPlugin("");
             }
             //value.setTags(getTags(key,value.getPlugin()));
-            mUsers.put(key+":"+value.getPlugin(), value);
+            mUsers.put(key + ":" + value.getPlugin(), value);
         }
         state.close();
-        for(IFBUser u:mUsers.values())
-        {
-            u.setTags(getTags(u.getUserName(),u.getPlugin()));
+        for (IFBUser u : mUsers.values()) {
+            u.setTags(getTags(u.getUserName(), u.getPlugin()));
         }
 
         return mUsers;
@@ -239,7 +235,7 @@ public class FB3UserManagerImpl implements IFBUserManager {
         try {
 
             Statement state1 = con.createStatement();
-            String query = "SELECT * FROM SEC$USER_ATTRIBUTES WHERE SEC$USER_NAME = '" + name + "' and SEC$PLUGIN = '"+Plugin+"'";
+            String query = "SELECT * FROM SEC$USER_ATTRIBUTES WHERE SEC$USER_NAME = '" + name + "' and SEC$PLUGIN = '" + Plugin + "'";
             ResultSet result1 = state1.executeQuery(query);
             while (result1.next()) {
                 tags.put(result1.getString(2), result1.getString(3));

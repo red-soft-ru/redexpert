@@ -104,6 +104,16 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         return objects;
     }
 
+    public List<String> getColumnNames()
+    {
+        List<String> names=new ArrayList<>();
+        for(DatabaseColumn column:getColumns())
+        {
+            names.add(column.getName());
+        }
+        return names;
+    }
+
     public List<DatabaseColumn> getExportedKeys() throws DataSourceException {
 
         if (!isMarkedForReload() && exportedColumns != null) {
@@ -1177,17 +1187,20 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         sb.append(" WHERE ");
 
         boolean applied = false;
-        for (String primaryKey : getPrimaryKeyColumnNames()) {
+        List<String> cols=getColumnNames();
+        for (String col : cols) {
 
-        	if (applied) {
-        		
-        		sb.append(" AND ");
-        	}
-            sb.append(primaryKey).append(" = ? ");
+            if (applied) {
+
+                sb.append(" AND ");
+            }
+            sb.append(col).append(" = ? ");
             applied =true;
         }
 
         sb.deleteCharAt(sb.length() - 1);
+        sb.append("\nORDER BY "+cols.get(0) +" \n");
+        sb.append("ROWS 1");
         return sb.toString();
     }
     

@@ -112,7 +112,7 @@ public class TableDataChangeWorker {
         try {
         
             int n = changes.size();
-            String sql = table.prepareStatement(columns);
+            String sql = table.prepareStatement(columns,true);
             
             Log.info("Executing data change using statement - [ " + sql + " ]");
             
@@ -120,9 +120,9 @@ public class TableDataChangeWorker {
             for (int i = 0; i < n; i++) {
 
                 RecordDataItem recordDataItem = changes.get(i);
-                if (!recordDataItem.isSQLValueNull()) {
+                if (!recordDataItem.isNewValueNull()) {
 
-                    statement.setObject((i + 1), recordDataItem.getValueAsType(), recordDataItem.getDataType());
+                    statement.setObject((i + 1), recordDataItem.getNewValue(), recordDataItem.getDataType());
 
                 } else {
                     
@@ -130,12 +130,10 @@ public class TableDataChangeWorker {
                 }
                 
             }
-
-            List<String> primaryKeys = table.getPrimaryKeyColumnNames();
-            for (String primaryKey : primaryKeys) {
+            for (RecordDataItem rdi:values) {
 
                 n++;
-                statement.setObject(n, valueForKey(primaryKey, values));
+                statement.setObject(n, rdi.getValue());
             }
             
             return statement.executeUpdate();

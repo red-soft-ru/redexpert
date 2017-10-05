@@ -30,6 +30,8 @@ import org.underworldlabs.swing.table.TableCellValue;
  */
 public interface RecordDataItem extends TableCellValue {
 
+    Object getNewValue();
+
     int length();
 
 	int getDataType();
@@ -49,6 +51,8 @@ public interface RecordDataItem extends TableCellValue {
     boolean isChanged();
 
     boolean isSQLValueNull();
+
+    boolean isNewValueNull();
 
     Object getValueAsType();
 

@@ -37,6 +37,8 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
 
 	private Object value;
 
+	private Object newValue;
+
     private String name;
 
     private int dataType;
@@ -79,7 +81,7 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
 
 	@Override
     public Object getDisplayValue() {
-		return getValue();
+		return getNewValue();
 	}
 
 	@Override
@@ -88,8 +90,14 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
 	}
 
 	@Override
+	public Object getNewValue() {
+		return newValue;
+	}
+
+	@Override
     public void setValue(Object value) {
 		this.value = value;
+		this.newValue=value;
 	}
 
 	@Override
@@ -107,16 +115,17 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
 
 		if (valuesEqual(this.value, newValue)) {
 
+			changed=false;
 			return;
 		}
 
 	    if (newValue != null && isStringLiteralNull(newValue)) {
 
-	        setValue(null);
+	        this.newValue=null;
 
 	    } else {
 
-	        setValue(newValue);
+	       this.newValue=newValue;
 	    }
 	    changed = true;
 	}
@@ -177,7 +186,12 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
         return isValueNull();// && StringUtils.isBlank(toString());
     }
 
-    @Override
+	@Override
+	public boolean isNewValueNull() {
+		return newValue==null;
+	}
+
+	@Override
     public Object getValueAsType() {
 
         if (isValueNull()) {

@@ -2,6 +2,8 @@ package org.underworldlabs.swing;
 
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -27,6 +29,12 @@ public class EQTimePicker  extends JPanel {
         timeEditor = new JSpinner.DateEditor(timeSpinner, "HH:mm:ss");
         timeSpinner.setEditor(timeEditor);
         nullBox=new JCheckBox("NULL");
+        nullBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                timeSpinner.setEnabled(!nullBox.isSelected());
+            }
+        });
         GroupLayout layout=new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(

@@ -58,17 +58,7 @@ public class PulsatingCircle extends ImageIcon {
         
         final Runnable fader = new Runnable() {
             public void run() {
-
-                if (alpha >= 0.999f) {
-
-                    try {
-
-                        Thread.sleep(750);
-
-                    } catch (InterruptedException e) {}
-
-                }
-
+                
                 if (!goingUp) {
                     
                     alpha -= 0.010f;

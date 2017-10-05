@@ -25,7 +25,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.sql.ResultSet;
+import java.sql.Time;
 import java.sql.Types;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 import java.util.Timer;
@@ -595,11 +598,10 @@ public class TableDataTab extends JPanel
                     component_value = ((DatePicker) component).getDateStringOrEmptyString();
                     break;
                 case Types.TIMESTAMP:
-                    component_value = ((DateTimePicker) component).datePicker.getDateStringOrEmptyString() + " " +
-                            ((DateTimePicker) component).timePicker.getTimeStringOrEmptyString();
+                    component_value = ((EQDateTimePicker) component).getStringValue();
                     break;
                 case Types.TIME:
-                    component_value = ((DateTimePicker) component).timePicker.getTimeStringOrEmptyString();
+                    component_value =((EQTimePicker) component).getStringValue();//((DateTimePicker) component).timePicker.getTimeStringOrEmptyString();
                     break;
                 default:
                     component_value = ((JTextField) component).getText();
@@ -707,10 +709,10 @@ public class TableDataTab extends JPanel
                             field = new DatePicker();
                             break;
                         case Types.TIMESTAMP:
-                            field = new DateTimePicker();
+                            field = new EQDateTimePicker();
                             break;
                         case Types.TIME:
-                            field = new TimePicker();
+                            field=new EQTimePicker();
                             break;
                         default:
                             field = new JTextField(14);
@@ -758,6 +760,7 @@ public class TableDataTab extends JPanel
         int row = table.getSelectedRow();
         if (row >= 0) {
             String query = "DELETE FROM " + databaseObject.getNameForQuery() + " WHERE ";
+            String order="";
             for (int i = 0; i < tableModel.getColumnHeaders().size(); i++) {
                 String value = "";
                 ResultSetColumnHeader rsch = tableModel.getColumnHeaders().get(i);
@@ -795,9 +798,11 @@ public class TableDataTab extends JPanel
                     query = query + " (" + rsch.getName() + " = " + value + " )";
                 if (i != tableModel.getColumnHeaders().size() - 1)
                     query += " and";
-
+                else order=rsch.getName();
 
             }
+            query+="\nORDER BY "+order+"\n";
+            query+="ROWS 1";
             ExecuteQueryDialog eqd = new ExecuteQueryDialog("Delete record", query, databaseObject.getHost().getDatabaseConnection(), true);
             eqd.display();
             if (eqd.getCommit()) {

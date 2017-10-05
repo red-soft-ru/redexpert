@@ -772,6 +772,9 @@ public class TableDataTab extends JPanel
                     case Types.VARCHAR:
                     case Types.NVARCHAR:
                     case Types.CLOB:
+                    case Types.DATE:
+                    case Types.TIME:
+                    case Types.TIMESTAMP:
                         value = "'";
                         str = true;
                         break;

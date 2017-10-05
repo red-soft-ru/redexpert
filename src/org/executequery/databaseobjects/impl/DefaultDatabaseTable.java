@@ -556,6 +556,15 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
     
     public void addTableDataChange(TableDataChange tableDataChange) {
 
+        if(tableDataChanges!=null)
+        {
+            for (int i=0;i<tableDataChanges.size();i++)
+                if(tableDataChange.getRowDataForRow()==tableDataChanges.get(i).getRowDataForRow())
+                {
+                    tableDataChanges.remove(i);
+                    i--;
+                }
+        }
         tableDataChanges().add(tableDataChange);
     }
     

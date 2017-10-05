@@ -112,7 +112,7 @@ public class TableDataChangeWorker {
         try {
         
             int n = changes.size();
-            String sql = table.prepareStatement(columns,true);
+            String sql = table.prepareStatement(columns);
             
             Log.info("Executing data change using statement - [ " + sql + " ]");
             

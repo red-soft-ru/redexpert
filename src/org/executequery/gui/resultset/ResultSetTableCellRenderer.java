@@ -268,7 +268,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
             case Types.BINARY:
             case Types.BLOB:
                 color = blobValueDisplayColor;
-
+                break;
             default:
                 color = otherValueDisplayColor;
 

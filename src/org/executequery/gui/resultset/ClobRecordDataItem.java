@@ -20,12 +20,11 @@
 
 package org.executequery.gui.resultset;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.sql.Clob;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.executequery.Constants;
 import org.executequery.log.Log;
@@ -34,6 +33,8 @@ import org.underworldlabs.util.SystemProperties;
 public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 
 	private int displayLength;
+
+	private static final String CLOB_DATA="<CLOB Data>";
 
 	private String displayValue;
 
@@ -48,16 +49,8 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 	@Override
 	public Object getDisplayValue() {
 
-		if (displayValue == null) {
 
-		    displayValue = new String(getData());
-		    if (displayValue.length() > displayLength) {
-
-		        displayValue = displayValue.substring(0, displayLength);
-		    }
-		}
-
-		return displayValue;
+		return CLOB_DATA;
 	}
 
 	@Override
@@ -65,6 +58,7 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 
 		return getDataTypeName();
 	}
+
 
     @Override
     protected byte[] readLob() {
@@ -76,13 +70,20 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
         }
 
     	Clob clob = (Clob) value;
-
-    	Reader reader;
-    	Writer writer = new StringWriter();
-
+		InputStream as;
 		try {
+			as = clob.getAsciiStream();
+			byte[] b = new byte[1024];
+			ByteArrayOutputStream result=new ByteArrayOutputStream();
+			int length;
+			while ((length = as.read(b)) != -1) {
+				result.write(b, 0, length);
+			}
+			return result.toByteArray();
 
-			reader = clob.getCharacterStream();
+
+
+			//reader = clob.getCharacterStream();
 
 		} catch (SQLException e) {
 
@@ -93,40 +94,11 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 
 			return e.getMessage().getBytes();
 		}
-
-        try {
-
-            int read;
-            while ((read = reader.read()) > -1) {
-
-	            writer.write(read);
-	        }
-
-	        writer.flush();
-
-		} catch (IOException e) {
-
-			if (Log.isDebugEnabled()) {
-
-				Log.debug("Error reading CLOB data", e);
-			}
-
-			return e.getMessage().getBytes();
-
-		} finally {
-
-            try {
-
-                if (writer != null) {
-
-                    writer.close();
-                }
-
-            } catch (IOException e) {}
-
+		catch (Exception e)
+		{
+			Log.error("Error reading CLOB data:"+e.getMessage());
+			return "Error reading CLOB data:".getBytes();
 		}
-
-    	return writer.toString().trim().getBytes();
     }
 
     @Override
@@ -139,6 +111,10 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
         return getDisplayValue().toString();
     }
 
+	public boolean isBlob() {
+
+		return true;
+	}
 }
 
 

@@ -466,7 +466,6 @@ public class ResultSetTable extends JTable implements StandardTable {
             case Types.NCHAR:
             case Types.VARCHAR:
             case Types.NVARCHAR:
-            case Types.CLOB:
                 return multiLineCellEditor;
         }
         

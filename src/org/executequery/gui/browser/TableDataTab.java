@@ -24,9 +24,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.sql.ResultSet;
-import java.sql.Time;
-import java.sql.Types;
+import java.sql.*;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -123,6 +121,29 @@ public class TableDataTab extends JPanel
     private JPanel buttonsEditingPanel;
 
     StatementExecutor querySender;
+
+    private ResultSet resultSet;
+
+    public void removeNotify() {
+        super.removeNotify();
+
+        if (resultSet != null) {
+
+            try {
+
+                Statement statement = resultSet.getStatement();
+                resultSet.close();
+
+                if (statement != null) {
+
+                    statement.close();
+                }
+
+            } catch (SQLException e) {
+            }
+        }
+    }
+
 
     public TableDataTab(boolean displayRowCount) {
 
@@ -326,7 +347,24 @@ public class TableDataTab extends JPanel
     private List<String> foreignKeyColumns = new ArrayList<String>(0);
     List<org.executequery.databaseobjects.impl.ColumnConstraint> foreigns;
 
-    private Object setTableResultsPanel(DatabaseObject databaseObject) {
+    private synchronized Object setTableResultsPanel(DatabaseObject databaseObject) {
+
+        if (resultSet != null) {
+
+            try {
+
+                Statement statement = resultSet.getStatement();
+                resultSet.close();
+
+                if (statement != null) {
+
+                    statement.close();
+                }
+
+            } catch (SQLException e) {
+            }
+        }
+
         querySender = new DefaultStatementExecutor(databaseObject.getHost().getDatabaseConnection(), true);
         tableDataChanges.clear();
         primaryKeyColumns.clear();
@@ -370,12 +408,12 @@ public class TableDataTab extends JPanel
 
             Log.debug("Retrieving data for table - " + databaseObject.getName());
             try {
-                ResultSet resultSet = databaseObject.getData(true);
+                resultSet = databaseObject.getData(true);
                 tableModel.createTable(resultSet);
 
             } catch (Exception e) {
                 Log.error("Error retrieving data for table - " + databaseObject.getName() + ". Try to rebuild table model.");
-                ResultSet resultSet = databaseObject.getMetaData();
+                resultSet = databaseObject.getMetaData();
                 tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection());
             }
 

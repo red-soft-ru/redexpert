@@ -343,21 +343,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
         } finally {
 
-            if (resultSet != null) {
-
-                try {
-
-                    Statement statement = resultSet.getStatement();
-                    resultSet.close();
-
-                    if (statement != null) {
-
-                        statement.close();
-                    }
-
-                } catch (SQLException e) {}
-
-            }
+            // now closing rs and statement in TableDataTab
         }
 
     }

@@ -77,7 +77,7 @@ public class BlobRecordDataItem extends AbstractLobRecordDataItem {
         try {
 
             blobBytes = blob.getBytes(1, (int) blob.length());
-            executor.releaseResources();
+            //executor.releaseResources();
 
         } catch (SQLException e) {
 

@@ -157,7 +157,7 @@ public class ResultSetDelimitedFileWriter {
         ColumnData[] columns = new ColumnData[columnCount];
         for (int i = 1; i <= columnCount; i++) {
             
-            ColumnData columnData = new ColumnData(resultSetMetaData.getColumnLabel(i));
+            ColumnData columnData = new ColumnData(resultSetMetaData.getColumnLabel(i),null);
             columnData.setSQLType(resultSetMetaData.getColumnType(i));
             columns[i - 1] = columnData;
         }

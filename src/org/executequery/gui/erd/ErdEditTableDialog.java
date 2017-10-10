@@ -128,7 +128,7 @@ public class ErdEditTableDialog extends ErdPrintableDialog
         ColumnData[]  _columns = new ColumnData[columns.length];
         
         for (int i = 0; i < columns.length; i++) {
-            _columns[i] = new ColumnData();
+            _columns[i] = new ColumnData(columns[i].getDatabaseConnection());
             _columns[i].setValues(columns[i]);
         }
         

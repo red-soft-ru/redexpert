@@ -631,7 +631,7 @@ public class MetaDataValues implements ConnectionListener {
                 
                 columnName = rs.getString(4);
                 
-                ColumnData cd = new ColumnData();
+                ColumnData cd = new ColumnData(databaseConnection);
                 cd.setCatalog(catalog);
                 cd.setSchema(schema);
                 cd.setColumnName(columnName);
@@ -1181,7 +1181,7 @@ public class MetaDataValues implements ConnectionListener {
                 dataTypes[i] = _dataTypes.get(i);
             } 
             
-            Arrays.sort(dataTypes);
+            //Arrays.sort(dataTypes);
             return dataTypes;
         } 
         catch (SQLException e) {
@@ -1191,6 +1191,78 @@ public class MetaDataValues implements ConnectionListener {
             releaseResources(rs);
         } 
         
+    }
+
+    public Object[][] getObjectDataTypesArray() throws DataSourceException {
+        ResultSet rs = null;
+        try {
+            ensureConnection();
+            DatabaseMetaData dmd = connection.getMetaData();
+            rs = dmd.getTypeInfo();
+
+            String underscore = "_";
+            List<String> _dataTypes = new ArrayList<String>();
+            List<Integer>_dataIntTypes=new ArrayList<>();
+            while (rs.next()) {
+                String type = rs.getString(1);
+                Integer typeInt=rs.getInt(2);
+                if (!type.startsWith(underscore)) {
+                    _dataTypes.add(type);
+                    _dataIntTypes.add(typeInt);
+                }
+            }
+
+            int size = _dataTypes.size();
+            Object[][] dataTypes = new Object[size][];
+            for (int i = 0; i < size; i++) {
+                dataTypes[i] = new Object[2];
+                dataTypes[i][0]=_dataTypes.get(i);
+                dataTypes[i][1]=_dataIntTypes.get(i);
+            }
+
+            Arrays.sort(dataTypes);
+            return dataTypes;
+        }
+        catch (SQLException e) {
+            throw new DataSourceException(e);
+        }
+        finally {
+            releaseResources(rs);
+        }
+
+    }
+
+    public int[] getIntDataTypesArray() throws DataSourceException {
+        ResultSet rs = null;
+        try {
+            ensureConnection();
+            DatabaseMetaData dmd = connection.getMetaData();
+            rs = dmd.getTypeInfo();
+
+            String underscore = "_";
+            List<Integer> _dataTypes = new ArrayList<Integer>();
+            while (rs.next()) {
+                String stype=rs.getString(1);
+                int type = rs.getInt(2);
+                if (!stype.startsWith(underscore)) {
+                    _dataTypes.add(type);
+                }
+            }
+
+            int size = _dataTypes.size();
+            int[] dataTypes = new int[size];
+            for (int i = 0; i < size; i++) {
+                dataTypes[i] = _dataTypes.get(i);
+            }
+            return dataTypes;
+        }
+        catch (SQLException e) {
+            throw new DataSourceException(e);
+        }
+        finally {
+            releaseResources(rs);
+        }
+
     }
     
     /** <p>Retrieves the currently connected schema's
@@ -1379,7 +1451,7 @@ public class MetaDataValues implements ConnectionListener {
             
             Vector v = new Vector();
             while (rs.next()) {
-                ColumnData cd = new ColumnData();
+                ColumnData cd = new ColumnData(databaseConnection);
                 cd.setColumnName(rs.getString(4));
                 cd.setSQLType(rs.getInt(5));
                 cd.setColumnType(rs.getString(6));

@@ -25,6 +25,10 @@ import java.sql.Types;
 import java.util.Vector;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.DatabaseMetaTag;
+import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
+import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 
 /** 
  * This class represents a single table
@@ -92,21 +96,32 @@ public class ColumnData implements Serializable {
     
     /** Whether this column is marked as to be deleted */
     private boolean markedDeleted;
+
+    private String domain;
+
+    private int domainType;
+
+    private int domainSize=-1;
+
+    private int domainScale=-1;
+
+    DatabaseConnection dc;
     
-    public ColumnData() {
+    public ColumnData(DatabaseConnection databaseConnection) {
         primaryKey = false;
         foreignKey = false;
         newColumn = false;
         keyType = null;
+        dc=databaseConnection;
     }
     
-    public ColumnData(String columnName) {
-        this();
+    public ColumnData(String columnName,DatabaseConnection databaseConnection) {
+        this(databaseConnection);
         this.columnName = columnName;
     }
     
-    public ColumnData(boolean newColumn) {
-        this();
+    public ColumnData(boolean newColumn,DatabaseConnection databaseConnection) {
+        this(databaseConnection);
         this.newColumn = newColumn;
     }
     
@@ -184,7 +199,9 @@ public class ColumnData implements Serializable {
         columnSize = cd.getColumnSize();
         columnRequired = cd.getColumnRequired();
         sqlType = cd.getSQLType();
-        
+        domain=cd.getDomain();
+        dc=cd.getDatabaseConnection();
+
         Vector<ColumnConstraint> constraints = cd.getColumnConstraintsVector();
         if (constraints != null) {
             columnConstraints = (Vector<ColumnConstraint>)constraints.clone();
@@ -335,6 +352,29 @@ public class ColumnData implements Serializable {
 
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String Domain)
+    {
+        domain=Domain;
+    }
+    private void getDomainInfo()
+    {
+        String query="SELECT RDB$FIELD_TYPE,RDB$FIELD_LENGTH,RDB$FIELD_SCALE FROM RDB$FIELDS WHERE RDB$FIELD_NAME";
+    }
+
+    public void setDatabaseConnection(DatabaseConnection databaseConnection)
+    {
+        dc=databaseConnection;
+    }
+
+    public DatabaseConnection getDatabaseConnection()
+    {
+        return dc;
     }
     
     /**

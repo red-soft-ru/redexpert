@@ -28,6 +28,9 @@ import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -41,14 +44,18 @@ import javax.swing.event.ChangeListener;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
+import org.executequery.databasemediators.QueryTypes;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.FocusComponentPanel;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.editor.QueryEditorTextPane;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
+import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.GUIUtils;
@@ -230,9 +237,39 @@ public abstract class CreateTableFunctionPanel extends JPanel
             schemaModel.setElements(schemas);
             if (schemas.size() != 0)
                 schemaCombo.setSelectedIndex(0);
-            tablePanel.setDataTypes(metaData.getDataTypesArray());
+
+            tablePanel.setDataTypes(metaData.getDataTypesArray(),metaData.getIntDataTypesArray());
+            tablePanel.setDomains(getDomains());
+            tablePanel.setDatabaseConnection(connection);
+            //metaDataю
         }
+
         
+    }
+    String[] getDomains()
+    {
+        DefaultStatementExecutor executor=new DefaultStatementExecutor(getSelectedConnection(),true);
+        List<String> domains=new ArrayList<>();
+        try
+        {
+            String query="select " +
+                    "RDB$FIELD_NAME "+
+                    "where RDB$FIELD_NAME not like 'RDB$%'\n" +
+                    "and RDB$FIELD_NAME not like 'MON$%'\n" +
+                    "order by RDB$FIELD_NAME";
+            ResultSet rs=executor.execute(QueryTypes.SELECT,query).getResultSet();
+            while (rs.next())
+            {
+                domains.add(rs.getString(1));
+            }
+            executor.releaseResources();
+            return domains.toArray(new String[domains.size()]);
+        }
+        catch (Exception e)
+        {
+            Log.error("Error loading domains:"+e.getMessage());
+            return null;
+        }
     }
     
     /**
@@ -281,6 +318,15 @@ public abstract class CreateTableFunctionPanel extends JPanel
             }
         });
     }
+
+    private void columnChangeConnection(DatabaseConnection dc)
+    {
+        Vector<ColumnData> cd=getTableColumnDataVector();
+        for (ColumnData c:cd)
+        {
+            c.setDatabaseConnection(dc);
+        }
+    }
     
     private void connectionChanged() {
         // retrieve connection selection
@@ -289,6 +335,8 @@ public abstract class CreateTableFunctionPanel extends JPanel
 
         // reset meta data
         metaData.setDatabaseConnection(connection);
+        tablePanel.setDatabaseConnection(connection);
+        columnChangeConnection(connection);
 
         // reset schema values
         try {
@@ -309,22 +357,23 @@ public abstract class CreateTableFunctionPanel extends JPanel
 
         // reset data types
         try {
-            populateDataTypes(metaData.getDataTypesArray());
+            populateDataTypes(metaData.getDataTypesArray(),metaData.getIntDataTypesArray());
         }
         catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
                     "Error retrieving the data types for the " +
                     "selected connection.\n\nThe system returned:\n" + 
                     e.getExtendedMessage(), e);
-            populateDataTypes(new String[0]);
+            populateDataTypes(new String[0],new int[0]);
         }
 
     }
     
-    private void populateDataTypes(final String[] dataTypes) {
+    private void populateDataTypes(final String[] dataTypes,final int[] intDataTypes) {
         GUIUtils.invokeAndWait(new Runnable() {
             public void run() {
-                tablePanel.setDataTypes(dataTypes);
+                tablePanel.setDataTypes(dataTypes,intDataTypes);
+                tablePanel.setDomains(getDomains());
             }
         });
     }

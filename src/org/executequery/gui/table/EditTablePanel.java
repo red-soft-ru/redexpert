@@ -163,7 +163,7 @@ public class EditTablePanel extends TableDefinitionPanel {
                 originalData = new ColumnData[v_size];
                 
                 for (int i = 0; i <v_size; i++) {
-                    originalData[i] = new ColumnData();
+                    originalData[i] = new ColumnData(dc);
                     originalData[i].setValues(tableVector.elementAt(i));
                 }
                 
@@ -264,7 +264,7 @@ public class EditTablePanel extends TableDefinitionPanel {
         }
 
         int newRow = selection + 1;
-        ColumnData cd = new ColumnData(true);
+        ColumnData cd = new ColumnData(true,dc);
         cd.setColumnRequired(ColumnData.VALUE_NOT_REQUIRED);
 
         if (selection == tableVector.size()) {

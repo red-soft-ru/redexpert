@@ -152,7 +152,7 @@ public class NewTablePanel extends TableDefinitionPanel
      * Adds all the column definition lines to
      * the SQL text buffer for display.
      *
-     * @param the current row being edited
+     * @param row current row being edited
      */
     public void addColumnLines(int row) {
         
@@ -174,10 +174,10 @@ public class NewTablePanel extends TableDefinitionPanel
                 if (cd.getColumnType() != null) {
                     sqlText.append(cd.getColumnType().toUpperCase());
                     
-                    if(!cd.getColumnType().equalsIgnoreCase(DATE)) {
+                    if(cd.getColumnSize()!=-1) {
                         sqlText.append(B_OPEN).append(cd.getColumnSize());
                         
-                        if (cd.getColumnScale() != 0) {
+                        if (cd.getColumnScale() != -1) {
                             sqlText.append(COMMA).append(cd.getColumnScale());
                         }
                         

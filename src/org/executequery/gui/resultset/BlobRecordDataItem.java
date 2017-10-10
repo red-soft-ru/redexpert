@@ -85,13 +85,14 @@ public class BlobRecordDataItem extends AbstractLobRecordDataItem {
             String query="SELECT "+name+" FROM "+tableName;
             ResultSet rs=executor.execute(QueryTypes.SELECT,query).getResultSet();
             int i=0;
-            while (rs.next()&&i<row)
+            while (rs.next()&&i<=row)
             {
                 if(i==row)
                     blob=rs.getBlob(1);
                 i++;
             }
             blobBytes = blob.getBytes(1, (int) blob.length());
+            executor.releaseResources();
 
         } catch (SQLException e) {
 

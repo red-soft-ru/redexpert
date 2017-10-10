@@ -23,6 +23,8 @@ package org.executequery.gui.table;
 import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.util.MiscUtils;
 
+import static org.executequery.gui.table.CreateTableSQLSyntax.EMPTY;
+
 /**
  *
  * @author   Takis Diakoumis
@@ -89,22 +91,22 @@ public class NewTablePanel extends TableDefinitionPanel
 
         ColumnData cd = (ColumnData)tableVector.get(row);
         switch(col) {
-            case 1:
+            case NAME_COLUMN:
                 cd.setColumnName(value);
                 break;
-            case 2:
+            case TYPE_COLUMN:
                 cd.setColumnType(value);
                 break;
-                case 3:
+                case DOMAIN_COLUMN:
                     cd.setDomain(value);
                     break;
-            case 4:
+            case SIZE_COLUMN:
                 if (!MiscUtils.isNull(value)) {
                     int _value = Integer.parseInt(value);
                     cd.setColumnSize(_value);
                 }
                 break;
-            case 5:
+            case SCALE_COLUMN:
                 if (!MiscUtils.isNull(value)) {
                     int _value = Integer.parseInt(value);
                     cd.setColumnScale(_value);
@@ -126,14 +128,14 @@ public class NewTablePanel extends TableDefinitionPanel
         ColumnData cd = (ColumnData)tableVector.get(row);
         line.setLength(0);
         line.append(NEW_LINE_2).
-             append(cd.getColumnName() == null ? EMPTY : cd.getColumnName()).
+             append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnName()).
              append(SPACE);
 
         if (cd.getColumnType() != null) {
             line.append(cd.getFormattedDataType());
         }
 
-        line.append(cd.isRequired() ? NOT_NULL : EMPTY);
+        line.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
         
         if (row < tableVector.size() - 1) {
             line.append(COMMA);
@@ -166,7 +168,7 @@ public class NewTablePanel extends TableDefinitionPanel
             else if (!cd.isNewColumn()) {
                 
                 sqlText.append(NEW_LINE_2).append(
-                        cd.getColumnName() == null ? EMPTY : cd.getColumnName()).
+                        cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnName()).
                         append(SPACE);
                 
                 if (cd.getColumnType() != null) {
@@ -183,7 +185,7 @@ public class NewTablePanel extends TableDefinitionPanel
                     }
                     
                 }
-                sqlText.append(cd.isRequired() ? NOT_NULL : EMPTY);
+                sqlText.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
                 
                 if (i != k - 1) {
                     sqlText.append(COMMA);

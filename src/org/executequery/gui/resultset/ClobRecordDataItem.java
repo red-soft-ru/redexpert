@@ -82,7 +82,7 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 			String query="SELECT "+name+" FROM "+tableName;
 			ResultSet rs=executor.execute(QueryTypes.SELECT,query).getResultSet();
 			int i=0;
-			while (rs.next()&&i<row)
+			while (rs.next()&&i<=row)
 			{
 				if(i==row)
 					clob=rs.getClob(1);

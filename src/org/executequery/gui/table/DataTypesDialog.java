@@ -122,8 +122,8 @@ public class DataTypesDialog extends AbstractBaseDialog
         if (selected) {
             return;
         }
-        int item = list.getSelectedIndex();
-        parent.dataTypeSelected(item);
+        Object value = list.getSelectedValue();
+        parent.dataTypeSelected(value.toString());
         selected = true;
         dispose();
     }

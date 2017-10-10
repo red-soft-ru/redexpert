@@ -291,12 +291,12 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
         try {
 
-            metaDataPanel.setData(currentObjectView.getMetaData(),currentObjectView.getHost().getDatabaseConnection());
+            metaDataPanel.setData(currentObjectView.getMetaData());
 
         } catch (DataSourceException e) {
           
             controller.handleException(e);
-            metaDataPanel.setData(null,currentObjectView.getHost().getDatabaseConnection());
+            metaDataPanel.setData(null);
 
         } finally {
             

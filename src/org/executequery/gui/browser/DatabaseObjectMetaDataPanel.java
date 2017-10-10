@@ -20,7 +20,6 @@
 
 package org.executequery.gui.browser;
 
-import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.editor.ResultSetTableContainer;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
@@ -49,9 +48,9 @@ public class DatabaseObjectMetaDataPanel extends JPanel implements ResultSetTabl
         add(new JScrollPane(table), BorderLayout.CENTER);
     }
 
-    public void setData(ResultSet resultSet, DatabaseConnection dc) {
+    public void setData(ResultSet resultSet) {
 
-        tableModel.createTable(resultSet,dc);
+        tableModel.createTable(resultSet);
     }
     
     public JTable getTable() {

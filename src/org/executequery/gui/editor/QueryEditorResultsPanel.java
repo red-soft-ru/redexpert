@@ -37,7 +37,6 @@ import javax.swing.table.TableModel;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.UserPreferencesManager;
-import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.resultset.RecordDataItem;
@@ -179,7 +178,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
         List<List<RecordDataItem>> list = selectedResultSetPanel.filter(pattern);
         ResultSetPanel resultSetPanel = createResultSetPanel();
-        ResultSetTableModel model = new ResultSetTableModel(selectedResultSetPanel.getResultSetTableModel().getColumnNames(), list, null);
+        ResultSetTableModel model = new ResultSetTableModel(selectedResultSetPanel.getResultSetTableModel().getColumnNames(), list);
         
         resultSetPanel.setResultSet(model, false);
         addResultSetPanel(selectedResultSetPanel.getResultSetTableModel().getQuery(), model.getRowCount(), resultSetPanel, true);
@@ -342,10 +341,10 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
      * @param showRowNumber - whether to return the result set row count
      * @param maxRecords - the maximum records to return
      */
-    public int setResultSet(ResultSet rset, boolean showRowNumber, int maxRecords,DatabaseConnection dc)
+    public int setResultSet(ResultSet rset, boolean showRowNumber, int maxRecords)
         throws SQLException{
 
-        return setResultSet(rset, showRowNumber, maxRecords, null,dc);
+        return setResultSet(rset, showRowNumber, maxRecords, null);
     }
 
     /**
@@ -356,9 +355,9 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
      * @param maxRecords - the maximum records to return
      * @param query - the executed query of the result set
      */
-    public int setResultSet(ResultSet rset, boolean showRowNumber, int maxRecords, String query, DatabaseConnection dc) {
+    public int setResultSet(ResultSet rset, boolean showRowNumber, int maxRecords, String query) {
 
-        ResultSetTableModel model = new ResultSetTableModel(rset, maxRecords, query,dc);
+        ResultSetTableModel model = new ResultSetTableModel(rset, maxRecords, query);
 
         int rowCount = getResultSetRowCount(model, showRowNumber);
         if (rowCount == 0) {

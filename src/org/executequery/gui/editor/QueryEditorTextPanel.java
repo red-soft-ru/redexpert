@@ -47,7 +47,6 @@ import javax.swing.text.Document;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
-import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.editor.autocomplete.AutoCompletePopupProvider;
 import org.executequery.gui.text.TextUtilities;
 import org.executequery.log.Log;
@@ -434,9 +433,9 @@ public class QueryEditorTextPanel extends JPanel {
      * @param the table results to display
      * @param the executed query of the result set
      */
-    public void setResultSet(ResultSet rset, String query, DatabaseConnection dc) throws SQLException {
+    public void setResultSet(ResultSet rset, String query) throws SQLException {
 
-        queryEditor.setResultSet(rset, query,dc);
+        queryEditor.setResultSet(rset, query);
     }
 
     public void setResult(int updateCount, int type) {

@@ -25,9 +25,6 @@ import java.sql.Types;
 import java.util.Vector;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
-import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 
 /** 
  * This class represents a single table
@@ -95,8 +92,6 @@ public class ColumnData implements Serializable {
     
     /** Whether this column is marked as to be deleted */
     private boolean markedDeleted;
-
-    private String domain;
     
     public ColumnData() {
         primaryKey = false;
@@ -340,15 +335,6 @@ public class ColumnData implements Serializable {
 
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public void setDomain(String Domain)
-    {
-        domain=Domain;
     }
     
     /**

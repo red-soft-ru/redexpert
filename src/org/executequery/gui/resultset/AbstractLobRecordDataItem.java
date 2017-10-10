@@ -24,12 +24,10 @@ public abstract class AbstractLobRecordDataItem extends AbstractRecordDataItem
 												implements LobRecordDataItem {
 
 	private byte[] data;
-	String tableName;
 
-	public AbstractLobRecordDataItem(String table,String name, int dataType, String dataTypeName,int row) {
+	public AbstractLobRecordDataItem(String name, int dataType, String dataTypeName) {
 
-		super(name, dataType, dataTypeName,row);
-		tableName=table;
+		super(name, dataType, dataTypeName);
 	}
 
 	@Override

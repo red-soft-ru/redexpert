@@ -42,7 +42,7 @@ public interface DataTypeSelectionListener {
      *
      * @param the data type value string
      */
-    public void dataTypeSelected(int item);
+    public void dataTypeSelected(String dataType);
 
     /**
      * Called when the selction is cancelled.

@@ -230,7 +230,7 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
 
         try {
 
-            dataTypesPanel.setDataTypes(host.getDataTypeInfo(),host.getDatabaseConnection());
+            dataTypesPanel.setDataTypes(host.getDataTypeInfo());
             
         } catch (DataSourceException e) {
 

@@ -78,20 +78,20 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     public ResultSetTableModel() {
 
-        this(null, -1,null);
+        this(null, -1);
     }
 
     public ResultSetTableModel(int maxRecords) {
 
-        this(null, maxRecords,null);
+        this(null, maxRecords);
     }
 
-    public ResultSetTableModel(ResultSet resultSet, int maxRecords,DatabaseConnection dc) {
+    public ResultSetTableModel(ResultSet resultSet, int maxRecords) {
 
-        this(resultSet, maxRecords, null,dc);
+        this(resultSet, maxRecords, null);
     }
 
-    public ResultSetTableModel(ResultSet resultSet, int maxRecords, String query,DatabaseConnection dc) {
+    public ResultSetTableModel(ResultSet resultSet, int maxRecords, String query) {
 
         this.maxRecords = maxRecords;
         this.query = query;
@@ -106,15 +106,15 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
         if (resultSet != null) {
 
-            createTable(resultSet,dc);
+            createTable(resultSet);
         }
 
     }
 
-    public ResultSetTableModel(List<String> columnHeaders, List<List<RecordDataItem>> tableData,DatabaseConnection dc) {
+    public ResultSetTableModel(List<String> columnHeaders, List<List<RecordDataItem>> tableData) {
 
         this.tableData = tableData;
-        this.columnHeaders = createHeaders(columnHeaders,dc);
+        this.columnHeaders = createHeaders(columnHeaders);
         visibleColumnHeaders = new ArrayList<ResultSetColumnHeader>();
         resetVisibleColumnHeaders();
     }
@@ -124,13 +124,13 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         return columnHeaders;
     }
 
-    private List<ResultSetColumnHeader> createHeaders(List<String> columnHeaders,DatabaseConnection dc) {
+    private List<ResultSetColumnHeader> createHeaders(List<String> columnHeaders) {
 
         int index = 0;
         List<ResultSetColumnHeader> list = new ArrayList<ResultSetColumnHeader>();
         for (String columnHeader : columnHeaders) {
 
-            list.add(new ResultSetColumnHeader(index++, columnHeader,dc));
+            list.add(new ResultSetColumnHeader(index++, columnHeader));
         }
 
         return list;
@@ -140,7 +140,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         return query;
     }
 
-    public synchronized void createTable(ResultSet resultSet,DatabaseConnection dc) {
+    public synchronized void createTable(ResultSet resultSet) {
 
         if (!isOpenAndValid(resultSet)) {
 
@@ -168,11 +168,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                                   rsmd.getColumnLabel(i),
                                                   rsmd.getColumnName(i),
                                                   rsmd.getColumnType(i),
-                                                  rsmd.getColumnTypeName(i),
-                                                  rsmd.getTableName(i),
-                                                  dc
-
-                                ));
+                                                  rsmd.getColumnTypeName(i)));
             }
 
             int recordCount = 0;
@@ -200,7 +196,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                     zeroBaseIndex = i - 1;
 
                     ResultSetColumnHeader header = columnHeaders.get(zeroBaseIndex);
-                	RecordDataItem value = recordDataItemFactory.create(header,recordCount-1);
+                	RecordDataItem value = recordDataItemFactory.create(header);
 
                     try {
 
@@ -395,9 +391,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                 resultSet.getString(4),
                                 resultSet.getString(4),
                                 resultSet.getInt(5),
-                                resultSet.getString(6),
-                                resultSet.getString(3),
-                                dc
+                                resultSet.getString(6)
                         ));
                 tableName = resultSet.getString(3);
                 g++;
@@ -461,7 +455,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                     zeroBaseIndex = i - 1;
 
                     ResultSetColumnHeader header = columnHeaders.get(zeroBaseIndex);
-                    RecordDataItem value = recordDataItemFactory.create(header,recordCount-1);
+                    RecordDataItem value = recordDataItemFactory.create(header);
 
                     try {
 

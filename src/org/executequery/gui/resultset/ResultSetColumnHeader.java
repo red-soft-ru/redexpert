@@ -23,7 +23,6 @@ package org.executequery.gui.resultset;
 import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.databasemediators.DatabaseConnection;
 
 public class ResultSetColumnHeader {
 
@@ -35,18 +34,16 @@ public class ResultSetColumnHeader {
     private int dataType;
     private String dataTypeName;
     private boolean editable;
-    private String tableName;
-    private DatabaseConnection databaseConnection;
     
-    public ResultSetColumnHeader(int index, String label,DatabaseConnection dc) {
-        this(index, label, label,dc);
+    public ResultSetColumnHeader(int index, String label) {
+        this(index, label, label);
     }
     
-    public ResultSetColumnHeader(int index, String label, String name,DatabaseConnection dc) {
-        this(index, label, name, -1, null,null, dc);
+    public ResultSetColumnHeader(int index, String label, String name) {
+        this(index, label, name, -1, null);
     }
     
-    public ResultSetColumnHeader(int index, String label, String name, int dataType, String dataTypeName, String tableName, DatabaseConnection dc) {
+    public ResultSetColumnHeader(int index, String label, String name, int dataType, String dataTypeName) {
         this.id = UUID.randomUUID().toString();
         this.originalIndex = index;
         this.label = label;
@@ -55,8 +52,6 @@ public class ResultSetColumnHeader {
         this.dataTypeName = dataTypeName;
         this.visible = true;
         this.editable = true;
-        this.tableName=tableName;
-        databaseConnection=dc;
     }
     
     public String getId() {
@@ -107,14 +102,7 @@ public class ResultSetColumnHeader {
         }
         return label + " [ " + name + " ]";
     }
-
-    public String getTableName() {
-        return tableName;
-    }
-
-    public DatabaseConnection getDatabaseConnection() {
-        return databaseConnection;
-    }
+    
 }
 
 

@@ -31,7 +31,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
-import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.SortableColumnsTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.underworldlabs.swing.plaf.UIUtils;
@@ -93,10 +92,10 @@ public class DataTypesPanel extends ConnectionPropertiesPanel {
         repaint();
     }
     
-    public void setDataTypes(ResultSet rs, DatabaseConnection dc) {
+    public void setDataTypes(ResultSet rs) {
 
         addScrollPane();
-        model.createTable(rs,dc);
+        model.createTable(rs);
         model.fireTableStructureChanged();
         
         validate();

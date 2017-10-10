@@ -644,9 +644,9 @@ public class QueryEditor extends DefaultTabView
      * @param the executed result set
      * @param whether to return the result set row count
      */
-    public int setResultSet(ResultSet rset, boolean showRowNumber) throws SQLException {
+    public int setResultSet(ResultSet rset, boolean showRowNumber,DatabaseConnection dc) throws SQLException {
 
-        return setResultSet(rset, showRowNumber, null);
+        return setResultSet(rset, showRowNumber, null,dc);
     }
 
     /**
@@ -686,10 +686,10 @@ public class QueryEditor extends DefaultTabView
      * @param whether to return the result set row count
      * @param the executed query of the result set
      */
-    public int setResultSet(ResultSet rset, boolean showRowNumber, String query)
+    public int setResultSet(ResultSet rset, boolean showRowNumber, String query,DatabaseConnection dc)
         throws SQLException {
 
-        int rowCount = resultsPanel.setResultSet(rset, showRowNumber, getMaxRecords());
+        int rowCount = resultsPanel.setResultSet(rset, showRowNumber, getMaxRecords(),dc);
         revalidate();
         return rowCount;
     }
@@ -699,9 +699,9 @@ public class QueryEditor extends DefaultTabView
      *
      * @param rset the executed result set
      */
-    public void setResultSet(ResultSet rset) throws SQLException {
+    public void setResultSet(ResultSet rset,DatabaseConnection dc) throws SQLException {
 
-        resultsPanel.setResultSet(rset, true, getMaxRecords());
+        resultsPanel.setResultSet(rset, true, getMaxRecords(),dc);
         revalidate();
     }
 
@@ -711,9 +711,9 @@ public class QueryEditor extends DefaultTabView
      * @param the executed result set
      * @param the executed query of the result set
      */
-    public void setResultSet(ResultSet rset, String query) throws SQLException {
+    public void setResultSet(ResultSet rset, String query,DatabaseConnection dc) throws SQLException {
 
-        resultsPanel.setResultSet(rset, true, getMaxRecords(), query);
+        resultsPanel.setResultSet(rset, true, getMaxRecords(), query,dc);
     }
 
     public void destroyTable() {

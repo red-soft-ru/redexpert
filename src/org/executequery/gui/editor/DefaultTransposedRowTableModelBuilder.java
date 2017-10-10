@@ -45,7 +45,7 @@ public class DefaultTransposedRowTableModelBuilder implements TransposedRowTable
 
             List<RecordDataItem> row = new ArrayList<RecordDataItem>(columnCount);
 
-            row.add(dataItemForColumnName(columnName));
+            row.add(dataItemForColumnName(columnName,rowIndex));
             row.add(rowDataForRow.get(i));
             
             transposedRow.add(row);
@@ -65,9 +65,9 @@ public class DefaultTransposedRowTableModelBuilder implements TransposedRowTable
         return columnHeaders;
     }
 
-    private RecordDataItem dataItemForColumnName(String columnName) {
+    private RecordDataItem dataItemForColumnName(String columnName,int row) {
 
-        return new StringRecordDataItem(columnName);
+        return new StringRecordDataItem(columnName,row);
     }
     
 }

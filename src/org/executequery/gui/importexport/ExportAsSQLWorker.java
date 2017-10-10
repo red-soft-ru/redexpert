@@ -374,7 +374,7 @@ public class ExportAsSQLWorker extends BaseImportExportWorker {
 
             case Types.LONGVARBINARY:
             case Types.BINARY:
-            case Types.BLOB:
+            case Types./**/BLOB:
             case Types.CLOB:
                 return Base64.encodeBytes(
                         MiscUtils.inputStreamToBytes(rs.getBinaryStream(index)));

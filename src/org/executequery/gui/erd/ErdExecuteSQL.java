@@ -40,6 +40,7 @@ import javax.swing.JTextArea;
 import javax.swing.border.Border;
 
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.QueryDelegate;
 import org.executequery.sql.QueryDispatcher;
@@ -253,7 +254,7 @@ public class ErdExecuteSQL extends ErdPrintableDialog
     public void log(String message) {}
     public void executeQuery(String query) {}
     public void executeQuery(String query, boolean executeAsBlock) {}
-    public void setResultSet(ResultSet rs, String query) throws SQLException {}
+    public void setResultSet(ResultSet rs, String query, DatabaseConnection dc) throws SQLException {}
     public boolean isLogEnabled() {return false;}
     
     // -------------------------------------------

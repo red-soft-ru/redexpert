@@ -20,6 +20,8 @@
 
 package org.executequery.sql;
 
+import org.executequery.databasemediators.DatabaseConnection;
+
 import java.sql.SQLException;
 import java.sql.ResultSet;
 
@@ -90,7 +92,7 @@ public interface QueryDelegate {
      *  @param the table results to display
      *  @param the executed query of the result set
      */
-    void setResultSet(ResultSet rs, String query) throws SQLException;
+    void setResultSet(ResultSet rs, String query, DatabaseConnection dc) throws SQLException;
 
     /** Adds the specified SQL statement to the statement
      *  history list if available.

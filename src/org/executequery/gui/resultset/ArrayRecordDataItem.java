@@ -22,9 +22,9 @@ package org.executequery.gui.resultset;
 
 public class ArrayRecordDataItem extends SimpleRecordDataItem {
 
-	public ArrayRecordDataItem(String name, int dataType, String dataTypeName) {
+	public ArrayRecordDataItem(String name, int dataType, String dataTypeName, int row) {
 
-		super(name, dataType, dataTypeName);
+		super(name, dataType, dataTypeName, row);
 	}
 
 	@Override

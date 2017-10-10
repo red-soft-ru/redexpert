@@ -480,7 +480,7 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
 
                         if (result.isResultSet()) {
                             
-                            resultsPanel.setResultSet(result.getResultSet(), false, -1);
+                            resultsPanel.setResultSet(result.getResultSet(), false, -1,statementExecutor.getDatabaseConnection());
                         }
                         
                     }

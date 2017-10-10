@@ -675,12 +675,12 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         try {
 
-            metaDataPanel.setData(table.getColumnMetaData());
+            metaDataPanel.setData(table.getColumnMetaData(),table.getHost().getDatabaseConnection());
 
         } catch (DataSourceException e) {
           
             controller.handleException(e);
-            metaDataPanel.setData(null);
+            metaDataPanel.setData(null,table.getHost().getDatabaseConnection());
         }
     }
 

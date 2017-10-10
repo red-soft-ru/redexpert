@@ -22,11 +22,15 @@ package org.executequery.gui.resultset;
 
 import java.io.*;
 import java.sql.Clob;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.executequery.Constants;
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.QueryTypes;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.log.Log;
 import org.underworldlabs.util.SystemProperties;
 
@@ -38,12 +42,15 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 
 	private String displayValue;
 
-	public ClobRecordDataItem(String name, int dataType, String dataTypeName) {
+	DatabaseConnection dc;
 
-		super(name, dataType, dataTypeName);
+	public ClobRecordDataItem(String tableName, String name, int dataType, String dataTypeName, DatabaseConnection dc,int row) {
+
+		super(tableName,name, dataType, dataTypeName,row);
 
 		displayLength = SystemProperties.getIntProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.clob.length");
+		this.dc=dc;
 	}
 
 	@Override
@@ -63,22 +70,34 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
     @Override
     protected byte[] readLob() {
 
-        Object value = getValue();
+		DefaultStatementExecutor executor=new DefaultStatementExecutor(dc,true);
+		Object value = getValue();
         if (value instanceof String) {
 
             return ((String) value).getBytes();
         }
-
     	Clob clob = (Clob) value;
 		InputStream as;
 		try {
+			String query="SELECT "+name+" FROM "+tableName;
+			ResultSet rs=executor.execute(QueryTypes.SELECT,query).getResultSet();
+			int i=0;
+			while (rs.next()&&i<row)
+			{
+				if(i==row)
+					clob=rs.getClob(1);
+				i++;
+			}
 			as = clob.getAsciiStream();
 			byte[] b = new byte[1024];
 			ByteArrayOutputStream result=new ByteArrayOutputStream();
 			int length;
-			while ((length = as.read(b)) != -1) {
+			int l=0;
+			while ((length = as.read(b)) != -1&&l<displayLength) {
 				result.write(b, 0, length);
+				l+=length;
 			}
+			executor.releaseResources();
 			return result.toByteArray();
 
 

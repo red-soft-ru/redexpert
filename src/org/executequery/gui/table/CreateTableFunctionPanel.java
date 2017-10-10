@@ -230,7 +230,8 @@ public abstract class CreateTableFunctionPanel extends JPanel
             schemaModel.setElements(schemas);
             if (schemas.size() != 0)
                 schemaCombo.setSelectedIndex(0);
-            tablePanel.setDataTypes(metaData.getDataTypesArray());
+            tablePanel.setDataTypes(metaData.getDataTypesArray(),metaData.getIntDataTypesArray());
+            //metaDataю
         }
         
     }
@@ -309,22 +310,22 @@ public abstract class CreateTableFunctionPanel extends JPanel
 
         // reset data types
         try {
-            populateDataTypes(metaData.getDataTypesArray());
+            populateDataTypes(metaData.getDataTypesArray(),metaData.getIntDataTypesArray());
         }
         catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
                     "Error retrieving the data types for the " +
                     "selected connection.\n\nThe system returned:\n" + 
                     e.getExtendedMessage(), e);
-            populateDataTypes(new String[0]);
+            populateDataTypes(new String[0],new int[0]);
         }
 
     }
     
-    private void populateDataTypes(final String[] dataTypes) {
+    private void populateDataTypes(final String[] dataTypes,final int[] intDataTypes) {
         GUIUtils.invokeAndWait(new Runnable() {
             public void run() {
-                tablePanel.setDataTypes(dataTypes);
+                tablePanel.setDataTypes(dataTypes,intDataTypes);
             }
         });
     }

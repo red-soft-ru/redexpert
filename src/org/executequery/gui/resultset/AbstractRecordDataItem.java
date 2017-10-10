@@ -35,26 +35,29 @@ import org.underworldlabs.jdbc.DataSourceException;
  */
 public abstract class AbstractRecordDataItem implements RecordDataItem {
 
-	private Object value;
+	protected Object value;
 
-	private Object newValue;
+	protected Object newValue;
 
-    private String name;
+    protected String name;
 
-    private int dataType;
+    protected int dataType;
 
-	private String dataTypeName;
+	protected String dataTypeName;
 
-	private boolean changed;
+	protected boolean changed;
+
+	protected int row;
 
 	private static final SQLTypeObjectFactory TYPE_OBJECT_FACTORY = new SQLTypeObjectFactory();
 
-	public AbstractRecordDataItem(String name, int dataType, String dataTypeName) {
+	public AbstractRecordDataItem(String name, int dataType, String dataTypeName,int row) {
 
 		super();
         this.name = name;
         this.dataType = dataType;
 		this.dataTypeName = dataTypeName;
+		this.row=row;
 	}
 
 	@Override

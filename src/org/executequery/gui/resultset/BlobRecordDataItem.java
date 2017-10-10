@@ -21,8 +21,12 @@
 package org.executequery.gui.resultset;
 
 import java.sql.Blob;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.QueryTypes;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.log.Log;
 import org.executequery.util.mime.MimeType;
 import org.executequery.util.mime.MimeTypes;
@@ -32,10 +36,12 @@ public class BlobRecordDataItem extends AbstractLobRecordDataItem {
 //    private static final String UNKNOWN_TYPE = "Unknown BLOB";
 
     private static final String BLOB_DATA_OBJECT = "<BLOB Data Object>";
+    DatabaseConnection dc;
 
-    public BlobRecordDataItem(String name, int dataType, String dataTypeName) {
+    public BlobRecordDataItem(String table, String name, int dataType, String dataTypeName,DatabaseConnection dc,int row) {
 
-        super(name, dataType, dataTypeName);
+        super(table,name, dataType, dataTypeName,row);
+        this.dc=dc;
     }
 
     @Override
@@ -74,8 +80,17 @@ public class BlobRecordDataItem extends AbstractLobRecordDataItem {
 
         byte[] blobBytes;
         Blob blob = (Blob) value;
+        DefaultStatementExecutor executor=new DefaultStatementExecutor(dc,true);
         try {
-
+            String query="SELECT "+name+" FROM "+tableName;
+            ResultSet rs=executor.execute(QueryTypes.SELECT,query).getResultSet();
+            int i=0;
+            while (rs.next()&&i<row)
+            {
+                if(i==row)
+                    blob=rs.getBlob(1);
+                i++;
+            }
             blobBytes = blob.getBytes(1, (int) blob.length());
 
         } catch (SQLException e) {

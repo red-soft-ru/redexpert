@@ -976,7 +976,7 @@ public class QueryDispatcher {
         });
 */
         try {
-            delegate.setResultSet(rs, query);
+            delegate.setResultSet(rs, query,querySender.getDatabaseConnection());
         } catch (SQLException e) {
             processException(e);
         }

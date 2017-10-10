@@ -20,17 +20,19 @@
 
 package org.executequery.gui.resultset;
 
+import org.executequery.databasemediators.DatabaseConnection;
+
 import java.sql.Types;
 
 
 public class RecordDataItemFactory {
 
-    public RecordDataItem create(ResultSetColumnHeader header) {
+    public RecordDataItem create(ResultSetColumnHeader header,int row) {
         
-        return create(header.getLabel(), header.getDataType(), header.getDataTypeName());
+        return create(header.getTableName(),header.getLabel(), header.getDataType(), header.getDataTypeName(),header.getDatabaseConnection(), row);
     }
     
-	public RecordDataItem create(String name, int dataType, String dataTypeName) {
+	public RecordDataItem create(String tableName, String name, int dataType, String dataTypeName, DatabaseConnection dc,int row) {
 
 		switch (dataType) {
 /*
@@ -66,24 +68,24 @@ public class RecordDataItemFactory {
 
     		case Types.LONGVARCHAR:
 	        case Types.CLOB:
-	        	return new ClobRecordDataItem(name, dataType, dataTypeName);
+	        	return new ClobRecordDataItem(tableName,name, dataType, dataTypeName,dc,row);
 
 	        case Types.LONGVARBINARY:
 	        case Types.VARBINARY:
 	        case Types.BINARY:
 	        case Types.BLOB:
-	        	return new BlobRecordDataItem(name, dataType, dataTypeName);
+	        	return new BlobRecordDataItem(tableName,name, dataType, dataTypeName,dc,row);
 	        	
 	        case Types.DATE:
 	        case Types.TIME:
 	        case Types.TIMESTAMP:
-	            return new DateRecordDataItem(name, dataType, dataTypeName);
+	            return new DateRecordDataItem(name, dataType, dataTypeName,row);
 	            
 	        case Types.ARRAY:
-	            return new ArrayRecordDataItem(name, dataType, dataTypeName);
+	            return new ArrayRecordDataItem(name, dataType, dataTypeName,row);
 	            
         	default:
-        	    return new SimpleRecordDataItem(name, dataType, dataTypeName);
+        	    return new SimpleRecordDataItem(name, dataType, dataTypeName,row);
 
 		}
 

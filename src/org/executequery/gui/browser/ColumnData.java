@@ -21,14 +21,19 @@
 package org.executequery.gui.browser;
 
 import java.io.Serializable;
+import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.Vector;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.QueryTypes;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
+import org.executequery.log.Log;
+import org.underworldlabs.util.MiscUtils;
 
 /** 
  * This class represents a single table
@@ -104,6 +109,8 @@ public class ColumnData implements Serializable {
     private int domainSize=-1;
 
     private int domainScale=-1;
+
+    private int domainSubType;
 
     DatabaseConnection dc;
     
@@ -361,10 +368,40 @@ public class ColumnData implements Serializable {
     public void setDomain(String Domain)
     {
         domain=Domain;
+        if(!MiscUtils.isNull(domain))
+        getDomainInfo();
     }
     private void getDomainInfo()
     {
-        String query="SELECT RDB$FIELD_TYPE,RDB$FIELD_LENGTH,RDB$FIELD_SCALE FROM RDB$FIELDS WHERE RDB$FIELD_NAME";
+        String query="SELECT RDB$FIELD_TYPE,RDB$FIELD_LENGTH,RDB$FIELD_SCALE,RDB$FIELD_SUB_TYPE FROM RDB$FIELDS WHERE RDB$FIELD_NAME='"+
+                domain.trim()+"'";
+        DefaultStatementExecutor executor= new DefaultStatementExecutor(dc,true);
+        try {
+            ResultSet rs =executor.execute(QueryTypes.SELECT,query).getResultSet();
+            if(rs.next())
+            {
+                domainType=rs.getInt(1);
+                domainSize=rs.getInt(2);
+                domainScale=rs.getInt(3);
+                domainSubType=rs.getInt(4);
+            }
+            executor.releaseResources();
+            domainType=getSqlTypeFromRDBtype(domainType,domainSubType);
+            sqlType=domainType;
+            columnSize=domainSize;
+            columnScale=domainScale;
+
+        }
+        catch (Exception e)
+        {
+            Log.error(e.getMessage());
+        }
+
+    }
+
+    public int getDomainType()
+    {
+        return domainType;
     }
 
     public void setDatabaseConnection(DatabaseConnection databaseConnection)
@@ -375,6 +412,74 @@ public class ColumnData implements Serializable {
     public DatabaseConnection getDatabaseConnection()
     {
         return dc;
+    }
+
+
+    public int getSqlTypeFromRDBtype(int type,int subtype)
+    {
+        switch (type)
+        {
+            case 7:
+                switch (subtype)
+                {
+                    case 1:
+                        return Types.NUMERIC;
+                    case 2:
+                        return Types.DECIMAL;
+                    default:
+                        return Types.SMALLINT;
+                }
+            case 8:
+                switch (subtype)
+                {
+                    case 1:
+                        return Types.NUMERIC;
+                    case 2:
+                        return Types.DECIMAL;
+                    default:
+                        return Types.INTEGER;
+                }
+            case 10:
+                return Types.FLOAT;
+            case 12:
+                return Types.DATE;
+            case 13:
+                return Types.TIME;
+            case 14:
+                switch(subtype)
+                {
+                    case 0:return Types.BINARY;
+                    case 1:return Types.CHAR;
+                }
+            case 16:
+                switch (subtype)
+                {
+                    case 1:
+                        return Types.NUMERIC;
+                    case 2:
+                        return Types.DECIMAL;
+                    default:
+                        return Types.BIGINT;
+                }
+            case 27:
+                return Types.DOUBLE;
+            case 35:
+                return Types.TIMESTAMP;
+            case 37:
+                switch(subtype)
+                {
+                    case 0:return Types.VARBINARY;
+                    case 1:return Types.VARCHAR;
+                }
+            case 261:
+                switch(subtype)
+                {
+                    case 1:return Types.LONGVARCHAR;
+                    case 2:return Types.LONGVARBINARY;
+                    default:return Types.BLOB;
+                }
+            default:return 0;
+        }
     }
     
     /**

@@ -83,7 +83,7 @@ public abstract class TableDefinitionPanel extends JPanel
     /** The cell editor for the datatype column */
     protected DataTypeSelectionTableCell dataTypeCell;
 
-    protected DataTypeSelectionTableCell domainCell;
+    protected DomainSelectionTableCell domainCell;
 
     /** The <code>Vector</code> of <code>ColumnData</code> objects */
     protected Vector<ColumnData> tableVector;
@@ -208,7 +208,7 @@ public abstract class TableDefinitionPanel extends JPanel
             };
             tcm.getColumn(SIZE_COLUMN).setCellEditor(szEditor);
             tcm.getColumn(SCALE_COLUMN).setCellEditor(scEditor);
-            domainCell = new DataTypeSelectionTableCell();
+            domainCell = new DomainSelectionTableCell();
             tcm.getColumn(DOMAIN_COLUMN).setCellRenderer(domainCell);
             tcm.getColumn(DOMAIN_COLUMN).setCellEditor(domainCell);
             dataTypeCell = new DataTypeSelectionTableCell();
@@ -315,23 +315,26 @@ public abstract class TableDefinitionPanel extends JPanel
         dc=databaseConnection;
     }
     void sortTypes()
-    {if(dataTypes!=null)
-        for(int i=0;i<dataTypes.length;i++)
-        {
-            for (int g=0;g<dataTypes.length-1;g++)
-            {
-                int compare=dataTypes[g].compareTo(dataTypes[g+1]);
-                if(compare>0)
-                {
-                    int temp1=intDataTypes[g];
-                    String temp2=dataTypes[g];
-                    intDataTypes[g]=intDataTypes[g+1];
-                    dataTypes[g]=dataTypes[g+1];
-                    intDataTypes[g+1]=temp1;
-                    dataTypes[g+1]=temp2;
+    {if(dataTypes!=null) {
+        for (int i = 0; i < dataTypes.length; i++) {
+            for (int g = 0; g < dataTypes.length - 1; g++) {
+                int compare = dataTypes[g].compareTo(dataTypes[g + 1]);
+                if (compare > 0) {
+                    int temp1 = intDataTypes[g];
+                    String temp2 = dataTypes[g];
+                    intDataTypes[g] = intDataTypes[g + 1];
+                    dataTypes[g] = dataTypes[g + 1];
+                    intDataTypes[g + 1] = temp1;
+                    dataTypes[g + 1] = temp2;
                 }
             }
         }
+        for(int i=0;i<intDataTypes.length;i++) {
+            if (intDataTypes[i] == Types.CHAR||intDataTypes[i] == Types.VARCHAR)
+                dataTypes[i] += "(n)";
+
+        }
+    }
     }
 
     public void tableChanged(TableModelEvent e) {
@@ -773,19 +776,53 @@ public abstract class TableDefinitionPanel extends JPanel
                     if (value.getClass()==String.class)
                     {
                         cd.setColumnType((String)value);
+                        if(cd.getSQLType()!=cd.getDomainType()) {
+                            if (!isEditSize(row))
+                                _model.setValueAt("-1", row, SIZE_COLUMN);
+                            else
+                                _model.setValueAt("0", row, SIZE_COLUMN);
+                            if (!isEditScale(row))
+                                _model.setValueAt("-1", row, SCALE_COLUMN);
+                            else
+                                _model.setValueAt("0", row, SCALE_COLUMN);
+                        }
+                        else
+                        {
+                            if (!isEditSize(row))
+                                _model.setValueAt("-1", row, SIZE_COLUMN);
+                            else
+                                _model.setValueAt(String.valueOf(cd.getColumnSize()), row, SIZE_COLUMN);
+                            if (!isEditScale(row))
+                                _model.setValueAt("-1", row, SCALE_COLUMN);
+                            else
+                                _model.setValueAt(String.valueOf(cd.getColumnScale()), row, SCALE_COLUMN);
+                        }
                     }
                     else {
                         cd.setColumnType(dataTypes[(int) value]);
                         cd.setSQLType(intDataTypes[(int) value]);
-                        //_model.setValueAt("",row,DOMAIN_COLUMN);
-                        if(!isEditSize(row))
-                        _model.setValueAt("-1",row,SIZE_COLUMN);
+                        if(cd.getSQLType()!=cd.getDomainType()) {
+                            _model.setValueAt("", row, DOMAIN_COLUMN);
+                            if (!isEditSize(row))
+                                _model.setValueAt("-1", row, SIZE_COLUMN);
+                            else
+                                _model.setValueAt("0", row, SIZE_COLUMN);
+                            if (!isEditScale(row))
+                                _model.setValueAt("-1", row, SCALE_COLUMN);
+                            else
+                                _model.setValueAt("0", row, SCALE_COLUMN);
+                        }
                         else
-                            _model.setValueAt("0",row,SIZE_COLUMN);
-                        if(!isEditScale(row))
-                        _model.setValueAt("-1",row,SCALE_COLUMN);
-                        else
-                            _model.setValueAt("0",row,SCALE_COLUMN);
+                        {
+                            if (!isEditSize(row))
+                                _model.setValueAt("-1", row, SIZE_COLUMN);
+                            else
+                                _model.setValueAt(String.valueOf(cd.getColumnSize()), row, SIZE_COLUMN);
+                            if (!isEditScale(row))
+                                _model.setValueAt("-1", row, SCALE_COLUMN);
+                            else
+                                _model.setValueAt(String.valueOf(cd.getColumnScale()), row, SCALE_COLUMN);
+                        }
 
                     }
                     break;
@@ -795,18 +832,10 @@ public abstract class TableDefinitionPanel extends JPanel
                         cd.setDomain((String)value);
                     }
                     else {
-                        cd.setColumnType(dataTypes[(int) value]);
-                        cd.setSQLType(intDataTypes[(int) value]);
-                        _model.setValueAt("",row,DOMAIN_COLUMN);
-                        if(!isEditSize(row))
-                            _model.setValueAt("-1",row,SIZE_COLUMN);
-                        else
-                            _model.setValueAt("0",row,SIZE_COLUMN);
-                        if(!isEditScale(row))
-                            _model.setValueAt("-1",row,SCALE_COLUMN);
-                        else
-                            _model.setValueAt("0",row,SCALE_COLUMN);
-
+                        cd.setDatabaseConnection(dc);
+                        cd.setDomain(domains[(int) value]);
+                        cd.setColumnType(getStringType(cd.getDomainType()));
+                        _model.setValueAt(cd.getColumnType(),row,TYPE_COLUMN);
                     }
                     break;
                 case SIZE_COLUMN:
@@ -824,6 +853,14 @@ public abstract class TableDefinitionPanel extends JPanel
             }
             
             fireTableRowsUpdated(row, row);
+        }
+
+        String getStringType(int x)
+        {
+            for(int i=0;i<intDataTypes.length;i++)
+                if(x==intDataTypes[i])
+                    return dataTypes[i];
+            return "";
         }
 
         boolean isEditSize(int row)
@@ -979,7 +1016,7 @@ public abstract class TableDefinitionPanel extends JPanel
             //setDelegateValue(dataType);
             if (lastEditingRow != -1 && lastEditingColumn != -1) {
                 _model.setValueAt(item, lastEditingRow, lastEditingColumn);
-                tableChanged(lastEditingColumn, lastEditingRow, dataTypes[item]);
+                tableChanged(lastEditingColumn, lastEditingRow, domains[item]);
             }
             fireEditingStopped();
 

@@ -130,13 +130,17 @@ public class NewTablePanel extends TableDefinitionPanel
         line.append(NEW_LINE_2).
              append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnName()).
              append(SPACE);
+        if(MiscUtils.isNull(cd.getDomain())) {
+            if (cd.getColumnType() != null) {
+                line.append(cd.getFormattedDataType());
+            }
 
-        if (cd.getColumnType() != null) {
-            line.append(cd.getFormattedDataType());
+            line.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
         }
-
-        line.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
-        
+        else
+            {
+                line.append(cd.getDomain());
+            }
         if (row < tableVector.size() - 1) {
             line.append(COMMA);
         }
@@ -170,23 +174,28 @@ public class NewTablePanel extends TableDefinitionPanel
                 sqlText.append(NEW_LINE_2).append(
                         cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnName()).
                         append(SPACE);
-                
-                if (cd.getColumnType() != null) {
-                    sqlText.append(cd.getColumnType().toUpperCase());
-                    
-                    if(cd.getColumnSize()!=-1) {
-                        sqlText.append(B_OPEN).append(cd.getColumnSize());
-                        
-                        if (cd.getColumnScale() != -1) {
-                            sqlText.append(COMMA).append(cd.getColumnScale());
+                if(MiscUtils.isNull(cd.getDomain())) {
+                    if (cd.getColumnType() != null) {
+                        sqlText.append(cd.getColumnType().toUpperCase());
+
+                        if (cd.getColumnSize() != -1) {
+                            sqlText.append(B_OPEN).append(cd.getColumnSize());
+
+                            if (cd.getColumnScale() != -1) {
+                                sqlText.append(COMMA).append(cd.getColumnScale());
+                            }
+
+                            sqlText.append(B_CLOSE);
                         }
-                        
-                        sqlText.append(B_CLOSE);
+
                     }
-                    
-                }
+
                 sqlText.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
-                
+                }
+                else
+                {
+                    sqlText.append(cd.getDomain());
+                }
                 if (i != k - 1) {
                     sqlText.append(COMMA);
                 }

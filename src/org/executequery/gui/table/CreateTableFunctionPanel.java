@@ -253,14 +253,14 @@ public abstract class CreateTableFunctionPanel extends JPanel
         try
         {
             String query="select " +
-                    "RDB$FIELD_NAME "+
+                    "RDB$FIELD_NAME FROM RDB$FIELDS "+
                     "where RDB$FIELD_NAME not like 'RDB$%'\n" +
                     "and RDB$FIELD_NAME not like 'MON$%'\n" +
                     "order by RDB$FIELD_NAME";
             ResultSet rs=executor.execute(QueryTypes.SELECT,query).getResultSet();
             while (rs.next())
             {
-                domains.add(rs.getString(1));
+                domains.add(rs.getString(1).trim());
             }
             executor.releaseResources();
             return domains.toArray(new String[domains.size()]);

@@ -61,8 +61,8 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1788 $
+ * @date     $Date: 2017-10-09 16:22:31 +1100 (Mon, 09 Oct 2017) $
  */
 public class ApplicationLauncher {
 
@@ -393,7 +393,7 @@ public class ApplicationLauncher {
                         "/org/executequery/images/SplashImage.png",
                         versionString(),
                         versionTextColour(),
-                        210, 220);
+                        220, 220);
 //        5, 15); // top-left
     }
 

@@ -45,8 +45,8 @@ import org.underworldlabs.swing.plaf.UIUtils;
  * components.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @version  $Revision: 1788 $
+ * @date     $Date: 2017-10-09 16:22:31 +1100 (Mon, 09 Oct 2017) $
  */
 public class SplashPanel extends Canvas {
     
@@ -124,7 +124,7 @@ public class SplashPanel extends Canvas {
         gradientColour = UIUtils.getBrighter(progressBarColour, 0.75);
         
         //Font font = new Font("Dialog", Font.BOLD, 15);
-        Font font = new Font("Dialog", Font.PLAIN, 11);
+        Font font = new Font("Dialog", Font.PLAIN, 14);
         setFont(font);
         fontMetrics = getFontMetrics(font);
         
@@ -234,8 +234,8 @@ public class SplashPanel extends Canvas {
             offscreenGfx2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-            offscreenGfx.setColor(versionTextColour);
-            offscreenGfx.drawString(version,
+            offscreenGfx2d.setColor(versionTextColour);
+            offscreenGfx2d.drawString(version,
                                     versionLabelX, 
                                     versionLabelY);
         }

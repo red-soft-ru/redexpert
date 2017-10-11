@@ -69,7 +69,7 @@ public class SimpleMetaDataModel extends AbstractTableModel {
         for (Entry<String, String> entry : map.entrySet()) {
 
             propertyNames[count] = entry.getKey();
-            propertyValues[count] = (String) map.get(entry.getValue());
+            propertyValues[count] = entry.getValue();
             count++;            
         }        
         

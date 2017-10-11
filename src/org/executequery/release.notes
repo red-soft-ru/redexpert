@@ -2,6 +2,13 @@
 
 Date: 4 October 2017
 
+Summary of changes - v4.4.1 Build 5478:
+----------------------------------------
+
+- Fixed missing error messages on exception dialog.
+- Fixed missing column and key labels on table node expansion.
+
+
 Summary of changes - v4.4.0 Build 5476:
 ----------------------------------------
 

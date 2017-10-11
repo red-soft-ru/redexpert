@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 
 public class DatabaseTableNode extends DatabaseObjectNode {
@@ -157,6 +158,11 @@ public class DatabaseTableNode extends DatabaseObjectNode {
     }
     
     abstract class TableFolderNode extends DatabaseObjectNode {
+
+        protected String bundleString(String key) {
+            
+            return Bundles.get(getClass().getEnclosingClass(), key);
+        }
 
         @Override
         public String getDisplayName() {

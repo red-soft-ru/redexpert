@@ -270,6 +270,7 @@ public abstract class TableDefinitionPanel extends JPanel
                 tableVector.elementAt(row).setPrimaryKey(!tableVector.elementAt(row).isPrimaryKey());
                 //tableChanged(row,0,null);
                 _model.setValueAt(null,row,PK_COLUMN);
+                tableChanged(row,PK_COLUMN,null);
 
             }
         }

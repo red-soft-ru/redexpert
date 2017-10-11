@@ -475,6 +475,13 @@ public abstract class CreateTableFunctionPanel extends JPanel
     public void setSQLText(String values, int type) {
         sqlBuffer.setLength(0);
         sqlBuffer.append(CreateTableSQLSyntax.CREATE_TABLE);
+        StringBuffer primary=new StringBuffer(50);
+        primary.setLength(0);
+        primary.append(",\nCONSTRAINT PK_");
+        primary.append(nameField.getText());
+        primary.append(" PRIMARY KEY (");
+        primary.append(tablePanel.getPrimaryText());
+        primary.append(")");
 
         // check for a valid schema name
         if (schemaModel.getSize() > 0) {
@@ -491,12 +498,16 @@ public abstract class CreateTableFunctionPanel extends JPanel
                   append(CreateTableSQLSyntax.B_OPEN);
         
         if (type == TableModifier.COLUMN_VALUES) {
-            sqlBuffer.append(values).
-                      append(consPanel.getSQLText());
+            sqlBuffer.append(values);
+            if(tablePanel.primary)
+                sqlBuffer.append(primary);
+            sqlBuffer.append(consPanel.getSQLText());
         }
         else if (type == TableModifier.CONSTRAINT_VALUES) {
-            sqlBuffer.append(tablePanel.getSQLText()).
-                      append(values);
+            sqlBuffer.append(tablePanel.getSQLText());
+            if(tablePanel.primary)
+                sqlBuffer.append(primary);
+                      sqlBuffer.append(values);
         }
         
         sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE).

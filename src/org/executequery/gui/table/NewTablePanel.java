@@ -42,6 +42,10 @@ public class NewTablePanel extends TableDefinitionPanel
     
     /** The buffer off all SQL generated */
     private StringBuffer sqlText;
+
+    private StringBuffer primaryText;
+
+    boolean primary;
     
     public NewTablePanel(TableModifier creator) {
         super();
@@ -49,6 +53,7 @@ public class NewTablePanel extends TableDefinitionPanel
         
         line = new StringBuffer(50);
         sqlText = new StringBuffer(100);
+        primaryText = new StringBuffer(50);
     }
     
     /**
@@ -161,11 +166,20 @@ public class NewTablePanel extends TableDefinitionPanel
     public void addColumnLines(int row) {
         
         sqlText.setLength(0);
+        primary=false;
+        primaryText.setLength(0);
 
         for (int i = 0, k = tableVector.size(); i < k; i++) {
             ColumnData cd = (ColumnData)tableVector.elementAt(i);
-
-            if (i == row) {
+            if(cd.isPrimaryKey())
+            {
+                if(primary)
+                    primaryText.append(", ");
+                else primaryText.append(" ");
+                primaryText.append(cd.getColumnName());
+                primary=true;
+            }
+           if (i == row) {
                 sqlText.append(line);
             }
             
@@ -201,13 +215,19 @@ public class NewTablePanel extends TableDefinitionPanel
                 }
                 
             }
+
             
         }
         
         creator.setSQLText(sqlText.toString(), TableModifier.COLUMN_VALUES);
         
     }
-    
+    public String getPrimaryText()
+    {
+        if(primary)
+        return primaryText.toString();
+        else return "";
+    }
 }
 
 

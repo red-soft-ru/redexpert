@@ -37,6 +37,7 @@ public interface ColumnConstraint extends DatabaseObjectElement {
     String PRIMARY = "PRIMARY";
     String FOREIGN = "FOREIGN";
     String UNIQUE = "UNIQUE";
+    String CHECK = "CHECK";
 
     /**
      * Returns the column object referenced by this column or
@@ -66,6 +67,8 @@ public interface ColumnConstraint extends DatabaseObjectElement {
      * @return true | false
      */
     boolean isUniqueKey();
+
+    boolean isCheck();
 
     /**
      * Returns whether this is a new constraint.
@@ -145,6 +148,10 @@ public interface ColumnConstraint extends DatabaseObjectElement {
     String getReferencedSchema();
 
     String getReferencedCatalog();
+
+    String getCheck();
+
+    void setCheck(String check);
 
     boolean isMarkedDeleted();
 

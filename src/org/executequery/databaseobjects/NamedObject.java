@@ -76,6 +76,7 @@ public interface NamedObject extends java.io.Serializable {
     int FOREIGN_KEY = 998;
     int UNIQUE_KEY = 997;
     int TABLE_INDEX = 996;
+    int CHECK_KEY=995;
 
     String[] META_TYPES = {"FUNCTION",
                             "INDEX",

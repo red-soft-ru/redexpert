@@ -44,7 +44,9 @@ public class ColumnConstraintTableModel extends AbstractPrintableTableModel {
                                  "Table Column", 
                                  "Reference Schema",
                                  "Reference Table", 
-                                 "Reference Column"};
+                                 "Reference Column",
+                                "Check"
+    };
 
     /** the constraints list */
     private List<ColumnConstraint> constraints;
@@ -176,6 +178,10 @@ public class ColumnConstraintTableModel extends AbstractPrintableTableModel {
                 else if (value == ColumnConstraint.UNIQUE) {
                     tableConstraint.setKeyType(ColumnConstraint.UNIQUE_KEY);
                 }
+                else if(value == ColumnConstraint.CHECK)
+                {
+                    tableConstraint.setKeyType(ColumnConstraint.CHECK_KEY);
+                }
 
                 tableConstraint.setReferencedCatalog(Constants.EMPTY);
                 tableConstraint.setReferencedSchema(Constants.EMPTY);
@@ -211,6 +217,9 @@ public class ColumnConstraintTableModel extends AbstractPrintableTableModel {
             case 6:
                 tableConstraint.setReferencedColumn(_value);
                 break;
+            case 7:
+                tableConstraint.setCheck(_value);
+                break;
         }
         fireTableRowsUpdated(row, row);
     }
@@ -232,6 +241,8 @@ public class ColumnConstraintTableModel extends AbstractPrintableTableModel {
                 return constraint.getReferencedTable();
             case 6:
                 return constraint.getReferencedColumn();
+            case 7:
+                return constraint.getCheck();
             default:
                 return null;
         }

@@ -112,6 +112,10 @@ public class ColumnData implements Serializable {
 
     private int domainSubType;
 
+    private String check;
+
+    private String description;
+
     DatabaseConnection dc;
     
     public ColumnData(DatabaseConnection databaseConnection) {
@@ -208,6 +212,8 @@ public class ColumnData implements Serializable {
         sqlType = cd.getSQLType();
         domain=cd.getDomain();
         dc=cd.getDatabaseConnection();
+        description=cd.description;
+        check=cd.getCheck();
 
         Vector<ColumnConstraint> constraints = cd.getColumnConstraintsVector();
         if (constraints != null) {
@@ -523,7 +529,14 @@ public class ColumnData implements Serializable {
         return sb.toString();
     }
 
-    
+    public void setCheck(String Check)
+    {
+        check=Check;
+    }
+
+    public String getCheck() {
+        return check;
+    }
 }
 
 

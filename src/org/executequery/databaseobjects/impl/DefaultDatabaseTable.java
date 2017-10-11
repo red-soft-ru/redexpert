@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.databasemediators.QueryTypes;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
@@ -39,7 +41,9 @@ import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.TableDataChange;
 import org.executequery.databaseobjects.TableDataChangeWorker;
+import org.executequery.log.Log;
 import org.executequery.sql.SQLFormatter;
+import org.executequery.sql.SqlStatementResult;
 import org.executequery.sql.StatementGenerator;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.FileUtils;
@@ -257,7 +261,6 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
                     String _catalog = host.getCatalogNameForQueries(getCatalogName());
                     String _schema = host.getSchemaNameForQueries(getSchemaName());
                     DatabaseMetaData dmd = host.getDatabaseMetaData();
-
                     rs = dmd.getPrimaryKeys(_catalog, _schema, getName());
                     while (rs.next()) {
 
@@ -383,6 +386,28 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
                 }
 
             }
+            DefaultStatementExecutor executor=new DefaultStatementExecutor(getHost().getDatabaseConnection(),true);
+            SqlStatementResult result=null;
+            try {
+                String query="SELECT DISTINCT C.RDB$CONSTRAINT_NAME,\n" +
+                        "T.RDB$TRIGGER_SOURCE FROM\n" +
+                        "RDB$CHECK_CONSTRAINTS AS C LEFT JOIN RDB$TRIGGERS AS T\n" +
+                        "ON C.RDB$TRIGGER_NAME = T.RDB$TRIGGER_NAME\n" +
+                        "where T.RDB$RELATION_NAME='"+getName()+"'";
+                result=executor.execute(QueryTypes.SELECT,query);
+                ResultSet rs=result.getResultSet();
+                while(rs.next())
+                {
+                    ColumnConstraint constraint=new TableColumnConstraint(rs.getString(2));
+                    constraint.setName(rs.getString(1).trim());
+                    constraints.add(constraint);
+                }
+            }
+            catch (Exception e)
+            {
+                Log.error("Error loading check-constraints:"+result.getErrorMessage(),e);
+            }
+            executor.releaseResources();
             constraints.removeAll(Collections.singleton(null));
             
             return constraints;

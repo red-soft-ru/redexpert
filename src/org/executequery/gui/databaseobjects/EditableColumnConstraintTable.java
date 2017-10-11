@@ -76,6 +76,7 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
     private static final int REF_SCHEMA_COL_INDEX = 4;
     private static final int REF_TABLE_COL_INDEX = 5;
     private static final int REF_COLUMN_COL_INDEX = 6;
+    private static final int CHECK_COL_INDEX=7;
     
     /** Creates a new instance of EditableColumnConstraintTable */
     public EditableColumnConstraintTable() {
@@ -175,9 +176,12 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
     protected void setCellEditors() {
         TableColumnModel tcm = getColumnModel();
         if (keyTypeEditor == null) {
-            String[] keys = {ColumnConstraint.PRIMARY,
-                             ColumnConstraint.FOREIGN,
-                             ColumnConstraint.UNIQUE};
+            String[] keys = {
+                    ColumnConstraint.PRIMARY,
+                    ColumnConstraint.FOREIGN,
+                    ColumnConstraint.UNIQUE,
+                    ColumnConstraint.CHECK
+            };
             keyTypeEditor = new ComboBoxCellEditor(keys);
         }
         tcm.getColumn(KEY_TYPE_COL_INDEX).setCellEditor(keyTypeEditor);

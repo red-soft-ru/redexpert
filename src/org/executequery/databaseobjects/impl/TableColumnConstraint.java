@@ -82,6 +82,8 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
     
     /** the column meta data map */
     private Map<String,String> metaData;
+
+    private String check;
     
     /** Creates a new instance of TableColumnConstraint */
     public TableColumnConstraint(int type) {
@@ -92,6 +94,11 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
     public TableColumnConstraint(DatabaseTableColumn column, int keyType) {
         setColumn(column);
         setKeyType(keyType);
+    }
+
+    public TableColumnConstraint(String Check) {
+        setCheck(Check);
+        setKeyType(CHECK_KEY);
     }
 
     /**
@@ -137,6 +144,11 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
         return getKeyType() == UNIQUE_KEY;
     }
 
+    @Override
+    public boolean isCheck() {
+        return getKeyType() == CHECK_KEY;
+    }
+
     /**
      * Returns whether this is a new constraint.
      *
@@ -164,12 +176,14 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
     public String getTypeName() {
         int _type = getKeyType();
         switch (_type) {
-            case 0:
+            case PRIMARY_KEY:
                 return PRIMARY;
-            case 1:
+            case FOREIGN_KEY:
                 return FOREIGN;
-            case 2:
+            case UNIQUE_KEY:
                 return UNIQUE;
+            case CHECK_KEY:
+                return CHECK;
             default:
                 return null;
         }
@@ -309,6 +323,16 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
         return referencedCatalog;
     }
 
+    @Override
+    public String getCheck() {
+        return check;
+    }
+
+    @Override
+    public void setCheck(String check) {
+        this.check=check;
+    }
+
     public void setReferencedCatalog(String referencedCatalog) {
         this.referencedCatalog = referencedCatalog;
     }
@@ -433,9 +457,17 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
             case UNIQUE_KEY:
                 sb.append(" UNIQUE (");
                 break;
+            case CHECK_KEY:
+                sb.append(" CHECK (");
+                break;
         }
-        
-        sb.append(getColumnName());
+        if(_type!=CHECK_KEY) {
+            sb.append(getColumnName());
+        }
+        else
+        {
+            sb.append(getCheck());
+        }
         sb.append(")");
 
         if (_type == FOREIGN_KEY) {
@@ -503,7 +535,8 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
         destination.setReferencedSchema(source.getReferencedSchema());
         destination.setReferencedTable(source.getReferencedTable());
         destination.setReferencedColumn(source.getReferencedColumn());
-        destination.setName(source.getName());        
+        destination.setName(source.getName());
+        destination.setCheck(source.getCheck());
     }
 
     /**
@@ -659,10 +692,10 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
 
             return PRIMARY_KEY;
 
-        } else {
+        }if(isUniqueKey()) {
             
             return UNIQUE_KEY;
-        }
+        } else return CHECK_KEY;
 
     }
     

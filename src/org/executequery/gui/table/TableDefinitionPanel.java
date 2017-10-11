@@ -70,6 +70,8 @@ public abstract class TableDefinitionPanel extends JPanel
     
     /** The cell editor for the column names */
     protected static StringCellEditor colNameEditor;
+
+    protected static StringCellEditor checkEditor;
     
     /** The cell editor for the column size */
     protected NumberCellEditor sizeEditor;
@@ -117,6 +119,8 @@ public abstract class TableDefinitionPanel extends JPanel
     public static final int SCALE_COLUMN=5;
 
     public static final int REQUIRED_COLUMN=6;
+
+    public static final int CHECK_COLUMN=7;
 
     private String[] domains;
 
@@ -176,12 +180,13 @@ public abstract class TableDefinitionPanel extends JPanel
         tcm.getColumn(PK_COLUMN).setMaxWidth(25);
         tcm.getColumn(NAME_COLUMN).setPreferredWidth(200);
         tcm.getColumn(TYPE_COLUMN).setPreferredWidth(130);
-        tcm.getColumn(DOMAIN_COLUMN).setPreferredWidth(50);
+        tcm.getColumn(DOMAIN_COLUMN).setPreferredWidth(130);
         tcm.getColumn(SIZE_COLUMN).setPreferredWidth(50);
         //tcm.getColumn(SCALE_COLUMN).setPreferredWidth(60);
         tcm.getColumn(SCALE_COLUMN).setPreferredWidth(70);
         tcm.getColumn(REQUIRED_COLUMN).setPreferredWidth(70);
         tcm.getColumn(REQUIRED_COLUMN).setMaxWidth(70);
+        tcm.getColumn(CHECK_COLUMN).setPreferredWidth(200);
 
         tcm.getColumn(PK_COLUMN).setCellRenderer(new KeyCellRenderer());
         
@@ -192,7 +197,13 @@ public abstract class TableDefinitionPanel extends JPanel
                 public Object getCellEditorValue() {
                     return colNameEditor.getValue(); }
             };
+            checkEditor = new StringCellEditor();
+            DefaultCellEditor checkStrEditor = new DefaultCellEditor(checkEditor) {
+                public Object getCellEditorValue() {
+                    return checkEditor.getValue(); }
+            };
             tcm.getColumn(NAME_COLUMN).setCellEditor(colStrEditor);
+            tcm.getColumn(CHECK_COLUMN).setCellEditor(checkStrEditor);
             //tcm.getColumn(5).setCellEditor(colStrEditor);
 
             scaleEditor = new NumberCellEditor();
@@ -223,7 +234,11 @@ public abstract class TableDefinitionPanel extends JPanel
                     if (object == colNameEditor) {
                         value = colNameEditor.getValue();
                     }
-                    else if (object == sizeEditor) {    
+                    else
+                    if (object == checkEditor) {
+                        value = checkEditor.getValue();
+                    }
+                    else if (object == sizeEditor) {
                         value = sizeEditor.getEditorValue();
                     }
                     else if (object == scaleEditor) {
@@ -242,6 +257,7 @@ public abstract class TableDefinitionPanel extends JPanel
                 }
             };
             colNameEditor.addKeyListener(valueKeyListener);
+            checkEditor.addKeyListener(valueKeyListener);
             dataTypeCell.addKeyListener(valueKeyListener);
             sizeEditor.addKeyListener(valueKeyListener);
             scaleEditor.addKeyListener(valueKeyListener);
@@ -647,7 +663,7 @@ public abstract class TableDefinitionPanel extends JPanel
     protected class CreateTableModel extends AbstractPrintableTableModel {
         
         protected String[] header = {"PK", "Name", "Datatype","Domain",
-                                     "Size", "Scale", "Required"};
+                                     "Size", "Scale", "Required","Check"};
 
         public CreateTableModel() {
             tableVector = new Vector<ColumnData>();
@@ -748,6 +764,9 @@ public abstract class TableDefinitionPanel extends JPanel
 
                 case REQUIRED_COLUMN:
                     return Boolean.valueOf(cd.isRequired());
+
+                case CHECK_COLUMN:
+                    return cd.getCheck();
                     
                 default:
                     return null;
@@ -851,6 +870,8 @@ public abstract class TableDefinitionPanel extends JPanel
                 case REQUIRED_COLUMN:
                     cd.setColumnRequired(((Boolean)value).booleanValue() ? 0 : 1);
                     break;
+                case CHECK_COLUMN:
+                    cd.setCheck((String)value);
             }
             
             fireTableRowsUpdated(row, row);

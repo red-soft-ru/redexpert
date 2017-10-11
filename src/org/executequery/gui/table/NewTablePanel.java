@@ -146,6 +146,11 @@ public class NewTablePanel extends TableDefinitionPanel
             {
                 line.append(cd.getDomain());
             }
+            if(!MiscUtils.isNull(cd.getCheck()))
+            {
+                line.append(" CHECK ( "+cd.getCheck()+")");
+
+            }
         if (row < tableVector.size() - 1) {
             line.append(COMMA);
         }
@@ -210,6 +215,11 @@ public class NewTablePanel extends TableDefinitionPanel
                 {
                     sqlText.append(cd.getDomain());
                 }
+               if(!MiscUtils.isNull(cd.getCheck()))
+               {
+                   sqlText.append(" CHECK ( "+cd.getCheck()+")");
+
+               }
                 if (i != k - 1) {
                     sqlText.append(COMMA);
                 }

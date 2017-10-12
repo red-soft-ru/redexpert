@@ -23,6 +23,8 @@ package org.executequery.gui.resultset;
 import java.sql.Blob;
 import java.sql.SQLException;
 
+import biz.redsoft.IFBBlob;
+import biz.redsoft.IFBClob;
 import org.executequery.log.Log;
 import org.executequery.util.mime.MimeType;
 import org.executequery.util.mime.MimeTypes;
@@ -72,22 +74,32 @@ public class BlobRecordDataItem extends AbstractLobRecordDataItem {
             return (byte[]) value;
         }
 
-        byte[] blobBytes;
-        Blob blob = (Blob) value;
-        try {
+        byte[] blobBytes = new byte[0];
 
-            blobBytes = blob.getBytes(1, (int) blob.length());
-            //executor.releaseResources();
-
-        } catch (SQLException e) {
-
-            if (Log.isDebugEnabled()) {
-
-                Log.debug("Error reading BLOB data", e);
+        if (value.getClass().getName().contains("FBBlobImpl")) {
+            IFBBlob ifbBlob = (IFBBlob) value;
+            try {
+                blobBytes = ifbBlob.getBytes(1, (int) ifbBlob.lenght());
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
+        } else {
+            Blob blob = (Blob) value;
+            try {
 
-            return e.getMessage().getBytes();
+                blobBytes = blob.getBytes(1, (int) blob.length());
+                //executor.releaseResources();
 
+            } catch (SQLException e) {
+
+                if (Log.isDebugEnabled()) {
+
+                    Log.debug("Error reading BLOB data", e);
+                }
+
+                return e.getMessage().getBytes();
+
+            }
         }
         return blobBytes;
     }

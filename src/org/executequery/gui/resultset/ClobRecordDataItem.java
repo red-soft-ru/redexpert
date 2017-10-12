@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import biz.redsoft.IFBClob;
 import org.executequery.Constants;
 import org.executequery.log.Log;
 import org.underworldlabs.util.SystemProperties;
@@ -69,35 +70,63 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
             return ((String) value).getBytes();
         }
 
-    	Clob clob = (Clob) value;
-		InputStream as;
-		try {
-			as = clob.getAsciiStream();
-			byte[] b = new byte[1024];
-			ByteArrayOutputStream result=new ByteArrayOutputStream();
-			int length;
-			while ((length = as.read(b)) != -1) {
-				result.write(b, 0, length);
+		if (value.getClass().getName().contains("FBClobImpl")) {
+			IFBClob ifbClob = (IFBClob) value;
+			InputStream as;
+			try {
+				as = ifbClob.open();
+				byte[] b = new byte[1024];
+				ByteArrayOutputStream result = new ByteArrayOutputStream();
+				int length;
+				while ((length = as.read(b)) != -1) {
+					result.write(b, 0, length);
+				}
+				return result.toByteArray();
+
+
+				//reader = clob.getCharacterStream();
+
+			} catch (SQLException e) {
+
+				if (Log.isDebugEnabled()) {
+
+					Log.debug("Error reading CLOB data", e);
+				}
+
+				return e.getMessage().getBytes();
+			} catch (Exception e) {
+				Log.error("Error reading CLOB data:" + e.getMessage());
+				return "Error reading CLOB data:".getBytes();
 			}
-			return result.toByteArray();
+		} else {
+
+			Clob clob = (Clob) value;
+			InputStream as;
+			try {
+				as = clob.getAsciiStream();
+				byte[] b = new byte[1024];
+				ByteArrayOutputStream result = new ByteArrayOutputStream();
+				int length;
+				while ((length = as.read(b)) != -1) {
+					result.write(b, 0, length);
+				}
+				return result.toByteArray();
 
 
+				//reader = clob.getCharacterStream();
 
-			//reader = clob.getCharacterStream();
+			} catch (SQLException e) {
 
-		} catch (SQLException e) {
+				if (Log.isDebugEnabled()) {
 
-			if (Log.isDebugEnabled()) {
+					Log.debug("Error reading CLOB data", e);
+				}
 
-				Log.debug("Error reading CLOB data", e);
+				return e.getMessage().getBytes();
+			} catch (Exception e) {
+				Log.error("Error reading CLOB data:" + e.getMessage());
+				return "Error reading CLOB data:".getBytes();
 			}
-
-			return e.getMessage().getBytes();
-		}
-		catch (Exception e)
-		{
-			Log.error("Error reading CLOB data:"+e.getMessage());
-			return "Error reading CLOB data:".getBytes();
 		}
     }
 

@@ -84,7 +84,17 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     public List<ColumnConstraint> getConstraints() {
         return null;
     }
-    
+
+    @Override
+    public void setColumnDescription(String description) {
+        setRemarks(description);
+    }
+
+    @Override
+    public String getColumnDescription() {
+        return getRemarks();
+    }
+
     public int getColumnSize() {
         return columnSize;
     }
@@ -171,7 +181,7 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     /**
      * Sets the type int to that specified.
      *
-     * @param the java.sql.Type int value
+     * @param typeInt java.sql.Type int value
      */
     public void setTypeInt(int typeInt) {
         this.typeInt = typeInt;

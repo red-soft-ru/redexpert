@@ -38,7 +38,7 @@ import org.underworldlabs.swing.print.AbstractPrintableTableModel;
  */
 public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
 
-    protected String[] header = {"", "Name", "Datatype", "Size", "Scale", "Required", "Default", "Computed_Source" };
+    protected String[] header = {"", "Name", "Datatype", "Size", "Scale", "Required", "Default", "Computed_Source","Description" };
 
     /** the database table columns */
     protected List<DatabaseColumn> columns;
@@ -122,6 +122,8 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
                 return column.getDefaultValue();
             case 7:
                 return column.getComputedSource();
+            case 8:
+                return column.getColumnDescription();
             default:
                 return null;
         }
@@ -196,6 +198,9 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
                 break;
             case 6:
                 defaultDatabaseColumn.setDefaultValue((String)value);
+                break;
+            case 7:
+                defaultDatabaseColumn.setColumnDescription((String)value);
                 break;
         }
 

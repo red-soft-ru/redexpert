@@ -482,6 +482,16 @@ public abstract class CreateTableFunctionPanel extends JPanel
         primary.append(" PRIMARY KEY (");
         primary.append(tablePanel.getPrimaryText());
         primary.append(")");
+        StringBuffer description=new StringBuffer(50);
+        description.setLength(0);
+        for(String d:tablePanel.descriptions)
+        {
+            description.append("COMMENT ON COLUMN ");
+            description.append(nameField.getText());
+            description.append("."+d);
+            description.append(";");
+
+        }
 
         // check for a valid schema name
         if (schemaModel.getSize() > 0) {
@@ -512,6 +522,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
         
         sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE).
                   append(CreateTableSQLSyntax.SEMI_COLON);
+        sqlBuffer.append("\n").append(description);
         setSQLText(sqlBuffer.toString());
     }
     

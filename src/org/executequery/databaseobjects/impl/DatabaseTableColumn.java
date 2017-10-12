@@ -75,7 +75,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
     /**
      * Initialises this object with values derived from the specified column.
      * 
-     * @param the column
+     * @param  column
      */
     protected void initValues(DatabaseColumn column) {
         setCatalogName(column.getCatalogName());
@@ -92,6 +92,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         setForeignKey(column.isForeignKey());
         setGenerated(column.isGenerated());
         setComputedSource(column.getComputedSource());
+        setColumnDescription(column.getColumnDescription());
     }
 
     @Override
@@ -457,7 +458,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
     /**
      * Sets the mark deleted flag as specified.
      *
-     * @param newColumn true | false
+     * @param markedDeleted true | false
      */
     public void setMarkedDeleted(boolean markedDeleted) {
         

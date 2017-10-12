@@ -23,6 +23,9 @@ package org.executequery.gui.table;
 import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.util.MiscUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.executequery.gui.table.CreateTableSQLSyntax.EMPTY;
 
 /**
@@ -44,6 +47,8 @@ public class NewTablePanel extends TableDefinitionPanel
     private StringBuffer sqlText;
 
     private StringBuffer primaryText;
+
+    public List<String> descriptions;
 
     boolean primary;
     
@@ -173,6 +178,7 @@ public class NewTablePanel extends TableDefinitionPanel
         sqlText.setLength(0);
         primary=false;
         primaryText.setLength(0);
+        descriptions =new ArrayList<>();
 
         for (int i = 0, k = tableVector.size(); i < k; i++) {
             ColumnData cd = (ColumnData)tableVector.elementAt(i);
@@ -183,6 +189,10 @@ public class NewTablePanel extends TableDefinitionPanel
                 else primaryText.append(" ");
                 primaryText.append(cd.getColumnName());
                 primary=true;
+            }
+            if(!MiscUtils.isNull(cd.getDescription()))
+            {
+                descriptions.add(cd.getColumnName()+" is '"+ cd.getDescription()+"'");
             }
            if (i == row) {
                 sqlText.append(line);

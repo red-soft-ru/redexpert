@@ -212,7 +212,7 @@ public class ColumnData implements Serializable {
         sqlType = cd.getSQLType();
         domain=cd.getDomain();
         dc=cd.getDatabaseConnection();
-        description=cd.description;
+        description=cd.getDescription();
         check=cd.getCheck();
 
         Vector<ColumnConstraint> constraints = cd.getColumnConstraintsVector();
@@ -536,6 +536,14 @@ public class ColumnData implements Serializable {
 
     public String getCheck() {
         return check;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
     }
 }
 

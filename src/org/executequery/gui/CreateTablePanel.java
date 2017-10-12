@@ -176,7 +176,7 @@ public class CreateTablePanel extends CreateTableFunctionPanel
      * Action listener implementation.<br>
      * Executes the create table script.
      *
-     * @param the event
+     * @param e event
      */
     public void actionPerformed(ActionEvent e) {
 
@@ -186,58 +186,45 @@ public class CreateTablePanel extends CreateTableFunctionPanel
                     "No database connection is available.");
             return;
         }
-
-        GUIUtils.startWorker(new Runnable() {
-            public void run() {
-                try {
-                    setInProcess(true);
-                    createTable();
-                }
-                finally {
-                    setInProcess(false);
-                }
-            }
-        });
+        createTable();
 
     }
 
     private void createTable() {
-        GUIUtils.startWorker(new Runnable() {
-            public void run() {        
-                try {
-                    String query = getSQLText();
-                    if (query.endsWith(";")) {
-                        query = query.substring(0, query.length() - 1);
-                    }
-
-                    DatabaseConnection dc = getSelectedConnection();
-                    StatementExecutor qs = new DefaultStatementExecutor(dc);
-                    SqlStatementResult result = qs.updateRecords(query);
-
-                    if (result.getUpdateCount() >= 0) {
-                        GUIUtilities.displayInformationMessage(
-                                "Table " + getTableName() + " created.");
-                        parent.finished();
-                    }
-                    else {
-                        SQLException exc = result.getSqlException();
-                        if (exc != null) {
-                            StringBuffer sb = new StringBuffer();
-                            sb.append("An error occurred creating the specified table.").
-                               append("\n\nThe system returned:\n").
-                               append(MiscUtils.formatSQLError(exc));
-                            GUIUtilities.displayExceptionErrorDialog(sb.toString(), exc);
-                        } else {
-                            GUIUtilities.displayErrorMessage(result.getErrorMessage());
-                        }
-                    }
-
-                }
-                catch (Exception exc) {
-                    GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc);
-                }
+        try {
+            String querys = getSQLText();
+            if (querys.endsWith(";")) {
+                querys = querys.substring(0, querys.length() - 1);
             }
-        });
+            String query="";
+            boolean commit=true;
+            while (querys.length()>0&&commit) {
+                if(querys.contains(";")) {
+                    query = querys.substring(0, querys.indexOf(";"));
+                    querys = querys.substring(querys.indexOf(";") + 1, querys.length());
+                }
+                else
+                {
+                    query = querys;
+                    querys ="";
+                }
+                while(query.indexOf("\n")==0)
+                {
+                    query=query.substring(1,query.length());
+                }
+
+                DatabaseConnection dc = getSelectedConnection();
+                ExecuteQueryDialog eqd=new ExecuteQueryDialog("Creating table",query,dc,true);
+                eqd.display();
+                commit=eqd.getCommit();
+            }
+            if(commit)
+                parent.finished();
+
+        }
+        catch (Exception exc) {
+            GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc);
+        }
 
     }
     

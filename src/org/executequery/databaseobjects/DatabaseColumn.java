@@ -125,6 +125,10 @@ public interface DatabaseColumn extends DatabaseObjectElement {
     String getFormattedDataType();
 
     List<ColumnConstraint> getConstraints();
+
+    void setColumnDescription(String description);
+
+    String getColumnDescription();
     
 }
 

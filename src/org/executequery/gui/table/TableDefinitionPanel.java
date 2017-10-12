@@ -72,6 +72,8 @@ public abstract class TableDefinitionPanel extends JPanel
     protected static StringCellEditor colNameEditor;
 
     protected static StringCellEditor checkEditor;
+
+    protected static StringCellEditor descEditor;
     
     /** The cell editor for the column size */
     protected NumberCellEditor sizeEditor;
@@ -121,6 +123,8 @@ public abstract class TableDefinitionPanel extends JPanel
     public static final int REQUIRED_COLUMN=6;
 
     public static final int CHECK_COLUMN=7;
+
+    public static final int DESCRIPTION_COLUMN=8;
 
     private String[] domains;
 
@@ -187,6 +191,7 @@ public abstract class TableDefinitionPanel extends JPanel
         tcm.getColumn(REQUIRED_COLUMN).setPreferredWidth(70);
         tcm.getColumn(REQUIRED_COLUMN).setMaxWidth(70);
         tcm.getColumn(CHECK_COLUMN).setPreferredWidth(200);
+        tcm.getColumn(DESCRIPTION_COLUMN).setPreferredWidth(200);
 
         tcm.getColumn(PK_COLUMN).setCellRenderer(new KeyCellRenderer());
         
@@ -202,8 +207,14 @@ public abstract class TableDefinitionPanel extends JPanel
                 public Object getCellEditorValue() {
                     return checkEditor.getValue(); }
             };
+           descEditor = new StringCellEditor();
+            DefaultCellEditor descStrEditor = new DefaultCellEditor(descEditor) {
+                public Object getCellEditorValue() {
+                    return descEditor.getValue(); }
+            };
             tcm.getColumn(NAME_COLUMN).setCellEditor(colStrEditor);
             tcm.getColumn(CHECK_COLUMN).setCellEditor(checkStrEditor);
+            tcm.getColumn(DESCRIPTION_COLUMN).setCellEditor(descStrEditor);
             //tcm.getColumn(5).setCellEditor(colStrEditor);
 
             scaleEditor = new NumberCellEditor();
@@ -237,6 +248,10 @@ public abstract class TableDefinitionPanel extends JPanel
                     else
                     if (object == checkEditor) {
                         value = checkEditor.getValue();
+                    }
+                    else
+                    if (object == descEditor) {
+                        value = descEditor.getValue();
                     }
                     else if (object == sizeEditor) {
                         value = sizeEditor.getEditorValue();
@@ -663,7 +678,7 @@ public abstract class TableDefinitionPanel extends JPanel
     protected class CreateTableModel extends AbstractPrintableTableModel {
         
         protected String[] header = {"PK", "Name", "Datatype","Domain",
-                                     "Size", "Scale", "Required","Check"};
+                                     "Size", "Scale", "Required","Check","Description"};
 
         public CreateTableModel() {
             tableVector = new Vector<ColumnData>();
@@ -767,6 +782,8 @@ public abstract class TableDefinitionPanel extends JPanel
 
                 case CHECK_COLUMN:
                     return cd.getCheck();
+                case DESCRIPTION_COLUMN:
+                    return cd.getDescription();
                     
                 default:
                     return null;
@@ -872,6 +889,10 @@ public abstract class TableDefinitionPanel extends JPanel
                     break;
                 case CHECK_COLUMN:
                     cd.setCheck((String)value);
+                    break;
+                case DESCRIPTION_COLUMN:
+                    cd.setDescription((String)value);
+                    break;
             }
             
             fireTableRowsUpdated(row, row);

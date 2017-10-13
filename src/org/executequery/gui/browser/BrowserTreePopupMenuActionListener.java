@@ -50,10 +50,9 @@ import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.actions.ReflectiveAction;
 
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision: 1783 $
- * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
+ * @author Takis Diakoumis
+ * @version $Revision: 1783 $
+ * @date $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
@@ -74,71 +73,65 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         currentPath = null;
     }
 
-    public void deleteObject(ActionEvent e)
-    {
-        if(currentPath!=null&&currentSelection!=null)
-        {
-            DatabaseObjectNode node=(DatabaseObjectNode) currentPath.getLastPathComponent();
-            String query="DROP "+NamedObject.META_TYPES[node.getType()]+" "+node.getName();
-            ExecuteQueryDialog eqd= new ExecuteQueryDialog("Dropping object",query,currentSelection,true);
+    public void deleteObject(ActionEvent e) {
+        if (currentPath != null && currentSelection != null) {
+            DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
+            String query = "DROP " + NamedObject.META_TYPES[node.getType()] + " " + node.getName();
+            ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, currentSelection, true);
             eqd.display();
-            if(eqd.getCommit())
-            treePanel.reloadPath(currentPath.getParentPath());
+            if (eqd.getCommit())
+                treePanel.reloadPath(currentPath.getParentPath());
         }
 
     }
 
-    public void createObject(ActionEvent e)
-    {
-        if(currentPath!=null&&currentSelection!=null)
-        {
-            DatabaseObjectNode node=(DatabaseObjectNode)currentPath.getLastPathComponent();
-            int type=node.getType();
-            if(type==NamedObject.META_TAG)
-                for (int i=0;i<NamedObject.META_TYPES.length;i++)
-                    if(NamedObject.META_TYPES[i]==node.getName())
-                    {
-                        type=i;
+    public void createObject(ActionEvent e) {
+        if (currentPath != null && currentSelection != null) {
+            DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
+            int type = node.getType();
+            if (type == NamedObject.META_TAG)
+                for (int i = 0; i < NamedObject.META_TYPES.length; i++)
+                    if (NamedObject.META_TYPES[i] == node.getName()) {
+                        type = i;
                         break;
                     }
-            switch (type)
-            {
+            switch (type) {
                 case NamedObject.TABLE:
                     if (GUIUtilities.isDialogOpen(CreateTablePanel.TITLE)) {
 
                         GUIUtilities.setSelectedDialog(CreateTablePanel.TITLE);
 
-                    }{
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateTablePanel.TITLE, false);
-                            CreateTablePanel panel = new CreateTablePanel(currentSelection,dialog);
-                            dialog.addDisplayComponentWithEmptyBorder(panel);
-                            dialog.display();
-                            treePanel.reloadPath(currentPath.getParentPath());
-                        }
-                        finally {
-                            GUIUtilities.showNormalCursor();
-                        }
                     }
-                    break;
+                {
+                    try {
+                        GUIUtilities.showWaitCursor();
+                        BaseDialog dialog =
+                                new BaseDialog(CreateTablePanel.TITLE, false);
+                        CreateTablePanel panel = new CreateTablePanel(currentSelection, dialog);
+                        dialog.addDisplayComponentWithEmptyBorder(panel);
+                        dialog.display();
+                        treePanel.reloadPath(currentPath.getParentPath());
+                    } finally {
+                        GUIUtilities.showNormalCursor();
+                    }
+                }
+                break;
                 case NamedObject.ROLE:
                     try {
                         GUIUtilities.showWaitCursor();
                         BaseDialog dialog =
                                 new BaseDialog(WindowAddRole.TITLE, true);
-                        WindowAddRole panel = new WindowAddRole(dialog,currentSelection);
+                        WindowAddRole panel = new WindowAddRole(dialog, currentSelection);
                         dialog.addDisplayComponentWithEmptyBorder(panel);
                         dialog.display();
                         treePanel.reloadPath(currentPath.getParentPath());
-                    }
-                    finally {
+                    } finally {
                         GUIUtilities.showNormalCursor();
                     }
                     break;
-                default:GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
-                break;
+                default:
+                    GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
+                    break;
             }
         }
 
@@ -150,10 +143,10 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     public void switchDefaultCatalogAndSchemaDisplay(ActionEvent e) {
 
-        JCheckBoxMenuItem check = (JCheckBoxMenuItem)e.getSource();
+        JCheckBoxMenuItem check = (JCheckBoxMenuItem) e.getSource();
 
         DatabaseHostNode node =
-            (DatabaseHostNode)currentPath.getLastPathComponent();
+                (DatabaseHostNode) currentPath.getLastPathComponent();
         node.setDefaultCatalogsAndSchemasOnly(check.isSelected());
 
         treePanel.nodeStructureChanged(node);
@@ -162,7 +155,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     public void delete(ActionEvent e) {
         if (currentPath != null) {
             DatabaseHostNode node =
-                    (DatabaseHostNode)currentPath.getLastPathComponent();
+                    (DatabaseHostNode) currentPath.getLastPathComponent();
             treePanel.deleteConnection(node);
         }
     }
@@ -171,8 +164,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         DatabaseHost host = treePanel.getSelectedMetaObject();
         try {
             host.recycleConnection();
-        }
-        catch (DataSourceException dse) {
+        } catch (DataSourceException dse) {
             handleException(dse);
         }
     }
@@ -189,7 +181,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             GUIUtilities.copyToClipBoard(name);
         }
     }
-    
+
     public void disconnect(ActionEvent e) {
         treePanel.disconnect(currentSelection);
     }
@@ -199,7 +191,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         if (currentSelection != null) {
 
             String name = treePanel.buildConnectionName(
-                            currentSelection.getName() + " ("+ Bundles.getCommon("Copy")) + ")";
+                    currentSelection.getName() + " (" + Bundles.getCommon("Copy")) + ")";
             DatabaseConnection dc = currentSelection.copy().withName(name);
             treePanel.newConnection(dc);
         }
@@ -207,7 +199,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     }
 
     public void duplicateWithSource(ActionEvent e) {
-        
+
         if (currentSelection != null) {
 
             String selectedSource = currentPath.getLastPathComponent().toString();
@@ -215,9 +207,9 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             DatabaseConnection dc = currentSelection.copy().withSource(selectedSource).withName(name);
             treePanel.newConnection(dc);
         }
-        
+
     }
-    
+
     public void exportExcel(ActionEvent e) {
         importExportDialog(ImportExportDataProcess.EXCEL);
     }
@@ -257,7 +249,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         //reloadView = true;
         treePanel.setSelectedConnection(currentSelection);
     }
-    
+
     public void connect(ActionEvent e) {
         treePanel.connect(currentSelection);
     }
@@ -271,7 +263,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
         DatabaseConnection dc = treePanel.getSelectedDatabaseConnection();
 
-        DatabaseObject _object = (DatabaseObject)object;
+        DatabaseObject _object = (DatabaseObject) object;
         String schemaName = _object.getNamePrefix(); // _object.getSchemaName();
         String tableName = _object.getName();
 
@@ -285,50 +277,49 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 case ImportExportDataProcess.EXPORT_DELIMITED:
                     dialog = new BaseDialog(bundledString("ExportData"), false, false);
                     panel = new ImportExportDelimitedPanel(
-                                    dialog, ImportExportDataProcess.EXPORT,
-                                    dc, schemaName, tableName);
+                            dialog, ImportExportDataProcess.EXPORT,
+                            dc, schemaName, tableName);
                     break;
 
                 case ImportExportDataProcess.IMPORT_DELIMITED:
                     dialog = new BaseDialog(bundledString("ImportData"), false, false);
                     panel = new ImportExportDelimitedPanel(
-                                    dialog, ImportExportDataProcess.IMPORT,
-                                    dc, schemaName, tableName);
+                            dialog, ImportExportDataProcess.IMPORT,
+                            dc, schemaName, tableName);
                     break;
 
                 case ImportExportDataProcess.EXPORT_XML:
                     dialog = new BaseDialog(bundledString("exportXml"), false, false);
                     panel = new ImportExportXMLPanel(
-                                    dialog, ImportExportDataProcess.EXPORT,
-                                    dc, schemaName, tableName);
+                            dialog, ImportExportDataProcess.EXPORT,
+                            dc, schemaName, tableName);
                     break;
 
                 case ImportExportDataProcess.IMPORT_XML:
                     dialog = new BaseDialog(bundledString("importXml"), false, false);
                     panel = new ImportExportXMLPanel(
-                                    dialog, ImportExportDataProcess.IMPORT,
-                                    dc, schemaName, tableName);
+                            dialog, ImportExportDataProcess.IMPORT,
+                            dc, schemaName, tableName);
                     break;
 
                 case ImportExportDataProcess.EXCEL:
                     dialog = new BaseDialog(bundledString("exportExcel"), false, false);
                     panel = new ImportExportExcelPanel(
-                                    dialog, ImportExportDataProcess.EXPORT,
-                                    dc, schemaName, tableName);
+                            dialog, ImportExportDataProcess.EXPORT,
+                            dc, schemaName, tableName);
                     break;
 
             }
 
             dialog.addDisplayComponent(panel);
             dialog.display();
-        }
-        finally {
+        } finally {
             GUIUtilities.showNormalCursor();
         }
     }
 
     private DatabaseTable getSelectedTable() {
-        return (DatabaseTable)treePanel.getSelectedNamedObject();
+        return (DatabaseTable) treePanel.getSelectedNamedObject();
     }
 
     private StatementToEditorWriter getStatementWriter() {

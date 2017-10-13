@@ -34,52 +34,78 @@ import org.executequery.databaseobjects.NamedObject;
 import org.underworldlabs.jdbc.DataSourceException;
 
 /**
- *
  * @author takisd
  */
-public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement 
-                                   implements DatabaseColumn {
-    
-    /** the database column size */
+public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
+        implements DatabaseColumn {
+
+    /**
+     * the database column size
+     */
     private int columnSize;
 
-    /** the database column scale */
+    /**
+     * the database column scale
+     */
     private int columnScale;
 
-    /** the parent object's name */
+    /**
+     * the parent object's name
+     */
     private String parentsName;
-    
-    /** column required indicator */
+
+    /**
+     * column required indicator
+     */
     private boolean required;
-    
-    /** the column data type name */
+
+    /**
+     * the column data type name
+     */
     private String typeName;
-    
-    /** the java.sql.Type int value */
+
+    /**
+     * the java.sql.Type int value
+     */
     private int typeInt;
-    
-    /** primary key flag */
+
+    /**
+     * primary key flag
+     */
     private boolean primaryKey;
 
-    /** foreign key flag */
+    /**
+     * foreign key flag
+     */
     private boolean foreignKey;
 
-    /** unique flag */
+    /**
+     * unique flag
+     */
     private boolean unique;
-    
-    /** the column default value */
+
+    /**
+     * the column default value
+     */
     private String defaultValue;
 
-    /** generated column */
+    /**
+     * generated column
+     */
     private boolean isGenerated;
 
-    /** the column source */
+    /**
+     * the column source
+     */
     private String computedSource;
 
-    /** the column meta data map */
+    /**
+     * the column meta data map
+     */
     private Map<String, String> metaData;
-    
-    public DefaultDatabaseColumn() {}    
+
+    public DefaultDatabaseColumn() {
+    }
 
     public List<ColumnConstraint> getConstraints() {
         return null;
@@ -107,7 +133,7 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
         return columnScale;
     }
 
-    public void setColumnScale(int columnScale) {     
+    public void setColumnScale(int columnScale) {
         this.columnScale = columnScale;
     }
 
@@ -150,7 +176,7 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     public void setComputedSource(String computedSource) {
         this.computedSource = computedSource;
     }
-    
+
     /**
      * Returns the table column's default value.
      *
@@ -186,7 +212,7 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     public void setTypeInt(int typeInt) {
         this.typeInt = typeInt;
     }
-    
+
     /**
      * Indicates whether this column is a primary key column.
      *
@@ -204,14 +230,14 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     public boolean isForeignKey() {
         return foreignKey;
     }
-    
+
     /**
      * Indicates whether this column has any constraints.
-     * 
+     *
      * @return true | false
      */
     public boolean hasConstraints() {
-        
+
         return isForeignKey() || isPrimaryKey() || isUnique();
     }
 
@@ -261,9 +287,9 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     */
 
     /**
-     * Returns whether this column is a date type or 
+     * Returns whether this column is a date type or
      * extension of.
-     *
+     * <p>
      * ie. Types.DATE, Types.TIME, Types.TIMESTAMP.
      *
      * @return true | false
@@ -274,7 +300,7 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
                 _type == Types.TIME ||
                 _type == Types.TIMESTAMP;
     }
-    
+
     /**
      * Returns whether this column's type does not have
      * a precision such as in a BIT data type.
@@ -322,11 +348,11 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
         int _type = getTypeInt();
         if (!typeString.matches("\\b\\D+\\d+\\b") ||
                 (_type == Types.CHAR ||
-                 _type == Types.VARCHAR ||
-                 _type == Types.LONGVARCHAR)) {
+                        _type == Types.VARCHAR ||
+                        _type == Types.LONGVARCHAR)) {
 
             if (getColumnSize() > 0 && !isDateDataType() && !isNonPrecisionType()) {
-                
+
                 buffer.append("(");
                 buffer.append(getColumnSize());
 
@@ -361,13 +387,13 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
         super.reset();
         metaData = null;
     }
-    
+
     /**
      * Returns the meta data as a map of this column.
      *
      * @return the meta data
      */
-    public Map<String,String> getMetaData() throws DataSourceException {
+    public Map<String, String> getMetaData() throws DataSourceException {
         NamedObject _parent = getParent();
         if (!(_parent instanceof DatabaseObject)) {
             return null;
@@ -379,8 +405,8 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
 
         ResultSet rs = null;
         try {
-            
-            DatabaseHost databaseHost = ((DatabaseObject)_parent).getHost();
+
+            DatabaseHost databaseHost = ((DatabaseObject) _parent).getHost();
             String _catalog = databaseHost.getCatalogNameForQueries(getCatalogName());
             String _schema = databaseHost.getSchemaNameForQueries(getSchemaName());
 

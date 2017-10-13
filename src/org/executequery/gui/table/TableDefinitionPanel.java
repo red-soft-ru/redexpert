@@ -54,21 +54,26 @@ import org.underworldlabs.swing.table.NumberCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
 
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @author Takis Diakoumis
+ * @version $Revision: 1780 $
+ * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public abstract class TableDefinitionPanel extends JPanel
-                                           implements TableModelListener {
-    
-    /** The table containing all column descriptions */
+        implements TableModelListener {
+
+    /**
+     * The table containing all column descriptions
+     */
     protected DatabaseTable table;
-    
-    /** The table's _model */
+
+    /**
+     * The table's _model
+     */
     protected CreateTableModel _model;
-    
-    /** The cell editor for the column names */
+
+    /**
+     * The cell editor for the column names
+     */
     protected static StringCellEditor colNameEditor;
 
     protected static StringCellEditor checkEditor;
@@ -76,81 +81,97 @@ public abstract class TableDefinitionPanel extends JPanel
     protected static StringCellEditor descEditor;
 
     protected static StringCellEditor computedEditor;
-    
-    /** The cell editor for the column size */
+
+    /**
+     * The cell editor for the column size
+     */
     protected NumberCellEditor sizeEditor;
-    
-    /** The cell editor for the column scale */
+
+    /**
+     * The cell editor for the column scale
+     */
     protected NumberCellEditor scaleEditor;
-    
+
     /** The cell editor for the datatype column */
     //protected ComboBoxCellEditor comboCell;
-    
-    /** The cell editor for the datatype column */
+
+    /**
+     * The cell editor for the datatype column
+     */
     protected DataTypeSelectionTableCell dataTypeCell;
 
     protected DomainSelectionTableCell domainCell;
 
-    /** The <code>Vector</code> of <code>ColumnData</code> objects */
+    /**
+     * The <code>Vector</code> of <code>ColumnData</code> objects
+     */
     protected Vector<ColumnData> tableVector;
-    
-    /** The literal 'PK' */
+
+    /**
+     * The literal 'PK'
+     */
     private static final String PRIMARY = "PK";
-    
-    /** The literal 'FK' */
+
+    /**
+     * The literal 'FK'
+     */
     private static final String FOREIGN = "FK";
-    
-    /** An empty String literal */
+
+    /**
+     * An empty String literal
+     */
     private static final String EMPTY = " ";
-    
+
     protected boolean editing;
-    
-    /** the available data types */
+
+    /**
+     * the available data types
+     */
     private String[] dataTypes;
 
     private int[] intDataTypes;
 
-    public static final int PK_COLUMN=0;
+    public static final int PK_COLUMN = 0;
 
-    public static final int NAME_COLUMN=1;
+    public static final int NAME_COLUMN = 1;
 
-    public static final int TYPE_COLUMN=2;
+    public static final int TYPE_COLUMN = 2;
 
-    public static final int DOMAIN_COLUMN=3;
+    public static final int DOMAIN_COLUMN = 3;
 
-    public static final int SIZE_COLUMN=4;
+    public static final int SIZE_COLUMN = 4;
 
-    public static final int SCALE_COLUMN=5;
+    public static final int SCALE_COLUMN = 5;
 
-    public static final int REQUIRED_COLUMN=6;
+    public static final int REQUIRED_COLUMN = 6;
 
-    public static final int CHECK_COLUMN=7;
+    public static final int CHECK_COLUMN = 7;
 
-    public static final int DESCRIPTION_COLUMN=8;
+    public static final int DESCRIPTION_COLUMN = 8;
 
-    public static final int COMPUTED_BY_COLUMN=9;
+    public static final int COMPUTED_BY_COLUMN = 9;
 
     private String[] domains;
 
     DatabaseConnection dc;
-    
+
     public TableDefinitionPanel() {
         this(true, null);
     }
-    
+
     public TableDefinitionPanel(boolean editing, String[] dataTypes) {
         super(new GridBagLayout());
         this.editing = editing;
         this.dataTypes = dataTypes;
-        
+
         try {
             jbInit();
         } catch (Exception e) {
             //e.printStackTrace();
         }
-        
+
     }
-    
+
     private void jbInit() throws Exception {
         // set the table model to use
         _model = new CreateTableModel();
@@ -197,25 +218,28 @@ public abstract class TableDefinitionPanel extends JPanel
         tcm.getColumn(COMPUTED_BY_COLUMN).setPreferredWidth(200);
 
         tcm.getColumn(PK_COLUMN).setCellRenderer(new KeyCellRenderer());
-        
+
         // add the editors if editing
         if (editing) {
             colNameEditor = new StringCellEditor();
             DefaultCellEditor colStrEditor = new DefaultCellEditor(colNameEditor) {
                 public Object getCellEditorValue() {
-                    return colNameEditor.getValue(); }
+                    return colNameEditor.getValue();
+                }
             };
             checkEditor = new StringCellEditor();
             DefaultCellEditor checkStrEditor = new DefaultCellEditor(checkEditor) {
                 public Object getCellEditorValue() {
-                    return checkEditor.getValue(); }
+                    return checkEditor.getValue();
+                }
             };
-           descEditor = new StringCellEditor();
+            descEditor = new StringCellEditor();
             DefaultCellEditor descStrEditor = new DefaultCellEditor(descEditor) {
                 public Object getCellEditorValue() {
-                    return descEditor.getValue(); }
+                    return descEditor.getValue();
+                }
             };
-            computedEditor=new StringCellEditor();
+            computedEditor = new StringCellEditor();
             DefaultCellEditor computedStrEditor = new DefaultCellEditor(computedEditor) {
                 @Override
                 public Object getCellEditorValue() {
@@ -230,13 +254,15 @@ public abstract class TableDefinitionPanel extends JPanel
             scaleEditor = new NumberCellEditor();
             DefaultCellEditor scEditor = new DefaultCellEditor(scaleEditor) {
                 public Object getCellEditorValue() {
-                    return scaleEditor.getStringValue(); }
+                    return scaleEditor.getStringValue();
+                }
             };
-            
+
             sizeEditor = new NumberCellEditor();
             DefaultCellEditor szEditor = new DefaultCellEditor(sizeEditor) {
                 public Object getCellEditorValue() {
-                    return sizeEditor.getStringValue(); }
+                    return sizeEditor.getStringValue();
+                }
             };
             tcm.getColumn(SIZE_COLUMN).setCellEditor(szEditor);
             tcm.getColumn(SCALE_COLUMN).setCellEditor(scEditor);
@@ -254,32 +280,24 @@ public abstract class TableDefinitionPanel extends JPanel
                     Object object = e.getSource();
                     if (object == colNameEditor) {
                         value = colNameEditor.getValue();
-                    }
-                    else if (object == checkEditor) {
+                    } else if (object == checkEditor) {
                         value = checkEditor.getValue();
-                    }
-                    else if (object == descEditor) {
+                    } else if (object == descEditor) {
                         value = descEditor.getValue();
-                    }
-                    else if(object==computedEditor) {
+                    } else if (object == computedEditor) {
                         value = computedEditor.getValue();
-                    }
-                    else if (object == sizeEditor) {
+                    } else if (object == sizeEditor) {
                         value = sizeEditor.getEditorValue();
-                    }
-                    else if (object == scaleEditor) {
+                    } else if (object == scaleEditor) {
                         value = scaleEditor.getEditorValue();
-                    }
-                    else if (object == dataTypeCell.getComponent()) {
+                    } else if (object == dataTypeCell.getComponent()) {
                         value = dataTypeCell.getEditorValue();
-                    }
-                    else if(object == domainCell.getComponent())
-                    {
+                    } else if (object == domainCell.getComponent()) {
                         value = String.valueOf(domainCell.getEditorValue());
                     }
                     tableChanged(table.getEditingColumn(),
-                                 table.getEditingRow(), 
-                                 value); 
+                            table.getEditingRow(),
+                            value);
                 }
             };
             colNameEditor.addKeyListener(valueKeyListener);
@@ -290,27 +308,24 @@ public abstract class TableDefinitionPanel extends JPanel
             sizeEditor.addKeyListener(valueKeyListener);
             scaleEditor.addKeyListener(valueKeyListener);
             domainCell.addKeyListener(valueKeyListener);
-            
+
             _model.addTableModelListener(this);
         }
         add(new JScrollPane(table), new GridBagConstraints(
-                                                1, 1, 1, 1, 1.0, 1.0, 
-                                                GridBagConstraints.SOUTHEAST,
-                                                GridBagConstraints.BOTH, 
-                                                new Insets(2, 2, 2, 2), 0, 0));
-        
+                1, 1, 1, 1, 1.0, 1.0,
+                GridBagConstraints.SOUTHEAST,
+                GridBagConstraints.BOTH,
+                new Insets(2, 2, 2, 2), 0, 0));
+
     }
 
-    private void click(MouseEvent e)
-    {
-        if(e.getClickCount()>1)
-        {
-            int row=table.getSelectedRow();
-            if (table.getSelectedColumn()==PK_COLUMN)
-            {
+    private void click(MouseEvent e) {
+        if (e.getClickCount() > 1) {
+            int row = table.getSelectedRow();
+            if (table.getSelectedColumn() == PK_COLUMN) {
                 tableVector.elementAt(row).setPrimaryKey(!tableVector.elementAt(row).isPrimaryKey());
-                _model.setValueAt(null,row,PK_COLUMN);
-                tableChanged(row,PK_COLUMN,null);
+                _model.setValueAt(null, row, PK_COLUMN);
+                tableChanged(row, PK_COLUMN, null);
 
             }
         }
@@ -324,9 +339,9 @@ public abstract class TableDefinitionPanel extends JPanel
         _model.setColumnDataArray(cda);
         this.dataTypes = dataTypes;
     }
-    public void setDomains(String[] domains)
-    {
-        this.domains=domains;
+
+    public void setDomains(String[] domains) {
+        this.domains = domains;
     }
 
     /**
@@ -334,69 +349,71 @@ public abstract class TableDefinitionPanel extends JPanel
      *
      * @param dataTypes data type values
      */
-    public void setDataTypes(String[] dataTypes,int[]intDataTypes) {
+    public void setDataTypes(String[] dataTypes, int[] intDataTypes) {
         this.dataTypes = dataTypes;
         this.intDataTypes = intDataTypes;
         sortTypes();
     }
 
-    public void setDatabaseConnection(DatabaseConnection databaseConnection)
-    {
-        dc=databaseConnection;
+    public void setDatabaseConnection(DatabaseConnection databaseConnection) {
+        dc = databaseConnection;
     }
-    void sortTypes()
-    {if(dataTypes!=null) {
-        for (int i = 0; i < dataTypes.length; i++) {
-            for (int g = 0; g < dataTypes.length - 1; g++) {
-                int compare = dataTypes[g].compareTo(dataTypes[g + 1]);
-                if (compare > 0) {
-                    int temp1 = intDataTypes[g];
-                    String temp2 = dataTypes[g];
-                    intDataTypes[g] = intDataTypes[g + 1];
-                    dataTypes[g] = dataTypes[g + 1];
-                    intDataTypes[g + 1] = temp1;
-                    dataTypes[g + 1] = temp2;
+
+    void sortTypes() {
+        if (dataTypes != null) {
+            for (int i = 0; i < dataTypes.length; i++) {
+                for (int g = 0; g < dataTypes.length - 1; g++) {
+                    int compare = dataTypes[g].compareTo(dataTypes[g + 1]);
+                    if (compare > 0) {
+                        int temp1 = intDataTypes[g];
+                        String temp2 = dataTypes[g];
+                        intDataTypes[g] = intDataTypes[g + 1];
+                        dataTypes[g] = dataTypes[g + 1];
+                        intDataTypes[g + 1] = temp1;
+                        dataTypes[g + 1] = temp2;
+                    }
                 }
             }
-        }
-        for(int i=0;i<intDataTypes.length;i++) {
-            if (intDataTypes[i] == Types.CHAR||intDataTypes[i] == Types.VARCHAR)
-                dataTypes[i] += "(n)";
+            for (int i = 0; i < intDataTypes.length; i++) {
+                if (intDataTypes[i] == Types.CHAR || intDataTypes[i] == Types.VARCHAR)
+                    dataTypes[i] += "(n)";
 
+            }
         }
-    }
     }
 
     public void tableChanged(TableModelEvent e) {
         int row = table.getEditingRow();
         if (row == -1) {
             return;
-        }        
+        }
         tableChanged(table.getEditingColumn(), row, null);
     }
-    
+
     /**
      * Fires that a table cell value has changed as specified.
      *
-     * @param col - the column index
-     * @param row - the row index
+     * @param col   - the column index
+     * @param row   - the row index
      * @param value - the current value
      */
     public abstract void tableChanged(int col, int row, String value);
-    
-    /** <p>Adds all the column definition lines to
-     *  the SQL text buffer for display.
+
+    /**
+     * <p>Adds all the column definition lines to
+     * the SQL text buffer for display.
      *
-     *  @param row current row being edited
+     * @param row current row being edited
      */
     public abstract void addColumnLines(int row);
-    
-    /** <p>Moves the selected column up one row within
-     *  the table moving the column above the selection
-     *  below the selection.
+
+    /**
+     * <p>Moves the selected column up one row within
+     * the table moving the column above the selection
+     * below the selection.
      */
     public void moveColumnUp() {
-        int selection = table.getSelectedRow();        
+        int selection = table.getSelectedRow();
         if (selection == -1 || selection == 0) {
             return;
         }
@@ -414,64 +431,70 @@ public abstract class TableDefinitionPanel extends JPanel
         _model.fireTableRowsUpdated(newPostn, selection);
         addColumnLines(-1);
     }
-    
+
     public void tableEditingStopped(ChangeEvent e) {
         table.editingStopped(e);
     }
-    
+
     public int getEditingRow() {
         return table.getEditingRow();
     }
-    
+
     public void setEditingRow(int newEditingRow) {
         table.setEditingRow(newEditingRow);
     }
-    
+
     public int getSelectedRow() {
         return table.getSelectedRow();
     }
-    
+
     public int getEditingColumn() {
         return table.getEditingColumn();
     }
-    
+
     public void addTableFocusListener(FocusListener listener) {
         table.addFocusListener(listener);
     }
-    
-    /** <p>Propogates the call to <code>removeEditor()</code>
-     *  on the table displaying the data. */
+
+    /**
+     * <p>Propogates the call to <code>removeEditor()</code>
+     * on the table displaying the data.
+     */
     public void removeEditor() {
         table.removeEditor();
     }
-    
-    /** <p>Propogates the call to <code>isEditing()</code>
-     *  on the table displaying the data.
+
+    /**
+     * <p>Propogates the call to <code>isEditing()</code>
+     * on the table displaying the data.
      *
-     *  @return if a data edit is in progress on the table
+     * @return if a data edit is in progress on the table
      */
     public boolean isEditing() {
         return table.isEditing();
     }
-    
-    /** <p>Returns the table displaying the
-     *  column data.
+
+    /**
+     * <p>Returns the table displaying the
+     * column data.
      *
-     *  @return the table displaying the data
+     * @return the table displaying the data
      */
     public JTable getTable() {
         return table;
     }
-    
-    /** <p>Moves the selected column down one row within
-     *  the table moving the column below the selection
-     *  above the selection. */
+
+    /**
+     * <p>Moves the selected column down one row within
+     * the table moving the column below the selection
+     * above the selection.
+     */
     public void moveColumnDown() {
-        int selection = table.getSelectedRow();        
+        int selection = table.getSelectedRow();
         if (selection == -1 || selection == tableVector.size() - 1) {
             return;
         }
-        
+
         table.editingStopped(null);
         if (table.isEditing()) {
             table.removeEditor();
@@ -485,72 +508,78 @@ public abstract class TableDefinitionPanel extends JPanel
         _model.fireTableRowsUpdated(selection, newPostn);
         addColumnLines(-1);
     }
-    
-    /** <p>Inserts a new column before the selected
-     *  column moving the selected column down one row. */
+
+    /**
+     * <p>Inserts a new column before the selected
+     * column moving the selected column down one row.
+     */
     public void insertBefore() {
         fireEditingStopped();
-        
+
         if (table.isEditing()) {
             table.removeEditor();
         }
-        
+
         int selection = table.getSelectedRow();
         if (selection == -1) {
             return;
         } else {
             tableVector.insertElementAt(new ColumnData(dc), selection);
         }
-        
+
         _model.fireTableRowsInserted(
-                selection == 0 ? 0 : selection -1,
+                selection == 0 ? 0 : selection - 1,
                 selection == 0 ? 1 : selection);
 
         table.setRowSelectionInterval(selection, selection);
         table.setColumnSelectionInterval(1, 1);
-        
+
         table.setEditingRow(selection);
         table.setEditingColumn(NAME_COLUMN);
-        
+
     }
-    
-    public void fireEditingStopped() {        
+
+    public void fireEditingStopped() {
         table.editingStopped(null);
         if (table.isEditing()) {
             table.removeEditor();
-        }        
+        }
     }
-    
-    /** <p>Deletes the selected row from the table.
-     *  This will also modify the SQL generated text. */
+
+    /**
+     * <p>Deletes the selected row from the table.
+     * This will also modify the SQL generated text.
+     */
     public void deleteRow() {
         table.editingStopped(null);
         if (table.isEditing()) {
             table.removeEditor();
         }
-        
+
         int selection = table.getSelectedRow();
         if (selection == -1 || tableVector.size() == 0) {
             return;
         }
-        
+
         tableVector.removeElementAt(selection);
         _model.fireTableRowsDeleted(selection, selection);
-        
+
         if (tableVector.size() == 0) {
-            tableVector.addElement(new ColumnData(true,dc));
+            tableVector.addElement(new ColumnData(true, dc));
             _model.fireTableRowsInserted(0, 0);
         }
-        
+
         addColumnLines(-1);
     }
-    
+
     public void addMouseListener() {
         table.addMouseListener();
     }
-    
-    /** <p>Inserts a new column after the selected
-     *  column moving the selected column up one row. */
+
+    /**
+     * <p>Inserts a new column after the selected
+     * column moving the selected column up one row.
+     */
     public void insertAfter() {
         fireEditingStopped();
         int selection = table.getSelectedRow();
@@ -558,28 +587,26 @@ public abstract class TableDefinitionPanel extends JPanel
 
         if (selection == -1) {
             return;
-        }
-        else if (selection == tableVector.size()) {
+        } else if (selection == tableVector.size()) {
             tableVector.add(new ColumnData(dc));
-        }
-        else {
+        } else {
             tableVector.add(newRow, new ColumnData(dc));
         }
-        
-        _model.fireTableRowsInserted(selection, newRow);        
+
+        _model.fireTableRowsInserted(selection, newRow);
         table.setRowSelectionInterval(newRow, newRow);
         table.setColumnSelectionInterval(1, 1);
-        
+
         table.setEditingRow(newRow);
         table.setEditingColumn(NAME_COLUMN);
-        ((DefaultCellEditor)table.getCellEditor(newRow, NAME_COLUMN)).
-                                            getComponent().requestFocus();
+        ((DefaultCellEditor) table.getCellEditor(newRow, NAME_COLUMN)).
+                getComponent().requestFocus();
     }
 
     public TableCellEditor getCellEditor(int row, int col) {
         return table.getCellEditor(row, col);
     }
-    
+
     public void setEditingColumn(int col) {
         table.setEditingColumn(col);
     }
@@ -596,33 +623,33 @@ public abstract class TableDefinitionPanel extends JPanel
         tableVector = new Vector<ColumnData>(cda.length);
         for (int i = 0; i < cda.length; i++) {
             tableVector.add(cda[i]);
-        }       
+        }
         _model.fireTableDataChanged();
         addColumnLines(-1);
     }
-    
+
     public ColumnData[] getTableColumnData() {
         int v_size = tableVector.size();
         ColumnData[] cda = new ColumnData[v_size];
-        
+
         for (int i = 0; i < v_size; i++) {
             cda[i] = tableVector.elementAt(i);
         }
         return cda;
     }
-    
+
     public abstract String getSQLText();
-    
+
     public Vector<ColumnData> getTableColumnDataVector() {
         return tableVector;
     }
-    
+
     /**
      * The table view display.
      */
     private class DatabaseTable extends DefaultTable
-                                implements MouseListener {
-        
+            implements MouseListener {
+
         public DatabaseTable(TableModel _model) {
             super(_model);
             //setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -633,15 +660,15 @@ public abstract class TableDefinitionPanel extends JPanel
             setSurrendersFocusOnKeystroke(true);
             //setDefaultRenderer(Object.class,new BrowserTableCellRenderer());
         }
-        
+
         public void addMouseListener() {
             addMouseListener(this);
         }
-        
+
         public void mouseClicked(MouseEvent e) {
             int mouseX = e.getX();
             int mouseY = e.getY();
-            
+
             int col = columnAtPoint(new Point(mouseX, mouseY));
             if (col != PK_COLUMN) {
                 return;
@@ -654,68 +681,73 @@ public abstract class TableDefinitionPanel extends JPanel
                     cda[i].setPrimaryKey(true);
                 } else {
                     cda[i].setPrimaryKey(false);
-                }                
+                }
             }
 
             _model.fireTableRowsUpdated(0, cda.length);
             addColumnLines(-1);
         }
-        
-        public void mouseEntered(MouseEvent e) {}
-        public void mouseExited(MouseEvent e) {}
-        public void mousePressed(MouseEvent e) {}
-        public void mouseReleased(MouseEvent e) {}
-        
+
+        public void mouseEntered(MouseEvent e) {
+        }
+
+        public void mouseExited(MouseEvent e) {
+        }
+
+        public void mousePressed(MouseEvent e) {
+        }
+
+        public void mouseReleased(MouseEvent e) {
+        }
+
     } // class DatabaseTable
-    
-    
+
+
     /**
      * The table's model.
      */
     protected class CreateTableModel extends AbstractPrintableTableModel {
-        
-        protected String[] header = {"PK", "Name", "Datatype","Domain",
-                                     "Size", "Scale", "Required","Check",
-                                     "Description","Computed by"};
+
+        protected String[] header = {"PK", "Name", "Datatype", "Domain",
+                "Size", "Scale", "Required", "Check",
+                "Description", "Computed by"};
 
         public CreateTableModel() {
             tableVector = new Vector<ColumnData>();
             tableVector.addElement(new ColumnData(dc));
         }
-        
+
         public CreateTableModel(Vector<ColumnData> data) {
             tableVector = data;
         }
-        
+
         public void setColumnDataArray(ColumnData[] cda) {
-            
+
             if (cda != null) {
                 if (tableVector == null) {
                     tableVector = new Vector<ColumnData>(cda.length);
-                }
-                else {
+                } else {
                     tableVector.clear();
                 }
 
                 for (int i = 0; i < cda.length; i++) {
                     tableVector.add(cda[i]);
                 }
-            }
-            else {
+            } else {
                 tableVector.clear();
             }
-            
+
             fireTableDataChanged();
         }
-        
+
         public int getColumnCount() {
             return header.length;
         }
-        
+
         public int getRowCount() {
             return tableVector.size();
         }
-        
+
         /**
          * Returns the printable value at the specified row and column.
          *
@@ -724,14 +756,13 @@ public abstract class TableDefinitionPanel extends JPanel
          * @return the value to print
          */
         public String getPrintValueAt(int row, int col) {
-            if (col !=PK_COLUMN&&col>=0) {
+            if (col != PK_COLUMN && col >= 0) {
                 Object value = getValueAt(row, col);
                 if (value != null) {
                     return value.toString();
                 }
                 return EMPTY;
-            }
-            else if(col==PK_COLUMN){
+            } else if (col == PK_COLUMN) {
                 ColumnData cd = tableVector.elementAt(row);
                 if (cd.isPrimaryKey()) {
                     if (cd.isForeignKey()) {
@@ -742,33 +773,32 @@ public abstract class TableDefinitionPanel extends JPanel
                     return "FK";
                 }
                 return EMPTY;
-            }
-            else return EMPTY;
+            } else return EMPTY;
         }
 
         public Object getValueAt(int row, int col) {
-            
+
             if (row >= tableVector.size()) {
                 return null;
             }
             ColumnData cd = tableVector.elementAt(row);
-            
-            switch(col) {
-                
+
+            switch (col) {
+
                 case PK_COLUMN:
                     return cd;
                 case NAME_COLUMN:
                     return cd.getColumnName();
-                    
+
                 case TYPE_COLUMN:
                     return cd.getColumnType();
 
                 case DOMAIN_COLUMN:
                     return cd.getDomain();
-                    
+
                 case SIZE_COLUMN:
                     return Integer.valueOf(cd.getColumnSize());
-                    
+
                 case SCALE_COLUMN:
                     return Integer.valueOf(cd.getColumnScale());
 
@@ -782,18 +812,18 @@ public abstract class TableDefinitionPanel extends JPanel
 
                 case COMPUTED_BY_COLUMN:
                     return cd.getComputedBy();
-                    
+
                 default:
                     return null;
-                    
+
             }
         }
-        
+
         public void setValueAt(Object value, int row, int col) {
             ColumnData cd = tableVector.elementAt(row);
 
             //Log.debug("setValueAt [row: "+row+" col: "+col+" value: "+value+"]");
-            
+
             switch (col) {
                 case PK_COLUMN:
                     if (cd.isPrimaryKey()) {
@@ -805,13 +835,12 @@ public abstract class TableDefinitionPanel extends JPanel
                     }
                     break;
                 case NAME_COLUMN:
-                    cd.setColumnName((String)value);
+                    cd.setColumnName((String) value);
                     break;
                 case TYPE_COLUMN:
-                    if (value.getClass()==String.class)
-                    {
-                        cd.setColumnType((String)value);
-                        if(cd.getSQLType()!=cd.getDomainType()) {
+                    if (value.getClass() == String.class) {
+                        cd.setColumnType((String) value);
+                        if (cd.getSQLType() != cd.getDomainType()) {
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
                             else
@@ -820,9 +849,7 @@ public abstract class TableDefinitionPanel extends JPanel
                                 _model.setValueAt("-1", row, SCALE_COLUMN);
                             else
                                 _model.setValueAt("0", row, SCALE_COLUMN);
-                        }
-                        else
-                        {
+                        } else {
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
                             else
@@ -832,11 +859,10 @@ public abstract class TableDefinitionPanel extends JPanel
                             else
                                 _model.setValueAt(String.valueOf(cd.getColumnScale()), row, SCALE_COLUMN);
                         }
-                    }
-                    else {
+                    } else {
                         cd.setColumnType(dataTypes[(int) value]);
                         cd.setSQLType(intDataTypes[(int) value]);
-                        if(cd.getSQLType()!=cd.getDomainType()) {
+                        if (cd.getSQLType() != cd.getDomainType()) {
                             _model.setValueAt("", row, DOMAIN_COLUMN);
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
@@ -846,9 +872,7 @@ public abstract class TableDefinitionPanel extends JPanel
                                 _model.setValueAt("-1", row, SCALE_COLUMN);
                             else
                                 _model.setValueAt("0", row, SCALE_COLUMN);
-                        }
-                        else
-                        {
+                        } else {
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
                             else
@@ -862,112 +886,109 @@ public abstract class TableDefinitionPanel extends JPanel
                     }
                     break;
                 case DOMAIN_COLUMN:
-                    if (value.getClass()==String.class)
-                    {
-                        cd.setDomain((String)value);
-                    }
-                    else {
+                    if (value.getClass() == String.class) {
+                        cd.setDomain((String) value);
+                    } else {
                         cd.setDatabaseConnection(dc);
                         cd.setDomain(domains[(int) value]);
                         cd.setColumnType(getStringType(cd.getDomainType()));
-                        _model.setValueAt(cd.getColumnType(),row,TYPE_COLUMN);
+                        _model.setValueAt(cd.getColumnType(), row, TYPE_COLUMN);
                     }
                     break;
                 case SIZE_COLUMN:
-                    cd.setColumnSize(Integer.parseInt((String)value));
+                    cd.setColumnSize(Integer.parseInt((String) value));
                     break;
                 case SCALE_COLUMN:
-                    cd.setColumnScale(Integer.parseInt((String)value));
+                    cd.setColumnScale(Integer.parseInt((String) value));
                     break;
 //                case 5:
 //                    cd.setDefaultValue((String)value);
 //                    break;
                 case REQUIRED_COLUMN:
-                    cd.setColumnRequired(((Boolean)value).booleanValue() ? 0 : 1);
+                    cd.setColumnRequired(((Boolean) value).booleanValue() ? 0 : 1);
                     break;
                 case CHECK_COLUMN:
-                    cd.setCheck((String)value);
+                    cd.setCheck((String) value);
                     break;
                 case DESCRIPTION_COLUMN:
-                    cd.setDescription((String)value);
+                    cd.setDescription((String) value);
                     break;
                 case COMPUTED_BY_COLUMN:
-                    cd.setComputedBy((String)value);
+                    cd.setComputedBy((String) value);
                     break;
             }
-            
+
             fireTableRowsUpdated(row, row);
         }
 
-        String getStringType(int x)
-        {
-            for(int i=0;i<intDataTypes.length;i++)
-                if(x==intDataTypes[i])
+        String getStringType(int x) {
+            for (int i = 0; i < intDataTypes.length; i++)
+                if (x == intDataTypes[i])
                     return dataTypes[i];
             return "";
         }
 
-        boolean isEditSize(int row)
-        {
-            ColumnData cd=tableVector.elementAt(row);
-            return cd.getSQLType()== Types.NUMERIC||cd.getSQLType()==Types.CHAR||cd.getSQLType()==Types.VARCHAR
-                    ||cd.getSQLType()==Types.DECIMAL||cd.getSQLType()==Types.BLOB;
+        boolean isEditSize(int row) {
+            ColumnData cd = tableVector.elementAt(row);
+            return cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
+                    || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB;
         }
 
-        boolean isEditScale(int row)
-        {
-            ColumnData cd=tableVector.elementAt(row);
-            return cd.getSQLType()== Types.NUMERIC||cd.getSQLType()==Types.DECIMAL;
+        boolean isEditScale(int row) {
+            ColumnData cd = tableVector.elementAt(row);
+            return cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL;
         }
 
 
         public boolean isCellEditable(int row, int col) {
-            if(editing)
-            switch (col)
-            {
-                case PK_COLUMN:return false;
-                case SIZE_COLUMN:return isEditSize(row);
-                case SCALE_COLUMN:return isEditScale(row);
-                default:return editing;
-            }
+            if (editing)
+                switch (col) {
+                    case PK_COLUMN:
+                        return false;
+                    case SIZE_COLUMN:
+                        return isEditSize(row);
+                    case SCALE_COLUMN:
+                        return isEditScale(row);
+                    default:
+                        return editing;
+                }
             else return editing;
 
 
         }
-        
+
         public String getColumnName(int col) {
             return header[col];
         }
-        
+
         public Class getColumnClass(int col) {
             if (col == REQUIRED_COLUMN) {
                 return Boolean.class;
-            }
-            else if (col == SIZE_COLUMN || col == SCALE_COLUMN) {
+            } else if (col == SIZE_COLUMN || col == SCALE_COLUMN) {
                 return Integer.class;
-            }
-            else {
+            } else {
                 return String.class;
             }
         }
-        
+
         public void addNewRow() {
             ColumnData cd = tableVector.lastElement();
             if (!cd.isNewColumn()) {
-                tableVector.addElement(new ColumnData(true,dc));
+                tableVector.addElement(new ColumnData(true, dc));
             }
-            
+
         }
-        
+
     } // class CreateTableModel
-    
-    private class DataTypeSelectionTableCell extends BrowsingCellEditor 
-                                             implements DataTypeSelectionListener {
+
+    private class DataTypeSelectionTableCell extends BrowsingCellEditor
+            implements DataTypeSelectionListener {
 
         private int lastEditingRow;
         private int lastEditingColumn;
-        
-        public DataTypeSelectionTableCell() {}
+
+        public DataTypeSelectionTableCell() {
+        }
 
         public void actionPerformed(ActionEvent e) {
             // store the current edit row and column
@@ -979,16 +1000,16 @@ public abstract class TableDefinitionPanel extends JPanel
                 GUIUtilities.displayWarningMessage("Data type values are not available");
                 return;
             }
-            
+
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    new DataTypesDialog(GUIUtilities.getParentFrame(), 
-                                        DataTypeSelectionTableCell.this,
-                                        dataTypes);
-               } 
+                    new DataTypesDialog(GUIUtilities.getParentFrame(),
+                            DataTypeSelectionTableCell.this,
+                            dataTypes);
+                }
             });
         }
-        
+
         /**
          * Called when the selction is cancelled.
          */
@@ -1022,7 +1043,8 @@ public abstract class TableDefinitionPanel extends JPanel
         private int lastEditingRow;
         private int lastEditingColumn;
 
-        public DomainSelectionTableCell() {}
+        public DomainSelectionTableCell() {
+        }
 
         public void actionPerformed(ActionEvent e) {
             // store the current edit row and column

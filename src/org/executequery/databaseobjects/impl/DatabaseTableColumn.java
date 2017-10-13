@@ -31,38 +31,47 @@ import org.executequery.sql.spi.LiquibaseStatementGenerator;
 import org.underworldlabs.util.MiscUtils;
 
 /**
- *
  * @author takisd
  */
 public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
-    /** Whether this column is a new column in the table */
+    /**
+     * Whether this column is a new column in the table
+     */
     private boolean newColumn;
-    
-    /** Whether this column is marked as to be deleted */
+
+    /**
+     * Whether this column is marked as to be deleted
+     */
     private boolean markedDeleted;
 
-    /** The table this column belongs to */
+    /**
+     * The table this column belongs to
+     */
     private DatabaseTable table;
-    
-    /** constraints of this column */
+
+    /**
+     * constraints of this column
+     */
     private List<ColumnConstraint> constraints;
 
-    /** an original copy of this object */
+    /**
+     * an original copy of this object
+     */
     private DatabaseTableColumn copy;
 
     private transient static final StatementGenerator STATEMENT_GENERATOR = new LiquibaseStatementGenerator();
-    
-    /** 
-     * Creates a new instance of DatabaseTableColumn belonging to the 
+
+    /**
+     * Creates a new instance of DatabaseTableColumn belonging to the
      * specified table.
      */
     public DatabaseTableColumn(DatabaseTable table) {
         this(table, null);
     }
 
-    /** 
-     * Creates a new instance of DatabaseTableColumn with values derived from 
+    /**
+     * Creates a new instance of DatabaseTableColumn with values derived from
      * the specified column and belonging to the specified table.
      */
     public DatabaseTableColumn(DatabaseTable table, DatabaseColumn column) {
@@ -74,8 +83,8 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
     /**
      * Initialises this object with values derived from the specified column.
-     * 
-     * @param  column
+     *
+     * @param column
      */
     protected void initValues(DatabaseColumn column) {
         setCatalogName(column.getCatalogName());
@@ -101,28 +110,28 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         StringBuilder sb = new StringBuilder();
         sb.append("TABLE COLUMN: ");
         sb.append(STATEMENT_GENERATOR.columnDescription(this));
-        
+
         if (isPrimaryKey()) {
-            
+
             sb.append(" PRIMARY KEY");
-        
+
         } else if (isForeignKey()) {
-            
+
             sb.append(" FOREIGN KEY");
 
         } else if (isUnique()) {
-            
+
             sb.append(" UNIQUE");
         }
-        
-        return  sb.toString();
+
+        return sb.toString();
     }
-    
+
     public String getNameEscaped() {
-        
+
         return STATEMENT_GENERATOR.columnNameValueEscaped(this);
     }
-    
+
     /**
      * Returns the constraints attached to this table column.
      *
@@ -132,38 +141,38 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
         return constraints;
     }
-    
+
     public boolean hasChanges() {
 
         //*************** 
         if (hasConstraintsChanged()) {
-            
+
             return true;
-        
+
         } else if (!isNewColumn() && !isMarkedDeleted() && !hasCopy()) {
 
             return false;
 
         } else {
 
-            return (isMarkedDeleted() 
-                || isNewColumn()
-                || isNameChanged()
-                || isDataTypeChanged()
-                || isRequiredChanged()
-                || isDefaultValueChanged());
+            return (isMarkedDeleted()
+                    || isNewColumn()
+                    || isNameChanged()
+                    || isDataTypeChanged()
+                    || isRequiredChanged()
+                    || isDefaultValueChanged());
         }
     }
-    
+
     private boolean hasConstraintsChanged() {
-        
+
         List<ColumnConstraint> constraints = getConstraints();
         if (constraints != null) {
 
             for (ColumnConstraint i : constraints) {
 
                 if (i.isNewConstraint() || i.isAltered()) {
-                
+
                     return true;
                 }
 
@@ -173,17 +182,17 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
         return false;
     }
-    
+
     public boolean isRequiredChanged() {
-        
+
         if (!hasCopy()) {
-            
+
             return false;
         }
-        
+
         return (copy.isRequired() != isRequired());
     }
-    
+
     /**
      * Returns the ALTER TABLE statement to modify this constraint.
      */
@@ -193,7 +202,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
             return "";
         }
-        
+
 //        StatementGenerator statementGenerator = new LiquibaseStatementGenerator();
 //        
 //        return statementGenerator.alterTable(
@@ -215,11 +224,11 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
                 sb.append(" DEFAULT ");
                 sb.append(getDefaultValue());
             }
-            
+
             if (isRequired()) {
                 sb.append(" NOT NULL");
             }
-            
+
             sb.append(";");
             return sb.toString();
         }
@@ -248,7 +257,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
                 copy.getColumnScale() != getColumnScale() ||
                 copy.isRequired() != isRequired() ||
                 isDefaultValueChanged()) {
-            
+
             if (hasNameChange) {
                 sb.append("\n");
             }
@@ -266,7 +275,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
                     sb.append(getDefaultValue());
                 }
             }
-            
+
             if (isRequired()) {
                 sb.append(" NOT NULL");
             }
@@ -282,7 +291,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
             return false;
         }
-        
+
         return !(copy.getName().equalsIgnoreCase(getName()));
     }
 
@@ -294,8 +303,8 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         }
 
         return (!copy.getTypeName().equalsIgnoreCase(getTypeName()))
-            || (copy.getColumnSize() != getColumnSize())
-            || (copy.getColumnScale() != getColumnScale());        
+                || (copy.getColumnSize() != getColumnSize())
+                || (copy.getColumnScale() != getColumnScale());
     }
 
     private boolean hasCopy() {
@@ -307,30 +316,30 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
      * Determines whether there has been a change in the default value.
      */
     public boolean isDefaultValueChanged() {
-        
+
         if (!hasCopy()) {
 
             return false;
         }
-        
-        return 
-            ((!MiscUtils.isNull(copy.getDefaultValue()) && 
-                !copy.getDefaultValue().equalsIgnoreCase(getDefaultValue())) ||
-            (!MiscUtils.isNull(getDefaultValue()) && 
-                !getDefaultValue().equalsIgnoreCase(copy.getDefaultValue())));
+
+        return
+                ((!MiscUtils.isNull(copy.getDefaultValue()) &&
+                        !copy.getDefaultValue().equalsIgnoreCase(getDefaultValue())) ||
+                        (!MiscUtils.isNull(getDefaultValue()) &&
+                                !getDefaultValue().equalsIgnoreCase(copy.getDefaultValue())));
     }
-    
+
     /**
-     * Indicates whether the specified constraint belongs 
+     * Indicates whether the specified constraint belongs
      * to this table column.
      *
      * @param constraint the constraint to search for
      * @return true | false
      */
     public boolean containsConstraint(ColumnConstraint constraint) {
-       
+
         if (constraints == null) {
-        
+
             return false;
         }
 
@@ -345,13 +354,13 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
     public void removeConstraint(ColumnConstraint constraint) {
 
         if (constraints != null) {
-        
+
             if (constraint.isNewConstraint()) {
-    
+
                 constraints.remove(constraint);
-    
+
             } else {
-    
+
                 ((TableColumnConstraint) constraint).setMarkedDeleted(true);
             }
 
@@ -360,9 +369,9 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
                 setKeyType(_constraint);
             }
-            
+
         }
-        
+
     }
 
     /**
@@ -373,45 +382,45 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
     public void addConstraint(ColumnConstraint constraint) {
 
         if (constraints == null) {
-        
+
             constraints = new ArrayList<ColumnConstraint>();
         }
-        
+
         // make sure the column has been added
         if (constraint.getColumn() == null) {
-            
+
             constraint.setColumn(this);
         }
 
         constraints.add(constraint);
         setKeyType(constraint);
     }
-    
+
     private void resetKeyType() {
 
         setForeignKey(false);
         setPrimaryKey(false);
         setUnique(false);
     }
-    
+
     private void setKeyType(ColumnConstraint constraint) {
-        
+
         if (constraint.isForeignKey()) {
-            
-            setForeignKey(true);            
+
+            setForeignKey(true);
         }
-        
+
         if (constraint.isPrimaryKey()) {
-            
-            setPrimaryKey(true);            
+
+            setPrimaryKey(true);
         }
-        
+
         if (constraint.isUniqueKey()) {
-        
+
             setUnique(true);
         }
     }
-    
+
     /**
      * Returns whether this column is a referenced key
      * primary or foreign.
@@ -424,7 +433,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
     }
 
     /**
-     * Returns whether this is a new table column that does not physically 
+     * Returns whether this is a new table column that does not physically
      * exist in the database yet.
      *
      * @return true | false
@@ -445,7 +454,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
     }
 
     /**
-     * Returns whether this column has been marked 
+     * Returns whether this column has been marked
      * for deletion.
      *
      * @return true | false
@@ -461,7 +470,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
      * @param markedDeleted true | false
      */
     public void setMarkedDeleted(boolean markedDeleted) {
-        
+
         this.markedDeleted = markedDeleted;
     }
 
@@ -471,23 +480,23 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
      * @return the parent object
      */
     public NamedObject getParent() {
-        
+
         return getTable();
     }
 
     public String getParentsName() {
-        
+
         return getParent() != null ? getParent().getName() : "";
     }
-    
+
     /**
-     * Returns the database table object this 
+     * Returns the database table object this
      * column belongs to.
      *
      * @return this column's table
      */
     public DatabaseTable getTable() {
-        
+
         return table;
     }
 
@@ -497,22 +506,22 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
      * @param table the table
      */
     public void setTable(DatabaseTable table) {
-        
+
         this.table = table;
     }
-    
+
     /**
      * Returns the catalog name parent to this column.
      *
      * @return the catalog name
      */
     public String getCatalogName() {
-        
+
         if (table != null) {
-            
+
             return table.getCatalogName();
         }
-        
+
         return null;
     }
 
@@ -522,30 +531,32 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
      * @return the schema name
      */
     public String getSchemaName() {
-        
+
         if (table != null) {
-            
+
             return table.getSchemaName();
         }
-        
+
         return null;
     }
 
-    /** Override to clear the copy. */
+    /**
+     * Override to clear the copy.
+     */
     public void reset() {
-        
+
         super.reset();
         copy = null;
     }
 
     /**
-     * Reverts any changes made to this column and 
+     * Reverts any changes made to this column and
      * associated constraints.
      */
     public void revert() {
 
         if (hasChanges()) {
-            
+
             // check the constraints first
             List<ColumnConstraint> _constraints = getConstraints();
             if (_constraints != null) {
@@ -554,13 +565,13 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
                     ColumnConstraint constraint = _constraints.get(i);
                     if (constraint.isNewConstraint()) {
-                        
+
                         removeConstraint(constraint);
                         i--;
 
                     } else {
 
-                        ((TableColumnConstraint)constraint).revert();
+                        ((TableColumnConstraint) constraint).revert();
                     }
 
                 }
@@ -568,16 +579,16 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
             // revert to the copy
             if (copy != null) {
-             
+
                 copyColumn(copy, this);
                 copy = null;
             }
 
         }
     }
-    
+
     /**
-     * Makes a copy of itself. A copy of this object may 
+     * Makes a copy of itself. A copy of this object may
      * not always be required and may be made available only
      * when deemed necessary - ie. table meta changes.
      */
@@ -592,9 +603,9 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
     }
 
     protected final String getNameForQuery() {
-        
+
         String name = getName();
-        
+
         if (name.contains(" ")) { // eg. access db allows this
 
             return "\"" + name + "\"";
@@ -604,15 +615,15 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
     }
 
     /**
-     * Copies the specified source object to the specified 
+     * Copies the specified source object to the specified
      * destination object of the same type.
      *
-     * @param source the source column object
+     * @param source      the source column object
      * @param destination the destination column
      */
-    protected void copyColumn(DatabaseTableColumn source, 
-                        DatabaseTableColumn destination) {
-        
+    protected void copyColumn(DatabaseTableColumn source,
+                              DatabaseTableColumn destination) {
+
         destination.setCatalogName(source.getCatalogName());
         destination.setSchemaName(source.getSchemaName());
         destination.setName(source.getName());
@@ -642,18 +653,18 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
     }
 
     public DatabaseColumn getOriginalColumn() {
-        
+
         return copy;
     }
-    
+
     public boolean hasConstraints() {
 
-        return super.hasConstraints() && 
-            (constraints != null && !constraints.isEmpty());
+        return super.hasConstraints() &&
+                (constraints != null && !constraints.isEmpty());
     }
 
     static final long serialVersionUID = -8548400438832796686L;
-    
+
 }
 
 

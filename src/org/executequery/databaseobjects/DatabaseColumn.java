@@ -25,36 +25,36 @@ import java.util.List;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 
 /**
- * Defines a database column. This may be a column as defined by 
+ * Defines a database column. This may be a column as defined by
  * the meta data and not limited to table columns.
  *
- * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @author Takis Diakoumis
+ * @version $Revision: 1780 $
+ * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public interface DatabaseColumn extends DatabaseObjectElement {
-    
+
     /**
      * Returns the name of the parent object.
      *
      * @return the parent object's name
      */
     String getParentsName();
-    
+
     /**
      * Returns the data type name of this database column.
      *
      * @return the data type name
      */
     String getTypeName();
-    
+
     /**
      * The type identfier int from java.sql.Type.
      *
      * @return the type int
      */
     int getTypeInt();
-    
+
     /**
      * Returns the size of this database column.
      *
@@ -70,13 +70,13 @@ public interface DatabaseColumn extends DatabaseObjectElement {
     int getColumnScale();
 
     /**
-     * Indicates whether this database column is required 
+     * Indicates whether this database column is required
      * (may the value be null).
      *
      * @return true | false
      */
     boolean isRequired();
-    
+
     /**
      * Indicates whether this column is a primary key column.
      *
@@ -90,21 +90,21 @@ public interface DatabaseColumn extends DatabaseObjectElement {
      * @return true | false
      */
     boolean isForeignKey();
-    
+
     /**
      * Indicates whether this column is unique.
      *
      * @return true | false
      */
     boolean isUnique();
-    
+
     /**
      * Indicates whether this column has any constraints.
-     * 
+     *
      * @return true | false
      */
     boolean hasConstraints();
-    
+
     /**
      * Returns the default value of this column.
      *
@@ -129,7 +129,7 @@ public interface DatabaseColumn extends DatabaseObjectElement {
     void setColumnDescription(String description);
 
     String getColumnDescription();
-    
+
 }
 
 

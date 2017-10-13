@@ -158,8 +158,7 @@ public class NewTablePanel extends TableDefinitionPanel
             if (!MiscUtils.isNull(cd.getCheck())) {
                 line.append(" CHECK ( " + cd.getCheck() + ")");
             }
-        }
-        else {
+        } else {
             line.append("COMPUTED BY ( " + cd.getComputedBy() + ")");
         }
         if (row < tableVector.size() - 1) {
@@ -226,9 +225,9 @@ public class NewTablePanel extends TableDefinitionPanel
                     } else {
                         sqlText.append(cd.getDomain());
                     }
-                if (!MiscUtils.isNull(cd.getCheck())) {
-                    sqlText.append(" CHECK ( " + cd.getCheck() + ")");
-                }
+                    if (!MiscUtils.isNull(cd.getCheck())) {
+                        sqlText.append(" CHECK ( " + cd.getCheck() + ")");
+                    }
                 } else {
                     sqlText.append("COMPUTED BY ( " + cd.getComputedBy() + ")");
                 }

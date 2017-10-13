@@ -20,16 +20,13 @@
 
 package org.executequery.gui.table;
 
-import java.awt.BorderLayout;
+import java.awt.*;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Vector;
 
-import javax.swing.DefaultCellEditor;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
@@ -92,17 +89,14 @@ public abstract class TableConstraintsPanel extends JPanel
         };
         
         conNameEditor.addKeyListener(colKeyListener);
-        
-        add(new JScrollPane(table), BorderLayout.CENTER);
-        
+
         if (getMode() == CREATE_TABLE_MODE) {
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         }
+        JScrollPane jScrollPane = new JScrollPane(table);
 
-        table.setColumnSelectionAllowed(false);
-        table.setRowSelectionAllowed(false);
-        table.getTableHeader().setReorderingAllowed(false);
-        
+        add(jScrollPane, BorderLayout.CENTER);
+
         keysCombo = new ComboBoxCellEditor(CreateTableSQLSyntax.KEY_NAMES);
         
         strEditor = new DefaultCellEditor(conNameEditor) {

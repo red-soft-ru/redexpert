@@ -26,7 +26,7 @@ public class ExecuteQueryDialog extends BaseDialog {
 
     String query;
 
-    Boolean commitResult=false;
+    Boolean commitResult = false;
 
     StatementExecutor querySender;
 
@@ -186,39 +186,31 @@ public class ExecuteQueryDialog extends BaseDialog {
     }
 
     private void copyErrorButtonActionPerformed(ActionEvent evt) {
-        try
-        {
+        try {
             errorPane.selectAll();
             errorPane.copy();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
         }
     }
 
     private void copyQueryButtonActionPerformed(ActionEvent evt) {
-        try
-        {
+        try {
             queryPane.selectAll();
             queryPane.copy();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
         }
     }
 
     private void commitButtonActionPerformed(ActionEvent evt) {
         try {
-            SqlStatementResult rs=querySender.execute(QueryTypes.COMMIT, "commit");
-            String error=rs.getErrorMessage();
-            if(!rs.isException()) {
+            SqlStatementResult rs = querySender.execute(QueryTypes.COMMIT, "commit");
+            String error = rs.getErrorMessage();
+            if (!rs.isException()) {
                 commitResult = true;
                 super.finished();
-            }
-            else
-            {
+            } else {
                 setOutputMessage(SqlMessages.ERROR_MESSAGE, error);
                 commitButton.setVisible(false);
             }
@@ -227,8 +219,7 @@ public class ExecuteQueryDialog extends BaseDialog {
         }
     }
 
-    public boolean getCommit()
-    {
+    public boolean getCommit() {
         return commitResult;
     }
 
@@ -252,7 +243,7 @@ public class ExecuteQueryDialog extends BaseDialog {
 
             int type = q.getQueryType();
             long start = System.currentTimeMillis();
-            Log.info("Executing:"+queryToExecute);
+            Log.info("Executing:" + queryToExecute);
             SqlStatementResult result = querySender.execute(type, queryToExecute);
             int updateCount = result.getUpdateCount();
             if (updateCount == -1) {

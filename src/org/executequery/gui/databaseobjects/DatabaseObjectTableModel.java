@@ -32,36 +32,48 @@ import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 /**
  * Table model for db objects display.
  *
- * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @author Takis Diakoumis
+ * @version $Revision: 1780 $
+ * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
 
-    protected String[] header = {"", "Name", "Datatype", "Size", "Scale", "Required", "Default", "Computed_Source","Description" };
+    protected String[] header = {"", "Name", "Datatype", "Size", "Scale", "Required", "Default", "Computed_Source", "Description"};
 
-    /** the database table columns */
+    /**
+     * the database table columns
+     */
     protected List<DatabaseColumn> columns;
 
-    /** indicates whether this model is editable */
+    /**
+     * indicates whether this model is editable
+     */
     private boolean editable;
 
-    /** Creates a new instance of DatabaseObjectTableModel */
+    /**
+     * Creates a new instance of DatabaseObjectTableModel
+     */
     public DatabaseObjectTableModel() {
         this(null);
     }
 
-    /** Creates a new instance of DatabaseObjectTableModel */
+    /**
+     * Creates a new instance of DatabaseObjectTableModel
+     */
     public DatabaseObjectTableModel(List<DatabaseColumn> columns) {
         this(columns, false);
     }
 
-    /** Creates a new instance of DatabaseObjectTableModel */
+    /**
+     * Creates a new instance of DatabaseObjectTableModel
+     */
     public DatabaseObjectTableModel(boolean editable) {
         this(null, editable);
     }
 
-    /** Creates a new instance of DatabaseObjectTableModel */
+    /**
+     * Creates a new instance of DatabaseObjectTableModel
+     */
     public DatabaseObjectTableModel(List<DatabaseColumn> columns, boolean editable) {
         this.columns = columns;
         setEditable(editable);
@@ -71,7 +83,7 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
     public boolean canSortColumn(int column) {
         return (column > 0);
     }
-    
+
     public void setValues(List<DatabaseColumn> columns) {
         this.columns = columns;
         fireTableDataChanged();
@@ -104,7 +116,7 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
 
         DatabaseColumn column = columns.get(row);
 
-        switch(col) {
+        switch (col) {
             case 0:
                 return column;
             case 1:
@@ -159,7 +171,7 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
 
         if (column instanceof DatabaseTableColumn) {
 
-            DatabaseTableColumn tableColumn = (DatabaseTableColumn)column;
+            DatabaseTableColumn tableColumn = (DatabaseTableColumn) column;
 
             // if its not currently modified or isn't new
             // ensure a copy is made for later comparison
@@ -174,33 +186,33 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
 
         DefaultDatabaseColumn defaultDatabaseColumn = (DefaultDatabaseColumn) column;
 
-        switch(col) {
+        switch (col) {
             case 1:
-                defaultDatabaseColumn.setName((String)value);
+                defaultDatabaseColumn.setName((String) value);
                 break;
             case 2:
-                defaultDatabaseColumn.setTypeName((String)value);
+                defaultDatabaseColumn.setTypeName((String) value);
                 break;
             case 3:
                 if (value == null) {
                     value = Integer.valueOf(0);
                 }
-                defaultDatabaseColumn.setColumnSize(((Integer)value).intValue());
+                defaultDatabaseColumn.setColumnSize(((Integer) value).intValue());
                 break;
             case 4:
                 if (value == null) {
                     value = Integer.valueOf(0);
                 }
-                defaultDatabaseColumn.setColumnScale(((Integer)value).intValue());
+                defaultDatabaseColumn.setColumnScale(((Integer) value).intValue());
                 break;
             case 5:
-                defaultDatabaseColumn.setRequired(((Boolean)value).booleanValue());
+                defaultDatabaseColumn.setRequired(((Boolean) value).booleanValue());
                 break;
             case 6:
-                defaultDatabaseColumn.setDefaultValue((String)value);
+                defaultDatabaseColumn.setDefaultValue((String) value);
                 break;
             case 7:
-                defaultDatabaseColumn.setColumnDescription((String)value);
+                defaultDatabaseColumn.setColumnDescription((String) value);
                 break;
         }
 
@@ -233,8 +245,7 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
         if (toIndex != -1) {
             columns.add(toIndex, column);
             row = toIndex;
-        }
-        else {
+        } else {
             columns.add(column);
             row = columns.size() - 1;
         }
@@ -273,16 +284,14 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
         if (value != null) {
             if (col > 0) {
                 return value.toString();
-            }
-            else if (col == 0) {
-                DatabaseColumn dc = (DatabaseColumn)value;
+            } else if (col == 0) {
+                DatabaseColumn dc = (DatabaseColumn) value;
                 if (dc.isPrimaryKey()) {
                     if (dc.isForeignKey()) {
                         return "PFK";
                     }
                     return "PK";
-                }
-                else if (dc.isForeignKey()) {
+                } else if (dc.isForeignKey()) {
                     return "FK";
                 }
             }

@@ -32,16 +32,20 @@ import org.underworldlabs.swing.table.TableSorter;
 /**
  * Simple database object table display.
  *
- * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @author Takis Diakoumis
+ * @version $Revision: 1780 $
+ * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public abstract class AbstractDatabaseObjectTable extends DefaultTable {
-    
-    /** the table model */
+
+    /**
+     * the table model
+     */
     private DatabaseObjectTableModel model;
 
-    /** Initialises the table with some default properties. */
+    /**
+     * Initialises the table with some default properties.
+     */
     protected void initTableDisplayDefaults() {
         getTableHeader().setReorderingAllowed(false);
         setCellSelectionEnabled(true);
@@ -49,18 +53,24 @@ public abstract class AbstractDatabaseObjectTable extends DefaultTable {
         setRowSelectionAllowed(false);
         setSurrendersFocusOnKeystroke(true);
     }
-    
-    /** Initialises with the default model. */
+
+    /**
+     * Initialises with the default model.
+     */
     protected void initDefaultTableModel() {
         createModel();
     }
-    
-    /** Returns the table model as a DatabaseObjectTableModel. */
+
+    /**
+     * Returns the table model as a DatabaseObjectTableModel.
+     */
     protected DatabaseObjectTableModel getDatabaseTableModel() {
         return model;
     }
-    
-    /** Initialises the cell renderer. */
+
+    /**
+     * Initialises the cell renderer.
+     */
     protected void initDefaultCellRenderer() {
         if (getColumnCount() > 0) {
             getColumnModel().getColumn(0).setCellRenderer(new ColumnKeyRenderer());
@@ -73,9 +83,9 @@ public abstract class AbstractDatabaseObjectTable extends DefaultTable {
      * @param columns the column value data to display
      */
     public void setColumnData(List<DatabaseColumn> columns) {
-        
+
         if (model == null) {
-        
+
             createModel();
 
         } else {
@@ -85,13 +95,15 @@ public abstract class AbstractDatabaseObjectTable extends DefaultTable {
     }
 
     private void createModel() {
-        
+
         model = new DatabaseObjectTableModel();
         setModel(new TableSorter(model, getTableHeader()));
         setColumnProperties();
     }
-    
-    /** Sets table column display properties and sizes. */
+
+    /**
+     * Sets table column display properties and sizes.
+     */
     protected void setColumnProperties() {
         TableColumnModel tcm = getColumnModel();
         tcm.getColumn(0).setPreferredWidth(25);
@@ -106,7 +118,7 @@ public abstract class AbstractDatabaseObjectTable extends DefaultTable {
         tcm.getColumn(6).setPreferredWidth(130);
         tcm.getColumn(7).setPreferredWidth(130);
     }
-    
+
 }
 
 

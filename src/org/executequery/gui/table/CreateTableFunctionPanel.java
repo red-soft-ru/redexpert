@@ -61,75 +61,102 @@ import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.util.MiscUtils;
 
-/** 
+/**
  * The Create Table base panel.
  *
- * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @author Takis Diakoumis
+ * @version $Revision: 1780 $
+ * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public abstract class CreateTableFunctionPanel extends JPanel
-                                               implements FocusComponentPanel,
-                                                          ItemListener,
-                                                          ChangeListener,
-                                                          TableModifier,
-                                                          TableConstraintFunction,
-                                                          TextEditorContainer {
-    
-    /** The table name field */
-    protected JTextField nameField;
-    
-    /** The schema combo box */
-    protected JComboBox schemaCombo;
-    
-    /** the schema combo box model */
-    protected DynamicComboBoxModel schemaModel;
-    
-    /** The connection combo selection */
-    protected JComboBox connectionsCombo; 
+        implements FocusComponentPanel,
+        ItemListener,
+        ChangeListener,
+        TableModifier,
+        TableConstraintFunction,
+        TextEditorContainer {
 
-    /** the schema combo box model */
+    /**
+     * The table name field
+     */
+    protected JTextField nameField;
+
+    /**
+     * The schema combo box
+     */
+    protected JComboBox schemaCombo;
+
+    /**
+     * the schema combo box model
+     */
+    protected DynamicComboBoxModel schemaModel;
+
+    /**
+     * The connection combo selection
+     */
+    protected JComboBox connectionsCombo;
+
+    /**
+     * the schema combo box model
+     */
     protected DynamicComboBoxModel connectionsModel;
 
-    /** The table column definition panel */
+    /**
+     * The table column definition panel
+     */
     protected NewTablePanel tablePanel;
-    
-    /** The table constraints panel */
+
+    /**
+     * The table constraints panel
+     */
     protected NewTableConstraintsPanel consPanel;
-    
-    /** The text pane showing SQL generated */
+
+    /**
+     * The text pane showing SQL generated
+     */
     protected SimpleSqlTextPanel sqlText;
-    
-    /** The tabbed pane containing definition and constraints */
+
+    /**
+     * The tabbed pane containing definition and constraints
+     */
     private JTabbedPane tableTabs;
-    
-    /** The buffer off all SQL generated */
+
+    /**
+     * The buffer off all SQL generated
+     */
     protected StringBuffer sqlBuffer;
-    
-    /** The tool bar */
+
+    /**
+     * The tool bar
+     */
     private CreateTableToolBar tools;
-    
-    /** Utility to retrieve database meta data */
+
+    /**
+     * Utility to retrieve database meta data
+     */
     protected MetaDataValues metaData;
-    
-    /** The base panel */
+
+    /**
+     * The base panel
+     */
     protected JPanel mainPanel;
-    
-    /** <p> Constructs a new instance. */
+
+    /**
+     * <p> Constructs a new instance.
+     */
     public CreateTableFunctionPanel() {
         super(new BorderLayout());
-        
-        try  {
+
+        try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
     }
-    
+
     private void init() throws Exception {
-        
+
         nameField = WidgetFactory.createTextField();
         //initialise the schema label
         metaData = new MetaDataValues(true);
@@ -150,26 +177,26 @@ public abstract class CreateTableFunctionPanel extends JPanel
         // and add this to the tabbed pane
         tablePanel = new NewTablePanel(this);
         tableTabs.add("Columns", tablePanel);
-        
+
         // create the constraints table and model
         JPanel constraintsPanel = new JPanel(new GridBagLayout());
         consPanel = new NewTableConstraintsPanel(this);
         consPanel.setData(new Vector(0), true);
-        
+
         constraintsPanel.add(consPanel, new GridBagConstraints(
-                                                1, 1, 1, 1, 1.0, 1.0, 
-                                                GridBagConstraints.SOUTHEAST,
-                                                GridBagConstraints.BOTH, 
-                                                new Insets(2, 2, 2, 2), 0, 0));
-        
+                1, 1, 1, 1, 1.0, 1.0,
+                GridBagConstraints.SOUTHEAST,
+                GridBagConstraints.BOTH,
+                new Insets(2, 2, 2, 2), 0, 0));
+
         tableTabs.add("Constraints", constraintsPanel);
-        
+
         sqlText = new SimpleSqlTextPanel();
         tools = new CreateTableToolBar(this);
-        
+
         mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBorder(BorderFactory.createEtchedBorder());
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.NORTHWEST;
 
@@ -196,7 +223,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         definitionPanel.add(tableTabs, gbc);
-        
+
         gbc.gridx = 0;
         gbc.gridy++;
         gbc.insets.top = 10;
@@ -212,23 +239,23 @@ public abstract class CreateTableFunctionPanel extends JPanel
 
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         add(mainPanel, BorderLayout.CENTER);
-        
+
         tableTabs.addChangeListener(this);
         nameField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(KeyEvent e) {
-                setSQLText(); 
+                setSQLText();
             }
         });
-        
+
         sqlBuffer = new StringBuffer(CreateTableSQLSyntax.CREATE_TABLE);
-        
+
         // check initial values for possible value inits
         if (connections == null || connections.isEmpty()) {
             schemaCombo.setEnabled(false);
             connectionsCombo.setEnabled(false);
         } else {
-            DatabaseConnection connection = 
-                    (DatabaseConnection)connections.elementAt(0);
+            DatabaseConnection connection =
+                    (DatabaseConnection) connections.elementAt(0);
             metaData.setDatabaseConnection(connection);
             Vector schemas = metaData.getHostedSchemasVector();
             if (schemas == null || schemas.size() == 0) {
@@ -238,50 +265,46 @@ public abstract class CreateTableFunctionPanel extends JPanel
             if (schemas.size() != 0)
                 schemaCombo.setSelectedIndex(0);
 
-            tablePanel.setDataTypes(metaData.getDataTypesArray(),metaData.getIntDataTypesArray());
+            tablePanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
             tablePanel.setDomains(getDomains());
             tablePanel.setDatabaseConnection(connection);
             //metaDataю
         }
 
-        
+
     }
-    String[] getDomains()
-    {
-        DefaultStatementExecutor executor=new DefaultStatementExecutor(getSelectedConnection(),true);
-        List<String> domains=new ArrayList<>();
-        try
-        {
-            String query="select " +
-                    "RDB$FIELD_NAME FROM RDB$FIELDS "+
+
+    String[] getDomains() {
+        DefaultStatementExecutor executor = new DefaultStatementExecutor(getSelectedConnection(), true);
+        List<String> domains = new ArrayList<>();
+        try {
+            String query = "select " +
+                    "RDB$FIELD_NAME FROM RDB$FIELDS " +
                     "where RDB$FIELD_NAME not like 'RDB$%'\n" +
                     "and RDB$FIELD_NAME not like 'MON$%'\n" +
                     "order by RDB$FIELD_NAME";
-            ResultSet rs=executor.execute(QueryTypes.SELECT,query).getResultSet();
-            while (rs.next())
-            {
+            ResultSet rs = executor.execute(QueryTypes.SELECT, query).getResultSet();
+            while (rs.next()) {
                 domains.add(rs.getString(1).trim());
             }
             executor.releaseResources();
             return domains.toArray(new String[domains.size()]);
-        }
-        catch (Exception e)
-        {
-            Log.error("Error loading domains:"+e.getMessage());
+        } catch (Exception e) {
+            Log.error("Error loading domains:" + e.getMessage());
             return null;
         }
     }
-    
+
     /**
      * Returns the selected connection from the panel's
      * connections combo selection box.
-     * 
+     *
      * @return the selected connection properties object
      */
     public DatabaseConnection getSelectedConnection() {
-        return (DatabaseConnection)connectionsCombo.getSelectedItem();
+        return (DatabaseConnection) connectionsCombo.getSelectedItem();
     }
-    
+
     /**
      * Returns the table name field.
      */
@@ -293,7 +316,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
      * Invoked when an item has been selected or deselected by the user.
      * The code written for this method performs the operations
      * that need to occur when an item is selected (or deselected).
-     */    
+     */
     public void itemStateChanged(ItemEvent event) {
         // interested in selections only
         if (event.getStateChange() == ItemEvent.DESELECTED) {
@@ -307,31 +330,27 @@ public abstract class CreateTableFunctionPanel extends JPanel
                     setInProcess(true);
                     if (source == connectionsCombo) {
                         connectionChanged();
-                    }
-                    else if (source == schemaCombo) {
+                    } else if (source == schemaCombo) {
                         setSQLText();
                     }
-                }
-                finally {
+                } finally {
                     setInProcess(false);
                 }
             }
         });
     }
 
-    private void columnChangeConnection(DatabaseConnection dc)
-    {
-        Vector<ColumnData> cd=getTableColumnDataVector();
-        for (ColumnData c:cd)
-        {
+    private void columnChangeConnection(DatabaseConnection dc) {
+        Vector<ColumnData> cd = getTableColumnDataVector();
+        for (ColumnData c : cd) {
             c.setDatabaseConnection(dc);
         }
     }
-    
+
     private void connectionChanged() {
         // retrieve connection selection
-        DatabaseConnection connection = 
-                (DatabaseConnection)connectionsCombo.getSelectedItem();
+        DatabaseConnection connection =
+                (DatabaseConnection) connectionsCombo.getSelectedItem();
 
         // reset meta data
         metaData.setDatabaseConnection(connection);
@@ -346,38 +365,36 @@ public abstract class CreateTableFunctionPanel extends JPanel
                 schemas = metaData.getHostedCatalogsVector();
             }
             populateSchemaValues(schemas);
-        }
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
                     "Error retrieving the catalog/schema names for the " +
-                    "selected connection.\n\nThe system returned:\n" + 
-                    e.getExtendedMessage(), e);
+                            "selected connection.\n\nThe system returned:\n" +
+                            e.getExtendedMessage(), e);
             populateSchemaValues(new Vector<String>(0));
         }
 
         // reset data types
         try {
-            populateDataTypes(metaData.getDataTypesArray(),metaData.getIntDataTypesArray());
-        }
-        catch (DataSourceException e) {
+            populateDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+        } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
                     "Error retrieving the data types for the " +
-                    "selected connection.\n\nThe system returned:\n" + 
-                    e.getExtendedMessage(), e);
-            populateDataTypes(new String[0],new int[0]);
+                            "selected connection.\n\nThe system returned:\n" +
+                            e.getExtendedMessage(), e);
+            populateDataTypes(new String[0], new int[0]);
         }
 
     }
-    
-    private void populateDataTypes(final String[] dataTypes,final int[] intDataTypes) {
+
+    private void populateDataTypes(final String[] dataTypes, final int[] intDataTypes) {
         GUIUtils.invokeAndWait(new Runnable() {
             public void run() {
-                tablePanel.setDataTypes(dataTypes,intDataTypes);
+                tablePanel.setDataTypes(dataTypes, intDataTypes);
                 tablePanel.setDomains(getDomains());
             }
         });
     }
-    
+
     private void populateSchemaValues(final Vector schemas) {
         GUIUtils.invokeAndWait(new Runnable() {
             public void run() {
@@ -387,65 +404,66 @@ public abstract class CreateTableFunctionPanel extends JPanel
             }
         });
     }
-    
+
     public void setFocusComponent() {
         nameField.requestFocusInWindow();
         nameField.selectAll();
     }
-    
+
     public void setSQLTextCaretPosition(int position) {
         sqlText.setCaretPosition(position);
     }
-    
+
     protected void addButtonsPanel(JPanel buttonsPanel) {
         add(buttonsPanel, BorderLayout.SOUTH);
     }
-    
+
     public void fireEditingStopped() {
         tablePanel.fireEditingStopped();
         consPanel.fireEditingStopped();
     }
-    
+
     public void setColumnDataArray(ColumnData[] cda) {
         tablePanel.setColumnDataArray(cda, null);
     }
-    
+
     public void setColumnConstraintVector(Vector ccv, boolean fillCombos) {
         consPanel.setData(ccv, fillCombos);
     }
-    
+
     public void setColumnConstraintsArray(ColumnConstraint[] cca, boolean fillCombos) {
         Vector ccv = new Vector(cca.length);
         for (int i = 0; i < cca.length; i++) {
             ccv.add(cca[i]);
-        }        
+        }
         consPanel.setData(ccv, fillCombos);
     }
-    
+
     /**
      * Indicates that a [long-running] process has begun or ended
-     * as specified. This may trigger the glass pane on or off 
+     * as specified. This may trigger the glass pane on or off
      * or set the cursor appropriately.
      *
      * @param inProcess - true | false
      */
-    public void setInProcess(boolean inProcess) {}
-    
+    public void setInProcess(boolean inProcess) {
+    }
+
     // -----------------------------------------------
     // --- TableConstraintFunction implementations ---
     // -----------------------------------------------
-    
+
     public abstract Vector<String> getHostedSchemasVector();
-    
+
     public abstract Vector<String> getSchemaTables(String schemaName);
-    
+
     public abstract Vector<String> getColumnNamesVector(String tableName, String schemaName);
-    
+
     public void resetSQLText() {
         tablePanel.resetSQLText();
         consPanel.resetSQLText();
     }
-    
+
     public void setSQLText() {
         sqlBuffer.setLength(0);
         sqlBuffer.append(CreateTableSQLSyntax.CREATE_TABLE);
@@ -455,40 +473,39 @@ public abstract class CreateTableFunctionPanel extends JPanel
             String schema = schemaCombo.getSelectedItem().toString();
             if (!MiscUtils.isNull(schema)) {
                 sqlBuffer.append(schemaCombo.getSelectedItem()).
-                          append(CreateTableSQLSyntax.DOT);
+                        append(CreateTableSQLSyntax.DOT);
 
             }
         }
-        
+
         sqlBuffer.append(nameField.getText()).
-                  append(CreateTableSQLSyntax.SPACE).
-                  append(CreateTableSQLSyntax.B_OPEN).
-                  append(tablePanel.getSQLText()).
-                  append(consPanel.getSQLText());
+                append(CreateTableSQLSyntax.SPACE).
+                append(CreateTableSQLSyntax.B_OPEN).
+                append(tablePanel.getSQLText()).
+                append(consPanel.getSQLText());
 
         sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE).
-                  append(CreateTableSQLSyntax.SEMI_COLON);
-        
+                append(CreateTableSQLSyntax.SEMI_COLON);
+
         setSQLText(sqlBuffer.toString());
     }
-    
+
     public void setSQLText(String values, int type) {
         sqlBuffer.setLength(0);
         sqlBuffer.append(CreateTableSQLSyntax.CREATE_TABLE);
-        StringBuffer primary=new StringBuffer(50);
+        StringBuffer primary = new StringBuffer(50);
         primary.setLength(0);
         primary.append(",\nCONSTRAINT PK_");
         primary.append(nameField.getText());
         primary.append(" PRIMARY KEY (");
         primary.append(tablePanel.getPrimaryText());
         primary.append(")");
-        StringBuffer description=new StringBuffer(50);
+        StringBuffer description = new StringBuffer(50);
         description.setLength(0);
-        for(String d:tablePanel.descriptions)
-        {
+        for (String d : tablePanel.descriptions) {
             description.append("COMMENT ON COLUMN ");
             description.append(nameField.getText());
-            description.append("."+d);
+            description.append("." + d);
             description.append(";");
 
         }
@@ -498,34 +515,33 @@ public abstract class CreateTableFunctionPanel extends JPanel
             String schema = schemaCombo.getSelectedItem().toString();
             if (!MiscUtils.isNull(schema)) {
                 sqlBuffer.append(schemaCombo.getSelectedItem()).
-                          append(CreateTableSQLSyntax.DOT);
+                        append(CreateTableSQLSyntax.DOT);
 
             }
         }
 
         sqlBuffer.append(nameField.getText()).
-                  append(CreateTableSQLSyntax.SPACE).
-                  append(CreateTableSQLSyntax.B_OPEN);
-        
+                append(CreateTableSQLSyntax.SPACE).
+                append(CreateTableSQLSyntax.B_OPEN);
+
         if (type == TableModifier.COLUMN_VALUES) {
             sqlBuffer.append(values);
-            if(tablePanel.primary)
+            if (tablePanel.primary)
                 sqlBuffer.append(primary);
             sqlBuffer.append(consPanel.getSQLText());
-        }
-        else if (type == TableModifier.CONSTRAINT_VALUES) {
+        } else if (type == TableModifier.CONSTRAINT_VALUES) {
             sqlBuffer.append(tablePanel.getSQLText());
-            if(tablePanel.primary)
+            if (tablePanel.primary)
                 sqlBuffer.append(primary);
-                      sqlBuffer.append(values);
+            sqlBuffer.append(values);
         }
-        
+
         sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE).
-                  append(CreateTableSQLSyntax.SEMI_COLON);
+                append(CreateTableSQLSyntax.SEMI_COLON);
         sqlBuffer.append("\n").append(description);
         setSQLText(sqlBuffer.toString());
     }
-    
+
     private void setSQLText(final String text) {
         GUIUtils.invokeLater(new Runnable() {
             public void run() {
@@ -533,36 +549,37 @@ public abstract class CreateTableFunctionPanel extends JPanel
             }
         });
     }
-    
+
     public String getSQLText() {
         return sqlText.getSQLText();
     }
-    
+
     public String getTableName() {
         return nameField.getText();
     }
-    
+
     // -----------------------------------------------
-    
-    
+
+
     // constraints panel only
-    public void updateCellEditor(int col, int row, String value) {}
-    
-    public void columnValuesChanging(int col, int row, String value) {}
-    
+    public void updateCellEditor(int col, int row, String value) {
+    }
+
+    public void columnValuesChanging(int col, int row, String value) {
+    }
+
     public Vector getTableColumnDataVector() {
         return tablePanel.getTableColumnDataVector();
     }
-    
+
     public void stateChanged(ChangeEvent e) {
         if (tableTabs.getSelectedIndex() == 1) {
             tools.enableButtons(false);
-            
+
             //          if (table.isEditing())
             //            table.removeEditor();
-            
-        }
-        else {
+
+        } else {
             tools.enableButtons(true);
         }
     }
@@ -588,108 +605,107 @@ public abstract class CreateTableFunctionPanel extends JPanel
         String tableName = null;
         ColumnData[] cda = tablePanel.getTableColumnData();
         ColumnConstraint[] cca = consPanel.getColumnConstraintArray();
-        
+
         for (int i = 0; i < cda.length; i++) {
-            
+
             // reset the keys
             cda[i].setPrimaryKey(false);
             cda[i].setForeignKey(false);
             cda[i].resetConstraints();
-            
+
             tableName = cda[i].getTableName();
 
             String columnName = cda[i].getColumnName();
-            
+
             for (int j = 0; j < cca.length; j++) {
-                
+
                 String constraintColumn = cca[j].getColumn();
 
-                if (constraintColumn!= null 
+                if (constraintColumn != null
                         && constraintColumn.equalsIgnoreCase(columnName)) {
-                    
+
                     if (cca[j].isPrimaryKey()) {
                         cda[i].setPrimaryKey(true);
                     } else if (cca[j].isForeignKey()) {
                         cda[i].setForeignKey(true);
                     }
-                    
+
                     cca[j].setTable(tableName);
                     cca[j].setNewConstraint(true);
                     cda[i].addConstraint(cca[j]);
                 }
-                
+
             }
-            
+
         }
-        
+
         return cda;
-        
+
     }
-    
-    public void columnValuesChanging() {}
-    
+
+    public void columnValuesChanging() {
+    }
+
     public ColumnData[] getTableColumnData() {
         return tablePanel.getTableColumnData();
     }
-    
+
     // -----------------------------------------------
     // -------- TableFunction implementations --------
     // -----------------------------------------------
-    
+
     public void moveColumnUp() {
-        int index = tableTabs.getSelectedIndex();        
+        int index = tableTabs.getSelectedIndex();
         if (index == 0) {
             tablePanel.moveColumnUp();
-        }        
+        }
     }
-    
+
     public void moveColumnDown() {
         int index = tableTabs.getSelectedIndex();
         if (index == 0) {
             tablePanel.moveColumnDown();
         }
     }
-    
-    public void deleteRow() {        
+
+    public void deleteRow() {
         if (tableTabs.getSelectedIndex() == 0) {
             tablePanel.deleteRow();
-        }
-        else if (tableTabs.getSelectedIndex() == 1) {
+        } else if (tableTabs.getSelectedIndex() == 1) {
             consPanel.deleteSelectedRow();
-        }        
+        }
     }
-    
+
     public void insertBefore() {
         tablePanel.insertBefore();
     }
-    
-    public void insertAfter() {        
+
+    public void insertAfter() {
         if (tableTabs.getSelectedIndex() == 0) {
             tablePanel.insertAfter();
-        }
-        else if (tableTabs.getSelectedIndex() == 1) {
+        } else if (tableTabs.getSelectedIndex() == 1) {
             consPanel.insertRowAfter();
         }
     }
-    
+
     // -----------------------------------------------
-    
+
     public String getDisplayName() {
         return "";
     }
-    
+
     // ------------------------------------------------
     // ----- TextEditorContainer implementations ------
     // ------------------------------------------------
-    
+
     /**
-     * Returns the SQL text pane as the TextEditor component 
+     * Returns the SQL text pane as the TextEditor component
      * that this container holds.
      */
     public TextEditor getTextEditor() {
         return sqlText;
     }
-    
+
 }
 
 

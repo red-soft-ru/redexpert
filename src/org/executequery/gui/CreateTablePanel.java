@@ -43,71 +43,79 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.util.MiscUtils;
 
-/** 
+/**
  * <p>The Create Panel function
  *
- * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @author Takis Diakoumis
+ * @version $Revision: 1780 $
+ * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class CreateTablePanel extends CreateTableFunctionPanel
-                              implements ActionListener,
-                                         KeywordListener,
-                                         ActiveComponent {
-    
-    /** This objects title as an internal frame */
+        implements ActionListener,
+        KeywordListener,
+        ActiveComponent {
+
+    /**
+     * This objects title as an internal frame
+     */
     public static final String TITLE = "Create Table";
-    
-    /** This objects icon as an internal frame */
+
+    /**
+     * This objects icon as an internal frame
+     */
     public static final String FRAME_ICON = "NewTable16.png";
-    
-    /** the parent container */
+
+    /**
+     * the parent container
+     */
     private ActionContainer parent;
-    
-    /** <p> Constructs a new instance. */
+
+    /**
+     * <p> Constructs a new instance.
+     */
     public CreateTablePanel(ActionContainer parent) {
         super();
         this.parent = parent;
-        try  {
+        try {
             jbInit();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        }        
+        }
         setFocusComponent();
     }
 
-    public CreateTablePanel(DatabaseConnection dc,ActionContainer parent)
-    {
+    public CreateTablePanel(DatabaseConnection dc, ActionContainer parent) {
         this(parent);
         connectionsCombo.setSelectedItem(dc);
     }
-    
-    /** <p>Initializes the state of this instance. */
+
+    /**
+     * <p>Initializes the state of this instance.
+     */
     private void jbInit() throws Exception {
 
         addButtonsPanel(new BottomButtonPanel(
-                                this, "Create", "create-table", parent.isDialog()));
-        setPreferredSize(new Dimension(750,480));
+                this, "Create", "create-table", parent.isDialog()));
+        setPreferredSize(new Dimension(750, 480));
         EventMediator.registerListener(this);
     }
-    
+
     /**
      * Indicates that a [long-running] process has begun or ended
-     * as specified. This may trigger the glass pane on or off 
+     * as specified. This may trigger the glass pane on or off
      * or set the cursor appropriately.
      *
      * @param inProcess - true | false
      */
     public void setInProcess(boolean inProcess) {
         if (parent != null) {
-            
+
             if (inProcess) {
 
                 parent.block();
-                
+
             } else {
-                
+
                 parent.unblock();
             }
         }
@@ -134,25 +142,23 @@ public class CreateTablePanel extends CreateTableFunctionPanel
     public Vector<String> getHostedSchemasVector() {
         try {
             return metaData.getHostedSchemasVector();
-        }
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
                     "Error retrieving the catalog/schema list for the " +
-                    "selected connection.\n\nThe system returned:\n" + 
-                    e.getExtendedMessage(), e);
+                            "selected connection.\n\nThe system returned:\n" +
+                            e.getExtendedMessage(), e);
             return new Vector<String>(0);
         }
     }
-    
+
     public Vector<String> getSchemaTables(String schemaName) {
         try {
             return metaData.getSchemaTables(schemaName);
-        }
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
                     "Error retrieving the table list for the " +
-                    "selected catalog/schema.\n\nThe system returned:\n" + 
-                    e.getExtendedMessage(), e);
+                            "selected catalog/schema.\n\nThe system returned:\n" +
+                            e.getExtendedMessage(), e);
             return new Vector<String>(0);
         }
     }
@@ -160,12 +166,11 @@ public class CreateTablePanel extends CreateTableFunctionPanel
     public Vector<String> getColumnNamesVector(String tableName, String schemaName) {
         try {
             return metaData.getColumnNamesVector(tableName, schemaName);
-        }
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
                     "Error retrieving the column names for the " +
-                    "selected table.\n\nThe system returned:\n" + 
-                    e.getExtendedMessage(), e);
+                            "selected table.\n\nThe system returned:\n" +
+                            e.getExtendedMessage(), e);
             return new Vector<String>(0);
         }
     }
@@ -177,7 +182,7 @@ public class CreateTablePanel extends CreateTableFunctionPanel
         EventMediator.deregisterListener(this);
         metaData.closeConnection();
     }
-    
+
     /**
      * Action listener implementation.<br>
      * Executes the create table script.
@@ -193,7 +198,6 @@ public class CreateTablePanel extends CreateTableFunctionPanel
             return;
         }
         createTable();
-
     }
 
     private void createTable() {
@@ -202,41 +206,37 @@ public class CreateTablePanel extends CreateTableFunctionPanel
             if (querys.endsWith(";")) {
                 querys = querys.substring(0, querys.length() - 1);
             }
-            String query="";
-            boolean commit=true;
-            while (querys.length()>0&&commit) {
-                if(querys.contains(";")) {
+            String query = "";
+            boolean commit = true;
+            while (querys.length() > 0 && commit) {
+                if (querys.contains(";")) {
                     query = querys.substring(0, querys.indexOf(";"));
                     querys = querys.substring(querys.indexOf(";") + 1, querys.length());
-                }
-                else
-                {
+                } else {
                     query = querys;
-                    querys ="";
+                    querys = "";
                 }
-                while(query.indexOf("\n")==0)
-                {
-                    query=query.substring(1,query.length());
+                while (query.indexOf("\n") == 0) {
+                    query = query.substring(1, query.length());
                 }
 
                 DatabaseConnection dc = getSelectedConnection();
-                ExecuteQueryDialog eqd=new ExecuteQueryDialog("Creating table",query,dc,true);
+                ExecuteQueryDialog eqd = new ExecuteQueryDialog("Creating table", query, dc, true);
                 eqd.display();
-                commit=eqd.getCommit();
+                commit = eqd.getCommit();
             }
-            if(commit)
+            if (commit)
                 parent.finished();
 
-        }
-        catch (Exception exc) {
+        } catch (Exception exc) {
             GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc);
         }
 
     }
-    
+
     public String toString() {
         return TITLE;
     }
-    
+
 }
 

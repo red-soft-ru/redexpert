@@ -155,12 +155,12 @@ public class NewTablePanel extends TableDefinitionPanel
             } else {
                 line.append(cd.getDomain());
             }
-        if (!MiscUtils.isNull(cd.getCheck())) {
-            line.append(" CHECK ( " + cd.getCheck() + ")");
-        } else {
-            line.append("COMPUTED BY ( " + cd.getComputedBy() + ")");
+            if (!MiscUtils.isNull(cd.getCheck())) {
+                line.append(" CHECK ( " + cd.getCheck() + ")");
+            }
         }
-
+        else {
+            line.append("COMPUTED BY ( " + cd.getComputedBy() + ")");
         }
         if (row < tableVector.size() - 1) {
             line.append(COMMA);

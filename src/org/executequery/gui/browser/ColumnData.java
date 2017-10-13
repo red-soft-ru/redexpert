@@ -116,6 +116,8 @@ public class ColumnData implements Serializable {
 
     private String description;
 
+    private String computedBy;
+
     DatabaseConnection dc;
     
     public ColumnData(DatabaseConnection databaseConnection) {
@@ -214,6 +216,7 @@ public class ColumnData implements Serializable {
         dc=cd.getDatabaseConnection();
         description=cd.getDescription();
         check=cd.getCheck();
+        computedBy=cd.getComputedBy();
 
         Vector<ColumnConstraint> constraints = cd.getColumnConstraintsVector();
         if (constraints != null) {
@@ -544,6 +547,15 @@ public class ColumnData implements Serializable {
 
     public String getDescription() {
         return description;
+    }
+
+    public void setComputedBy(String computedBy)
+    {
+        this.computedBy=computedBy;
+    }
+
+    public String getComputedBy() {
+        return computedBy;
     }
 }
 

@@ -68,12 +68,6 @@ public class DefaultTable extends JTable implements StandardTable {
 
             getTableHeader().setDefaultRenderer(new DefaultTableHeaderRenderer());
 
-        } else {
-
-            JTableHeader tableHeader = getTableHeader();
-            tableHeader.setPreferredSize(new Dimension(tableHeader.getWidth(), 
-                            Math.max(tableHeader.getHeight(), DEFAULT_ROW_HEIGHT)));
-            
         }
 
     }

@@ -12,6 +12,7 @@ import org.executequery.sql.DerivedQuery;
 import org.executequery.sql.QueryTokenizer;
 import org.executequery.sql.SqlMessages;
 import org.executequery.sql.SqlStatementResult;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -210,9 +211,17 @@ public class ExecuteQueryDialog extends BaseDialog {
 
     private void commitButtonActionPerformed(ActionEvent evt) {
         try {
-            querySender.execute(QueryTypes.COMMIT, "commit");
-            commitResult=true;
-            super.finished();
+            SqlStatementResult rs=querySender.execute(QueryTypes.COMMIT, "commit");
+            String error=rs.getErrorMessage();
+            if(!rs.isException()) {
+                commitResult = true;
+                super.finished();
+            }
+            else
+            {
+                setOutputMessage(SqlMessages.ERROR_MESSAGE, error);
+                commitButton.setVisible(false);
+            }
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
         }
@@ -243,6 +252,7 @@ public class ExecuteQueryDialog extends BaseDialog {
 
             int type = q.getQueryType();
             long start = System.currentTimeMillis();
+            Log.info("Executing:"+queryToExecute);
             SqlStatementResult result = querySender.execute(type, queryToExecute);
             int updateCount = result.getUpdateCount();
             if (updateCount == -1) {

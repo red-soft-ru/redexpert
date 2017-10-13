@@ -113,7 +113,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             GUIUtilities.showWaitCursor();
                             BaseDialog dialog =
                                     new BaseDialog(CreateTablePanel.TITLE, false);
-                            CreateTablePanel panel = new CreateTablePanel(dialog);
+                            CreateTablePanel panel = new CreateTablePanel(currentSelection,dialog);
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());

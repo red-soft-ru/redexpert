@@ -76,6 +76,12 @@ public class CreateTablePanel extends CreateTableFunctionPanel
         }        
         setFocusComponent();
     }
+
+    public CreateTablePanel(DatabaseConnection dc,ActionContainer parent)
+    {
+        this(parent);
+        connectionsCombo.setSelectedItem(dc);
+    }
     
     /** <p>Initializes the state of this instance. */
     private void jbInit() throws Exception {

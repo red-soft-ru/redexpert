@@ -140,7 +140,7 @@ public class GrantManagerPanel extends JPanel {
         enabled_dBox = true;
         setEnableElements(true);
         load_connections();
-        load_userList();
+        //load_userList();
     }
 
     @SuppressWarnings("unchecked")

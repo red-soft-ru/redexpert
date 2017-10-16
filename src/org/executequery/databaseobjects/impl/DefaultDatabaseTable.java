@@ -41,6 +41,7 @@ import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.TableDataChange;
 import org.executequery.databaseobjects.TableDataChangeWorker;
+import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.log.Log;
 import org.executequery.sql.SQLFormatter;
 import org.executequery.sql.SqlStatementResult;
@@ -1208,7 +1209,7 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         return true;
     }
 
-    public String prepareStatement(List<String> columns) {
+    public String prepareStatement(List<String> columns, List<RecordDataItem> changes) {
 
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
@@ -1222,13 +1223,18 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
 
         boolean applied = false;
         List<String> cols=getColumnNames();
-        for (String col : cols) {
+        for (int i=0;i<cols.size();i++) {
+            String col=cols.get(i);
+            RecordDataItem rdi=changes.get(i);
 
             if (applied) {
 
                 sb.append(" AND ");
             }
-            sb.append(col).append(" = ? ");
+            if(rdi.isValueNull())
+                sb.append(col).append(" is NULL ");
+            else
+                sb.append(col).append(" = ? ");
             applied =true;
         }
 

@@ -112,7 +112,7 @@ public class TableDataChangeWorker {
         try {
         
             int n = changes.size();
-            String sql = table.prepareStatement(columns);
+            String sql = table.prepareStatement(columns,values);
             
             Log.info("Executing data change using statement - [ " + sql + " ]");
             
@@ -132,8 +132,10 @@ public class TableDataChangeWorker {
             }
             for (RecordDataItem rdi:values) {
 
-                n++;
-                statement.setObject(n, rdi.getValue());
+                if(!rdi.isValueNull()) {
+                    n++;
+                    statement.setObject(n, rdi.getValue());
+                }
             }
             
             return statement.executeUpdate();

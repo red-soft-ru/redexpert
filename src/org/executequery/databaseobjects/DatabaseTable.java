@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.TableColumnIndex;
+import org.executequery.gui.resultset.RecordDataItem;
 import org.underworldlabs.jdbc.DataSourceException;
 
 /**
@@ -179,7 +180,7 @@ public interface DatabaseTable extends DatabaseObject {
 
     boolean hasPrimaryKey();
 
-    String prepareStatement(List<String> columns);
+    String prepareStatement(List<String> columns, List<RecordDataItem> changes);
 
     List<String> getPrimaryKeyColumnNames();
 

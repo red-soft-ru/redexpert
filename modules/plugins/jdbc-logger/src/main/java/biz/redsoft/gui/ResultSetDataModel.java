@@ -1,4 +1,4 @@
-package org.executequery.gui.jdbclogger;
+package biz.redsoft.gui;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.table.AbstractTableModel;
 
+import biz.redsoft.gui.LogConstants;
 import ch.sla.jdbcperflogger.StatementType;
 
 class ResultSetDataModel extends AbstractTableModel {

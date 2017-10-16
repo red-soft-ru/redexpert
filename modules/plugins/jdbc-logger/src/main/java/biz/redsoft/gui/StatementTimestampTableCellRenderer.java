@@ -1,4 +1,4 @@
-package org.executequery.gui.jdbclogger;
+package biz.redsoft.gui;
 
 import java.awt.Component;
 import java.sql.Timestamp;

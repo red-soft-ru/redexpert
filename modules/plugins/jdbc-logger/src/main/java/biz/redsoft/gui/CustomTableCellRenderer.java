@@ -1,4 +1,4 @@
-package org.executequery.gui.jdbclogger;
+package biz.redsoft.gui;
 
 import java.awt.Color;
 import java.awt.Component;

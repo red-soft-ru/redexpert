@@ -1,4 +1,4 @@
-package org.executequery.gui.jdbclogger.net;
+package biz.redsoft.net;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 
 import ch.sla.jdbcperflogger.model.LogMessage;
+import ch.sla.jdbcperflogger.model.ConnectionInfo;
 
 public abstract class AbstractLogReceiver extends Thread {
     protected int SOCKET_TIMEOUT = 60 * 1000;

@@ -1,10 +1,13 @@
-package org.executequery.gui.jdbclogger.net;
+package biz.redsoft.net;
 
+import ch.sla.jdbcperflogger.model.ConnectionInfo;
+
+import java.io.File;
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.util.Set;
+import java.net.*;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -53,6 +56,7 @@ public class ServerLogReceiver extends AbstractLogReceiver {
     @Override
     public void run() {
         try (ServerSocket serverSocketLocalVar = new ServerSocket(listenPort)) {
+
             listenPort = serverSocketLocalVar.getLocalPort();
             serverSocketLocalVar.setSoTimeout((int) TimeUnit.MINUTES.toMillis(5));
             serverSocket = serverSocketLocalVar;
@@ -139,5 +143,35 @@ public class ServerLogReceiver extends AbstractLogReceiver {
             child.resumeReceivingLogs();
         }
     }
+
+    public static URL[] loadURLs(String paths) throws MalformedURLException {
+        String token = ";";
+        Vector<String> pathsVector = new Vector<String>();
+
+        if (paths.indexOf(token) != -1) {
+            StringTokenizer st = new StringTokenizer(paths, token);
+            while (st.hasMoreTokens()) {
+                pathsVector.add(st.nextToken());
+            }
+        }
+        else {
+            pathsVector.add(paths);
+        }
+
+        URL[] urls = new URL[pathsVector.size()];
+        for (int i = 0; i < urls.length; i++) {
+            File f = new File((String)pathsVector.elementAt(i));
+            urls[i] = f.toURI().toURL();
+        }
+        return urls;
+    }
+
+    public static String formatNumber(long number, String pattern) {
+        NumberFormat nf = NumberFormat.getNumberInstance();
+        DecimalFormat df = (DecimalFormat)nf;
+        df.applyPattern(pattern);
+        return df.format(number);
+    }
+
 
 }

@@ -1,13 +1,13 @@
-package org.executequery.gui.jdbclogger.net;
+package biz.redsoft.net;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import biz.redsoft.model.FullStatementLog;
 import ch.sla.jdbcperflogger.StatementType;
 import ch.sla.jdbcperflogger.model.*;
-import org.executequery.gui.jdbclogger.model.FullStatementLog;
 
 public class LogProcessor extends Thread implements AutoCloseable {
 

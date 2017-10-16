@@ -1,4 +1,4 @@
-package org.executequery.gui.jdbclogger;
+package biz.redsoft.gui;
 
 /**
  * Created by vasiliy on 21.12.16.

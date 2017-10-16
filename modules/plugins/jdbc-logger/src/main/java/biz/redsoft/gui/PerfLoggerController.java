@@ -1,10 +1,10 @@
-package org.executequery.gui.jdbclogger;
+package biz.redsoft.gui;
 
+import biz.redsoft.model.FullStatementLog;
 import ch.sla.jdbcperflogger.model.ConnectionInfo;
-import org.executequery.gui.jdbclogger.model.FullStatementLog;
-import org.executequery.gui.jdbclogger.net.AbstractLogReceiver;
-import org.executequery.gui.jdbclogger.net.LogProcessor;
-import org.executequery.gui.jdbclogger.net.ServerLogReceiver;
+import biz.redsoft.net.AbstractLogReceiver;
+import biz.redsoft.net.LogProcessor;
+import biz.redsoft.net.ServerLogReceiver;
 
 import javax.swing.*;
 import java.util.*;
@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 public class PerfLoggerController {
     private final AbstractLogReceiver logReceiver;
-    private final JdbcLoggerPanel jdbcLoggerPanel;
+    private final LoggerPanel loggerPanel;
 
     private volatile String txtFilter;
 
@@ -26,10 +26,10 @@ public class PerfLoggerController {
     private final ScheduledExecutorService refreshDataScheduledExecutorService;
     private boolean forceRefresh;
 
-    PerfLoggerController(final AbstractLogReceiver logReceiver, JdbcLoggerPanel loggerPanel) {
+    PerfLoggerController(final AbstractLogReceiver logReceiver, LoggerPanel loggerPanel) {
         this.logReceiver = logReceiver;
 
-        jdbcLoggerPanel = loggerPanel;
+        this.loggerPanel = loggerPanel;
 
         refreshDataTask = new RefreshDataTask();
 
@@ -43,8 +43,8 @@ public class PerfLoggerController {
         this.logReceiver.start();
     }
 
-    JdbcLoggerPanel getPanel() {
-        return jdbcLoggerPanel;
+    LoggerPanel getPanel() {
+        return this.loggerPanel;
     }
 
     void setTextFilter(final String filter) {
@@ -80,13 +80,13 @@ public class PerfLoggerController {
 
     private void refresh() {
         if (filterType == Filter.FilterType.FILTER) {
-            jdbcLoggerPanel.table.setTxtToHighlight(null);
-            jdbcLoggerPanel.table.setMinDurationNanoToHighlight(null);
+            loggerPanel.table.setTxtToHighlight(null);
+            loggerPanel.table.setMinDurationNanoToHighlight(null);
         } else {
-            jdbcLoggerPanel.table.setTxtToHighlight(txtFilter);
-            jdbcLoggerPanel.table.setMinDurationNanoToHighlight(minDurationNanos);
+            loggerPanel.table.setTxtToHighlight(txtFilter);
+            loggerPanel.table.setMinDurationNanoToHighlight(minDurationNanos);
         }
-        jdbcLoggerPanel.setTxtToHighlight(txtFilter);
+        loggerPanel.setTxtToHighlight(txtFilter);
 
         refreshDataTask.forceRefresh();
         refreshDataScheduledExecutorService.submit(refreshDataTask);
@@ -106,20 +106,20 @@ public class PerfLoggerController {
             for (Map.Entry<UUID, FullStatementLog> entry : fullStatementLogs.entrySet()) {
                 FullStatementLog statement = entry.getValue();
                 if (selectedLogId.equals(statement.getLogId())) {
-                    jdbcLoggerPanel.txtFieldFilledSql.setText(statement.getFilledSql());
-                    jdbcLoggerPanel.txtFieldRawSql.setText(statement.getRawSql());
+                    loggerPanel.txtFieldFilledSql.setText(statement.getFilledSql());
+                    loggerPanel.txtFieldRawSql.setText(statement.getRawSql());
                     ConnectionInfo connectionInfo = connections.get(statement.getConnectionId());
 
-                    jdbcLoggerPanel.connectionCreationDateField.setText(connectionInfo.getCreationDate().toString());
+                    loggerPanel.connectionCreationDateField.setText(connectionInfo.getCreationDate().toString());
                     long millis = TimeUnit.NANOSECONDS
                             .toMillis(connectionInfo.getConnectionCreationDuration());
-                    jdbcLoggerPanel.connectionCreationDurationField.setText(String.valueOf(millis));
-                    jdbcLoggerPanel.connectionUrlField.setText(connectionInfo.getUrl());
-                    jdbcLoggerPanel.connectionPropertiesField.setText(connectionInfo.getConnectionProperties().toString());
+                    loggerPanel.connectionCreationDurationField.setText(String.valueOf(millis));
+                    loggerPanel.connectionUrlField.setText(connectionInfo.getUrl());
+                    loggerPanel.connectionPropertiesField.setText(connectionInfo.getConnectionProperties().toString());
 
                     if (statement.getSqlException() != null && !statement.getSqlException().isEmpty()) {
-                        jdbcLoggerPanel.txtFieldFilledSql.append(statement.getSqlException());
-                        jdbcLoggerPanel.txtFieldRawSql.append(statement.getSqlException());
+                        loggerPanel.txtFieldFilledSql.append(statement.getSqlException());
+                        loggerPanel.txtFieldRawSql.append(statement.getSqlException());
                     }
 
                     return;
@@ -210,7 +210,7 @@ public class PerfLoggerController {
                 @Override
                 public void run() {
                     try {
-                        jdbcLoggerPanel.setData(tempRows, finalTempColumnNames, finalTempColumnTypes,
+                        loggerPanel.setData(tempRows, finalTempColumnNames, finalTempColumnTypes,
                                 true);
                     } catch (Exception e) {
                         e.printStackTrace();

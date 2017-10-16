@@ -1,4 +1,4 @@
-package org.executequery.gui.jdbclogger.model;
+package biz.redsoft.model;
 
 import ch.sla.jdbcperflogger.StatementType;
 import ch.sla.jdbcperflogger.TxCompletionType;

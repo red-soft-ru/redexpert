@@ -23,6 +23,8 @@ package org.executequery.datasource;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -33,14 +35,17 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
+import javax.swing.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.ExecuteQuery;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.log.Log;
+import org.executequery.util.UserProperties;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SystemProperties;
 
 /**
  *
@@ -100,8 +105,12 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         }
 
         if (driver != null) {
+            boolean jdbcLogging = SystemProperties.getBooleanProperty("user", "connection.logging");
 
-            return driver.connect(url, advancedProperties);
+            if (!jdbcLogging)
+                return driver.connect(url, advancedProperties);
+
+            return driver.connect("jdbcperflogger:" + url, advancedProperties);
         }
 
         throw new DataSourceException("Error loading specified JDBC driver");

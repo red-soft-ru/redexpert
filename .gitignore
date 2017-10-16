@@ -21,3 +21,5 @@ RedExpert\.iml
 lib/fbplugin\.jar
 
 lib/fbplugin-impl\.jar
+
+lib/jdbc-logger\.jar

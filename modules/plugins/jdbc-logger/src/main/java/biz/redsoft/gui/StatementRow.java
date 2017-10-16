@@ -1,4 +1,4 @@
-package org.executequery.gui.jdbclogger;
+package biz.redsoft.gui;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;

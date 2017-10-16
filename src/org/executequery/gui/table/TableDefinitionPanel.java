@@ -374,11 +374,6 @@ public abstract class TableDefinitionPanel extends JPanel
                     }
                 }
             }
-            for (int i = 0; i < intDataTypes.length; i++) {
-                if (intDataTypes[i] == Types.CHAR || intDataTypes[i] == Types.VARCHAR)
-                    dataTypes[i] += "(n)";
-
-            }
         }
     }
 

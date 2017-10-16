@@ -1222,24 +1222,24 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         sb.append(" WHERE ");
 
         boolean applied = false;
-        List<String> cols=getColumnNames();
-        for (int i=0;i<cols.size();i++) {
-            String col=cols.get(i);
-            RecordDataItem rdi=changes.get(i);
+        List<String> cols = getColumnNames();
+        for (int i = 0; i < cols.size(); i++) {
+            String col = cols.get(i);
+            RecordDataItem rdi = changes.get(i);
 
             if (applied) {
 
                 sb.append(" AND ");
             }
-            if(rdi.isValueNull())
+            if (rdi.isValueNull())
                 sb.append(col).append(" is NULL ");
             else
                 sb.append(col).append(" = ? ");
-            applied =true;
+            applied = true;
         }
 
         sb.deleteCharAt(sb.length() - 1);
-        sb.append("\nORDER BY "+cols.get(0) +" \n");
+        sb.append("\nORDER BY " + cols.get(0) + " \n");
         sb.append("ROWS 1");
         return sb.toString();
     }

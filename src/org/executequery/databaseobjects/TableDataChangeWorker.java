@@ -105,17 +105,17 @@ public class TableDataChangeWorker {
         }
 
         if (changes.isEmpty()) {
-            
+
             return 0;
         }
-        
+
         try {
-        
+
             int n = changes.size();
-            String sql = table.prepareStatement(columns,values);
-            
+            String sql = table.prepareStatement(columns, values);
+
             Log.info("Executing data change using statement - [ " + sql + " ]");
-            
+
             statement = connection.prepareStatement(sql);
             for (int i = 0; i < n; i++) {
 
@@ -125,36 +125,37 @@ public class TableDataChangeWorker {
                     statement.setObject((i + 1), recordDataItem.getNewValue(), recordDataItem.getDataType());
 
                 } else {
-                    
+
                     statement.setNull((i + 1), recordDataItem.getDataType());
                 }
-                
-            }
-            for (RecordDataItem rdi:values) {
 
-                if(!rdi.isValueNull()) {
+            }
+            for (RecordDataItem rdi : values) {
+
+                if (!rdi.isValueNull()) {
                     n++;
                     statement.setObject(n, rdi.getValue());
                 }
             }
-            
+
             return statement.executeUpdate();
-            
+
         } catch (Exception e) {
 
             rollback();
             throw handleException(e);
-        
+
         } finally {
-            
+
             if (statement != null) {
-                
+
                 try {
                     statement.close();
-                } catch (SQLException e) {}
+                } catch (SQLException e) {
+                }
                 statement = null;
             }
-            
+
         }
         
     }

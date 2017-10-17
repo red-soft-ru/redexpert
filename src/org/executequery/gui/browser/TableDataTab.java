@@ -603,6 +603,9 @@ public class TableDataTab extends JPanel
                 case Types.TIME:
                     component_value =((EQTimePicker) component).getStringValue();//((DateTimePicker) component).timePicker.getTimeStringOrEmptyString();
                     break;
+                case Types.BOOLEAN:
+                    component_value = ((RDBCheckBox)component).getStringValue();
+                    break;
                 default:
                     component_value = ((JTextField) component).getText();
                     break;
@@ -713,6 +716,9 @@ public class TableDataTab extends JPanel
                             break;
                         case Types.TIME:
                             field=new EQTimePicker();
+                            break;
+                        case Types.BOOLEAN:
+                            field = new RDBCheckBox();
                             break;
                         default:
                             field = new JTextField(14);

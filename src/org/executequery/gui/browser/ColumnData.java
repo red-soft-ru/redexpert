@@ -249,6 +249,7 @@ public class ColumnData implements Serializable {
         description = cd.getDescription();
         check = cd.getCheck();
         computedBy = cd.getComputedBy();
+        defaultValue = cd.getDefaultValue();
 
         Vector<ColumnConstraint> constraints = cd.getColumnConstraintsVector();
         if (constraints != null) {

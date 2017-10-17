@@ -208,7 +208,7 @@ public class CreateTablePanel extends CreateTableFunctionPanel
             }
             String query = "";
             boolean commit = true;
-            while (querys.length() > 0 && commit) {
+            while (querys.trim().length() > 0 && commit) {
                 if (querys.contains(";")) {
                     query = querys.substring(0, querys.indexOf(";"));
                     querys = querys.substring(querys.indexOf(";") + 1, querys.length());

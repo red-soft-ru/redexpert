@@ -23,6 +23,7 @@ package org.executequery.gui.table;
 import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.util.MiscUtils;
 
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -150,11 +151,40 @@ public class NewTablePanel extends TableDefinitionPanel
                 if (cd.getColumnType() != null) {
                     line.append(cd.getFormattedDataType());
                 }
-
-                line.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
             } else {
                 line.append(cd.getDomain());
             }
+            if (!MiscUtils.isNull(cd.getDefaultValue()))
+            {
+                String value="";
+                boolean str=false;
+                int sqlType=cd.getSQLType();
+                switch (sqlType) {
+
+                    case Types.LONGVARCHAR:
+                    case Types.LONGNVARCHAR:
+                    case Types.CHAR:
+                    case Types.NCHAR:
+                    case Types.VARCHAR:
+                    case Types.NVARCHAR:
+                    case Types.CLOB:
+                    case Types.DATE:
+                    case Types.TIME:
+                    case Types.TIMESTAMP:
+                        value = "'";
+                        str = true;
+                        break;
+                    default:
+                        break;
+                }
+                value+=cd.getDefaultValue();
+                if(str)
+                {
+                    value+="'";
+                }
+                line.append(" DEFAULT "+value);
+            }
+            line.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
             if (!MiscUtils.isNull(cd.getCheck())) {
                 line.append(" CHECK ( " + cd.getCheck() + ")");
             }
@@ -220,11 +250,40 @@ public class NewTablePanel extends TableDefinitionPanel
                             }
 
                         }
-
-                        sqlText.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
                     } else {
                         sqlText.append(cd.getDomain());
                     }
+                    if (!MiscUtils.isNull(cd.getDefaultValue()))
+                    {
+                        String value="";
+                        boolean str=false;
+                        int sqlType=cd.getSQLType();
+                        switch (sqlType) {
+
+                            case Types.LONGVARCHAR:
+                            case Types.LONGNVARCHAR:
+                            case Types.CHAR:
+                            case Types.NCHAR:
+                            case Types.VARCHAR:
+                            case Types.NVARCHAR:
+                            case Types.CLOB:
+                            case Types.DATE:
+                            case Types.TIME:
+                            case Types.TIMESTAMP:
+                                value = "'";
+                                str = true;
+                                break;
+                            default:
+                                break;
+                        }
+                        value+=cd.getDefaultValue();
+                        if(str)
+                        {
+                            value+="'";
+                        }
+                        sqlText.append(" DEFAULT "+value);
+                    }
+                    sqlText.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
                     if (!MiscUtils.isNull(cd.getCheck())) {
                         sqlText.append(" CHECK ( " + cd.getCheck() + ")");
                     }

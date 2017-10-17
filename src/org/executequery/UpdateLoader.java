@@ -16,6 +16,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -53,7 +55,7 @@ public class UpdateLoader extends JFrame {
     private String getLastVersion(String repo) {
         StringBuilder buffer = new StringBuilder("");
         try {
-            String path = repo + "/maven-metadata.xml";
+            /*String path = repo + "/maven-metadata.xml";
             URL url = new URL(path);
 
             InputStream html = null;
@@ -66,7 +68,15 @@ public class UpdateLoader extends JFrame {
                 c = html.read();
                 buffer.append((char) c);
 
+            }*/
+            URL myUrl = new URL(repo);
+            URLConnection myUrlCon = myUrl.openConnection();
+            InputStream input = myUrlCon.getInputStream();
+            int c;
+            while(((c = input.read()) != -1)) {
+                buffer.append((char) c);
             }
+            input.close();
         } catch (MalformedURLException e) {
             Log.error("Cannot download update from repository. " +
                     "Please, check repository url or try update later.");
@@ -77,15 +87,29 @@ public class UpdateLoader extends JFrame {
             return null;
         }
         String s = buffer.toString();
+        String[] ss=s.split("\n");
+        String res = "0.0";
+        for(int i=0;i<ss.length;i++) {
+            Pattern pattern;
+            pattern =Pattern.compile("(<a href=\")([0-9]+[\\.][0-9]+.+)(/\">)");
+            Matcher m = pattern.matcher(ss[i]);
+            if(m.find()) {
+                String r = m.group(2);
+                try {
+                    ApplicationVersion temp = new ApplicationVersion(r);
+                    if (temp.isNewerThan(res))
+                        res = r;
+                }
+                catch (Exception e)
+                {
+                    Log.debug("Big version:"+r,e);
+                }
 
-        Pattern pattern = Pattern.compile("(<release>)([^<>]*)(<\\/release>)");
-        Matcher m = pattern.matcher(s);
-        String res = null;
-        while (m.find()) {
-            res = m.group(2);
+            }
         }
-
+        if(res!="0.0")
         return res;
+        else return null;
     }
 
     private void initComponents() {

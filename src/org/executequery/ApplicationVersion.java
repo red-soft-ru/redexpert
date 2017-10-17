@@ -29,24 +29,88 @@ package org.executequery;
 public final class ApplicationVersion {
 
     private final String version;
-    
+
+    int x = -1;
+
+    int y = -1;
+
+    int z = -1;
+
+    int abc = -1;
+
     private final String build;
 
     public ApplicationVersion(String version, String build) {
         super();
-        
-        this.version = version;
+        String xs=beforeDot(version);
+        String temp = afterDot(version);
+        x=Integer.parseInt(xs);
+        if (temp.contains(".")) {
+            String ys = beforeDot(temp);
+            temp = afterDot(temp);
+            y = Integer.parseInt(ys);
+        }
+        if (temp.contains(".")) {
+            String zs = beforeDot(temp);
+            temp = afterDot(temp);
+            z = Integer.parseInt(zs);
+        }
+        abc=Integer.parseInt(temp);
+        this.version = ConstructVersion();
+        if(z==-1)
+            z=abc;
+        if(y==-1)
+            y=z;
         this.build = build;
+    }
+    public ApplicationVersion(String version) {
+        this(version,null);
+    }
+    public String ConstructVersion()
+    {
+        String s="";
+        if(x!=-1)
+            s+=x;
+        if(y!=-1)
+            s+="."+y;
+        if(z!=-1)
+            s+="."+z;
+        if(abc!=-1)
+            s+="."+abc;
+        return s;
+    }
+
+    public String beforeDot(String s)
+    {
+        return s.substring(0,s.indexOf("."));
+    }
+    public String afterDot(String s)
+    {
+        return s.substring(s.indexOf(".")+1);
     }
 
     public boolean isNewerThan(String anotherVersion) {
-
         if (anotherVersion != null && version != null) {
-            int newVersion = Integer.valueOf(version.replaceAll("\\.", ""));
-            int currentVersion = Integer.valueOf(anotherVersion.replaceAll("\\.", ""));
-            return (newVersion != currentVersion);
+            ApplicationVersion anotherVers = new ApplicationVersion(anotherVersion);
+            if (abc < 10000) {
+                if (x > anotherVers.x)
+                    return true;
+                else if (x == anotherVers.x) {
+                    if (y > anotherVers.y) {
+                        return true;
+                    }
+                    else if (y == anotherVers.y) {
+                        if (z > anotherVers.z) {
+                            return true;
+                        }
+                        else if (z == anotherVers.z) {
+                            return abc>anotherVers.abc;
+                        }
+                    }
+
+                }
+            }
         }
-        
         return false;
     }
     

@@ -301,6 +301,7 @@
                     <include>fbplugin-impl.jar</include>
                     <include>jaybird-full-3.1.0-SNAPSHOT.jar</include>
                     <include>jdbc-perf-logger-driver-0.8.1-SNAPSHOT.jar</include>
+                    <include>jdbc-logger.jar</include>
                   </includes>
                 </resource>
               </resources>

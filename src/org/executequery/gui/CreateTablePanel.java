@@ -203,28 +203,9 @@ public class CreateTablePanel extends CreateTableFunctionPanel
     private void createTable() {
         try {
             String querys = getSQLText();
-            if (querys.endsWith(";")) {
-                querys = querys.substring(0, querys.length() - 1);
-            }
-            String query = "";
-            boolean commit = true;
-            while (querys.trim().length() > 0 && commit) {
-                if (querys.contains(";")) {
-                    query = querys.substring(0, querys.indexOf(";"));
-                    querys = querys.substring(querys.indexOf(";") + 1, querys.length());
-                } else {
-                    query = querys;
-                    querys = "";
-                }
-                while (query.indexOf("\n") == 0) {
-                    query = query.substring(1, query.length());
-                }
-
-                DatabaseConnection dc = getSelectedConnection();
-                ExecuteQueryDialog eqd = new ExecuteQueryDialog("Creating table", query, dc, true);
-                eqd.display();
-                commit = eqd.getCommit();
-            }
+            ExecuteQueryDialog eqd = new ExecuteQueryDialog("Creating table", querys, getSelectedConnection(), true);
+            eqd.display();
+            boolean commit = eqd.getCommit();
             if (commit)
                 parent.finished();
 

@@ -1,6 +1,7 @@
 package org.executequery.gui;
 
 import org.executequery.GUIUtilities;
+import org.executequery.components.table.BrowserTableCellRenderer;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
@@ -15,11 +16,18 @@ import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.List;
+import java.util.Vector;
 
 
 public class ExecuteQueryDialog extends BaseDialog {
@@ -54,11 +62,18 @@ public class ExecuteQueryDialog extends BaseDialog {
 
     JLabel errorLabel;
 
-    JTable tableAction;
+    DefaultTable tableAction;
 
     SQLTextPane queryPane;
 
     LoggingOutputPanel errorPane;
+
+    ListActionsModel model;
+
+    public static void setClipboard(String str) {
+        StringSelection ss = new StringSelection(str);
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, null);
+    }
 
     public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive) {
         super(name, true, false);
@@ -86,8 +101,67 @@ public class ExecuteQueryDialog extends BaseDialog {
         rollbackButton = new JButton();
         queryPane = new SQLTextPane();
         errorPane = new LoggingOutputPanel();
+        tableAction = new DefaultTable();
+        BrowserTableCellRenderer bctr = new BrowserTableCellRenderer();
+        tableAction.setDefaultRenderer(Object.class,bctr);
+        model = new ListActionsModel();
+        tableAction.setModel(model);
+        tableScroll.setViewportView(tableAction);
+        model.addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent tableModelEvent) {
 
-        listActionsLabel.setText("listActions");
+            }
+        });
+        tableAction.addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+                int row=tableAction.getSelectedRow();
+                if(row>=0) {
+                    if (mouseEvent.getClickCount() > 1) {
+                        if (tableAction.getSelectedColumn() == model.COPY) {
+                            model.data.elementAt(row).copyScript = !model.data.elementAt(row).copyScript;
+                            model.fireTableDataChanged();
+                        }
+                    } else {
+                        setMessages(model.data.elementAt(row));
+                    }
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent mouseEvent) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent mouseEvent) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent mouseEvent) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent mouseEvent) {
+
+            }
+        });
+        tableAction.getTableHeader().setReorderingAllowed(false);
+        tableAction.setCellSelectionEnabled(true);
+        tableAction.setColumnSelectionAllowed(false);
+        tableAction.setSurrendersFocusOnKeystroke(true);
+        TableColumnModel tcm = tableAction.getColumnModel();
+        tcm.getColumn(model.EXECUTED).setPreferredWidth(25);
+        tcm.getColumn(model.NAME_OPERATION).setPreferredWidth(200);
+        tcm.getColumn(model.STATUS).setPreferredWidth(200);
+        tcm.getColumn(model.COPY).setPreferredWidth(50);
+
+
+        listActionsLabel.setText(bundleString("listActions"));
 
         operatorLabel.setText(bundleString("operator"));
 
@@ -123,7 +197,7 @@ public class ExecuteQueryDialog extends BaseDialog {
 
         queryScroll.setViewportView(queryPane);
 
-        queryPane.setText(query);
+        //queryPane.setText(query);
         queryPane.setEditable(false);
 
         GroupLayout layout = new GroupLayout(mainPanel);
@@ -135,6 +209,8 @@ public class ExecuteQueryDialog extends BaseDialog {
                         .addGroup(
                                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                .addComponent(listActionsLabel)
+                                                .addComponent(tableScroll)
                                                 .addComponent(operatorLabel)
                                                 .addComponent(queryScroll, GroupLayout.PREFERRED_SIZE, 500, Short.MAX_VALUE)
                                                 .addComponent(errorLabel)
@@ -161,6 +237,10 @@ public class ExecuteQueryDialog extends BaseDialog {
                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
                                 .addGap(10)
+                                .addComponent(listActionsLabel)
+                                .addContainerGap()
+                                .addComponent(tableScroll,GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap()
                                 .addComponent(operatorLabel)
                                 .addContainerGap()
                                 .addComponent(queryScroll, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)
@@ -185,10 +265,24 @@ public class ExecuteQueryDialog extends BaseDialog {
         addDisplayComponent(mainPanel);
     }
 
+    private void setMessages(RowAction row)
+    {
+        queryPane.setText(row.queryAction);
+        if(row.executed)
+            setOutputMessage(SqlMessages.PLAIN_MESSAGE, row.SQLmessage);
+        else setOutputMessage(SqlMessages.ERROR_MESSAGE, row.SQLmessage);
+    }
+
     private void copyErrorButtonActionPerformed(ActionEvent evt) {
         try {
-            errorPane.selectAll();
-            errorPane.copy();
+            Vector<RowAction> v=model.data;
+            String copy="";
+            for(int i=0;i<v.size();i++)
+            {
+                if(v.elementAt(i).copyScript)
+                    copy+=v.elementAt(i).SQLmessage+"\n";
+            }
+            setClipboard(copy);
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
         }
@@ -196,8 +290,16 @@ public class ExecuteQueryDialog extends BaseDialog {
 
     private void copyQueryButtonActionPerformed(ActionEvent evt) {
         try {
-            queryPane.selectAll();
-            queryPane.copy();
+            Vector<RowAction> v=model.data;
+            String copy="";
+            for(int i=0;i<v.size();i++)
+            {
+                if(v.elementAt(i).copyScript)
+                    copy+=v.elementAt(i).queryAction+";\n";
+            }
+            setClipboard(copy);
+            /*queryPane.selectAll();
+            queryPane.copy();*/
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
         }
@@ -234,46 +336,78 @@ public class ExecuteQueryDialog extends BaseDialog {
         }
     }
 
-    void execute() {
+    void execute()
+    {
+        String querys = query;
+        if (querys.endsWith(";")) {
+            querys = querys.substring(0, querys.length() - 1);
+        }
+        String query = "";
+        boolean commit = true;
+        while (querys.trim().length() > 0 && commit) {
+            if (querys.contains(";")) {
+                query = querys.substring(0, querys.indexOf(";"));
+                querys = querys.substring(querys.indexOf(";") + 1, querys.length());
+            } else {
+                query = querys;
+                querys = "";
+            }
+            while (query.indexOf("\n") == 0) {
+                query = query.substring(1, query.length());
+            }
+            RowAction action=new RowAction(query);
+            commit=execute_query(action);
+            model.addRow(action);
+            setMessages(action);
+        }
+    }
+    boolean execute_query(RowAction query) {
         try {
-            DerivedQuery q = new DerivedQuery(query);
-
-            String derivedQueryString = q.getDerivedQuery();
+            DerivedQuery q = new DerivedQuery(query.queryAction);
             String queryToExecute = q.getOriginalQuery();
-
             int type = q.getQueryType();
-            long start = System.currentTimeMillis();
             Log.info("Executing:" + queryToExecute);
             SqlStatementResult result = querySender.execute(type, queryToExecute);
             int updateCount = result.getUpdateCount();
             if (updateCount == -1) {
 
-                setOutputMessage(SqlMessages.ERROR_MESSAGE,
-                        result.getErrorMessage());
+                /*setOutputMessage(SqlMessages.ERROR_MESSAGE,
+                        result.getErrorMessage());*/
+                query.status="Error";
+                query.SQLmessage=result.getErrorMessage();
                 commitButton.setVisible(false);
+                return false;
 
             } else {
 
                 if (result.isException()) {
 
-                    setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage());
+                    //setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage());
+                    query.status="Error";
+                    query.SQLmessage=result.getErrorMessage();
                     commitButton.setVisible(false);
+                    return false;
                 } else {
-
                     type = result.getType();
-                    setResultText(updateCount, type);
+                    query.SQLmessage=getResultText(updateCount, type);
+                    query.executed = true;
+                    query.status = "Success";
+                    return true;
 
                 }
             }
         } catch (Exception e) {
-            setOutputMessage(SqlMessages.ERROR_MESSAGE, e.getMessage());
+            //setOutputMessage(SqlMessages.ERROR_MESSAGE, e.getMessage());
+            query.status="Error";
+            query.SQLmessage=e.getMessage();
             commitButton.setVisible(false);
+            return false;
         }
 
 
     }
 
-    public void setResultText(int result, int type) {
+    public String getResultText(int result, int type) {
 
         String row = " row ";
         if (result > 1 || result == 0) {
@@ -334,6 +468,9 @@ public class ExecuteQueryDialog extends BaseDialog {
             case QueryTypes.DROP_OBJECT:
                 rText = "Object dropped.";
                 break;
+            case QueryTypes.COMMENT:
+                rText = "Description added";
+                break;
             case QueryTypes.UNKNOWN:
             case QueryTypes.EXECUTE:
                 if (result > -1) {
@@ -352,7 +489,7 @@ public class ExecuteQueryDialog extends BaseDialog {
 
         sb.append(rText);
 
-        setOutputMessage(SqlMessages.PLAIN_MESSAGE, sb.toString());
+        return sb.toString();//setOutputMessage(SqlMessages.PLAIN_MESSAGE, sb.toString());
 
     }
 
@@ -364,11 +501,160 @@ public class ExecuteQueryDialog extends BaseDialog {
     }
 
     void setOutputMessage(int type, String text) {
+        errorPane.clear();
         errorPane.append(type, text);
     }
 
     String bundleString(String key) {
         return Bundles.get(getClass(), key);
+    }
+
+    public class RowAction
+    {
+        boolean executed;
+
+        String nameOperation;
+
+        String status;
+
+        boolean copyScript;
+
+        String queryAction;
+
+        String SQLmessage;
+
+        public RowAction (String query)
+        {
+            queryAction=query;
+            executed=false;
+            status="";
+            copyScript=true;
+            ConctructName();
+
+        }
+
+        void ConctructName()
+        {
+            DerivedQuery q = new DerivedQuery(queryAction);
+
+            int type = q.getQueryType();
+            switch (type) {
+                case QueryTypes.INSERT:
+                    nameOperation = "INSERT RECORDS";
+                    break;
+                case QueryTypes.UPDATE:
+                    nameOperation = "UPDATE RECORDS";
+                    break;
+                case QueryTypes.DELETE:
+                    nameOperation = "DELETE RECORDS";
+                    break;
+                case QueryTypes.DROP_TABLE:
+                    nameOperation = "DROP TABLE";
+                    break;
+                case QueryTypes.CREATE_TABLE:
+                    nameOperation = "CREATE TABLE";
+                    break;
+                case QueryTypes.ALTER_TABLE:
+                    nameOperation = "ALTER TABLE";
+                    break;
+                case QueryTypes.CREATE_SEQUENCE:
+                    nameOperation = "CREATE SEQUENCE";
+                    break;
+                case QueryTypes.CREATE_PROCEDURE:
+                    nameOperation = "CREATE PROCEDURE";
+                    break;
+                case QueryTypes.CREATE_FUNCTION:
+                    nameOperation = "CREATE FUNCTION";
+                    break;
+                case QueryTypes.GRANT:
+                    nameOperation = "GRANT PRIVILEGE";;
+                    break;
+                case QueryTypes.CREATE_SYNONYM:
+                    nameOperation = "CREATE SYNONYM";
+                    break;
+                case QueryTypes.COMMIT:
+                    nameOperation = "COMMIT";
+                    break;
+                case QueryTypes.ROLLBACK:
+                    nameOperation = "ROLLBACK";
+                    break;
+                case QueryTypes.SELECT_INTO:
+                    nameOperation = "SELECT INTO";
+                    break;
+                case QueryTypes.CREATE_ROLE:
+                    nameOperation = "CREATE ROLE";
+                    break;
+                case QueryTypes.REVOKE:
+                    nameOperation = "REVOKE PRIVILEGE";
+                    break;
+                case QueryTypes.DROP_OBJECT:
+                    nameOperation = "DROP OBJECT";
+                    break;
+                case QueryTypes.COMMENT:
+                    nameOperation = "ADD DESCRIPTION";
+                    break;
+                default:
+                    nameOperation = "OPERATION";
+                    break;
+
+            }
+
+        }
+
+    }
+
+    public class ListActionsModel extends AbstractTableModel
+    {
+        final int EXECUTED=0;
+        final int NAME_OPERATION=1;
+        final int STATUS=2;
+        final int COPY=3;
+
+        Vector<RowAction> data;
+        String [] headers={"","Name operation","Status","Copy"};
+
+        public ListActionsModel()
+        {
+            data = new Vector<>();
+        }
+
+        @Override
+        public int getRowCount() {
+            return data.size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return headers.length;
+        }
+
+        @Override
+        public Object getValueAt(int row, int col) {
+           RowAction action=data.elementAt(row);
+            switch(col)
+            {
+                case EXECUTED:
+                    if(action.executed)
+                        return GUIUtilities.loadIcon("grant.png");
+                    else return GUIUtilities.loadIcon("no_grant.png");
+                case NAME_OPERATION:return action.nameOperation;
+                case STATUS:return action.status;
+                case COPY: if(action.copyScript)
+                    return GUIUtilities.loadIcon("CloseDockable.png");
+                    else return "";
+                default:return"";
+            }
+        }
+        public String getColumnName(int column)
+        {
+            return headers[column];
+        }
+
+        public void addRow(RowAction row)
+        {
+            data.add(row);
+            fireTableDataChanged();
+        }
     }
 
 }

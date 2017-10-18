@@ -251,6 +251,10 @@ public final class DerivedQuery {
             type = QueryTypes.REVOKE;
 
         }
+        else if (query.indexOf("COMMENT")==0)
+        {
+            type=QueryTypes.COMMENT;
+        }
         else {
             
             type = QueryTypes.UNKNOWN;

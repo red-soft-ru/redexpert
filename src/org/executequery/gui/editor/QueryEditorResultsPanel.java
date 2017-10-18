@@ -579,6 +579,9 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
             case QueryTypes.DROP_OBJECT:
                 rText = "Object dropped.";
                 break;
+            case QueryTypes.COMMENT:
+                rText = "Description added";
+                break;
             case QueryTypes.UNKNOWN:
             case QueryTypes.EXECUTE:
                 if (result > -1) {

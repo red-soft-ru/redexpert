@@ -93,6 +93,8 @@ public final class QueryTypes {
 
     public static final int DROP_OBJECT=33;
 
+    public static final int COMMENT=34;
+
     private QueryTypes() {}
 
 }

@@ -20,6 +20,7 @@
 
 package org.executequery.databasemediators.spi;
 
+import java.lang.reflect.UndeclaredThrowableException;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -39,6 +40,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.ProcedureParameterSorter;
 import org.executequery.databasemediators.QueryTypes;
@@ -108,8 +110,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
      * that determines whether connections are retained or closed between
      * requests.
      *
-     * @param the connection properties object
-     * @param whether the connection should be kept between requests
+     * @param databaseConnection the connection properties object
      */
     public DefaultStatementExecutor(DatabaseConnection databaseConnection) {
         this(databaseConnection, false);
@@ -121,8 +122,8 @@ public class DefaultStatementExecutor implements StatementExecutor {
      * that determines whether connections are retained or closed between
      * requests.
      *
-     * @param the connection properties object
-     * @param whether the connection should be kept between requests
+     * @param databaseConnection the connection properties object
+     * @param keepAlive whether the connection should be kept between requests
      */
     public DefaultStatementExecutor(DatabaseConnection databaseConnection, boolean keepAlive) {
         this.keepAlive = keepAlive;
@@ -135,7 +136,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
      *  the connection's <code>DatabaseMetaData</code> object
      *  and the method <code>getColumns(...)</code>.
      *
-     *  @param  the table name to describe
+     *  @param tableName the table name to describe
      *  @return the query result
      */
     private SqlStatementResult getTableDescription(String tableName) throws SQLException {
@@ -254,6 +255,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
         if (databaseConnection == null || !databaseConnection.isConnected()) {
 
             statementResult.setMessage("Not Connected");
+            statementResult.setOtherException(new UndeclaredThrowableException(new Throwable(),"Not Connected"));
             return false;
         }
 
@@ -309,7 +311,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
      *  the relevant error message, if available, assigned
      *  to this object for retrieval.
      *
-     *  @param  the SQL query to execute
+     *  @param query the SQL query to execute
      *  @return the query result
      */
     @Override
@@ -324,7 +326,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
      * <p>If an exception occurs, null is returned and the relevant error message, if available,
      * assigned to this object for retrieval.
      *
-     *  @param  the SQL query to execute
+     *  @param query the SQL query to execute
      *  @return the query result
      */
     @Override
@@ -364,7 +366,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
     /** <p>Executes the specified procedure.
      *
-     *  @param  the SQL procedure to execute
+     *  @param  databaseExecutable the SQL procedure to execute
      *  @return the query result
      */
     @Override
@@ -792,7 +794,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
      *  the relevant error message, if available, assigned
      *  to this object for retrieval.
      *
-     *  @param  the SQL procedure to execute
+     *  @param query the SQL procedure to execute
      *  @return the query result
      */
     private SqlStatementResult executeProcedure(String query) throws SQLException {
@@ -1165,7 +1167,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
      *  typically be called for a CREATE PROCEDURE/FUNCTION
      *  call.
      *
-     *  @param  the SQL query to execute
+     *  @param query the SQL query to execute
      *  @return the number of rows affected
      */
     @Override
@@ -1230,7 +1232,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
      *  the relevant error message, if available, assigned
      *  to this object for retrieval.
      *
-     *  @param  the SQL query to execute
+     *  @param  query the SQL query to execute
      *  @return the number of rows affected
      */
     @Override
@@ -1277,13 +1279,13 @@ public class DefaultStatementExecutor implements StatementExecutor {
     /** <p>Commits or rolls back the last executed
      *  SQL query or queries.
      *
-     *  @param true to commit - false to roll back
+     *  @param commit true to commit - false to roll back
      */
     private SqlStatementResult commitLast(boolean commit) {
 
         statementResult.reset();
         statementResult.setUpdateCount(0);
-
+        if(conn!=null)
         try {
 
             if (!conn.isClosed()) {
@@ -1350,7 +1352,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
     /** <p>Sets the connection's commit mode to the
      *  specified value.
      *
-     *  @param true for auto-commit, false otherwise
+     *  @param commitMode for auto-commit, false otherwise
      */
     @Override
     public void setCommitMode(boolean commitMode) {
@@ -1398,7 +1400,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
      *  <p>If the specified connection is NULL, the open
      *  connection held by this class is closed.
      *
-     *  @param the connection to close
+     *  @param c connection to close
      */
     private void closeConnection(Connection c) throws SQLException {
         try {
@@ -1422,7 +1424,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
      * the value of keepAlive for this instance will
      * be respected.
      *
-     * @param whether to call close() on the connection object
+     * @param destroy to call close() on the connection object
      */
     private void closeConnection(boolean destroy) {
         if (destroy) {
@@ -1463,7 +1465,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
     /**
      * Indicates a connection has been closed.
      *
-     * @param the connection thats been closed
+     * @param dc connection thats been closed
      */
     @Override
     public void disconnected(DatabaseConnection dc) {

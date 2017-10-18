@@ -24,6 +24,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.actions.othercommands.AbstractBaseCommand;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.BaseDialog;
+import org.executequery.localization.Bundles;
 
 /**
  * Base command for those opening a new frame
@@ -38,7 +39,7 @@ public abstract class OpenFrameCommand extends AbstractBaseCommand {
 
         if (!ConnectionManager.hasConnections()) {
 
-            GUIUtilities.displayErrorMessage(bundledString("error.notConnected"));
+            GUIUtilities.displayErrorMessage(Bundles.get(OpenFrameCommand.class,"error.notConnected"));
             return false;
         }
 
@@ -64,8 +65,8 @@ public abstract class OpenFrameCommand extends AbstractBaseCommand {
      * Creates a dialog component with the specified name
      * and modality.
      *
-     * @param the dialog name
-     * @param whether the dialog is to be modal
+     * @param name dialog name
+     * @param modal the dialog is to be modal
      */
     protected final BaseDialog createDialog(String name, boolean modal) {
         return new BaseDialog(name, modal);
@@ -75,9 +76,9 @@ public abstract class OpenFrameCommand extends AbstractBaseCommand {
      * Creates a dialog component with the specified name
      * and modality.
      *
-     * @param the dialog name
-     * @param whether the dialog is to be modal
-     * @param wether the dialog is resizeable
+     * @param name dialog name
+     * @param modal the dialog is to be modal
+     * @param resizeable the dialog is resizeable
      */
     protected final BaseDialog createDialog(String name, boolean modal, boolean resizeable) {
         return new BaseDialog(name, modal, resizeable);

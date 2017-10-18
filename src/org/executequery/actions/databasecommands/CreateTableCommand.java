@@ -43,7 +43,7 @@ public class CreateTableCommand extends OpenFrameCommand
     /** 
      * Performs the execution of this action.
      *
-     * @param the originating <code>ActionEvent</code>
+     * @param e originating <code>ActionEvent</code>
      */
     public void execute(ActionEvent e) {
 

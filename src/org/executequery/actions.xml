@@ -566,6 +566,13 @@
           description="Create a new database table"
           execute-class="org.executequery.actions.databasecommands.CreateTableCommand"/>
 
+  <action id="create-sequence-command"
+          name="Create Sequence"
+          mnemonic="T"
+          accel-editable="true"
+          description="Create a new database sequence"
+          execute-class="org.executequery.actions.databasecommands.CreateSequenceCommand"/>
+
   <action id="generate-scripts-command"
           name="Generate SQL Scripts"
           mnemonic="S"

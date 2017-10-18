@@ -40,6 +40,7 @@ import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.managment.WindowAddRole;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
+import org.executequery.gui.databaseobjects.CreateGeneratorPanel;
 import org.executequery.gui.importexport.ImportExportDelimitedPanel;
 import org.executequery.gui.importexport.ImportExportExcelPanel;
 import org.executequery.gui.importexport.ImportExportDataProcess;
@@ -101,21 +102,20 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
                         GUIUtilities.setSelectedDialog(CreateTablePanel.TITLE);
 
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateTablePanel.TITLE, false);
+                            CreateTablePanel panel = new CreateTablePanel(currentSelection, dialog);
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
                     }
-                {
-                    try {
-                        GUIUtilities.showWaitCursor();
-                        BaseDialog dialog =
-                                new BaseDialog(CreateTablePanel.TITLE, false);
-                        CreateTablePanel panel = new CreateTablePanel(currentSelection, dialog);
-                        dialog.addDisplayComponentWithEmptyBorder(panel);
-                        dialog.display();
-                        treePanel.reloadPath(currentPath.getParentPath());
-                    } finally {
-                        GUIUtilities.showNormalCursor();
-                    }
-                }
-                break;
+                    break;
                 case NamedObject.ROLE:
                     try {
                         GUIUtilities.showWaitCursor();
@@ -127,6 +127,25 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         treePanel.reloadPath(currentPath.getParentPath());
                     } finally {
                         GUIUtilities.showNormalCursor();
+                    }
+                    break;
+                case NamedObject.SEQUENCE:
+                    if (GUIUtilities.isDialogOpen(CreateGeneratorPanel.TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateGeneratorPanel.TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateGeneratorPanel.TITLE, false);
+                            CreateGeneratorPanel panel = new CreateGeneratorPanel(currentSelection, dialog);
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
                     }
                     break;
                 default:

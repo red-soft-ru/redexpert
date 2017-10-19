@@ -361,6 +361,7 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         
         return Collections.synchronizedList(new ArrayList<TableColumnIndex>(size));
     }
+    List<ColumnConstraint> constraints;
     
     /**
      * Returns the columns of this table.
@@ -369,54 +370,55 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
      */
     public List<ColumnConstraint> getConstraints() throws DataSourceException {
 
-        if (getColumns() != null) {
+        if(constraints==null) {
 
-            List<ColumnConstraint> constraints = new ArrayList<ColumnConstraint>();
+            if (getColumns() != null) {
 
-            for (DatabaseColumn i : columns) {
+                constraints = new ArrayList<ColumnConstraint>();
 
-                DatabaseTableColumn column = (DatabaseTableColumn) i;
-                if (column.hasConstraints()) {
+                for (DatabaseColumn i : columns) {
 
-                    List<ColumnConstraint> columnConstraints = column.getConstraints();
-                    for (ColumnConstraint j : columnConstraints) {
+                    DatabaseTableColumn column = (DatabaseTableColumn) i;
+                    if (column.hasConstraints()) {
 
-                        constraints.add(j);
+                        List<ColumnConstraint> columnConstraints = column.getConstraints();
+                        for (ColumnConstraint j : columnConstraints) {
+
+                            constraints.add(j);
+                        }
+
                     }
 
                 }
-
-            }
-            DefaultStatementExecutor executor=new DefaultStatementExecutor(getHost().getDatabaseConnection(),true);
-            SqlStatementResult result=null;
-            try {
-                String query="SELECT DISTINCT C.RDB$CONSTRAINT_NAME,\n" +
-                        "T.RDB$TRIGGER_SOURCE FROM\n" +
-                        "RDB$CHECK_CONSTRAINTS AS C LEFT JOIN RDB$TRIGGERS AS T\n" +
-                        "ON C.RDB$TRIGGER_NAME = T.RDB$TRIGGER_NAME\n" +
-                        "where T.RDB$RELATION_NAME='"+getName()+"'";
-                result=executor.execute(QueryTypes.SELECT,query);
-                ResultSet rs=result.getResultSet();
-                while(rs.next())
-                {
-                    ColumnConstraint constraint=new TableColumnConstraint(rs.getString(2));
-                    constraint.setName(rs.getString(1).trim());
-                    constraints.add(constraint);
+                DefaultStatementExecutor executor = new DefaultStatementExecutor(getHost().getDatabaseConnection(), true);
+                SqlStatementResult result = null;
+                try {
+                    String query = "SELECT DISTINCT C.RDB$CONSTRAINT_NAME,\n" +
+                            "T.RDB$TRIGGER_SOURCE FROM\n" +
+                            "RDB$CHECK_CONSTRAINTS AS C LEFT JOIN RDB$TRIGGERS AS T\n" +
+                            "ON C.RDB$TRIGGER_NAME = T.RDB$TRIGGER_NAME\n" +
+                            "where T.RDB$RELATION_NAME='" + getName() + "'";
+                    result = executor.execute(QueryTypes.SELECT, query);
+                    ResultSet rs = result.getResultSet();
+                    while (rs.next()) {
+                        ColumnConstraint constraint = new TableColumnConstraint(rs.getString(2));
+                        constraint.setName(rs.getString(1).trim());
+                        constraints.add(constraint);
+                    }
+                } catch (Exception e) {
+                    Log.error("Error loading check-constraints:" + result.getErrorMessage(), e);
                 }
-            }
-            catch (Exception e)
-            {
-                Log.error("Error loading check-constraints:"+result.getErrorMessage(),e);
-            }
-            executor.releaseResources();
-            constraints.removeAll(Collections.singleton(null));
-            
-            return constraints;
+                executor.releaseResources();
+                constraints.removeAll(Collections.singleton(null));
 
-        } else {
+                return constraints;
 
-            return databaseConstraintsListWithSize(0);
+            } else {
+
+                return databaseConstraintsListWithSize(0);
+            }
         }
+        else return constraints;
     }
 
     /**

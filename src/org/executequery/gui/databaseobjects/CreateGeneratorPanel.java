@@ -2,6 +2,8 @@ package org.executequery.gui.databaseobjects;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -40,6 +42,8 @@ public class CreateGeneratorPanel extends JPanel {
 
     private JComboBox connectionsCombo;
 
+    JLabel labelIncrement;
+
     private DynamicComboBoxModel connectionsModel;
 
     public static final String TITLE = "Create Sequence";
@@ -60,6 +64,10 @@ public class CreateGeneratorPanel extends JPanel {
         parent = dialog;
         connection = dc;
         init(name, initial_value, increment, description);
+        if (getVersion() < 3) {
+            labelIncrement.setVisible(false);
+            incrementText.setVisible(false);
+        }
 
     }
 
@@ -143,8 +151,8 @@ public class CreateGeneratorPanel extends JPanel {
         add(startValueText, gbc);
         gbc.gridy++;
         gbcLabel.gridy++;
-        label = new JLabel("Increment");
-        add(label, gbcLabel);
+        labelIncrement = new JLabel("Increment");
+        add(labelIncrement, gbcLabel);
         add(incrementText, gbc);
         gbc.gridy++;
         gbcLabel.gridy++;
@@ -158,21 +166,42 @@ public class CreateGeneratorPanel extends JPanel {
 
     }
 
+    int getVersion() {
+        DatabaseHost host = new DefaultDatabaseHost(connection);
+        String vers = host.getDatabaseProductVersion();
+        int version = 2;
+        if (vers != null) {
+            int number = 0;
+            for (int i = 0; i < vers.length(); i++) {
+                if (Character.isDigit(vers.charAt(i))) {
+                    number = Character.getNumericValue(vers.charAt(i));
+                    break;
+                }
+            }
+            if (number >= 3)
+                version = 3;
+
+        }
+        return version;
+    }
+
     void createGenerator() {
         if (!MiscUtils.isNull(nameText.getText().trim())) {
-            String query = "CREATE SEQUENCE " + nameText.getText() + " START WITH " + startValueText.getStringValue()
-                    + " INCREMENT BY " + incrementText.getStringValue();
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog(TITLE, query, connection, true);
-            eqd.display();
-            if (eqd.getCommit()) {
-                if (!MiscUtils.isNull(description.getText().trim())) {
-                    String query2 = "COMMENT ON SEQUENCE " + nameText.getText() + " IS '" + description.getText() + "'";
-                    ExecuteQueryDialog eqd2 = new ExecuteQueryDialog(TITLE, query2, connection, true);
-                    eqd2.display();
-                    if (eqd2.getCommit())
-                        parent.finished();
-                } else
+            String query;
+            if (getVersion() == 3) {
+                query = "CREATE SEQUENCE " + nameText.getText() + " START WITH " + startValueText.getStringValue()
+                        + " INCREMENT BY " + incrementText.getStringValue() + ";";
+            } else {
+                query = "CREATE SEQUENCE " + nameText.getText() + ";";
+                query += "\nALTER SEQUENCE " + nameText.getText() + " RESTART WITH " + startValueText.getStringValue() + ";";
+            }
+            if (!MiscUtils.isNull(description.getText().trim())) {
+                query += "\nCOMMENT ON SEQUENCE " + nameText.getText() + " IS '" + description.getText() + "'";
+                ExecuteQueryDialog eqd = new ExecuteQueryDialog(TITLE, query, connection, true);
+                eqd.display();
+                if (eqd.getCommit()) {
                     parent.finished();
+                }
             }
         } else
             GUIUtilities.displayErrorMessage("Name can not be empty");

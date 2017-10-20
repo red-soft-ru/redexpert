@@ -4,44 +4,42 @@ package org.underworldlabs.swing;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.Date;
 
-public class EQTimePicker  extends JPanel {
+public class EQTimePicker extends JPanel {
     JSpinner timeSpinner;
     JSpinner.DateEditor timeEditor;
     JCheckBox nullBox;
-    public EQTimePicker()
-    {
+
+    public EQTimePicker() {
         init();
     }
-    public EQTimePicker(boolean enabled)
-    {
+
+    public EQTimePicker(boolean enabled) {
         init();
         nullBox.setSelected(!enabled);
         setEnable(enabled);
     }
-    void init()
-    {
-        timeSpinner = new JSpinner( new SpinnerDateModel() );
+
+    void init() {
+        timeSpinner = new JSpinner(new SpinnerDateModel());
         timeEditor = new JSpinner.DateEditor(timeSpinner, "HH:mm:ss");
         timeSpinner.setEditor(timeEditor);
-        nullBox=new JCheckBox("NULL");
+        nullBox = new JCheckBox("NULL");
         nullBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 timeSpinner.setEnabled(!nullBox.isSelected());
             }
         });
-        GroupLayout layout=new GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
                 layout.createSequentialGroup()
                         .addComponent(timeSpinner)
                         .addGap(10)
-                        .addComponent(nullBox,GroupLayout.DEFAULT_SIZE,GroupLayout.DEFAULT_SIZE,GroupLayout.DEFAULT_SIZE)
+                        .addComponent(nullBox, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
 
         );
         layout.setVerticalGroup(
@@ -50,16 +48,23 @@ public class EQTimePicker  extends JPanel {
                         .addComponent(timeSpinner)
         );
     }
-    public String getStringValue()
-    {
-        if(nullBox.isSelected())
+
+    public String getStringValue() {
+        if (nullBox.isSelected())
             return "";
-        Instant instant=Instant.ofEpochMilli(((Date)(timeSpinner).getValue()).getTime());
+        Instant instant = Instant.ofEpochMilli(((Date) (timeSpinner).getValue()).getTime());
         LocalDateTime temp = LocalDateTime.ofInstant(instant, ZoneOffset.systemDefault());
-        return temp.getHour()+":"+temp.getMinute()+":"+temp.getSecond() ;
+        return temp.getHour() + ":" + temp.getMinute() + ":" + temp.getSecond();
     }
-    public void setEnable(boolean enable)
-    {
+
+    public void setTime(LocalTime time) {
+        Instant instant = time.atDate(LocalDate.of(2000, 1, 1)).
+                atZone(ZoneId.systemDefault()).toInstant();
+        Date date = Date.from(instant);
+        timeSpinner.setValue(date);
+    }
+
+    public void setEnable(boolean enable) {
         setEnabled(enable);
         nullBox.setSelected(!enable);
         nullBox.setEnabled(enable);

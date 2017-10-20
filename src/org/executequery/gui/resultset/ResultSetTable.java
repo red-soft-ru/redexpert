@@ -43,6 +43,7 @@ import javax.swing.table.TableModel;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.StandardTable;
+import org.underworldlabs.swing.DateTimeCellEditor;
 import org.underworldlabs.swing.table.MultiLineStringCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
 import org.underworldlabs.swing.table.TableSorter;
@@ -60,6 +61,10 @@ public class ResultSetTable extends JTable implements StandardTable {
     private DefaultCellEditor defaultCellEditor;
 
     private DefaultCellEditor multiLineCellEditor;
+
+    private DateCellEditor dateEditor;
+
+    private DateTimeCellEditor dateTimeCellEditor;
 
     List<Integer> comboboxColumns;
 
@@ -89,7 +94,9 @@ public class ResultSetTable extends JTable implements StandardTable {
             public Object getCellEditorValue() {
                 return multiLineStringCellEditor.getValue(); }
         };
-        
+        dateEditor = new DateCellEditor();
+        dateTimeCellEditor = new DateTimeCellEditor();
+
     }
 
     public ResultSetTable(TableModel model) {
@@ -467,6 +474,11 @@ public class ResultSetTable extends JTable implements StandardTable {
             case Types.VARCHAR:
             case Types.NVARCHAR:
                 return multiLineCellEditor;
+            case Types.DATE:
+                return dateEditor;
+            case Types.TIMESTAMP:
+                return dateTimeCellEditor;
+
         }
         
         return defaultCellEditor;

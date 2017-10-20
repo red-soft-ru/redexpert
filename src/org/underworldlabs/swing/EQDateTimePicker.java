@@ -6,20 +6,19 @@ import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
 import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
 
 import javax.swing.*;
+import java.time.LocalDateTime;
 
 public class EQDateTimePicker extends JPanel {
     public DatePicker datePicker;
     public EQTimePicker timePicker;
 
-    public EQDateTimePicker()
-    {
-        datePicker=new DatePicker();
-        timePicker=new EQTimePicker(false);
+    public EQDateTimePicker() {
+        datePicker = new DatePicker();
+        timePicker = new EQTimePicker(false);
         init();
     }
 
-    void init()
-    {
+    void init() {
         datePicker.addDateChangeListener(new DateChangeListener() {
             @Override
             public void dateChanged(DateChangeEvent dateChangeEvent) {
@@ -27,7 +26,7 @@ public class EQDateTimePicker extends JPanel {
 
             }
         });
-        GroupLayout layout=new GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
                 layout.createSequentialGroup()
@@ -42,9 +41,18 @@ public class EQDateTimePicker extends JPanel {
                         .addComponent(timePicker)
         );
     }
-    public String getStringValue()
-    {
-        return (datePicker.getDateStringOrEmptyString()+" "+timePicker.getStringValue()).trim();
+
+    public String getStringValue() {
+        return (datePicker.getDateStringOrEmptyString() + " " + timePicker.getStringValue()).trim();
     }
 
+    public void setDateTimePermissive(LocalDateTime time) {
+        datePicker.setDate(time.toLocalDate());
+        timePicker.setTime(time.toLocalTime());
+    }
+
+    public void clear() {
+        datePicker.clear();
+        timePicker.setEnabled(false);
+    }
 }

@@ -932,7 +932,10 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         if (column < rowData.size()) {
 
             try {
-
+                if (value!=null)
+                    if(value.getClass().equals(String.class))
+                        if(((String)value).equals(""))
+                            value=null;
                 rowData.get(asVisibleColumnIndex(column)).valueChanged(value);
                 fireTableCellUpdated(row, column);
 

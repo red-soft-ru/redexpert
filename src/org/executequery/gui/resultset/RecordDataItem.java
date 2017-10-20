@@ -40,6 +40,8 @@ public interface RecordDataItem extends TableCellValue {
 
 	Object getDisplayValue();
 
+	boolean isDisplayValueNull();
+
 	void setValue(Object value);
 
 	boolean isValueNull();

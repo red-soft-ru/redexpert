@@ -155,6 +155,11 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
 		return (value == null);
 	}
 
+	public boolean isDisplayValueNull()
+	{
+		return isValueNull();
+	}
+
 	@Override
     public String toString() {
 

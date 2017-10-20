@@ -11,13 +11,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -55,61 +52,42 @@ public class UpdateLoader extends JFrame {
     private String getLastVersion(String repo) {
         StringBuilder buffer = new StringBuilder("");
         try {
-            /*String path = repo + "/maven-metadata.xml";
-            URL url = new URL(path);
-
-            InputStream html = null;
-
-            html = url.openStream();
-
-            int c = 0;
-
-            while (c != -1) {
-                c = html.read();
-                buffer.append((char) c);
-
-            }*/
             URL myUrl = new URL(repo);
             URLConnection myUrlCon = myUrl.openConnection();
             InputStream input = myUrlCon.getInputStream();
             int c;
-            while(((c = input.read()) != -1)) {
+            while (((c = input.read()) != -1)) {
                 buffer.append((char) c);
             }
             input.close();
-        } catch (MalformedURLException e) {
-            Log.error("Cannot download update from repository. " +
-                    "Please, check repository url or try update later.");
-            return null;
-        } catch (IOException e) {
+        } catch (Exception e) {
             Log.error("Cannot download update from repository. " +
                     "Please, check repository url or try update later.");
             return null;
         }
         String s = buffer.toString();
-        String[] ss=s.split("\n");
+        String[] ss = s.split("\n");
         String res = "0.0";
-        for(int i=0;i<ss.length;i++) {
+        for (int i = 0; i < ss.length; i++) {
             Pattern pattern;
-            pattern =Pattern.compile("(<a href=\")([0-9]+[\\.][0-9]+.+)(/\">)");
+            pattern = Pattern.compile("(<a href=\")([0-9]+[\\.][0-9]+.+)(/\">)");
             Matcher m = pattern.matcher(ss[i]);
-            if(m.find()) {
+            if (m.find()) {
                 String r = m.group(2);
                 try {
                     ApplicationVersion temp = new ApplicationVersion(r);
                     if (temp.isNewerThan(res))
                         res = r;
-                }
-                catch (Exception e)
-                {
-                    Log.debug("Big version:"+r,e);
+                } catch (Exception e) {
+                    Log.debug("Big version:" + r, e);
                 }
 
             }
         }
-        if(res!="0.0")
-        return res;
-        else return null;
+        if (res != "0.0")
+            return res;
+        else
+            return null;
     }
 
     private void initComponents() {
@@ -151,7 +129,7 @@ public class UpdateLoader extends JFrame {
         pack();
         this.setSize(500, 400);
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);
+        this.setLocation(dim.width / 2 - this.getSize().width / 2, dim.height / 2 - this.getSize().height / 2);
     }
 
     private void cancelUpdate() {
@@ -159,61 +137,56 @@ public class UpdateLoader extends JFrame {
         this.dispose();
     }
 
-    JSONObject getJsonObject(String Url) throws IOException
-    {
+    JSONObject getJsonObject(String Url) throws IOException {
 
-        String text="";
-        HttpClient client=new HttpClient();
-            //HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        GetMethod get=new GetMethod(Url);
+        String text = "";
+        HttpClient client = new HttpClient();
+        GetMethod get = new GetMethod(Url);
         client.executeMethod(get);
 
         BufferedReader br = new BufferedReader(
-                   new InputStreamReader(get.getResponseBodyAsStream()));
+                new InputStreamReader(get.getResponseBodyAsStream()));
 
         String inputLine;
 
 
         while ((inputLine = br.readLine()) != null) {
-            text+=inputLine+"\n";
+            text += inputLine + "\n";
         }
 
         br.close();
 
 
-
         return new JSONObject(text);
     }
-    JSONArray getJsonArray(String Url)throws IOException
-    {
-        URL url;
-        String text="";
 
-        HttpClient client=new HttpClient();
-            //HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        GetMethod get=new GetMethod(Url);
+    JSONArray getJsonArray(String Url) throws IOException {
+        URL url;
+        String text = "";
+
+        HttpClient client = new HttpClient();
+        //HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        GetMethod get = new GetMethod(Url);
         client.executeMethod(get);
 
         BufferedReader br = new BufferedReader(
-                    new InputStreamReader(get.getResponseBodyAsStream()));
+                new InputStreamReader(get.getResponseBodyAsStream()));
 
         String inputLine;
 
 
         while ((inputLine = br.readLine()) != null) {
-                text+=inputLine+"\n";
-            }
+            text += inputLine + "\n";
+        }
 
         br.close();
 
         return new JSONArray(text);
     }
 
-    JSONObject getJsonObjectFromArray(JSONArray mas,String key,String value)
-    {
-        for(int i=0;i<mas.length();i++)
-        {
-            String prop=mas.getJSONObject(i).getString(key);
+    JSONObject getJsonObjectFromArray(JSONArray mas, String key, String value) {
+        for (int i = 0; i < mas.length(); i++) {
+            String prop = mas.getJSONObject(i).getString(key);
             if (prop.contentEquals(value))
                 return mas.getJSONObject(i);
         }
@@ -221,15 +194,13 @@ public class UpdateLoader extends JFrame {
 
     }
 
-    String getJsonPropertyFromUrl(String Url,String key)throws IOException
-    {
+    String getJsonPropertyFromUrl(String Url, String key) throws IOException {
 
         return getJsonObject(Url).getString(key);
     }
 
     void update(boolean unstable) {
-        if(unstable)
-        {
+        if (unstable) {
             this.setTitle("Updating");
             outText.setText("Contacting Download Server...");
             try {
@@ -239,13 +210,10 @@ public class UpdateLoader extends JFrame {
                         "artifact_id",
                         "red_expert:red_expert:" + version + ":zip:bin");
                 downloadLink = "http://builds.red-soft.biz/" + obj.getString("file");
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 Log.error(e.getMessage());
             }
-        }
-        else {
+        } else {
             this.setTitle("Updating from " + repo);
             outText.setText("Contacting Download Server...");
             if (!repo.isEmpty())
@@ -253,7 +221,7 @@ public class UpdateLoader extends JFrame {
             else
                 this.downloadLink = binaryZipUrl;
         }
-            download();
+        download();
 
     }
 
@@ -323,7 +291,7 @@ public class UpdateLoader extends JFrame {
                     copy(ff.getAbsolutePath(), dir + "/" + ff.getName());
                 } catch (IOException e) {
                     outText.setText(outText.getText() + "\n Copying error. " +
-                        e.getMessage());
+                            e.getMessage());
                 }
             }
 
@@ -382,7 +350,7 @@ public class UpdateLoader extends JFrame {
                                 ex.getMessage());
                     } catch (IOException ex) {
                         outText.setText(outText.getText() + "\nExtracting " + entry + "error." +
-                            ex.getMessage());
+                                ex.getMessage());
                     }
                     dest.flush();
                     dest.close();
@@ -428,9 +396,8 @@ public class UpdateLoader extends JFrame {
         return false;
     }
 
-    public void setVersion(String version)
-    {
-        this.version=version;
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public String getVersion() {

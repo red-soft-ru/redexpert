@@ -154,11 +154,10 @@ public class NewTablePanel extends TableDefinitionPanel
             } else {
                 line.append(cd.getDomain());
             }
-            if (!MiscUtils.isNull(cd.getDefaultValue()))
-            {
-                String value="";
-                boolean str=false;
-                int sqlType=cd.getSQLType();
+            if (!MiscUtils.isNull(cd.getDefaultValue())) {
+                String value = "";
+                boolean str = false;
+                int sqlType = cd.getSQLType();
                 switch (sqlType) {
 
                     case Types.LONGVARCHAR:
@@ -177,12 +176,11 @@ public class NewTablePanel extends TableDefinitionPanel
                     default:
                         break;
                 }
-                value+=cd.getDefaultValue();
-                if(str)
-                {
-                    value+="'";
+                value += cd.getDefaultValue();
+                if (str) {
+                    value += "'";
                 }
-                line.append(" DEFAULT "+value);
+                line.append(" DEFAULT " + value);
             }
             line.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
             if (!MiscUtils.isNull(cd.getCheck())) {
@@ -253,11 +251,10 @@ public class NewTablePanel extends TableDefinitionPanel
                     } else {
                         sqlText.append(cd.getDomain());
                     }
-                    if (!MiscUtils.isNull(cd.getDefaultValue()))
-                    {
-                        String value="";
-                        boolean str=false;
-                        int sqlType=cd.getSQLType();
+                    if (!MiscUtils.isNull(cd.getDefaultValue())) {
+                        String value = "";
+                        boolean str = false;
+                        int sqlType = cd.getSQLType();
                         switch (sqlType) {
 
                             case Types.LONGVARCHAR:
@@ -276,12 +273,11 @@ public class NewTablePanel extends TableDefinitionPanel
                             default:
                                 break;
                         }
-                        value+=cd.getDefaultValue();
-                        if(str)
-                        {
-                            value+="'";
+                        value += cd.getDefaultValue();
+                        if (str) {
+                            value += "'";
                         }
-                        sqlText.append(" DEFAULT "+value);
+                        sqlText.append(" DEFAULT " + value);
                     }
                     sqlText.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
                     if (!MiscUtils.isNull(cd.getCheck())) {

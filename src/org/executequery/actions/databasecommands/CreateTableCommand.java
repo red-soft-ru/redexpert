@@ -28,19 +28,19 @@ import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.CreateTablePanel;
 
-/** 
+/**
  * Executes the create table action creating an
  * instance of CreateTablePanel and adding this within
  * an internal frame to the desktop.
  *
- * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @author Takis Diakoumis
+ * @version $Revision: 1780 $
+ * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class CreateTableCommand extends OpenFrameCommand
-                                implements BaseCommand {
-    
-    /** 
+        implements BaseCommand {
+
+    /**
      * Performs the execution of this action.
      *
      * @param e originating <code>ActionEvent</code>
@@ -49,29 +49,28 @@ public class CreateTableCommand extends OpenFrameCommand
 
         if (!isConnected()) {
             return;
-        }        
+        }
 
-        
+
         if (isActionableDialogOpen()) {
             GUIUtilities.acionableDialogToFront();
             return;
         }
-        
+
         if (!isDialogOpen(CreateTablePanel.TITLE)) {
             try {
                 GUIUtilities.showWaitCursor();
-                BaseDialog dialog = 
+                BaseDialog dialog =
                         createDialog(CreateTablePanel.TITLE, false);
                 CreateTablePanel panel = new CreateTablePanel(dialog);
                 dialog.addDisplayComponentWithEmptyBorder(panel);
                 dialog.display();
-            }
-            finally {
+            } finally {
                 GUIUtilities.showNormalCursor();
             }
         }
     }
-    
+
 }
 
 

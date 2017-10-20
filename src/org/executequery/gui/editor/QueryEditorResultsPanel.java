@@ -53,31 +53,41 @@ import org.underworldlabs.util.MiscUtils;
 /**
  * The Query Editor's results panel.
  *
- * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @author Takis Diakoumis
+ * @version $Revision: 1780 $
+ * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
-                                     implements TabRollOverListener,
-                                                TabSelectionListener,
-                                                ResultSetTableContainer,
-                                                ChangeListener {
+        implements TabRollOverListener,
+        TabSelectionListener,
+        ResultSetTableContainer,
+        ChangeListener {
 
     private static final String OUTPUT_TAB_TITLE = "Output";
 
-    /** the editor parent */
+    /**
+     * the editor parent
+     */
     private QueryEditor queryEditor;
 
-    /** the text output message pane */
+    /**
+     * the text output message pane
+     */
     private LoggingOutputPanel outputTextPane;
 
-    /** the result set tab count */
+    /**
+     * the result set tab count
+     */
     private int resultSetTabTitleCounter;
 
-    /** the result tab icon */
+    /**
+     * the result tab icon
+     */
     private Icon resultSetTabIcon;
 
-    /** the text output tab icon */
+    /**
+     * the text output tab icon
+     */
     private Icon outputTabIcon;
 
     private static final String SUCCESS = " Statement executed successfully";
@@ -154,7 +164,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         return transposedRowTableModelBuilder;
     }
 
-    public void transposeRow(TableModel tableModel,  int row) {
+    public void transposeRow(TableModel tableModel, int row) {
 
         if (!(tableModel instanceof ResultSetTableModel)) {
 
@@ -172,22 +182,22 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
         ResultSetPanel selectedResultSetPanel = getSelectedResultSetPanel();
         if (selectedResultSetPanel == null || selectedResultSetPanel.getRowCount() == 0) {
-            
+
             return;
         }
 
         List<List<RecordDataItem>> list = selectedResultSetPanel.filter(pattern);
         ResultSetPanel resultSetPanel = createResultSetPanel();
         ResultSetTableModel model = new ResultSetTableModel(selectedResultSetPanel.getResultSetTableModel().getColumnNames(), list);
-        
+
         resultSetPanel.setResultSet(model, false);
         addResultSetPanel(selectedResultSetPanel.getResultSetTableModel().getQuery(), model.getRowCount(), resultSetPanel, true);
     }
-    
+
     private String queryForModel(TableModel tableModel) {
 
         for (int i = 0, n = getTabCount(); i < n; i++) {
-            
+
             Component c = getTabComponentAt(i);
             if (c instanceof ResultSetPanel) {
 
@@ -198,7 +208,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
                 }
 
             }
-            
+
         }
         return "";
     }
@@ -298,7 +308,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         Component selectedComponent = getSelectedComponent();
         if (selectedComponent instanceof ResultSetPanel) {
 
-            int rowCount = ((ResultSetPanel)selectedComponent).getRowCount();
+            int rowCount = ((ResultSetPanel) selectedComponent).getRowCount();
             resetEditorRowCount(rowCount);
         }
 
@@ -328,7 +338,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         for (int i = 0; i < tabs.length; i++) {
             Component c = tabs[i];
             if (c instanceof ResultSetPanel) {
-                ResultSetPanel panel = (ResultSetPanel)c;
+                ResultSetPanel panel = (ResultSetPanel) c;
                 panel.interrupt();
             }
         }
@@ -337,12 +347,12 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
     /**
      * Sets the result set object.
      *
-     * @param rset - the executed result set
+     * @param rset          - the executed result set
      * @param showRowNumber - whether to return the result set row count
-     * @param maxRecords - the maximum records to return
+     * @param maxRecords    - the maximum records to return
      */
     public int setResultSet(ResultSet rset, boolean showRowNumber, int maxRecords)
-        throws SQLException{
+            throws SQLException {
 
         return setResultSet(rset, showRowNumber, maxRecords, null);
     }
@@ -350,10 +360,10 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
     /**
      * Sets the result set object.
      *
-     * @param rset - the executed result set
+     * @param rset          - the executed result set
      * @param showRowNumber - whether to return the result set row count
-     * @param maxRecords - the maximum records to return
-     * @param query - the executed query of the result set
+     * @param maxRecords    - the maximum records to return
+     * @param query         - the executed query of the result set
      */
     public int setResultSet(ResultSet rset, boolean showRowNumber, int maxRecords, String query) {
 
@@ -374,9 +384,9 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
             ResultSetPanel panel = createResultSetPanel();
             ResultSetTable table = panel.getTable();
             try {
-                
+
                 resultSetTableColumnResizingManager.suspend(table);
-                
+
                 panel.setResultSet(model, showRowNumber);
                 resultSetTableColumnResizingManager.setColumnWidthsForTable(table);
 
@@ -410,10 +420,10 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
     }
 
     private void addResultSetPanel(String query, int rowCount, final ResultSetPanel panel) {
-        
+
         addResultSetPanel(query, rowCount, panel, false);
     }
-    
+
     private void addResultSetPanel(String query, int rowCount, final ResultSetPanel panel, boolean filtered) {
 
         resetTabCount();
@@ -580,14 +590,13 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
                 rText = "Object dropped.";
                 break;
             case QueryTypes.COMMENT:
-                rText = "Description added";
+                rText = "Description created.";
                 break;
             case QueryTypes.UNKNOWN:
             case QueryTypes.EXECUTE:
                 if (result > -1) {
                     rText = result + row + "affected.\nStatement executed successfully.";
-                }
-                else {
+                } else {
                     rText = "Statement executed successfully.";
                 }
                 break;
@@ -606,7 +615,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
     }
 
     private boolean hasNoTabs() {
-        
+
         return getTabCount() == 0;
     }
 
@@ -618,7 +627,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         for (int i = 0; i < tabs.length; i++) {
             Component c = tabs[i];
             if (c instanceof ResultSetPanel) {
-                ResultSetPanel panel = (ResultSetPanel)c;
+                ResultSetPanel panel = (ResultSetPanel) c;
                 panel.setResultBackground(colour);
             }
         }
@@ -629,7 +638,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         for (int i = 0; i < tabs.length; i++) {
             Component c = tabs[i];
             if (c instanceof ResultSetPanel) {
-                ResultSetPanel panel = (ResultSetPanel)c;
+                ResultSetPanel panel = (ResultSetPanel) c;
                 panel.destroyTable();
             }
         }
@@ -646,7 +655,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         Component c = getComponentAt(selectedIndex);
         if (c instanceof ResultSetPanel) {
 
-            return (ResultSetPanel)c;
+            return (ResultSetPanel) c;
         }
 
         return null;
@@ -764,7 +773,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
      * currently selected result set tab.
      */
     public void displayResultSetMetaData() {
-        
+
         ResultSetPanel panel = getSelectedResultSetPanel();
         if (panelHasResultSetMetaData(panel)) {
 
@@ -777,7 +786,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
                 Component c = getComponentAt(index + 1);
                 if (c == metaDataPanel) {
-                
+
                     setSelectedIndex(index + 1);
                     return;
                 }
@@ -785,10 +794,10 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
             // otherwise add it
             insertTab(ResultSetMetaDataPanel.TITLE,
-                      GUIUtilities.loadIcon("RSMetaData16.png", true),
-                      metaDataPanel,
-                      getToolTipTextAt(index),
-                      index + 1);
+                    GUIUtilities.loadIcon("RSMetaData16.png", true),
+                    metaDataPanel,
+                    getToolTipTextAt(index),
+                    index + 1);
             setSelectedIndex(index + 1);
         }
     }
@@ -810,10 +819,14 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         queryEditor.caretToQuery(query);
     }
 
-    /** the query display popup */
+    /**
+     * the query display popup
+     */
     private static QueryTextPopup queryPopup;
 
-    /** last popup rollover index */
+    /**
+     * last popup rollover index
+     */
     private int lastRolloverIndex = -1;
 
     /**
@@ -837,17 +850,17 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
             queryEditor.toggleResultPane();
         }
-        
+
     }
-    
-    
+
+
     /**
      * Reacts to a tab rollover.
      *
      * @param the associated event
      */
     public void tabRollOver(TabRolloverEvent e) {
-        
+
         int index = e.getIndex();
 
         // check if we're over the output panel (index 0)

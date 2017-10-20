@@ -601,10 +601,10 @@ public class TableDataTab extends JPanel
                     component_value = ((EQDateTimePicker) component).getStringValue();
                     break;
                 case Types.TIME:
-                    component_value =((EQTimePicker) component).getStringValue();//((DateTimePicker) component).timePicker.getTimeStringOrEmptyString();
+                    component_value = ((EQTimePicker) component).getStringValue();//((DateTimePicker) component).timePicker.getTimeStringOrEmptyString();
                     break;
                 case Types.BOOLEAN:
-                    component_value = ((RDBCheckBox)component).getStringValue();
+                    component_value = ((RDBCheckBox) component).getStringValue();
                     break;
                 default:
                     component_value = ((JTextField) component).getText();
@@ -715,7 +715,7 @@ public class TableDataTab extends JPanel
                             field = new EQDateTimePicker();
                             break;
                         case Types.TIME:
-                            field=new EQTimePicker();
+                            field = new EQTimePicker();
                             break;
                         case Types.BOOLEAN:
                             field = new RDBCheckBox();
@@ -766,7 +766,7 @@ public class TableDataTab extends JPanel
         int row = table.getSelectedRow();
         if (row >= 0) {
             String query = "DELETE FROM " + databaseObject.getNameForQuery() + " WHERE ";
-            String order="";
+            String order = "";
             for (int i = 0; i < tableModel.getColumnHeaders().size(); i++) {
                 String value = "";
                 ResultSetColumnHeader rsch = tableModel.getColumnHeaders().get(i);
@@ -804,11 +804,11 @@ public class TableDataTab extends JPanel
                     query = query + " (" + rsch.getName() + " = " + value + " )";
                 if (i != tableModel.getColumnHeaders().size() - 1)
                     query += " and";
-                else order=rsch.getName();
+                else order = rsch.getName();
 
             }
-            query+="\nORDER BY "+order+"\n";
-            query+="ROWS 1";
+            query += "\nORDER BY " + order + "\n";
+            query += "ROWS 1";
             ExecuteQueryDialog eqd = new ExecuteQueryDialog("Delete record", query, databaseObject.getHost().getDatabaseConnection(), true);
             eqd.display();
             if (eqd.getCommit()) {

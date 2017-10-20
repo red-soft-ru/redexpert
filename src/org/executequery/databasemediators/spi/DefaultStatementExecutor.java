@@ -59,7 +59,7 @@ import org.underworldlabs.util.MiscUtils;
  * This class handles all database query functions
  * such as the execution of SQL SELECT, INSERT, UPDATE
  * etc statements.
- *
+ * <p>
  * <p>This class will typically be used by the Database
  * Browser or Query Editor where all SQL statements to be
  * executed will pass through here. In the case of a Query
@@ -70,34 +70,50 @@ import org.underworldlabs.util.MiscUtils;
  * within an editor, a dedicated connection is required
  * so as to maintain the correct rollback segment.
  *
- * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @author Takis Diakoumis
+ * @version $Revision: 1780 $
+ * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class DefaultStatementExecutor implements StatementExecutor {
 
-    /** Whether this object is owned by a QueryEditor instance */
+    /**
+     * Whether this object is owned by a QueryEditor instance
+     */
     private boolean keepAlive;
 
-    /** The connection's commit mode */
+    /**
+     * The connection's commit mode
+     */
     private boolean commitMode;
 
-    /** The database connection */
+    /**
+     * The database connection
+     */
     private Connection conn;
 
-    /** The database <code>Statement</code> object */
+    /**
+     * The database <code>Statement</code> object
+     */
     private Statement stmnt;
 
-    /** The connection use count */
+    /**
+     * The connection use count
+     */
     private int useCount = 0;
 
-    /** The specified maximum connection use count */
+    /**
+     * The specified maximum connection use count
+     */
     private int maxUseCount;
 
-    /** the query result object */
+    /**
+     * the query result object
+     */
     private SqlStatementResult statementResult;
 
-    /** the database connection properties object */
+    /**
+     * the database connection properties object
+     */
     private DatabaseConnection databaseConnection;
 
     public DefaultStatementExecutor() {
@@ -123,7 +139,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
      * requests.
      *
      * @param databaseConnection the connection properties object
-     * @param keepAlive whether the connection should be kept between requests
+     * @param keepAlive          whether the connection should be kept between requests
      */
     public DefaultStatementExecutor(DatabaseConnection databaseConnection, boolean keepAlive) {
         this.keepAlive = keepAlive;
@@ -132,12 +148,13 @@ public class DefaultStatementExecutor implements StatementExecutor {
         statementResult = new SqlStatementResult();
     }
 
-    /** <p>Retrieves a description of the specified table using
-     *  the connection's <code>DatabaseMetaData</code> object
-     *  and the method <code>getColumns(...)</code>.
+    /**
+     * <p>Retrieves a description of the specified table using
+     * the connection's <code>DatabaseMetaData</code> object
+     * and the method <code>getColumns(...)</code>.
      *
-     *  @param tableName the table name to describe
-     *  @return the query result
+     * @param tableName the table name to describe
+     * @return the query result
      */
     private SqlStatementResult getTableDescription(String tableName) throws SQLException {
 
@@ -255,7 +272,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
         if (databaseConnection == null || !databaseConnection.isConnected()) {
 
             statementResult.setMessage("Not Connected");
-            statementResult.setOtherException(new UndeclaredThrowableException(new Throwable(),"Not Connected"));
+            statementResult.setOtherException(new UndeclaredThrowableException(new Throwable(), "Not Connected"));
             return false;
         }
 
@@ -305,14 +322,15 @@ public class DefaultStatementExecutor implements StatementExecutor {
         return true;
     }
 
-    /** <p>Executes the specified query (SELECT) and returns
-     *  a <code>ResultSet</code> object from this query.
-     *  <p>If an exception occurs, null is returned and
-     *  the relevant error message, if available, assigned
-     *  to this object for retrieval.
+    /**
+     * <p>Executes the specified query (SELECT) and returns
+     * a <code>ResultSet</code> object from this query.
+     * <p>If an exception occurs, null is returned and
+     * the relevant error message, if available, assigned
+     * to this object for retrieval.
      *
-     *  @param query the SQL query to execute
-     *  @return the query result
+     * @param query the SQL query to execute
+     * @return the query result
      */
     @Override
     public SqlStatementResult getResultSet(String query) throws SQLException {
@@ -320,14 +338,15 @@ public class DefaultStatementExecutor implements StatementExecutor {
         return getResultSet(query, -1);
     }
 
-    /** <p>Executes the specified query (SELECT) and returns a <code>ResultSet</code> object
+    /**
+     * <p>Executes the specified query (SELECT) and returns a <code>ResultSet</code> object
      * from this query.
-     *
+     * <p>
      * <p>If an exception occurs, null is returned and the relevant error message, if available,
      * assigned to this object for retrieval.
      *
-     *  @param query the SQL query to execute
-     *  @return the query result
+     * @param query the SQL query to execute
+     * @return the query result
      */
     @Override
     public SqlStatementResult getResultSet(String query, int fetchSize) throws SQLException {
@@ -364,14 +383,15 @@ public class DefaultStatementExecutor implements StatementExecutor {
         return statementResult;
     }
 
-    /** <p>Executes the specified procedure.
+    /**
+     * <p>Executes the specified procedure.
      *
-     *  @param  databaseExecutable the SQL procedure to execute
-     *  @return the query result
+     * @param databaseExecutable the SQL procedure to execute
+     * @return the query result
      */
     @Override
     public SqlStatementResult execute(DatabaseExecutable databaseExecutable)
-        throws SQLException {
+            throws SQLException {
 
         if (!prepared()) {
 
@@ -398,17 +418,16 @@ public class DefaultStatementExecutor implements StatementExecutor {
             for (int i = 0; i < param.length; i++) {
                 type = param[i].getType();
                 if (type == DatabaseMetaData.procedureColumnIn ||
-                      type == DatabaseMetaData.procedureColumnInOut) {
+                        type == DatabaseMetaData.procedureColumnInOut) {
 
                     // add to the ins list
                     ins.add(param[i]);
 
-                }
-                else if (type == DatabaseMetaData.procedureColumnOut ||
-                            type == DatabaseMetaData.procedureColumnResult ||
-                            type == DatabaseMetaData.procedureColumnReturn ||
-                            type == DatabaseMetaData.procedureColumnUnknown ||
-                            type == DatabaseMetaData.procedureColumnInOut) {
+                } else if (type == DatabaseMetaData.procedureColumnOut ||
+                        type == DatabaseMetaData.procedureColumnResult ||
+                        type == DatabaseMetaData.procedureColumnReturn ||
+                        type == DatabaseMetaData.procedureColumnUnknown ||
+                        type == DatabaseMetaData.procedureColumnInOut) {
 
                     // add to the outs list
                     outs.add(param[i]);
@@ -461,7 +480,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
             }
 
             sb.append(databaseExecutable.getName()).
-               append("( ");
+                    append("( ");
 
             // build the ins params place holders
             for (int i = 0, n = ins.size(); i < n; i++) {
@@ -476,18 +495,17 @@ public class DefaultStatementExecutor implements StatementExecutor {
             // determine if we have out params
             hasOut = !(outs.isEmpty());
             procQuery = sb.toString();
-        }
-        else {
+        } else {
             StringBuilder sb = new StringBuilder();
             sb.append("{ call ");
 
             if (databaseExecutable.getSchemaName() != null) {
-               sb.append(databaseExecutable.getSchemaName()).
-                  append('.');
+                sb.append(databaseExecutable.getSchemaName()).
+                        append('.');
             }
 
             sb.append(databaseExecutable.getName()).
-               append("( ) }");
+                    append("( ) }");
 
             procQuery = sb.toString();
         }
@@ -788,14 +806,15 @@ public class DefaultStatementExecutor implements StatementExecutor {
         return "true".equals(toLower) || "false".equals(toLower);
     }
 
-    /** <p>Executes the specified procedure and returns
-     *  a <code>ResultSet</code> object from this query.
-     *  <p>If an exception occurs, null is returned and
-     *  the relevant error message, if available, assigned
-     *  to this object for retrieval.
+    /**
+     * <p>Executes the specified procedure and returns
+     * a <code>ResultSet</code> object from this query.
+     * <p>If an exception occurs, null is returned and
+     * the relevant error message, if available, assigned
+     * to this object for retrieval.
      *
-     *  @param query the SQL procedure to execute
-     *  @return the query result
+     * @param query the SQL procedure to execute
+     * @return the query result
      */
     private SqlStatementResult executeProcedure(String query) throws SQLException {
 
@@ -897,7 +916,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
                             int type = parameters[i].getType();
                             if (type == DatabaseMetaData.procedureColumnIn ||
-                                  type == DatabaseMetaData.procedureColumnInOut) {
+                                    type == DatabaseMetaData.procedureColumnInOut) {
 
                                 // check the data type and remove quotes if char
                                 int dataType = parameters[i].getDataType();
@@ -1099,7 +1118,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
     @Override
     public SqlStatementResult execute(String query, boolean enableEscapes)
-        throws SQLException {
+            throws SQLException {
 
         if (!prepared()) {
             return statementResult;
@@ -1120,10 +1139,10 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
             } else {
 
-            	int updateCount = stmnt.getUpdateCount();
+                int updateCount = stmnt.getUpdateCount();
                 if (updateCount == -1) {
 
-                	updateCount = -10000;
+                    updateCount = -10000;
                 }
 
                 statementResult.setUpdateCount(updateCount);
@@ -1139,10 +1158,10 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
         } finally {
 
-        	if (!isResultSet) {
+            if (!isResultSet) {
 
-        		finished();
-        	}
+                finished();
+            }
 
         }
 
@@ -1161,15 +1180,16 @@ public class DefaultStatementExecutor implements StatementExecutor {
         }
     }
 
-    /** <p>Executes the specified query and returns 0 if this
-     *  executes successfully. If an exception occurs, -1 is
-     *  returned and the relevant error message, if available,
-     *  assigned to this object for retrieval. This will
-     *  typically be called for a CREATE PROCEDURE/FUNCTION
-     *  call.
+    /**
+     * <p>Executes the specified query and returns 0 if this
+     * executes successfully. If an exception occurs, -1 is
+     * returned and the relevant error message, if available,
+     * assigned to this object for retrieval. This will
+     * typically be called for a CREATE PROCEDURE/FUNCTION
+     * call.
      *
-     *  @param query the SQL query to execute
-     *  @return the number of rows affected
+     * @param query the SQL query to execute
+     * @return the number of rows affected
      */
     @Override
     public SqlStatementResult createProcedure(String query) throws SQLException {
@@ -1204,8 +1224,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
             useCount++;
             statementResult.setSqlWarning(stmnt.getWarnings());
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
 
             statementResult.setSqlException(e);
 
@@ -1227,14 +1246,15 @@ public class DefaultStatementExecutor implements StatementExecutor {
         closeConnection(conn);
     }
 
-    /** <p>Executes the specified query and returns
-     *  the number of rows affected by this query.
-     *  <p>If an exception occurs, -1 is returned and
-     *  the relevant error message, if available, assigned
-     *  to this object for retrieval.
+    /**
+     * <p>Executes the specified query and returns
+     * the number of rows affected by this query.
+     * <p>If an exception occurs, -1 is returned and
+     * the relevant error message, if available, assigned
+     * to this object for retrieval.
      *
-     *  @param  query the SQL query to execute
-     *  @return the number of rows affected
+     * @param query the SQL query to execute
+     * @return the number of rows affected
      */
     @Override
     public SqlStatementResult updateRecords(String query) throws SQLException {
@@ -1249,11 +1269,9 @@ public class DefaultStatementExecutor implements StatementExecutor {
             int result = stmnt.executeUpdate(query);
             statementResult.setUpdateCount(result);
             useCount++;
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             statementResult.setSqlException(e);
-        }
-        finally {
+        } finally {
             finished();
         }
 
@@ -1277,59 +1295,60 @@ public class DefaultStatementExecutor implements StatementExecutor {
     }
      */
 
-    /** <p>Commits or rolls back the last executed
-     *  SQL query or queries.
+    /**
+     * <p>Commits or rolls back the last executed
+     * SQL query or queries.
      *
-     *  @param commit true to commit - false to roll back
+     * @param commit true to commit - false to roll back
      */
     private SqlStatementResult commitLast(boolean commit) {
 
         statementResult.reset();
         statementResult.setUpdateCount(0);
-        if(conn!=null)
-        try {
+        if (conn != null)
+            try {
 
-            if (!conn.isClosed()) {
+                if (!conn.isClosed()) {
 
 
-                if (conn.getAutoCommit()) {
+                    if (conn.getAutoCommit()) {
 
-                    statementResult.setSqlWarning(new SQLWarning("Auto-Commit is set true"));
-                    return statementResult;
-                }
+                        statementResult.setSqlWarning(new SQLWarning("Auto-Commit is set true"));
+                        return statementResult;
+                    }
 
-                if (commit) {
+                    if (commit) {
 
-                    conn.commit();
-                    Log.info("Commit complete.");
-                    statementResult.setMessage("Commit complete.");
-                    closeMaxedConn();
+                        conn.commit();
+                        Log.info("Commit complete.");
+                        statementResult.setMessage("Commit complete.");
+                        closeMaxedConn();
+
+                    } else {
+
+                        conn.rollback();
+                        Log.info("Rollback complete.");
+                        statementResult.setMessage("Rollback complete.");
+                        closeMaxedConn();
+                    }
 
                 } else {
 
-                    conn.rollback();
-                    Log.info("Rollback complete.");
-                    statementResult.setMessage("Rollback complete.");
-                    closeMaxedConn();
+                    statementResult.setSqlException(new SQLException("Connection is closed"));
                 }
 
-            } else {
-
-                statementResult.setSqlException(new SQLException("Connection is closed"));
+            } catch (SQLException e) {
+                handleException(e);
+                statementResult.setSqlException(e);
             }
-
-        }
-        catch (SQLException e) {
-            handleException(e);
-            statementResult.setSqlException(e);
-        }
         return statementResult;
 
     }
 
-    /** <p>Closes a connection which has reached its
-     *  maximum use count and retrieves a new one from
-     *  the <code>DBConnection</code> object.
+    /**
+     * <p>Closes a connection which has reached its
+     * maximum use count and retrieves a new one from
+     * the <code>DBConnection</code> object.
      */
     private void closeMaxedConn() throws SQLException {
         if (keepAlive && useCount > maxUseCount) {
@@ -1350,10 +1369,11 @@ public class DefaultStatementExecutor implements StatementExecutor {
         }
     }
 
-    /** <p>Sets the connection's commit mode to the
-     *  specified value.
+    /**
+     * <p>Sets the connection's commit mode to the
+     * specified value.
      *
-     *  @param commitMode for auto-commit, false otherwise
+     * @param commitMode for auto-commit, false otherwise
      */
     @Override
     public void setCommitMode(boolean commitMode) {
@@ -1363,8 +1383,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
             if (keepAlive && (conn != null && !conn.isClosed())) {
                 conn.setAutoCommit(commitMode);
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             handleException(e);
         }
     }
@@ -1397,11 +1416,12 @@ public class DefaultStatementExecutor implements StatementExecutor {
         }
     }
 
-    /** <p>Closes the specified database connection.
-     *  <p>If the specified connection is NULL, the open
-     *  connection held by this class is closed.
+    /**
+     * <p>Closes the specified database connection.
+     * <p>If the specified connection is NULL, the open
+     * connection held by this class is closed.
      *
-     *  @param c connection to close
+     * @param c connection to close
      */
     private void closeConnection(Connection c) throws SQLException {
         try {
@@ -1412,8 +1432,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
             } else { // otherwise proceed to close
                 closeConnection();
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             handleException(e);
         }
     }
@@ -1434,8 +1453,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
                     conn.close();
                 }
                 conn = null;
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 handleException(e);
             }
         }
@@ -1481,21 +1499,23 @@ public class DefaultStatementExecutor implements StatementExecutor {
      * SQLException.
      */
     private void handleDataSourceException(DataSourceException e)
-        throws SQLException {
-            if (e.getCause() instanceof SQLException) {
-                throw (SQLException)e.getCause();
-            } else {
-                throw new SQLException(e.getMessage());
-            }
+            throws SQLException {
+        if (e.getCause() instanceof SQLException) {
+            throw (SQLException) e.getCause();
+        } else {
+            throw new SQLException(e.getMessage());
+        }
     }
 
-    /** <p>Releases database resources held by this class. */
+    /**
+     * <p>Releases database resources held by this class.
+     */
     @Override
     public void releaseResources() {
 
         try {
 
-            if(stmnt != null) {
+            if (stmnt != null) {
 
                 if (!stmnt.isClosed())
                     stmnt.close();
@@ -1532,9 +1552,8 @@ public class DefaultStatementExecutor implements StatementExecutor {
                 databaseConnection = _databaseConnection;
                 prepared();
                 useCount = 0;
-            }
-            catch (DataSourceException e) {}
-            catch (SQLException e) {
+            } catch (DataSourceException e) {
+            } catch (SQLException e) {
                 handleException(e);
             }
         }

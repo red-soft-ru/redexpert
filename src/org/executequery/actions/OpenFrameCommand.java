@@ -29,17 +29,17 @@ import org.executequery.localization.Bundles;
 /**
  * Base command for those opening a new frame
  *
- * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @author Takis Diakoumis
+ * @version $Revision: 1780 $
+ * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public abstract class OpenFrameCommand extends AbstractBaseCommand {
-    
+
     protected final boolean isConnected() {
 
         if (!ConnectionManager.hasConnections()) {
 
-            GUIUtilities.displayErrorMessage(Bundles.get(OpenFrameCommand.class,"error.notConnected"));
+            GUIUtilities.displayErrorMessage(Bundles.get(OpenFrameCommand.class, "error.notConnected"));
             return false;
         }
 
@@ -50,7 +50,7 @@ public abstract class OpenFrameCommand extends AbstractBaseCommand {
 
         return GUIUtilities.isActionableDialogOpen();
     }
-    
+
     protected final boolean isDialogOpen(String title) {
 
         if (GUIUtilities.isDialogOpen(title)) {
@@ -60,12 +60,12 @@ public abstract class OpenFrameCommand extends AbstractBaseCommand {
         }
         return false;
     }
-    
+
     /**
      * Creates a dialog component with the specified name
      * and modality.
      *
-     * @param name dialog name
+     * @param name  dialog name
      * @param modal the dialog is to be modal
      */
     protected final BaseDialog createDialog(String name, boolean modal) {
@@ -76,8 +76,8 @@ public abstract class OpenFrameCommand extends AbstractBaseCommand {
      * Creates a dialog component with the specified name
      * and modality.
      *
-     * @param name dialog name
-     * @param modal the dialog is to be modal
+     * @param name       dialog name
+     * @param modal      the dialog is to be modal
      * @param resizeable the dialog is resizeable
      */
     protected final BaseDialog createDialog(String name, boolean modal, boolean resizeable) {

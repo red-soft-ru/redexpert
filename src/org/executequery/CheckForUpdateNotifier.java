@@ -50,30 +50,30 @@ import org.underworldlabs.swing.util.Interruptible;
 import org.underworldlabs.swing.util.SwingWorker;
 
 /**
- * Checks to see if a newer version of Execute Query is available. 
- * 
- * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * Checks to see if a newer version of Execute Query is available.
+ *
+ * @author Takis Diakoumis
+ * @version $Revision: 1780 $
+ * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class CheckForUpdateNotifier implements Interruptible {
 
     private static final int LABEL_INDEX = 2;
-    
+
     private ApplicationVersion version;
 
     private LatestVersionRepository repository;
 
     private SwingWorker worker;
-    
+
     private InterruptibleProgressDialog progressDialog;
 
     private boolean monitorProgress;
 
     UpdateLoader updateLoader = null;
-    
+
     public void startupCheckForUpdate() {
-        
+
         SwingWorker worker = new SwingWorker() {
 
             public Object construct() {
@@ -81,16 +81,17 @@ public class CheckForUpdateNotifier implements Interruptible {
                 return Constants.WORKER_SUCCESS;
             }
 
-            public void finished() {}
+            public void finished() {
+            }
 
         };
 
         worker.start();
     }
-    boolean unstable=false;
-    
-    private void startupCheck() {
 
+    boolean unstable = false;
+
+    private void startupCheck() {
 
 
         ApplicationContext instance = ApplicationContext.getInstance();
@@ -102,29 +103,23 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         } else {
             unstable = UserProperties.getInstance().getBooleanProperty("startup.unstableversions.load");
-            if(unstable)
-            {
-                try{
+            if (unstable) {
+                try {
                     checkUnstable();
-                }
-                catch (Exception e)
-                {
-                    Log.error("No access:"+e.getMessage());
+                } catch (Exception e) {
+                    Log.error("No access:" + e.getMessage());
                     checkRelease();
 
                 }
 
-            }
-            else checkRelease();
-
+            } else checkRelease();
 
 
         }
-        
+
     }
 
-    void checkRelease()
-    {
+    void checkRelease() {
         try {
 
             Log.info("Checking for new version update from https://github.com/redsoftbiz/executequery/releases ...");
@@ -154,38 +149,33 @@ public class CheckForUpdateNotifier implements Interruptible {
         }
     }
 
-    void checkUnstable()throws IOException
-    {
+    void checkUnstable() throws IOException {
         updateLoader = new UpdateLoader("");
-        version=new ApplicationVersion(updateLoader.getJsonPropertyFromUrl("http://builds.red-soft.biz/api/builds/latest/?project=red_expert&branch=master","version"),null);
-        if(isNewVersion(version))
-        {
+        version = new ApplicationVersion(updateLoader.getJsonPropertyFromUrl("http://builds.red-soft.biz/api/builds/latest/?project=red_expert&branch=master", "version"), null);
+        if (isNewVersion(version)) {
 
             updateLoader.setVersion(version.getVersion());
             setDownloadNotifierInStatusBar();
 
-        }
-        else
-        {
+        } else {
 
             Log.info("Red Expert is up to date.");
         }
     }
 
-     void checkFromRepo(String repo)
-     {
-         Log.info("Checking for new version update from " + repo + " ...");
+    void checkFromRepo(String repo) {
+        Log.info("Checking for new version update from " + repo + " ...");
 
-         // updating from repository to latest version
-         updateLoader = new UpdateLoader(repo);
-         if (updateLoader.isNeedUpdate()) {
-             version = new ApplicationVersion(updateLoader.getVersion(), null);
-             setDownloadNotifierInStatusBar();
-         } else {
-             if (updateLoader.getVersion() != null)
-                 Log.info("Red Expert is up to date.");
-         }
-     }
+        // updating from repository to latest version
+        updateLoader = new UpdateLoader(repo);
+        if (updateLoader.isNeedUpdate()) {
+            version = new ApplicationVersion(updateLoader.getVersion(), null);
+            setDownloadNotifierInStatusBar();
+        } else {
+            if (updateLoader.getVersion() != null)
+                Log.info("Red Expert is up to date.");
+        }
+    }
 
     private void setDownloadNotifierInStatusBar() {
         JLabel label = getUpdateNotificationLabel();
@@ -203,11 +193,10 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
 
     private void setNotifierInStatusBar() {
-         
+
         JLabel label = getUpdateNotificationLabel();
 
-        label.addMouseListener(new NotificationLabelMouseAdapter());        
-//        label.setIcon(GUIUtilities.loadIcon("YellowBallAnimated16.gif"));
+        label.addMouseListener(new NotificationLabelMouseAdapter());
         label.setIcon(new PulsatingCircle(label, 6));
         label.setToolTipText(newVersionAvailableText());
 
@@ -220,7 +209,7 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
 
     private StatusBarPanel statusBar() {
-        
+
         return GUIUtilities.getStatusBar();
     }
 
@@ -229,7 +218,7 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
 
     class NotificationLabelMouseAdapter extends MouseAdapter {
-        
+
         public void mouseReleased(MouseEvent e) {
 
             resetLabel();
@@ -243,6 +232,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
                         return displayReleaseNotes();
                     }
+
                     public void finished() {
 
                         closeProgressDialog();
@@ -253,13 +243,13 @@ public class CheckForUpdateNotifier implements Interruptible {
                 worker.start();
 
             }
-                
+
         }
 
         private void resetLabel() {
 
             JLabel label = getUpdateNotificationLabel();
-            
+
             label.setIcon(null);
             label.setToolTipText(null);
 
@@ -267,7 +257,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
             statusBar().setThirdLabelText("");
         }
-        
+
     }
 
 
@@ -288,6 +278,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
                         return Constants.WORKER_SUCCESS;
                     }
+
                     public void finished() {
 
 //                        closeProgressDialog();
@@ -329,7 +320,7 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
 
     public void checkForUpdate(boolean monitorProgress) {
-        
+
         this.monitorProgress = monitorProgress;
         worker = new SwingWorker() {
 
@@ -337,6 +328,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
                 return doWork();
             }
+
             public void finished() {
 
                 closeProgressDialog();
@@ -357,24 +349,24 @@ public class CheckForUpdateNotifier implements Interruptible {
     private void createProgressDialog() {
 
         progressDialog = new InterruptibleProgressDialog(
-            GUIUtilities.getParentFrame(),
-            "Check for update", 
-            "Checking for updated version from https://github.com/redsoftbiz/executequery/releases",
-            this);
+                GUIUtilities.getParentFrame(),
+                "Check for update",
+                "Checking for updated version from https://github.com/redsoftbiz/executequery/releases",
+                this);
     }
 
     private Object doWork() {
-        
+
         try {
-            
+
             version = getVersionInfo();
 
             if (isNewVersion(version)) {
-                
+
                 logNewVersonInfo();
 
                 closeProgressDialog();
-                
+
                 int yesNo = displayNewVersionMessage();
                 if (yesNo == JOptionPane.YES_OPTION) {
 
@@ -384,23 +376,23 @@ public class CheckForUpdateNotifier implements Interruptible {
             } else {
 
                 Log.info("Red Expert is up to date.");
-                
+
                 if (monitorProgress) {
 
                     closeProgressDialog();
-    
+
                     GUIUtilities.displayInformationMessage(noUpdateMessage());
                 }
 
             }
-            
+
             return Constants.WORKER_SUCCESS;
-            
+
         } catch (ApplicationException e) {
-            
+
             if (monitorProgress) {
 
-                showExceptionErrorDialog(e);    
+                showExceptionErrorDialog(e);
             }
 
             return Constants.WORKER_FAIL;
@@ -409,9 +401,9 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
 
     private int displayNewVersionMessage() {
-        
+
         return GUIUtilities.displayYesNoDialog(
-                new SimpleHtmlContentPane(newVersionMessage(version)), 
+                new SimpleHtmlContentPane(newVersionMessage(version)),
                 "Red Expert Update");
     }
 
@@ -426,31 +418,31 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
 
     private boolean isNewVersion(ApplicationVersion version) {
-        String currentVersion =  System.getProperty("executequery.minor.version");
+        String currentVersion = System.getProperty("executequery.minor.version");
 
         return version.isNewerThan(currentVersion);
     }
-    
+
     private ApplicationVersion getVersionInfo() {
 
         return repository().getLatestVersion();
     }
-    
+
     private LatestVersionRepository repository() {
-        
+
         if (repository == null) {
-            
-            repository = (LatestVersionRepository) 
-                RepositoryCache.load(LatestVersionRepository.REPOSITORY_ID);
+
+            repository = (LatestVersionRepository)
+                    RepositoryCache.load(LatestVersionRepository.REPOSITORY_ID);
         }
-        
+
         return repository;
     }
-    
+
     private Object displayReleaseNotes() {
 
         try {
-            
+
             GUIUtilities.showWaitCursor();
 
             createProgressDialogForReleaseNotesLoad();
@@ -480,13 +472,13 @@ public class CheckForUpdateNotifier implements Interruptible {
             return Constants.WORKER_SUCCESS;
 
         } catch (ApplicationException e) {
-            
+
             showExceptionErrorDialog(e);
 
             return Constants.WORKER_FAIL;
-            
+
         } finally {
-            
+
             GUIUtilities.showNormalCursor();
         }
 
@@ -495,21 +487,21 @@ public class CheckForUpdateNotifier implements Interruptible {
     private void createProgressDialogForReleaseNotesLoad() {
 
         GUIUtils.invokeLater(new Runnable() {
-            
+
             public void run() {
 
                 progressDialog = new InterruptibleProgressDialog(
-                    GUIUtilities.getParentFrame(),
-                    "Check for update", 
-                    "Retrieving new version release notes from https://github.com/redsoftbiz/executequery/releases/latest",
-                    CheckForUpdateNotifier.this);
+                        GUIUtilities.getParentFrame(),
+                        "Check for update",
+                        "Retrieving new version release notes from https://github.com/redsoftbiz/executequery/releases/latest",
+                        CheckForUpdateNotifier.this);
 
                 progressDialog.run();
             }
-            
+
         });
     }
-    
+
     private void showExceptionErrorDialog(ApplicationException e) {
 
         GUIUtilities.showNormalCursor();
@@ -519,33 +511,33 @@ public class CheckForUpdateNotifier implements Interruptible {
     private String genericIOError() {
 
         return "An error occured trying to communicate " +
-            " with the server at https://github.com/redsoftbiz/executequery/releases.";
+                " with the server at https://github.com/redsoftbiz/executequery/releases.";
     }
 
     private String newVersionMessage(ApplicationVersion version) {
 
         return "New version " + version.getVersion() +
-            " is available for download at " +
-            "<a style=\"color:#3F7ED3\" href=\"https://github.com/redsoftbiz/executequery/releases\">https://github.com/redsoftbiz/executequery/releases</a>." +
-            "\nClick <a  style=\"color:#3F7ED3\" href=\"https://github.com/redsoftbiz/executequery/releases/latest\">here</a>" +
-            " to go to the download page.\n\nDo you wish to view the " +
-            "version notes for this release?";
+                " is available for download at " +
+                "<a style=\"color:#3F7ED3\" href=\"https://github.com/redsoftbiz/executequery/releases\">https://github.com/redsoftbiz/executequery/releases</a>." +
+                "\nClick <a  style=\"color:#3F7ED3\" href=\"https://github.com/redsoftbiz/executequery/releases/latest\">here</a>" +
+                " to go to the download page.\n\nDo you wish to view the " +
+                "version notes for this release?";
     }
 
     private String noUpdateMessage() {
         return "No update available.\n" +
-            "This version of Red Expert is up to date.\n" +
-            "Please check back here periodically to ensure you have " +
-            "the latest version.";
+                "This version of Red Expert is up to date.\n" +
+                "Please check back here periodically to ensure you have " +
+                "the latest version.";
     }
-    
+
     private String getCurrentBuild() {
 
         return System.getProperty("executequery.build");
     }
 
     private void closeProgressDialog() {
-        
+
         if (progressDialog != null) {
 
             SwingUtilities.invokeLater(new Runnable() {
@@ -554,21 +546,21 @@ public class CheckForUpdateNotifier implements Interruptible {
 
                         progressDialog.dispose();
                     }
-                    progressDialog = null;                
+                    progressDialog = null;
                 }
             });
-            
+
         }
     }
 
     public void setCancelled(boolean cancelled) {
-        
+
         interrupt();
     }
-    
+
     public void interrupt() {
 
-        if (worker != null) { 
+        if (worker != null) {
 
             worker.interrupt();
         }

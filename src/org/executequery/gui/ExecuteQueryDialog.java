@@ -103,7 +103,7 @@ public class ExecuteQueryDialog extends BaseDialog {
         errorPane = new LoggingOutputPanel();
         tableAction = new DefaultTable();
         BrowserTableCellRenderer bctr = new BrowserTableCellRenderer();
-        tableAction.setDefaultRenderer(Object.class,bctr);
+        tableAction.setDefaultRenderer(Object.class, bctr);
         model = new ListActionsModel();
         tableAction.setModel(model);
         tableScroll.setViewportView(tableAction);
@@ -117,8 +117,8 @@ public class ExecuteQueryDialog extends BaseDialog {
 
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
-                int row=tableAction.getSelectedRow();
-                if(row>=0) {
+                int row = tableAction.getSelectedRow();
+                if (row >= 0) {
                     if (mouseEvent.getClickCount() > 1) {
                         if (tableAction.getSelectedColumn() == model.COPY) {
                             model.data.elementAt(row).copyScript = !model.data.elementAt(row).copyScript;
@@ -239,7 +239,7 @@ public class ExecuteQueryDialog extends BaseDialog {
                                 .addGap(10)
                                 .addComponent(listActionsLabel)
                                 .addContainerGap()
-                                .addComponent(tableScroll,GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(tableScroll, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)
                                 .addContainerGap()
                                 .addComponent(operatorLabel)
                                 .addContainerGap()
@@ -265,22 +265,20 @@ public class ExecuteQueryDialog extends BaseDialog {
         addDisplayComponent(mainPanel);
     }
 
-    private void setMessages(RowAction row)
-    {
+    private void setMessages(RowAction row) {
         queryPane.setText(row.queryAction);
-        if(row.executed)
+        if (row.executed)
             setOutputMessage(SqlMessages.PLAIN_MESSAGE, row.SQLmessage);
         else setOutputMessage(SqlMessages.ERROR_MESSAGE, row.SQLmessage);
     }
 
     private void copyErrorButtonActionPerformed(ActionEvent evt) {
         try {
-            Vector<RowAction> v=model.data;
-            String copy="";
-            for(int i=0;i<v.size();i++)
-            {
-                if(v.elementAt(i).copyScript)
-                    copy+=v.elementAt(i).SQLmessage+"\n";
+            Vector<RowAction> v = model.data;
+            String copy = "";
+            for (int i = 0; i < v.size(); i++) {
+                if (v.elementAt(i).copyScript)
+                    copy += v.elementAt(i).SQLmessage + "\n";
             }
             setClipboard(copy);
         } catch (Exception e) {
@@ -290,16 +288,13 @@ public class ExecuteQueryDialog extends BaseDialog {
 
     private void copyQueryButtonActionPerformed(ActionEvent evt) {
         try {
-            Vector<RowAction> v=model.data;
-            String copy="";
-            for(int i=0;i<v.size();i++)
-            {
-                if(v.elementAt(i).copyScript)
-                    copy+=v.elementAt(i).queryAction+";\n";
+            Vector<RowAction> v = model.data;
+            String copy = "";
+            for (int i = 0; i < v.size(); i++) {
+                if (v.elementAt(i).copyScript)
+                    copy += v.elementAt(i).queryAction + ";\n";
             }
             setClipboard(copy);
-            /*queryPane.selectAll();
-            queryPane.copy();*/
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
         }
@@ -336,8 +331,7 @@ public class ExecuteQueryDialog extends BaseDialog {
         }
     }
 
-    void execute()
-    {
+    void execute() {
         String querys = query;
         if (querys.endsWith(";")) {
             querys = querys.substring(0, querys.length() - 1);
@@ -355,12 +349,13 @@ public class ExecuteQueryDialog extends BaseDialog {
             while (query.indexOf("\n") == 0) {
                 query = query.substring(1, query.length());
             }
-            RowAction action=new RowAction(query);
-            commit=execute_query(action);
+            RowAction action = new RowAction(query);
+            commit = execute_query(action);
             model.addRow(action);
             setMessages(action);
         }
     }
+
     boolean execute_query(RowAction query) {
         try {
             DerivedQuery q = new DerivedQuery(query.queryAction);
@@ -370,26 +365,21 @@ public class ExecuteQueryDialog extends BaseDialog {
             SqlStatementResult result = querySender.execute(type, queryToExecute);
             int updateCount = result.getUpdateCount();
             if (updateCount == -1) {
-
-                /*setOutputMessage(SqlMessages.ERROR_MESSAGE,
-                        result.getErrorMessage());*/
-                query.status="Error";
-                query.SQLmessage=result.getErrorMessage();
+                query.status = "Error";
+                query.SQLmessage = result.getErrorMessage();
                 commitButton.setVisible(false);
                 return false;
 
             } else {
 
                 if (result.isException()) {
-
-                    //setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage());
-                    query.status="Error";
-                    query.SQLmessage=result.getErrorMessage();
+                    query.status = "Error";
+                    query.SQLmessage = result.getErrorMessage();
                     commitButton.setVisible(false);
                     return false;
                 } else {
                     type = result.getType();
-                    query.SQLmessage=getResultText(updateCount, type);
+                    query.SQLmessage = getResultText(updateCount, type);
                     query.executed = true;
                     query.status = "Success";
                     return true;
@@ -397,9 +387,8 @@ public class ExecuteQueryDialog extends BaseDialog {
                 }
             }
         } catch (Exception e) {
-            //setOutputMessage(SqlMessages.ERROR_MESSAGE, e.getMessage());
-            query.status="Error";
-            query.SQLmessage=e.getMessage();
+            query.status = "Error";
+            query.SQLmessage = e.getMessage();
             commitButton.setVisible(false);
             return false;
         }
@@ -509,8 +498,7 @@ public class ExecuteQueryDialog extends BaseDialog {
         return Bundles.get(getClass(), key);
     }
 
-    public class RowAction
-    {
+    public class RowAction {
         boolean executed;
 
         String nameOperation;
@@ -523,18 +511,16 @@ public class ExecuteQueryDialog extends BaseDialog {
 
         String SQLmessage;
 
-        public RowAction (String query)
-        {
-            queryAction=query;
-            executed=false;
-            status="";
-            copyScript=true;
+        public RowAction(String query) {
+            queryAction = query;
+            executed = false;
+            status = "";
+            copyScript = true;
             ConctructName();
 
         }
 
-        void ConctructName()
-        {
+        void ConctructName() {
             DerivedQuery q = new DerivedQuery(queryAction);
 
             int type = q.getQueryType();
@@ -567,7 +553,7 @@ public class ExecuteQueryDialog extends BaseDialog {
                     nameOperation = "CREATE FUNCTION";
                     break;
                 case QueryTypes.GRANT:
-                    nameOperation = "GRANT PRIVILEGE";;
+                    nameOperation = "GRANT PRIVILEGE";
                     break;
                 case QueryTypes.CREATE_SYNONYM:
                     nameOperation = "CREATE SYNONYM";
@@ -603,18 +589,16 @@ public class ExecuteQueryDialog extends BaseDialog {
 
     }
 
-    public class ListActionsModel extends AbstractTableModel
-    {
-        final int EXECUTED=0;
-        final int NAME_OPERATION=1;
-        final int STATUS=2;
-        final int COPY=3;
+    public class ListActionsModel extends AbstractTableModel {
+        final int EXECUTED = 0;
+        final int NAME_OPERATION = 1;
+        final int STATUS = 2;
+        final int COPY = 3;
 
         Vector<RowAction> data;
-        String [] headers={"","Name operation","Status","Copy"};
+        String[] headers = {"", "Name operation", "Status", "Copy"};
 
-        public ListActionsModel()
-        {
+        public ListActionsModel() {
             data = new Vector<>();
         }
 
@@ -630,28 +614,30 @@ public class ExecuteQueryDialog extends BaseDialog {
 
         @Override
         public Object getValueAt(int row, int col) {
-           RowAction action=data.elementAt(row);
-            switch(col)
-            {
+            RowAction action = data.elementAt(row);
+            switch (col) {
                 case EXECUTED:
-                    if(action.executed)
+                    if (action.executed)
                         return GUIUtilities.loadIcon("grant.png");
                     else return GUIUtilities.loadIcon("no_grant.png");
-                case NAME_OPERATION:return action.nameOperation;
-                case STATUS:return action.status;
-                case COPY: if(action.copyScript)
-                    return GUIUtilities.loadIcon("CloseDockable.png");
+                case NAME_OPERATION:
+                    return action.nameOperation;
+                case STATUS:
+                    return action.status;
+                case COPY:
+                    if (action.copyScript)
+                        return GUIUtilities.loadIcon("CloseDockable.png");
                     else return "";
-                default:return"";
+                default:
+                    return "";
             }
         }
-        public String getColumnName(int column)
-        {
+
+        public String getColumnName(int column) {
             return headers[column];
         }
 
-        public void addRow(RowAction row)
-        {
+        public void addRow(RowAction row) {
             data.add(row);
             fireTableDataChanged();
         }

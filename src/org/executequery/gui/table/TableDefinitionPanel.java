@@ -254,8 +254,7 @@ public abstract class TableDefinitionPanel extends JPanel
                 }
             };
             defaultValueEditor = new StringCellEditor();
-            DefaultCellEditor defaultValueStrEditor=new DefaultCellEditor(defaultValueEditor)
-            {
+            DefaultCellEditor defaultValueStrEditor = new DefaultCellEditor(defaultValueEditor) {
                 @Override
                 public Object getCellEditorValue() {
                     return defaultValueEditor.getValue();
@@ -301,7 +300,7 @@ public abstract class TableDefinitionPanel extends JPanel
                         value = descEditor.getValue();
                     } else if (object == computedEditor) {
                         value = computedEditor.getValue();
-                    }else if (object == defaultValueEditor) {
+                    } else if (object == defaultValueEditor) {
                         value = defaultValueEditor.getValue();
                     } else if (object == sizeEditor) {
                         value = sizeEditor.getEditorValue();
@@ -723,7 +722,7 @@ public abstract class TableDefinitionPanel extends JPanel
 
         protected String[] header = {"PK", "Name", "Datatype", "Domain",
                 "Size", "Scale", "Required", "Check",
-                "Description", "Computed by","Default Value"};
+                "Description", "Computed by", "Default Value"};
 
         public CreateTableModel() {
             tableVector = new Vector<ColumnData>();
@@ -933,7 +932,7 @@ public abstract class TableDefinitionPanel extends JPanel
                     cd.setComputedBy((String) value);
                     break;
                 case DEFAULT_COLUMN:
-                    cd.setDefaultValue((String)value);
+                    cd.setDefaultValue((String) value);
             }
 
             fireTableRowsUpdated(row, row);

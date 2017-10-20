@@ -31,17 +31,17 @@ import org.executequery.databasemediators.QueryTypes;
 public final class DerivedQuery {
 
     private static DerivedTableStrategy defaultDerivedTableStrategy;
-    
+
     private static Map<Integer, DerivedTableStrategy> derivedTableStrategies;
-    
+
     private String derivedQuery;
-    
+
     private final String originalQuery;
 
     private List<QueryTable> queryTables;
-    
+
     static {
-        
+
         defaultDerivedTableStrategy = new DefaultDerivedTableStrategy();
         derivedTableStrategies = new HashMap<Integer, DerivedTableStrategy>();
         derivedTableStrategies.put(QueryTypes.SELECT, new SelectDerivedTableStrategy());
@@ -51,7 +51,7 @@ public final class DerivedQuery {
         derivedTableStrategies.put(QueryTypes.DROP_TABLE, new DropTableDerivedTableStrategy());
         derivedTableStrategies.put(QueryTypes.ALTER_TABLE, new AlterTableDerivedTableStrategy());
     }
-    
+
     public DerivedQuery(String originalQuery) {
         super();
         this.originalQuery = originalQuery;
@@ -63,206 +63,202 @@ public final class DerivedQuery {
     }
 
     public String getLoggingQuery() {
-        
+
         if (derivedQuery.length() > 50) {
-            
+
             return derivedQuery.substring(0, 50) + " ... ";
         }
-        
+
         return derivedQuery;
     }
-    
+
     public String getDerivedQuery() {
         return derivedQuery;
     }
 
     public void setDerivedQuery(String derivedQuery) {
-        
+
         String query = derivedQuery.replaceAll("\t", " ");
-        
+
         if (query.endsWith(";")) {
-            
+
             query = query.substring(0, query.length() - 1);
         }
-        
+
         this.derivedQuery = query;
     }
 
     public boolean isExecutable() {
 
-        return StringUtils.isNotBlank(getDerivedQuery()); 
+        return StringUtils.isNotBlank(getDerivedQuery());
     }
 
     private void deriveTables() {
-        
+
         if (queryTables != null) {
-            
+
             return;
         }
-        
+
         int queryType = getQueryType();
         DerivedTableStrategy derivedTableStrategy = derivedTableStrategies.get(queryType);
         if (derivedTableStrategy == null) {
-            
+
             derivedTableStrategy = defaultDerivedTableStrategy;
         }
-        
+
         queryTables = derivedTableStrategy.deriveTables(derivedQuery);
     }
-    
+
     public List<QueryTable> tableForWord(String word) {
 
         deriveTables();
-        
+
         int dotPoint = word.indexOf('.');
         if (dotPoint == -1) {
-            
+
             return queryTables;
         }
-        
+
         String pattern = word.substring(0, dotPoint);
         return asList(getTableForNameOrAlias(pattern));
     }
-    
+
     private List<QueryTable> asList(QueryTable queryTable) {
 
         List<QueryTable> list = new ArrayList<QueryTable>(1);
         if (queryTable != null) {
-            
+
             list.add(queryTable);
         }
-        
+
         return list;
     }
 
     public QueryTable getTableForNameOrAlias(String nameOrAlias) {
-        
+
         deriveTables();
         if (!queryTables.isEmpty()) {
 
             for (QueryTable queryTable : queryTables) {
-            
+
                 if (queryTable.isNameOrAlias(nameOrAlias)) {
-                    
+
                     return queryTable;
                 }
 
             }
         }
-        
+
         return null;
     }
-    
+
     public int getQueryType() {
-        
+
         int type = -1;
         String query = derivedQuery.replaceAll("\n", " ").toUpperCase();
-        
+
         if (query.indexOf("SELECT ") == 0 && query.indexOf(" INTO ") != -1) {
-        
+
             type = QueryTypes.SELECT_INTO;
 
         } else if (query.indexOf("SELECT ") == 0) {
-            
+
             type = QueryTypes.SELECT;
-                
+
         } else if (query.indexOf("INSERT ") == 0) {
-            
+
             type = QueryTypes.INSERT;
-        
+
         } else if (query.indexOf("UPDATE ") == 0) {
-        
+
             type = QueryTypes.UPDATE;
-        
+
         } else if (query.indexOf("DELETE ") == 0) {
-            
+
             type = QueryTypes.DELETE;
 
         } else if (query.indexOf("CREATE TABLE ") == 0) {
-            
+
             type = QueryTypes.CREATE_TABLE;
 
-        } else if (query.indexOf("CREATE ") == 0 && (query.indexOf("PROCEDURE ") != -1 || 
-                      query.indexOf("PACKAGE ") != -1)) {
-          
+        } else if (query.indexOf("CREATE ") == 0 && (query.indexOf("PROCEDURE ") != -1 ||
+                query.indexOf("PACKAGE ") != -1)) {
+
             type = QueryTypes.CREATE_PROCEDURE;
-        
+
         } else if (query.indexOf("CREATE ") == 0 && query.indexOf("FUNCTION ") != -1) {
-          
+
             type = QueryTypes.CREATE_FUNCTION;
-        
+
         } else if (query.indexOf("DROP TABLE ") == 0) {
-            
+
             type = QueryTypes.DROP_TABLE;
-        
+
         } else if (query.indexOf("ALTER TABLE ") == 0) {
-        
+
             type = QueryTypes.ALTER_TABLE;
-        
+
         } else if (query.indexOf("CREATE SEQUENCE ") == 0) {
-            
+
             type = QueryTypes.CREATE_SEQUENCE;
-        
+
         } else if (query.indexOf("CREATE SYNONYM ") == 0) {
-            
+
             type = QueryTypes.CREATE_SYNONYM;
-        
+
         } else if (query.indexOf("GRANT ") == 0) {
-            
+
             type = QueryTypes.GRANT;
-        
+
         } else if (query.indexOf("EXECUTE ") == 0 || query.indexOf("CALL ") == 0) {
-            
+
             type = QueryTypes.EXECUTE;
-        
+
         } else if (query.indexOf("COMMIT") == 0) {
-        
+
             type = QueryTypes.COMMIT;
-        
+
         } else if (query.indexOf("ROLLBACK") == 0 && query.indexOf("ROLLBACK TO") == -1) {
-            
+
             type = QueryTypes.ROLLBACK;
 
-        } else if(query.indexOf("EXPLAIN ") == 0) {
+        } else if (query.indexOf("EXPLAIN ") == 0) {
 
             type = QueryTypes.EXPLAIN;
-        
-        } else if(query.indexOf("DESC ") == 0 || query.indexOf("DESCRIBE ") == 0) {
-            
+
+        } else if (query.indexOf("DESC ") == 0 || query.indexOf("DESCRIBE ") == 0) {
+
             type = QueryTypes.DESCRIBE;
 
         } else if (query.indexOf("SHOW TABLES") == 0) {
-            
+
             type = QueryTypes.SHOW_TABLES;
 
-        }
-        else if (query.indexOf("CREATE ROLE ") == 0) {
+        } else if (query.indexOf("CREATE ROLE ") == 0) {
 
             type = QueryTypes.CREATE_ROLE;
 
-        }
-        else if (query.indexOf("DROP ") == 0) {
+        } else if (query.indexOf("DROP ") == 0) {
 
             type = QueryTypes.DROP_OBJECT;
 
-        }
-        else if (query.indexOf("REVOKE ") == 0) {
+        } else if (query.indexOf("REVOKE ") == 0) {
 
             type = QueryTypes.REVOKE;
 
-        }
-        else if (query.indexOf("COMMENT")==0)
-        {
-            type=QueryTypes.COMMENT;
-        }
-        else {
-            
+        } else if (query.indexOf("COMMENT") == 0) {
+
+            type = QueryTypes.COMMENT;
+
+        } else {
+
             type = QueryTypes.UNKNOWN;
         }
-        
+
         return type;
     }
-    
+
 }
 
 

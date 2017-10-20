@@ -26,11 +26,10 @@ public class CreateSequenceCommand extends OpenFrameCommand implements BaseComma
                 GUIUtilities.showWaitCursor();
                 BaseDialog dialog =
                         createDialog(CreateGeneratorPanel.TITLE, false);
-                CreateGeneratorPanel panel = new CreateGeneratorPanel(null,dialog);
+                CreateGeneratorPanel panel = new CreateGeneratorPanel(null, dialog);
                 dialog.addDisplayComponentWithEmptyBorder(panel);
                 dialog.display();
-            }
-            finally {
+            } finally {
                 GUIUtilities.showNormalCursor();
             }
         }

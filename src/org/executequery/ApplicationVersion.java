@@ -21,10 +21,9 @@
 package org.executequery;
 
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @author Takis Diakoumis
+ * @version $Revision: 1780 $
+ * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public final class ApplicationVersion {
 
@@ -42,9 +41,9 @@ public final class ApplicationVersion {
 
     public ApplicationVersion(String version, String build) {
         super();
-        String xs=beforeDot(version);
+        String xs = beforeDot(version);
         String temp = afterDot(version);
-        x=Integer.parseInt(xs);
+        x = Integer.parseInt(xs);
         if (temp.contains(".")) {
             String ys = beforeDot(temp);
             temp = afterDot(temp);
@@ -55,38 +54,38 @@ public final class ApplicationVersion {
             temp = afterDot(temp);
             z = Integer.parseInt(zs);
         }
-        abc=Integer.parseInt(temp);
-        this.version = ConstructVersion();
-        if(z==-1)
-            z=abc;
-        if(y==-1)
-            y=z;
+        abc = Integer.parseInt(temp);
+        this.version = constructVersion();
+        if (z == -1)
+            z = abc;
+        if (y == -1)
+            y = z;
         this.build = build;
     }
+
     public ApplicationVersion(String version) {
-        this(version,null);
+        this(version, null);
     }
-    public String ConstructVersion()
-    {
-        String s="";
-        if(x!=-1)
-            s+=x;
-        if(y!=-1)
-            s+="."+y;
-        if(z!=-1)
-            s+="."+z;
-        if(abc!=-1)
-            s+="."+abc;
+
+    public String constructVersion() {
+        String s = "";
+        if (x != -1)
+            s += x;
+        if (y != -1)
+            s += "." + y;
+        if (z != -1)
+            s += "." + z;
+        if (abc != -1)
+            s += "." + abc;
         return s;
     }
 
-    public String beforeDot(String s)
-    {
-        return s.substring(0,s.indexOf("."));
+    public String beforeDot(String s) {
+        return s.substring(0, s.indexOf("."));
     }
-    public String afterDot(String s)
-    {
-        return s.substring(s.indexOf(".")+1);
+
+    public String afterDot(String s) {
+        return s.substring(s.indexOf(".") + 1);
     }
 
     public boolean isNewerThan(String anotherVersion) {
@@ -98,13 +97,11 @@ public final class ApplicationVersion {
                 else if (x == anotherVers.x) {
                     if (y > anotherVers.y) {
                         return true;
-                    }
-                    else if (y == anotherVers.y) {
+                    } else if (y == anotherVers.y) {
                         if (z > anotherVers.z) {
                             return true;
-                        }
-                        else if (z == anotherVers.z) {
-                            return abc>anotherVers.abc;
+                        } else if (z == anotherVers.z) {
+                            return abc > anotherVers.abc;
                         }
                     }
 
@@ -113,16 +110,16 @@ public final class ApplicationVersion {
         }
         return false;
     }
-    
+
     public String getVersion() {
 
         return version;
     }
 
     public String getBuild() {
-        
+
         return build;
     }
-    
+
 }
 

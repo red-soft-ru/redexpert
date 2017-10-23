@@ -44,6 +44,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.StandardTable;
 import org.underworldlabs.swing.DateTimeCellEditor;
+import org.underworldlabs.swing.TimeCellEditor;
 import org.underworldlabs.swing.table.MultiLineStringCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
 import org.underworldlabs.swing.table.TableSorter;
@@ -65,6 +66,8 @@ public class ResultSetTable extends JTable implements StandardTable {
     private DateCellEditor dateEditor;
 
     private DateTimeCellEditor dateTimeCellEditor;
+
+    private TimeCellEditor timeCellEditor;
 
     List<Integer> comboboxColumns;
 
@@ -96,6 +99,7 @@ public class ResultSetTable extends JTable implements StandardTable {
         };
         dateEditor = new DateCellEditor();
         dateTimeCellEditor = new DateTimeCellEditor();
+        timeCellEditor = new TimeCellEditor();
 
     }
 
@@ -478,6 +482,8 @@ public class ResultSetTable extends JTable implements StandardTable {
                 return dateEditor;
             case Types.TIMESTAMP:
                 return dateTimeCellEditor;
+            case Types.TIME:
+                return timeCellEditor;
 
         }
         

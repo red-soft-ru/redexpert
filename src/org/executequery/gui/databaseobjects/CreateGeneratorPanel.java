@@ -195,13 +195,12 @@ public class CreateGeneratorPanel extends JPanel {
                 query = "CREATE SEQUENCE " + nameText.getText() + ";";
                 query += "\nALTER SEQUENCE " + nameText.getText() + " RESTART WITH " + startValueText.getStringValue() + ";";
             }
-            if (!MiscUtils.isNull(description.getText().trim())) {
+            if (!MiscUtils.isNull(description.getText().trim()))
                 query += "\nCOMMENT ON SEQUENCE " + nameText.getText() + " IS '" + description.getText() + "'";
-                ExecuteQueryDialog eqd = new ExecuteQueryDialog(TITLE, query, connection, true);
-                eqd.display();
-                if (eqd.getCommit()) {
-                    parent.finished();
-                }
+            ExecuteQueryDialog eqd = new ExecuteQueryDialog(TITLE, query, connection, true);
+            eqd.display();
+            if (eqd.getCommit()) {
+                parent.finished();
             }
         } else
             GUIUtilities.displayErrorMessage("Name can not be empty");

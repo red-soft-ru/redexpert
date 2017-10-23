@@ -59,23 +59,33 @@ import javax.swing.table.TableColumn;
  */
 public class ResultSetTableModel extends AbstractSortableTableModel {
 
-    /** Whether the meta data should be generated */
+    /**
+     * Whether the meta data should be generated
+     */
     private boolean holdMetaData;
 
-    /** The maximum number of records displayed */
+    /**
+     * The maximum number of records displayed
+     */
     private int maxRecords;
 
-    /** Indicates that the query executing has been interrupted */
+    /**
+     * Indicates that the query executing has been interrupted
+     */
     private boolean interrupted;
 
     private List<ResultSetColumnHeader> columnHeaders;
 
     private List<ResultSetColumnHeader> visibleColumnHeaders;
 
-    /** The table values */
+    /**
+     * The table values
+     */
     private List<List<RecordDataItem>> tableData;
 
-    /** result set meta data model */
+    /**
+     * result set meta data model
+     */
     private ResultSetMetaDataTableModel metaDataTableModel;
 
     private RecordDataItemFactory recordDataItemFactory;
@@ -171,10 +181,10 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
                 columnHeaders.add(
                         new ResultSetColumnHeader(zeroBaseIndex,
-                                                  rsmd.getColumnLabel(i),
-                                                  rsmd.getColumnName(i),
-                                                  rsmd.getColumnType(i),
-                                                  rsmd.getColumnTypeName(i)));
+                                rsmd.getColumnLabel(i),
+                                rsmd.getColumnName(i),
+                                rsmd.getColumnType(i),
+                                rsmd.getColumnTypeName(i)));
             }
 
             int recordCount = 0;
@@ -202,7 +212,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                     zeroBaseIndex = i - 1;
 
                     ResultSetColumnHeader header = columnHeaders.get(zeroBaseIndex);
-                	RecordDataItem value = recordDataItemFactory.create(header);
+                    RecordDataItem value = recordDataItemFactory.create(header);
 
                     try {
 
@@ -250,7 +260,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                         e.printStackTrace();
                                     }
 
-                                    IFBClob ifbClob = (IFBClob)odb;
+                                    IFBClob ifbClob = (IFBClob) odb;
                                     ifbClob.detach(clob);
                                     value.setValue(ifbClob);
                                 } else {
@@ -283,7 +293,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                         e.printStackTrace();
                                     }
 
-                                    IFBBlob ifbBlob = (IFBBlob)odb;
+                                    IFBBlob ifbBlob = (IFBBlob) odb;
                                     ifbBlob.detach(blob);
                                     value.setValue(ifbBlob);
                                 } else {
@@ -411,7 +421,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                         statement.close();
                     }
 
-                } catch (SQLException e) {}
+                } catch (SQLException e) {
+                }
 
             }
         }
@@ -689,20 +700,20 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         try {
 
             if (resultSet != null) {
-                
+
                 try {
-                    
+
                     return !resultSet.isClosed();
-                    
+
                 } catch (IllegalAccessError e) {
-                    
+
                     // possible jt400 issue
-                    
+
                     return false;
                 }
-                
+
             }
-            
+
             return false;
 
         } catch (SQLException e) {
@@ -809,11 +820,11 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
                             }
 
+                        } catch (AbstractMethodError e) {
+                        } catch (IllegalArgumentException e) {
+                        } catch (IllegalAccessException e) {
+                        } catch (InvocationTargetException e) {
                         }
-                        catch (AbstractMethodError e) {}
-                        catch (IllegalArgumentException e) {}
-                        catch (IllegalAccessException e) {}
-                        catch (InvocationTargetException e) {}
 
                     }
 
@@ -932,10 +943,10 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         if (column < rowData.size()) {
 
             try {
-                if (value!=null)
-                    if(value.getClass().equals(String.class))
-                        if(((String)value).equals(""))
-                            value=null;
+                if (value != null)
+                    if (value.getClass().equals(String.class))
+                        if (((String) value).equals(""))
+                            value = null;
                 rowData.get(asVisibleColumnIndex(column)).valueChanged(value);
                 fireTableCellUpdated(row, column);
 
@@ -1031,22 +1042,18 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     }
 
-    public int getColumnIndex(String column)
-    {
-        int ind =-1;
-        for (int i=0;i<visibleColumnHeaders.size();i++)
-        {
-            if (visibleColumnHeaders.get(i).getName().equals(column))
-            {
-                ind=i;
+    public int getColumnIndex(String column) {
+        int ind = -1;
+        for (int i = 0; i < visibleColumnHeaders.size(); i++) {
+            if (visibleColumnHeaders.get(i).getName().equals(column)) {
+                ind = i;
                 break;
             }
         }
         return ind;
     }
 
-    public void AddRow(List<RecordDataItem> row)
-    {
+    public void AddRow(List<RecordDataItem> row) {
         tableData.add(row);
     }
 

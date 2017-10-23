@@ -42,10 +42,9 @@ import org.underworldlabs.util.SystemProperties;
 // results table.
 
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @author Takis Diakoumis
+ * @version $Revision: 1780 $
+ * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
@@ -74,7 +73,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     private Color dateValueDisplayColor;
     private Color charValueDisplayColor;
     private Color blobValueDisplayColor;
-    
+
     private Color alternatingRowBackground;
 
     private boolean rightAlignNumeric;
@@ -100,9 +99,9 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     }
 
     public Component getTableCellRendererComponent(
-				JTable table, Object value,
-				boolean isSelected, boolean hasFocus,
-				int row, int column) {
+            JTable table, Object value,
+            boolean isSelected, boolean hasFocus,
+            int row, int column) {
 
         if (isSelected) {
 
@@ -118,11 +117,11 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
             setForeground(tableForeground);
             if (row % 2 > 0) {
-                
+
                 setBackground(alternatingRowBackground);
 
             } else {
-             
+
                 setBackground(tableBackground);
             }
         }
@@ -185,24 +184,24 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         if (value != null) {
 
-        	if (value instanceof RecordDataItem) {
+            if (value instanceof RecordDataItem) {
 
-        		RecordDataItem recordDataItem = (RecordDataItem) value;
-        		if (recordDataItem.isDisplayValueNull()) {
+                RecordDataItem recordDataItem = (RecordDataItem) value;
+                if (recordDataItem.isDisplayValueNull()) {
 
-        		    formatForNullValue(isSelected);
-        			return;
+                    formatForNullValue(isSelected);
+                    return;
 
-        		} else {
+                } else {
 
-        			formatForDataItem(recordDataItem, isSelected);
-        			return;
-        		}
+                    formatForDataItem(recordDataItem, isSelected);
+                    return;
+                }
 
-        	} else {
+            } else {
 
-        	    formatForOther(value, isSelected);
-        	}
+                formatForOther(value, isSelected);
+            }
 
         } else {
 
@@ -226,7 +225,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
         boolean isDateValue = false;
         Color color = tableBackground;
         int sqlType = recordDataItem.getDataType();
-        
+
         switch (sqlType) {
 
             case Types.LONGVARCHAR:
@@ -284,14 +283,14 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
             // account for possible dump on parse conversion
             if (value instanceof Date) {
-                
+
                 setValue(dateFormatted((Date) value));
 
             } else {
-                
+
                 setValue(value);
             }
-            
+
         }
 
         if (!isSelected) {
@@ -301,7 +300,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
                 // if its not the bg, apply the bg otherwise run 
                 // with alternating bg alreday set 
-                
+
                 setBackground(color);
             }
 
@@ -317,7 +316,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
             setBackground(nullValueDisplayColor);
         }
-        
+
     }
 
     public void applyUserPreferences() {
@@ -360,7 +359,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         alternatingRowBackground = SystemProperties.getColourProperty(
                 Constants.USER_PROPERTIES_KEY, "results.alternating.row.background");
-        
+
         nullValueDisplayString = SystemProperties.getStringProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.cell.null.text");
     }
@@ -407,12 +406,19 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
         return background != null;
     }
 
-    public void invalidate() {}
-    public void repaint() {}
-    public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {}
-    protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {}
+    public void invalidate() {
+    }
 
-    
+    public void repaint() {
+    }
+
+    public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
+    }
+
+    protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+    }
+
+
 }
 
 

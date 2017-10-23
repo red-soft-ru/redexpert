@@ -7,13 +7,12 @@ import com.github.lgooddatepicker.zinternaltools.InternalUtilities;
 import java.sql.Date;
 import java.time.LocalDate;
 
-public class DateCellEditor extends DateTableEditor
-{
+public class DateCellEditor extends DateTableEditor {
     public void setCellEditorValue(Object value) {
         this.getDatePicker().clear();
         if (value != null) {
-            RecordDataItem item=(RecordDataItem)value;
-            if(!item.isDisplayValueNull()) {
+            RecordDataItem item = (RecordDataItem) value;
+            if (!item.isDisplayValueNull()) {
                 if (item.getDisplayValue() instanceof Date) {
                     LocalDate nativeValue = ((Date) item.getDisplayValue()).toLocalDate();
                     this.getDatePicker().setDate(nativeValue);
@@ -26,10 +25,11 @@ public class DateCellEditor extends DateTableEditor
 
         }
     }
+
     public Object getCellEditorValue() {
-        if(getDatePicker().getDateStringOrEmptyString().equals(""))
+        if (getDatePicker().getDateStringOrEmptyString().equals(""))
             return null;
         else
-        return Date.valueOf(getDatePicker().getDate());
+            return Date.valueOf(getDatePicker().getDate());
     }
 }

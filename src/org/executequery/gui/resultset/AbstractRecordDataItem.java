@@ -28,155 +28,153 @@ import org.underworldlabs.jdbc.DataSourceException;
 
 
 /**
- *
  * @author Takis Diakoumis
  * @version $Revision: 1780 $
  * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public abstract class AbstractRecordDataItem implements RecordDataItem {
 
-	private Object value;
+    private Object value;
 
-	private Object newValue;
+    private Object newValue;
 
     private String name;
 
     private int dataType;
 
-	private String dataTypeName;
+    private String dataTypeName;
 
-	private boolean changed;
+    private boolean changed;
 
-	private static final SQLTypeObjectFactory TYPE_OBJECT_FACTORY = new SQLTypeObjectFactory();
+    private static final SQLTypeObjectFactory TYPE_OBJECT_FACTORY = new SQLTypeObjectFactory();
 
-	public AbstractRecordDataItem(String name, int dataType, String dataTypeName) {
+    public AbstractRecordDataItem(String name, int dataType, String dataTypeName) {
 
-		super();
+        super();
         this.name = name;
         this.dataType = dataType;
-		this.dataTypeName = dataTypeName;
-	}
+        this.dataTypeName = dataTypeName;
+    }
 
-	@Override
+    @Override
     public int length() {
 
-	    if (!isValueNull()) {
+        if (!isValueNull()) {
 
-	        return toString().length();
+            return toString().length();
 
-	    } else {
+        } else {
 
-	        return 0;
-	    }
-	}
+            return 0;
+        }
+    }
 
-	public String getDataTypeName() {
-		return dataTypeName;
-	}
+    public String getDataTypeName() {
+        return dataTypeName;
+    }
 
-	@Override
+    @Override
     public int getDataType() {
-		return dataType;
-	}
+        return dataType;
+    }
 
-	@Override
+    @Override
     public Object getDisplayValue() {
-		return getNewValue();
-	}
+        return getNewValue();
+    }
 
-	@Override
+    @Override
     public Object getValue() {
-		return value;
-	}
+        return value;
+    }
 
-	@Override
-	public Object getNewValue() {
-		return newValue;
-	}
+    @Override
+    public Object getNewValue() {
+        return newValue;
+    }
 
-	@Override
+    @Override
     public void setValue(Object value) {
-		this.value = value;
-		this.newValue=value;
-	}
+        this.value = value;
+        this.newValue = value;
+    }
 
-	@Override
+    @Override
     public boolean valueContains(String pattern) {
 
-	    if (isLob() || isValueNull()) {
+        if (isLob() || isValueNull()) {
 
-	        return false;
-	    }
-	    return StringUtils.containsIgnoreCase(getValue().toString(), pattern);
-	}
+            return false;
+        }
+        return StringUtils.containsIgnoreCase(getValue().toString(), pattern);
+    }
 
-	@Override
+    @Override
     public void valueChanged(Object newValue) {
 
-		if (valuesEqual(this.value, newValue)) {
+        if (valuesEqual(this.value, newValue)) {
 
-			changed=false;
-			return;
-		}
+            changed = false;
+            return;
+        }
 
-	    if (newValue != null && isStringLiteralNull(newValue)) {
+        if (newValue != null && isStringLiteralNull(newValue)) {
 
-	        this.newValue=null;
+            this.newValue = null;
 
-	    } else {
+        } else {
 
-	       this.newValue=newValue;
-	    }
-	    changed = true;
-	}
+            this.newValue = newValue;
+        }
+        changed = true;
+    }
 
-	private boolean valuesEqual(Object firstValue, Object secondValue) {
+    private boolean valuesEqual(Object firstValue, Object secondValue) {
 
-		if (ObjectUtils.equals(firstValue, secondValue)) {
+        if (ObjectUtils.equals(firstValue, secondValue)) {
 
-			return true;
-		}
+            return true;
+        }
 
-		if (firstValue != null && secondValue != null) {
+        if (firstValue != null && secondValue != null) {
 
-			return firstValue.toString().equals(secondValue.toString());
-		}
+            return firstValue.toString().equals(secondValue.toString());
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	private boolean isStringLiteralNull(Object newValue) {
+    private boolean isStringLiteralNull(Object newValue) {
 
-	    return newValue.toString().equalsIgnoreCase("NULL");
+        return newValue.toString().equalsIgnoreCase("NULL");
     }
 
     @Override
     public boolean isValueNull() {
-		return (value == null);
-	}
+        return (value == null);
+    }
 
-	public boolean isDisplayValueNull()
-	{
-		return isValueNull();
-	}
+    public boolean isDisplayValueNull() {
+        return isValueNull();
+    }
 
-	@Override
+    @Override
     public String toString() {
 
-		if (getValue() != null) {
+        if (getValue() != null) {
 
-			return getValue().toString();
-		}
+            return getValue().toString();
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	@Override
+    @Override
     public void setNull() {
-		value = null;
-	}
+        value = null;
+    }
 
-	@Override
+    @Override
     public boolean isChanged() {
         return changed;
     }
@@ -191,12 +189,12 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
         return isValueNull();// && StringUtils.isBlank(toString());
     }
 
-	@Override
-	public boolean isNewValueNull() {
-		return newValue==null;
-	}
+    @Override
+    public boolean isNewValueNull() {
+        return newValue == null;
+    }
 
-	@Override
+    @Override
     public Object getValueAsType() {
 
         if (isValueNull()) {

@@ -6,12 +6,12 @@ import javax.swing.*;
 import javax.swing.event.CellEditorListener;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.sql.Time;
 import java.util.EventObject;
 
 public class TimeCellEditor extends AbstractCellEditor implements TableCellEditor {
     EQTimePicker picker;
-
     public TimeCellEditor() {
         picker = new EQTimePicker();
         this.autoAdjustMinimumTableRowHeight = true;
@@ -43,10 +43,14 @@ public class TimeCellEditor extends AbstractCellEditor implements TableCellEdito
     }
 
     @Override
-    public boolean isCellEditable(EventObject eventObject) {
-        return true;
+    public boolean isCellEditable(EventObject anEvent) {
+        if (anEvent instanceof MouseEvent) {
+            return ((MouseEvent) anEvent).getClickCount() >= 2;
+        } else {
+            return true;
+        }
     }
-    
+
     private void zAdjustTableRowHeightIfNeeded(JTable table) {
         if (this.autoAdjustMinimumTableRowHeight) {
             if (table.getRowHeight() < this.minimumRowHeightInPixels) {

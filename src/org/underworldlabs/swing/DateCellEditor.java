@@ -1,8 +1,9 @@
-package org.executequery.gui.resultset;
+package org.underworldlabs.swing;
 
 
 import com.github.lgooddatepicker.tableeditors.DateTableEditor;
 import com.github.lgooddatepicker.zinternaltools.InternalUtilities;
+import org.executequery.gui.resultset.RecordDataItem;
 
 import java.sql.Date;
 import java.time.LocalDate;

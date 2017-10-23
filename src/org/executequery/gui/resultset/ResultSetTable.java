@@ -43,6 +43,7 @@ import javax.swing.table.TableModel;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.StandardTable;
+import org.underworldlabs.swing.DateCellEditor;
 import org.underworldlabs.swing.DateTimeCellEditor;
 import org.underworldlabs.swing.TimeCellEditor;
 import org.underworldlabs.swing.table.MultiLineStringCellEditor;

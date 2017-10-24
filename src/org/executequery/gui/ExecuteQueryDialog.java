@@ -70,14 +70,22 @@ public class ExecuteQueryDialog extends BaseDialog {
 
     ListActionsModel model;
 
+    String delimiter =";";
+
     public static void setClipboard(String str) {
         StringSelection ss = new StringSelection(str);
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, null);
     }
 
-    public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive) {
+    public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive)
+    {
+        this(name,query,databaseConnection,keepAlive,";");
+    }
+
+    public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive,String delimiter) {
         super(name, true, false);
         this.query = query;
+        this.delimiter = delimiter;
         this.dc = databaseConnection;
         queryTokenizer = new QueryTokenizer();
         querySender = new DefaultStatementExecutor(dc, keepAlive);
@@ -290,10 +298,14 @@ public class ExecuteQueryDialog extends BaseDialog {
         try {
             Vector<RowAction> v = model.data;
             String copy = "";
+            if(!delimiter.equals(";"))
+            copy+="SET TERM "+delimiter+";\n";
             for (int i = 0; i < v.size(); i++) {
                 if (v.elementAt(i).copyScript)
                     copy += v.elementAt(i).queryAction + ";\n";
             }
+            if(!delimiter.equals(";"))
+                copy += "SET TERM ;"+delimiter;
             setClipboard(copy);
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
@@ -339,9 +351,9 @@ public class ExecuteQueryDialog extends BaseDialog {
         String query = "";
         boolean commit = true;
         while (querys.trim().length() > 0 && commit) {
-            if (querys.contains(";")) {
-                query = querys.substring(0, querys.indexOf(";"));
-                querys = querys.substring(querys.indexOf(";") + 1, querys.length());
+            if (querys.contains(delimiter)) {
+                query = querys.substring(0, querys.indexOf(delimiter));
+                querys = querys.substring(querys.indexOf(delimiter) + 1, querys.length());
             } else {
                 query = querys;
                 querys = "";

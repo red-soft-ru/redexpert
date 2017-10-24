@@ -46,6 +46,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTableCellRenderer;
 import org.executequery.components.table.BrowsingCellEditor;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.gui.BaseDialog;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.log.Log;
@@ -157,9 +158,15 @@ public abstract class TableDefinitionPanel extends JPanel
 
     public static final int DEFAULT_COLUMN = 10;
 
+    public static final String SUBSTITUTE_NAME="<TABLE_NAME>";
+
     private String[] domains;
 
+    private String[] generators;
+
     DatabaseConnection dc;
+
+    String AutoincrementSQLText="";
 
     public TableDefinitionPanel() {
         this(true, null);
@@ -223,6 +230,7 @@ public abstract class TableDefinitionPanel extends JPanel
         tcm.getColumn(DESCRIPTION_COLUMN).setPreferredWidth(200);
         tcm.getColumn(COMPUTED_BY_COLUMN).setPreferredWidth(200);
         tcm.getColumn(DEFAULT_COLUMN).setPreferredWidth(200);
+        tcm.getColumn(AUTOINCREMENT_COLUMN).setPreferredWidth(70);
 
         tcm.getColumn(PK_COLUMN).setCellRenderer(new KeyCellRenderer());
 
@@ -342,7 +350,14 @@ public abstract class TableDefinitionPanel extends JPanel
             if (table.getSelectedColumn() == PK_COLUMN) {
                 tableVector.elementAt(row).setPrimaryKey(!tableVector.elementAt(row).isPrimaryKey());
                 _model.setValueAt(null, row, PK_COLUMN);
-                tableChanged(row, PK_COLUMN, null);
+                tableChanged( PK_COLUMN,row, null);
+
+            }else if (table.getSelectedColumn() == AUTOINCREMENT_COLUMN) {
+                BaseDialog dialog = new BaseDialog("Autoincrement",true);
+                AutoIncrementPanel panel = new AutoIncrementPanel(dc,dialog,tableVector.elementAt(row).getAutoincrement(),SUBSTITUTE_NAME,generators);
+                dialog.addDisplayComponent(panel);
+                dialog.display();
+                tableChanged( AUTOINCREMENT_COLUMN,row, null);
 
             }
         }
@@ -360,6 +375,12 @@ public abstract class TableDefinitionPanel extends JPanel
     public void setDomains(String[] domains) {
         this.domains = domains;
     }
+
+    public void setGenerators(String[] generators)
+    {
+        this.generators=generators;
+    }
+
 
     /**
      * Sets the available data types to the values specified.
@@ -722,7 +743,7 @@ public abstract class TableDefinitionPanel extends JPanel
 
         protected String[] header = {"PK", "Name", "Datatype", "Domain",
                 "Size", "Scale", "Required", "Check",
-                "Description", "Computed by", "Default Value"};
+                "Description", "Computed by", "Default Value","Autoincrement"};
 
         public CreateTableModel() {
             tableVector = new Vector<ColumnData>();
@@ -819,6 +840,7 @@ public abstract class TableDefinitionPanel extends JPanel
 
                 case CHECK_COLUMN:
                     return cd.getCheck();
+
                 case DESCRIPTION_COLUMN:
                     return cd.getDescription();
 
@@ -827,6 +849,9 @@ public abstract class TableDefinitionPanel extends JPanel
 
                 case DEFAULT_COLUMN:
                     return cd.getDefaultValue();
+
+                case AUTOINCREMENT_COLUMN:
+                    return cd.isAutoincrement();
 
                 default:
                     return null;
@@ -933,6 +958,8 @@ public abstract class TableDefinitionPanel extends JPanel
                     break;
                 case DEFAULT_COLUMN:
                     cd.setDefaultValue((String) value);
+                case AUTOINCREMENT_COLUMN:
+                    break;
             }
 
             fireTableRowsUpdated(row, row);
@@ -966,6 +993,8 @@ public abstract class TableDefinitionPanel extends JPanel
                         return isEditSize(row);
                     case SCALE_COLUMN:
                         return isEditScale(row);
+                    case AUTOINCREMENT_COLUMN:
+                        return false;
                     default:
                         return editing;
                 }
@@ -979,7 +1008,7 @@ public abstract class TableDefinitionPanel extends JPanel
         }
 
         public Class getColumnClass(int col) {
-            if (col == REQUIRED_COLUMN) {
+            if (col == REQUIRED_COLUMN||col==AUTOINCREMENT_COLUMN) {
                 return Boolean.class;
             } else if (col == SIZE_COLUMN || col == SCALE_COLUMN) {
                 return Integer.class;
@@ -1108,6 +1137,10 @@ public abstract class TableDefinitionPanel extends JPanel
             lastEditingColumn = -1;
         }
 
+    }
+
+    public String getAutoincrementSQLText() {
+        return AutoincrementSQLText;
     }
 }
 

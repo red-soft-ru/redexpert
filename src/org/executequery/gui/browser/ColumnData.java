@@ -32,6 +32,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
+import org.executequery.gui.table.Autoincrement;
 import org.executequery.log.Log;
 import org.underworldlabs.util.MiscUtils;
 
@@ -150,6 +151,8 @@ public class ColumnData implements Serializable {
 
     private String computedBy;
 
+    Autoincrement ai;
+
     DatabaseConnection dc;
 
     public ColumnData(DatabaseConnection databaseConnection) {
@@ -158,6 +161,7 @@ public class ColumnData implements Serializable {
         newColumn = false;
         keyType = null;
         dc = databaseConnection;
+        ai = new Autoincrement();
     }
 
     public ColumnData(String columnName, DatabaseConnection databaseConnection) {
@@ -580,6 +584,17 @@ public class ColumnData implements Serializable {
 
     public String getComputedBy() {
         return computedBy;
+    }
+
+    public boolean isAutoincrement()
+    {
+        return ai.isAutoincrement();
+    }
+
+    public Autoincrement getAutoincrement()
+    {
+        ai.fieldName=getColumnName();
+        return ai;
     }
 }
 

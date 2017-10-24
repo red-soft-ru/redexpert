@@ -113,7 +113,7 @@ public interface CreateTableSQLSyntax {
     char DOT = '.';
     
     /** The literal ';' */
-    char SEMI_COLON = ';';
+    char SEMI_COLON = '^';
 
     /** The literal ' DROP CONSTRAINT ' */
     String DROP_CONSTRAINT = " DROP CONSTRAINT ";

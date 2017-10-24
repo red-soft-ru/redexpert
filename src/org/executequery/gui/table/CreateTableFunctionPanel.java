@@ -267,6 +267,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
 
             tablePanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
             tablePanel.setDomains(getDomains());
+            tablePanel.setGenerators(getGenerators());
             tablePanel.setDatabaseConnection(connection);
             //metaDataю
         }
@@ -291,6 +292,26 @@ public abstract class CreateTableFunctionPanel extends JPanel
             return domains.toArray(new String[domains.size()]);
         } catch (Exception e) {
             Log.error("Error loading domains:" + e.getMessage());
+            return null;
+        }
+    }
+
+    String[] getGenerators() {
+        DefaultStatementExecutor executor = new DefaultStatementExecutor(getSelectedConnection(), true);
+        List<String> domains = new ArrayList<>();
+        try {
+            String query = "select " +
+                    "RDB$GENERATOR_NAME FROM RDB$GENERATORS " +
+                    "where RDB$SYSTEM_FLAG = 0 " +
+                    "order by 1";
+            ResultSet rs = executor.execute(QueryTypes.SELECT, query).getResultSet();
+            while (rs.next()) {
+                domains.add(rs.getString(1).trim());
+            }
+            executor.releaseResources();
+            return domains.toArray(new String[domains.size()]);
+        } catch (Exception e) {
+            Log.error("Error loading generators:" + e.getMessage());
             return null;
         }
     }
@@ -391,6 +412,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
             public void run() {
                 tablePanel.setDataTypes(dataTypes, intDataTypes);
                 tablePanel.setDomains(getDomains());
+                tablePanel.setGenerators(getGenerators());
             }
         });
     }
@@ -506,7 +528,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
             description.append("COMMENT ON COLUMN ");
             description.append(nameField.getText());
             description.append("." + d);
-            description.append(";");
+            description.append("^");
 
         }
 
@@ -539,6 +561,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
         sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE).
                 append(CreateTableSQLSyntax.SEMI_COLON);
         sqlBuffer.append("\n").append(description);
+        sqlBuffer.append(tablePanel.getAutoincrementSQLText().replace(TableDefinitionPanel.SUBSTITUTE_NAME,nameField.getText()));
         setSQLText(sqlBuffer.toString());
     }
 

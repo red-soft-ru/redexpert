@@ -854,5 +854,12 @@
           description="Comparer DB"
           execute-class="org.executequery.actions.toolscommands.ComparerDBCommands"/>
 
+  <action id="create-view-command"
+          name="Create View"
+          mnemonic="T"
+          accel-editable="true"
+          description="Create a new database view"
+          execute-class="org.executequery.actions.databasecommands.CreateViewCommand"/>
+
 
 </actions>

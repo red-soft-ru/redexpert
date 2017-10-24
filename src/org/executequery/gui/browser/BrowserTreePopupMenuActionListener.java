@@ -23,9 +23,7 @@ package org.executequery.gui.browser;
 import java.awt.event.ActionEvent;
 import java.lang.reflect.Array;
 
-import javax.swing.Action;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.tree.TreePath;
 
 import org.executequery.GUIUtilities;
@@ -41,6 +39,7 @@ import org.executequery.gui.browser.managment.WindowAddRole;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.CreateGeneratorPanel;
+import org.executequery.gui.databaseobjects.CreateViewPanel;
 import org.executequery.gui.importexport.ImportExportDelimitedPanel;
 import org.executequery.gui.importexport.ImportExportExcelPanel;
 import org.executequery.gui.importexport.ImportExportDataProcess;
@@ -143,6 +142,28 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
+                case NamedObject.VIEW:
+                    if (GUIUtilities.isDialogOpen(CreateViewPanel.TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateViewPanel.TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateViewPanel.TITLE, false);
+                            CreateViewPanel panel = new CreateViewPanel(currentSelection, dialog);
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                            //Icon icon=null;
+                            //GUIUtilities.addCentralPane(CreateViewPanel.TITLE,icon,new CreateViewPanel(currentSelection),
+                            //        null,true);
                         } finally {
                             GUIUtilities.showNormalCursor();
                         }

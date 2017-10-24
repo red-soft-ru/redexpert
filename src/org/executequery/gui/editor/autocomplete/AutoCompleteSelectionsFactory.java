@@ -36,6 +36,7 @@ import org.executequery.databaseobjects.impl.ColumnInformation;
 import org.executequery.databaseobjects.impl.ColumnInformationFactory;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.gui.editor.QueryEditor;
+import org.executequery.gui.text.SQLTextPane;
 import org.executequery.log.Log;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
@@ -55,11 +56,11 @@ public class AutoCompleteSelectionsFactory {
     
     private static final String DATABASE_SYSTEM_FUNCTION_DESCRIPTION = "System Function";
     
-    private QueryEditorAutoCompletePopupProvider provider;
+    private AutoCompletePopupProvider provider;
     
     private List<AutoCompleteListItem> tables;
     
-    public AutoCompleteSelectionsFactory(QueryEditorAutoCompletePopupProvider provider) {
+    public AutoCompleteSelectionsFactory(AutoCompletePopupProvider provider) {
         super();
         this.provider = provider;
     }
@@ -132,6 +133,87 @@ public class AutoCompleteSelectionsFactory {
                 addToProvider(listSelections);
 
                 queryEditor.updateSQLKeywords();
+            }
+
+            if (autoCompleteSchema) {
+
+                databaseTablesForHost(databaseHost);
+//                databaseColumnsForTables(databaseHost, tables);
+                databaseFunctionsAndProceduresForHost(databaseHost);
+            }
+
+        }
+
+    }
+
+    public void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteSchema,
+                      SQLTextPane queryEditor) {
+
+        tables = new ArrayList<AutoCompleteListItem>();
+
+        List<AutoCompleteListItem> listSelections = new ArrayList<AutoCompleteListItem>();
+        if (autoCompleteKeywords) {
+
+            addSQL92Keywords(listSelections);
+            addUserDefinedKeywords(listSelections);
+
+            addToProvider(listSelections);
+        }
+
+        if (databaseHost != null && databaseHost.isConnected()) {
+
+            if (autoCompleteKeywords) {
+
+                addDatabaseDefinedKeywords(databaseHost, listSelections);
+                databaseSystemFunctionsForHost(databaseHost, listSelections);
+
+                DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
+                DefaultDriverLoader driverLoader = new DefaultDriverLoader();
+                Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
+                DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
+                Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+
+                if (driver.getClass().getName().contains("FBDriver")) {
+
+                    Connection connection = null;
+                    try {
+                        connection = databaseHost.getConnection().unwrap(Connection.class);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+
+                    URL[] urls = new URL[0];
+                    Class clazzdb = null;
+                    Object odb = null;
+                    try {
+                        urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                        ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
+                        clazzdb = cl.loadClass("biz.redsoft.FBDatabaseConnectionImpl");
+                        odb = clazzdb.newInstance();
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (InstantiationException e) {
+                        e.printStackTrace();
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
+
+                    IFBDatabaseConnection db = (IFBDatabaseConnection)odb;
+                    try {
+
+                        db.setConnection(connection);
+                        addFirebirdDefnedKeywords(databaseHost, listSelections, db.getMajorVersion(), db.getMinorVersion());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+                addToProvider(listSelections);
+
+                queryEditor.setSQLKeywords(true);
             }
 
             if (autoCompleteSchema) {

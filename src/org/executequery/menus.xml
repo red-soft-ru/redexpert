@@ -413,6 +413,9 @@
           <menu-item id="create-table-command"
                      class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
+        <menu-item id="create-view-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
           <menu-item id="create-index-command"
                      class="org.underworldlabs.swing.menu.MainMenuItem"/>
 

@@ -269,7 +269,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
             tablePanel.setDomains(getDomains());
             tablePanel.setGenerators(getGenerators());
             tablePanel.setDatabaseConnection(connection);
-            //metaDataю
+            //metaData
         }
 
 

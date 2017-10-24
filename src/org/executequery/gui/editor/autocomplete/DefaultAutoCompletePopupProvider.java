@@ -87,7 +87,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
     DatabaseConnection connection;
 
-    public DefaultAutoCompletePopupProvider(DatabaseConnection dc,SQLTextPane textPane) {
+    public DefaultAutoCompletePopupProvider(DatabaseConnection dc, SQLTextPane textPane) {
 
         super();
         connection = dc;
@@ -285,6 +285,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
         queryEditorTextComponent().requestFocus();
     }
+
     private String getWordEndingAt(int position) {
 
         String text = sqlTextPane.getText();
@@ -347,7 +348,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
                 } else if (start != -1) {
 
-                    if(chars[i - 1] == Constants.NEW_LINE_CHAR) {
+                    if (chars[i - 1] == Constants.NEW_LINE_CHAR) {
 
                         break;
 
@@ -386,19 +387,16 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
                         end = i;
                     }
                     break;
-                }
-                else if (end != -1) {
-                    if(chars[i + 1] == Constants.NEW_LINE_CHAR) {
+                } else if (end != -1) {
+                    if (chars[i + 1] == Constants.NEW_LINE_CHAR) {
                         break;
-                    }
-                    else if (Character.isSpaceChar(chars[i + 1])) {
+                    } else if (Character.isSpaceChar(chars[i + 1])) {
                         wasSpaceChar = true;
                         i++;
                     }
                 }
 
-            }
-            else if (!Character.isSpaceChar(chars[i])) {
+            } else if (!Character.isSpaceChar(chars[i])) {
                 end = i;
                 wasSpaceChar = false;
             }

@@ -561,7 +561,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
         sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE).
                 append(CreateTableSQLSyntax.SEMI_COLON);
         sqlBuffer.append("\n").append(description);
-        sqlBuffer.append(tablePanel.getAutoincrementSQLText().replace(TableDefinitionPanel.SUBSTITUTE_NAME,nameField.getText()));
+        sqlBuffer.append(tablePanel.getAutoincrementSQLText().replace(TableDefinitionPanel.SUBSTITUTE_NAME, nameField.getText()));
         setSQLText(sqlBuffer.toString());
     }
 

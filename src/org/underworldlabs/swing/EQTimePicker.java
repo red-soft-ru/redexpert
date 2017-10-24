@@ -58,13 +58,12 @@ public class EQTimePicker extends JPanel {
     }
 
     public void setTime(LocalTime time) {
-        if(time!=null) {
+        if (time != null) {
             Instant instant = time.atDate(LocalDate.of(2000, 1, 1)).
                     atZone(ZoneId.systemDefault()).toInstant();
             Date date = Date.from(instant);
             timeSpinner.setValue(date);
-        }
-        else{
+        } else {
             nullBox.setSelected(true);
         }
     }

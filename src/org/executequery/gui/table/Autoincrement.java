@@ -8,7 +8,7 @@ public class Autoincrement {
     public boolean createProcedure = false;
     public String generatorName = "";
     public int startValue = 0;
-    public String fieldName ="";
+    public String fieldName = "";
     public String triggerName = "";
     public String procedureName = "";
     public String sqlAutoincrement = "";

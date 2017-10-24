@@ -26,15 +26,9 @@ import java.util.List;
 public interface AutoCompletePopupProvider {
 
     void firePopupTrigger();
-    
+
     Action getPopupAction();
 
     void addListItems(List<AutoCompleteListItem> items);
 
 }
-
-
-
-
-
-

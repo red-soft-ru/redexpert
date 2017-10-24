@@ -586,14 +586,12 @@ public class ColumnData implements Serializable {
         return computedBy;
     }
 
-    public boolean isAutoincrement()
-    {
+    public boolean isAutoincrement() {
         return ai.isAutoincrement();
     }
 
-    public Autoincrement getAutoincrement()
-    {
-        ai.fieldName=getColumnName();
+    public Autoincrement getAutoincrement() {
+        ai.fieldName = getColumnName();
         return ai;
     }
 }

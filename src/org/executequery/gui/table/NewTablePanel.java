@@ -212,10 +212,10 @@ public class NewTablePanel extends TableDefinitionPanel
         primary = false;
         primaryText.setLength(0);
         descriptions = new ArrayList<>();
-        AutoincrementSQLText="";
+        AutoincrementSQLText = "";
         for (int i = 0, k = tableVector.size(); i < k; i++) {
             ColumnData cd = (ColumnData) tableVector.elementAt(i);
-            AutoincrementSQLText+=cd.getAutoincrement().sqlAutoincrement;
+            AutoincrementSQLText += cd.getAutoincrement().sqlAutoincrement;
             if (cd.isPrimaryKey()) {
                 if (primary)
                     primaryText.append(", ");

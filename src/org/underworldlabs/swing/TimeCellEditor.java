@@ -12,6 +12,7 @@ import java.util.EventObject;
 
 public class TimeCellEditor extends AbstractCellEditor implements TableCellEditor {
     EQTimePicker picker;
+
     public TimeCellEditor() {
         picker = new EQTimePicker();
         this.autoAdjustMinimumTableRowHeight = true;

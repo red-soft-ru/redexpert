@@ -70,19 +70,18 @@ public class ExecuteQueryDialog extends BaseDialog {
 
     ListActionsModel model;
 
-    String delimiter =";";
+    String delimiter = ";";
 
     public static void setClipboard(String str) {
         StringSelection ss = new StringSelection(str);
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, null);
     }
 
-    public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive)
-    {
-        this(name,query,databaseConnection,keepAlive,";");
+    public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive) {
+        this(name, query, databaseConnection, keepAlive, ";");
     }
 
-    public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive,String delimiter) {
+    public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive, String delimiter) {
         super(name, true, false);
         this.query = query;
         this.delimiter = delimiter;
@@ -298,14 +297,14 @@ public class ExecuteQueryDialog extends BaseDialog {
         try {
             Vector<RowAction> v = model.data;
             String copy = "";
-            if(!delimiter.equals(";"))
-            copy+="SET TERM "+delimiter+";\n";
+            if (!delimiter.equals(";"))
+                copy += "SET TERM " + delimiter + ";\n";
             for (int i = 0; i < v.size(); i++) {
                 if (v.elementAt(i).copyScript)
                     copy += v.elementAt(i).queryAction + ";\n";
             }
-            if(!delimiter.equals(";"))
-                copy += "SET TERM ;"+delimiter;
+            if (!delimiter.equals(";"))
+                copy += "SET TERM ;" + delimiter;
             setClipboard(copy);
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());

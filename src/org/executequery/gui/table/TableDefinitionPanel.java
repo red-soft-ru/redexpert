@@ -158,7 +158,7 @@ public abstract class TableDefinitionPanel extends JPanel
 
     public static final int DEFAULT_COLUMN = 10;
 
-    public static final String SUBSTITUTE_NAME="<TABLE_NAME>";
+    public static final String SUBSTITUTE_NAME = "<TABLE_NAME>";
 
     private String[] domains;
 
@@ -166,7 +166,7 @@ public abstract class TableDefinitionPanel extends JPanel
 
     DatabaseConnection dc;
 
-    String AutoincrementSQLText="";
+    String AutoincrementSQLText = "";
 
     public TableDefinitionPanel() {
         this(true, null);
@@ -350,14 +350,14 @@ public abstract class TableDefinitionPanel extends JPanel
             if (table.getSelectedColumn() == PK_COLUMN) {
                 tableVector.elementAt(row).setPrimaryKey(!tableVector.elementAt(row).isPrimaryKey());
                 _model.setValueAt(null, row, PK_COLUMN);
-                tableChanged( PK_COLUMN,row, null);
+                tableChanged(PK_COLUMN, row, null);
 
-            }else if (table.getSelectedColumn() == AUTOINCREMENT_COLUMN) {
-                BaseDialog dialog = new BaseDialog("Autoincrement",true);
-                AutoIncrementPanel panel = new AutoIncrementPanel(dc,dialog,tableVector.elementAt(row).getAutoincrement(),SUBSTITUTE_NAME,generators);
+            } else if (table.getSelectedColumn() == AUTOINCREMENT_COLUMN) {
+                BaseDialog dialog = new BaseDialog("Autoincrement", true);
+                AutoIncrementPanel panel = new AutoIncrementPanel(dc, dialog, tableVector.elementAt(row).getAutoincrement(), SUBSTITUTE_NAME, generators);
                 dialog.addDisplayComponent(panel);
                 dialog.display();
-                tableChanged( AUTOINCREMENT_COLUMN,row, null);
+                tableChanged(AUTOINCREMENT_COLUMN, row, null);
 
             }
         }
@@ -376,9 +376,8 @@ public abstract class TableDefinitionPanel extends JPanel
         this.domains = domains;
     }
 
-    public void setGenerators(String[] generators)
-    {
-        this.generators=generators;
+    public void setGenerators(String[] generators) {
+        this.generators = generators;
     }
 
 
@@ -743,7 +742,7 @@ public abstract class TableDefinitionPanel extends JPanel
 
         protected String[] header = {"PK", "Name", "Datatype", "Domain",
                 "Size", "Scale", "Required", "Check",
-                "Description", "Computed by", "Default Value","Autoincrement"};
+                "Description", "Computed by", "Default Value", "Autoincrement"};
 
         public CreateTableModel() {
             tableVector = new Vector<ColumnData>();
@@ -1008,7 +1007,7 @@ public abstract class TableDefinitionPanel extends JPanel
         }
 
         public Class getColumnClass(int col) {
-            if (col == REQUIRED_COLUMN||col==AUTOINCREMENT_COLUMN) {
+            if (col == REQUIRED_COLUMN || col == AUTOINCREMENT_COLUMN) {
                 return Boolean.class;
             } else if (col == SIZE_COLUMN || col == SCALE_COLUMN) {
                 return Integer.class;

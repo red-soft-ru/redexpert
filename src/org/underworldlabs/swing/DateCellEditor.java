@@ -9,11 +9,11 @@ import java.sql.Date;
 import java.time.LocalDate;
 
 public class DateCellEditor extends DateTableEditor {
-    public DateCellEditor()
-    {
+    public DateCellEditor() {
         super();
-        this.clickCountToEdit=2;
+        this.clickCountToEdit = 2;
     }
+
     public void setCellEditorValue(Object value) {
         this.getDatePicker().clear();
         if (value != null) {

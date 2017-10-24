@@ -45,21 +45,21 @@ import org.underworldlabs.util.MiscUtils;
 public class AutoCompleteSelectionsFactory {
 
     private static final String DATABASE_TABLE_DESCRIPTION = "Database Table";
-    
+
     private static final String DATABASE_FUNCTION_DESCRIPTION = "Database Function";
-    
+
     private static final String DATABASE_PROCEDURE_DESCRIPTION = "Database Procedure";
-    
+
     private static final String DATABASE_TABLE_VIEW = "Database View";
-    
+
     private static final String DATABASE_COLUMN_DESCRIPTION = "Database Column";
-    
+
     private static final String DATABASE_SYSTEM_FUNCTION_DESCRIPTION = "System Function";
-    
+
     private AutoCompletePopupProvider provider;
-    
+
     private List<AutoCompleteListItem> tables;
-    
+
     public AutoCompleteSelectionsFactory(AutoCompletePopupProvider provider) {
         super();
         this.provider = provider;
@@ -69,20 +69,20 @@ public class AutoCompleteSelectionsFactory {
                       QueryEditor queryEditor) {
 
         tables = new ArrayList<AutoCompleteListItem>();
-        
+
         List<AutoCompleteListItem> listSelections = new ArrayList<AutoCompleteListItem>();
         if (autoCompleteKeywords) {
-        
+
             addSQL92Keywords(listSelections);
             addUserDefinedKeywords(listSelections);
-            
+
             addToProvider(listSelections);
         }
 
         if (databaseHost != null && databaseHost.isConnected()) {
 
             if (autoCompleteKeywords) {
-            
+
                 addDatabaseDefinedKeywords(databaseHost, listSelections);
                 databaseSystemFunctionsForHost(databaseHost, listSelections);
 
@@ -119,7 +119,7 @@ public class AutoCompleteSelectionsFactory {
                         e.printStackTrace();
                     }
 
-                    IFBDatabaseConnection db = (IFBDatabaseConnection)odb;
+                    IFBDatabaseConnection db = (IFBDatabaseConnection) odb;
                     try {
 
                         db.setConnection(connection);
@@ -200,7 +200,7 @@ public class AutoCompleteSelectionsFactory {
                         e.printStackTrace();
                     }
 
-                    IFBDatabaseConnection db = (IFBDatabaseConnection)odb;
+                    IFBDatabaseConnection db = (IFBDatabaseConnection) odb;
                     try {
 
                         db.setConnection(connection);
@@ -232,21 +232,21 @@ public class AutoCompleteSelectionsFactory {
         provider.addListItems(listSelections);
         listSelections.clear();
     }
-    
+
     public List<AutoCompleteListItem> buildKeywords(DatabaseHost databaseHost, boolean autoCompleteKeywords) {
 
         List<AutoCompleteListItem> listSelections = new ArrayList<AutoCompleteListItem>();
         if (autoCompleteKeywords) {
-        
+
             addSQL92Keywords(listSelections);
             addUserDefinedKeywords(listSelections);
-    
+
             if (databaseHost != null && databaseHost.isConnected()) {
-    
+
                 databaseSystemFunctionsForHost(databaseHost, listSelections);
                 addDatabaseDefinedKeywords(databaseHost, listSelections);
             }
-    
+
             Collections.sort(listSelections, new AutoCompleteListItemComparator());
         }
 
@@ -258,7 +258,7 @@ public class AutoCompleteSelectionsFactory {
         databaseExecutableForHost(databaseHost, "FUNCTION", DATABASE_FUNCTION_DESCRIPTION, AutoCompleteListItemType.DATABASE_FUNCTION);
         databaseExecutableForHost(databaseHost, "PROCEDURE", DATABASE_PROCEDURE_DESCRIPTION, AutoCompleteListItemType.DATABASE_PROCEDURE);
     }
-    
+
     private void databaseTablesForHost(DatabaseHost databaseHost) {
 
         databaseObjectsForHost(databaseHost, "TABLE", DATABASE_TABLE_DESCRIPTION, AutoCompleteListItemType.DATABASE_TABLE);
@@ -276,12 +276,12 @@ public class AutoCompleteSelectionsFactory {
     }
 
     private void databaseSystemFunctionsForHost(DatabaseHost databaseHost, List<AutoCompleteListItem> listSelections) {
-        
+
         trace("Building autocomplete object list using [ " + databaseHost.getName() + " ] for type - SYSTEM_FUNCTION");
-        
+
         ResultSet rs = null;
         DatabaseMetaData databaseMetaData = databaseHost.getDatabaseMetaData();
-        
+
         try {
 
             List<String> tableNames = new ArrayList<String>();
@@ -291,7 +291,7 @@ public class AutoCompleteSelectionsFactory {
             extractNames(tableNames, databaseMetaData.getTimeDateFunctions());
 
             addKeywordsFromList(tableNames, listSelections, DATABASE_SYSTEM_FUNCTION_DESCRIPTION, AutoCompleteListItemType.SYSTEM_FUNCTION);
-            
+
         } catch (SQLException e) {
 
             error("Values not available for type SYSTEM_FUNCTION - driver returned: " + e.getMessage());
@@ -307,25 +307,25 @@ public class AutoCompleteSelectionsFactory {
     private void extractNames(List<String> tableNames, String functions) {
 
         if (StringUtils.isNotEmpty(functions)) {
-            
+
             String[] names = functions.split(",");
             for (String name : names) {
-                
+
                 tableNames.add(name);
             }
 
         }
     }
-    
+
     private static final int INCREMENT = 5;
-    
-    private void databaseObjectsForHost(DatabaseHost databaseHost, String type, 
-            String databaseObjectDescription, AutoCompleteListItemType autocompleteType) {
-        
+
+    private void databaseObjectsForHost(DatabaseHost databaseHost, String type,
+                                        String databaseObjectDescription, AutoCompleteListItemType autocompleteType) {
+
         trace("Building autocomplete object list using [ " + databaseHost.getName() + " ] for type - " + type);
-		
-		ResultSet rs = null;
-		DatabaseMetaData databaseMetaData = databaseHost.getDatabaseMetaData();
+
+        ResultSet rs = null;
+        DatabaseMetaData databaseMetaData = databaseHost.getDatabaseMetaData();
         try {
             String catalog = databaseHost.getCatalogNameForQueries(defaultCatalogForHost(databaseHost));
             String schema = databaseHost.getSchemaNameForQueries(defaultSchemaForHost(databaseHost));
@@ -336,7 +336,7 @@ public class AutoCompleteSelectionsFactory {
             String[] types = new String[]{type};
 
             int count = 0;
-            
+
             rs = databaseMetaData.getTables(catalog, schema, null, types);
             if (rs == null)
                 return;
@@ -347,8 +347,9 @@ public class AutoCompleteSelectionsFactory {
 
                         return;
                     }
-                } catch (SQLException e) {}
-                
+                } catch (SQLException e) {
+                }
+
                 typeName = rs.getString(4);
 
                 // only include if the returned reported type matches
@@ -357,17 +358,17 @@ public class AutoCompleteSelectionsFactory {
                     tableNames.add(rs.getString(3));
                     count++;
                 }
-                
+
                 if (count >= INCREMENT) {
-                    
+
                     addTablesToProvider(databaseObjectDescription, autocompleteType, tableNames, list);
                     count = 0;
                     list.clear();
                     tableNames.clear();
                 }
-                
+
             }
-            
+
             addTablesToProvider(databaseObjectDescription, autocompleteType, tableNames, list);
 
         } catch (SQLException e) {
@@ -379,7 +380,7 @@ public class AutoCompleteSelectionsFactory {
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
 
             // nothing to do
 
@@ -388,15 +389,15 @@ public class AutoCompleteSelectionsFactory {
             releaseResources(rs);
             trace("Finished autocomplete object list using [ " + databaseHost.getName() + " ] for type - " + type);
         }
-    		
+
     }
 
     @SuppressWarnings("resource")
-    private void databaseExecutableForHost(DatabaseHost databaseHost, String type, 
-            String databaseObjectDescription, AutoCompleteListItemType autocompleteType) {
-        
+    private void databaseExecutableForHost(DatabaseHost databaseHost, String type,
+                                           String databaseObjectDescription, AutoCompleteListItemType autocompleteType) {
+
         trace("Building autocomplete object list using [ " + databaseHost.getName() + " ] for type - " + type);
-        
+
         ResultSet rs = null;
         try {
 
@@ -406,11 +407,11 @@ public class AutoCompleteSelectionsFactory {
 
             List<String> names = new ArrayList<String>();
             List<AutoCompleteListItem> list = new ArrayList<AutoCompleteListItem>();
-            
+
             if (autocompleteType == AutoCompleteListItemType.DATABASE_FUNCTION) {
-                
+
                 try {
-                
+
                     rs = databaseMetaData.getFunctions(catalog, schema, null);
 
                 } catch (Throwable e) {
@@ -418,37 +419,38 @@ public class AutoCompleteSelectionsFactory {
                     trace("Functions not available using [ getFunctions() ] - reverting to [ getProcedures() ] - " + e.getMessage());
                     rs = getProcedures(databaseMetaData, catalog, schema);
                 }
-                
+
             } else {
-                
+
                 rs = getProcedures(databaseMetaData, catalog, schema);
             }
-            
+
             if (rs != null) {
-            
+
                 int count = 0;
                 while (rs.next()) {
-    
+
                     try {
                         if (Thread.interrupted() || databaseMetaData.getConnection().isClosed()) {
-    
+
                             return;
                         }
-                    } catch (SQLException e) {}
-                    
+                    } catch (SQLException e) {
+                    }
+
                     names.add(rs.getString(3));
                     count++;
-                    
+
                     if (count >= INCREMENT) {
-                        
+
                         addTablesToProvider(databaseObjectDescription, autocompleteType, names, list);
                         count = 0;
                         list.clear();
                         names.clear();
                     }
-                    
+
                 }
-                
+
                 addTablesToProvider(databaseObjectDescription, autocompleteType, names, list);
 
             }
@@ -466,31 +468,31 @@ public class AutoCompleteSelectionsFactory {
             releaseResources(rs);
             trace("Finished autocomplete object list using [ " + databaseHost.getName() + " ] for type - " + type);
         }
-            
+
     }
 
     private ResultSet getProcedures(DatabaseMetaData databaseMetaData,
-            String catalog, String schema) throws SQLException {
+                                    String catalog, String schema) throws SQLException {
         ResultSet rs;
         rs = databaseMetaData.getProcedures(catalog, schema, null);
         return rs;
     }
-    
+
     private List<AutoCompleteListItem> tablesToAutoCompleteListItems(
-            List<AutoCompleteListItem> list, List<String> tables, 
+            List<AutoCompleteListItem> list, List<String> tables,
             String databaseObjectDescription, AutoCompleteListItemType autoCompleteListItemType) {
 
         for (String table : tables) {
 
-            list.add(new AutoCompleteListItem(table, 
-                    table, databaseObjectDescription, autoCompleteListItemType)); 
+            list.add(new AutoCompleteListItem(table,
+                    table, databaseObjectDescription, autoCompleteListItemType));
         }
-        
+
         return list;
     }
 
     private ColumnInformationFactory columnInformationFactory = new ColumnInformationFactory();
-    
+
     private void databaseColumnsForTables(DatabaseHost databaseHost, List<AutoCompleteListItem> tables) {
 
         trace("Retrieving column names for tables for host [ " + databaseHost.getName() + " ]");
@@ -507,89 +509,90 @@ public class AutoCompleteSelectionsFactory {
 
             try {
                 if (Thread.interrupted() || dmd.getConnection().isClosed()) {
-                    
+
                     return;
                 }
-            } catch (SQLException e) {}
-            
-            AutoCompleteListItem table = tables.get(i);            
+            } catch (SQLException e) {
+            }
+
+            AutoCompleteListItem table = tables.get(i);
             if (table == null) {
-                
+
                 continue;
             }
-            
+
             trace("Retrieving column names for table [ " + table.getValue() + " ]");
-        
+
             try {
-            
+
                 rs = dmd.getColumns(catalog, schema, table.getValue(), null);
                 while (rs.next()) {
 
                     String name = rs.getString(4);
                     columns.add(columnInformationFactory.build(
-                            table.getValue(), 
-                            name, 
+                            table.getValue(),
+                            name,
                             rs.getString(6),
                             rs.getInt(5),
                             rs.getInt(7),
                             rs.getInt(9),
                             rs.getInt(11) == DatabaseMetaData.columnNoNulls));
                 }
-            
+
                 for (ColumnInformation column : columns) {
-                    
+
                     list.add(new AutoCompleteListItem(
-                            column.getName(), 
+                            column.getName(),
                             table.getValue(),
                             column.getDescription(),
-                            DATABASE_COLUMN_DESCRIPTION, 
-                            AutoCompleteListItemType.DATABASE_TABLE_COLUMN)); 
+                            DATABASE_COLUMN_DESCRIPTION,
+                            AutoCompleteListItemType.DATABASE_TABLE_COLUMN));
                 }
-                
+
                 provider.addListItems(list);
                 releaseResources(rs);
                 columns.clear();
                 list.clear();
-            
+
             } catch (Throwable e) {
 
                 // don't want to break the editor here so just log and bail...
-                
+
                 error("Error retrieving column data for table " + table.getDisplayValue() + " - driver returned: " + e.getMessage());
-                
+
             } finally {
 
                 releaseResources(rs);
             }
 
         }
-        
+
         trace("Finished retrieving column names for tables for host [ " + databaseHost.getName() + " ]");
     }
 
     private String defaultSchemaForHost(DatabaseHost databaseHost) {
-        
+
         if (databaseHost.isConnected()) {
 
             DatabaseSource schema = databaseHost.getDefaultSchema();
             if (schema != null) {
-            
+
                 return schema.getName();
             }
-        }        
+        }
         return null;
     }
 
     private String defaultCatalogForHost(DatabaseHost databaseHost) {
 
         if (databaseHost.isConnected()) {
-        
+
             DatabaseSource catalog = databaseHost.getDefaultCatalog();
             if (catalog != null) {
-            
+
                 return catalog.getName();
             }
-        }        
+        }
         return null;
     }
 
@@ -599,18 +602,18 @@ public class AutoCompleteSelectionsFactory {
         List<String> asList = new ArrayList<String>();
 
         for (String keyword : keywords) {
-            
+
             asList.add(keyword);
         }
 
         keywords().setDatabaseKeyWords(asList);
 
-        addKeywordsFromList(asList, list, 
+        addKeywordsFromList(asList, list,
                 "Database Defined Keyword", AutoCompleteListItemType.DATABASE_DEFINED_KEYWORD);
     }
 
-    private void addFirebirdDefnedKeywords (DatabaseHost databaseHost, List<AutoCompleteListItem> list,
-                                            int majorVersion, int minorVersion) {
+    private void addFirebirdDefnedKeywords(DatabaseHost databaseHost, List<AutoCompleteListItem> list,
+                                           int majorVersion, int minorVersion) {
         addKeywordsFromList(keywords().getFirebirdKeywords(majorVersion, minorVersion),
                 list, "Database Defined Keyword", AutoCompleteListItemType.DATABASE_DEFINED_KEYWORD);
     }
@@ -628,29 +631,29 @@ public class AutoCompleteSelectionsFactory {
     }
 
     private void addTablesToProvider(String databaseObjectDescription,
-            AutoCompleteListItemType autocompleteType, List<String> tableNames,
-            List<AutoCompleteListItem> list) {
+                                     AutoCompleteListItemType autocompleteType, List<String> tableNames,
+                                     List<AutoCompleteListItem> list) {
 
-        List<AutoCompleteListItem> autoCompleteListItems = 
+        List<AutoCompleteListItem> autoCompleteListItems =
                 tablesToAutoCompleteListItems(list, tableNames, databaseObjectDescription, autocompleteType);
 
         provider.addListItems(autoCompleteListItems);
         tables.addAll(autoCompleteListItems);
     }
-    
+
     private void addKeywordsFromList(List<String> keywords, List<AutoCompleteListItem> list,
-            String description, AutoCompleteListItemType autoCompleteListItemType) {
-        
+                                     String description, AutoCompleteListItemType autoCompleteListItemType) {
+
         for (String keyword : keywords) {
-            
-            list.add(new AutoCompleteListItem(keyword, keyword, description, autoCompleteListItemType)); 
+
+            list.add(new AutoCompleteListItem(keyword, keyword, description, autoCompleteListItemType));
         }
-        
+
     }
-    
+
     private KeywordRepository keywords() {
 
-        return (KeywordRepository)RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
+        return (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
     }
 
     public List<AutoCompleteListItem> buildItemsForTable(DatabaseHost databaseHost, String tableString) {
@@ -708,7 +711,7 @@ public class AutoCompleteSelectionsFactory {
 
             return o1.getValue().toUpperCase().compareTo(o2.getValue().toUpperCase());
         }
-        
+
     }
 
     private void releaseResources(ResultSet rs) {
@@ -717,26 +720,27 @@ public class AutoCompleteSelectionsFactory {
 
                 rs.close();
             }
-        } catch (SQLException sqlExc) {}
+        } catch (SQLException sqlExc) {
+        }
     }
 
     private void error(String message) {
 
         Log.error(message);
     }
-    
+
     @SuppressWarnings("unused")
     private void warning(String message) {
-        
+
         Log.error(message);
     }
-    
+
     private void trace(String message) {
-        
+
         Log.trace(message);
     }
-    
-    
+
+
 }
 
 

@@ -18,7 +18,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
 
-public class CreateViewPanel extends JPanel implements  FocusListener{
+public class CreateViewPanel extends JPanel implements FocusListener {
     public static final String TITLE = "Create View";
     private static final String AUTO_COMPLETE_POPUP_ACTION_KEY = "autoCompletePopupActionKey";
     DatabaseConnection connection;
@@ -30,21 +30,21 @@ public class CreateViewPanel extends JPanel implements  FocusListener{
     JButton cancelButton;
     DynamicComboBoxModel connectionsModel;
     DefaultAutoCompletePopupProvider autoCompletePopup;
-    public CreateViewPanel(DatabaseConnection dc, ActionContainer dialog)
-    {
-        connection=dc;
-        parent =dialog;
+
+    public CreateViewPanel(DatabaseConnection dc, ActionContainer dialog) {
+        connection = dc;
+        parent = dialog;
         init();
     }
-    public CreateViewPanel(DatabaseConnection dc)
-    {
-        this(dc,null);
+
+    public CreateViewPanel(DatabaseConnection dc) {
+        this(dc, null);
     }
-    void init()
-    {
+
+    void init() {
         sqlTextView = new SQLTextPane();
         sqlTextView.addFocusListener(this);
-        this.autoCompletePopup = new DefaultAutoCompletePopupProvider(connection,sqlTextView);
+        this.autoCompletePopup = new DefaultAutoCompletePopupProvider(connection, sqlTextView);
         sqlTextScroll = new JScrollPane(sqlTextView);
         okButton = new JButton("OK");
         cancelButton = new JButton("Cancel");
@@ -58,7 +58,7 @@ public class CreateViewPanel extends JPanel implements  FocusListener{
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                if(parent!=null)
+                if (parent != null)
                     parent.finished();
                 else GUIUtilities.closeSelectedCentralPane();
             }
@@ -67,9 +67,9 @@ public class CreateViewPanel extends JPanel implements  FocusListener{
         okButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                ExecuteQueryDialog eqd = new ExecuteQueryDialog(TITLE,sqlTextView.getText(),connection,true);
+                ExecuteQueryDialog eqd = new ExecuteQueryDialog(TITLE, sqlTextView.getText(), connection, true);
                 eqd.display();
-                if(eqd.getCommit()) {
+                if (eqd.getCommit()) {
                     if (parent != null)
                         parent.finished();
                     else GUIUtilities.closeSelectedCentralPane();
@@ -100,11 +100,11 @@ public class CreateViewPanel extends JPanel implements  FocusListener{
         setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addComponent(connectionsCombo)
-                .addComponent(sqlTextScroll,GroupLayout.PREFERRED_SIZE,400, Short.MAX_VALUE)
+                .addComponent(sqlTextScroll, GroupLayout.PREFERRED_SIZE, 400, Short.MAX_VALUE)
                 .addGroup(layout.createSequentialGroup()
-                        .addComponent(okButton,GroupLayout.DEFAULT_SIZE,GroupLayout.DEFAULT_SIZE,Short.MAX_VALUE)
+                        .addComponent(okButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(10)
-                        .addComponent(cancelButton,GroupLayout.DEFAULT_SIZE,GroupLayout.DEFAULT_SIZE,Short.MAX_VALUE)
+                        .addComponent(cancelButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 )
         );
@@ -112,13 +112,12 @@ public class CreateViewPanel extends JPanel implements  FocusListener{
                 .addGap(10)
                 .addComponent(connectionsCombo)
                 .addGap(10)
-                .addComponent(sqlTextScroll,0,200, Short.MAX_VALUE)
+                .addComponent(sqlTextScroll, 0, 200, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(cancelButton)
                         .addComponent(okButton)
                 )
         );
-
 
 
         Action autoCompletePopupAction = autoCompletePopup.getPopupAction();
@@ -131,8 +130,8 @@ public class CreateViewPanel extends JPanel implements  FocusListener{
 
     @Override
     public void focusGained(FocusEvent focusEvent) {
-        if(focusEvent.getSource() != sqlTextView)
-        GUIUtils.requestFocusInWindow(sqlTextView);
+        if (focusEvent.getSource() != sqlTextView)
+            GUIUtils.requestFocusInWindow(sqlTextView);
     }
 
     @Override

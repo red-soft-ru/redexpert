@@ -72,7 +72,7 @@ public class AutoIncrementPanel extends JPanel {
         createStartValue = new NumberTextField(0);
         createGeneratorName = new JTextField(15);
         comboGenerators = new JComboBox(generators);
-        triggerSQLPane=new SQLTextPane();
+        triggerSQLPane = new SQLTextPane();
         triggerScroll = new JScrollPane(triggerSQLPane);
 
         createGeneratorName.addKeyListener(new KeyListener() {
@@ -88,22 +88,22 @@ public class AutoIncrementPanel extends JPanel {
 
             @Override
             public void keyReleased(KeyEvent keyEvent) {
-                if(keyEvent.getSource()==createGeneratorName)
-                    ai.generatorName=createGeneratorName.getText();
+                if (keyEvent.getSource() == createGeneratorName)
+                    ai.generatorName = createGeneratorName.getText();
             }
         });
 
         comboGenerators.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                ai.generatorName=(String)comboGenerators.getSelectedItem();
+                ai.generatorName = (String) comboGenerators.getSelectedItem();
             }
         });
 
         systemGeneratorBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                ai.systemGenerator=systemGeneratorBox.isSelected();
+                ai.systemGenerator = systemGeneratorBox.isSelected();
                 if (ai.systemGenerator) {
                     systemGeneratorPanel.setVisible(true);
                     createGeneratorPanel.setVisible(false);
@@ -135,7 +135,7 @@ public class AutoIncrementPanel extends JPanel {
         useGeneratorBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                ai.useGenerator= useGeneratorBox.isSelected();
+                ai.useGenerator = useGeneratorBox.isSelected();
                 if (ai.useGenerator) {
                     systemGeneratorPanel.setVisible(false);
                     createGeneratorPanel.setVisible(false);
@@ -166,17 +166,16 @@ public class AutoIncrementPanel extends JPanel {
         createTriggerBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                ai.createTrigger=createTriggerBox.isSelected();
+                ai.createTrigger = createTriggerBox.isSelected();
                 triggerScroll.setVisible(ai.createTrigger);
-                if(ai.createTrigger)
-                {
-                    String sql="create trigger "+tableName+"_bi for "+tableName+"\n"+
-                    "active before insert position 0\n"+
-                    "as\n"+
-                    "begin\n"+
-                    "if (new."+ai.fieldName+" is null) then\n"+
-                    "new."+ai.fieldName+" = gen_id("+ai.generatorName+",1);\n"+
-                    "end";
+                if (ai.createTrigger) {
+                    String sql = "create trigger " + tableName + "_bi for " + tableName + "\n" +
+                            "active before insert position 0\n" +
+                            "as\n" +
+                            "begin\n" +
+                            "if (new." + ai.fieldName + " is null) then\n" +
+                            "new." + ai.fieldName + " = gen_id(" + ai.generatorName + ",1);\n" +
+                            "end";
                     triggerSQLPane.setText(sql);
                 }
             }
@@ -285,21 +284,21 @@ public class AutoIncrementPanel extends JPanel {
                 .addGap(10)
                 .addComponent(triggerScroll)
         );
-        tabPanel.add("Trigger",triggerPanel);
+        tabPanel.add("Trigger", triggerPanel);
 
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(tabPanel,GroupLayout.PREFERRED_SIZE,300, Short.MAX_VALUE)
+                .addComponent(tabPanel, GroupLayout.PREFERRED_SIZE, 300, Short.MAX_VALUE)
                 .addGroup(layout.createSequentialGroup()
-                        .addComponent(okButton,GroupLayout.DEFAULT_SIZE,GroupLayout.DEFAULT_SIZE,Short.MAX_VALUE)
+                        .addComponent(okButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(10)
-                        .addComponent(cancelButton,GroupLayout.DEFAULT_SIZE,GroupLayout.DEFAULT_SIZE,Short.MAX_VALUE)
+                        .addComponent(cancelButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 )
         );
         layout.setVerticalGroup(layout.createSequentialGroup()
-                .addComponent(tabPanel,GroupLayout.PREFERRED_SIZE,300, Short.MAX_VALUE)
+                .addComponent(tabPanel, GroupLayout.PREFERRED_SIZE, 300, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(cancelButton)
                         .addComponent(okButton)
@@ -307,22 +306,19 @@ public class AutoIncrementPanel extends JPanel {
         );
     }
 
-    public void generateAI()
-    {
-        String sql="";
-        if(ai.createGenerator) {
+    public void generateAI() {
+        String sql = "";
+        if (ai.createGenerator) {
             sql += "\nCREATE SEQUENCE " + ai.generatorName + "^";
-            ai.startValue=createStartValue.getValue();
-            if(ai.startValue!=0)
-            {
-                sql+= "\nALTER SEQUENCE "+ai.generatorName+" RESTART WITH "+ai.startValue+"^";
+            ai.startValue = createStartValue.getValue();
+            if (ai.startValue != 0) {
+                sql += "\nALTER SEQUENCE " + ai.generatorName + " RESTART WITH " + ai.startValue + "^";
             }
         }
-        if(ai.createTrigger)
-        {
-            sql+="\n"+triggerSQLPane.getText()+";";
+        if (ai.createTrigger) {
+            sql += "\n" + triggerSQLPane.getText() + ";";
         }
-        ai.sqlAutoincrement=sql;
+        ai.sqlAutoincrement = sql;
         parent.finished();
     }
 }

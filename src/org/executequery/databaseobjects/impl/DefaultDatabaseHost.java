@@ -1070,13 +1070,29 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
             metaTag.setCatalog(catalog);
             metaTag.setSchema(schema);
-
-            if (metaTag.hasChildObjects()) {
-
-                metaObjects.add(metaTag);
-            }
+            String driver=metaTag.getHost().getDatabaseConnection().getDriverName();
+            if(supportedObject(i,driver))
+            metaObjects.add(metaTag);
 
         }
+    }
+
+    boolean supportedObject(int type,String driver)
+    {
+        if(driver.toUpperCase().contains("JAYBIRD"))
+        {
+            switch (type)
+            {
+                case NamedObject.SYNONYM:
+                case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
+                case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
+                case NamedObject.SYSTEM_STRING_FUNCTIONS:
+                case NamedObject.SYSTEM_VIEW:
+                case NamedObject.SYSTEM_DATABASE_TRIGGER:
+                    return false;
+            }
+        }
+        return true;
     }
 
     private DefaultDatabaseMetaTag createDatabaseMetaTag(

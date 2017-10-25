@@ -1072,15 +1072,15 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
             metaTag.setCatalog(catalog);
             metaTag.setSchema(schema);
-            String driver = metaTag.getHost().getDatabaseConnection().getDriverName();
-            if (supportedObject(i, driver))
+            String driverClassName = metaTag.getHost().getDatabaseConnection().getJDBCDriver().getClassName();
+            if (supportedObject(i, driverClassName))
                 metaObjects.add(metaTag);
 
         }
     }
 
     boolean supportedObject(int type, String driver) {
-        if (driver.toUpperCase().contains("JAYBIRD")) {
+        if (driver.toLowerCase().contains("fbdriver")) {
             switch (type) {
                 case NamedObject.SYNONYM:
                 case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:

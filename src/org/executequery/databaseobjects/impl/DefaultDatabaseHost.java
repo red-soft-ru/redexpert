@@ -53,21 +53,31 @@ import org.underworldlabs.util.MiscUtils;
  * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class DefaultDatabaseHost extends AbstractNamedObject
-                                 implements DatabaseHost {
+        implements DatabaseHost {
 
-    /** the database connection wrapper for this host */
+    /**
+     * the database connection wrapper for this host
+     */
     private transient DatabaseConnection databaseConnection;
 
-    /** the SQL connection for this host */
+    /**
+     * the SQL connection for this host
+     */
     private transient Connection connection;
 
-    /** the database meta data object for this host */
+    /**
+     * the database meta data object for this host
+     */
     private transient DatabaseMetaData databaseMetaData;
 
-    /** the catalogs of this host */
+    /**
+     * the catalogs of this host
+     */
     private List<DatabaseCatalog> catalogs;
 
-    /** the schemas of this host */
+    /**
+     * the schemas of this host
+     */
     private List<DatabaseSchema> schemas;
 
     /**
@@ -146,9 +156,9 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * @return the sql connection
      */
     public Connection getConnection() throws DataSourceException {
-        
+
         try {
-            
+
             if ((connection == null || connection.isClosed())
                     && getDatabaseConnection().isConnected()) {
 
@@ -167,7 +177,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         return ConnectionManager.getConnection(getDatabaseConnection());
     }
-    
+
     /**
      * Returns the database meta data for this host.
      *
@@ -183,21 +193,21 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         try {
 
             if (databaseMetaData == null) {
-    
+
                 databaseMetaData = getConnection().getMetaData();
 
             } else if (databaseMetaData.getConnection().isClosed()) {
-                
+
                 databaseMetaData = null;
-                return getDatabaseMetaData();                
+                return getDatabaseMetaData();
             }
 
 
         } catch (SQLException e) {
-            
+
             throw new DataSourceException(e);
         }
-        
+
         return databaseMetaData;
     }
 
@@ -224,12 +234,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             }
 
             return catalogs;
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
 
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
 
             releaseResources(rs);
             setMarkedForReload(false);
@@ -278,7 +286,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     @SuppressWarnings("resource")
     public boolean hasTablesForType(String catalog, String schema, String type) {
-        
+
         ResultSet rs = null;
         try {
             String _catalog = getCatalogNameForQueries(catalog);
@@ -286,17 +294,17 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             DatabaseMetaData dmd = getDatabaseMetaData();
 
             rs = dmd.getTables(_catalog, _schema, null, new String[]{type});
-            while(rs.next()) {
-                
+            while (rs.next()) {
+
                 if (StringUtils.equalsIgnoreCase(type, rs.getString(4))) {
-                    
+
                     return true;
                 }
-                
+
             }
-            
+
             return false;
-            
+
         } catch (SQLException e) {
 
             if (Log.isDebugEnabled()) {
@@ -311,20 +319,20 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
             releaseResources(rs);
         }
-        
+
     }
-    
+
     /**
      * Returns the tables hosted by this host of the specified type and
      * belonging to the specified catalog and schema.
      *
      * @param catalog the table catalog name
-     * @param schema the table schema name
-     * @param type the table type
+     * @param schema  the table schema name
+     * @param type    the table type
      * @return the hosted tables
      */
     public List<NamedObject> getTables(String catalog, String schema, String type)
-        throws DataSourceException {
+            throws DataSourceException {
 
         ResultSet rs = null;
         try {
@@ -415,12 +423,12 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * Returns the exported keys columns of the specified database object.
      *
      * @param catalog the table catalog name
-     * @param schema the table schema name
-     * @param table the database object name
+     * @param schema  the table schema name
+     * @param table   the database object name
      * @return the exported keys
      */
     public List<DatabaseColumn> getExportedKeys(String catalog, String schema, String table)
-        throws DataSourceException {
+            throws DataSourceException {
 
         ResultSet rs = null;
         try {
@@ -447,19 +455,17 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
                     DatabaseMetaTag metaTag = databaseSchema.getDatabaseMetaTag(tableTagName);
 
-                    DatabaseTable databaseTable = (DatabaseTable)metaTag.getNamedObject(fkTable);
+                    DatabaseTable databaseTable = (DatabaseTable) metaTag.getNamedObject(fkTable);
                     columns.add(databaseTable.getColumn(fkColumn));
                 }
 
             }
 
             return columns;
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
 
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
 
             releaseResources(rs);
         }
@@ -467,7 +473,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     }
 
     public String getCatalogNameForQueries(String catalogName) {
-        
+
         DatabaseMetaData dmd = getDatabaseMetaData();
         try {
             if (!dmd.supportsCatalogsInTableDefinitions()) {
@@ -481,34 +487,34 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         return catalogName;
     }
-    
+
     public String getSchemaNameForQueries(String schemaName) {
-        
+
         DatabaseMetaData dmd = getDatabaseMetaData();
         try {
             if (!dmd.supportsSchemasInTableDefinitions()) {
-                
+
                 return null;
             }
         } catch (SQLException e) {
-            
+
             throw new DataSourceException(e);
         }
-        
+
         return schemaName;
     }
-    
+
     /**
      * Returns the table names hosted by this host of the specified type and
      * belonging to the specified catalog and schema.
      *
      * @param catalog the table catalog name
-     * @param schema the table schema name
-     * @param type the table type
+     * @param schema  the table schema name
+     * @param type    the table type
      * @return the hosted tables
      */
     public List<String> getTableNames(String catalog, String schema, String type)
-        throws DataSourceException {
+            throws DataSourceException {
 
         ResultSet rs = null;
         try {
@@ -561,12 +567,12 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * Returns the column names of the specified database object.
      *
      * @param catalog the table catalog name
-     * @param schema the table schema name
-     * @param table the database object name
+     * @param schema  the table schema name
+     * @param table   the database object name
      * @return the column names
      */
     public List<String> getColumnNames(String catalog, String schema, String table)
-        throws DataSourceException {
+            throws DataSourceException {
 
         ResultSet rs = null;
         List<String> columns = new ArrayList<String>();
@@ -589,7 +595,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
             if (Log.isDebugEnabled()) {
 
-                Log.error("Error retrieving column data for table " + table 
+                Log.error("Error retrieving column data for table " + table
                         + " using connection " + getDatabaseConnection(), e);
             }
 
@@ -603,17 +609,17 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     }
 
     private transient ColumnInformationFactory columnInformationFactory = new ColumnInformationFactory();
-    
+
     /**
      * Returns the column names of the specified database object.
      *
      * @param catalog the table catalog name
-     * @param schema the table schema name
-     * @param table the database object name
+     * @param schema  the table schema name
+     * @param table   the database object name
      * @return the column names
      */
     public List<ColumnInformation> getColumnInformation(String catalog, String schema, String table)
-        throws DataSourceException {
+            throws DataSourceException {
 
         ResultSet rs = null;
         List<ColumnInformation> columns = new ArrayList<ColumnInformation>();
@@ -634,13 +640,13 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
                 String name = rs.getString(4);
                 columns.add(columnInformationFactory.build(
-                        table, 
-                        name, 
+                        table,
+                        name,
                         rs.getString(6),
                         rs.getInt(5),
                         rs.getInt(7),
                         rs.getInt(9),
-                        rs.getInt(11) == DatabaseMetaData.columnNoNulls)); 
+                        rs.getInt(11) == DatabaseMetaData.columnNoNulls));
             }
 
             return columns;
@@ -649,7 +655,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
             if (Log.isDebugEnabled()) {
 
-                Log.error("Error retrieving column data for table " + table 
+                Log.error("Error retrieving column data for table " + table
                         + " using connection " + getDatabaseConnection(), e);
             }
 
@@ -666,12 +672,12 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * Returns the columns of the specified database object.
      *
      * @param catalog the table catalog name
-     * @param schema the table schema name
-     * @param table the database object name
+     * @param schema  the table schema name
+     * @param table   the database object name
      * @return the columns
      */
     public List<DatabaseColumn> getColumns(String catalog, String schema, String table)
-        throws DataSourceException {
+            throws DataSourceException {
 
         ResultSet rs = null;
 
@@ -747,16 +753,17 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                     if (isGen.compareToIgnoreCase("YES") == 0) {
                         column.setGenerated(true);
 //                        Statement statement = dmd.getConnection().createStatement();
-                        /*ResultSet*/ sourceRS = statement.executeQuery("select RF.RDB$COMPUTED_SOURCE, " +
+                        /*ResultSet*/
+                        sourceRS = statement.executeQuery("select RF.RDB$COMPUTED_SOURCE, " +
                                 " RRF.RDB$FIELD_NAME" +
                                 " from RDB$FIELDS RF, " +
-                            "rdb$relation_fields RRF\n" +
-                            "where\n" +
-                            "    RRF.rdb$field_name = '" + column.getName() + "'\n" +
-                            "    and\n" +
-                            "    RRF.rdb$relation_name = '" + table + "'\n" +
-                            "    and\n" +
-                            "    RF.rdb$field_name = RRF.rdb$field_source");
+                                "rdb$relation_fields RRF\n" +
+                                "where\n" +
+                                "    RRF.rdb$field_name = '" + column.getName() + "'\n" +
+                                "    and\n" +
+                                "    RRF.rdb$relation_name = '" + table + "'\n" +
+                                "    and\n" +
+                                "    RF.rdb$field_name = RRF.rdb$field_source");
                         if (sourceRS.next()) {
                             computedSource = sourceRS.getString(1);
                             releaseResources(sourceRS);
@@ -789,7 +796,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         String columnName = column.getName();
 
                         if (columnName.equalsIgnoreCase(pkColumn)) {
-                            ((DefaultDatabaseColumn)column).setPrimaryKey(true);
+                            ((DefaultDatabaseColumn) column).setPrimaryKey(true);
                             break;
                         }
 
@@ -808,7 +815,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         DatabaseColumn column = columns.get(i);
                         String columnName = column.getName();
                         if (columnName.equalsIgnoreCase(fkColumn)) {
-                            ((DefaultDatabaseColumn)column).setForeignKey(true);
+                            ((DefaultDatabaseColumn) column).setForeignKey(true);
                             break;
                         }
                     }
@@ -823,16 +830,16 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
             if (Log.isDebugEnabled()) {
 
-                Log.error("Error retrieving column data for table " + table 
+                Log.error("Error retrieving column data for table " + table
                         + " using connection " + getDatabaseConnection(), e);
             }
 
             return columns;
 
 //            throw new DataSourceException(e);
-        
+
         } finally {
-          
+
             releaseResources(rs);
         }
 
@@ -841,26 +848,25 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     public boolean supportCatalogOrSchemaInFunctionOrProcedureCalls() throws DataSourceException {
 
         try {
-            
+
             DatabaseMetaData dmd = getDatabaseMetaData();
             return dmd.supportsCatalogsInProcedureCalls() || dmd.supportsSchemasInProcedureCalls();
 
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
 
             throw new DataSourceException(e);
         }
     }
-    
+
     /**
      * Returns the priviliges of the specified object.
      *
      * @param catalog the table catalog name
-     * @param schema the table schema name
-     * @param table the database object name
+     * @param schema  the table schema name
+     * @param table   the database object name
      */
     public List<TablePrivilege> getPrivileges(String catalog, String schema, String table)
-        throws DataSourceException {
+            throws DataSourceException {
 
         ResultSet rs = null;
         try {
@@ -872,16 +878,14 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             rs = dmd.getTablePrivileges(_catalog, _schema, table);
             while (rs.next()) {
                 privs.add(new TablePrivilege(rs.getString(4),
-                                             rs.getString(5),
-                                             rs.getString(6),
-                                             rs.getString(7)));
+                        rs.getString(5),
+                        rs.getString(6),
+                        rs.getString(7)));
             }
             return privs;
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
         }
 
@@ -891,7 +895,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * Returns the default prefix name value for objects from this host.
      * ie. default catalog or schema name - with schema taking precedence.
      *
-     *  @return the default database object prefix
+     * @return the default database object prefix
      */
     public String getDefaultNamePrefix() {
 
@@ -951,7 +955,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * Returns the default database source object - schema or catalog with
      * schema taking precedence.
      *
-     *  @return the default database object prefix
+     * @return the default database object prefix
      */
     public DatabaseSource getDefaultDatabaseSource() {
 
@@ -1020,7 +1024,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * @return the meta type objects
      */
     public List<DatabaseMetaTag> getMetaObjects(DatabaseCatalog catalog,
-            DatabaseSchema schema) throws DataSourceException {
+                                                DatabaseSchema schema) throws DataSourceException {
 
         List<DatabaseMetaTag> metaObjects = new ArrayList<DatabaseMetaTag>();
         createDefaultMetaObjects(catalog, schema, metaObjects);
@@ -1036,7 +1040,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 if (!MiscUtils.containsValue(META_TYPES, type)) {
 
                     DatabaseMetaTag metaTag =
-                        createDatabaseMetaTag(catalog, schema, type);
+                            createDatabaseMetaTag(catalog, schema, type);
 
                     if (metaTag.hasChildObjects()) {
 
@@ -1048,11 +1052,9 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             }
 
             return metaObjects;
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
             setMarkedForReload(false);
         }
@@ -1060,29 +1062,26 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     }
 
     private void createDefaultMetaObjects(DatabaseCatalog catalog,
-            DatabaseSchema schema, List<DatabaseMetaTag> metaObjects)
+                                          DatabaseSchema schema, List<DatabaseMetaTag> metaObjects)
             throws DataSourceException {
 
         for (int i = 0; i < META_TYPES.length; i++) {
 
             DefaultDatabaseMetaTag metaTag =
-                createDatabaseMetaTag(catalog, schema, META_TYPES[i]);
+                    createDatabaseMetaTag(catalog, schema, META_TYPES[i]);
 
             metaTag.setCatalog(catalog);
             metaTag.setSchema(schema);
-            String driver=metaTag.getHost().getDatabaseConnection().getDriverName();
-            if(supportedObject(i,driver))
-            metaObjects.add(metaTag);
+            String driver = metaTag.getHost().getDatabaseConnection().getDriverName();
+            if (supportedObject(i, driver))
+                metaObjects.add(metaTag);
 
         }
     }
 
-    boolean supportedObject(int type,String driver)
-    {
-        if(driver.toUpperCase().contains("JAYBIRD"))
-        {
-            switch (type)
-            {
+    boolean supportedObject(int type, String driver) {
+        if (driver.toUpperCase().contains("JAYBIRD")) {
+            switch (type) {
                 case NamedObject.SYNONYM:
                 case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
                 case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
@@ -1106,7 +1105,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * API to call and retrieve values from the connection's meta data
      * object's methods and variables.
      *
-     *  @return the database properties as key/value pairs
+     * @return the database properties as key/value pairs
      */
     public Map<Object, Object> getDatabaseProperties() throws DataSourceException {
 
@@ -1249,8 +1248,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         try {
             return MiscUtils.splitSeparatedValues(
                     getDatabaseMetaData().getSQLKeywords(), ",");
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             Log.error("Error attempting to retrieve database SQL keywords: " + e.getMessage());
             return new String[0];
         }
@@ -1262,18 +1260,21 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     public ResultSet getDataTypeInfo() throws DataSourceException {
         try {
             return getDatabaseMetaData().getTypeInfo();
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
         }
     }
 
-    /** Does nothing. */
+    /**
+     * Does nothing.
+     */
     public int drop() throws DataSourceException {
         return 0;
     }
 
-    /** Returns NULL. */
+    /**
+     * Returns NULL.
+     */
     public NamedObject getParent() {
         return null;
     }
@@ -1300,7 +1301,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * Override to do nothing. Name retrieved from underlying
      * connection wrapper object.
      */
-    public void setName(String name) {}
+    public void setName(String name) {
+    }
 
     /**
      * Returns the meta data key name of this object.
@@ -1381,9 +1383,3 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     }
 
 }
-
-
-
-
-
-

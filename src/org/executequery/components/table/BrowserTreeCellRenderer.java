@@ -49,13 +49,15 @@ import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
  * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
-    
-    /** Icon collection for nodes */
+
+    /**
+     * Icon collection for nodes
+     */
     private Map<String, Icon> icons;
-    
+
     private Color textForeground;
     private Color selectedTextForeground;
-    
+
     private Color selectedBackground;
 
     /**
@@ -71,7 +73,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
         setIconTextGap(10);
         setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-        
+
         if (UIUtils.isGtkLookAndFeel()) {
 
             // has default black border on selection - ugly and wrong!
@@ -80,33 +82,33 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
         sb = new StringBuilder();
     }
-    
+
     /**
-     * Sets the value of the current tree cell to value. If 
-     * selected is true, the cell will be drawn as if selected. 
-     * If expanded is true the node is currently expanded and if 
-     * leaf is true the node represets a leaf and if hasFocus 
-     * is true the node currently has focus. tree is the JTree 
-     * the receiver is being configured for. Returns the Component 
+     * Sets the value of the current tree cell to value. If
+     * selected is true, the cell will be drawn as if selected.
+     * If expanded is true the node is currently expanded and if
+     * leaf is true the node represets a leaf and if hasFocus
+     * is true the node currently has focus. tree is the JTree
+     * the receiver is being configured for. Returns the Component
      * that the renderer uses to draw the value.
      *
      * @return the Component that the renderer uses to draw the value
      */
-    public Component getTreeCellRendererComponent(JTree tree, 
+    public Component getTreeCellRendererComponent(JTree tree,
                                                   Object value,
-                                                  boolean isSelected, 
+                                                  boolean isSelected,
                                                   boolean isExpanded,
-                                                  boolean isLeaf, 
-                                                  int row, 
+                                                  boolean isLeaf,
+                                                  int row,
                                                   boolean hasFocus) {
-        
+
         this.hasFocus = hasFocus;
 
         DefaultMutableTreeNode child = (DefaultMutableTreeNode) value;
-        
+
         DatabaseObjectNode node = (DatabaseObjectNode) child;
         int type = node.getType();
-        
+
         String label = node.getDisplayName();
         NamedObject databaseObject = node.getDatabaseObject();
 
@@ -121,9 +123,9 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 setIcon(icons.get(
                         BrowserConstants.CONNECTIONS_FOLDER_IMAGE));
                 break;
-                
+
             case NamedObject.HOST:
-                DatabaseHostNode _node = (DatabaseHostNode)node;
+                DatabaseHostNode _node = (DatabaseHostNode) node;
 
                 if (_node.isConnected()) {
                     setIcon(icons.get(
@@ -132,17 +134,17 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                     setIcon(icons.get(
                             BrowserConstants.HOST_NOT_CONNECTED_IMAGE));
                 }
-                 
+
                 break;
-                
+
             case NamedObject.CATALOG:
                 setIcon(icons.get(BrowserConstants.CATALOG_IMAGE));
                 break;
-                
+
             case NamedObject.SCHEMA:
                 setIcon(icons.get(BrowserConstants.SCHEMA_IMAGE));
                 break;
-            
+
             case NamedObject.META_TAG:
                 if (databaseObject.getMetaDataKey().compareToIgnoreCase("index") == 0) {
                     setIcon(icons.get(BrowserConstants.INDEXES_IMAGE));
@@ -223,28 +225,28 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
                 setIcon(icons.get(BrowserConstants.DATABASE_OBJECT_IMAGE));
                 break;
-                
+
             case NamedObject.SYSTEM_FUNCTION:
                 setIcon(icons.get(BrowserConstants.SYSTEM_FUNCTIONS_IMAGE));
                 break;
-                
+
             case NamedObject.FUNCTION:
                 setIcon(icons.get(BrowserConstants.FUNCTIONS_IMAGE));
                 break;
-                
+
             case NamedObject.INDEX:
             case NamedObject.TABLE_INDEX:
                 setIcon(icons.get(BrowserConstants.INDEXES_IMAGE));
                 break;
-                
+
             case NamedObject.PROCEDURE:
                 setIcon(icons.get(BrowserConstants.PROCEDURES_IMAGE));
                 break;
-                
+
             case NamedObject.SEQUENCE:
                 setIcon(icons.get(BrowserConstants.SEQUENCES_IMAGE));
                 break;
-                
+
             case NamedObject.SYNONYM:
                 setIcon(icons.get(BrowserConstants.SYNONYMS_IMAGE));
                 break;
@@ -256,11 +258,11 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
             case NamedObject.SYSTEM_VIEW:
                 setIcon(icons.get(BrowserConstants.SYSTEM_VIEWS_IMAGE));
                 break;
-                
+
             case NamedObject.SYSTEM_TABLE:
                 setIcon(icons.get(BrowserConstants.SYSTEM_TABLES_IMAGE));
                 break;
-                
+
             case NamedObject.TRIGGER:
                 setIcon(icons.get(BrowserConstants.TABLE_TRIGGER_IMAGE));
                 break;
@@ -283,7 +285,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
             case NamedObject.UDF:
                 setIcon(icons.get(BrowserConstants.UDF_IMAGE));
                 break;
-                
+
             case NamedObject.TABLE:
                 setIcon(icons.get(BrowserConstants.TABLES_IMAGE));
                 break;
@@ -309,22 +311,22 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 break;
 
             case NamedObject.TABLE_COLUMN:
-                
+
                 DatabaseColumn databaseColumn = (DatabaseColumn) databaseObject;
 
                 if (databaseColumn.isPrimaryKey()) {
 
                     setIcon(icons.get(BrowserConstants.PRIMARY_COLUMNS_IMAGE));
-                    
+
                 } else if (databaseColumn.isForeignKey()) {
-                    
+
                     setIcon(icons.get(BrowserConstants.FOREIGN_COLUMNS_IMAGE));
 
                 } else {
 
                     setIcon(icons.get(BrowserConstants.COLUMNS_IMAGE));
                 }
-                
+
                 break;
 
             case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
@@ -332,7 +334,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
             case NamedObject.SYSTEM_STRING_FUNCTIONS:
                 setIcon(icons.get(BrowserConstants.SYSTEM_FUNCTIONS_IMAGE));
                 break;
-                
+
             case NamedObject.PRIMARY_KEY:
                 setIcon(icons.get(BrowserConstants.PRIMARY_COLUMNS_IMAGE));
                 break;
@@ -340,46 +342,46 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
             case NamedObject.FOREIGN_KEY:
                 setIcon(icons.get(BrowserConstants.FOREIGN_COLUMNS_IMAGE));
                 break;
-                
+
             case NamedObject.UNIQUE_KEY:
                 setIcon(icons.get(BrowserConstants.COLUMNS_IMAGE));
                 break;
-                
+
             default:
                 setIcon(icons.get(BrowserConstants.DATABASE_OBJECT_IMAGE));
                 break;
-                
+
         }
-        
+
         setText(label);
 
         if (type == BrowserConstants.HOST_NODE) {
 
-            DatabaseConnection connection = 
+            DatabaseConnection connection =
                     ((DatabaseHost) databaseObject).getDatabaseConnection();
             setToolTipText(buildToolTip(connection));
 
         } else {
 
             if (databaseObject != null) {
-            
+
                 setToolTipText(databaseObject.getDescription());
-            
+
             } else {
-                
+
                 setToolTipText(label);
             }
         }
 
         setBackgroundSelectionColor(selectedBackground);
-        
+
         this.selected = isSelected;
-        if(!selected) {
+        if (!selected) {
 
             setForeground(textForeground);
 
         } else {
-            
+
             setForeground(selectedTextForeground);
         }
 
@@ -394,24 +396,26 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 background = UIUtils.getBrighter(getBackgroundSelectionColor(), 0.87);
             }
             setBackgroundSelectionColor(background);
-            
+
             selected = true;
         }
         return this;
     }
 
-    /** tool tip string buffer */
+    /**
+     * tool tip string buffer
+     */
     private StringBuilder sb;
-    
+
     /**
      * Builds a HTML tool tip describing this tree connection.
-     * 
+     *
      * @param connection object
      */
     private String buildToolTip(DatabaseConnection connection) {
         // reset
         sb.setLength(0);
-        
+
         // build the html display
         sb.append("<html>");
         sb.append(Constants.TABLE_TAG_START);
@@ -441,24 +445,17 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
         return getIcon();
     }
-    
+
     @Override
     public Icon getOpenIcon() {
 
         return getIcon();
     }
-    
+
     @Override
     public Icon getLeafIcon() {
 
         return getIcon();
     }
-    
+
 }
-
-
-
-
-
-
-

@@ -790,7 +790,7 @@ public class TableDataTab extends JPanel
                     default:
                         break;
                 }
-                String temp = String.valueOf(tableModel.getValueAt(row, i));
+                String temp = String.valueOf(table.getValueAt(row, i));
                 if (temp == null) {
                     value = "NULL";
                 } else

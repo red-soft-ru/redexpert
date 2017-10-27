@@ -61,7 +61,10 @@ public class TableDataChangeWorker {
             }
             
             List<RecordDataItem> row = tableDataChange.getRowDataForRow();
-            result += execute(connection, table, row);
+            if (table.hasPrimaryKey())
+                result+=executeWithPK(connection,table,row);
+            else
+                result += execute(connection, table, row);
         }
 
         if (result == rows.size()) {
@@ -89,9 +92,76 @@ public class TableDataChangeWorker {
         }
         
     }
+    private int executeWithPK(Connection connection, DatabaseTable table, List<RecordDataItem> values) {
+
+        List<String> columns = new ArrayList<String>();
+        List<RecordDataItem> changes = new ArrayList<RecordDataItem>();
+        for (RecordDataItem item : values) {
+
+            if (item.isChanged()) {
+
+                changes.add(item);
+                columns.add(item.getName());
+            }
+
+        }
+
+        if (changes.isEmpty()) {
+
+            return 0;
+        }
+
+        try {
+
+            int n = changes.size();
+            String sql = table.prepareStatementWithPK(columns);
+
+            Log.info("Executing data change using statement - [ " + sql + " ]");
+
+            statement = connection.prepareStatement(sql);
+            for (int i = 0; i < n; i++) {
+
+                RecordDataItem recordDataItem = changes.get(i);
+                if (!recordDataItem.isNewValueNull()) {
+
+                    statement.setObject((i + 1), recordDataItem.getNewValue(), recordDataItem.getDataType());
+
+                } else {
+
+                    statement.setNull((i + 1), recordDataItem.getDataType());
+                }
+
+            }
+
+            List<String> primaryKeys = table.getPrimaryKeyColumnNames();
+            for (String primaryKey : primaryKeys) {
+
+                n++;
+                statement.setObject(n, valueForKey(primaryKey, values));
+            }
+
+            return statement.executeUpdate();
+
+        } catch (Exception e) {
+
+            rollback();
+            throw handleException(e);
+
+        } finally {
+
+            if (statement != null) {
+
+                try {
+                    statement.close();
+                } catch (SQLException e) {}
+                statement = null;
+            }
+
+        }
+
+    }
 
     private int execute(Connection connection, DatabaseTable table, List<RecordDataItem> values) {
-
         List<String> columns = new ArrayList<String>();
         List<RecordDataItem> changes = new ArrayList<RecordDataItem>();
         for (RecordDataItem item : values) {
@@ -132,7 +202,7 @@ public class TableDataChangeWorker {
             }
             for (RecordDataItem rdi : values) {
 
-                if (!rdi.isValueNull()) {
+                if (!rdi.isValueNull()&&!rdi.isGenerated()) {
                     n++;
                     statement.setObject(n, rdi.getValue());
                 }

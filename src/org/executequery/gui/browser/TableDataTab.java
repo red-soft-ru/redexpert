@@ -50,6 +50,7 @@ import org.executequery.components.CancelButton;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
+import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.TableDataChange;
@@ -385,7 +386,18 @@ public class TableDataTab extends JPanel
                 createResultSetTable();
             }
 
-            tableModel.setNonEditableColumns(primaryKeyColumns);
+            List<String> nonEditableCols=new ArrayList<>();
+            nonEditableCols.addAll(primaryKeyColumns);
+            if(isDatabaseTable())
+            for(DatabaseColumn databaseColumn:asDatabaseTable().getColumns())
+            {
+                if(!nonEditableCols.contains(databaseColumn.getName()))
+                {
+                    if(databaseColumn.isGenerated())
+                        nonEditableCols.add(databaseColumn.getName());
+                }
+            }
+            tableModel.setNonEditableColumns(nonEditableCols);
 
             TableSorter sorter = new TableSorter(tableModel);
             table.setModel(sorter);

@@ -1230,25 +1230,57 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         sb.append(" WHERE ");
 
         boolean applied = false;
-        List<String> cols = getColumnNames();
+        List<DatabaseColumn> cols = getColumns();
         for (int i = 0; i < cols.size(); i++) {
-            String col = cols.get(i);
+            DatabaseColumn column=cols.get(i);
+            String col = cols.get(i).getName();
             RecordDataItem rdi = changes.get(i);
+            if(column.isGenerated())
+                rdi.setGenerated(true);
+            else {
+                if (applied) {
 
-            if (applied) {
-
-                sb.append(" AND ");
+                    sb.append(" AND ");
+                }
+                if (rdi.isValueNull())
+                    sb.append(col).append(" is NULL ");
+                else
+                    sb.append(col).append(" = ? ");
+                applied = true;
             }
-            if (rdi.isValueNull())
-                sb.append(col).append(" is NULL ");
-            else
-                sb.append(col).append(" = ? ");
-            applied = true;
         }
 
         sb.deleteCharAt(sb.length() - 1);
         sb.append("\nORDER BY " + cols.get(0) + " \n");
         sb.append("ROWS 1");
+        return sb.toString();
+    }
+
+    @Override
+    public String prepareStatementWithPK(List<String> columns) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
+        for (String column : columns) {
+
+            sb.append(column).append(" = ?,");
+        }
+
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append(" WHERE ");
+
+        boolean applied = false;
+        for (String primaryKey : getPrimaryKeyColumnNames()) {
+
+            if (applied) {
+
+                sb.append(" AND ");
+            }
+            sb.append(primaryKey).append(" = ? ");
+            applied =true;
+        }
+
+        sb.deleteCharAt(sb.length() - 1);
         return sb.toString();
     }
 

@@ -182,6 +182,8 @@ public interface DatabaseTable extends DatabaseObject {
 
     String prepareStatement(List<String> columns, List<RecordDataItem> changes);
 
+    String prepareStatementWithPK(List<String> columns);
+
     List<String> getPrimaryKeyColumnNames();
 
     void addTableDataChange(TableDataChange tableDataChange);

@@ -777,45 +777,54 @@ public class TableDataTab extends JPanel
         if (row >= 0) {
             String query = "DELETE FROM " + databaseObject.getNameForQuery() + " WHERE ";
             String order = "";
-            for (int i = 0; i < tableModel.getColumnHeaders().size(); i++) {
-                String value = "";
-                ResultSetColumnHeader rsch = tableModel.getColumnHeaders().get(i);
-                int sqlType = rsch.getDataType();
-                boolean str = false;
-                switch (sqlType) {
+            boolean first=true;
+            for (int i = 0; i < tableModel.getColumnHeaders().size(); i++)
+            {
+                if(!databaseObject.getColumns().get(i).isGenerated())
+                {
+                    String value = "";
+                    ResultSetColumnHeader rsch = tableModel.getColumnHeaders().get(i);
+                    int sqlType = rsch.getDataType();
+                    boolean str = false;
+                    switch (sqlType) {
 
-                    case Types.LONGVARCHAR:
-                    case Types.LONGNVARCHAR:
-                    case Types.CHAR:
-                    case Types.NCHAR:
-                    case Types.VARCHAR:
-                    case Types.NVARCHAR:
-                    case Types.CLOB:
-                    case Types.DATE:
-                    case Types.TIME:
-                    case Types.TIMESTAMP:
-                        value = "'";
-                        str = true;
-                        break;
-                    default:
-                        break;
+                        case Types.LONGVARCHAR:
+                        case Types.LONGNVARCHAR:
+                        case Types.CHAR:
+                        case Types.NCHAR:
+                        case Types.VARCHAR:
+                        case Types.NVARCHAR:
+                        case Types.CLOB:
+                        case Types.DATE:
+                        case Types.TIME:
+                        case Types.TIMESTAMP:
+                            value = "'";
+                            str = true;
+                            break;
+                        default:
+                            break;
+                    }
+                    String temp = String.valueOf(table.getValueAt(row, i));
+                    if (temp == null) {
+                        value = "NULL";
+                    } else
+                        value += temp;
+                    if (str && value != "NULL")
+                        value += "'";
+                    if(first)
+                    {
+                        first=false;
+                        order = rsch.getName();
+                    }
+                    else query+=" AND";
+                    //if(value=="'null'")
+                    if (value == "NULL")
+                        query = query + " (" + rsch.getName() + " IS " + value + " )";
+                    else
+                        query = query + " (" + rsch.getName() + " = " + value + " )";
+
+
                 }
-                String temp = String.valueOf(table.getValueAt(row, i));
-                if (temp == null) {
-                    value = "NULL";
-                } else
-                    value += temp;
-                if (str && value != "NULL")
-                    value += "'";
-                //if(value=="'null'")
-                if (value == "NULL")
-                    query = query + " (" + rsch.getName() + " IS " + value + " )";
-                else
-                    query = query + " (" + rsch.getName() + " = " + value + " )";
-                if (i != tableModel.getColumnHeaders().size() - 1)
-                    query += " and";
-                else order = rsch.getName();
-
             }
             query += "\nORDER BY " + order + "\n";
             query += "ROWS 1";

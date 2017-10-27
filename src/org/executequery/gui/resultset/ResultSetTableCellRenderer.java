@@ -73,6 +73,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     private Color dateValueDisplayColor;
     private Color charValueDisplayColor;
     private Color blobValueDisplayColor;
+    private Color changedValueDisplayColor;
 
     private Color alternatingRowBackground;
 
@@ -153,7 +154,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     private void alignNumeric(Object value) {
 
         RecordDataItem recordDataItem = (RecordDataItem) value;
-        if (recordDataItem == null || recordDataItem.isValueNull()) {
+        if (recordDataItem == null || recordDataItem.isDisplayValueNull()) {
 
             return;
         }
@@ -189,7 +190,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 RecordDataItem recordDataItem = (RecordDataItem) value;
                 if (recordDataItem.isDisplayValueNull()) {
 
-                    formatForNullValue(isSelected);
+                    formatForNullValue(isSelected,recordDataItem.isChanged());
                     return;
 
                 } else {
@@ -205,7 +206,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         } else {
 
-            formatForNullValue(isSelected);
+            formatForNullValue(isSelected,false);
         }
 
     }
@@ -224,53 +225,59 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         boolean isDateValue = false;
         Color color = tableBackground;
-        int sqlType = recordDataItem.getDataType();
+        if(recordDataItem.isChanged()&&changedValueDisplayColor.getRGB()!=tableBackground.getRGB())
+        {
+            color = changedValueDisplayColor;
+        }
+        else {
+            int sqlType = recordDataItem.getDataType();
 
-        switch (sqlType) {
+            switch (sqlType) {
 
-            case Types.LONGVARCHAR:
-            case Types.LONGNVARCHAR:
-            case Types.CHAR:
-            case Types.NCHAR:
-            case Types.VARCHAR:
-            case Types.NVARCHAR:
-            case Types.CLOB:
-                color = charValueDisplayColor;
-                break;
+                case Types.LONGVARCHAR:
+                case Types.LONGNVARCHAR:
+                case Types.CHAR:
+                case Types.NCHAR:
+                case Types.VARCHAR:
+                case Types.NVARCHAR:
+                case Types.CLOB:
+                    color = charValueDisplayColor;
+                    break;
 
-            case Types.BIT:
-            case Types.BOOLEAN:
-                color = booleanValueDisplayColor;
-                break;
+                case Types.BIT:
+                case Types.BOOLEAN:
+                    color = booleanValueDisplayColor;
+                    break;
 
-            case Types.TINYINT:
-            case Types.BIGINT:
-            case Types.NUMERIC:
-            case Types.DECIMAL:
-            case Types.INTEGER:
-            case Types.SMALLINT:
-            case Types.FLOAT:
-            case Types.REAL:
-            case Types.DOUBLE:
-                color = numericValueDisplayColor;
-                break;
+                case Types.TINYINT:
+                case Types.BIGINT:
+                case Types.NUMERIC:
+                case Types.DECIMAL:
+                case Types.INTEGER:
+                case Types.SMALLINT:
+                case Types.FLOAT:
+                case Types.REAL:
+                case Types.DOUBLE:
+                    color = numericValueDisplayColor;
+                    break;
 
-            case Types.DATE:
-            case Types.TIME:
-            case Types.TIMESTAMP:
-                color = dateValueDisplayColor;
-                isDateValue = true;
-                break;
+                case Types.DATE:
+                case Types.TIME:
+                case Types.TIMESTAMP:
+                    color = dateValueDisplayColor;
+                    isDateValue = true;
+                    break;
 
-            case Types.LONGVARBINARY:
-            case Types.VARBINARY:
-            case Types.BINARY:
-            case Types.BLOB:
-                color = blobValueDisplayColor;
-                break;
-            default:
-                color = otherValueDisplayColor;
+                case Types.LONGVARBINARY:
+                case Types.VARBINARY:
+                case Types.BINARY:
+                case Types.BLOB:
+                    color = blobValueDisplayColor;
+                    break;
+                default:
+                    color = otherValueDisplayColor;
 
+            }
         }
 
         Object value = recordDataItem.getDisplayValue();
@@ -308,13 +315,14 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
     }
 
-    private void formatForNullValue(boolean isSelected) {
+    private void formatForNullValue(boolean isSelected,boolean changed) {
 
         setValue(nullValueDisplayString);
         setHorizontalAlignment(SwingConstants.CENTER);
         if (!isSelected) {
-
-            setBackground(nullValueDisplayColor);
+            if(!changed)
+                setBackground(nullValueDisplayColor);
+            else setBackground(changedValueDisplayColor);
         }
 
     }
@@ -338,6 +346,9 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         nullValueDisplayColor = SystemProperties.getColourProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.cell.null.background.colour");
+
+        changedValueDisplayColor = SystemProperties.getColourProperty(
+                Constants.USER_PROPERTIES_KEY,"results.table.cell.changed.background.colour");
 
         blobValueDisplayColor = SystemProperties.getColourProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.cell.blob.background.colour");

@@ -37,5 +37,6 @@ results.table.cell.boolean.background.colour=-12697277
 results.table.cell.char.background.colour=-12697277
 results.table.cell.date.background.colour=-12697277
 results.table.cell.null.background.colour=-13486792
+results.table.cell.changed.background.colour=-12697277
 results.table.cell.numeric.background.colour=-12697277
 results.table.cell.other.background.colour=-12697277

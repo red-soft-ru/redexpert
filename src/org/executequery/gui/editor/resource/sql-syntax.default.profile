@@ -30,6 +30,7 @@ results.table.cell.date.background.colour=-1
 results.table.cell.boolean.background.colour=-1
 results.table.cell.blob.background.colour=-1
 results.table.cell.other.background.colour=-1
+results.table.cell.changed.background.colour=-1
 results.alternating.row.background=-1314561
 editor.caret.colour=-65536
 editor.display.linehighlight.colour=-52

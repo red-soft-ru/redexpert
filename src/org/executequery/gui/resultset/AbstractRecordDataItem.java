@@ -46,6 +46,8 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
 
     private boolean changed;
 
+    private boolean generated=false;
+
     private static final SQLTypeObjectFactory TYPE_OBJECT_FACTORY = new SQLTypeObjectFactory();
 
     public AbstractRecordDataItem(String name, int dataType, String dataTypeName) {
@@ -155,7 +157,7 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
     }
 
     public boolean isDisplayValueNull() {
-        return isValueNull();
+        return isNewValueNull();
     }
 
     @Override
@@ -230,6 +232,15 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
         return false;
     }
 
+    @Override
+    public boolean isGenerated() {
+        return generated;
+    }
+
+    @Override
+    public void setGenerated(boolean generated) {
+        this.generated=generated;
+    }
 }
 
 

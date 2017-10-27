@@ -73,6 +73,13 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
                     "Null value cell background",
                     SystemProperties.getColourProperty("user", key)));
 
+        key = "results.table.cell.changed.background.colour";
+        list.add(new UserPreference(
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Changed value cell background",
+                SystemProperties.getColourProperty("user", key)));
+
         key = "results.table.cell.char.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,

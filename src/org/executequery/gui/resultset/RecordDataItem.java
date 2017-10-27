@@ -30,6 +30,10 @@ import org.underworldlabs.swing.table.TableCellValue;
  */
 public interface RecordDataItem extends TableCellValue {
 
+    boolean isGenerated();
+
+    void setGenerated(boolean generated);
+
     Object getNewValue();
 
     int length();

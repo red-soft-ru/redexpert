@@ -133,7 +133,7 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
     @Override
     public String toString() {
 
-        if (isValueNull()) {
+        if (isDisplayValueNull()) {
 
             return null;
         }

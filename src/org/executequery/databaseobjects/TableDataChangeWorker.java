@@ -32,15 +32,14 @@ import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+ * @author Takis Diakoumis
+ * @version $Revision$
+ * @date $Date$
  */
 public class TableDataChangeWorker {
 
     private Connection connection;
-    
+
     private DatabaseTable table;
 
     private PreparedStatement statement;
@@ -56,24 +55,24 @@ public class TableDataChangeWorker {
         for (TableDataChange tableDataChange : rows) {
 
             if (connection == null) {
-                
+
                 createConnection(table);
             }
-            
+
             List<RecordDataItem> row = tableDataChange.getRowDataForRow();
             if (table.hasPrimaryKey())
-                result+=executeWithPK(connection,table,row);
+                result += executeWithPK(connection, table, row);
             else
                 result += execute(connection, table, row);
         }
 
         if (result == rows.size()) {
-            
+
             commit();
             return true;
-        
+
         } else {
-            
+
             return false;
         }
 
@@ -87,11 +86,12 @@ public class TableDataChangeWorker {
             connection.setAutoCommit(false);
 
         } catch (SQLException e) {
-        
+
             throw handleException(e);
         }
-        
+
     }
+
     private int executeWithPK(Connection connection, DatabaseTable table, List<RecordDataItem> values) {
 
         List<String> columns = new ArrayList<String>();
@@ -153,7 +153,8 @@ public class TableDataChangeWorker {
 
                 try {
                     statement.close();
-                } catch (SQLException e) {}
+                } catch (SQLException e) {
+                }
                 statement = null;
             }
 
@@ -202,7 +203,7 @@ public class TableDataChangeWorker {
             }
             for (RecordDataItem rdi : values) {
 
-                if (!rdi.isValueNull()&&!rdi.isGenerated()) {
+                if (!rdi.isValueNull() && !rdi.isGenerated()) {
                     n++;
                     statement.setObject(n, rdi.getValue());
                 }
@@ -227,20 +228,20 @@ public class TableDataChangeWorker {
             }
 
         }
-        
+
     }
 
     private Object valueForKey(String primaryKey, List<RecordDataItem> values) {
 
         for (RecordDataItem recordDataItem : values) {
-            
+
             if (primaryKey.equalsIgnoreCase(recordDataItem.getName())) {
-                
+
                 return recordDataItem.getValue();
             }
-            
+
         }
-        
+
         return null;
     }
 
@@ -249,50 +250,51 @@ public class TableDataChangeWorker {
         try {
 
             connection.commit();
-        
+
         } catch (SQLException e) {
 
             throw handleException(e);
-        }            
-        
+        }
+
     }
 
     private DataSourceException handleException(Throwable e) {
 
         return new DataSourceException(e);
     }
-    
+
     public void rollback() {
-        
+
         try {
-            
+
             connection.rollback();
-            
+
         } catch (SQLException e) {
-            
+
             throw handleException(e);
         }
-        
+
     }
 
     public void close() {
-        
+
         if (connection != null) {
-            
+
             try {
                 connection.close();
-            } catch (SQLException e) {}
+            } catch (SQLException e) {
+            }
             connection = null;
         }
-        
+
     }
 
     public void cancel() {
-        
+
         if (statement != null) {
-            
+
             try {
-            
+
                 statement.cancel();
                 rollback();
 
@@ -302,9 +304,9 @@ public class TableDataChangeWorker {
             }
 
         }
-        
+
     }
-    
+
 }
 
 

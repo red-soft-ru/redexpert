@@ -190,7 +190,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 RecordDataItem recordDataItem = (RecordDataItem) value;
                 if (recordDataItem.isDisplayValueNull()) {
 
-                    formatForNullValue(isSelected,recordDataItem.isChanged());
+                    formatForNullValue(isSelected, recordDataItem.isChanged());
                     return;
 
                 } else {
@@ -206,7 +206,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         } else {
 
-            formatForNullValue(isSelected,false);
+            formatForNullValue(isSelected, false);
         }
 
     }
@@ -225,11 +225,9 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         boolean isDateValue = false;
         Color color = tableBackground;
-        if(recordDataItem.isChanged()&&changedValueDisplayColor.getRGB()!=tableBackground.getRGB())
-        {
+        if (recordDataItem.isChanged() && changedValueDisplayColor.getRGB() != tableBackground.getRGB()) {
             color = changedValueDisplayColor;
-        }
-        else {
+        } else {
             int sqlType = recordDataItem.getDataType();
 
             switch (sqlType) {
@@ -315,12 +313,12 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
     }
 
-    private void formatForNullValue(boolean isSelected,boolean changed) {
+    private void formatForNullValue(boolean isSelected, boolean changed) {
 
         setValue(nullValueDisplayString);
         setHorizontalAlignment(SwingConstants.CENTER);
         if (!isSelected) {
-            if(!changed)
+            if (!changed)
                 setBackground(nullValueDisplayColor);
             else setBackground(changedValueDisplayColor);
         }
@@ -348,7 +346,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 Constants.USER_PROPERTIES_KEY, "results.table.cell.null.background.colour");
 
         changedValueDisplayColor = SystemProperties.getColourProperty(
-                Constants.USER_PROPERTIES_KEY,"results.table.cell.changed.background.colour");
+                Constants.USER_PROPERTIES_KEY, "results.table.cell.changed.background.colour");
 
         blobValueDisplayColor = SystemProperties.getColourProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.cell.blob.background.colour");

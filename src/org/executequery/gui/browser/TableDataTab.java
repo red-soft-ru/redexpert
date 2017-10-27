@@ -386,17 +386,15 @@ public class TableDataTab extends JPanel
                 createResultSetTable();
             }
 
-            List<String> nonEditableCols=new ArrayList<>();
+            List<String> nonEditableCols = new ArrayList<>();
             nonEditableCols.addAll(primaryKeyColumns);
-            if(isDatabaseTable())
-            for(DatabaseColumn databaseColumn:asDatabaseTable().getColumns())
-            {
-                if(!nonEditableCols.contains(databaseColumn.getName()))
-                {
-                    if(databaseColumn.isGenerated())
-                        nonEditableCols.add(databaseColumn.getName());
+            if (isDatabaseTable())
+                for (DatabaseColumn databaseColumn : asDatabaseTable().getColumns()) {
+                    if (!nonEditableCols.contains(databaseColumn.getName())) {
+                        if (databaseColumn.isGenerated())
+                            nonEditableCols.add(databaseColumn.getName());
+                    }
                 }
-            }
             tableModel.setNonEditableColumns(nonEditableCols);
 
             TableSorter sorter = new TableSorter(tableModel);

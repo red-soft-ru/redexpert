@@ -46,7 +46,7 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
 
     private boolean changed;
 
-    private boolean generated=false;
+    private boolean generated = false;
 
     private static final SQLTypeObjectFactory TYPE_OBJECT_FACTORY = new SQLTypeObjectFactory();
 
@@ -239,7 +239,7 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
 
     @Override
     public void setGenerated(boolean generated) {
-        this.generated=generated;
+        this.generated = generated;
     }
 }
 

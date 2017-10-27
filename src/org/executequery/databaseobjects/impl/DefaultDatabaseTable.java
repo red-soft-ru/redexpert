@@ -1222,7 +1222,6 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
         for (String column : columns) {
-
             sb.append(column).append(" = ?,");
         }
 
@@ -1232,14 +1231,13 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         boolean applied = false;
         List<DatabaseColumn> cols = getColumns();
         for (int i = 0; i < cols.size(); i++) {
-            DatabaseColumn column=cols.get(i);
+            DatabaseColumn column = cols.get(i);
             String col = cols.get(i).getName();
             RecordDataItem rdi = changes.get(i);
-            if(column.isGenerated())
+            if (column.isGenerated())
                 rdi.setGenerated(true);
             else {
                 if (applied) {
-
                     sb.append(" AND ");
                 }
                 if (rdi.isValueNull())
@@ -1262,25 +1260,20 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
         for (String column : columns) {
-
             sb.append(column).append(" = ?,");
         }
-
         sb.deleteCharAt(sb.length() - 1);
         sb.append(" WHERE ");
-
         boolean applied = false;
         for (String primaryKey : getPrimaryKeyColumnNames()) {
-
             if (applied) {
-
                 sb.append(" AND ");
             }
             sb.append(primaryKey).append(" = ? ");
-            applied =true;
+            applied = true;
         }
-
         sb.deleteCharAt(sb.length() - 1);
+
         return sb.toString();
     }
 

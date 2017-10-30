@@ -74,6 +74,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     private Color charValueDisplayColor;
     private Color blobValueDisplayColor;
     private Color changedValueDisplayColor;
+    private Color deletedValueDisplayColor;
 
     private Color alternatingRowBackground;
 
@@ -190,7 +191,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 RecordDataItem recordDataItem = (RecordDataItem) value;
                 if (recordDataItem.isDisplayValueNull()) {
 
-                    formatForNullValue(isSelected, recordDataItem.isChanged());
+                    formatForNullValue(isSelected, recordDataItem.isChanged(),recordDataItem.isDeleted());
                     return;
 
                 } else {
@@ -206,7 +207,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         } else {
 
-            formatForNullValue(isSelected, false);
+            formatForNullValue(isSelected, false,false);
         }
 
     }
@@ -225,7 +226,9 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         boolean isDateValue = false;
         Color color = tableBackground;
-        if (recordDataItem.isChanged() && changedValueDisplayColor.getRGB() != tableBackground.getRGB()) {
+        if (recordDataItem.isDeleted() && deletedValueDisplayColor.getRGB() != tableBackground.getRGB()) {
+            color = deletedValueDisplayColor;
+        } else if (recordDataItem.isChanged() && changedValueDisplayColor.getRGB() != tableBackground.getRGB()) {
             color = changedValueDisplayColor;
         } else {
             int sqlType = recordDataItem.getDataType();
@@ -313,14 +316,18 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
     }
 
-    private void formatForNullValue(boolean isSelected, boolean changed) {
+    private void formatForNullValue(boolean isSelected, boolean changed, boolean deleted) {
 
         setValue(nullValueDisplayString);
         setHorizontalAlignment(SwingConstants.CENTER);
         if (!isSelected) {
-            if (!changed)
-                setBackground(nullValueDisplayColor);
-            else setBackground(changedValueDisplayColor);
+            if (!deleted) {
+                if (!changed)
+                    setBackground(nullValueDisplayColor);
+                else setBackground(changedValueDisplayColor);
+            } else {
+                setBackground(deletedValueDisplayColor);
+            }
         }
 
     }
@@ -347,6 +354,9 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         changedValueDisplayColor = SystemProperties.getColourProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.cell.changed.background.colour");
+
+        deletedValueDisplayColor = SystemProperties.getColourProperty(
+                Constants.USER_PROPERTIES_KEY, "results.table.cell.deleted.background.colour");
 
         blobValueDisplayColor = SystemProperties.getColourProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.cell.blob.background.colour");

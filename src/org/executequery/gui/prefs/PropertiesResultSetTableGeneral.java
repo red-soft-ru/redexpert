@@ -151,6 +151,13 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 "Right-align numeric values",
                 Boolean.valueOf(stringUserProperty(key))));
 
+        key = "results.table.use.form.adding.deleting";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Use form for adding/deleting records",
+                Boolean.valueOf(stringUserProperty(key))));
+
         UserPreference[] preferences =
                 (UserPreference[])list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);

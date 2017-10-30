@@ -51,6 +51,7 @@ import javax.swing.table.TableColumnModel;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.TablePrivilege;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
@@ -82,101 +83,133 @@ import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.SystemProperties;
 
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision: 1783 $
- * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
+ * @author Takis Diakoumis
+ * @version $Revision: 1783 $
+ * @date $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
-                                      implements ActionListener,
-                                                 KeywordListener,
-                                                 FocusListener,
-                                                 TableConstraintFunction,
-                                                 ChangeListener, 
-                                                 VetoableChangeListener {
-    
+        implements ActionListener,
+        KeywordListener,
+        FocusListener,
+        TableConstraintFunction,
+        ChangeListener,
+        VetoableChangeListener {
+
     // TEXT FUNCTION CONTAINER
-    
+
     private static final int TABLE_DATA_TAB_INDEX = 5;
 
     public static final String NAME = "BrowserTableEditingPanel";
-    
-    /** Contains the table name */
+
+    /**
+     * Contains the table name
+     */
     private DisabledField tableNameField;
-    
-    /** Contains the data row count */
+
+    /**
+     * Contains the data row count
+     */
     private DisabledField rowCountField;
 
-    /** The table view tabbed pane */
+    /**
+     * The table view tabbed pane
+     */
     private JTabbedPane tabPane;
-    
-    /** The SQL text pane for alter text */
+
+    /**
+     * The SQL text pane for alter text
+     */
     private SimpleSqlTextPanel alterSqlText;
-    
-    /** The SQL text pane for create table text */
+
+    /**
+     * The SQL text pane for create table text
+     */
     private SimpleSqlTextPanel createSqlText;
 
     private EditableDatabaseTable descriptionTable;
-    
-    /** The panel displaying the table's constraints */
+
+    /**
+     * The panel displaying the table's constraints
+     */
     private EditableColumnConstraintTable constraintsTable;
-    
-    /** Contains the column indexes for a selected table */
+
+    /**
+     * Contains the column indexes for a selected table
+     */
     private JTable columnIndexTable;
-    
-    /** A reference to the currently selected table.
-     *  This is not a new <code>JTable</code> instance */
+
+    /**
+     * A reference to the currently selected table.
+     * This is not a new <code>JTable</code> instance
+     */
     private JTable focusTable;
-    
+
     private TableColumnIndexTableModel citm;
-    
-    /** Holds temporary SQL text during modifications */
+
+    /**
+     * Holds temporary SQL text during modifications
+     */
     private StringBuffer sbTemp;
 
-    /** table data tab panel */
+    /**
+     * table data tab panel
+     */
     private TableDataTab tableDataPanel;
-    
-    /** current node selection object */
+
+    /**
+     * current node selection object
+     */
     private BaseDatabaseObject metaObject;
-    
-    /** the erd panel */
+
+    /**
+     * the erd panel
+     */
     private ReferencesDiagramPanel referencesPanel;
-    
-    /** table privileges list */
+
+    /**
+     * table privileges list
+     */
     private TablePrivilegeTab tablePrivilegePanel;
-    
-    /** the apply changes button */
+
+    /**
+     * the apply changes button
+     */
     private JButton applyButton;
-    
-    /** the cancel changes button */
+
+    /**
+     * the cancel changes button
+     */
     private JButton cancelButton;
-    
-    /** the browser's control object */
+
+    /**
+     * the browser's control object
+     */
     private BrowserController controller;
 
     private DatabaseObjectMetaDataPanel metaDataPanel;
-    
-    /** the last focused editor */
+
+    /**
+     * the last focused editor
+     */
     private TextEditor lastFocusEditor;
-    
+
     public BrowserTableEditingPanel(BrowserController controller) {
         this.controller = controller;
         try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     private void init() throws Exception {
         // the column index table
         //citm = new ColumnIndexTableModel();
-        
+
         columnIndexTable = new DefaultTable();
         citm = new TableColumnIndexTableModel();
         columnIndexTable.setModel(new TableSorter(citm, columnIndexTable.getTableHeader()));
-        
+
         columnIndexTable.setColumnSelectionAllowed(false);
         columnIndexTable.getTableHeader().setReorderingAllowed(false);
 
@@ -187,16 +220,16 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         // table meta data table
         metaDataPanel = new DatabaseObjectMetaDataPanel();
-        
+
         // table data panel
         tableDataPanel = new TableDataTab(false);
-        
+
         // table privileges panel
         tablePrivilegePanel = new TablePrivilegeTab();
-        
+
         // table references erd panel
         referencesPanel = new ReferencesDiagramPanel();
-        
+
         // alter sql text panel
         alterSqlText = new SimpleSqlTextPanel();
         alterSqlText.setBorder(BorderFactory.createTitledBorder(bundleString("alter-table")));
@@ -207,34 +240,34 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         createSqlText = new SimpleSqlTextPanel();
         createSqlText.setBorder(BorderFactory.createTitledBorder(bundleString("create-table")));
         createSqlText.getEditorTextComponent().addFocusListener(this);
-        
+
         // sql text split pane
         FlatSplitPane splitPane = new FlatSplitPane(FlatSplitPane.VERTICAL_SPLIT);
         splitPane.setTopComponent(alterSqlText);
         splitPane.setBottomComponent(createSqlText);
         splitPane.setDividerSize(7);
         splitPane.setResizeWeight(0.25);
-        
+
         constraintsTable = new EditableColumnConstraintTable();
         JPanel constraintsPanel = new JPanel(new BorderLayout());
         constraintsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("table-keys")));
         constraintsPanel.add(new JScrollPane(constraintsTable), BorderLayout.CENTER);
-        
+
         descriptionTable = new EditableDatabaseTable();
         JPanel descTablePanel = new JPanel(new GridBagLayout());
         descTablePanel.setBorder(BorderFactory.createTitledBorder(bundleString("table-columns")));
         descTablePanel.add(
                 new JScrollPane(descriptionTable),
                 new GridBagConstraints(
-                1, 1, 1, 1, 1.0, 1.0, 
-                GridBagConstraints.SOUTHEAST,
-                GridBagConstraints.BOTH, 
-                new Insets(2, 2, 2, 2), 0, 0));
+                        1, 1, 1, 1, 1.0, 1.0,
+                        GridBagConstraints.SOUTHEAST,
+                        GridBagConstraints.BOTH,
+                        new Insets(2, 2, 2, 2), 0, 0));
 
         tableNameField = new DisabledField();
         //schemaNameField = new DisabledField();
         rowCountField = new DisabledField();
-        
+
         VetoableSingleSelectionModel model = new VetoableSingleSelectionModel();
         model.addVetoableChangeListener(this);
 
@@ -250,9 +283,9 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         tabPane.add(Bundles.getCommon("data"), tableDataPanel);
         tabPane.add(Bundles.getCommon("SQL"), splitPane);
         tabPane.add(Bundles.getCommon("metadata"), metaDataPanel);
-        
+
         tabPane.addChangeListener(this);
-        
+
         // apply/cancel buttons
         applyButton = new DefaultPanelButton(Bundles.get("common.apply.button"));
         cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
@@ -263,7 +296,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         // add to the base panel
         JPanel base = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        Insets ins = new Insets(10,5,5,5);
+        Insets ins = new Insets(10, 5, 5, 5);
         gbc.insets = ins;
         gbc.anchor = GridBagConstraints.NORTHEAST;
         gbc.fill = GridBagConstraints.BOTH;
@@ -326,11 +359,15 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         gbc.weightx = 0;
         gbc.insets.left = 0;
         base.add(cancelButton, gbc);
-        
+
         // set up and add the focus listener for the tables
         FocusListener tableFocusListener = new FocusListener() {
-            public void focusLost(FocusEvent e) {}
-            public void focusGained(FocusEvent e) {focusTable = (JTable)e.getSource();}
+            public void focusLost(FocusEvent e) {
+            }
+
+            public void focusGained(FocusEvent e) {
+                focusTable = (JTable) e.getSource();
+            }
         };
         descriptionTable.addFocusListener(tableFocusListener);
         //columnDataTable.addTableFocusListener(tableFocusListener);
@@ -341,11 +378,11 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         setContentPanel(base);
         setHeaderIcon(GUIUtilities.loadIcon("DatabaseTable24.png"));
         setHeaderText(bundleString("db-table"));
-        
+
         // register for keyword changes
         EventMediator.registerListener(this);
     }
-    
+
     /**
      * Invoked when a SQL text pane gains the keyboard focus.
      */
@@ -354,8 +391,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         // check which editor we are in
         if (createSqlText.getEditorTextComponent() == source) {
             lastFocusEditor = createSqlText;
-        }
-        else if (alterSqlText.getEditorTextComponent() == source) {
+        } else if (alterSqlText.getEditorTextComponent() == source) {
             lastFocusEditor = alterSqlText;
         }
     }
@@ -398,58 +434,61 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     public void actionPerformed(ActionEvent event) {
 
         if (table.isAltered()) {
-        
+
             Object source = event.getSource();
             if (source == applyButton) {
-    
+
                 try {
-    
-                    new DatabaseObjectChangeProvider(table).applyChanges();
-                    setValues(table);
-                
+
+                    DatabaseObjectChangeProvider docp = new DatabaseObjectChangeProvider(table);
+                    docp.applyChanges();
+                    if (docp.applied)
+                        setValues(table);
+
                 } catch (DataSourceException e) {
-    
+
                     GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
                 }
-                    
+
             } else if (source == cancelButton) {
-    
+
                 table.revert();
                 setValues(table);
             }
 
         }
-            
+
     }
-    
+
     public String getLayoutName() {
         return NAME;
     }
 
-    public void refresh() {}
-    
+    public void refresh() {
+    }
+
     public Printable getPrintable() {
-        
+
         int tabIndex = tabPane.getSelectedIndex();
-        
+
         switch (tabIndex) {
-            
+
             case 0:
                 return new TablePrinter(descriptionTable,
-                                        bundleString("description-table") + table.getName());
-                
+                        bundleString("description-table") + table.getName());
+
             case 1:
                 return new TablePrinter(constraintsTable,
                         bundleString("constraints-table") + table.getName(), false);
-                
+
             case 2:
                 return new TablePrinter(columnIndexTable,
                         bundleString("indexes-table") + table.getName());
-                
+
             case 3:
                 return new TablePrinter(tablePrivilegePanel.getTable(),
                         bundleString("privileges-table") + table.getName());
-                
+
             case 4:
                 return referencesPanel.getPrintable();
 
@@ -463,29 +502,29 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
             default:
                 return null;
-                
+
         }
-        
+
     }
-    
+
     public void cleanup() {
-        
+
         if (worker != null) {
 
             worker.interrupt();
             worker = null;
         }
-        
+
         referencesPanel.cleanup();
         EventMediator.deregisterListener(this);
     }
-    
+
     public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 
         if (Integer.valueOf(e.getOldValue().toString()) == TABLE_DATA_TAB_INDEX) {
-            
+
             if (tableDataPanel.hasChanges()) {
-                
+
                 boolean applyChanges = new DatabaseObjectChangeProvider(table).applyChanges(true);
                 if (!applyChanges) {
 
@@ -494,155 +533,155 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             }
 
         }
-        
-        
+
+
     }
-    
+
     /**
      * Handles a change tab selection.
      */
     public void stateChanged(ChangeEvent e) {
-        
+
         final int index = tabPane.getSelectedIndex();
         if (index != TABLE_DATA_TAB_INDEX && tableDataPanel.isExecuting()) {
 
             tableDataPanel.cancelStatement();
             return;
         }
-        
+
         GUIUtils.startWorker(new Runnable() {
-            
+
             public void run() {
-                
+
                 tabIndexSelected(index);
             }
 
         });
-        
+
     }
-    
+
     private void tabIndexSelected(int index) {
 
         switch (index) {
-        case 2:
-            loadIndexes();
-            break;
-        case 3:
-            loadPrivileges();
-            break;
-        case 4:
-            loadReferences();
-            break;
-        case 5:
-            tableDataPanel.loadDataForTable(table);
-            break;
-        case 6:
-            try {
-                // check for any table defn changes
-                // and update the alter text pane
-                if (table.isAltered()) {
+            case 2:
+                loadIndexes();
+                break;
+            case 3:
+                loadPrivileges();
+                break;
+            case 4:
+                loadReferences();
+                break;
+            case 5:
+                tableDataPanel.loadDataForTable(table);
+                break;
+            case 6:
+                try {
+                    // check for any table defn changes
+                    // and update the alter text pane
+                    if (table.isAltered()) {
 
-                    alterSqlText.setSQLText(table.getAlteredSQLText().trim());
-            
-                } else {
+                        alterSqlText.setSQLText(table.getAlteredSQLText().trim());
 
+                    } else {
+
+                        alterSqlText.setSQLText(EMPTY);
+                    }
+
+                } catch (DataSourceException exc) {
+
+                    controller.handleException(exc);
                     alterSqlText.setSQLText(EMPTY);
                 }
 
-            } catch (DataSourceException exc) {
-              
-                controller.handleException(exc);
-                alterSqlText.setSQLText(EMPTY);
-            }
-            
-            break;
-        case 7:
-            loadTableMetaData();
-            break;
+                break;
+            case 7:
+                loadTableMetaData();
+                break;
         }
-        
+
     }
 
-    /** 
+    /**
      * Indicates that the references tab has been previously displayed
-     * for the current selection. Aims to keep any changes made to the 
+     * for the current selection. Aims to keep any changes made to the
      * references ERD (moving tables around) stays as was previosuly set.
      */
     private boolean referencesLoaded;
-    
+
     /**
      * Loads database table references.
      */
     private void loadReferences() {
-        
+
         // TODO: to be refactored out when erd receives new impl
-        
+
         if (referencesLoaded) {
             return;
         }
 
         try {
-        
+
             GUIUtilities.showWaitCursor();
-            
+
             List<ColumnData[]> columns = new ArrayList<ColumnData[]>();
             List<String> tableNames = new ArrayList<String>();
-            
+
             List<ColumnConstraint> constraints = table.getConstraints();
             Set<String> tableNamesAdded = new HashSet<String>();
 
             for (ColumnConstraint constraint : constraints) {
 
                 String tableName = constraint.getTableName();
-				if (constraint.isPrimaryKey()) {
-                    
+                if (constraint.isPrimaryKey()) {
+
                     if (!tableNamesAdded.contains(tableName)) {
-                    
+
                         tableNames.add(tableName);
                         tableNamesAdded.add(tableName);
                         columns.add(controller.getColumnData(constraint.getCatalogName(),
-                                                             constraint.getSchemaName(),
-                                                             tableName));
+                                constraint.getSchemaName(),
+                                tableName));
                     }
 
                 } else if (constraint.isForeignKey()) {
 
                     String referencedTable = constraint.getReferencedTable();
                     if (!tableNamesAdded.contains(referencedTable)) {
-                    
+
                         tableNames.add(referencedTable);
                         tableNamesAdded.add(referencedTable);
                         columns.add(controller.getColumnData(constraint.getReferencedCatalog(),
-                                                             constraint.getReferencedSchema(),
-                                                             referencedTable));
+                                constraint.getReferencedSchema(),
+                                referencedTable));
                     }
-                    
+
                     String columnName = constraint.getColumnName();
-					if (!tableNames.contains(tableName) && !columns.contains(columnName)) {
-                    	
+                    if (!tableNames.contains(tableName) && !columns.contains(columnName)) {
+
                         tableNames.add(tableName);
                         tableNamesAdded.add(tableName);
                         columns.add(controller.getColumnData(constraint.getCatalogName(),
-                                                             constraint.getSchemaName(),
-                                                             tableName));
+                                constraint.getSchemaName(),
+                                tableName));
                     }
-                    
+
 
                 }
 
             }
-            
+
             List<DatabaseColumn> exportedKeys = table.getExportedKeys();
             for (DatabaseColumn column : exportedKeys) {
-                
+
                 String parentsName = column.getParentsName();
                 if (!tableNamesAdded.contains(parentsName)) {
-                
+
                     tableNames.add(parentsName);
                     tableNamesAdded.add(parentsName);
                     columns.add(controller.getColumnData(column.getCatalogName(),
-                                                         column.getSchemaName(),
-                                                         parentsName));
+                            column.getSchemaName(),
+                            parentsName));
                 }
 
             }
@@ -655,19 +694,17 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
             referencesPanel.setTables(tableNames, columns);
 
-        }
-        catch (DataSourceException e) {
-            
+        } catch (DataSourceException e) {
+
             controller.handleException(e);
-        }
-        finally {
-            
+        } finally {
+
             GUIUtilities.showNormalCursor();
         }
-        
+
         referencesLoaded = true;
     }
-    
+
     /**
      * Loads database table indexes.
      */
@@ -678,7 +715,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             metaDataPanel.setData(table.getColumnMetaData());
 
         } catch (DataSourceException e) {
-          
+
             controller.handleException(e);
             metaDataPanel.setData(null);
         }
@@ -701,32 +738,31 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             tcm.getColumn(1).setPreferredWidth(130);
             tcm.getColumn(2).setPreferredWidth(130);
             tcm.getColumn(3).setPreferredWidth(90);
-        } 
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             controller.handleException(e);
             citm.setIndexData(null);
         }
 
     }
-    
+
     /**
      * Loads database table privileges.
      */
     private void loadPrivileges() {
 
         try {
-        
+
             tablePrivilegePanel.setValues(table.getPrivileges());
-            
+
         } catch (DataSourceException e) {
-          
+
             controller.handleException(e);
             tablePrivilegePanel.setValues(new TablePrivilege[0]);
         }
 
     }
 
-    private DatabaseTable table; 
+    private DatabaseTable table;
 
     public void setValues(DatabaseTable table) {
 
@@ -735,40 +771,40 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         reloadView();
         if (SystemProperties.getBooleanProperty("user", "browser.query.row.count")) {
 
-            reloadDataRowCount();                    
+            reloadDataRowCount();
         }
-                
+
         stateChanged(null);
     }
-    
+
     protected void reloadView() {
 
         try {
 
             if (SystemProperties.getBooleanProperty("user", "browser.query.row.count")) {
-            
+
                 updateRowCount(bundleString("quering"));
 
             } else {
-                
+
                 updateRowCount(bundleString("option-disabled"));
             }
-            
+
             referencesLoaded = false;
 
             tableNameField.setText(table.getName());
             descriptionTable.setDatabaseTable(table);
             constraintsTable.setDatabaseTable(table);
-            
+
             alterSqlText.setSQLText(EMPTY);
             try {
 
-                    createSqlText.setSQLText(createTableStatementFormatted());                        
+                createSqlText.setSQLText(createTableStatementFormatted());
 
             } catch (Exception e) { // some liquibase generated issues... ??
 
                 String message = "Error generating SQL for table - " + e.getMessage();
-				createSqlText.setSQLText(message);
+                createSqlText.setSQLText(message);
                 Log.error("Error generating SQL for table - " + e.getMessage(), e);
             }
 
@@ -786,18 +822,18 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         return table.getCreateSQLText();
     }
-    
-    private boolean loadingRowCount; 
+
+    private boolean loadingRowCount;
     private SwingWorker worker;
     private Timer timer;
 
     private void reloadDataRowCount() {
 
         if (timer != null) {
-            
+
             timer.cancel();
         }
-        
+
         timer = new Timer();
         timer.schedule(new TimerTask() {
 
@@ -807,15 +843,15 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 updateDataRowCount();
             }
         }, 600);
-        
+
     }
-    
+
     private void updateDataRowCount() {
-        
+
         if (worker != null) {
 
             if (loadingRowCount) {
-                
+
                 Log.debug("Interrupting worker for data row count");
             }
             worker.interrupt();
@@ -828,20 +864,22 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                     loadingRowCount = true;
                     try {
                         Thread.sleep(200);
-                    } catch (InterruptedException e) {}
+                    } catch (InterruptedException e) {
+                    }
 
                     Log.debug("Retrieving data row count for table - " + table.getName());
                     return String.valueOf(table.getDataRowCount());
-                    
+
                 } catch (DataSourceException e) {
-                    
+
                     return "Error: " + e.getMessage();
-                
+
                 } finally {
 
                     loadingRowCount = false;
                 }
             }
+
             public void finished() {
 
                 updateRowCount(get().toString());
@@ -849,25 +887,25 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         };
         worker.start();
     }
-    
+
     /**
      * Fires a change in the selected table node and reloads
      * the current table display view.
      *
      * @param metaObject - the selected meta object
-     * @param reset - whether to reset the view, regardless of the current 
-     *                view which may be the same metaObject
+     * @param reset      - whether to reset the view, regardless of the current
+     *                   view which may be the same metaObject
      */
     public void selectionChanged(BaseDatabaseObject metaObject, boolean reset) {
 
         if (this.metaObject == metaObject && !reset) {
-        
+
             return;
         }
 
         this.metaObject = metaObject;
     }
-    
+
     /**
      * Fires a change in the selected table node and reloads
      * the current table display view.
@@ -875,21 +913,21 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
      * @param metaObject - the selected meta object
      */
     public void selectionChanged(BaseDatabaseObject metaObject) {
-        selectionChanged(metaObject, false);        
+        selectionChanged(metaObject, false);
     }
-    
+
     public TableDataTab getTableDataPanel() {
         return tableDataPanel;
     }
-    
+
     public void setBrowserPreferences() {
         tableDataPanel.setTableProperties();
     }
-    
+
     public JTable getTableInFocus() {
         return focusTable;
     }
-    
+
     /**
      * Returns whether the SQL panel has any text in it.
      */
@@ -915,27 +953,27 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     // --- TableConstraintFunction implementations ---
     // -----------------------------------------------
 
-    /** 
-     * Deletes the selected row on the currently selected table. 
+    /**
+     * Deletes the selected row on the currently selected table.
      */
     public void deleteRow() {
 
         int tabIndex = tabPane.getSelectedIndex();
-        
+
         if (tabIndex == 0) {
-        
+
             descriptionTable.deleteSelectedColumn();
-            
+
         } else if (tabIndex == 1) {
-          
+
             constraintsTable.deleteSelectedConstraint();
         }
 
         setSQLText();
     }
-    
-    /** 
-     * Inserts a row after the selected row on the currently selected table. 
+
+    /**
+     * Inserts a row after the selected row on the currently selected table.
      */
     public void insertAfter() {
 
@@ -955,15 +993,15 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         }
 
     }
-    
+
     public void setSQLText() {
 
         sbTemp.setLength(0);
         alterSqlText.setSQLText("");
     }
-    
+
     public void setSQLText(String values, int type) {
-        
+
         sbTemp.setLength(0);
         
         /*
@@ -979,40 +1017,47 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         */
         alterSqlText.setSQLText(sbTemp.toString());
     }
-    
+
     public String getTableName() {
         return tableNameField.getText();
     }
-    
+
     public Vector<String> getHostedSchemasVector() {
         return controller.getHostedSchemas();
     }
-    
-    public Vector<String> getSchemaTables(String schemaName) {        
+
+    public Vector<String> getSchemaTables(String schemaName) {
         return controller.getTables(schemaName);
     }
-    
+
     public Vector<String> getColumnNamesVector(String tableName, String schemaName) {
         return controller.getColumnNamesVector(tableName, schemaName);
     }
-    
-    public void insertBefore() {}
-    public void moveColumnUp() {}
-    public void moveColumnDown() {}
+
+    public void insertBefore() {
+    }
+
+    public void moveColumnUp() {
+    }
+
+    public void moveColumnDown() {
+    }
 
     public ColumnData[] getTableColumnData() {
         return null;
         //return columnDataTable.getTableColumnData();
     }
-    
+
     public Vector<ColumnData> getTableColumnDataVector() {
         return null;
         //return columnDataTable.getTableColumnDataVector();
     }
-    
-    /** Tab index of the SQL text panes */
+
+    /**
+     * Tab index of the SQL text panes
+     */
     private static final int SQL_PANE_INDEX = 6;
-    
+
     /**
      * Returns the focused TextEditor panel where the selected
      * tab is the SQL text pane.

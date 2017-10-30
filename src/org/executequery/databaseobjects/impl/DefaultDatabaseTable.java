@@ -604,6 +604,17 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         tableDataChanges().add(tableDataChange);
     }
 
+    @Override
+    public void removeTableDataChange(List<RecordDataItem> row) {
+        if (tableDataChanges != null) {
+            for (int i = 0; i < tableDataChanges.size(); i++)
+                if (row == tableDataChanges.get(i).getRowDataForRow()) {
+                    tableDataChanges.remove(i);
+                    i--;
+                }
+        }
+    }
+
     /**
      * Applies any changes to the database.
      */
@@ -1254,6 +1265,70 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         return sb.toString();
     }
 
+    public String prepareStatementDeleting(List<RecordDataItem> changes) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("DELETE FROM ").append(getNameWithPrefixForQuery());
+        sb.append(" WHERE ");
+
+        boolean applied = false;
+        List<DatabaseColumn> cols = getColumns();
+        for (int i = 0; i < cols.size(); i++) {
+            DatabaseColumn column = cols.get(i);
+            String col = cols.get(i).getName();
+            RecordDataItem rdi = changes.get(i);
+            if (column.isGenerated())
+                rdi.setGenerated(true);
+            else {
+                if (applied) {
+
+                    sb.append(" AND ");
+                }
+                if (rdi.isValueNull())
+                    sb.append(col).append(" is NULL ");
+                else
+                    sb.append(col).append(" = ? ");
+                applied = true;
+            }
+        }
+
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append("\nORDER BY " + cols.get(0) + " \n");
+        sb.append("ROWS 1");
+        return sb.toString();
+    }
+
+    public String prepareStatementAdding(List<String> columns, List<RecordDataItem> changes) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("INSERT INTO ").append(getNameWithPrefixForQuery());
+        String columnsForQuery = " (";
+        String values = " VALUES (";
+        boolean applied = false;
+        List<DatabaseColumn> cols = getColumns();
+        for (int i = 0; i < cols.size(); i++) {
+            DatabaseColumn column = cols.get(i);
+            String col = cols.get(i).getName();
+            RecordDataItem rdi = changes.get(i);
+            if (column.isGenerated())
+                rdi.setGenerated(true);
+            else {
+                if (applied) {
+
+                    columnsForQuery += " , ";
+                    values += " , ";
+                }
+                columnsForQuery += col;
+                values += "?";
+                applied = true;
+            }
+        }
+        columnsForQuery += ") ";
+        values += ") ";
+        sb.append(columnsForQuery).append(values);
+        return sb.toString();
+    }
+
     @Override
     public String prepareStatementWithPK(List<String> columns) {
 
@@ -1274,6 +1349,27 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         }
         sb.deleteCharAt(sb.length() - 1);
 
+        return sb.toString();
+    }
+
+    public String prepareStatementDeletingWithPK() {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("DELETE FROM ").append(getNameWithPrefixForQuery());
+        sb.append(" WHERE ");
+
+        boolean applied = false;
+        for (String primaryKey : getPrimaryKeyColumnNames()) {
+
+            if (applied) {
+
+                sb.append(" AND ");
+            }
+            sb.append(primaryKey).append(" = ? ");
+            applied = true;
+        }
+
+        sb.deleteCharAt(sb.length() - 1);
         return sb.toString();
     }
 

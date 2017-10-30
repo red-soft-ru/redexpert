@@ -80,6 +80,13 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
                 "Changed value cell background",
                 SystemProperties.getColourProperty("user", key)));
 
+        key = "results.table.cell.deleted.background.colour";
+        list.add(new UserPreference(
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Deleted value cell background",
+                SystemProperties.getColourProperty("user", key)));
+
         key = "results.table.cell.char.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,

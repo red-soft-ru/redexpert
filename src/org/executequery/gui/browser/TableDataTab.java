@@ -27,6 +27,7 @@ import java.awt.image.BufferedImage;
 import java.sql.ResultSet;
 import java.sql.Time;
 import java.sql.Types;
+import java.text.Collator;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -38,6 +39,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.components.DateTimePicker;
@@ -777,11 +779,9 @@ public class TableDataTab extends JPanel
         if (row >= 0) {
             String query = "DELETE FROM " + databaseObject.getNameForQuery() + " WHERE ";
             String order = "";
-            boolean first=true;
-            for (int i = 0; i < tableModel.getColumnHeaders().size(); i++)
-            {
-                if(!databaseObject.getColumns().get(i).isGenerated())
-                {
+            boolean first = true;
+            for (int i = 0; i < tableModel.getColumnHeaders().size(); i++) {
+                if (!databaseObject.getColumns().get(i).isGenerated()) {
                     String value = "";
                     ResultSetColumnHeader rsch = tableModel.getColumnHeaders().get(i);
                     int sqlType = rsch.getDataType();
@@ -811,12 +811,10 @@ public class TableDataTab extends JPanel
                         value += temp;
                     if (str && value != "NULL")
                         value += "'";
-                    if(first)
-                    {
-                        first=false;
+                    if (first) {
+                        first = false;
                         order = rsch.getName();
-                    }
-                    else query+=" AND";
+                    } else query += " AND";
                     //if(value=="'null'")
                     if (value == "NULL")
                         query = query + " (" + rsch.getName() + " IS " + value + " )";
@@ -844,7 +842,11 @@ public class TableDataTab extends JPanel
         addRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                add_record(actionEvent);
+                boolean useForm = SystemProperties.getBooleanProperty(
+                        Constants.USER_PROPERTIES_KEY, "results.table.use.form.adding.deleting");
+                if (useForm)
+                    add_record(actionEvent);
+                else tableModel.AddRow();
             }
         });
         bar.add(addRolloverButton);
@@ -853,7 +855,11 @@ public class TableDataTab extends JPanel
         deleteRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                delete_record();
+                boolean useForm = SystemProperties.getBooleanProperty(
+                        Constants.USER_PROPERTIES_KEY, "results.table.use.form.adding.deleting");
+                if (useForm)
+                    delete_record();
+                else tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(table.getSelectedRow()));
             }
         });
         bar.add(deleteRolloverButton);
@@ -950,10 +956,28 @@ public class TableDataTab extends JPanel
         if (isDatabaseTable()) {
 
             int row = e.getFirstRow();
-            if (row >= 0) {
+            if (e.getType() == TableModelEvent.DELETE) {
+                List<RecordDataItem> rowDataForRow = ((ResultSetTableModel) e.getSource()).getDeletedRow();
+                asDatabaseTable().removeTableDataChange(rowDataForRow);
+            } else if (row >= 0) {
 
                 List<RecordDataItem> rowDataForRow = tableModel.getRowDataForRow(row);
                 for (RecordDataItem recordDataItem : rowDataForRow) {
+
+                    if (recordDataItem.isDeleted()) {
+                        Log.debug("Deleting detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
+
+                        asDatabaseTable().addTableDataChange(new TableDataChange(rowDataForRow));
+                        return;
+                    }
+
+                    if (recordDataItem.isNew()) {
+
+                        Log.debug("Adding detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
+
+                        asDatabaseTable().addTableDataChange(new TableDataChange(rowDataForRow));
+                        return;
+                    }
 
                     if (recordDataItem.isChanged()) {
 
@@ -962,6 +986,7 @@ public class TableDataTab extends JPanel
                         asDatabaseTable().addTableDataChange(new TableDataChange(rowDataForRow));
                         return;
                     }
+
                 }
             }
         }
@@ -1036,6 +1061,10 @@ public class TableDataTab extends JPanel
         }
 
     }
-
 }
+
+
+
+
+
 

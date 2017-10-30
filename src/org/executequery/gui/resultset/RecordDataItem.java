@@ -23,12 +23,19 @@ package org.executequery.gui.resultset;
 import org.underworldlabs.swing.table.TableCellValue;
 
 /**
- *
  * @author Takis Diakoumis
  * @version $Revision: 1780 $
  * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
-public interface RecordDataItem extends TableCellValue {
+public interface RecordDataItem extends TableCellValue, Comparable {
+
+    boolean isDeleted();
+
+    void setDeleted(boolean deleted);
+
+    boolean isNew();
+
+    void setNew(boolean newRecord);
 
     boolean isGenerated();
 
@@ -38,19 +45,19 @@ public interface RecordDataItem extends TableCellValue {
 
     int length();
 
-	int getDataType();
+    int getDataType();
 
     String getName();
 
-	Object getDisplayValue();
+    Object getDisplayValue();
 
-	boolean isDisplayValueNull();
+    boolean isDisplayValueNull();
 
-	void setValue(Object value);
+    void setValue(Object value);
 
-	boolean isValueNull();
+    boolean isValueNull();
 
-	void setNull();
+    void setNull();
 
     void valueChanged(Object newValue);
 

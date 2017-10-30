@@ -35,41 +35,43 @@ import org.underworldlabs.swing.util.Interruptible;
 import org.underworldlabs.swing.util.SwingWorker;
 
 public class DatabaseObjectChangeProvider implements Interruptible {
-    
+
     private SwingWorker worker;
 
     private NamedObject namedObject;
 
     private InterruptibleProgressDialog interruptibleProgressDialog;
-    
+
+    boolean applied = false;
+
     public DatabaseObjectChangeProvider(NamedObject namedObject) {
 
         this.namedObject = namedObject;
     }
-    
+
     public boolean applyChanges() {
-        
+
         return applyChanges(false);
     }
-    
+
     public boolean applyChanges(boolean showDialog) {
 
         // dialog
 
         // need to run in worker
-        
+
         if (isTable() && table().isAltered()) {
-        
+
             if (showDialog) {
-            
+
                 return apply();
-                
+
             } else {
-                
+
                 execute();
             }
         }
-        
+
         return true;
     }
 
@@ -93,50 +95,53 @@ public class DatabaseObjectChangeProvider implements Interruptible {
     }
 
     public void interrupt() {
-        
+
         if (worker != null) {
-            
+
             table().cancelChanges();
             worker.interrupt();
         }
-        
+
     }
 
-    public void setCancelled(boolean cancelled) {}
-    
+    public void setCancelled(boolean cancelled) {
+    }
+
     private void execute() {
 
         interruptibleProgressDialog = new InterruptibleProgressDialog(GUIUtilities.getParentFrame(), "Applying changes", "Please wait...", this);
 
         worker = new SwingWorker() {
-            
+
             @Override
             public Object construct() {
 
                 try {
 
                     table().applyChanges();
-        
+                    applied = true;
+
                 } catch (DataSourceException e) {
-        
+                    applied = false;
+
                     StringBuilder sb = new StringBuilder();
                     sb.append("An error occurred applying the specified changes.\n\nThe system returned:\n");
-        
+
                     Throwable cause = e.getCause();
                     if (cause instanceof NumberFormatException) {
-                        
+
                         sb.append("Invalid number for value - ");
-                    
+
                     } else if (cause instanceof ParseException) {
-                        
+
                         sb.append("Invalid date format for value - ");
                     }
                     sb.append(e.getExtendedMessage());
-                    
+
                     if (table().hasTableDataChanges()) {
-                        
+
                         sb.append("\nRollback was issued for all data changes.");
-                    } 
+                    }
 
                     if (table().hasTableDefinitionChanges()) { // for ddl changes in tx 
 
@@ -150,15 +155,15 @@ public class DatabaseObjectChangeProvider implements Interruptible {
 
                 return "done";
             }
-            
+
             @Override
             public void finished() {
 
                 dispose();
             }
-            
+
         };
-     
+
         worker.start();
         interruptibleProgressDialog.run();
     }
@@ -166,29 +171,32 @@ public class DatabaseObjectChangeProvider implements Interruptible {
     private void dispose() {
 
         if (interruptibleProgressDialog != null) {
-            
+
             interruptibleProgressDialog.dispose();
             interruptibleProgressDialog = null;
-        }        
+        }
     }
-    
+
+    public boolean isApplied() {
+        return applied;
+    }
+
     private boolean isTable() {
-        
+
         return (table() != null);
-        
+
     }
-    
+
     private DatabaseTable table() {
 
         if (namedObject instanceof DatabaseTable) {
-        
+
             return (DatabaseTable) namedObject;
         }
         return null;
     }
-    
-    
-    
+
+
 }
 
 

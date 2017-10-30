@@ -26,6 +26,12 @@ import org.executequery.databasemediators.SQLTypeObjectFactory;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 
+import java.math.BigDecimal;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.sql.Types;
+
 
 /**
  * @author Takis Diakoumis
@@ -37,6 +43,10 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
     private Object value;
 
     private Object newValue;
+
+    private boolean newRecord = false;
+
+    private boolean deleted = false;
 
     private String name;
 
@@ -240,6 +250,90 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
     @Override
     public void setGenerated(boolean generated) {
         this.generated = generated;
+    }
+
+    @Override
+    public boolean isNew() {
+        return newRecord;
+    }
+
+    public void setNew(boolean newRecord) {
+        this.newRecord = newRecord;
+    }
+
+    @Override
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    @Override
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        RecordDataItem compar_object = (RecordDataItem) o;
+        if (isDisplayValueNull() && isDisplayValueNull())
+            switch (getDataType()) {
+                case Types.BIGINT: {
+                    Long first = (Long) getDisplayValue();
+                    Long second = (Long) compar_object.getDisplayValue();
+                    return first.compareTo(second);
+                }
+                case Types.DOUBLE: {
+                    Double first = (Double) getDisplayValue();
+                    Double second = (Double) compar_object.getDisplayValue();
+                    return first.compareTo(second);
+                }
+                case Types.INTEGER: {
+                    Integer first = (Integer) getDisplayValue();
+                    Integer second = (Integer) compar_object.getDisplayValue();
+                    return first.compareTo(second);
+                }
+                case Types.DECIMAL: {
+                    BigDecimal first = (BigDecimal) getDisplayValue();
+                    BigDecimal second = (BigDecimal) compar_object.getDisplayValue();
+                    return first.compareTo(second);
+                }
+                case Types.DATE: {
+                    Date first = (Date) getDisplayValue();
+                    Date second = (Date) compar_object.getDisplayValue();
+                    return first.compareTo(second);
+                }
+                case Types.TIME: {
+                    Time first = (Time) getDisplayValue();
+                    Time second = (Time) compar_object.getDisplayValue();
+                    return first.compareTo(second);
+                }
+                case Types.TIMESTAMP: {
+                    Timestamp first = (Timestamp) getDisplayValue();
+                    Timestamp second = (Timestamp) compar_object.getDisplayValue();
+                    return first.compareTo(second);
+                }
+                case Types.NUMERIC: {
+                    BigDecimal first = (BigDecimal) getDisplayValue();
+                    BigDecimal second = (BigDecimal) compar_object.getDisplayValue();
+                    return first.compareTo(second);
+                }
+                case Types.FLOAT: {
+                    Double first = (Double) getDisplayValue();
+                    Double second = (Double) compar_object.getDisplayValue();
+                    return first.compareTo(second);
+                }
+                case Types.SMALLINT: {
+                    Short first = (Short) getDisplayValue();
+                    Short second = (Short) compar_object.getDisplayValue();
+                    return first.compareTo(second);
+                }
+                default:
+                    return String.valueOf(getDisplayValue()).compareTo(String.valueOf(compar_object.getDisplayValue()));
+            }
+        else if (compar_object.getDisplayValue() == null && getDisplayValue() == null)
+            return 0;
+        else if (compar_object.getDisplayValue() == null)
+            return 1;
+        else return -1;
     }
 }
 

@@ -29,10 +29,9 @@ import org.executequery.gui.resultset.RecordDataItem;
 import org.underworldlabs.jdbc.DataSourceException;
 
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @author Takis Diakoumis
+ * @version $Revision: 1780 $
+ * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public interface DatabaseTable extends DatabaseObject {
 
@@ -44,7 +43,7 @@ public interface DatabaseTable extends DatabaseObject {
     List<DatabaseColumn> getExportedKeys() throws DataSourceException;
 
     DatabaseColumn getColumn(String name) throws DataSourceException;
-    
+
     /**
      * Returns the columns of this table.
      *
@@ -108,7 +107,7 @@ public interface DatabaseTable extends DatabaseObject {
     int applyChanges() throws DataSourceException;
 
     /**
-     * Indicates whether this table or any of its columns 
+     * Indicates whether this table or any of its columns
      * or constraints have pending modifications to be applied.
      *
      * @return true | false
@@ -120,13 +119,19 @@ public interface DatabaseTable extends DatabaseObject {
      */
     String getAlteredSQLText() throws DataSourceException;
 
-    /** identifier for no constraints in CREATE statement */
+    /**
+     * identifier for no constraints in CREATE statement
+     */
     int STYLE_NO_CONSTRAINTS = 0;
 
-    /** identifier for embedded constraints in CREATE statement */
+    /**
+     * identifier for embedded constraints in CREATE statement
+     */
     int STYLE_CONSTRAINTS_DEFAULT = 1;
 
-    /** identifier for constraints as ALTER TABLE statements */
+    /**
+     * identifier for constraints as ALTER TABLE statements
+     */
     int STYLE_CONSTRAINTS_ALTER = 2;
 
     String getCreateSQLText() throws DataSourceException;
@@ -139,8 +144,8 @@ public interface DatabaseTable extends DatabaseObject {
     String getCreateSQLText(int style) throws DataSourceException;
 
     /**
-     * Returns the user modified SQL text to apply 
-     * any pending changes. If this has not been set (no 
+     * Returns the user modified SQL text to apply
+     * any pending changes. If this has not been set (no
      * changes were made) then a call to getAlteredSQLText()
      * is made.
      *
@@ -151,7 +156,7 @@ public interface DatabaseTable extends DatabaseObject {
     void setModifiedSQLText(String modifiedSQLText);
 
     String getDropSQLText(boolean cascadeConstraints);
-    
+
     String getInsertSQLText();
 
     String getUpdateSQLText();
@@ -171,7 +176,7 @@ public interface DatabaseTable extends DatabaseObject {
     List<ColumnConstraint> getUniqueKeys();
 
     String getAlterSQLTextForUniqueKeys();
-    
+
     String getAlterSQLTextForPrimaryKeys();
 
     String getAlterSQLTextForForeignKeys();
@@ -184,15 +189,23 @@ public interface DatabaseTable extends DatabaseObject {
 
     String prepareStatementWithPK(List<String> columns);
 
+    String prepareStatementAdding(List<String> columns, List<RecordDataItem> changes);
+
+    String prepareStatementDeletingWithPK();
+
+    String prepareStatementDeleting(List<RecordDataItem> changes);
+
     List<String> getPrimaryKeyColumnNames();
 
     void addTableDataChange(TableDataChange tableDataChange);
 
+    void removeTableDataChange(List<RecordDataItem> row);
+
     boolean hasTableDataChanges();
 
-	boolean hasForeignKey();
+    boolean hasForeignKey();
 
-	List<String> getForeignKeyColumnNames();
+    List<String> getForeignKeyColumnNames();
 
     void cancelChanges();
 

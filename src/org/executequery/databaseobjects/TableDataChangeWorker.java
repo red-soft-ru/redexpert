@@ -60,10 +60,17 @@ public class TableDataChangeWorker {
             }
 
             List<RecordDataItem> row = tableDataChange.getRowDataForRow();
-            if (table.hasPrimaryKey())
+            if (row.get(0).isDeleted()) {
+                if (table.hasPrimaryKey())
+                    result += executeDeletingWithPK(connection, table, row);
+                else
+                    result += executedDeleting(connection, table, row);
+            } else if (row.get(0).isNew()) {
+                result += executeAdding(connection, table, row);
+            } else if (table.hasPrimaryKey())
                 result += executeWithPK(connection, table, row);
             else
-                result += execute(connection, table, row);
+                result += executeChange(connection, table, row);
         }
 
         if (result == rows.size()) {
@@ -162,7 +169,186 @@ public class TableDataChangeWorker {
 
     }
 
-    private int execute(Connection connection, DatabaseTable table, List<RecordDataItem> values) {
+    private int executeDeletingWithPK(Connection connection, DatabaseTable table, List<RecordDataItem> values) {
+
+        List<String> columns = new ArrayList<String>();
+        List<RecordDataItem> changes = new ArrayList<RecordDataItem>();
+        for (RecordDataItem item : values) {
+
+            if (item.isDeleted()) {
+
+                changes.add(item);
+                columns.add(item.getName());
+            }
+
+        }
+
+        if (changes.isEmpty()) {
+
+            return 0;
+        }
+
+        try {
+
+            int n = 0;
+            String sql = table.prepareStatementDeletingWithPK();
+
+            Log.info("Executing data change using statement - [ " + sql + " ]");
+
+            statement = connection.prepareStatement(sql);
+
+            List<String> primaryKeys = table.getPrimaryKeyColumnNames();
+            for (String primaryKey : primaryKeys) {
+
+                n++;
+                statement.setObject(n, valueForKey(primaryKey, values));
+            }
+
+            return statement.executeUpdate();
+
+        } catch (Exception e) {
+
+            rollback();
+            throw handleException(e);
+
+        } finally {
+
+            if (statement != null) {
+
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                }
+                statement = null;
+            }
+
+        }
+
+    }
+
+    private int executeAdding(Connection connection, DatabaseTable table, List<RecordDataItem> values) {
+        List<String> columns = new ArrayList<String>();
+        List<RecordDataItem> changes = new ArrayList<RecordDataItem>();
+        for (RecordDataItem item : values) {
+
+            if (item.isNew()) {
+
+                changes.add(item);
+                columns.add(item.getName());
+            }
+
+        }
+
+        if (changes.isEmpty()) {
+
+            return 0;
+        }
+
+        try {
+
+            int n = changes.size();
+            String sql = table.prepareStatementAdding(columns, values);
+
+            Log.info("Executing data change using statement - [ " + sql + " ]");
+
+            statement = connection.prepareStatement(sql);
+            for (int i = 0; i < n; i++) {
+                RecordDataItem recordDataItem = changes.get(i);
+                if (!recordDataItem.isGenerated()) {
+                    if (!recordDataItem.isNewValueNull()) {
+
+                        statement.setObject((i + 1), recordDataItem.getNewValue(), recordDataItem.getDataType());
+
+                    } else {
+
+                        statement.setNull((i + 1), recordDataItem.getDataType());
+                    }
+                } else {
+                    i--;
+                    n--;
+                }
+
+            }
+            return statement.executeUpdate();
+
+        } catch (Exception e) {
+
+            rollback();
+            throw handleException(e);
+
+        } finally {
+
+            if (statement != null) {
+
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                }
+                statement = null;
+            }
+
+        }
+
+    }
+
+    private int executedDeleting(Connection connection, DatabaseTable table, List<RecordDataItem> values) {
+        List<String> columns = new ArrayList<String>();
+        List<RecordDataItem> changes = new ArrayList<RecordDataItem>();
+        for (RecordDataItem item : values) {
+
+            if (item.isDeleted()) {
+
+                changes.add(item);
+                columns.add(item.getName());
+            }
+
+        }
+
+        if (changes.isEmpty()) {
+
+            return 0;
+        }
+
+        try {
+
+            int n = 0;
+            String sql = table.prepareStatementDeleting(values);
+
+            Log.info("Executing data change using statement - [ " + sql + " ]");
+
+            statement = connection.prepareStatement(sql);
+
+            for (RecordDataItem rdi : values) {
+
+                if (!rdi.isValueNull() && !rdi.isGenerated()) {
+                    n++;
+                    statement.setObject(n, rdi.getValue());
+                }
+            }
+
+            return statement.executeUpdate();
+
+        } catch (Exception e) {
+
+            rollback();
+            throw handleException(e);
+
+        } finally {
+
+            if (statement != null) {
+
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                }
+                statement = null;
+            }
+
+        }
+
+    }
+
+    private int executeChange(Connection connection, DatabaseTable table, List<RecordDataItem> values) {
         List<String> columns = new ArrayList<String>();
         List<RecordDataItem> changes = new ArrayList<RecordDataItem>();
         for (RecordDataItem item : values) {

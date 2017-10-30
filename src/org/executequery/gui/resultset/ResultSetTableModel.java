@@ -48,6 +48,7 @@ import org.underworldlabs.swing.table.AbstractSortableTableModel;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableColumn;
 
 /**
@@ -89,6 +90,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     private ResultSetMetaDataTableModel metaDataTableModel;
 
     private RecordDataItemFactory recordDataItemFactory;
+
+    private List<RecordDataItem> deletedRow;
 
     private String query;
 
@@ -1007,13 +1010,11 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     @Override
     public boolean isCellEditable(int row, int column) {
+        RecordDataItem recordDataItem = tableData.get(row).get(asVisibleColumnIndex(column));
 
         if (!visibleColumnHeaders.get(column).isEditable()) {
-
-            return false;
+            return recordDataItem.isNew() && cellsEditable;
         }
-
-        RecordDataItem recordDataItem = tableData.get(row).get(asVisibleColumnIndex(column));
         if (recordDataItem.isBlob()) {
 
             return false;
@@ -1057,6 +1058,39 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         tableData.add(row);
     }
 
+    public void AddRow() {
+        List<RecordDataItem> row = new ArrayList<>();
+        for (int i = 0; i < getColumnCount(); i++) {
+            ResultSetColumnHeader rsch = getColumnHeaders().get(i);
+            RecordDataItem rdi = recordDataItemFactory.create(rsch);
+            rdi.setValue(null);
+            rdi.setNew(true);
+            row.add(rdi);
+        }
+        AddRow(row);
+        fireTableRowsInserted(tableData.size() - 1, tableData.size() - 1);
+        //fireTableChanged(new TableModelEvent(this,tableData.size()-1));
+    }
+
+    public void deleteRow(int rowNumber) {
+        if (rowNumber >= 0 && rowNumber < tableData.size()) {
+            List<RecordDataItem> row = tableData.get(rowNumber);
+            if (row.get(0).isNew()) {
+                deletedRow = tableData.get(rowNumber);
+                tableData.remove(rowNumber);
+                fireTableRowsDeleted(rowNumber, rowNumber);
+            } else {
+                for (int i = 0; i < row.size(); i++) {
+                    row.get(i).setDeleted(true);
+                }
+                fireTableRowsUpdated(rowNumber, rowNumber);
+            }
+        }
+    }
+
+    public List<RecordDataItem> getDeletedRow() {
+        return deletedRow;
+    }
 
     public String getColumnNameHint(int column) {
 

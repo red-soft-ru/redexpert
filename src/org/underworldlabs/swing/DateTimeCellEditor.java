@@ -138,7 +138,7 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
                 if (value instanceof RecordDataItem) {
                     RecordDataItem item = ((RecordDataItem) value);
                     Timestamp dtvalue = (Timestamp) item.getDisplayValue();
-                    if (dtvalue != null)
+                    if (!item.isDisplayValueNull())
                         dateTimePicker.setDateTimePermissive(dtvalue.toLocalDateTime());
                     else dateTimePicker.setDateTimePermissive(null);
                 } else {

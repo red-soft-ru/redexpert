@@ -47,8 +47,14 @@ public class EQDateTimePicker extends JPanel {
     }
 
     public void setDateTimePermissive(LocalDateTime time) {
-        datePicker.setDate(time.toLocalDate());
-        timePicker.setTime(time.toLocalTime());
+        if(time!=null) {
+            datePicker.setDate(time.toLocalDate());
+            timePicker.setTime(time.toLocalTime());
+        }
+        else {
+            datePicker.setDate(null);
+            timePicker.setTime(null);
+        }
     }
 
     public void clear() {

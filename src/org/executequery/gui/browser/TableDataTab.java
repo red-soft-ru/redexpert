@@ -859,10 +859,43 @@ public class TableDataTab extends JPanel
                         Constants.USER_PROPERTIES_KEY, "results.table.use.form.adding.deleting");
                 if (useForm)
                     delete_record();
-                else tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(table.getSelectedRow()));
+                else
+                {
+                    int row=table.getSelectedRow();
+                    if(row>=0)
+                        tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(row));
+                }
             }
         });
         bar.add(deleteRolloverButton);
+        RolloverButton commitRolloverButton = new RolloverButton();
+        commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
+        commitRolloverButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+
+
+                try {
+                    DatabaseObjectChangeProvider docp = new DatabaseObjectChangeProvider(asDatabaseTable());
+                    if(docp.applyDataChanges())
+                        loadDataForTable(databaseObject);
+
+                } catch (DataSourceException e) {
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                }
+            }
+        });
+        bar.add(commitRolloverButton);
+        RolloverButton rollbackRolloverButton = new RolloverButton();
+        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
+        rollbackRolloverButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                asDatabaseTable().clearDataChanges();
+                loadDataForTable(databaseObject);
+            }
+        });
+        bar.add(rollbackRolloverButton);
         GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
         buttonsEditingPanel.add(bar, gbc3);

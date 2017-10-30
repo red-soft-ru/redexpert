@@ -531,7 +531,7 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         clearDataChanges();
     }
 
-    private void clearDataChanges() {
+    public void clearDataChanges() {
         if (tableDataChanges != null) {
             tableDataChanges.clear();
         }
@@ -635,7 +635,7 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         tableDataChangeExecutor = null;
     }
 
-    private int applyTableDataChanges() {
+    public int applyTableDataChanges() {
 
         if (!hasTableDataChanges()) {
 

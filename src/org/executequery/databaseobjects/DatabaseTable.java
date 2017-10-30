@@ -106,6 +106,10 @@ public interface DatabaseTable extends DatabaseObject {
      */
     int applyChanges() throws DataSourceException;
 
+    int applyTableDataChanges();
+
+    void clearDataChanges();
+
     /**
      * Indicates whether this table or any of its columns
      * or constraints have pending modifications to be applied.

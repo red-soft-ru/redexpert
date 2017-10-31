@@ -160,7 +160,10 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
                     || isNameChanged()
                     || isDataTypeChanged()
                     || isRequiredChanged()
-                    || isDefaultValueChanged());
+                    || isDefaultValueChanged()
+                    || isComputedChanged()
+                    || isDescriptionChanged()
+            );
         }
     }
 
@@ -307,6 +310,39 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
                 || (copy.getColumnScale() != getColumnScale());
     }
 
+    public boolean isComputedChanged() {
+
+        if (!hasCopy()) {
+
+            return false;
+        }
+
+        if (MiscUtils.isNull(copy.getComputedSource())||MiscUtils.isNull(getComputedSource())) {
+            return false;
+        }
+        return (!(copy.getComputedSource().equalsIgnoreCase(getComputedSource()))&&!copy.getComputedSource().equals(""));
+    }
+
+    public boolean isDescriptionChanged() {
+
+        if (!hasCopy()) {
+
+            return false;
+        }
+
+        if (MiscUtils.isNull(copy.getColumnDescription())) {
+            if (MiscUtils.isNull(getColumnDescription())) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            if (MiscUtils.isNull(getColumnDescription()))
+                return true;
+        }
+        return!copy.getColumnDescription().equalsIgnoreCase(getColumnDescription());
+    }
+
     private boolean hasCopy() {
 
         return (copy != null);
@@ -322,11 +358,17 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
             return false;
         }
 
-        return
-                ((!MiscUtils.isNull(copy.getDefaultValue()) &&
-                        !copy.getDefaultValue().equalsIgnoreCase(getDefaultValue())) ||
-                        (!MiscUtils.isNull(getDefaultValue()) &&
-                                !getDefaultValue().equalsIgnoreCase(copy.getDefaultValue())));
+        if (MiscUtils.isNull(copy.getDefaultValue())) {
+            if (MiscUtils.isNull(getDefaultValue())) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            if (MiscUtils.isNull(getDefaultValue()))
+                return true;
+        }
+        return!copy.getDefaultValue().equalsIgnoreCase(getDefaultValue());
     }
 
     /**
@@ -640,6 +682,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         destination.setMarkedDeleted(source.isMarkedDeleted());
         destination.setGenerated(source.isGenerated());
         destination.setComputedSource(source.getComputedSource());
+        destination.setColumnDescription(source.getColumnDescription());
     }
 
     /**

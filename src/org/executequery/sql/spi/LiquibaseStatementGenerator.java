@@ -585,6 +585,15 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
             sb.append(addDefaultValueChange(tableColumn, database));
         }
 
+        if (tableColumn.isComputedChanged()) {
+            sb.append(addComputedChange(tableColumn,database));
+        }
+
+        if(tableColumn.isDescriptionChanged())
+        {
+            sb.append(addDescriptionChange(tableColumn,database));
+        }
+
         return sb.toString();
     }
 
@@ -605,6 +614,12 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
 
     private String addNotNullConstraintChange(DatabaseTableColumn tableColumn, Database database) {
 
+        if (database instanceof FirebirdDatabase)
+        {
+            String sql = "ALTER TABLE " + tableColumn.getTable().getNameForQuery() +
+                    " ALTER COLUMN " + tableColumn.getName() + " SET NOT NULL;\n";
+            return sql;
+        }
         AddNotNullConstraintChange columnChange = new AddNotNullConstraintChange();
 
         //columnChange.setSchemaName(tableColumn.getSchemaName());
@@ -616,7 +631,14 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
     }
 
     private String addNullConstraintChange(DatabaseTableColumn tableColumn, Database database) {
-        
+
+        if (database instanceof FirebirdDatabase)
+        {
+            String sql = "ALTER TABLE " + tableColumn.getTable().getNameForQuery() +
+                    " ALTER COLUMN " + tableColumn.getName() + " DROP NOT NULL;\n";
+            return sql;
+        }
+
         DropNotNullConstraintChange columnChange = new DropNotNullConstraintChange();
         
         //columnChange.setSchemaName(tableColumn.getSchemaName());
@@ -637,6 +659,23 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
         columnChange.setDefaultValue(tableColumn.getDefaultValue());
 
         return generateStatements(columnChange, database);
+    }
+
+    private String addComputedChange(DatabaseTableColumn tableColumn, Database database) {
+        if (database instanceof FirebirdDatabase) {
+            String sql = "ALTER TABLE " + tableColumn.getTable().getNameForQuery() +
+                    "\nALTER COLUMN " + tableColumn.getName() + " COMPUTED BY " + tableColumn.getComputedSource() + ";\n";
+            return sql;
+        } else return "";
+    }
+
+    private String addDescriptionChange(DatabaseTableColumn tableColumn, Database database) {
+        if (database instanceof FirebirdDatabase) {
+            String sql = "COMMENT ON COLUMN " + tableColumn.getTable().getNameForQuery() + "." + tableColumn.getName() +
+                    " IS '" + tableColumn.getColumnDescription() + "';\n";
+            return sql;
+        }
+        return "";
     }
 
     private String modifyColumnChange(DatabaseTableColumn tableColumn, Database database) {

@@ -4,6 +4,7 @@ import liquibase.change.ColumnConfig;
 import liquibase.change.ConstraintsConfig;
 import liquibase.change.core.CreateTableChange;
 import liquibase.database.Database;
+import liquibase.database.core.FirebirdDatabase;
 import liquibase.database.core.MySQLDatabase;
 import liquibase.datatype.DataTypeFactory;
 import liquibase.datatype.LiquibaseDataType;
@@ -39,12 +40,11 @@ public class FirebirdCreateTableChange extends CreateTableChange {
 
             LiquibaseDataType columnType = null;
             try {
-                if (database.getConnection().getDatabaseProductName().contains("Firebird") ||
-                        database.getConnection().getDatabaseProductName().contains("Red Database"))
+                if (database instanceof FirebirdDatabase)
                     columnType = FirebirdDataTypeFactory.getFBInstance().fromDescription(column.getType() + (isAutoIncrement ? "{autoIncrement:true}" : ""), database);
                 else
                     columnType = FirebirdDataTypeFactory.getInstance().fromDescription(column.getType() + (isAutoIncrement ? "{autoIncrement:true}" : ""), database);
-            } catch (DatabaseException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 

@@ -47,6 +47,7 @@ import liquibase.change.core.DropUniqueConstraintChange;
 import liquibase.change.core.ModifyDataTypeChange;
 import liquibase.change.core.RenameColumnChange;
 import liquibase.database.Database;
+import liquibase.database.core.FirebirdDatabase;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.logging.LogFactory;
@@ -337,12 +338,11 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
         CreateTableChange tableChange = null;
 
         try {
-            if (database.getConnection().getDatabaseProductName().contains("Firebird") ||
-                    database.getConnection().getDatabaseProductName().contains("Red Database"))
+            if (database instanceof FirebirdDatabase)
                 tableChange = new FirebirdCreateTableChange();
             else
                 tableChange = new CreateTableChange();
-        } catch (DatabaseException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         //tableChange.setSchemaName(table.getSchemaName());

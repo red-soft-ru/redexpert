@@ -212,7 +212,7 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
                 defaultDatabaseColumn.setDefaultValue((String) value);
                 break;
             case 7:
-                defaultDatabaseColumn.setComputedSource((String)value);
+                defaultDatabaseColumn.setComputedSource((String) value);
                 break;
             case 8:
                 defaultDatabaseColumn.setColumnDescription((String) value);

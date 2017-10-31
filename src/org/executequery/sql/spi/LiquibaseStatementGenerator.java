@@ -229,10 +229,10 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
 
                         constraintConfig.setReferences(
                                 constraint.getReferencedTable()
-                                + "(" +
-                                constraint.getReferencedColumn()
-                                + ")");
-                        
+                                        + "(" +
+                                        constraint.getReferencedColumn()
+                                        + ")");
+
                         constraintConfig.setDeleteCascade(constraint.getDeleteRule() == DatabaseMetaData.importedKeyCascade);
                         constraintConfig.setInitiallyDeferred(constraint.getDeferrability() == DatabaseMetaData.importedKeyInitiallyDeferred);
                     }
@@ -254,12 +254,12 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
     }
 
     public String columnDescription(DatabaseTableColumn tableColumn) {
-        
+
         DatabaseTable table = (DatabaseTable) tableColumn.getParent();
         Database database = databaseFromName(connectionFromObject(table), table.getHost().getDatabaseProductName());
 
         ColumnConfig columnConfig = createColumn(tableColumn, database);
-        
+
         StringBuilder sb = new StringBuilder();
         sb.append(tableColumn.getName());
 //        sb.append(" [ ").append(database.getColumnType(columnConfig.getType(), false)).append(" ]");
@@ -267,9 +267,9 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
 
         return sb.toString();
     }
-    
+
     public String viewDefinition(String databaseName, DatabaseView view) {
-        
+
         try {
 
             Database database = databaseFromName(connectionFromObject(view), databaseName);
@@ -283,17 +283,17 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
             return "";
         }
     }
-    
+
     public String createTable(String databaseName, DatabaseTable table) {
 
-        Database database = databaseFromName(connectionFromObject(table), databaseName);        
+        Database database = databaseFromName(connectionFromObject(table), databaseName);
         CreateTableChange tableChange = createTableChange(table, database);
 
         return generateStatements(tableChange, database);
     }
 
     private String dropTable(String databaseName,
-            DatabaseTable table, boolean cascadeConstraints) {
+                             DatabaseTable table, boolean cascadeConstraints) {
 
         DropTableChange tableChange = dropTableChange(table);
         tableChange.setCascadeConstraints(Boolean.valueOf(cascadeConstraints));
@@ -397,42 +397,42 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
         change.setReferencedColumnNames(constraint.getReferencedColumn());
 
         if (constraint.getDeleteRule() != DatabaseMetaData.importedKeyNoAction) {
-        
+
             change.setOnDelete(getForeignKeyConstraintType(constraint.getDeleteRule()));
         }
-        
+
         if (constraint.getUpdateRule() != DatabaseMetaData.importedKeyNoAction) {
-         
+
             change.setOnUpdate(getForeignKeyConstraintType(constraint.getUpdateRule()));
         }
-        
+
         return generateStatements(change, database);
     }
 
     private ForeignKeyConstraintType getForeignKeyConstraintType(short rule) {
-        
+
         switch (rule) {
-        
+
             case DatabaseMetaData.importedKeyCascade:
                 return ForeignKeyConstraintType.importedKeyCascade;
-                
+
             case DatabaseMetaData.importedKeySetNull:
                 return ForeignKeyConstraintType.importedKeySetNull;
-                
+
             case DatabaseMetaData.importedKeyRestrict:
                 return ForeignKeyConstraintType.importedKeyRestrict;
-                
+
             case DatabaseMetaData.importedKeySetDefault:
                 return ForeignKeyConstraintType.importedKeySetDefault;
-            
+
             case DatabaseMetaData.importedKeyNoAction:
             default:
                 return ForeignKeyConstraintType.importedKeyNoAction;
-        
+
         }
-        
+
     }
-    
+
     private String addPrimaryKey(ColumnConstraint constraint, Database database) {
 
         AddPrimaryKeyChange change = new AddPrimaryKeyChange();
@@ -537,7 +537,7 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
 
         boolean isNewOrDeleted = true;
         StringBuilder sb = new StringBuilder();
-        DatabaseTableColumn tableColumn = (DatabaseTableColumn)column;
+        DatabaseTableColumn tableColumn = (DatabaseTableColumn) column;
 
         if (tableColumn.isNewColumn()) {
 
@@ -570,14 +570,14 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
         if (tableColumn.isRequiredChanged()) {
 
             if (tableColumn.isRequired()) {
-                
-                sb.append(addNotNullConstraintChange(tableColumn, database));                
-            
+
+                sb.append(addNotNullConstraintChange(tableColumn, database));
+
             } else {
-                
+
                 sb.append(addNullConstraintChange(tableColumn, database));
             }
-            
+
         }
 
         if (tableColumn.isDefaultValueChanged()) {
@@ -586,12 +586,11 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
         }
 
         if (tableColumn.isComputedChanged()) {
-            sb.append(addComputedChange(tableColumn,database));
+            sb.append(addComputedChange(tableColumn, database));
         }
 
-        if(tableColumn.isDescriptionChanged())
-        {
-            sb.append(addDescriptionChange(tableColumn,database));
+        if (tableColumn.isDescriptionChanged()) {
+            sb.append(addDescriptionChange(tableColumn, database));
         }
 
         return sb.toString();
@@ -614,8 +613,7 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
 
     private String addNotNullConstraintChange(DatabaseTableColumn tableColumn, Database database) {
 
-        if (database instanceof FirebirdDatabase)
-        {
+        if (database instanceof FirebirdDatabase) {
             String sql = "ALTER TABLE " + tableColumn.getTable().getNameForQuery() +
                     " ALTER COLUMN " + tableColumn.getName() + " SET NOT NULL;\n";
             return sql;
@@ -632,23 +630,22 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
 
     private String addNullConstraintChange(DatabaseTableColumn tableColumn, Database database) {
 
-        if (database instanceof FirebirdDatabase)
-        {
+        if (database instanceof FirebirdDatabase) {
             String sql = "ALTER TABLE " + tableColumn.getTable().getNameForQuery() +
                     " ALTER COLUMN " + tableColumn.getName() + " DROP NOT NULL;\n";
             return sql;
         }
 
         DropNotNullConstraintChange columnChange = new DropNotNullConstraintChange();
-        
+
         //columnChange.setSchemaName(tableColumn.getSchemaName());
         columnChange.setTableName(tableColumn.getTable().getName());
         columnChange.setColumnName(tableColumn.getName());
         columnChange.setColumnDataType(tableColumn.getFormattedDataType());
-        
+
         return generateStatements(columnChange, database);
     }
-    
+
     private String addDefaultValueChange(DatabaseTableColumn tableColumn, Database database) {
 
         AddDefaultValueChange columnChange = new AddDefaultValueChange();
@@ -740,7 +737,7 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
             Sql[] generatedSql = SqlGeneratorFactory.getInstance().generateSql(statement, database);
             if (generatedSql != null) { // jt400
                 for (Sql sql : generatedSql) {
-                    
+
                     sb.append(sql.toSql());
                     sb.append(sql.getEndDelimiter());
                 }
@@ -757,20 +754,20 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
 
         columnConfig.setName(column.getName() == null ? "" : column.getName());
         columnConfig.setType(column.getFormattedDataType());
-        
+
         if (column.getTypeInt() == Types.BIT) {
-            
+
             if (StringUtils.isNotBlank(column.getDefaultValue())) {
-            
+
 //                columnConfig.setDefaultValue(column.getDefaultValue().replaceAll("\\(|\\)", ""));
                 columnConfig.setDefaultValueBoolean(column.getDefaultValue().replaceAll("\\(|\\)", ""));
             }
 
         } else {
-            
+
             columnConfig.setDefaultValue(column.getDefaultValue());
         }
-        
+
         if (column.isRequired()) {
 
             ConstraintsConfig constraintConfig = new ConstraintsConfig();

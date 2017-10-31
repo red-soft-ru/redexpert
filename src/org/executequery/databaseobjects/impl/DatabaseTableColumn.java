@@ -317,10 +317,10 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
             return false;
         }
 
-        if (MiscUtils.isNull(copy.getComputedSource())||MiscUtils.isNull(getComputedSource())) {
+        if (MiscUtils.isNull(copy.getComputedSource()) || MiscUtils.isNull(getComputedSource())) {
             return false;
         }
-        return (!(copy.getComputedSource().equalsIgnoreCase(getComputedSource()))&&!copy.getComputedSource().equals(""));
+        return (!(copy.getComputedSource().equalsIgnoreCase(getComputedSource())) && !copy.getComputedSource().isEmpty());
     }
 
     public boolean isDescriptionChanged() {
@@ -340,7 +340,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
             if (MiscUtils.isNull(getColumnDescription()))
                 return true;
         }
-        return!copy.getColumnDescription().equalsIgnoreCase(getColumnDescription());
+        return !copy.getColumnDescription().equalsIgnoreCase(getColumnDescription());
     }
 
     private boolean hasCopy() {
@@ -368,7 +368,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
             if (MiscUtils.isNull(getDefaultValue()))
                 return true;
         }
-        return!copy.getDefaultValue().equalsIgnoreCase(getDefaultValue());
+        return !copy.getDefaultValue().equalsIgnoreCase(getDefaultValue());
     }
 
     /**

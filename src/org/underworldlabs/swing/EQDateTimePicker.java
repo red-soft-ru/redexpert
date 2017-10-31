@@ -1,6 +1,5 @@
 package org.underworldlabs.swing;
 
-
 import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
 import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
@@ -45,8 +44,8 @@ public class EQDateTimePicker extends JPanel {
     public String getStringValue() {
         String date = datePicker.getDateStringOrEmptyString();
         String time = timePicker.getStringValue().trim();
-        if(time.equals("")&&!date.equals(""))
-            time="0:00:00";
+        if (time.equals("") && !date.equals(""))
+            time = "0:00:00";
         return (date + " " + time).trim();
     }
 

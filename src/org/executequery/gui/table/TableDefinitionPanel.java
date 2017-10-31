@@ -20,19 +20,15 @@
 
 package org.executequery.gui.table;
 
-
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.sql.Types;
-import java.util.Vector;
+import org.executequery.GUIUtilities;
+import org.executequery.components.table.BrowsingCellEditor;
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.gui.BaseDialog;
+import org.executequery.gui.DefaultTable;
+import org.executequery.gui.browser.ColumnData;
+import org.underworldlabs.swing.print.AbstractPrintableTableModel;
+import org.underworldlabs.swing.table.NumberCellEditor;
+import org.underworldlabs.swing.table.StringCellEditor;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -41,18 +37,12 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
-
-import org.executequery.GUIUtilities;
-import org.executequery.components.table.BrowserTableCellRenderer;
-import org.executequery.components.table.BrowsingCellEditor;
-import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.gui.BaseDialog;
-import org.executequery.gui.DefaultTable;
-import org.executequery.gui.browser.ColumnData;
-import org.executequery.log.Log;
-import org.underworldlabs.swing.print.AbstractPrintableTableModel;
-import org.underworldlabs.swing.table.NumberCellEditor;
-import org.underworldlabs.swing.table.StringCellEditor;
+import java.awt.*;
+import java.awt.event.*;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
 
 /**
  * @author Takis Diakoumis
@@ -390,6 +380,21 @@ public abstract class TableDefinitionPanel extends JPanel
         this.dataTypes = dataTypes;
         this.intDataTypes = intDataTypes;
         sortTypes();
+
+        removeDuplicates();
+    }
+
+    void removeDuplicates() {
+        List<String> newTypes = new ArrayList<>();
+        List<Integer> newIntTypes = new ArrayList<>();
+        for (int i = 0; i < this.dataTypes.length; i++) {
+            if (!newTypes.contains(this.dataTypes[i])) {
+                newTypes.add(this.dataTypes[i]);
+                newIntTypes.add(this.intDataTypes[i]);
+            }
+        }
+        this.dataTypes = newTypes.toArray(new String[0]);
+        this.intDataTypes = newIntTypes.stream().mapToInt(Integer::intValue).toArray();
     }
 
     public void setDatabaseConnection(DatabaseConnection databaseConnection) {
@@ -974,7 +979,9 @@ public abstract class TableDefinitionPanel extends JPanel
         boolean isEditSize(int row) {
             ColumnData cd = tableVector.elementAt(row);
             return cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
-                    || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB;
+                    || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB
+                    || cd.getColumnType().toUpperCase().equals("VARCHAR")
+                    || cd.getColumnType().toUpperCase().equals("CHAR");
         }
 
         boolean isEditScale(int row) {

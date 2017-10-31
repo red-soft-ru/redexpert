@@ -43,7 +43,11 @@ public class EQDateTimePicker extends JPanel {
     }
 
     public String getStringValue() {
-        return (datePicker.getDateStringOrEmptyString() + " " + timePicker.getStringValue()).trim();
+        String date = datePicker.getDateStringOrEmptyString();
+        String time = timePicker.getStringValue().trim();
+        if(time.equals("")&&!date.equals(""))
+            time="0:00:00";
+        return (date + " " + time).trim();
     }
 
     public void setDateTimePermissive(LocalDateTime time) {

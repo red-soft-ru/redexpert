@@ -82,7 +82,7 @@ public class ExecuteQueryDialog extends BaseDialog {
     }
 
     public ExecuteQueryDialog(String name, String query, DatabaseConnection databaseConnection, boolean keepAlive, String delimiter) {
-        super(name, true, false);
+        super(name, true, true);
         this.query = query;
         this.delimiter = delimiter;
         this.dc = databaseConnection;
@@ -91,7 +91,6 @@ public class ExecuteQueryDialog extends BaseDialog {
         querySender.setCommitMode(false);
         init();
         execute();
-
 
     }
 
@@ -246,7 +245,7 @@ public class ExecuteQueryDialog extends BaseDialog {
                                 .addGap(10)
                                 .addComponent(listActionsLabel)
                                 .addContainerGap()
-                                .addComponent(tableScroll, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(tableScroll, GroupLayout.PREFERRED_SIZE, 150, /*GroupLayout.PREFERRED_SIZE*/Short.MAX_VALUE)
                                 .addContainerGap()
                                 .addComponent(operatorLabel)
                                 .addContainerGap()

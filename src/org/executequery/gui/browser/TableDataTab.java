@@ -125,7 +125,13 @@ public class TableDataTab extends JPanel
 
     private JPanel buttonsEditingPanel;
 
-    StatementExecutor querySender;
+    private StatementExecutor querySender;
+
+    private List<String> primaryKeyColumns = new ArrayList<String>(0);
+
+    private List<String> foreignKeyColumns = new ArrayList<String>(0);
+
+    private List<org.executequery.databaseobjects.impl.ColumnConstraint> foreigns;
 
     public TableDataTab(boolean displayRowCount) {
 
@@ -325,10 +331,6 @@ public class TableDataTab extends JPanel
 
     }
 
-    private List<String> primaryKeyColumns = new ArrayList<String>(0);
-    private List<String> foreignKeyColumns = new ArrayList<String>(0);
-    List<org.executequery.databaseobjects.impl.ColumnConstraint> foreigns;
-
     private Object setTableResultsPanel(DatabaseObject databaseObject) {
         querySender = new DefaultStatementExecutor(databaseObject.getHost().getDatabaseConnection(), true);
         tableDataChanges.clear();
@@ -355,7 +357,13 @@ public class TableDataTab extends JPanel
 
                     foreignKeyColumns = databaseTable.getForeignKeyColumnNames();
                     foreigns = databaseTable.getForeignKeys();
-                } else foreigns = new ArrayList<>();
+                } else {
+                    if (foreigns == null)
+                        foreigns = new ArrayList<>();
+                    else
+                        foreigns.clear();
+                }
+
 
                 if (primaryKeyColumns.isEmpty()) {
 

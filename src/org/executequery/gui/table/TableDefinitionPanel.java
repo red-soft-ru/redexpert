@@ -380,7 +380,6 @@ public abstract class TableDefinitionPanel extends JPanel
         this.dataTypes = dataTypes;
         this.intDataTypes = intDataTypes;
         sortTypes();
-
         removeDuplicates();
     }
 

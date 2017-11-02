@@ -357,6 +357,7 @@ public class ColumnData implements Serializable {
 
     public void setColumnName(String columnName) {
         this.columnName = columnName;
+        ai.setFieldName(columnName);
     }
 
     public String getColumnName() {
@@ -591,8 +592,14 @@ public class ColumnData implements Serializable {
     }
 
     public Autoincrement getAutoincrement() {
-        ai.fieldName = getColumnName();
+        ai.setFieldName(getColumnName());
         return ai;
+    }
+
+    public void setNotNull(boolean notNull) {
+        if (notNull)
+            columnRequired = VALUE_REQUIRED;
+        else columnRequired = VALUE_NOT_REQUIRED;
     }
 }
 

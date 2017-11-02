@@ -36,14 +36,9 @@ import java.beans.VetoableChangeListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.Timer;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.TableColumnModel;
@@ -61,12 +56,14 @@ import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
+import org.executequery.gui.BaseDialog;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.databaseobjects.EditableColumnConstraintTable;
 import org.executequery.gui.databaseobjects.EditableDatabaseTable;
 import org.executequery.gui.databaseobjects.TableColumnIndexTableModel;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.table.InsertColumnPanel;
 import org.executequery.gui.table.TableConstraintFunction;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextEditor;
@@ -980,11 +977,12 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         int tabIndex = tabPane.getSelectedIndex();
 
         if (tabIndex == 0) {
-
-            DatabaseTableColumn column = new DatabaseTableColumn(table);
-            column.setNewColumn(true);
-            descriptionTable.addColumn(column);
-
+            BaseDialog dialog = new BaseDialog("Add column", true);
+            InsertColumnPanel icp = new InsertColumnPanel(table, dialog);
+            dialog.addDisplayComponent(icp);
+            dialog.display();
+            table.reset();
+            reloadView();
         } else if (tabIndex == 1) {
 
             TableColumnConstraint constraint = new TableColumnConstraint(-1);

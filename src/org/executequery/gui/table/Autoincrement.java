@@ -1,17 +1,17 @@
 package org.executequery.gui.table;
 
 public class Autoincrement {
-    public boolean systemGenerator = false;
-    public boolean createGenerator = false;
-    public boolean useGenerator = false;
-    public boolean createTrigger = false;
-    public boolean createProcedure = false;
-    public String generatorName = "";
-    public int startValue = 0;
-    public String fieldName = "";
-    public String triggerName = "";
-    public String procedureName = "";
-    public String sqlAutoincrement = "";
+    private boolean systemGenerator = false;
+    private boolean createGenerator = false;
+    private boolean useGenerator = false;
+    private boolean createTrigger = false;
+    private boolean createProcedure = false;
+    private String generatorName = "";
+    private int startValue = 0;
+    private String fieldName = "";
+    private String triggerName = "";
+    private String procedureName = "";
+    private String sqlAutoincrement = "";
 
     public Autoincrement() {
     }
@@ -20,4 +20,91 @@ public class Autoincrement {
         return systemGenerator || (createGenerator || useGenerator) && (createTrigger || createProcedure);
     }
 
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    public void setFieldName(String fieldName) {
+        this.fieldName = fieldName;
+    }
+
+    public boolean isCreateGenerator() {
+        return createGenerator;
+    }
+
+    public boolean isCreateTrigger() {
+        return createTrigger;
+    }
+
+    public boolean isCreateProcedure() {
+        return createProcedure;
+    }
+
+    public boolean isSystemGenerator() {
+        return systemGenerator;
+    }
+
+    public boolean isUseGenerator() {
+        return useGenerator;
+    }
+
+    public int getStartValue() {
+        return startValue;
+    }
+
+    public String getGeneratorName() {
+        return generatorName;
+    }
+
+    public String getProcedureName() {
+        return procedureName;
+    }
+
+    public String getSqlAutoincrement() {
+        return sqlAutoincrement;
+    }
+
+    public String getTriggerName() {
+        return triggerName;
+    }
+
+    public void setCreateGenerator(boolean createGenerator) {
+        this.createGenerator = createGenerator;
+    }
+
+    public void setCreateProcedure(boolean createProcedure) {
+        this.createProcedure = createProcedure;
+    }
+
+    public void setCreateTrigger(boolean createTrigger) {
+        this.createTrigger = createTrigger;
+    }
+
+    public void setGeneratorName(String generatorName) {
+        this.generatorName = generatorName;
+    }
+
+    public void setProcedureName(String procedureName) {
+        this.procedureName = procedureName;
+    }
+
+    public void setSqlAutoincrement(String sqlAutoincrement) {
+        this.sqlAutoincrement = sqlAutoincrement;
+    }
+
+    public void setStartValue(int startValue) {
+        this.startValue = startValue;
+    }
+
+    public void setSystemGenerator(boolean systemGenerator) {
+        this.systemGenerator = systemGenerator;
+    }
+
+    public void setTriggerName(String triggerName) {
+        this.triggerName = triggerName;
+    }
+
+    public void setUseGenerator(boolean useGenerator) {
+        this.useGenerator = useGenerator;
+    }
 }

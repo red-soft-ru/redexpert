@@ -104,6 +104,8 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
      */
     private Map<String, String> metaData;
 
+    private String domain;
+
     public DefaultDatabaseColumn() {
     }
 
@@ -171,6 +173,16 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
 
     public String getComputedSource() {
         return computedSource;
+    }
+
+    @Override
+    public String getDomain() {
+        return domain;
+    }
+
+    @Override
+    public void setDomain(String domain) {
+        this.domain = domain;
     }
 
     public void setComputedSource(String computedSource) {

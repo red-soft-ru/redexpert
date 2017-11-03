@@ -2,6 +2,7 @@ package org.executequery.gui.table;
 
 import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.util.FileUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,6 +13,7 @@ import java.awt.event.KeyListener;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public class SelectTypePanel extends JPanel {
     private JLabel typeLabel;
@@ -28,6 +30,7 @@ public class SelectTypePanel extends JPanel {
     KeyListener keyListener;
     ColumnData cd;
     boolean refreshing = false;
+    List<String> charsets;
 
     public SelectTypePanel(String[] types, int[] intTypes, ColumnData cd) {
         this.dataTypes = types;
@@ -35,6 +38,7 @@ public class SelectTypePanel extends JPanel {
         sortTypes();
         removeDuplicates();
         this.cd = cd;
+        loadCharsets();
         init();
     }
 
@@ -84,13 +88,22 @@ public class SelectTypePanel extends JPanel {
                         || cd.getColumnType().toUpperCase().equals("VARCHAR")
                         || cd.getColumnType().toUpperCase().equals("CHAR"));
                 setScaleVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL);
+                setEncodingVisible(cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
+                        || cd.getColumnType().toUpperCase().equals("VARCHAR")
+                        || cd.getColumnType().toUpperCase().equals("CHAR"));
             }
         });
 
         typeBox.setModel(new DefaultComboBoxModel(dataTypes));
         typeBox.setSelectedIndex(0);
 
-        setEncodingVisible(false);
+        encodingBox.setModel(new DefaultComboBoxModel(charsets.toArray(new String[charsets.size()])));
+        encodingBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                cd.setCharset((String) encodingBox.getSelectedItem());
+            }
+        });
 
         this.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 0.01, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 0, 0);
@@ -99,9 +112,9 @@ public class SelectTypePanel extends JPanel {
         gbc.weighty = 0.01;
         this.add(sizeLabel, gbc);
         gbc.gridy++;
-        gbc.weighty = 1;
         this.add(scaleLabel, gbc);
         gbc.gridy++;
+        gbc.weighty = 1;
         this.add(encodingLabel, gbc);
         gbc.gridy = 0;
         gbc.gridx++;
@@ -146,8 +159,8 @@ public class SelectTypePanel extends JPanel {
     }
 
     void setEncodingVisible(boolean flag) {
-        encodingBox.setVisible(flag);
-        encodingLabel.setVisible(flag);
+        encodingBox.setEnabled(flag);
+        //encodingLabel.setVisible(flag);
     }
 
     void removeDuplicates() {
@@ -193,5 +206,27 @@ public class SelectTypePanel extends JPanel {
             if (x == intDataTypes[i])
                 return dataTypes[i];
         return "";
+    }
+
+    private void loadCharsets() {
+        try {
+            if (charsets == null)
+                charsets = new ArrayList<String>();
+            else
+                charsets.clear();
+
+            String resource = FileUtils.loadResource("org/executequery/charsets.properties");
+            String[] strings = resource.split("\n"/*System.getProperty("line.separator")*/);
+            for (String s : strings) {
+                if (!s.startsWith("#") && !s.isEmpty())
+                    charsets.add(s);
+            }
+            java.util.Collections.sort(charsets);
+            charsets.add(0, CreateTableSQLSyntax.NONE);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
     }
 }

@@ -25,10 +25,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
+import java.awt.event.*;
 import java.awt.print.Printable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
@@ -260,6 +257,44 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                         GridBagConstraints.SOUTHEAST,
                         GridBagConstraints.BOTH,
                         new Insets(2, 2, 2, 2), 0, 0));
+
+        descriptionTable.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if(e.getClickCount()>1)
+                {
+                    int row = descriptionTable.getSelectedRow();
+                    if(row>=0) {
+                        row = ((TableSorter)descriptionTable.getModel()).modelIndex(row);
+                        DatabaseColumn column = descriptionTable.getDatabaseTableModel().getDatabaseColumns().get(row);
+                        BaseDialog dialog = new BaseDialog("Edit Column",true);
+                        InsertColumnPanel panel = new InsertColumnPanel(table,dialog,column);
+                        dialog.addDisplayComponent(panel);
+                        dialog.display();
+                    }
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent mouseEvent) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent mouseEvent) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent mouseEvent) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent mouseEvent) {
+
+            }
+        });
 
         tableNameField = new DisabledField();
         //schemaNameField = new DisabledField();

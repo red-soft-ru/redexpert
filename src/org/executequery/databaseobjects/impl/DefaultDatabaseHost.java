@@ -745,9 +745,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         releaseResources(sourceRS);
                     }
 
-                    if (computedSource != null && !computedSource.isEmpty() &&
-                            !computedSource.substring(0, 3).equalsIgnoreCase("rdb")) {
-                        column.setComputedSource(computedSource);
+                    if (computedSource != null && !computedSource.isEmpty() ) {
+                        column.setDomain(computedSource);
                     }
 
                     if (isGen.compareToIgnoreCase("YES") == 0) {

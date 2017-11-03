@@ -17,7 +17,7 @@ public class Autoincrement {
     }
 
     public boolean isAutoincrement() {
-        return systemGenerator || (createGenerator || useGenerator) && (createTrigger || createProcedure);
+        return systemGenerator || (createGenerator || useGenerator) && (createTrigger || createProcedure) || createTrigger || createProcedure;
     }
 
     public String getFieldName() {

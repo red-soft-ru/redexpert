@@ -29,8 +29,11 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JTextField;
 import javax.swing.table.TableCellEditor;
 
+import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
+import org.executequery.gui.BaseDialog;
+import org.executequery.gui.table.InsertColumnPanel;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
@@ -46,9 +49,9 @@ public class EditableDatabaseTable extends DefaultDatabaseObjectTable
     /** Creates a new instance of EditableDatabaseTable */
     public EditableDatabaseTable() {
         super();
-        getDatabaseTableModel().setEditable(true);
+        getDatabaseTableModel().setEditable(false);
         setCellEditorListeners();
-        addMouseListener(new MouseHandler());
+        //addMouseListener(new MouseHandler());
     }
 
     /** Sets listeners on respective column cell editors. */
@@ -217,7 +220,7 @@ public class EditableDatabaseTable extends DefaultDatabaseObjectTable
 
         public void mouseClicked(MouseEvent e) {
 
-            int mouseX = e.getX();
+            /*int mouseX = e.getX();
             int mouseY = e.getY();
 
             int col = columnAtPoint(new Point(mouseX, mouseY));
@@ -233,7 +236,8 @@ public class EditableDatabaseTable extends DefaultDatabaseObjectTable
 
                 column.setMarkedDeleted(false);
                 _model.fireTableRowsUpdated(row, row);
-            }
+            }*/
+
 
         }
 

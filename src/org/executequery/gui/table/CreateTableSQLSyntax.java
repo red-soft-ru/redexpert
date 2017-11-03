@@ -163,6 +163,8 @@ public interface CreateTableSQLSyntax {
      */
     String DROP_CONSTRAINT = " DROP CONSTRAINT ";
 
+    String NONE="NONE";
+
 }
 
 

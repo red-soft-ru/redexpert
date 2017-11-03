@@ -533,6 +533,13 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
         return generateStatements(change, database);
     }
 
+    public String alterColumn(DatabaseColumn column, DatabaseTable table) {
+        String databaseName = table.getHost().getDatabaseProductName();
+        Database database = databaseFromName(connectionFromObject(table), databaseName);
+        return alterColumn(column, database);
+    }
+
+
     private String alterColumn(DatabaseColumn column, Database database) {
 
         boolean isNewOrDeleted = true;
@@ -591,6 +598,10 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
 
         if (tableColumn.isDescriptionChanged()) {
             sb.append(addDescriptionChange(tableColumn, database));
+        }
+
+        if (tableColumn.isDomainChanged()) {
+            sb.append(addDomainChange(tableColumn, database));
         }
 
         return sb.toString();
@@ -670,6 +681,15 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
         if (database instanceof FirebirdDatabase) {
             String sql = "COMMENT ON COLUMN " + tableColumn.getTable().getNameForQuery() + "." + tableColumn.getName() +
                     " IS '" + tableColumn.getColumnDescription() + "';\n";
+            return sql;
+        }
+        return "";
+    }
+
+    private String addDomainChange(DatabaseTableColumn tableColumn, Database database) {
+        if (database instanceof FirebirdDatabase) {
+            String sql = "ALTER TABLE " + tableColumn.getTable().getNameForQuery() +
+                    "\nALTER COLUMN " + tableColumn.getName() + " TYPE " + tableColumn.getDomain() + ";\n";
             return sql;
         }
         return "";

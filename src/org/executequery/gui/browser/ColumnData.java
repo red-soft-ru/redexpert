@@ -33,6 +33,7 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.gui.table.Autoincrement;
+import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.log.Log;
 import org.underworldlabs.util.MiscUtils;
 
@@ -155,6 +156,8 @@ public class ColumnData implements Serializable {
 
     DatabaseConnection dc;
 
+    private String charset;
+
     public ColumnData(DatabaseConnection databaseConnection) {
         primaryKey = false;
         foreignKey = false;
@@ -162,6 +165,7 @@ public class ColumnData implements Serializable {
         keyType = null;
         dc = databaseConnection;
         ai = new Autoincrement();
+        setCharset(CreateTableSQLSyntax.NONE);
     }
 
     public ColumnData(String columnName, DatabaseConnection databaseConnection) {
@@ -559,6 +563,10 @@ public class ColumnData implements Serializable {
                 }
                 sb.append(")");
             }
+            if(!getCharset().equals(CreateTableSQLSyntax.NONE))
+            {
+                sb.append(" CHARACTER SET ").append(getCharset());
+            }
         }
         return sb.toString();
     }
@@ -600,6 +608,14 @@ public class ColumnData implements Serializable {
         if (notNull)
             columnRequired = VALUE_REQUIRED;
         else columnRequired = VALUE_NOT_REQUIRED;
+    }
+
+    public void setCharset(String charset) {
+        this.charset = charset;
+    }
+
+    public String getCharset() {
+        return charset;
     }
 }
 

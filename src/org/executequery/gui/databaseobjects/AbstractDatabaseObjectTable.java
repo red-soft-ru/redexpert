@@ -64,7 +64,7 @@ public abstract class AbstractDatabaseObjectTable extends DefaultTable {
     /**
      * Returns the table model as a DatabaseObjectTableModel.
      */
-    protected DatabaseObjectTableModel getDatabaseTableModel() {
+    public DatabaseObjectTableModel getDatabaseTableModel() {
         return model;
     }
 

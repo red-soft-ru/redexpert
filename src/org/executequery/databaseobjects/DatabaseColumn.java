@@ -116,6 +116,12 @@ public interface DatabaseColumn extends DatabaseObjectElement {
 
     String getComputedSource();
 
+    String getDomain();
+
+    void setDomain(String domain);
+
+    void setComputedSource(String source);
+
     /**
      * Returns a formatted string representation of the
      * column's data type and size - eg. VARCHAR(10).

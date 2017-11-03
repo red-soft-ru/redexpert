@@ -102,6 +102,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         setGenerated(column.isGenerated());
         setComputedSource(column.getComputedSource());
         setColumnDescription(column.getColumnDescription());
+        setDomain(column.getDomain());
     }
 
     @Override
@@ -163,6 +164,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
                     || isDefaultValueChanged()
                     || isComputedChanged()
                     || isDescriptionChanged()
+                    || isDomainChanged()
             );
         }
     }
@@ -341,6 +343,16 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
                 return true;
         }
         return !copy.getColumnDescription().equalsIgnoreCase(getColumnDescription());
+    }
+
+    public boolean isDomainChanged() {
+
+        if (!hasCopy()) {
+
+            return false;
+        }
+
+        return !copy.getDomain().equalsIgnoreCase(getDomain());
     }
 
     private boolean hasCopy() {
@@ -683,6 +695,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         destination.setGenerated(source.isGenerated());
         destination.setComputedSource(source.getComputedSource());
         destination.setColumnDescription(source.getColumnDescription());
+        destination.setDomain(source.getDomain());
     }
 
     /**

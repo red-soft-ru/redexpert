@@ -302,6 +302,10 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
         return "";
     }
 
+    public List<DatabaseColumn> getDatabaseColumns() {
+        return columns;
+    }
+
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         return isEditable() && columnIndex != 0;
     }

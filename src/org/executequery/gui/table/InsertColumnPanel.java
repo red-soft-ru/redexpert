@@ -4,12 +4,16 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.text.SQLTextPane;
 import org.executequery.log.Log;
+import org.executequery.sql.spi.LiquibaseStatementGenerator;
+import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -24,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class InsertColumnPanel extends JPanel implements KeyListener {
 
@@ -66,8 +71,16 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
     StringBuffer sb;
     MetaDataValues metaData;
     ActionContainer parent;
+    DatabaseColumn columnEdited;
+    DatabaseTableColumn column;
+    boolean editing;
+    LiquibaseStatementGenerator statementGenerator;
 
     public InsertColumnPanel(DatabaseTable table, ActionContainer dialog) {
+        this(table, dialog, null);
+    }
+
+    public InsertColumnPanel(DatabaseTable table, ActionContainer dialog, DatabaseColumn column) {
         this.table = table;
         parent = dialog;
         databaseConnection = table.getHost().getDatabaseConnection();
@@ -75,7 +88,13 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
         metaData.setDatabaseConnection(databaseConnection);
         columnData = new ColumnData(databaseConnection);
         sb = new StringBuffer(200);
+        columnEdited = column;
+        editing = column != null;
+        this.column = new DatabaseTableColumn(table, columnEdited);
+        statementGenerator = new LiquibaseStatementGenerator();
         init();
+        if (editing)
+            init_edited_elements();
     }
 
     void init() {
@@ -129,7 +148,12 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
         notNullBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+
                 columnData.setNotNull(notNullBox.isSelected());
+                if (editing) {
+                    column.makeCopy();
+                    column.setRequired(notNullBox.isSelected());
+                }
             }
         });
 
@@ -146,6 +170,12 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
                 columnData.setDomain((String) domainBox.getSelectedItem());
                 if (domainBox.getSelectedIndex() != 0)
                     selectTypePanel.refresh();
+                if (editing) {
+                    column.makeCopy();
+                    column.setDomain((String) domainBox.getSelectedItem());
+                } else {
+                    editDomainButton.setEnabled(!columnData.getDomain().equals(""));
+                }
             }
         });
 
@@ -158,7 +188,9 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
             }
         });
 
-        domainBox.setModel(new DefaultComboBoxModel(getDomains()));
+        if (editing)
+            domainBox.setModel(new DefaultComboBoxModel(getEditingDomains()));
+        else domainBox.setModel(new DefaultComboBoxModel(getDomains()));
 
         defaultValueTextPane.addKeyListener(this);
         checkTextPane.addKeyListener(this);
@@ -238,10 +270,13 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
         descriptionPanel.add(scrollDescription, gbcFull);
         sqlPanel.add(scrollSQL, gbcFull);
         tabPane.add("Domain", domainPanel);
-        tabPane.add("Type", selectTypePanel);
+        if (!editing)
+            tabPane.add("Type", selectTypePanel);
         tabPane.add("Default Value", defaultValuePanel);
-        tabPane.add("Check", checkPanel);
-        tabPane.add("Computed by", computedPanel);
+        if (!editing)
+            tabPane.add("Check", checkPanel);
+        if (!editing || !MiscUtils.isNull(columnEdited.getComputedSource()))
+            tabPane.add("Computed by", computedPanel);
         tabPane.add("Autoincrement", autoIncrementPanel);
         tabPane.add("Description", descriptionPanel);
         tabPane.add("SQL", sqlPanel);
@@ -269,6 +304,21 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
         this.add(okButton, gbc);
         gbc.gridx++;
         this.add(cancelButton, gbc);
+        editDomainButton.setEnabled(false);
+    }
+
+    void init_edited_elements() {
+        fieldNameField.setText(columnEdited.getName());
+        notNullBox.setSelected(columnEdited.isRequired());
+        defaultValueTextPane.setText(columnEdited.getDefaultValue() != null ? columnEdited.getDefaultValue() : "");
+        computedTextPane.setText(columnEdited.getComputedSource() != null ? columnEdited.getComputedSource() : "");
+        descriptionTextPane.setText(columnEdited.getRemarks() != null ? columnEdited.getRemarks() : "");
+        /*if(!MiscUtils.isNull(columnEdited.getComputedSource()))
+        {
+            notNullBox.setEnabled(false);
+        }*/
+        primaryBox.setEnabled(false);
+        editDomainButton.setEnabled(true);
     }
 
     @Override
@@ -285,14 +335,30 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
     public void keyReleased(KeyEvent keyEvent) {
         if (keyEvent.getSource() == defaultValueTextPane) {
             columnData.setDefaultValue(defaultValueTextPane.getText());
+            if (editing) {
+                column.makeCopy();
+                column.setDefaultValue(defaultValueTextPane.getText());
+            }
         } else if (keyEvent.getSource() == checkTextPane) {
             columnData.setCheck(checkTextPane.getText());
         } else if (keyEvent.getSource() == computedTextPane) {
             columnData.setComputedBy(computedTextPane.getText());
+            if (editing) {
+                column.makeCopy();
+                column.setComputedSource(computedTextPane.getText());
+            }
         } else if (keyEvent.getSource() == descriptionTextPane) {
             columnData.setDescription(descriptionTextPane.getText());
+            if (editing) {
+                column.makeCopy();
+                column.setColumnDescription(descriptionTextPane.getText());
+            }
         } else if (keyEvent.getSource() == fieldNameField) {
             columnData.setColumnName(fieldNameField.getText());
+            if (editing) {
+                column.makeCopy();
+                column.setName(fieldNameField.getText());
+            }
         }
 
     }
@@ -339,64 +405,94 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
         }
     }
 
+    String[] getEditingDomains() {
+        DefaultStatementExecutor executor = new DefaultStatementExecutor(databaseConnection, true);
+        List<String> domains = new ArrayList<>();
+        domains.add(columnEdited.getDomain());
+        try {
+            String query = "select " +
+                    "RDB$FIELD_NAME FROM RDB$FIELDS " +
+                    "where RDB$FIELD_NAME not like 'RDB$%'\n" +
+                    "and RDB$FIELD_NAME not like 'MON$%'\n" +
+                    "order by RDB$FIELD_NAME";
+            ResultSet rs = executor.execute(QueryTypes.SELECT, query).getResultSet();
+            while (rs.next()) {
+                domains.add(rs.getString(1).trim());
+            }
+            executor.releaseResources();
+            return domains.toArray(new String[domains.size()]);
+        } catch (Exception e) {
+            Log.error("Error loading domains:" + e.getMessage());
+            return null;
+        }
+    }
+
     void generateSQL() {
         sb.setLength(0);
-        sb.append("ALTER TABLE ").append(table.getName()).append("\nADD ").append(columnData.getColumnName()).append("\n");
-        if (MiscUtils.isNull(columnData.getComputedBy())) {
-            if (MiscUtils.isNull(columnData.getDomain())) {
-                if (columnData.getColumnType() != null) {
-                    sb.append(columnData.getFormattedDataType());
+        if (editing) {
+            sb.append(statementGenerator.alterColumn(column, table).replace(";", "^"));
+            if (columnData.isAutoincrement()) {
+                sb.append(columnData.getAutoincrement().getSqlAutoincrement());
+            }
+            sqlTextPane.setText(sb.toString());
+        } else {
+            sb.append("ALTER TABLE ").append(table.getName()).append("\nADD ").append(columnData.getColumnName()).append("\n");
+            if (MiscUtils.isNull(columnData.getComputedBy())) {
+                if (MiscUtils.isNull(columnData.getDomain())) {
+                    if (columnData.getColumnType() != null) {
+                        sb.append(columnData.getFormattedDataType());
+                    }
+                } else {
+                    sb.append(columnData.getDomain());
+                }
+                if (!MiscUtils.isNull(columnData.getDefaultValue())) {
+                    String value = "";
+                    boolean str = false;
+                    int sqlType = columnData.getSQLType();
+                    switch (sqlType) {
+
+                        case Types.LONGVARCHAR:
+                        case Types.LONGNVARCHAR:
+                        case Types.CHAR:
+                        case Types.NCHAR:
+                        case Types.VARCHAR:
+                        case Types.NVARCHAR:
+                        case Types.CLOB:
+                        case Types.DATE:
+                        case Types.TIME:
+                        case Types.TIMESTAMP:
+                            value = "'";
+                            str = true;
+                            break;
+                        default:
+                            break;
+                    }
+                    value += columnData.getDefaultValue();
+                    if (str) {
+                        value += "'";
+                    }
+                    sb.append(" DEFAULT " + value);
+                }
+                sb.append(columnData.isRequired() ? " NOT NULL" : "");
+                if (!MiscUtils.isNull(columnData.getCheck())) {
+                    sb.append(" CHECK ( " + columnData.getCheck() + ")");
                 }
             } else {
-                sb.append(columnData.getDomain());
+                sb.append("COMPUTED BY ( " + columnData.getComputedBy() + ")");
             }
-            if (!MiscUtils.isNull(columnData.getDefaultValue())) {
-                String value = "";
-                boolean str = false;
-                int sqlType = columnData.getSQLType();
-                switch (sqlType) {
-
-                    case Types.LONGVARCHAR:
-                    case Types.LONGNVARCHAR:
-                    case Types.CHAR:
-                    case Types.NCHAR:
-                    case Types.VARCHAR:
-                    case Types.NVARCHAR:
-                    case Types.CLOB:
-                    case Types.DATE:
-                    case Types.TIME:
-                    case Types.TIMESTAMP:
-                        value = "'";
-                        str = true;
-                        break;
-                    default:
-                        break;
-                }
-                value += columnData.getDefaultValue();
-                if (str) {
-                    value += "'";
-                }
-                sb.append(" DEFAULT " + value);
+            if (columnData.isPrimaryKey()) {
+                sb.append(" PRIMARY KEY");
             }
-            sb.append(columnData.isRequired() ? " NOT NULL" : "");
-            if (!MiscUtils.isNull(columnData.getCheck())) {
-                sb.append(" CHECK ( " + columnData.getCheck() + ")");
+            sb.append("^");
+            if (!MiscUtils.isNull(columnData.getDescription())) {
+                sb.append("\nCOMMENT ON COLUMN ").append(table.getName()).append(".").append(columnData.getColumnName()).append(" IS '")
+                        .append(columnData.getDescription()).append("'^");
             }
-        } else {
-            sb.append("COMPUTED BY ( " + columnData.getComputedBy() + ")");
+            autoIncrementPanel.generateAI();
+            if (columnData.isAutoincrement()) {
+                sb.append(columnData.getAutoincrement().getSqlAutoincrement());
+            }
+            sqlTextPane.setText(sb.toString());
         }
-        if (columnData.isPrimaryKey()) {
-            sb.append(" PRIMARY KEY");
-        }
-        sb.append("^");
-        if (!MiscUtils.isNull(columnData.getDescription())) {
-            sb.append("\nCOMMENT ON COLUMN ").append(table.getName()).append(".").append(columnData.getColumnName()).append(" IS '")
-                    .append(columnData.getDescription()).append("'^");
-        }
-        autoIncrementPanel.generateAI();
-        if (columnData.isAutoincrement()) {
-            sb.append(columnData.getAutoincrement().getSqlAutoincrement());
-        }
-        sqlTextPane.setText(sb.toString());
     }
 }

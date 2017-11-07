@@ -7,6 +7,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
+import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.ColumnData;
@@ -270,7 +271,7 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
         descriptionPanel.add(scrollDescription, gbcFull);
         sqlPanel.add(scrollSQL, gbcFull);
         tabPane.add("Domain", domainPanel);
-        if (!editing)
+        if (!editing || columnEdited.getDomain().toUpperCase().startsWith("RDB$"))
             tabPane.add("Type", selectTypePanel);
         tabPane.add("Default Value", defaultValuePanel);
         if (!editing)
@@ -308,6 +309,11 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
     }
 
     void init_edited_elements() {
+        columnData.setSQLType(column.getTypeInt());
+        columnData.setColumnType(column.getTypeName());
+        columnData.setColumnSize(column.getColumnSize());
+        columnData.setColumnScale(column.getColumnScale());
+        selectTypePanel.refresh();
         fieldNameField.setText(columnEdited.getName());
         notNullBox.setSelected(columnEdited.isRequired());
         defaultValueTextPane.setText(columnEdited.getDefaultValue() != null ? columnEdited.getDefaultValue() : "");
@@ -319,6 +325,11 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
         }*/
         primaryBox.setEnabled(false);
         editDomainButton.setEnabled(true);
+    }
+
+    void newDomainAction()
+    {
+        DefaultDatabaseDomain domain = new DefaultDatabaseDomain();
     }
 
     @Override
@@ -430,6 +441,11 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
     void generateSQL() {
         sb.setLength(0);
         if (editing) {
+            column.makeCopy();
+            column.setTypeInt(columnData.getSQLType());
+            column.setTypeName(columnData.getColumnType());
+            column.setColumnSize(columnData.getColumnSize());
+            column.setColumnScale(columnData.getColumnScale());
             sb.append(statementGenerator.alterColumn(column, table).replace(";", "^"));
             if (columnData.isAutoincrement()) {
                 sb.append(columnData.getAutoincrement().getSqlAutoincrement());

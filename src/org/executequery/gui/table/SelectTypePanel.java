@@ -1,6 +1,7 @@
 package org.executequery.gui.table;
 
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.FileUtils;
 
@@ -11,9 +12,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.Types;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Properties;
 
 public class SelectTypePanel extends JPanel {
     private JLabel typeLabel;
@@ -31,6 +31,7 @@ public class SelectTypePanel extends JPanel {
     ColumnData cd;
     boolean refreshing = false;
     List<String> charsets;
+    Map<Integer,String> types;
 
     public SelectTypePanel(String[] types, int[] intTypes, ColumnData cd) {
         this.dataTypes = types;
@@ -80,17 +81,7 @@ public class SelectTypePanel extends JPanel {
         typeBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                int index = typeBox.getSelectedIndex();
-                cd.setColumnType(dataTypes[index]);
-                cd.setSQLType(intDataTypes[index]);
-                setSizeVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
-                        || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB
-                        || cd.getColumnType().toUpperCase().equals("VARCHAR")
-                        || cd.getColumnType().toUpperCase().equals("CHAR"));
-                setScaleVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL);
-                setEncodingVisible(cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
-                        || cd.getColumnType().toUpperCase().equals("VARCHAR")
-                        || cd.getColumnType().toUpperCase().equals("CHAR"));
+                refreshType();
             }
         });
 
@@ -136,6 +127,27 @@ public class SelectTypePanel extends JPanel {
         this.add(new JPanel(), gbc);
     }
 
+    void refreshType()
+    {
+        int index = typeBox.getSelectedIndex();
+        cd.setColumnType(dataTypes[index]);
+        cd.setSQLType(intDataTypes[index]);
+        setSizeVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
+                || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB
+                || cd.getColumnType().toUpperCase().equals("VARCHAR")
+                || cd.getColumnType().toUpperCase().equals("CHAR"));
+        setScaleVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL);
+        setEncodingVisible(cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
+                || cd.getColumnType().toUpperCase().equals("VARCHAR")
+                || cd.getColumnType().toUpperCase().equals("CHAR"));
+    }
+
+    public void refreshColumn()
+    {
+        cd.setColumnSize(sizeField.getValue());
+        cd.setColumnScale(scaleField.getValue());
+    }
+
     void setSizeVisible(boolean flag) {
         sizeField.setEnabled(flag);
         //sizeLabel.setEnabled(flag);
@@ -164,12 +176,21 @@ public class SelectTypePanel extends JPanel {
     }
 
     void removeDuplicates() {
+        if(types==null)
+            types = new HashMap<>();
+        else types.clear();
         java.util.List<String> newTypes = new ArrayList<>();
         List<Integer> newIntTypes = new ArrayList<>();
+        String last = "";
         for (int i = 0; i < this.dataTypes.length; i++) {
             if (!newTypes.contains(this.dataTypes[i])) {
                 newTypes.add(this.dataTypes[i]);
                 newIntTypes.add(this.intDataTypes[i]);
+                types.put(intDataTypes[i],dataTypes[i]);
+                last = dataTypes[i];
+            }
+            else {
+                types.put(intDataTypes[i],last);
             }
         }
         this.dataTypes = newTypes.toArray(new String[0]);
@@ -198,14 +219,19 @@ public class SelectTypePanel extends JPanel {
         refreshing = true;
         cd.setColumnType(getStringType(cd.getSQLType()));
         typeBox.setSelectedItem(cd.getColumnType());
+        refreshType();
         refreshing = false;
     }
 
     String getStringType(int x) {
-        for (int i = 0; i < intDataTypes.length; i++)
-            if (x == intDataTypes[i])
-                return dataTypes[i];
-        return "";
+        try {
+            return types.get(x);
+        }
+        catch (Exception e)
+        {
+            Log.error(e.getMessage());
+            return "";
+        }
     }
 
     private void loadCharsets() {

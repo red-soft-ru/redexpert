@@ -135,7 +135,7 @@ public class DefaultDatabaseDomain extends DefaultDatabaseExecutable
                     column.setRequired(rs.getInt(12) == DatabaseMetaData.columnNoNulls);
                     column.setRemarks(rs.getString(8));
                     this.setRemarks(rs.getString(8));
-//                    column.setDefaultValue(rs.getString(13));
+                    column.setDefaultValue(rs.getString(13));
 
                     sqlType = rs.getInt(2);
                     sqlSubtype = rs.getInt(3);

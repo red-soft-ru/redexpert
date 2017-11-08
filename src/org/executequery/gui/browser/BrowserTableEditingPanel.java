@@ -40,6 +40,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.TableColumnModel;
 
+import org.executequery.Constants;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseColumn;
@@ -68,11 +69,9 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.DisabledField;
-import org.underworldlabs.swing.FlatSplitPane;
-import org.underworldlabs.swing.GUIUtils;
-import org.underworldlabs.swing.VetoableSingleSelectionModel;
+import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.table.TableSorter;
+import org.underworldlabs.swing.toolbar.PanelToolBar;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.SystemProperties;
 
@@ -187,6 +186,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
      */
     private TextEditor lastFocusEditor;
 
+    private JPanel buttonsEditingPanel;
+
     public BrowserTableEditingPanel(BrowserController controller) {
         this.controller = controller;
         try {
@@ -248,8 +249,15 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         constraintsPanel.add(new JScrollPane(constraintsTable), BorderLayout.CENTER);
 
         descriptionTable = new EditableDatabaseTable();
+        createButtonsEditingPanel();
         JPanel descTablePanel = new JPanel(new GridBagLayout());
         descTablePanel.setBorder(BorderFactory.createTitledBorder(bundleString("table-columns")));
+        GridBagConstraints gbcDesc = new GridBagConstraints(
+                1, 0, 1, 1, 0, 0,
+                GridBagConstraints.NORTH,
+                GridBagConstraints.HORIZONTAL,
+                new Insets(2, 2, 2, 2), 0, 0);
+        descTablePanel.add(buttonsEditingPanel,gbcDesc);
         descTablePanel.add(
                 new JScrollPane(descriptionTable),
                 new GridBagConstraints(
@@ -1110,6 +1118,59 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 rowCountField.setText(text);
             }
         });
+    }
+    private void createButtonsEditingPanel() {
+        buttonsEditingPanel = new JPanel(new GridBagLayout());
+        PanelToolBar bar = new PanelToolBar();
+        RolloverButton addRolloverButton = new RolloverButton();
+        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.png"));
+        addRolloverButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                insertAfter();
+            }
+        });
+        bar.add(addRolloverButton);
+        RolloverButton deleteRolloverButton = new RolloverButton();
+        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
+        deleteRolloverButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                deleteRow();
+            }
+        });
+        bar.add(deleteRolloverButton);
+        RolloverButton commitRolloverButton = new RolloverButton();
+        commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
+        commitRolloverButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+
+
+                try {
+                    DatabaseObjectChangeProvider docp = new DatabaseObjectChangeProvider(table);
+                    if(docp.applyDefinitionChanges())
+                        setValues(table);
+
+                } catch (DataSourceException e) {
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                }
+            }
+        });
+        bar.add(commitRolloverButton);
+        RolloverButton rollbackRolloverButton = new RolloverButton();
+        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
+        rollbackRolloverButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                table.revert();
+                setValues(table);
+            }
+        });
+        bar.add(rollbackRolloverButton);
+        GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
+                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
+        buttonsEditingPanel.add(bar, gbc3);
     }
 
 }

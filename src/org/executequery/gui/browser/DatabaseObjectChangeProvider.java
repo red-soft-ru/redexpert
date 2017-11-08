@@ -59,6 +59,11 @@ public class DatabaseObjectChangeProvider implements Interruptible {
         return applied;
     }
 
+    public boolean applyDefinitionChanges() {
+        executeApplyDefinitionChanges();
+        return applied;
+    }
+
     public boolean applyChanges(boolean showDialog) {
 
         // dialog
@@ -184,6 +189,61 @@ public class DatabaseObjectChangeProvider implements Interruptible {
                 try {
 
                     table().applyTableDataChanges();
+                    applied = true;
+
+                } catch (DataSourceException e) {
+                    applied = false;
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("An error occurred applying the specified changes.\n\nThe system returned:\n");
+
+                    Throwable cause = e.getCause();
+                    if (cause instanceof NumberFormatException) {
+
+                        sb.append("Invalid number for value - ");
+
+                    } else if (cause instanceof ParseException) {
+
+                        sb.append("Invalid date format for value - ");
+                    }
+                    sb.append(e.getExtendedMessage());
+
+                    if (table().hasTableDataChanges()) {
+
+                        sb.append("\nRollback was issued for all data changes.");
+                    }
+
+                    dispose();
+                    ErrorMessagePublisher.publish(sb.toString(), e.getCause());
+                }
+
+                return "done";
+            }
+
+            @Override
+            public void finished() {
+
+                dispose();
+            }
+
+        };
+
+        worker.start();
+        interruptibleProgressDialog.run();
+    }
+
+    private void executeApplyDefinitionChanges() {
+
+        interruptibleProgressDialog = new InterruptibleProgressDialog(GUIUtilities.getParentFrame(), "Applying changes", "Please wait...", this);
+
+        worker = new SwingWorker() {
+
+            @Override
+            public Object construct() {
+
+                try {
+
+                    table().applyTableDefinitionChanges();
                     applied = true;
 
                 } catch (DataSourceException e) {

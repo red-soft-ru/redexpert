@@ -108,6 +108,8 @@ public interface DatabaseTable extends DatabaseObject {
 
     int applyTableDataChanges();
 
+    int applyTableDefinitionChanges();
+
     void clearDataChanges();
 
     /**

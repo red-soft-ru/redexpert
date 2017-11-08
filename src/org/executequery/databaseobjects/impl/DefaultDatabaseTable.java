@@ -531,6 +531,13 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         clearDataChanges();
     }
 
+    public void clearDefinitionChanges()
+    {
+        modifiedSQLText = null;
+        clearColumns();
+        clearIndexes();
+    }
+
     public void clearDataChanges() {
         if (tableDataChanges != null) {
             tableDataChanges.clear();
@@ -652,7 +659,7 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         return success ? 1 : 0;
     }
 
-    private int applyTableDefinitionChanges() throws DataSourceException {
+    public int applyTableDefinitionChanges() throws DataSourceException {
 
         Statement stmnt = null;
 

@@ -5,12 +5,16 @@ import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.gui.ActionContainer;
+import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.databaseobjects.CreateDomainPanel;
 import org.executequery.gui.text.SQLTextPane;
 import org.executequery.log.Log;
 import org.executequery.sql.spi.LiquibaseStatementGenerator;
@@ -217,6 +221,24 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
             }
         });
 
+        newDomainButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                BaseDialog dialog = new BaseDialog(CreateDomainPanel.CREATE_TITLE, true);
+                CreateDomainPanel panel = new CreateDomainPanel(databaseConnection, dialog);
+                dialog.addDisplayComponent(panel);
+                dialog.display();
+            }
+        });
+        editDomainButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                BaseDialog dialog = new BaseDialog(CreateDomainPanel.EDIT_TITLE, true);
+                CreateDomainPanel panel = new CreateDomainPanel(databaseConnection, dialog, (String) domainBox.getSelectedItem());
+                dialog.addDisplayComponent(panel);
+                dialog.display();
+            }
+        });
 
         this.setLayout(new GridBagLayout());
         upPanel.setLayout(new GridBagLayout());
@@ -316,6 +338,8 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
         selectTypePanel.refresh();
         fieldNameField.setText(columnEdited.getName());
         notNullBox.setSelected(columnEdited.isRequired());
+        if (getVersion() < 3)
+            notNullBox.setEnabled(false);
         defaultValueTextPane.setText(columnEdited.getDefaultValue() != null ? columnEdited.getDefaultValue() : "");
         computedTextPane.setText(columnEdited.getComputedSource() != null ? columnEdited.getComputedSource() : "");
         descriptionTextPane.setText(columnEdited.getRemarks() != null ? columnEdited.getRemarks() : "");
@@ -327,10 +351,6 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
         editDomainButton.setEnabled(true);
     }
 
-    void newDomainAction()
-    {
-        DefaultDatabaseDomain domain = new DefaultDatabaseDomain();
-    }
 
     @Override
     public void keyTyped(KeyEvent keyEvent) {
@@ -392,6 +412,24 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
             Log.error("Error loading generators:" + e.getMessage());
             return null;
         }
+    }
+
+    int getVersion() {
+        DatabaseHost host = new DefaultDatabaseHost(databaseConnection);
+        String vers = host.getDatabaseProductVersion();
+        int version = 2;
+        if (vers != null) {
+            int number = 0;
+            for (int i = 0; i < vers.length(); i++) {
+                if (Character.isDigit(vers.charAt(i))) {
+                    number = Character.getNumericValue(vers.charAt(i));
+                    break;
+                }
+            }
+            if (number >= 3)
+                version = 3;
+        }
+        return version;
     }
 
     String[] getDomains() {

@@ -146,6 +146,16 @@ public class ColumnData implements Serializable {
 
     private int domainSubType;
 
+    private String domainCharset;
+
+    private String domainCheck;
+
+    private String domainDescription;
+
+    private boolean domainNotNull;
+
+    private String domainDefault;
+
     private String check;
 
     private String description;
@@ -157,6 +167,8 @@ public class ColumnData implements Serializable {
     DatabaseConnection dc;
 
     private String charset;
+
+    ColumnData copy;
 
     public ColumnData(DatabaseConnection databaseConnection) {
         primaryKey = false;
@@ -423,7 +435,10 @@ public class ColumnData implements Serializable {
     }
 
     private void getDomainInfo() {
-        String query = "SELECT RDB$FIELD_TYPE,RDB$FIELD_LENGTH,RDB$FIELD_SCALE,RDB$FIELD_SUB_TYPE FROM RDB$FIELDS WHERE RDB$FIELD_NAME='" +
+        String query = "SELECT F.RDB$FIELD_TYPE,F.RDB$FIELD_LENGTH,F.RDB$FIELD_SCALE,F.RDB$FIELD_SUB_TYPE,C.RDB$CHARACTER_SET_NAME," +
+                "F.RDB$VALIDATION_SOURCE,F.RDB$DESCRIPTION,F.RDB$NULL_FLAG,F.RDB$DEFAULT_SOURCE\n" +
+                "FROM RDB$FIELDS AS F LEFT JOIN RDB$CHARACTER_SETS AS C ON F.RDB$CHARACTER_SET_ID = C.RDB$CHARACTER_SET_ID" +
+                "\nWHERE RDB$FIELD_NAME='" +
                 domain.trim() + "'";
         DefaultStatementExecutor executor = new DefaultStatementExecutor(dc, true);
         try {
@@ -433,12 +448,37 @@ public class ColumnData implements Serializable {
                 domainSize = rs.getInt(2);
                 domainScale = rs.getInt(3);
                 domainSubType = rs.getInt(4);
+                domainCharset = rs.getString(5);
+                domainCheck = rs.getString(6);
+                domainDescription = rs.getString(7);
+                domainNotNull = rs.getInt(8) == 1;
+                domainDefault = rs.getString(9);
             }
             executor.releaseResources();
             domainType = getSqlTypeFromRDBtype(domainType, domainSubType);
             sqlType = domainType;
             columnSize = domainSize;
             columnScale = domainScale;
+            if (!MiscUtils.isNull(domainCheck)) {
+                domainCheck = domainCheck.trim();
+                if (domainCheck.toUpperCase().startsWith("CHECK"))
+                    domainCheck = domainCheck.substring(5).trim();
+                if (domainCheck.startsWith("(") && domainCheck.endsWith(")")) {
+                    domainCheck = domainCheck.substring(1, domainCheck.length() - 1);
+                }
+            }
+            if (!MiscUtils.isNull(domainDefault)) {
+                domainDefault = domainDefault.trim();
+                if (domainDefault.toUpperCase().startsWith("DEFAULT"))
+                    domainDefault = domainDefault.substring(7).trim();
+                if (domainDefault.startsWith("'") && domainDefault.endsWith("'")) {
+                    domainDefault = domainDefault.substring(1, domainDefault.length() - 1);
+                }
+            }
+            if (MiscUtils.isNull(domainCharset)) {
+                domainCharset = CreateTableSQLSyntax.NONE;
+            } else domainCharset = domainCharset.trim();
+            setCharset(domainCharset);
 
         } catch (Exception e) {
             Log.error(e.getMessage());
@@ -563,8 +603,7 @@ public class ColumnData implements Serializable {
                 }
                 sb.append(")");
             }
-            if(!getCharset().equals(CreateTableSQLSyntax.NONE))
-            {
+            if (!getCharset().equals(CreateTableSQLSyntax.NONE)) {
                 sb.append(" CHARACTER SET ").append(getCharset());
             }
         }
@@ -616,6 +655,114 @@ public class ColumnData implements Serializable {
 
     public String getCharset() {
         return charset;
+    }
+
+    public String getDomainCharset() {
+        return domainCharset;
+    }
+
+    public String getDomainCheck() {
+        return domainCheck;
+    }
+
+    public String getDomainDescription() {
+        return domainDescription;
+    }
+
+    public boolean isDomainNotNull() {
+        return domainNotNull;
+    }
+
+    public String getDomainDefault() {
+        return domainDefault;
+    }
+
+    public void makeCopy() {
+        if (copy == null) {
+            copy = new ColumnData(dc);
+            copy.setValues(this);
+        }
+    }
+
+    public boolean hasCopy() {
+        return copy != null;
+    }
+
+    public boolean isNameChanged() {
+        if (!hasCopy()) {
+            return false;
+        }
+        return !getColumnName().equals(copy.getColumnName());
+    }
+
+    public boolean isDefaultChanged() {
+        if (!hasCopy()) {
+            return false;
+        }
+        if (MiscUtils.isNull(copy.getDefaultValue())) {
+            if (MiscUtils.isNull(getDefaultValue())) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            if (MiscUtils.isNull(getDefaultValue()))
+                return true;
+        }
+        return !copy.getDefaultValue().equalsIgnoreCase(getDefaultValue());
+    }
+
+    public boolean isCheckChanged() {
+        if (!hasCopy()) {
+            return false;
+        }
+        if (MiscUtils.isNull(copy.getCheck())) {
+            if (MiscUtils.isNull(getCheck())) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            if (MiscUtils.isNull(getCheck()))
+                return true;
+        }
+        return !copy.getCheck().equalsIgnoreCase(getCheck());
+    }
+
+    public boolean isTypeChanged() {
+        if (!hasCopy()) {
+            return false;
+        }
+        return !getColumnType().equals(copy.getColumnType()) || getColumnSize() != copy.getColumnSize() || getColumnScale() != copy.getColumnScale() || getCharset() != copy.getCharset();
+    }
+
+    public boolean isDescriptionChanged() {
+        if (!hasCopy()) {
+            return false;
+        }
+        if (MiscUtils.isNull(copy.getDescription())) {
+            if (MiscUtils.isNull(getDescription())) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            if (MiscUtils.isNull(getDescription()))
+                return true;
+        }
+        return !copy.getDescription().equalsIgnoreCase(getDescription());
+    }
+
+    public boolean isRequiredChanged() {
+        if (!hasCopy())
+            return false;
+        return (isRequired() != copy.isRequired());
+    }
+
+    public boolean isChanged() {
+        if (!hasCopy())
+            return false;
+        return isCheckChanged() || isDefaultChanged() || isNameChanged() || isDescriptionChanged() || isTypeChanged();
     }
 }
 

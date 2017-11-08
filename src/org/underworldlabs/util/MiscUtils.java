@@ -29,6 +29,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -663,6 +664,36 @@ public final class MiscUtils {
 
     public static String generateUniqueId() {
         return UUID.randomUUID().toString();
+    }
+
+    public static String formattedSQLValue(String value,int type)
+    {
+        boolean str = false;
+        switch (type) {
+
+            case Types.LONGVARCHAR:
+            case Types.LONGNVARCHAR:
+            case Types.CHAR:
+            case Types.NCHAR:
+            case Types.VARCHAR:
+            case Types.NVARCHAR:
+            case Types.CLOB:
+            case Types.DATE:
+            case Types.TIME:
+            case Types.TIMESTAMP:
+            case Types.LONGVARBINARY:
+            case Types.VARBINARY:
+            case Types.BINARY:
+                value = "'"+value;
+                str = true;
+                break;
+            default:
+                break;
+        }
+        if (str) {
+            value += "'";
+        }
+        return value;
     }
 
     public static void printThreadStack(StackTraceElement[] stackTrace) {

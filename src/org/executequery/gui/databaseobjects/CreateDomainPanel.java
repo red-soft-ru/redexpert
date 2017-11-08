@@ -2,15 +2,12 @@ package org.executequery.gui.databaseobjects;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
-import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.DatabaseTable;
+
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.ColumnData;
-import org.executequery.gui.table.AutoIncrementPanel;
 import org.executequery.gui.table.SelectTypePanel;
 import org.executequery.gui.text.SQLTextPane;
 import org.underworldlabs.util.MiscUtils;
@@ -25,11 +22,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.Types;
 
-import static org.executequery.databaseobjects.NamedObject.DOMAIN;
-import static org.executequery.databaseobjects.NamedObject.META_TYPES;
-
 public class CreateDomainPanel extends JPanel implements KeyListener {
-    private JLabel connectionLabel;
     private JLabel fieldLabel;
     private JTabbedPane tabPane;
     private JScrollPane scrollDefaultValue;
@@ -51,7 +44,8 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
     private JButton cancelButton;
     private JTextField fieldNameField;
 
-    public static final String TITLE = "Create Domain";
+    public static final String CREATE_TITLE = "Create Domain";
+    public static final String EDIT_TITLE = "Edit Domain";
 
     DatabaseConnection databaseConnection;
     ColumnData columnData;
@@ -59,9 +53,6 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
     MetaDataValues metaData;
     boolean editing;
     String domain;
-    DefaultDatabaseDomain databaseDomain;
-    DatabaseHost host;
-    DatabaseTableColumn column;
 
     public CreateDomainPanel(DatabaseConnection connection, ActionContainer parent, String domain) {
         databaseConnection = connection;
@@ -71,7 +62,7 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
         columnData = new ColumnData(databaseConnection);
         editing = domain != null;
         init();
-        if(editing)
+        if (editing)
             init_edited();
     }
 
@@ -210,10 +201,39 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
     }
 
     void init_edited() {
-        DatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(host, null, null, META_TYPES[DOMAIN]);
-        databaseDomain = new DefaultDatabaseDomain(metaTag, domain);
+        columnData.setColumnName(domain);
         columnData.setDomain(domain);
+        columnData.setDescription(columnData.getDomainDescription());
+        columnData.setCheck(columnData.getDomainCheck());
+        columnData.setNotNull(columnData.isDomainNotNull());
+        columnData.setDefaultValue(columnData.getDomainDefault());
+        descriptionTextPane.setText(columnData.getDescription());
+        checkTextPane.setText(columnData.getCheck());
+        defaultValueTextPane.setText(columnData.getDefaultValue());
+        fieldNameField.setText(columnData.getColumnName());
+        notNullBox.setSelected(columnData.isRequired());
+        if (getVersion() < 3)
+            notNullBox.setEnabled(false);
         selectTypePanel.refresh();
+        columnData.makeCopy();
+    }
+
+    int getVersion() {
+        DatabaseHost host = new DefaultDatabaseHost(databaseConnection);
+        String vers = host.getDatabaseProductVersion();
+        int version = 2;
+        if (vers != null) {
+            int number = 0;
+            for (int i = 0; i < vers.length(); i++) {
+                if (Character.isDigit(vers.charAt(i))) {
+                    number = Character.getNumericValue(vers.charAt(i));
+                    break;
+                }
+            }
+            if (number >= 3)
+                version = 3;
+        }
+        return version;
     }
 
     @Override
@@ -231,71 +251,74 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
 
         if (keyEvent.getSource() == defaultValueTextPane) {
             columnData.setDefaultValue(defaultValueTextPane.getText());
-            if (editing) {
-                column.makeCopy();
-                column.setDefaultValue(defaultValueTextPane.getText());
-            }
         } else if (keyEvent.getSource() == checkTextPane) {
             columnData.setCheck(checkTextPane.getText());
         } else if (keyEvent.getSource() == descriptionTextPane) {
             columnData.setDescription(descriptionTextPane.getText());
-            if (editing) {
-                column.makeCopy();
-                column.setColumnDescription(descriptionTextPane.getText());
-            }
         } else if (keyEvent.getSource() == fieldNameField) {
             columnData.setColumnName(fieldNameField.getText());
-            if (editing) {
-                column.makeCopy();
-                column.setName(fieldNameField.getText());
-            }
         }
 
     }
 
     void generateSQL() {
         StringBuffer sb = new StringBuffer();
-        /*if (editing) {
-            column.makeCopy();
-            column.setTypeInt(columnData.getSQLType());
-            column.setTypeName(columnData.getColumnType());
-            column.setColumnSize(columnData.getColumnSize());
-            column.setColumnScale(columnData.getColumnScale());
-            sb.append(statementGenerator.alterColumn(column, table).replace(";", "^"));
-            if (columnData.isAutoincrement()) {
-                sb.append(columnData.getAutoincrement().getSqlAutoincrement());
+        sb.setLength(0);
+        if (editing) {
+            if (columnData.isChanged()) {
+                sb.append("ALTER DOMAIN ").append(domain).append("\n");
+                if (columnData.isNameChanged()) {
+                    sb.append("TO ").append(columnData.getColumnName()).append("\n");
+                }
+                if (columnData.isDefaultChanged()) {
+                    if (MiscUtils.isNull(columnData.getDefaultValue()))
+                        sb.append("DROP DEFAULT\n");
+                    else {
+                        sb.append("SET DEFAULT ");
+                        if (columnData.getDefaultValue().toUpperCase().trim().equals("NULL")) {
+                            sb.append("NULL");
+                        } else {
+                            sb.append(MiscUtils.formattedSQLValue(columnData.getDefaultValue(), columnData.getSQLType()));
+                        }
+                        sb.append("\n");
+
+                    }
+                }
+                if (columnData.isRequiredChanged()) {
+                    if (columnData.isRequired()) {
+                        sb.append("SET ");
+                    } else {
+                        sb.append("DROP ");
+                    }
+                    sb.append("NOT NULL\n");
+
+                }
+                if (columnData.isCheckChanged()) {
+                    sb.append("DROP CONSTRAINT\n");
+                    if (!MiscUtils.isNull(columnData.getCheck())) {
+                        sb.append("ADD CHECK (").append(columnData.getCheck()).append(")\n");
+                    }
+                }
+                if (columnData.isTypeChanged()) {
+                    sb.append("TYPE ").append(columnData.getFormattedDataType());
+                }
+                sb.append(";");
+                if (columnData.isDescriptionChanged()) {
+                    sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getColumnName()).append(" IS ");
+                    if (!MiscUtils.isNull(columnData.getDescription())) {
+
+                        sb.append("'").append(columnData.getDescription()).append("'");
+                    } else {
+                        sb.append("NULL");
+                    }
+                    sb.append(";");
+                }
+                sqlTextPane.setText(sb.toString());
             }
-            sqlTextPane.setText(sb.toString());
-        } else */
-        {
+        } else {
             sb.append("CREATE DOMAIN ").append(columnData.getColumnName()).append(" as ").append(columnData.getFormattedDataType()).append("\n");
             if (!MiscUtils.isNull(columnData.getDefaultValue())) {
-                String value = "";
-                boolean str = false;
-                int sqlType = columnData.getSQLType();
-                switch (sqlType) {
-
-                    case Types.LONGVARCHAR:
-                    case Types.LONGNVARCHAR:
-                    case Types.CHAR:
-                    case Types.NCHAR:
-                    case Types.VARCHAR:
-                    case Types.NVARCHAR:
-                    case Types.CLOB:
-                    case Types.DATE:
-                    case Types.TIME:
-                    case Types.TIMESTAMP:
-                        value = "'";
-                        str = true;
-                        break;
-                    default:
-                        break;
-                }
-                value += columnData.getDefaultValue();
-                if (str) {
-                    value += "'";
-                }
-                sb.append(" DEFAULT " + value);
+                sb.append(" DEFAULT " + MiscUtils.formattedSQLValue(columnData.getDefaultValue(), columnData.getSQLType()));
             }
             sb.append(columnData.isRequired() ? " NOT NULL" : "");
             if (!MiscUtils.isNull(columnData.getCheck())) {
@@ -304,7 +327,7 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
             sb.append(";");
             if (!MiscUtils.isNull(columnData.getDescription())) {
                 sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getColumnName()).append(" IS '")
-                        .append(columnData.getDescription()).append("'^");
+                        .append(columnData.getDescription()).append("';");
             }
             sqlTextPane.setText(sb.toString());
         }

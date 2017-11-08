@@ -34,6 +34,8 @@ import org.underworldlabs.jdbc.DataSourceException;
  */
 public interface DatabaseObject extends NamedObject {
 
+    void setHost(DatabaseHost host);
+
     /**
      * Returns the parent host object.
      *

@@ -171,15 +171,15 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     }
                     break;
                 case NamedObject.DOMAIN:
-                    if (GUIUtilities.isDialogOpen(CreateDomainPanel.TITLE)) {
+                    if (GUIUtilities.isDialogOpen(CreateDomainPanel.CREATE_TITLE)) {
 
-                        GUIUtilities.setSelectedDialog(CreateDomainPanel.TITLE);
+                        GUIUtilities.setSelectedDialog(CreateDomainPanel.CREATE_TITLE);
 
                     } else {
                         try {
                             GUIUtilities.showWaitCursor();
                             BaseDialog dialog =
-                                    new BaseDialog(CreateDomainPanel.TITLE, false);
+                                    new BaseDialog(CreateDomainPanel.CREATE_TITLE, false);
                             CreateDomainPanel panel = new CreateDomainPanel(currentSelection, dialog);
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();

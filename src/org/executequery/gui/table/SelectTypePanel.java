@@ -31,7 +31,7 @@ public class SelectTypePanel extends JPanel {
     ColumnData cd;
     boolean refreshing = false;
     List<String> charsets;
-    Map<Integer,String> types;
+    Map<Integer, String> types;
 
     public SelectTypePanel(String[] types, int[] intTypes, ColumnData cd) {
         this.dataTypes = types;
@@ -127,8 +127,7 @@ public class SelectTypePanel extends JPanel {
         this.add(new JPanel(), gbc);
     }
 
-    void refreshType()
-    {
+    void refreshType() {
         int index = typeBox.getSelectedIndex();
         cd.setColumnType(dataTypes[index]);
         cd.setSQLType(intDataTypes[index]);
@@ -142,8 +141,7 @@ public class SelectTypePanel extends JPanel {
                 || cd.getColumnType().toUpperCase().equals("CHAR"));
     }
 
-    public void refreshColumn()
-    {
+    public void refreshColumn() {
         cd.setColumnSize(sizeField.getValue());
         cd.setColumnScale(scaleField.getValue());
     }
@@ -172,11 +170,13 @@ public class SelectTypePanel extends JPanel {
 
     void setEncodingVisible(boolean flag) {
         encodingBox.setEnabled(flag);
-        //encodingLabel.setVisible(flag);
+        if (refreshing)
+            encodingBox.setSelectedItem(cd.getCharset());
+        cd.setCharset((String) encodingBox.getSelectedItem());
     }
 
     void removeDuplicates() {
-        if(types==null)
+        if (types == null)
             types = new HashMap<>();
         else types.clear();
         java.util.List<String> newTypes = new ArrayList<>();
@@ -186,11 +186,10 @@ public class SelectTypePanel extends JPanel {
             if (!newTypes.contains(this.dataTypes[i])) {
                 newTypes.add(this.dataTypes[i]);
                 newIntTypes.add(this.intDataTypes[i]);
-                types.put(intDataTypes[i],dataTypes[i]);
+                types.put(intDataTypes[i], dataTypes[i]);
                 last = dataTypes[i];
-            }
-            else {
-                types.put(intDataTypes[i],last);
+            } else {
+                types.put(intDataTypes[i], last);
             }
         }
         this.dataTypes = newTypes.toArray(new String[0]);
@@ -226,9 +225,7 @@ public class SelectTypePanel extends JPanel {
     String getStringType(int x) {
         try {
             return types.get(x);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Log.error(e.getMessage());
             return "";
         }

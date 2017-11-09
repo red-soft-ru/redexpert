@@ -158,6 +158,13 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 "Use form for adding/deleting records",
                 Boolean.valueOf(stringUserProperty(key))));
 
+        key = "results.table.use.other.color.null";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Use other color for null when adding/deleting records",
+                Boolean.valueOf(stringUserProperty(key))));
+
         UserPreference[] preferences =
                 (UserPreference[])list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);

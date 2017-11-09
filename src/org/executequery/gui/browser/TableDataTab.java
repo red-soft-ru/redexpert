@@ -867,11 +867,12 @@ public class TableDataTab extends JPanel
                         Constants.USER_PROPERTIES_KEY, "results.table.use.form.adding.deleting");
                 if (useForm)
                     delete_record();
-                else
-                {
-                    int row=table.getSelectedRow();
-                    if(row>=0)
-                        tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(row));
+                else {
+                    int[] rows = table.getSelectedRows();
+                    for (int row : rows) {
+                        if (row >= 0)
+                            tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(row));
+                    }
                 }
             }
         });
@@ -885,7 +886,7 @@ public class TableDataTab extends JPanel
 
                 try {
                     DatabaseObjectChangeProvider docp = new DatabaseObjectChangeProvider(asDatabaseTable());
-                    if(docp.applyDataChanges())
+                    if (docp.applyDataChanges())
                         loadDataForTable(databaseObject);
 
                 } catch (DataSourceException e) {

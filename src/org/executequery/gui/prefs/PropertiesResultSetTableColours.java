@@ -73,6 +73,20 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
                     "Null value cell background",
                     SystemProperties.getColourProperty("user", key)));
 
+        key = "results.table.cell.null.adding.background.colour";
+        list.add(new UserPreference(
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Null value cell background when there is adding",
+                SystemProperties.getColourProperty("user", key)));
+
+        key = "results.table.cell.null.deleting.background.colour";
+        list.add(new UserPreference(
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Null value cell background when there is deleting",
+                SystemProperties.getColourProperty("user", key)));
+
         key = "results.table.cell.changed.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,

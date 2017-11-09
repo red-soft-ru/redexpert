@@ -67,6 +67,8 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     private String nullValueDisplayString;
 
     private Color nullValueDisplayColor;
+    private Color nullValueAddDisplayColor;
+    private Color nullValueDeleteDisplayColor;
     private Color numericValueDisplayColor;
     private Color otherValueDisplayColor;
     private Color booleanValueDisplayColor;
@@ -76,6 +78,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     private Color changedValueDisplayColor;
     private Color deletedValueDisplayColor;
     private Color newValueDisplayColor;
+    private boolean otherColorForNull;
 
     private Color alternatingRowBackground;
 
@@ -192,7 +195,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 RecordDataItem recordDataItem = (RecordDataItem) value;
                 if (recordDataItem.isDisplayValueNull()) {
 
-                    formatForNullValue(isSelected, recordDataItem.isChanged(),recordDataItem.isDeleted(),recordDataItem.isNew());
+                    formatForNullValue(isSelected, recordDataItem.isChanged(), recordDataItem.isDeleted(), recordDataItem.isNew());
                     return;
 
                 } else {
@@ -208,7 +211,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         } else {
 
-            formatForNullValue(isSelected, false,false, false);
+            formatForNullValue(isSelected, false, false, false);
         }
 
     }
@@ -227,10 +230,9 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         boolean isDateValue = false;
         Color color = tableBackground;
-        if(recordDataItem.isNew() && newValueDisplayColor.getRGB() != tableBackground.getRGB()) {
+        if (recordDataItem.isNew() && newValueDisplayColor.getRGB() != tableBackground.getRGB()) {
             color = newValueDisplayColor;
-        }
-        else if (recordDataItem.isDeleted() && deletedValueDisplayColor.getRGB() != tableBackground.getRGB()) {
+        } else if (recordDataItem.isDeleted() && deletedValueDisplayColor.getRGB() != tableBackground.getRGB()) {
             color = deletedValueDisplayColor;
         } else if (recordDataItem.isChanged() && changedValueDisplayColor.getRGB() != tableBackground.getRGB()) {
             color = changedValueDisplayColor;
@@ -325,13 +327,18 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
         setValue(nullValueDisplayString);
         setHorizontalAlignment(SwingConstants.CENTER);
         if (!isSelected) {
-            if (!deleted||deletedValueDisplayColor.getRGB()==tableBackground.getRGB()) {
-                if(!newValue||newValueDisplayColor.getRGB()==tableBackground.getRGB()) {
+            if (!deleted || deletedValueDisplayColor.getRGB() == tableBackground.getRGB()) {
+                if (!newValue || newValueDisplayColor.getRGB() == tableBackground.getRGB()) {
                     if (!changed)
                         setBackground(nullValueDisplayColor);
                     else setBackground(changedValueDisplayColor);
+                } else if (otherColorForNull) {
+                    setBackground(nullValueAddDisplayColor);
+                } else {
+                    setBackground(newValueDisplayColor);
                 }
-                else setBackground(newValueDisplayColor);
+            } else if (otherColorForNull) {
+                setBackground(nullValueDeleteDisplayColor);
             } else {
                 setBackground(deletedValueDisplayColor);
             }
@@ -358,6 +365,12 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         nullValueDisplayColor = SystemProperties.getColourProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.cell.null.background.colour");
+
+        nullValueAddDisplayColor = SystemProperties.getColourProperty(
+                Constants.USER_PROPERTIES_KEY, "results.table.cell.null.adding.background.colour");
+
+        nullValueDeleteDisplayColor = SystemProperties.getColourProperty(
+                Constants.USER_PROPERTIES_KEY, "results.table.cell.null.deleting.background.colour");
 
         changedValueDisplayColor = SystemProperties.getColourProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.cell.changed.background.colour");
@@ -391,6 +404,9 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         nullValueDisplayString = SystemProperties.getStringProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.cell.null.text");
+
+        otherColorForNull = SystemProperties.getBooleanProperty(
+                Constants.USER_PROPERTIES_KEY, "results.table.use.other.color.null");
     }
 
     private String dateFormatted(Date date) {

@@ -2,6 +2,7 @@ package org.executequery.gui.databaseobjects;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -16,6 +17,7 @@ import org.underworldlabs.swing.GUIUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.security.acl.Group;
 import java.util.Vector;
 
 public class CreateViewPanel extends JPanel implements FocusListener {
@@ -30,10 +32,19 @@ public class CreateViewPanel extends JPanel implements FocusListener {
     JButton cancelButton;
     DynamicComboBoxModel connectionsModel;
     DefaultAutoCompletePopupProvider autoCompletePopup;
+    boolean editing;
+    DefaultDatabaseView view;
 
-    public CreateViewPanel(DatabaseConnection dc, ActionContainer dialog) {
+    public CreateViewPanel(DatabaseConnection dc,ActionContainer dialog)
+    {
+        this(dc,dialog,null);
+    }
+
+    public CreateViewPanel(DatabaseConnection dc, ActionContainer dialog,DefaultDatabaseView view) {
         connection = dc;
         parent = dialog;
+        this.view = view;
+        editing = view!=null;
         init();
     }
 
@@ -49,10 +60,17 @@ public class CreateViewPanel extends JPanel implements FocusListener {
         okButton = new JButton("OK");
         cancelButton = new JButton("Cancel");
 
-        String sql = "create view new_view ( _fields_ )\n" +
-                "as\n" +
-                "select _fields_ from _table_name_\n" +
-                "where _conditions_";
+        String sql;
+        if(editing)
+        {
+            sql = view.getCreateSQLText();
+        }
+        else {
+            sql = "create view new_view ( _fields_ )\n" +
+                    "as\n" +
+                    "select _fields_ from _table_name_\n" +
+                    "where _conditions_";
+        }
         sqlTextView.setText(sql);
 
         cancelButton.addActionListener(new ActionListener() {
@@ -110,7 +128,7 @@ public class CreateViewPanel extends JPanel implements FocusListener {
         );
         layout.setVerticalGroup(layout.createSequentialGroup()
                 .addGap(10)
-                .addComponent(connectionsCombo)
+                .addComponent(connectionsCombo,GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addGap(10)
                 .addComponent(sqlTextScroll, 0, 200, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)

@@ -25,6 +25,8 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.print.Printable;
 import java.util.List;
 
@@ -42,10 +44,13 @@ import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.TablePrivilege;
+import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
+import org.executequery.gui.BaseDialog;
+import org.executequery.gui.databaseobjects.CreateViewPanel;
 import org.executequery.gui.databaseobjects.DefaultDatabaseObjectTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
@@ -341,6 +346,41 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
     private void createTablePanel() {
         if (tableDescriptionPanel == null) {
             tableDescriptionTable = new DefaultDatabaseObjectTable();
+            tableDescriptionTable.addMouseListener(new MouseListener() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if(e.getClickCount()>1)
+                    {
+                        if(currentObjectView instanceof DefaultDatabaseView)
+                        {
+                            BaseDialog dialog = new BaseDialog("Edit View",true);
+                            CreateViewPanel panel = new CreateViewPanel(controller.getDatabaseConnection(),dialog,(DefaultDatabaseView) currentObjectView);
+                            dialog.addDisplayComponent(panel);
+                            dialog.display();
+                        }
+                    }
+                }
+
+                @Override
+                public void mousePressed(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent mouseEvent) {
+
+                }
+
+                @Override
+                public void mouseExited(MouseEvent mouseEvent) {
+
+                }
+            });
             tableDescriptionPanel = new JPanel(new GridBagLayout());
             tableDescriptionPanel.add(
                     new JScrollPane(tableDescriptionTable), 

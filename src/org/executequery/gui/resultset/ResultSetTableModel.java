@@ -553,7 +553,32 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                 break;
                             case Types.LONGVARCHAR:
                             case Types.CLOB:
-                                value.setValue(resultSet.getClob(i));
+                                Clob clob = resultSet.getClob(i);
+                                if (clob.getClass().getName().contains("org.firebirdsql.jdbc")) {
+                                    URL[] urls = new URL[0];
+                                    Class clazzdb = null;
+                                    Object odb = null;
+                                    try {
+                                        urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                                        ClassLoader cl = new URLClassLoader(urls, resultSet.getStatement().getConnection().getClass().getClassLoader());
+                                        clazzdb = cl.loadClass("biz.redsoft.FBClobImpl");
+                                        odb = clazzdb.newInstance();
+                                    } catch (ClassNotFoundException e) {
+                                        e.printStackTrace();
+                                    } catch (IllegalAccessException e) {
+                                        e.printStackTrace();
+                                    } catch (InstantiationException e) {
+                                        e.printStackTrace();
+                                    } catch (MalformedURLException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    IFBClob ifbClob = (IFBClob) odb;
+                                    ifbClob.detach(clob);
+                                    value.setValue(ifbClob);
+                                } else {
+                                    value.setValue(clob);
+                                }
                                 break;
                             case Types.LONGVARBINARY:
                             case Types.VARBINARY:
@@ -561,7 +586,32 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                 value.setValue(resultSet.getBytes(i));
                                 break;
                             case Types.BLOB:
-                                value.setValue(resultSet.getBlob(i));
+                                Blob blob = resultSet.getBlob(i);
+                                if (blob.getClass().getName().contains("org.firebirdsql.jdbc")) {
+                                    URL[] urls = new URL[0];
+                                    Class clazzdb = null;
+                                    Object odb = null;
+                                    try {
+                                        urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                                        ClassLoader cl = new URLClassLoader(urls, resultSet.getStatement().getConnection().getClass().getClassLoader());
+                                        clazzdb = cl.loadClass("biz.redsoft.FBBlobImpl");
+                                        odb = clazzdb.newInstance();
+                                    } catch (ClassNotFoundException e) {
+                                        e.printStackTrace();
+                                    } catch (IllegalAccessException e) {
+                                        e.printStackTrace();
+                                    } catch (InstantiationException e) {
+                                        e.printStackTrace();
+                                    } catch (MalformedURLException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    IFBBlob ifbBlob = (IFBBlob) odb;
+                                    ifbBlob.detach(blob);
+                                    value.setValue(ifbBlob);
+                                } else {
+                                    value.setValue(blob);
+                                }
                                 break;
                             case Types.BIT:
                             case Types.TINYINT:

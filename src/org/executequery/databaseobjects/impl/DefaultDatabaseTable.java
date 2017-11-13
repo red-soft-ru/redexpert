@@ -54,7 +54,7 @@ import org.underworldlabs.util.FileUtils;
  * @version $Revision: 1780 $
  * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
-public class DefaultDatabaseTable extends DefaultDatabaseObject implements DatabaseTable {
+public class DefaultDatabaseTable extends AbstractTableObject implements DatabaseTable {
 
     /**
      * the table columns
@@ -70,8 +70,6 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
      * the table indexed columns
      */
     private List<TableColumnIndex> indexes;
-
-    private List<TableDataChange> tableDataChanges;
 
     /**
      * the user modified SQL text for changes
@@ -538,12 +536,6 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         clearIndexes();
     }
 
-    public void clearDataChanges() {
-        if (tableDataChanges != null) {
-            tableDataChanges.clear();
-        }
-        tableDataChanges = null;
-    }
 
     private void clearColumns() {
         if (columns != null) {
@@ -590,38 +582,6 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
         modifiedSQLText = null;
     }
 
-    private List<TableDataChange> tableDataChanges() {
-
-        if (tableDataChanges == null) {
-
-            tableDataChanges = new ArrayList<TableDataChange>();
-        }
-        return tableDataChanges;
-    }
-
-    public void addTableDataChange(TableDataChange tableDataChange) {
-
-        if (tableDataChanges != null) {
-            for (int i = 0; i < tableDataChanges.size(); i++)
-                if (tableDataChange.getRowDataForRow() == tableDataChanges.get(i).getRowDataForRow()) {
-                    tableDataChanges.remove(i);
-                    i--;
-                }
-        }
-        tableDataChanges().add(tableDataChange);
-    }
-
-    @Override
-    public void removeTableDataChange(List<RecordDataItem> row) {
-        if (tableDataChanges != null) {
-            for (int i = 0; i < tableDataChanges.size(); i++)
-                if (row == tableDataChanges.get(i).getRowDataForRow()) {
-                    tableDataChanges.remove(i);
-                    i--;
-                }
-        }
-    }
-
     /**
      * Applies any changes to the database.
      */
@@ -640,23 +600,6 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
             tableDataChangeExecutor.cancel();
         }
         tableDataChangeExecutor = null;
-    }
-
-    public int applyTableDataChanges() {
-
-        if (!hasTableDataChanges()) {
-
-            return 1;
-        }
-
-        tableDataChangeExecutor = new TableDataChangeWorker(this);
-        boolean success = tableDataChangeExecutor.apply(tableDataChanges);
-        if (success) {
-
-            clearDataChanges();
-        }
-
-        return success ? 1 : 0;
     }
 
     public int applyTableDefinitionChanges() throws DataSourceException {
@@ -707,11 +650,6 @@ public class DefaultDatabaseTable extends DefaultDatabaseObject implements Datab
 
             releaseResources(stmnt);
         }
-    }
-
-    public boolean hasTableDataChanges() {
-
-        return tableDataChanges != null ? !tableDataChanges.isEmpty() : false;
     }
 
     public boolean hasTableDefinitionChanges() {

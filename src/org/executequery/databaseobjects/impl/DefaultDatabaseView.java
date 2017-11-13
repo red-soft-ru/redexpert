@@ -29,7 +29,7 @@ import org.underworldlabs.jdbc.DataSourceException;
 
 import java.util.List;
 
-public class DefaultDatabaseView extends DefaultDatabaseObject implements DatabaseView {
+public class DefaultDatabaseView extends AbstractTableObject implements DatabaseView {
 
     public DefaultDatabaseView(DatabaseObject object) {
 

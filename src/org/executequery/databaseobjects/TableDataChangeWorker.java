@@ -42,11 +42,21 @@ public class TableDataChangeWorker {
 
     private DatabaseTable table;
 
+    private DatabaseTableObject tableObject;
+
     private PreparedStatement statement;
 
     public TableDataChangeWorker(DatabaseTable table) {
 
         this.table = table;
+    }
+
+    public TableDataChangeWorker(DatabaseTableObject table) {
+
+        this.tableObject = table;
+        if(table instanceof DatabaseTable)
+            this.table = (DatabaseTable)table;
+        else this.table = null;
     }
 
     public boolean apply(List<TableDataChange> rows) {
@@ -56,21 +66,21 @@ public class TableDataChangeWorker {
 
             if (connection == null) {
 
-                createConnection(table);
+                createConnection(tableObject);
             }
 
             List<RecordDataItem> row = tableDataChange.getRowDataForRow();
             if (row.get(0).isDeleted()) {
-                if (table.hasPrimaryKey())
+                if (table!=null&&table.hasPrimaryKey())
                     result += executeDeletingWithPK(connection, table, row);
                 else
-                    result += executedDeleting(connection, table, row);
+                    result += executedDeleting(connection, tableObject, row);
             } else if (row.get(0).isNew()) {
-                result += executeAdding(connection, table, row);
-            } else if (table.hasPrimaryKey())
+                result += executeAdding(connection, tableObject, row);
+            } else if (table!=null&&table.hasPrimaryKey())
                 result += executeWithPK(connection, table, row);
             else
-                result += executeChange(connection, table, row);
+                result += executeChange(connection, tableObject, row);
         }
 
         if (result == rows.size()) {
@@ -85,7 +95,7 @@ public class TableDataChangeWorker {
 
     }
 
-    private void createConnection(DatabaseTable table) {
+    private void createConnection(DatabaseTableObject table) {
 
         try {
 
@@ -226,7 +236,7 @@ public class TableDataChangeWorker {
 
     }
 
-    private int executeAdding(Connection connection, DatabaseTable table, List<RecordDataItem> values) {
+    private int executeAdding(Connection connection, DatabaseTableObject table, List<RecordDataItem> values) {
         List<String> columns = new ArrayList<String>();
         List<RecordDataItem> changes = new ArrayList<RecordDataItem>();
         for (RecordDataItem item : values) {
@@ -291,7 +301,7 @@ public class TableDataChangeWorker {
 
     }
 
-    private int executedDeleting(Connection connection, DatabaseTable table, List<RecordDataItem> values) {
+    private int executedDeleting(Connection connection, DatabaseTableObject table, List<RecordDataItem> values) {
         List<String> columns = new ArrayList<String>();
         List<RecordDataItem> changes = new ArrayList<RecordDataItem>();
         for (RecordDataItem item : values) {
@@ -348,7 +358,7 @@ public class TableDataChangeWorker {
 
     }
 
-    private int executeChange(Connection connection, DatabaseTable table, List<RecordDataItem> values) {
+    private int executeChange(Connection connection, DatabaseTableObject table, List<RecordDataItem> values) {
         List<String> columns = new ArrayList<String>();
         List<RecordDataItem> changes = new ArrayList<RecordDataItem>();
         for (RecordDataItem item : values) {

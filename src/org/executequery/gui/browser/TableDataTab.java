@@ -52,10 +52,7 @@ import org.executequery.components.CancelButton;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
-import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseObject;
-import org.executequery.databaseobjects.DatabaseTable;
-import org.executequery.databaseobjects.TableDataChange;
+import org.executequery.databaseobjects.*;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultUserPreferenceEvent;
 import org.executequery.event.UserPreferenceEvent;
@@ -373,7 +370,7 @@ public class TableDataTab extends JPanel
                 canEditTableNotePanel.setVisible(alwaysShowCanEditNotePanel);
             }
 
-            if (!isDatabaseTable()) {
+            if (!isDatabaseTableObject()) {
 
                 canEditTableNotePanel.setVisible(false);
                 buttonsEditingPanel.setVisible(false);
@@ -398,8 +395,8 @@ public class TableDataTab extends JPanel
 
             List<String> nonEditableCols = new ArrayList<>();
             nonEditableCols.addAll(primaryKeyColumns);
-            if (isDatabaseTable())
-                for (DatabaseColumn databaseColumn : asDatabaseTable().getColumns()) {
+            if (isDatabaseTableObject())
+                for (DatabaseColumn databaseColumn : asDatabaseTableObject().getColumns()) {
                     if (!nonEditableCols.contains(databaseColumn.getName())) {
                         if (databaseColumn.isGenerated())
                             nonEditableCols.add(databaseColumn.getName());
@@ -547,6 +544,11 @@ public class TableDataTab extends JPanel
     private boolean isDatabaseTable() {
 
         return this.databaseObject instanceof DatabaseTable;
+    }
+
+    private boolean isDatabaseView()
+    {
+        return this.databaseObject instanceof DatabaseView;
     }
 
     private void addErrorLabel(Throwable e) {
@@ -885,7 +887,7 @@ public class TableDataTab extends JPanel
 
 
                 try {
-                    DatabaseObjectChangeProvider docp = new DatabaseObjectChangeProvider(asDatabaseTable());
+                    DatabaseObjectChangeProvider docp = new DatabaseObjectChangeProvider(asDatabaseTableObject());
                     if (docp.applyDataChanges())
                         loadDataForTable(databaseObject);
 
@@ -900,7 +902,7 @@ public class TableDataTab extends JPanel
         rollbackRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                asDatabaseTable().clearDataChanges();
+                asDatabaseTableObject().clearDataChanges();
                 loadDataForTable(databaseObject);
             }
         });
@@ -995,12 +997,12 @@ public class TableDataTab extends JPanel
 
     public void tableChanged(TableModelEvent e) {
 
-        if (isDatabaseTable()) {
+        if (isDatabaseTableObject()) {
 
             int row = e.getFirstRow();
             if (e.getType() == TableModelEvent.DELETE) {
                 List<RecordDataItem> rowDataForRow = ((ResultSetTableModel) e.getSource()).getDeletedRow();
-                asDatabaseTable().removeTableDataChange(rowDataForRow);
+                asDatabaseTableObject().removeTableDataChange(rowDataForRow);
             } else if (row >= 0) {
 
                 List<RecordDataItem> rowDataForRow = tableModel.getRowDataForRow(row);
@@ -1009,7 +1011,7 @@ public class TableDataTab extends JPanel
                     if (recordDataItem.isDeleted()) {
                         Log.debug("Deleting detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
 
-                        asDatabaseTable().addTableDataChange(new TableDataChange(rowDataForRow));
+                        asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
                         return;
                     }
 
@@ -1017,7 +1019,7 @@ public class TableDataTab extends JPanel
 
                         Log.debug("Adding detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
 
-                        asDatabaseTable().addTableDataChange(new TableDataChange(rowDataForRow));
+                        asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
                         return;
                     }
 
@@ -1025,7 +1027,7 @@ public class TableDataTab extends JPanel
 
                         Log.debug("Change detected in column [ " + recordDataItem.getName() + " ] - value [ " + recordDataItem.getValue() + " ]");
 
-                        asDatabaseTable().addTableDataChange(new TableDataChange(rowDataForRow));
+                        asDatabaseTableObject().addTableDataChange(new TableDataChange(rowDataForRow));
                         return;
                     }
 
@@ -1043,11 +1045,25 @@ public class TableDataTab extends JPanel
         return null;
     }
 
+    private boolean isDatabaseTableObject()
+    {
+        return this.databaseObject instanceof DatabaseTableObject;
+    }
+
+    private DatabaseTableObject asDatabaseTableObject()
+    {
+        if (isDatabaseTableObject()) {
+
+        return (DatabaseTableObject) this.databaseObject;
+    }
+        return null;
+    }
+
     public boolean hasChanges() {
 
         if (isDatabaseTable()) {
 
-            return asDatabaseTable().hasTableDataChanges();
+            return asDatabaseTableObject().hasTableDataChanges();
         }
         return false;
     }

@@ -33,7 +33,7 @@ import org.underworldlabs.jdbc.DataSourceException;
  * @version $Revision: 1780 $
  * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
-public interface DatabaseTable extends DatabaseObject {
+public interface DatabaseTable extends DatabaseTableObject {
 
     /**
      * Propagates the call to getColumns().
@@ -106,11 +106,7 @@ public interface DatabaseTable extends DatabaseObject {
      */
     int applyChanges() throws DataSourceException;
 
-    int applyTableDataChanges();
-
     int applyTableDefinitionChanges();
-
-    void clearDataChanges();
 
     /**
      * Indicates whether this table or any of its columns
@@ -191,23 +187,11 @@ public interface DatabaseTable extends DatabaseObject {
 
     boolean hasPrimaryKey();
 
-    String prepareStatement(List<String> columns, List<RecordDataItem> changes);
-
     String prepareStatementWithPK(List<String> columns);
-
-    String prepareStatementAdding(List<String> columns, List<RecordDataItem> changes);
 
     String prepareStatementDeletingWithPK();
 
-    String prepareStatementDeleting(List<RecordDataItem> changes);
-
     List<String> getPrimaryKeyColumnNames();
-
-    void addTableDataChange(TableDataChange tableDataChange);
-
-    void removeTableDataChange(List<RecordDataItem> row);
-
-    boolean hasTableDataChanges();
 
     boolean hasForeignKey();
 

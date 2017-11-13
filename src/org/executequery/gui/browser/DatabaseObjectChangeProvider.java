@@ -26,6 +26,7 @@ import javax.swing.JOptionPane;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.DatabaseTableObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.ErrorMessagePublisher;
 import org.executequery.localization.Bundles;
@@ -148,7 +149,7 @@ public class DatabaseObjectChangeProvider implements Interruptible {
                     }
                     sb.append(e.getExtendedMessage());
 
-                    if (table().hasTableDataChanges()) {
+                    if (tableObject().hasTableDataChanges()) {
 
                         sb.append("\nRollback was issued for all data changes.");
                     }
@@ -188,7 +189,7 @@ public class DatabaseObjectChangeProvider implements Interruptible {
 
                 try {
 
-                    table().applyTableDataChanges();
+                    tableObject().applyTableDataChanges();
                     applied = true;
 
                 } catch (DataSourceException e) {
@@ -208,7 +209,7 @@ public class DatabaseObjectChangeProvider implements Interruptible {
                     }
                     sb.append(e.getExtendedMessage());
 
-                    if (table().hasTableDataChanges()) {
+                    if (tableObject().hasTableDataChanges()) {
 
                         sb.append("\nRollback was issued for all data changes.");
                     }
@@ -263,7 +264,7 @@ public class DatabaseObjectChangeProvider implements Interruptible {
                     }
                     sb.append(e.getExtendedMessage());
 
-                    if (table().hasTableDataChanges()) {
+                    if (tableObject().hasTableDataChanges()) {
 
                         sb.append("\nRollback was issued for all data changes.");
                     }
@@ -311,6 +312,15 @@ public class DatabaseObjectChangeProvider implements Interruptible {
         if (namedObject instanceof DatabaseTable) {
 
             return (DatabaseTable) namedObject;
+        }
+        return null;
+    }
+
+    private DatabaseTableObject tableObject() {
+
+        if (namedObject instanceof DatabaseTableObject) {
+
+            return (DatabaseTableObject) namedObject;
         }
         return null;
     }

@@ -20,10 +20,8 @@
 
 package org.executequery.gui.editor;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Insets;
+import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 
 import javax.swing.BorderFactory;
@@ -43,52 +41,78 @@ import javax.swing.event.ChangeListener;
 import org.apache.commons.lang.CharUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
+import org.executequery.databaseobjects.DatabaseTableObject;
+import org.executequery.databaseobjects.TableDataChange;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.DefaultActionButtonsPanel;
 import org.executequery.gui.resultset.BlobRecordDataItem;
 import org.executequery.gui.resultset.LobRecordDataItem;
+import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.io.ByteArrayFileWriter;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.underworldlabs.swing.hexeditor.*;
+import org.underworldlabs.swing.hexeditor.bdoc.AnnotatedBinaryDocument;
+import org.underworldlabs.swing.hexeditor.bdoc.BinaryDocument;
+import org.underworldlabs.swing.hexeditor.bdoc.Location;
 
-public class LobDataItemViewerPanel extends DefaultActionButtonsPanel 
-                            implements ChangeListener {
+import java.util.List;
+
+public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
+        implements ChangeListener {
 
     private static final String CANNOT_DISPLAY_BINARY_DATA_AS_TEXT = "\n  Cannot display binary data as text";
 
     private JTextArea textArea;
 
-    private JTextArea binaryStringTextArea;
+    /*private JTextArea binaryStringTextArea;
+
+    private JTextArea binaryCharTextArea;*/
+
+    private HexEditor binaryStringTextArea;
 
     private JTabbedPane tabbedPane;
-    
+
+    private JButton openButton;
+
     private final LobRecordDataItem recordDataItem;
 
     private final ActionContainer parent;
 
-    public LobDataItemViewerPanel(ActionContainer parent, LobRecordDataItem recordDataItem) {
+    JScrollPane scrollPane;
+    JScrollPane imageScroll;
+    JLabel imageLabel;
+
+    DatabaseTableObject table;
+    List<RecordDataItem> row;
+    boolean readOnly;
+
+    public LobDataItemViewerPanel(ActionContainer parent, LobRecordDataItem recordDataItem, DatabaseTableObject table, List<RecordDataItem> row) {
 
         this.parent = parent;
         this.recordDataItem = recordDataItem;
-    
+        this.table = table;
+        this.row = row;
+        readOnly = table == null;
+
         try {
-            
+
             init();
-        
+
         } catch (Exception e) {
-            
+
             e.printStackTrace();
         }
-        
+
     }
 
     private void init() {
 
         Border emptyBorder = BorderFactory.createEmptyBorder(2, 2, 2, 2);
-        
+
         JPanel textPanel = new JPanel(new BorderLayout());
         textPanel.setBorder(emptyBorder);
-        
+
         textArea = createTextArea();
         textArea.setLineWrap(false);
         textArea.setMargin(new Insets(2, 2, 2, 2));
@@ -99,29 +123,35 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         imagePanel = new JPanel(new BorderLayout());
         imagePanel.setBorder(emptyBorder);
 
+
+        JPanel binaryPanel = new JPanel(new AKDockLayout());
+
+        binaryStringTextArea = new HexEditor(new AnnotatedBinaryDocument(recordDataItemByteArray(), readOnly));
+        imageScroll = new JScrollPane();
+
         if (isImage()) {
-        
+
             ImageIcon image = loadImageData();
             if (image != null) {
-    
-                JLabel imageLabel = new JLabel(image);
-                imagePanel.add(new JScrollPane(imageLabel), BorderLayout.CENTER);
+
+                imageLabel = new JLabel(image);
+                imageScroll.setViewportView(imageLabel);
+                imagePanel.add(imageScroll, BorderLayout.CENTER);
             }
 
             setTextAreaText(textArea, CANNOT_DISPLAY_BINARY_DATA_AS_TEXT);
-            
-        } else {
 
-            imagePanel.add(new JLabel("Unsupported format", JLabel.CENTER));
-            
+        } else {
+            imageLabel = new JLabel("Unsupported format",JLabel.CENTER);
+            imageScroll.setViewportView(imageLabel);
+
+            imagePanel.add(imageScroll,BorderLayout.CENTER );
+
             loadTextData();
         }
 
-        JPanel binaryPanel = new JPanel(new BorderLayout());
-        binaryPanel.setBorder(emptyBorder);
-
-        binaryStringTextArea = createTextArea();
-        binaryPanel.add(new JScrollPane(binaryStringTextArea), BorderLayout.CENTER);
+        scrollPane = new JScrollPane(binaryStringTextArea);
+        binaryPanel.add(scrollPane, AKDockLayout.CENTER);
 
         tabbedPane = new JTabbedPane();
         tabbedPane.addChangeListener(this);
@@ -137,115 +167,128 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         descriptionLabel.setBorder(BorderFactory.createEmptyBorder(5, 2, 5, 0));
 
         contentPanel.add(descriptionLabel, BorderLayout.SOUTH);
-        
+
         JButton closeButton = new JButton(Bundles.get("common.close.button"));
         closeButton.setActionCommand("close");
 
         JButton saveButton = new JButton(Bundles.get("common.save-as.button"));
         saveButton.setActionCommand("save");
-        
+
+        JButton okButton = new JButton("OK");
+        okButton.setActionCommand("ok");
+
+        openButton = new JButton("Open File");
+        openButton.setActionCommand("open");
+
+
         saveButton.addActionListener(this);
         closeButton.addActionListener(this);
-        
+        okButton.addActionListener(this);
+        openButton.addActionListener(this);
+
+        addActionButton(okButton);
+        addActionButton(openButton);
         addActionButton(saveButton);
         addActionButton(closeButton);
-        
-        setPreferredSize(new Dimension(500, 420));
+
+        setPreferredSize(new Dimension(600, 420));
 
         addContentPanel(contentPanel);
-        
+
         textArea.requestFocus();
     }
 
     private String formatDescriptionString() {
-        
+
         StringBuilder sb = new StringBuilder();
 
         sb.append("LOB Data Type: ").append(recordDataItem.getLobRecordItemName());
         sb.append("   Total Size: ").append(recordDataItem.length()).append(" bytes");
-        
+
         return sb.toString();
     }
-    
+
     private byte[] recordDataItemByteArray() {
 
-        return recordDataItem.getData();
+        return recordDataItem.getData() != null ? recordDataItem.getData() : new byte[0];
     }
-    
+
     private void loadTextData() {
 
-    	String dataAsText = null;
-        byte[] data = recordDataItemByteArray();
+        String dataAsText = null;
+        byte[] data = binaryStringTextArea.getDocument().getData();
         boolean isValidText = true;
 
         if (data != null) {
-        	
-			dataAsText = new String(data);
-	        char[] charArray = dataAsText.toCharArray();
-	
-	        int defaultEndPoint = 256;
-            int endPoint = Math.min(charArray.length, defaultEndPoint);
-	        
-	        for (int i = 0; i < endPoint; i++) {
 
-	            if (!CharUtils.isAscii(charArray[i])) {
-	
-	                isValidText = false;
-	                break;
-	            }
-	            
-	        }
-        
+            dataAsText = new String(data);
+            char[] charArray = dataAsText.toCharArray();
+
+            int defaultEndPoint = 256;
+            int endPoint = Math.min(charArray.length, defaultEndPoint);
+
+            for (int i = 0; i < endPoint; i++) {
+
+                if (!CharUtils.isAscii(charArray[i])) {
+
+                    isValidText = false;
+                    break;
+                }
+
+            }
+
         } else {
-        	
-        	isValidText = false;
+
+            isValidText = false;
         }
 
         if (isValidText) {
-        
+
             setTextAreaText(textArea, dataAsText);
-        
+
         } else {
 
             setTextAreaText(textArea, CANNOT_DISPLAY_BINARY_DATA_AS_TEXT);
         }
-        
+
     }
 
     private void setTextAreaText(JTextArea textArea, String text) {
-        
+
         textArea.setText(text);
         textArea.setCaretPosition(0);
     }
-    
+
     private JTextArea createTextArea() {
-        
+
         JTextArea textArea = new JTextArea();
         textArea.setEditable(false);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
         textArea.setFont(new Font("monospaced", Font.PLAIN, 11));
-        
+
         return textArea;
     }
 
     private static final String SUPPORTED_IMAGES = "image/jpeg,image/gif,image/png";
-    
+
     private boolean isImage() {
 
-        return SUPPORTED_IMAGES.contains(recordDataItem.getLobRecordItemName());                
+        if (isBlob())
+            return SUPPORTED_IMAGES.contains(((BlobRecordDataItem) recordDataItem).getLobRecordItemName(binaryStringTextArea.getDocument().getData()));
+        return SUPPORTED_IMAGES.contains(recordDataItem.getLobRecordItemName());
     }
 
     private boolean isBlob() {
 
         return (recordDataItem instanceof BlobRecordDataItem);
     }
-    
+
     private ImageIcon loadImageData() {
 
         if (isBlob()) {
-        
-            byte[] data = recordDataItemByteArray();
+
+            byte[] data = binaryStringTextArea.getDocument().getData();
             return new ImageIcon(data);
         }
 
@@ -253,7 +296,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
     }
 
     public void save() {
-        
+
         FileChooserDialog fileChooser = new FileChooserDialog();
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
@@ -262,57 +305,82 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
             return;
         }
-        
+
         if (fileChooser.getSelectedFile() != null) {
-            
+
             try {
 
                 GUIUtilities.showWaitCursor();
 
                 new ByteArrayFileWriter().write(
                         fileChooser.getSelectedFile(), recordDataItemByteArray());
-                
+
             } catch (IOException e) {
-                
+
                 if (Log.isDebugEnabled()) {
-                    
+
                     Log.debug("Error writing LOB to file", e);
                 }
 
                 GUIUtilities.displayErrorMessage(
                         "Error writing LOB data to file:\n" + e.getMessage());
                 return;
-         
+
             } finally {
-                
+
                 GUIUtilities.showNormalCursor();
             }
-            
+
         }
-        
+
         close();
     }
-    
+
     public void close() {
-        
+
         parent.finished();
+    }
+
+    public void ok() {
+        if (!readOnly)
+            if (!recordDataItemByteArray().equals(binaryStringTextArea.getDocument().getData())) {
+                recordDataItem.valueChanged(binaryStringTextArea.getDocument().getData());
+                table.addTableDataChange(new TableDataChange(row));
+            }
+        parent.finished();
+    }
+
+    public void open() {
+        FileChooserDialog fileChooser = new FileChooserDialog();
+        int returnVal = fileChooser.showOpenDialog(openButton);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            try {
+                binaryStringTextArea = new HexEditor(new AnnotatedBinaryDocument(file));
+                scrollPane.setViewportView(binaryStringTextArea);
+                loadTextData();
+                if (isImage()) {
+                    imageLabel = new JLabel(loadImageData());
+                    imageScroll.setViewportView(imageLabel);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+
     }
 
     public void stateChanged(ChangeEvent e) {
 
-        int selectedIndex = tabbedPane.getSelectedIndex(); 
-        
-        if (selectedIndex == tabbedPane.getTabCount() - 1) { // binary tab always last
-            
-            if (binaryStringTextArea.getText().length() == 0) {
+        int selectedIndex = tabbedPane.getSelectedIndex();
 
-                setTextAreaText(binaryStringTextArea, recordDataItem.asBinaryString());
-            }
-            
+        if (selectedIndex == tabbedPane.getTabCount() - 1) { // binary tab always last
+
         }
-        
     }
-    
+
 }
 
 

@@ -262,8 +262,8 @@ public class TableDataChangeWorker {
             Log.info("Executing data change using statement - [ " + sql + " ]");
 
             statement = connection.prepareStatement(sql);
-            for (int i = 0; i < n; i++) {
-                RecordDataItem recordDataItem = changes.get(i);
+            for (int i = 0,g=0; i < n; i++,g++) {
+                RecordDataItem recordDataItem = changes.get(g);
                 if (!recordDataItem.isGenerated()) {
                     if (!recordDataItem.isNewValueNull()) {
 

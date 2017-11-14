@@ -20,6 +20,7 @@
 
 package org.executequery.gui.resultset;
 
+import java.io.ByteArrayInputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
 
@@ -47,9 +48,28 @@ public class BlobRecordDataItem extends AbstractLobRecordDataItem {
     }
 
     @Override
+    public Object getNewValue() {
+        return new ByteArrayInputStream(getData());
+    }
+
+    @Override
     public String getLobRecordItemName() {
 
         MimeType mimeType = mimeTypeFromByteArray(getData());
+        if (mimeType != null) {
+
+            return mimeType.getName();
+
+        } else {
+
+            return getDataTypeName() + " Type"; //UNKNOWN_TYPE;
+        }
+
+    }
+
+    public String getLobRecordItemName(byte[] data) {
+
+        MimeType mimeType = mimeTypeFromByteArray(data);
         if (mimeType != null) {
 
             return mimeType.getName();

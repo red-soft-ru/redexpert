@@ -592,7 +592,7 @@ public class TableDataTab extends JPanel
     private void createResultSetTable() {
 
         table = new ResultSetTable();
-        table.addMouseListener(new ResultSetTablePopupMenu(table, this));
+        table.addMouseListener(new ResultSetTablePopupMenu(table, this,asDatabaseTableObject()));
         setTableProperties();
     }
 

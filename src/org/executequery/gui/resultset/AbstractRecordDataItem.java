@@ -54,7 +54,7 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
 
     private String dataTypeName;
 
-    private boolean changed;
+    protected boolean changed;
 
     private boolean generated = false;
 
@@ -141,7 +141,7 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
         changed = true;
     }
 
-    private boolean valuesEqual(Object firstValue, Object secondValue) {
+    protected boolean valuesEqual(Object firstValue, Object secondValue) {
 
         if (ObjectUtils.equals(firstValue, secondValue)) {
 

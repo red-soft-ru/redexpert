@@ -84,6 +84,8 @@ public class BlobRecordDataItem extends AbstractLobRecordDataItem {
     @Override
     protected byte[] readLob() {
 
+        if(isValueNull())
+            return null;
         Object value = getValue();
         if (value instanceof String) { // eg. oracle RAW type
 

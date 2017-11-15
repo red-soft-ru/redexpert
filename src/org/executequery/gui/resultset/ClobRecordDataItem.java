@@ -69,6 +69,9 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
     @Override
     protected byte[] readLob() {
 
+        if(isValueNull())
+            return null;
+
         Object value = getValue();
         if (value instanceof String) {
 

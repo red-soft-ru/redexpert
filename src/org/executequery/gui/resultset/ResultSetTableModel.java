@@ -384,8 +384,12 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
         } catch (SQLException e) {
 
-            System.err.println("SQL error populating table model at: " + e.getMessage());
-            Log.debug("Table model error - " + e.getMessage(), e);
+            // TODO make sure that all resources are released
+            if (!e.getMessage().equalsIgnoreCase("Look at a column before testing null.")
+                    || !e.getMessage().equalsIgnoreCase("Result set is already closed.")) {
+                System.err.println("SQL error populating table model at: " + e.getMessage());
+                Log.debug("Table model error - " + e.getMessage(), e);
+            }
 
         } catch (Exception e) {
 

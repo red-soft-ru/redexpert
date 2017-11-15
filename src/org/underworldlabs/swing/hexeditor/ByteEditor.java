@@ -8,6 +8,7 @@ import java.util.*;
 
 import org.underworldlabs.swing.hexeditor.bdoc.*;
 import org.underworldlabs.swing.hexeditor.textgrid.*;
+import org.underworldlabs.util.SystemProperties;
 
 public class ByteEditor extends TextGrid implements BinaryEditor {
         
@@ -49,8 +50,8 @@ public class ByteEditor extends TextGrid implements BinaryEditor {
     radix = 16;
     byteWidth = Integer.toString(0xFF,radix).length(); 
     
-    setBackground(Color.WHITE);
-    setForeground(Color.BLACK);
+    setBackground(SystemProperties.getColourProperty("user","editor.text.background.colour"));
+    setForeground(SystemProperties.getColourProperty("user","editor.text.foreground.colour"));
   }
 
   public int getBytesPerRow() {
@@ -159,8 +160,8 @@ public class ByteEditor extends TextGrid implements BinaryEditor {
     private int lastRowIndex = 0;
     private String lastRowText = null;
     private LinkedList listeners;
-    private Color whiteColor = new Color(254, 254, 254);
-    private Color alternateColor = new Color(237, 243, 254);
+    private Color whiteColor = SystemProperties.getColourProperty("user","editor.text.background.colour");
+    private Color alternateColor = SystemProperties.getColourProperty("user","editor.text.background.alternate.color");
     
     public LocalTextGridModel() {
       listeners = new LinkedList();
@@ -183,7 +184,8 @@ public class ByteEditor extends TextGrid implements BinaryEditor {
     }
     
     public Color getCharColor(int row, int col) {
-      return (isEnabled() ? Color.BLACK : Color.DARK_GRAY);
+      return (isEnabled() ? SystemProperties.getColourProperty("user","editor.text.foreground.colour"):
+      SystemProperties.getColourProperty("user","editor.text.selection.foreground"));
     }
     
     public Color getCharBackground(int row, int col) {
@@ -259,9 +261,9 @@ public class ByteEditor extends TextGrid implements BinaryEditor {
   private class LocalTextGridCursor extends TextGridCursor {
     private boolean isInserting = false;
     private boolean insertingAtLineStart = true;
-    private Color insertColor = Color.BLACK;
-    private Color replaceColor = Color.BLACK;
-    private Color greySelectionColor = new Color(225, 225, 225);
+    private Color insertColor = SystemProperties.getColourProperty("user","editor.text.foreground.colour");
+    private Color replaceColor =SystemProperties.getColourProperty("user","editor.text.foreground.colour");
+    private Color greySelectionColor =  SystemProperties.getColourProperty("user","editor.text.selection.background.alternative");
   
     public void left() {
       if (getCurrentColumn() == 0 && !insertingAtLineStart) {
@@ -363,7 +365,7 @@ public class ByteEditor extends TextGrid implements BinaryEditor {
 
     public Color getSelectionColor() {
       if (ByteEditor.this.hasFocus())
-        return (Color) UIManager.get("TextArea.selectionBackground");
+        return SystemProperties.getColourProperty("user","editor.text.selection.background");
       else
         return greySelectionColor;
     }
@@ -371,7 +373,7 @@ public class ByteEditor extends TextGrid implements BinaryEditor {
     public Color getSelectedTextColor() {
       Color color = null;
       if (ByteEditor.this.hasFocus()) {
-        color = (Color) UIManager.get("TextArea.selectionForeground");
+        color =  SystemProperties.getColourProperty("user","editor.text.selection.foreground");
       }
       return (color != null ? color : super.getSelectedTextColor());
     }
@@ -428,7 +430,7 @@ public class ByteEditor extends TextGrid implements BinaryEditor {
           char c = getCharAt(getCurrentRow(), getCurrentColumn());
           g.setColor(replaceColor);
           g.fillRect(rect.x, rect.y, rect.width, rect.height);
-          g.setColor(Color.WHITE);
+          g.setColor(SystemProperties.getColourProperty("user","editor.text.selection.foreground"));
           g.drawChars(new char[] {c}, 0, 1, rect.x, 1 + rect.y + rect.height - charDescent);
         }
       }

@@ -101,6 +101,19 @@ public class PropertiesEditorBackground extends AbstractPropertiesBasePanel
                     key,
                     "Editor background",
                     SystemProperties.getColourProperty("user", key)));
+        key = "editor.text.background.alternate.color";
+        list.add(new UserPreference(
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Editor alternative background",
+                SystemProperties.getColourProperty("user", key)));
+
+        key = "editor.text.foreground.colour";
+        list.add(new UserPreference(
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Editor foreground",
+                SystemProperties.getColourProperty("user", key)));
 
         key = "editor.results.background.colour";
         list.add(new UserPreference(
@@ -122,6 +135,14 @@ public class PropertiesEditorBackground extends AbstractPropertiesBasePanel
                     key,
                     "Text selection background",
                     SystemProperties.getColourProperty("user", key)));
+
+        key = "editor.text.selection.background.alternative";
+        list.add(new UserPreference(
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Text selection alternative background",
+                SystemProperties.getColourProperty("user", key)));
+
 
         key = "editor.display.linehighlight.colour";
         list.add(new UserPreference(

@@ -8,6 +8,7 @@ import java.util.*;
 
 import org.underworldlabs.swing.hexeditor.bdoc.*;
 import org.underworldlabs.swing.hexeditor.textgrid.*;
+import org.underworldlabs.util.SystemProperties;
 
 public class CharEditor extends TextGrid implements BinaryEditor {
         
@@ -25,6 +26,9 @@ public class CharEditor extends TextGrid implements BinaryEditor {
   protected LocalTextGridModel localTextGridModel;
   protected LocalTextGridCursor localTextGridCursor;
   protected LocalDocumentObserver localDocumentObserver;
+
+  private Color charColor;
+  private Color selectedColor;
 
   /**
    * Construct the editor with a document.
@@ -44,8 +48,11 @@ public class CharEditor extends TextGrid implements BinaryEditor {
     setSelectionSpan(null);
     setCurrentLocation(document.createOffset(0));
 
-    setBackground(Color.WHITE);
-    setForeground(Color.BLACK);
+    setBackground(SystemProperties.getColourProperty("user","editor.text.background.colour"));
+    setForeground(SystemProperties.getColourProperty("user","editor.text.foreground.colour"));
+    charColor = SystemProperties.getColourProperty("user","editor.text.foreground.colour");
+    selectedColor = SystemProperties.getColourProperty("user","editor.text.selection.foreground");
+
   }
 
   public int getBytesPerRow() {
@@ -152,8 +159,8 @@ public class CharEditor extends TextGrid implements BinaryEditor {
     private int lastRowIndex = 0;
     private String lastRowText = null;
     private LinkedList listeners;
-    private Color whiteColor = new Color(254, 254, 254);
-    private Color alternateColor = new Color(237, 243, 254);
+    private Color whiteColor = SystemProperties.getColourProperty("user","editor.text.background.colour");
+    private Color alternateColor = SystemProperties.getColourProperty("user","editor.text.background.alternate.color");
     
     public LocalTextGridModel() {
       listeners = new LinkedList();
@@ -176,7 +183,7 @@ public class CharEditor extends TextGrid implements BinaryEditor {
     }
     
     public Color getCharColor(int row, int col) {
-      return (isEnabled() ? Color.BLACK : Color.DARK_GRAY);
+      return (isEnabled() ? charColor : selectedColor);
     }
     
     public Color getCharBackground(int row, int col) {
@@ -311,9 +318,9 @@ public class CharEditor extends TextGrid implements BinaryEditor {
 
     public Color getSelectionColor() {
       if (CharEditor.this.hasFocus())
-        return (Color) UIManager.get("TextArea.selectionBackground");
+        return SystemProperties.getColourProperty("user","editor.text.selection.background") ;
       else
-        return greySelectionColor;
+        return SystemProperties.getColourProperty("user","editor.text.selection.background.alternative") ;
     }
 
     public Color getSelectedTextColor() {

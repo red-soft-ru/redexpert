@@ -7,13 +7,14 @@ import java.util.*;
 
 import org.underworldlabs.swing.hexeditor.bdoc.*;
 import org.underworldlabs.swing.hexeditor.textgrid.*;
+import org.underworldlabs.util.SystemProperties;
 
 public class HexEditor extends JPanel implements BinaryEditor, Scrollable {
         
   // CONSTANTS
   public static final int SPACER_WIDTH = 2;
   
-  private static Color addressBackground = new Color(0.9f, 0.9f, 0.9f);
+  private static Color addressBackground = SystemProperties.getColourProperty("user","editor.text.background.colour");
 
   // MEMBERS
   protected TextGrid   addressComponent;
@@ -27,9 +28,9 @@ public class HexEditor extends JPanel implements BinaryEditor, Scrollable {
    * Construct the editor with a document.
    */
   public HexEditor(BinaryDocument document) {
-    Color bg = Color.WHITE;
+    Color bg = SystemProperties.getColourProperty("user","editor.text.background.colour");
     setBackground(bg);
-    setForeground(Color.BLACK);
+    setForeground(SystemProperties.getColourProperty("user","editor.text.foreground.colour"));
 
     GridBagLayout gridbag = new GridBagLayout();
     GridBagConstraints gbc = new GridBagConstraints();
@@ -203,7 +204,7 @@ public class HexEditor extends JPanel implements BinaryEditor, Scrollable {
     }
     
     public Color getCharColor(int row, int col) {
-      return Color.BLACK;
+      return SystemProperties.getColourProperty("user","editor.text.foreground.colour");
     }
     
     public Color getCharBackground(int row, int col) {

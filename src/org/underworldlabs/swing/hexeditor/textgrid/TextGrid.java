@@ -1,5 +1,7 @@
 package org.underworldlabs.swing.hexeditor.textgrid;
 
+import org.underworldlabs.util.SystemProperties;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
@@ -12,10 +14,12 @@ import java.util.Iterator;
 public class TextGrid extends JComponent implements TextGridModelListener, Scrollable {
 
   // CONSTANTS
-  public static final Font PLAIN_FONT       = new Font("Monospaced", Font.PLAIN,  11);
-  public static final Font BOLD_FONT        = new Font("Monospaced", Font.BOLD,   11);
-  public static final Font ITALIC_FONT      = new Font("Monospaced", Font.ITALIC, 11);
-  public static final Font BOLD_ITALIC_FONT = new Font("Monospaced", Font.BOLD|Font.ITALIC, 11);
+  public static final String FONT = SystemProperties.getProperty("user","sqlsyntax.font.name");
+  public static final int FONT_SIZE = SystemProperties.getIntProperty("user","sqlsyntax.font.size");
+  public static final Font PLAIN_FONT       = new Font(FONT, Font.PLAIN,  FONT_SIZE);
+  public static final Font BOLD_FONT        = new Font(FONT, Font.BOLD,   FONT_SIZE);
+  public static final Font ITALIC_FONT      = new Font(FONT, Font.ITALIC, FONT_SIZE);
+  public static final Font BOLD_ITALIC_FONT = new Font(FONT, Font.BOLD|Font.ITALIC,FONT_SIZE);
   
   public static final int PLAIN                = 0;
   public static final int BOLD                 = 1;

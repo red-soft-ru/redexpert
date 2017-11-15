@@ -1,5 +1,7 @@
 package org.underworldlabs.swing.hexeditor.textgrid;
 
+import org.underworldlabs.util.SystemProperties;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.LinkedList;
@@ -10,8 +12,8 @@ import javax.swing.Timer;
 public class TextGridCursor {
 
   public static final int DEFAULT_BLINK_RATE = 500;      
-  public static final Color DEFAULT_SELECTION_COLOR = new Color(200, 221, 241);
-  public static final Color DEFAULT_SELECTED_TEXT_COLOR = Color.BLACK;
+  public static final Color DEFAULT_SELECTION_COLOR = SystemProperties.getColourProperty("user","editor.text.selection.background");
+  public static final Color DEFAULT_SELECTED_TEXT_COLOR = SystemProperties.getColourProperty("user","editor.text.selection.foreground");
         
   private int row;
   private int column;

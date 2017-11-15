@@ -93,9 +93,12 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         editorColourKeys.put("editor.linenumber.background", "Gutter background");
         editorColourKeys.put("editor.linenumber.foreground", "Gutter foreground");
         editorColourKeys.put("editor.text.background.colour", "Editor background");
+        editorColourKeys.put("editor.text.background.alternate.color", "Editor alternative background");
+        editorColourKeys.put("editor.text.foreground.colour", "Editor foreground");
         editorColourKeys.put("editor.results.background.colour", "Results panel background");
         editorColourKeys.put("editor.text.selection.foreground", "Text selection foreground");
         editorColourKeys.put("editor.text.selection.background", "Text selection background");
+        editorColourKeys.put("editor.text.selection.background.alternative", "Text selection alternative background");
         editorColourKeys.put("editor.display.linehighlight.colour", "Current Line Highlight");
         
         List<UserPreference> editorColoursPreferences = new ArrayList<>();

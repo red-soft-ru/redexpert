@@ -61,7 +61,6 @@ import java.util.Map;
  * @author Glenn L. Nielsen
  * @author James House
  * @author Dirk Verbeeck
- * @version $Revision: 1780 $
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
 class DelegatingResultSet implements ResultSet {

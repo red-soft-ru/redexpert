@@ -40,8 +40,6 @@ import org.underworldlabs.jdbc.DataSourceException;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  * @deprecated
  */
 public class GenerateScriptsPanel extends BaseScriptGeneratorPanel

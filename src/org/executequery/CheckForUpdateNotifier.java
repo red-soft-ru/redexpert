@@ -50,11 +50,9 @@ import org.underworldlabs.swing.util.Interruptible;
 import org.underworldlabs.swing.util.SwingWorker;
 
 /**
- * Checks to see if a newer version of Execute Query is available.
- *
- * @author Takis Diakoumis
- * @version $Revision: 1780 $
- * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * Checks to see if a newer version of Execute Query is available. 
+ * 
+ * @author   Takis Diakoumis
  */
 public class CheckForUpdateNotifier implements Interruptible {
 

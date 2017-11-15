@@ -65,8 +65,6 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  *  @author   Takis Diakoumis
- *  @version  $Revision: 1497 $
- *  @date     $Date: 2015-09-18 00:15:39 +1000 (Fri, 18 Sep 2015) $
  */
 public class PropertiesEditorColours extends AbstractPropertiesColours implements Constants {
     

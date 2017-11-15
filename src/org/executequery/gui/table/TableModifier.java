@@ -24,8 +24,6 @@ package org.executequery.gui.table;
  * defines those objects with table functions requiring sql output
  * 
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public interface TableModifier extends CreateTableSQLSyntax {
     

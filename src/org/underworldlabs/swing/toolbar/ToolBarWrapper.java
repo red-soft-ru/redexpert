@@ -26,8 +26,6 @@ import java.util.Vector;
  *  and its row and position within the tool bar area.
  *
  *  @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class ToolBarWrapper implements Cloneable {
     

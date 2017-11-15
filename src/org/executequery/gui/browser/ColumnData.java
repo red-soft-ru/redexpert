@@ -42,9 +42,7 @@ import org.underworldlabs.util.MiscUtils;
  * column definition. This includes data types
  * sizes, scales and key referencing meta data.
  *
- * @author Takis Diakoumis
- * @version $Revision: 1784 $
- * @date $Date: 2017-09-19 00:55:31 +1000 (Tue, 19 Sep 2017) $
+ * @author   Takis Diakoumis
  */
 public class ColumnData implements Serializable {
 

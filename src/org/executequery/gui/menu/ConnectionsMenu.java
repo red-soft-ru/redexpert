@@ -41,8 +41,6 @@ import org.underworldlabs.swing.util.MenuScroller;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class ConnectionsMenu extends MainMenu 
                              implements ConnectionRepositoryListener {
@@ -67,6 +65,13 @@ public class ConnectionsMenu extends MainMenu
     public void connectionModified(
             ConnectionRepositoryEvent connectionRepositoryEvent) {
 
+        reloadConnectionMenu();
+    }
+    
+    @Override
+    public void connectionImported(
+            ConnectionRepositoryEvent connectionRepositoryEvent) {
+        
         reloadConnectionMenu();
     }
     

@@ -29,8 +29,6 @@ import org.executequery.gui.editor.ManageBookmarksPanel;
  * <p>The Query Editor's manage bookmarks command.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class ManageBookmarksCommand extends AbstractQueryEditorCommand {
 

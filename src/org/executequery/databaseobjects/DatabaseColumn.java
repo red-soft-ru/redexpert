@@ -28,9 +28,7 @@ import org.executequery.databaseobjects.impl.ColumnConstraint;
  * Defines a database column. This may be a column as defined by
  * the meta data and not limited to table columns.
  *
- * @author Takis Diakoumis
- * @version $Revision: 1780 $
- * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @author   Takis Diakoumis
  */
 public interface DatabaseColumn extends DatabaseObjectElement {
 

@@ -30,9 +30,8 @@ import java.util.List;
 import static org.executequery.gui.table.CreateTableSQLSyntax.EMPTY;
 
 /**
- * @author Takis Diakoumis
- * @version $Revision: 1780 $
- * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ *
+ * @author   Takis Diakoumis
  */
 public class NewTablePanel extends TableDefinitionPanel
         implements CreateTableSQLSyntax {

@@ -29,8 +29,6 @@ import org.executequery.localization.Bundles;
  *  use of the same String objects in many places.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1783 $
- * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 public class BrowserConstants {
     

@@ -63,8 +63,6 @@ import org.underworldlabs.swing.plaf.UIUtils;
  * from http://www.jroller.com/santhosh/category/Swing
  * 
  * @author   Santhosh Kumar, Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 @SuppressWarnings("unchecked")
 public abstract class FindAction<T> extends AbstractAction 

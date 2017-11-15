@@ -48,8 +48,6 @@ import org.executequery.localization.Bundles;
  * Usage: new TreeFindAction().install(tree);
  *
  * @author   Santhosh Kumar, Takis Diakoumis
- * @version  $Revision: 1783 $
- * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 public class TreeFindAction extends FindAction<TreePath> {
 

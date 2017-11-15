@@ -38,8 +38,6 @@ import org.underworldlabs.swing.util.SwingWorker;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1784 $
- * @date     $Date: 2017-09-19 00:55:31 +1000 (Tue, 19 Sep 2017) $
  */
 public class ExportDelimitedWorker extends AbstractImportExportWorker {
     

@@ -27,8 +27,6 @@ import org.executequery.databasemediators.DatabaseConnection;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public interface ConnectionRepositoryEvent extends ApplicationEvent {
 
@@ -37,6 +35,9 @@ public interface ConnectionRepositoryEvent extends ApplicationEvent {
     
     /** Method name for connection modified */
     String CONNECTION_MODIFIED = "connectionModified";
+    
+    /** Method name for connection imported */
+    String CONNECTION_IMPORTED = "connectionImported";
     
     /** Method name for connection removed */
     String CONNECTION_REMOVED = "connectionRemoved";

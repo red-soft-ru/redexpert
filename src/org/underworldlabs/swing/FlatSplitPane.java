@@ -45,8 +45,6 @@ import org.underworldlabs.swing.plaf.FlatSplitPaneUI;
  * This is achieved simply by 'nulling' all borders, including the divider itself.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class FlatSplitPane extends JSplitPane {
     

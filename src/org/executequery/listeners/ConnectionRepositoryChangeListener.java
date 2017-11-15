@@ -34,6 +34,12 @@ public final class ConnectionRepositoryChangeListener implements ConnectionRepos
         saveConnections();
     }
 
+    @Override
+    public void connectionImported(ConnectionRepositoryEvent connectionRepositoryEvent) {
+
+        saveConnections();
+    }
+
     public void connectionRemoved(ConnectionRepositoryEvent connectionRepositoryEvent) {
 
         saveConnections();

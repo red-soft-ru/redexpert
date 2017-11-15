@@ -61,8 +61,6 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1788 $
- * @date     $Date: 2017-10-09 16:22:31 +1100 (Mon, 09 Oct 2017) $
  */
 public class ApplicationLauncher {
 

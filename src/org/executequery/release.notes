@@ -1,12 +1,14 @@
 --- Execute Query - RELEASE NOTES ---
 
-Date: 4 October 2017
+Date: 9 November 2017
 
-Summary of changes - v4.4.1 Build 5478:
+Summary of changes - v4.4.1 Build 5484:
 ----------------------------------------
 
 - Fixed missing error messages on exception dialog.
 - Fixed missing column and key labels on table node expansion.
+- Fixed regression bug that would break the tree model when adding or removing 
+  connections.
 
 
 Summary of changes - v4.4.0 Build 5476:
@@ -566,4 +568,4 @@ Thank you for trying Execute Query.
 
 Takis Diakoumis
 takisd@executequery.org
-4 October 2017
+9 November 2017

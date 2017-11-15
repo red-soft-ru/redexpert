@@ -42,8 +42,6 @@ import org.underworldlabs.swing.plaf.base.AcceleratorToolTipUI;
  * When the mouse pointer is moved away from the button, the borders are removed.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class RolloverButton extends JButton
                            implements MouseListener {

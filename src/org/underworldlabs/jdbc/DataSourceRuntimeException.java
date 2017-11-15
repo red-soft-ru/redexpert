@@ -24,8 +24,6 @@ package org.underworldlabs.jdbc;
  * Generic runtime exception thrown by data source related methods/classes.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class DataSourceRuntimeException extends RuntimeException {
 

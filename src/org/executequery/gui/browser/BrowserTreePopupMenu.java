@@ -30,6 +30,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
+import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseCatalog;
 import org.executequery.databaseobjects.NamedObject;
@@ -42,8 +43,6 @@ import org.underworldlabs.swing.menu.MenuItemFactory;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1783 $
- * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 class BrowserTreePopupMenu extends JPopupMenu {
 
@@ -223,16 +222,16 @@ class BrowserTreePopupMenu extends JPopupMenu {
         if (listener.hasCurrentSelection()) {
 
             String name = listener.getCurrentSelection().getName();
-            connect.setText(bundleString("connectText" )+ name);
-            disconnect.setText(bundleString("disconnectText") + name);
-            delete.setText(bundleString("deleteText") + name);
-            duplicate.setText(bundleString("duplicateText") + name);
+            connect.setText(bundleString("connectText", name));
+            disconnect.setText(bundleString("disconnectText", name));
+            delete.setText(bundleString("deleteText", name));
+            duplicate.setText(bundleString("duplicateText", name));
             
             // eeekkk...
             if (isCatalog(currentPathComponent) && asDatabaseCatalog(currentPathComponent).getHost().supportsCatalogsInTableDefinitions()) {
                 
                 duplicateWithSource.setEnabled(true);
-                duplicateWithSource.setText(bundleString("duplicateWithSourceText1") + currentPathComponent.toString());
+                duplicateWithSource.setText(bundleString("duplicateWithSourceText1", currentPathComponent.toString()));
 
             } else {
 
@@ -241,9 +240,9 @@ class BrowserTreePopupMenu extends JPopupMenu {
             }
 
             if (label != null) {
-                reload.setText(bundleString("reload")+" " + label);
+                reload.setText(bundleString("reload", label));
             } else {
-                reload.setText(bundleString("reload"));
+                reload.setText(bundleString("reload", StringUtils.EMPTY));
             }
 
         }
@@ -310,14 +309,8 @@ class BrowserTreePopupMenu extends JPopupMenu {
         return listener.getCurrentPath();
     }
 
-    private String bundleString(String key) {
-        return Bundles.get(getClass(), key);
+    private String bundleString(String key, Object...args) {
+        return Bundles.get(getClass(), key, args);
     }
 
 }
-
-
-
-
-
-

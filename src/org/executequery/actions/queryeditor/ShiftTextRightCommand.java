@@ -26,8 +26,6 @@ import java.awt.event.ActionEvent;
  * Command to shift the current editor's text right
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class ShiftTextRightCommand extends AbstractQueryEditorCommand {
 

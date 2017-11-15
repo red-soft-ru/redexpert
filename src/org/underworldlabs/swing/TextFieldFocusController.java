@@ -25,8 +25,6 @@ package org.underworldlabs.swing;
  * would like the text selected when that field is traversed to.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  * @see CustomKeyboardFocusManager
  */
 public interface TextFieldFocusController {

@@ -56,8 +56,6 @@ import org.underworldlabs.util.MiscUtils;
  * Performs SQL execution tasks from browser components.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1789 $
- * @date     $Date: 2017-10-09 16:38:29 +1100 (Mon, 09 Oct 2017) $
  */
 public class BrowserController {
 

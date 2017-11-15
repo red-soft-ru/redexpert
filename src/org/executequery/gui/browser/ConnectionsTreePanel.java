@@ -73,8 +73,6 @@ import org.underworldlabs.util.SystemProperties;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1783 $
- * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
                                   implements ConnectionListener,
@@ -510,9 +508,8 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     private void deleteFolder(ConnectionsFolderNode folder) {
 
         int yesNo = GUIUtilities.displayConfirmCancelDialog(
-                bundleString("message.confirm-delete-folder1") + folder +
-                        bundleString("message.confirm-delete-folder1"));
-
+                bundleString("message.confirm-delete-folder", folder));
+        
         if (yesNo != JOptionPane.YES_OPTION) {
         
             return;
@@ -542,8 +539,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     public void deleteConnection(DatabaseHostNode node) {
 
         int yesNo = GUIUtilities.displayConfirmCancelDialog(
-                bundleString("message.confirm-delete-connection") +
-                        node + " ?");
+                bundleString("message.confirm-delete-connection", node));
 
         if (yesNo != JOptionPane.YES_OPTION) {
 
@@ -601,7 +597,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
             });
 
         }
-        
+
     }
 
     private DatabaseHostNode nextSelectableHostNode(DatabaseHostNode node) {
@@ -861,11 +857,14 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
         ConnectionsFolderNode folderNode = getSelectedFolderNode();
         if (folderNode != null) {
             
-            DatabaseHostNode hostNode = new DatabaseHostNode(host, folderNode);
+            final DatabaseHostNode hostNode = new DatabaseHostNode(host, folderNode);
             folderNode.addNewHostNode(hostNode);
             
-            tree.nodesWereInserted(folderNode, new int[]{folderNode.getChildCount() - 1});
+            tree.nodesWereInserted(folderNode, new int[] {folderNode.getChildCount() - 1});
+//            tree.insertNode(folderNode, hostNode);
+
             tree.selectNode(hostNode);
+//            tree.expandSelectedRow();
 
             folderModified(folderNode.getConnectionsFolder());
 
@@ -1147,7 +1146,8 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     public boolean canHandleEvent(ApplicationEvent event) {
         return (event instanceof ConnectionEvent) 
                 || (event instanceof UserPreferenceEvent)
-                || (event instanceof ConnectionRepositoryEvent);
+                || (event instanceof ConnectionRepositoryEvent 
+                        && "connectionImported".equals(((ConnectionRepositoryEvent) event).getMethod()));
     }
 
     // ------------------------------------------
@@ -1942,6 +1942,14 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
                         this, ConnectionsFolderRepositoryEvent.FOLDER_MODIFIED, connectionsFolder));
     }
 
+    @Override
+    public void connectionImported(ConnectionRepositoryEvent connectionRepositoryEvent) {
+        
+        System.out.println("imported");
+        
+//        tree.reset(createTreeStructure());
+    }
+    
     @Override
     public void connectionAdded(ConnectionRepositoryEvent connectionRepositoryEvent) {
         

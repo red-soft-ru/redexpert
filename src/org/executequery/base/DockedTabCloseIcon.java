@@ -27,8 +27,6 @@ import java.awt.Graphics;
  * Simple icon drawing the close button for a closeable tab on the CloseTabbedPane.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public class DockedTabCloseIcon implements TabControlIcon {
     

@@ -28,8 +28,6 @@ import org.underworldlabs.jdbc.DataSourceException;
  * as in TABLE, FUNCTION, VIEW etc...
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public interface DatabaseMetaTag extends NamedObject {
 

@@ -85,8 +85,6 @@ import org.underworldlabs.util.MiscUtils;
 /**
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1783 $
- * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 public class ConnectionPanel extends AbstractConnectionPanel 
                              implements DatabaseDriverListener,

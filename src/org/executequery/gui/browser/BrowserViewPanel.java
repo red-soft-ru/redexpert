@@ -36,8 +36,6 @@ import org.executequery.print.PrintFunction;
  * Base panel for browser tree selection views.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1783 $
- * @date     $Date: 2017-09-19 00:04:44 +1000 (Tue, 19 Sep 2017) $
  */
 public class BrowserViewPanel extends FormObjectViewContainer 
                               implements TabView,

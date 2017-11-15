@@ -55,8 +55,6 @@ import org.xml.sax.helpers.AttributesImpl;
 /** <p>Performs the 'work' during the export XML process.
  *
  *  @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  *  @author Dragan Vasic
  */
 public class ExportXMLWorker extends AbstractImportExportWorker 

@@ -33,9 +33,7 @@ import org.executequery.gui.CreateTablePanel;
  * instance of CreateTablePanel and adding this within
  * an internal frame to the desktop.
  *
- * @author Takis Diakoumis
- * @version $Revision: 1780 $
- * @date $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
+ * @author   Takis Diakoumis
  */
 public class CreateTableCommand extends OpenFrameCommand
         implements BaseCommand {

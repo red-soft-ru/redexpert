@@ -31,8 +31,6 @@ import javax.swing.tree.DefaultTreeCellRenderer;
  * Abstract tree cell renderer with custom paint method.
  *
  * @author   Takis Diakoumis
- * @version  $Revision: 1780 $
- * @date     $Date: 2017-09-03 15:52:36 +1000 (Sun, 03 Sep 2017) $
  */
 public abstract class AbstractTreeCellRenderer extends DefaultTreeCellRenderer {
 

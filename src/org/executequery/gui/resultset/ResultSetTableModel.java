@@ -242,7 +242,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                             case Types.LONGVARCHAR:
                             case Types.CLOB:
                                 Clob clob = resultSet.getClob(i);
-                                if (clob.getClass().getName().contains("org.firebirdsql.jdbc")) {
+                                if (clob != null && clob.getClass().getName().contains("org.firebirdsql.jdbc")) {
                                     URL[] urls = new URL[0];
                                     Class clazzdb = null;
                                     Object odb = null;
@@ -275,7 +275,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                 break;
                             case Types.BLOB:
                                 Blob blob = resultSet.getBlob(i);
-                                if (blob.getClass().getName().contains("org.firebirdsql.jdbc")) {
+                                if (blob != null && blob.getClass().getName().contains("org.firebirdsql.jdbc")) {
                                     URL[] urls = new URL[0];
                                     Class clazzdb = null;
                                     Object odb = null;

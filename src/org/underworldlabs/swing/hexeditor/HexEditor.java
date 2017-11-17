@@ -23,11 +23,12 @@ public class HexEditor extends JPanel implements BinaryEditor, Scrollable {
   
   private HexEditorListener hexEditorListener;
   private ASCIIEditorListener asciiEditorListener;
+  private BinaryDocument binaryDocument;
 
   /**
    * Construct the editor with a document.
    */
-  public HexEditor(BinaryDocument document) {
+  public HexEditor(BinaryDocument document,String charset) {
     Color bg = SystemProperties.getColourProperty("user","editor.text.background.colour");
     setBackground(bg);
     setForeground(SystemProperties.getColourProperty("user","editor.text.foreground.colour"));
@@ -35,9 +36,11 @@ public class HexEditor extends JPanel implements BinaryEditor, Scrollable {
     GridBagLayout gridbag = new GridBagLayout();
     GridBagConstraints gbc = new GridBagConstraints();
     setLayout(gridbag);
+    binaryDocument = document;
 
     hexEditor     = new ByteEditor(document);
     asciiEditor   = new CharEditor(document);
+    setCharset(charset);
     addressComponent = new TextGrid(new AddressTextGridModel());
     
     hexEditorListener = new HexEditorListener();
@@ -88,6 +91,25 @@ public class HexEditor extends JPanel implements BinaryEditor, Scrollable {
     add(asciiEditor);
   }
 
+
+
+  public void setCharset(String charset) {
+    this.asciiEditor.setCharset(charset);
+  }
+
+  public void setData(byte[] data)
+  {
+    binaryDocument.setData(data);
+    TextGridModelEvent gme = new TextGridModelEvent(addressComponent.getModel(),
+            TextGridModelEvent.FIRST_ROW,
+            TextGridModelEvent.FIRST_COLUMN,
+            TextGridModelEvent.LAST_ROW,
+            TextGridModelEvent.LAST_COLUMN,
+            TextGridModelEvent.UPDATE);
+    ((AddressTextGridModel) addressComponent.getModel()).fireTextGridModelEvent(gme);
+
+  }
+
   public Font getFont() {
     return (hexEditor == null ? super.getFont() : hexEditor.getFont());
   }
@@ -115,8 +137,16 @@ public class HexEditor extends JPanel implements BinaryEditor, Scrollable {
   }
 
   public void setDocument(BinaryDocument document) {
+    binaryDocument = document;
     hexEditor.setDocument(document);
     asciiEditor.setDocument(document);
+    TextGridModelEvent gme = new TextGridModelEvent(addressComponent.getModel(),
+            TextGridModelEvent.FIRST_ROW,
+            TextGridModelEvent.FIRST_COLUMN,
+            TextGridModelEvent.LAST_ROW,
+            TextGridModelEvent.LAST_COLUMN,
+            TextGridModelEvent.UPDATE);
+    ((AddressTextGridModel) addressComponent.getModel()).fireTextGridModelEvent(gme);
   }
  
   public Location getCurrentLocation() {

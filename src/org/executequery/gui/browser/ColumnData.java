@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
@@ -177,6 +178,10 @@ public class ColumnData implements Serializable {
         ai = new Autoincrement();
         setCharset(CreateTableSQLSyntax.NONE);
     }
+    public ColumnData(DatabaseConnection databaseConnection, DatabaseColumn databaseColumn) {
+        this(databaseConnection);
+        setValues(databaseColumn);
+    }
 
     public ColumnData(String columnName, DatabaseConnection databaseConnection) {
         this(databaseConnection);
@@ -273,6 +278,21 @@ public class ColumnData implements Serializable {
         if (constraints != null) {
             columnConstraints = (Vector<ColumnConstraint>) constraints.clone();
         }
+    }
+
+    public void setValues(DatabaseColumn cd) {
+        setTableName( cd.getParentsName());
+        setColumnName(cd.getName());
+        setColumnType(cd.getTypeName());
+        setPrimaryKey(cd.isPrimaryKey());
+        setForeignKey(cd.isForeignKey());
+        setColumnSize(cd.getColumnSize());
+        setNotNull(cd.isRequired());
+        setSQLType(cd.getTypeInt());
+        setDomain(cd.getDomain());
+        setDescription(cd.getDescription());
+        setComputedBy(cd.getComputedSource());
+        setDefaultValue(cd.getDefaultValue());
     }
 
     public boolean isPrimaryKey() {

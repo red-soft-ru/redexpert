@@ -105,6 +105,15 @@ public class BinaryDocument extends Observable {
         return Arrays.copyOfRange(data, 0, occupied);
     }
 
+    public void setData(byte[] data) {
+
+
+        anchor2Offset = new HashMap();
+
+        occupied = data.length;
+        this.data = data.clone();
+    }
+
     // SAVE / CLOSE
 
     /**

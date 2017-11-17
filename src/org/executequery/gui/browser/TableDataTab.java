@@ -368,22 +368,30 @@ public class TableDataTab extends JPanel
 
                 canEditTableNotePanel.setVisible(alwaysShowCanEditNotePanel);
             }
-
+            List<ColumnData> columnDataList = new ArrayList<>();
             if (!isDatabaseTableObject()) {
 
                 canEditTableNotePanel.setVisible(false);
                 buttonsEditingPanel.setVisible(false);
             }
+            else {
+                List<DatabaseColumn> list = asDatabaseTableObject().getColumns();
+                if(columnDataList == null)
+                    columnDataList = new ArrayList<>();
+                columnDataList.clear();
+                for(DatabaseColumn column: list)
+                    columnDataList.add(new ColumnData(databaseObject.getHost().getDatabaseConnection(),column));
+            }
 
             Log.debug("Retrieving data for table - " + databaseObject.getName());
             try {
                 ResultSet resultSet = databaseObject.getData(true);
-                tableModel.createTable(resultSet);
+                tableModel.createTable(resultSet,columnDataList);
 
             } catch (Exception e) {
                 Log.error("Error retrieving data for table - " + databaseObject.getName() + ". Try to rebuild table model.");
                 ResultSet resultSet = databaseObject.getMetaData();
-                tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection());
+                tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection(),columnDataList);
             }
 
 

@@ -20,6 +20,8 @@
 
 package org.underworldlabs.util;
 
+import org.executequery.util.StringBundle;
+
 import java.awt.event.KeyEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -32,14 +34,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.UUID;
-import java.util.Vector;
+import java.util.*;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
@@ -702,7 +697,23 @@ public final class MiscUtils {
         }
 
     }
-    
+
+    public static String getJavaCharsetFromSqlCharset(String sqlcharset)
+    {
+        ResourceBundle bundle = ResourceBundle.getBundle("org/executequery/sqlToJavaCharset");
+        org.executequery.util.StringBundle sb = new StringBundle(bundle);
+        return sb.getString(sqlcharset);
+    }
+    public static String replaceUnsupportedSimbolsToDot(String b)
+    {
+        b = b.replace("\0", ".");
+        b = b.replace("\b", ".");
+        b = b.replace("\t", ".");
+        b = b.replace("\n", ".");
+        b = b.replace("\f", ".");
+        b = b.replace("\r", ".");
+        return b;
+    }
     
 }
 

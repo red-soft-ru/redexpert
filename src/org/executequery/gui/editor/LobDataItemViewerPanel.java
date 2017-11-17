@@ -21,6 +21,8 @@
 package org.executequery.gui.editor;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.IOException;
 
@@ -46,8 +48,10 @@ import org.executequery.databaseobjects.TableDataChange;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.DefaultActionButtonsPanel;
 import org.executequery.gui.resultset.BlobRecordDataItem;
+import org.executequery.gui.resultset.ClobRecordDataItem;
 import org.executequery.gui.resultset.LobRecordDataItem;
 import org.executequery.gui.resultset.RecordDataItem;
+import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.io.ByteArrayFileWriter;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -55,7 +59,9 @@ import org.underworldlabs.swing.hexeditor.*;
 import org.underworldlabs.swing.hexeditor.bdoc.AnnotatedBinaryDocument;
 import org.underworldlabs.swing.hexeditor.bdoc.BinaryDocument;
 import org.underworldlabs.swing.hexeditor.bdoc.Location;
+import org.underworldlabs.util.MiscUtils;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
@@ -79,6 +85,8 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
     private final ActionContainer parent;
 
+    String charset;
+
     JScrollPane scrollPane;
     JScrollPane imageScroll;
     JLabel imageLabel;
@@ -94,7 +102,11 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         this.table = table;
         this.row = row;
         readOnly = table == null;
-
+        charset = CreateTableSQLSyntax.NONE;
+        if (recordDataItem instanceof ClobRecordDataItem)
+            charset = ((ClobRecordDataItem) recordDataItem).getCharset();
+        if (!charset.equals(CreateTableSQLSyntax.NONE))
+            charset = MiscUtils.getJavaCharsetFromSqlCharset(charset);
         try {
 
             init();
@@ -126,7 +138,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
         JPanel binaryPanel = new JPanel(new AKDockLayout());
 
-        binaryStringTextArea = new HexEditor(new AnnotatedBinaryDocument(recordDataItemByteArray(), readOnly));
+        binaryStringTextArea = new HexEditor(new AnnotatedBinaryDocument(recordDataItemByteArray(), readOnly),charset);
         imageScroll = new JScrollPane();
 
         if (isImage()) {
@@ -142,10 +154,10 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
             setTextAreaText(textArea, CANNOT_DISPLAY_BINARY_DATA_AS_TEXT);
 
         } else {
-            imageLabel = new JLabel("Unsupported format",JLabel.CENTER);
+            imageLabel = new JLabel("Unsupported format", JLabel.CENTER);
             imageScroll.setViewportView(imageLabel);
 
-            imagePanel.add(imageScroll,BorderLayout.CENTER );
+            imagePanel.add(imageScroll, BorderLayout.CENTER);
 
             loadTextData();
         }
@@ -220,22 +232,28 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         boolean isValidText = true;
 
         if (data != null) {
-
-            dataAsText = new String(data);
+            if (charset.equals(CreateTableSQLSyntax.NONE))
+                dataAsText = new String(data);
+            else try {
+                dataAsText = new String(data, charset);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                dataAsText = new String(data);
+            }
             char[] charArray = dataAsText.toCharArray();
 
             int defaultEndPoint = 256;
             int endPoint = Math.min(charArray.length, defaultEndPoint);
+            if (charset.equals(CreateTableSQLSyntax.NONE))
+                for (int i = 0; i < endPoint; i++) {
 
-            for (int i = 0; i < endPoint; i++) {
+                    if (!CharUtils.isAscii(charArray[i])) {
 
-                if (!CharUtils.isAscii(charArray[i])) {
+                        isValidText = false;
+                        break;
+                    }
 
-                    isValidText = false;
-                    break;
                 }
-
-            }
 
         } else {
 
@@ -245,6 +263,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         if (isValidText) {
 
             setTextAreaText(textArea, dataAsText);
+            textArea.setEditable(true);
 
         } else {
 
@@ -356,7 +375,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             try {
-                binaryStringTextArea = new HexEditor(new AnnotatedBinaryDocument(file));
+                binaryStringTextArea = new HexEditor(new AnnotatedBinaryDocument(file),charset);
                 scrollPane.setViewportView(binaryStringTextArea);
                 loadTextData();
                 if (isImage()) {
@@ -376,8 +395,21 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
         int selectedIndex = tabbedPane.getSelectedIndex();
 
-        if (selectedIndex == tabbedPane.getTabCount() - 1) { // binary tab always last
-
+        if (selectedIndex == 0) { // binary tab always last
+            loadTextData();
+            textArea.requestFocus();
+        }
+        if (selectedIndex == 2) {
+            if (!textArea.getText().equals(CANNOT_DISPLAY_BINARY_DATA_AS_TEXT)) {
+                if (charset.equals(CreateTableSQLSyntax.NONE))
+                    binaryStringTextArea.setData(textArea.getText().getBytes());
+                else try {
+                    binaryStringTextArea.setData(textArea.getText().getBytes(charset));
+                } catch (UnsupportedEncodingException e1) {
+                    e1.printStackTrace();
+                    binaryStringTextArea.setData(textArea.getText().getBytes());
+                }
+            }
         }
     }
 

@@ -40,6 +40,8 @@ import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.gui.ErrorMessagePublisher;
+import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.executequery.util.UserProperties;
@@ -157,7 +159,12 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         return query;
     }
 
-    public synchronized void createTable(ResultSet resultSet) {
+    public synchronized void createTable(ResultSet resultSet)
+    {
+        createTable(resultSet,null);
+    }
+
+    public synchronized void createTable(ResultSet resultSet, List<ColumnData> columnDataList) {
 
         if (!isOpenAndValid(resultSet)) {
 
@@ -187,200 +194,13 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                 rsmd.getColumnType(i),
                                 rsmd.getColumnTypeName(i)));
             }
-
-            int recordCount = 0;
             interrupted = false;
 
             if (holdMetaData) {
 
                 setMetaDataVectors(rsmd);
             }
-
-            List<RecordDataItem> rowData;
-            long time = System.currentTimeMillis();
-            while (resultSet.next()) {
-
-                if (interrupted || Thread.interrupted()) {
-
-                    throw new InterruptedException();
-                }
-
-                recordCount++;
-                rowData = new ArrayList<RecordDataItem>(count);
-
-                for (int i = 1; i <= count; i++) {
-
-                    zeroBaseIndex = i - 1;
-
-                    ResultSetColumnHeader header = columnHeaders.get(zeroBaseIndex);
-                    RecordDataItem value = recordDataItemFactory.create(header);
-
-                    try {
-
-                        int dataType = header.getDataType();
-                        switch (dataType) {
-
-                            // some drivers (informix for example)
-                            // was noticed to return the hashcode from
-                            // getObject for -1 data types (eg. longvarchar).
-                            // force string for these - others stick with
-                            // getObject() for default value formatting
-
-                            case Types.CHAR:
-                            case Types.VARCHAR:
-                                value.setValue(resultSet.getString(i));
-                                break;
-                            case Types.DATE:
-                                value.setValue(resultSet.getDate(i));
-                                break;
-                            case Types.TIME:
-                                value.setValue(resultSet.getTime(i));
-                                break;
-                            case Types.TIMESTAMP:
-                                value.setValue(resultSet.getTimestamp(i));
-                                break;
-                            case Types.LONGVARCHAR:
-                            case Types.CLOB:
-                                Clob clob = resultSet.getClob(i);
-                                if (clob != null && clob.getClass().getName().contains("org.firebirdsql.jdbc")) {
-                                    URL[] urls = new URL[0];
-                                    Class clazzdb = null;
-                                    Object odb = null;
-                                    try {
-                                        urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-                                        ClassLoader cl = new URLClassLoader(urls, resultSet.getStatement().getConnection().getClass().getClassLoader());
-                                        clazzdb = cl.loadClass("biz.redsoft.FBClobImpl");
-                                        odb = clazzdb.newInstance();
-                                    } catch (ClassNotFoundException e) {
-                                        e.printStackTrace();
-                                    } catch (IllegalAccessException e) {
-                                        e.printStackTrace();
-                                    } catch (InstantiationException e) {
-                                        e.printStackTrace();
-                                    } catch (MalformedURLException e) {
-                                        e.printStackTrace();
-                                    }
-
-                                    IFBClob ifbClob = (IFBClob) odb;
-                                    ifbClob.detach(clob);
-                                    value.setValue(ifbClob);
-                                } else {
-                                    value.setValue(clob);
-                                }
-                                break;
-                            case Types.LONGVARBINARY:
-                            case Types.VARBINARY:
-                            case Types.BINARY:
-                                value.setValue(resultSet.getBytes(i));
-                                break;
-                            case Types.BLOB:
-                                Blob blob = resultSet.getBlob(i);
-                                if (blob != null && blob.getClass().getName().contains("org.firebirdsql.jdbc")) {
-                                    URL[] urls = new URL[0];
-                                    Class clazzdb = null;
-                                    Object odb = null;
-                                    try {
-                                        urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-                                        ClassLoader cl = new URLClassLoader(urls, resultSet.getStatement().getConnection().getClass().getClassLoader());
-                                        clazzdb = cl.loadClass("biz.redsoft.FBBlobImpl");
-                                        odb = clazzdb.newInstance();
-                                    } catch (ClassNotFoundException e) {
-                                        e.printStackTrace();
-                                    } catch (IllegalAccessException e) {
-                                        e.printStackTrace();
-                                    } catch (InstantiationException e) {
-                                        e.printStackTrace();
-                                    } catch (MalformedURLException e) {
-                                        e.printStackTrace();
-                                    }
-
-                                    IFBBlob ifbBlob = (IFBBlob) odb;
-                                    ifbBlob.detach(blob);
-                                    value.setValue(ifbBlob);
-                                } else {
-                                    value.setValue(blob);
-                                }
-                                break;
-                            case Types.BIT:
-                            case Types.TINYINT:
-                            case Types.SMALLINT:
-                            case Types.INTEGER:
-                            case Types.BIGINT:
-                            case Types.FLOAT:
-                            case Types.REAL:
-                            case Types.DOUBLE:
-                            case Types.NUMERIC:
-                            case Types.DECIMAL:
-                            case Types.NULL:
-                            case Types.OTHER:
-                            case Types.JAVA_OBJECT:
-                            case Types.DISTINCT:
-                            case Types.STRUCT:
-                            case Types.ARRAY:
-                            case Types.REF:
-                            case Types.DATALINK:
-                            case Types.BOOLEAN:
-                            case Types.ROWID:
-                            case Types.NCHAR:
-                            case Types.NVARCHAR:
-                            case Types.LONGNVARCHAR:
-                            case Types.NCLOB:
-                            case Types.SQLXML:
-
-                                // use getObject for all other known types
-
-                                value.setValue(resultSet.getObject(i));
-                                break;
-
-                            default:
-
-                                // otherwise try as string
-
-                                asStringOrObject(value, resultSet, i);
-                                break;
-                        }
-
-                    } catch (Exception e) {
-
-                        try {
-
-                            // ... and on dump, resort to string
-                            value.setValue(resultSet.getString(i));
-
-                        } catch (SQLException sqlException) {
-
-                            // catch-all SQLException - yes, this is hideous
-
-                            // noticed with invalid date formatted values in mysql
-
-                            value.setValue("<Error - " + sqlException.getMessage() + ">");
-                        }
-                    }
-
-                    if (resultSet.wasNull()) {
-
-                        value.setNull();
-                    }
-
-                    rowData.add(value);
-                }
-
-                tableData.add(rowData);
-
-                if (recordCount == maxRecords) {
-
-                    break;
-                }
-
-            }
-
-            if (Log.isTraceEnabled()) {
-
-                Log.trace("Finished populating table model - " + recordCount + " rows - [ "
-                        + MiscUtils.formatDuration(System.currentTimeMillis() - time) + "]");
-            }
-
-            fireTableStructureChanged();
+            getDataForTable(resultSet,count,columnDataList);
 
         } catch (SQLException e) {
 
@@ -434,7 +254,204 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     }
 
-    public synchronized void createTableFromMetaData(ResultSet resultSet, DatabaseConnection dc) {
+    public synchronized void getDataForTable(ResultSet resultSet,int count,List<ColumnData> columnDataList) throws SQLException, InterruptedException {
+        int recordCount = 0;
+        int zeroBaseIndex;
+        List<RecordDataItem> rowData;
+        long time = System.currentTimeMillis();
+        while (resultSet.next()) {
+
+            if (interrupted || Thread.interrupted()) {
+
+                throw new InterruptedException();
+            }
+
+            recordCount++;
+            rowData = new ArrayList<RecordDataItem>(count);
+
+            for (int i = 1; i <= count; i++) {
+
+                zeroBaseIndex = i - 1;
+
+                ResultSetColumnHeader header = columnHeaders.get(zeroBaseIndex);
+                RecordDataItem value = recordDataItemFactory.create(header);
+
+                try {
+
+                    int dataType = header.getDataType();
+                    switch (dataType) {
+
+                        // some drivers (informix for example)
+                        // was noticed to return the hashcode from
+                        // getObject for -1 data types (eg. longvarchar).
+                        // force string for these - others stick with
+                        // getObject() for default value formatting
+
+                        case Types.CHAR:
+                        case Types.VARCHAR:
+                            value.setValue(resultSet.getString(i));
+                            break;
+                        case Types.DATE:
+                            value.setValue(resultSet.getDate(i));
+                            break;
+                        case Types.TIME:
+                            value.setValue(resultSet.getTime(i));
+                            break;
+                        case Types.TIMESTAMP:
+                            value.setValue(resultSet.getTimestamp(i));
+                            break;
+                        case Types.LONGVARCHAR:
+                        case Types.CLOB:
+                            Clob clob = resultSet.getClob(i);
+                            if (clob != null && clob.getClass().getName().contains("org.firebirdsql.jdbc")) {
+                                URL[] urls = new URL[0];
+                                Class clazzdb = null;
+                                Object odb = null;
+                                try {
+                                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                                    ClassLoader cl = new URLClassLoader(urls, resultSet.getStatement().getConnection().getClass().getClassLoader());
+                                    clazzdb = cl.loadClass("biz.redsoft.FBClobImpl");
+                                    odb = clazzdb.newInstance();
+                                } catch (ClassNotFoundException e) {
+                                    e.printStackTrace();
+                                } catch (IllegalAccessException e) {
+                                    e.printStackTrace();
+                                } catch (InstantiationException e) {
+                                    e.printStackTrace();
+                                } catch (MalformedURLException e) {
+                                    e.printStackTrace();
+                                }
+
+                                IFBClob ifbClob = (IFBClob) odb;
+                                ifbClob.detach(clob);
+                                value.setValue(ifbClob);
+                            } else {
+                                value.setValue(clob);
+                            }
+                            if(columnDataList!=null)
+                            {
+                                ((ClobRecordDataItem)value).setCharset(columnDataList.get(i-1).getCharset());
+                            }
+                            else ((ClobRecordDataItem)value).setCharset(CreateTableSQLSyntax.NONE);
+                            break;
+                        case Types.LONGVARBINARY:
+                        case Types.VARBINARY:
+                        case Types.BINARY:
+                            value.setValue(resultSet.getBytes(i));
+                            break;
+                        case Types.BLOB:
+                            Blob blob = resultSet.getBlob(i);
+                            if (blob != null && blob.getClass().getName().contains("org.firebirdsql.jdbc")) {
+                                URL[] urls = new URL[0];
+                                Class clazzdb = null;
+                                Object odb = null;
+                                try {
+                                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                                    ClassLoader cl = new URLClassLoader(urls, resultSet.getStatement().getConnection().getClass().getClassLoader());
+                                    clazzdb = cl.loadClass("biz.redsoft.FBBlobImpl");
+                                    odb = clazzdb.newInstance();
+                                } catch (ClassNotFoundException e) {
+                                    e.printStackTrace();
+                                } catch (IllegalAccessException e) {
+                                    e.printStackTrace();
+                                } catch (InstantiationException e) {
+                                    e.printStackTrace();
+                                } catch (MalformedURLException e) {
+                                    e.printStackTrace();
+                                }
+
+                                IFBBlob ifbBlob = (IFBBlob) odb;
+                                ifbBlob.detach(blob);
+                                value.setValue(ifbBlob);
+                            } else {
+                                value.setValue(blob);
+                            }
+                            break;
+                        case Types.BIT:
+                        case Types.TINYINT:
+                        case Types.SMALLINT:
+                        case Types.INTEGER:
+                        case Types.BIGINT:
+                        case Types.FLOAT:
+                        case Types.REAL:
+                        case Types.DOUBLE:
+                        case Types.NUMERIC:
+                        case Types.DECIMAL:
+                        case Types.NULL:
+                        case Types.OTHER:
+                        case Types.JAVA_OBJECT:
+                        case Types.DISTINCT:
+                        case Types.STRUCT:
+                        case Types.ARRAY:
+                        case Types.REF:
+                        case Types.DATALINK:
+                        case Types.BOOLEAN:
+                        case Types.ROWID:
+                        case Types.NCHAR:
+                        case Types.NVARCHAR:
+                        case Types.LONGNVARCHAR:
+                        case Types.NCLOB:
+                        case Types.SQLXML:
+
+                            // use getObject for all other known types
+
+                            value.setValue(resultSet.getObject(i));
+                            break;
+
+                        default:
+
+                            // otherwise try as string
+
+                            asStringOrObject(value, resultSet, i);
+                            break;
+                    }
+
+                } catch (Exception e) {
+
+                    try {
+
+                        // ... and on dump, resort to string
+                        value.setValue(resultSet.getString(i));
+
+                    } catch (SQLException sqlException) {
+
+                        // catch-all SQLException - yes, this is hideous
+
+                        // noticed with invalid date formatted values in mysql
+
+                        value.setValue("<Error - " + sqlException.getMessage() + ">");
+                    }
+                }
+
+                if (resultSet.wasNull()) {
+
+                    value.setNull();
+                }
+
+                rowData.add(value);
+            }
+
+            tableData.add(rowData);
+
+            if (recordCount == maxRecords) {
+
+                break;
+            }
+
+        }
+
+        if (Log.isTraceEnabled()) {
+
+            Log.trace("Finished populating table model - " + recordCount + " rows - [ "
+                    + MiscUtils.formatDuration(System.currentTimeMillis() - time) + "]");
+        }
+
+        fireTableStructureChanged();
+
+
+    }
+
+    public synchronized void createTableFromMetaData(ResultSet resultSet, DatabaseConnection dc,List<ColumnData> columnDataList) {
 
         if (!isOpenAndValid(resultSet)) {
 
@@ -509,192 +526,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             }
             sql += " FROM " + tableName;
             resultSet = executor.execute(QueryTypes.SELECT, sql).getResultSet();
-            List<RecordDataItem> rowData;
-            long time = System.currentTimeMillis();
-
-            while (resultSet.next()) {
-
-                if (interrupted || Thread.interrupted()) {
-
-                    throw new InterruptedException();
-                }
-
-                recordCount++;
-                rowData = new ArrayList<RecordDataItem>(count);
-
-                for (int i = 1; i <= count; i++) {
-
-                    zeroBaseIndex = i - 1;
-
-                    ResultSetColumnHeader header = columnHeaders.get(zeroBaseIndex);
-                    RecordDataItem value = recordDataItemFactory.create(header);
-
-                    try {
-
-                        int dataType = header.getDataType();
-                        switch (dataType) {
-
-                            // some drivers (informix for example)
-                            // was noticed to return the hashcode from
-                            // getObject for -1 data types (eg. longvarchar).
-                            // force string for these - others stick with
-                            // getObject() for default value formatting
-
-                            case Types.CHAR:
-                            case Types.VARCHAR:
-                                value.setValue(resultSet.getString(i));
-                                break;
-                            case Types.DATE:
-                                value.setValue(resultSet.getDate(i));
-                                break;
-                            case Types.TIME:
-                                value.setValue(resultSet.getTime(i));
-                                break;
-                            case Types.TIMESTAMP:
-                                value.setValue(resultSet.getTimestamp(i));
-                                break;
-                            case Types.LONGVARCHAR:
-                            case Types.CLOB:
-                                Clob clob = resultSet.getClob(i);
-                                if (clob.getClass().getName().contains("org.firebirdsql.jdbc")) {
-                                    URL[] urls = new URL[0];
-                                    Class clazzdb = null;
-                                    Object odb = null;
-                                    try {
-                                        urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-                                        ClassLoader cl = new URLClassLoader(urls, resultSet.getStatement().getConnection().getClass().getClassLoader());
-                                        clazzdb = cl.loadClass("biz.redsoft.FBClobImpl");
-                                        odb = clazzdb.newInstance();
-                                    } catch (ClassNotFoundException e) {
-                                        e.printStackTrace();
-                                    } catch (IllegalAccessException e) {
-                                        e.printStackTrace();
-                                    } catch (InstantiationException e) {
-                                        e.printStackTrace();
-                                    } catch (MalformedURLException e) {
-                                        e.printStackTrace();
-                                    }
-
-                                    IFBClob ifbClob = (IFBClob) odb;
-                                    ifbClob.detach(clob);
-                                    value.setValue(ifbClob);
-                                } else {
-                                    value.setValue(clob);
-                                }
-                                break;
-                            case Types.LONGVARBINARY:
-                            case Types.VARBINARY:
-                            case Types.BINARY:
-                                value.setValue(resultSet.getBytes(i));
-                                break;
-                            case Types.BLOB:
-                                Blob blob = resultSet.getBlob(i);
-                                if (blob.getClass().getName().contains("org.firebirdsql.jdbc")) {
-                                    URL[] urls = new URL[0];
-                                    Class clazzdb = null;
-                                    Object odb = null;
-                                    try {
-                                        urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-                                        ClassLoader cl = new URLClassLoader(urls, resultSet.getStatement().getConnection().getClass().getClassLoader());
-                                        clazzdb = cl.loadClass("biz.redsoft.FBBlobImpl");
-                                        odb = clazzdb.newInstance();
-                                    } catch (ClassNotFoundException e) {
-                                        e.printStackTrace();
-                                    } catch (IllegalAccessException e) {
-                                        e.printStackTrace();
-                                    } catch (InstantiationException e) {
-                                        e.printStackTrace();
-                                    } catch (MalformedURLException e) {
-                                        e.printStackTrace();
-                                    }
-
-                                    IFBBlob ifbBlob = (IFBBlob) odb;
-                                    ifbBlob.detach(blob);
-                                    value.setValue(ifbBlob);
-                                } else {
-                                    value.setValue(blob);
-                                }
-                                break;
-                            case Types.BIT:
-                            case Types.TINYINT:
-                            case Types.SMALLINT:
-                            case Types.INTEGER:
-                            case Types.BIGINT:
-                            case Types.FLOAT:
-                            case Types.REAL:
-                            case Types.DOUBLE:
-                            case Types.NUMERIC:
-                            case Types.DECIMAL:
-                            case Types.NULL:
-                            case Types.OTHER:
-                            case Types.JAVA_OBJECT:
-                            case Types.DISTINCT:
-                            case Types.STRUCT:
-                            case Types.ARRAY:
-                            case Types.REF:
-                            case Types.DATALINK:
-                            case Types.BOOLEAN:
-                            case Types.ROWID:
-                            case Types.NCHAR:
-                            case Types.NVARCHAR:
-                            case Types.LONGNVARCHAR:
-                            case Types.NCLOB:
-                            case Types.SQLXML:
-
-                                // use getObject for all other known types
-
-                                value.setValue(resultSet.getObject(i));
-                                break;
-
-                            default:
-
-                                // otherwise try as string
-
-                                asStringOrObject(value, resultSet, i);
-                                break;
-                        }
-
-                    } catch (Exception e) {
-
-                        try {
-
-                            // ... and on dump, resort to string
-                            value.setValue(resultSet.getString(i));
-
-                        } catch (SQLException sqlException) {
-
-                            // catch-all SQLException - yes, this is hideous
-
-                            // noticed with invalid date formatted values in mysql
-
-                            value.setValue("<Error - " + sqlException.getMessage() + ">");
-                        }
-                    }
-
-                    if (resultSet.wasNull()) {
-
-                        value.setNull();
-                    }
-
-                    rowData.add(value);
-                }
-
-                tableData.add(rowData);
-
-                if (recordCount == maxRecords) {
-
-                    break;
-                }
-
-            }
-
-            if (Log.isTraceEnabled()) {
-
-                Log.trace("Finished populating table model - " + recordCount + " rows - [ "
-                        + MiscUtils.formatDuration(System.currentTimeMillis() - time) + "]");
-            }
-
-            fireTableStructureChanged();
+           getDataForTable(resultSet,count,columnDataList);
 
         } catch (SQLException e) {
 

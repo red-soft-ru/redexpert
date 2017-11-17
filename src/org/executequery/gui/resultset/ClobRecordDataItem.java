@@ -39,6 +39,8 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 
     private String displayValue;
 
+    private String charset;
+
     public ClobRecordDataItem(String name, int dataType, String dataTypeName) {
 
         super(name, dataType, dataTypeName);
@@ -52,6 +54,14 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 
 
         return CLOB_DATA;
+    }
+
+    public String getCharset() {
+        return charset;
+    }
+
+    public void setCharset(String charset) {
+        this.charset = charset;
     }
 
     @Override

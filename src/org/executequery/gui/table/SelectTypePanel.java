@@ -137,6 +137,7 @@ public class SelectTypePanel extends JPanel {
                 || cd.getColumnType().toUpperCase().equals("CHAR"));
         setScaleVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL);
         setEncodingVisible(cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
+                ||cd.getSQLType()==Types.LONGVARCHAR || cd.getSQLType() == Types.CLOB
                 || cd.getColumnType().toUpperCase().equals("VARCHAR")
                 || cd.getColumnType().toUpperCase().equals("CHAR"));
     }

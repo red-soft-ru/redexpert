@@ -361,11 +361,24 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
     }
 
     public void ok() {
-        if (!readOnly)
+        if (!readOnly) {
+            int selectedIndex = tabbedPane.getSelectedIndex();
+            if(selectedIndex==0)
+            if (!textArea.getText().equals(CANNOT_DISPLAY_BINARY_DATA_AS_TEXT)) {
+                if (charset.equals(CreateTableSQLSyntax.NONE))
+                    binaryStringTextArea.setData(textArea.getText().getBytes());
+                else try {
+                    binaryStringTextArea.setData(textArea.getText().getBytes(charset));
+                } catch (UnsupportedEncodingException e1) {
+                    e1.printStackTrace();
+                    binaryStringTextArea.setData(textArea.getText().getBytes());
+                }
+            }
             if (!recordDataItemByteArray().equals(binaryStringTextArea.getDocument().getData())) {
                 recordDataItem.valueChanged(binaryStringTextArea.getDocument().getData());
                 table.addTableDataChange(new TableDataChange(row));
             }
+        }
         parent.finished();
     }
 

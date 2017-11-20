@@ -179,7 +179,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
                 showLobRecordDataItemDialog(recordDataItem);
             }
 
-        }else if (recordDataItem instanceof LobRecordDataItem) {
+        } else if (recordDataItem instanceof LobRecordDataItem) {
 
             showLobRecordDataItemDialog(recordDataItem);
         }
@@ -344,7 +344,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
 
     public void mouseClicked(MouseEvent e) {
 
-        if (e.getClickCount() >= 2 && doubleClickCellOpensDialog) {
+        if (e.getClickCount() >= 2 && (doubleClickCellOpensDialog || table.getValueAt(table.getSelectedRow(), table.getSelectedColumn()) instanceof LobRecordDataItem)) {
 
             lastPopupPoint = e.getPoint();
             openDataItemViewer(null);

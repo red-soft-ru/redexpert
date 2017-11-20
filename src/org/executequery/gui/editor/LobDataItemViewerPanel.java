@@ -138,7 +138,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
         JPanel binaryPanel = new JPanel(new AKDockLayout());
 
-        binaryStringTextArea = new HexEditor(new AnnotatedBinaryDocument(recordDataItemByteArray(), readOnly),charset);
+        binaryStringTextArea = new HexEditor(new AnnotatedBinaryDocument(recordDataItemByteArray(), readOnly), charset);
         imageScroll = new JScrollPane();
 
         if (isImage()) {
@@ -192,16 +192,20 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         openButton = new JButton("Open File");
         openButton.setActionCommand("open");
 
+        JButton nullButton = new JButton("NULL");
+        nullButton.setActionCommand("tonull");
 
         saveButton.addActionListener(this);
         closeButton.addActionListener(this);
         okButton.addActionListener(this);
         openButton.addActionListener(this);
+        nullButton.addActionListener(this);
 
         addActionButton(okButton);
         addActionButton(openButton);
         addActionButton(saveButton);
         addActionButton(closeButton);
+        addActionButton(nullButton);
 
         setPreferredSize(new Dimension(600, 420));
 
@@ -363,17 +367,17 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
     public void ok() {
         if (!readOnly) {
             int selectedIndex = tabbedPane.getSelectedIndex();
-            if(selectedIndex==0)
-            if (!textArea.getText().equals(CANNOT_DISPLAY_BINARY_DATA_AS_TEXT)) {
-                if (charset.equals(CreateTableSQLSyntax.NONE))
-                    binaryStringTextArea.setData(textArea.getText().getBytes());
-                else try {
-                    binaryStringTextArea.setData(textArea.getText().getBytes(charset));
-                } catch (UnsupportedEncodingException e1) {
-                    e1.printStackTrace();
-                    binaryStringTextArea.setData(textArea.getText().getBytes());
+            if (selectedIndex == 0)
+                if (!textArea.getText().equals(CANNOT_DISPLAY_BINARY_DATA_AS_TEXT)) {
+                    if (charset.equals(CreateTableSQLSyntax.NONE))
+                        binaryStringTextArea.setData(textArea.getText().getBytes());
+                    else try {
+                        binaryStringTextArea.setData(textArea.getText().getBytes(charset));
+                    } catch (UnsupportedEncodingException e1) {
+                        e1.printStackTrace();
+                        binaryStringTextArea.setData(textArea.getText().getBytes());
+                    }
                 }
-            }
             if (!recordDataItemByteArray().equals(binaryStringTextArea.getDocument().getData())) {
                 recordDataItem.valueChanged(binaryStringTextArea.getDocument().getData());
                 table.addTableDataChange(new TableDataChange(row));
@@ -388,7 +392,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             try {
-                binaryStringTextArea = new HexEditor(new AnnotatedBinaryDocument(file),charset);
+                binaryStringTextArea = new HexEditor(new AnnotatedBinaryDocument(file), charset);
                 scrollPane.setViewportView(binaryStringTextArea);
                 loadTextData();
                 if (isImage()) {
@@ -402,6 +406,14 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         }
 
 
+    }
+
+    public void tonull() {
+        if (!readOnly) {
+            recordDataItem.valueChanged(null);
+            table.addTableDataChange(new TableDataChange(row));
+        }
+        parent.finished();
     }
 
     public void stateChanged(ChangeEvent e) {

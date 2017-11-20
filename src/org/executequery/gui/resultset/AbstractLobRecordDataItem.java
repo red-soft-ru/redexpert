@@ -39,7 +39,7 @@ public abstract class AbstractLobRecordDataItem extends AbstractRecordDataItem
     @Override
     public byte[] getData() {
 
-        if (data == null&&!isNew()) {
+        if (data == null && !isNew()) {
 
             data = readLob();
         }
@@ -49,13 +49,15 @@ public abstract class AbstractLobRecordDataItem extends AbstractRecordDataItem
 
     public void valueChanged(Object newValue) {
 
-        byte[] bytes = (byte[])newValue;
+        byte[] bytes = (byte[]) newValue;
         if (valuesEqual(this.getData(), bytes)) {
 
             changed = false;
             return;
         }
-
+        if (newValue == null) {
+            super.valueChanged(null);
+        }
         setData(bytes);
         changed = true;
     }
@@ -63,17 +65,19 @@ public abstract class AbstractLobRecordDataItem extends AbstractRecordDataItem
     @Override
     public void setData(byte[] data) {
 
-        this.data = data.clone();
+        if (data != null)
+            this.data = data.clone();
+        else this.data = null;
     }
 
     @Override
     public boolean isNewValueNull() {
-        return data == null;
+        return data == null && super.isNewValueNull();
     }
 
     @Override
     public boolean isDisplayValueNull() {
-        return data == null && isValueNull();
+        return data == null && isValueNull() || isNewValueNull();
     }
 
     abstract byte[] readLob();

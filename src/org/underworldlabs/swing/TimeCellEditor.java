@@ -46,7 +46,7 @@ public class TimeCellEditor extends AbstractCellEditor implements TableCellEdito
     @Override
     public boolean isCellEditable(EventObject anEvent) {
         if (anEvent instanceof MouseEvent) {
-            return ((MouseEvent) anEvent).getClickCount() >= 2;
+            return ((MouseEvent) anEvent).getClickCount() >= 1;
         } else {
             return true;
         }

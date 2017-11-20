@@ -11,7 +11,7 @@ import java.time.LocalDate;
 public class DateCellEditor extends DateTableEditor {
     public DateCellEditor() {
         super();
-        this.clickCountToEdit = 2;
+        this.clickCountToEdit = 1;
     }
 
     public void setCellEditorValue(Object value) {

@@ -36,7 +36,7 @@ public class DateTimeCellEditor extends AbstractCellEditor implements TableCellE
 
     public DateTimeCellEditor(boolean autoAdjustMinimumTableRowHeight, boolean matchTableBackgroundColor, boolean matchTableSelectionBackgroundColor) {
         this.autoAdjustMinimumTableRowHeight = true;
-        this.clickCountToEdit = 2;
+        this.clickCountToEdit = 1;
         this.matchTableBackgroundColor = true;
         this.matchTableSelectionBackgroundColor = true;
         this.autoAdjustMinimumTableRowHeight = autoAdjustMinimumTableRowHeight;

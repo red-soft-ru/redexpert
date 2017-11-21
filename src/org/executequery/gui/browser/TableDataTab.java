@@ -234,7 +234,7 @@ public class TableDataTab extends JPanel
 
     private Timer timer;
 
-    public void loadDataForTable(/*final*/ DatabaseObject databaseObject) {
+    public void loadDataForTable(final DatabaseObject databaseObject) {
 
         addInProgressPanel();
 
@@ -255,7 +255,7 @@ public class TableDataTab extends JPanel
 
     }
 
-    private void load(/*final*/ DatabaseObject databaseObject) {
+    private void load(final DatabaseObject databaseObject) {
 
         ConnectionsTreePanel treePanel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
         synchronized (treePanel) {
@@ -373,33 +373,26 @@ public class TableDataTab extends JPanel
 
                 canEditTableNotePanel.setVisible(false);
                 buttonsEditingPanel.setVisible(false);
-            }
-            else {
+            } else {
                 List<DatabaseColumn> list = asDatabaseTableObject().getColumns();
-                if(columnDataList == null)
+                if (columnDataList == null)
                     columnDataList = new ArrayList<>();
                 columnDataList.clear();
-                for(DatabaseColumn column: list)
-                    columnDataList.add(new ColumnData(databaseObject.getHost().getDatabaseConnection(),column));
+                for (DatabaseColumn column : list)
+                    columnDataList.add(new ColumnData(databaseObject.getHost().getDatabaseConnection(), column));
             }
 
             Log.debug("Retrieving data for table - " + databaseObject.getName());
             try {
                 ResultSet resultSet = databaseObject.getData(true);
-                tableModel.createTable(resultSet,columnDataList);
+                tableModel.createTable(resultSet, columnDataList);
 
             } catch (Exception e) {
                 Log.error("Error retrieving data for table - " + databaseObject.getName() + ". Try to rebuild table model.");
                 ResultSet resultSet = databaseObject.getMetaData();
-                tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection(),columnDataList);
+                tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection(), columnDataList);
             }
-
-
-            if (table == null) {
-
-                createResultSetTable();
-            }
-
+            createResultSetTable();
             List<String> nonEditableCols = new ArrayList<>();
             nonEditableCols.addAll(primaryKeyColumns);
             if (isDatabaseTableObject())

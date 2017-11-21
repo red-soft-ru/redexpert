@@ -23,6 +23,7 @@ package org.executequery.databaseobjects;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -145,7 +146,7 @@ public class TableDataChangeWorker {
 
                 } else {
 
-                    statement.setNull((i + 1), recordDataItem.getDataType());
+                    statement.setNull((i + 1), Types.NULL);
                 }
 
             }
@@ -271,7 +272,7 @@ public class TableDataChangeWorker {
 
                     } else {
 
-                        statement.setNull((i + 1), recordDataItem.getDataType());
+                        statement.setNull((i + 1), Types.NULL);
                     }
                 } else {
                     i--;
@@ -393,7 +394,7 @@ public class TableDataChangeWorker {
 
                 } else {
 
-                    statement.setNull((i + 1), recordDataItem.getDataType());
+                    statement.setNull((i + 1), Types.NULL);
                 }
 
             }

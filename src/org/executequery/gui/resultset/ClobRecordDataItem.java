@@ -99,6 +99,8 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
                 while ((length = as.read(b)) != -1) {
                     result.write(b, 0, length);
                 }
+                as.close();
+                ifbClob.close();
                 return result.toByteArray();
 
 

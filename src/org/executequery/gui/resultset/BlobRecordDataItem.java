@@ -102,6 +102,7 @@ public class BlobRecordDataItem extends AbstractLobRecordDataItem {
             IFBBlob ifbBlob = (IFBBlob) value;
             try {
                 blobBytes = ifbBlob.getBytes(1, (int) ifbBlob.lenght());
+                ifbBlob.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }

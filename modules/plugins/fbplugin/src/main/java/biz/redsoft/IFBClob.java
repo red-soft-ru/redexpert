@@ -12,4 +12,6 @@ public interface IFBClob {
     void detach(Clob clob) throws SQLException;
 
     InputStream open() throws SQLException;
+
+    void close() throws SQLException;
 }

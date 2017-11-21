@@ -13,4 +13,6 @@ public interface IFBBlob {
     byte[] getBytes(long pos, int lenght) throws SQLException;
 
     long lenght();
+
+    void close() throws SQLException;
 }

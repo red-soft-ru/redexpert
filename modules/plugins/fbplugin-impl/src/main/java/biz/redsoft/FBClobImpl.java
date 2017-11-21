@@ -18,10 +18,12 @@ import java.sql.SQLException;
 public class FBClobImpl implements IFBClob {
     DatabaseParameterBuffer buffer;
     FirebirdBlob detached = null;
+    FbTransaction transaction = null;
 
     @Override
     public void detach(Clob clob) throws SQLException {
         FBClob fbClob = (FBClob) clob;
+        fbClob.free();
         detached = fbClob.getWrappedBlob().detach();
         buffer = ((FBBlob) detached).getGdsHelper().getDatabaseParameterBuffer();
     }
@@ -30,9 +32,16 @@ public class FBClobImpl implements IFBClob {
     public InputStream open() throws SQLException {
         if (((FBBlob) detached).getGdsHelper().getCurrentTransaction() == null) {
             TransactionParameterBuffer tpb = new TransactionParameterBufferImpl();
-            FbTransaction transaction = ((FBBlob) detached).getGdsHelper().startTransaction(tpb);
+            transaction = ((FBBlob) detached).getGdsHelper().startTransaction(tpb);
             ((FBBlob) detached).getGdsHelper().setCurrentTransaction(transaction);
         }
         return detached.getBinaryStream();
+    }
+
+    @Override
+    public void close() throws SQLException {
+        transaction.commit();
+        ((FBBlob)detached).free();
+        ((FBBlob) detached).getGdsHelper().setCurrentTransaction(null);
     }
 }

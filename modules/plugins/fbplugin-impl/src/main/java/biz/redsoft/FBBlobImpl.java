@@ -17,6 +17,7 @@ public class FBBlobImpl implements IFBBlob {
     DatabaseParameterBuffer buffer;
     FirebirdBlob detached = null;
     long lenght = 0;
+    FbTransaction transaction = null;
 
     @Override
     public void detach(Blob blob) throws SQLException {
@@ -30,7 +31,7 @@ public class FBBlobImpl implements IFBBlob {
     public byte[] getBytes(long pos, int lenght) throws SQLException {
         if (((FBBlob) detached).getGdsHelper().getCurrentTransaction() == null) {
             TransactionParameterBuffer tpb = new TransactionParameterBufferImpl();
-            FbTransaction transaction = ((FBBlob) detached).getGdsHelper().startTransaction(tpb);
+            transaction = ((FBBlob) detached).getGdsHelper().startTransaction(tpb);
             ((FBBlob) detached).getGdsHelper().setCurrentTransaction(transaction);
         }
         return detached.getBytes(pos, lenght);
@@ -39,5 +40,12 @@ public class FBBlobImpl implements IFBBlob {
     @Override
     public long lenght() {
         return lenght;
+    }
+
+    @Override
+    public void close() throws SQLException {
+        transaction.commit();
+        ((FBBlob) detached).free();
+        ((FBBlob) detached).getGdsHelper().setCurrentTransaction(null);
     }
 }

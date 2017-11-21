@@ -95,6 +95,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     private String query;
 
+    private List<ColumnData> columnDataList;
+
     public ResultSetTableModel() {
 
         this(null, -1);
@@ -173,7 +175,6 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         }
 
         try {
-
             resetMetaData();
             ResultSetMetaData rsmd = resultSet.getMetaData();
 
@@ -256,6 +257,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     public synchronized void getDataForTable(ResultSet resultSet,int count,List<ColumnData> columnDataList) throws SQLException, InterruptedException {
         int recordCount = 0;
+        this.columnDataList = columnDataList;
         int zeroBaseIndex;
         List<RecordDataItem> rowData;
         long time = System.currentTimeMillis();
@@ -949,6 +951,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             RecordDataItem rdi = recordDataItemFactory.create(rsch);
             rdi.setValue(null);
             rdi.setNew(true);
+            if(rdi instanceof ClobRecordDataItem)
+                ((ClobRecordDataItem)rdi).setCharset(columnDataList.get(i).getCharset());
             row.add(rdi);
         }
         AddRow(row);

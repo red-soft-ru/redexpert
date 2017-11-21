@@ -234,7 +234,7 @@ public class TableDataTab extends JPanel
 
     private Timer timer;
 
-    public void loadDataForTable(final DatabaseObject databaseObject) {
+    public void loadDataForTable(/*final*/ DatabaseObject databaseObject) {
 
         addInProgressPanel();
 
@@ -255,7 +255,7 @@ public class TableDataTab extends JPanel
 
     }
 
-    private void load(final DatabaseObject databaseObject) {
+    private void load(/*final*/ DatabaseObject databaseObject) {
 
         ConnectionsTreePanel treePanel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
         synchronized (treePanel) {

@@ -11,6 +11,9 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class PerfLoggerController {
     private final AbstractLogReceiver logReceiver;
@@ -26,6 +29,10 @@ public class PerfLoggerController {
     private final ScheduledExecutorService refreshDataScheduledExecutorService;
     private boolean forceRefresh;
 
+    Logger logger = Logger.getLogger("JDBCLog");
+    FileHandler fh;
+    boolean logOpened;
+
     PerfLoggerController(final AbstractLogReceiver logReceiver, LoggerPanel loggerPanel) {
         this.logReceiver = logReceiver;
 
@@ -37,6 +44,8 @@ public class PerfLoggerController {
         refreshDataScheduledExecutorService.scheduleWithFixedDelay(refreshDataTask, 1, 2, TimeUnit.SECONDS);
 
         forceRefresh = false;
+
+        logOpened = false;
     }
 
     void startReciever() {
@@ -172,6 +181,30 @@ public class PerfLoggerController {
                             if (filterType.equals(Filter.FilterType.FILTER) && txtFilter != null)
                                 if (!statement.getRawSql().toLowerCase().contains(txtFilter.toLowerCase()))
                                     continue;
+
+                            if (loggerPanel.getCheckLogToFile().isSelected()) {
+                                // log to file
+                                // This block configure the logger with handler and formatter
+                                if (!logOpened) {
+                                    fh = new FileHandler("sql.log");
+                                    logger.addHandler(fh);
+                                    SimpleFormatter formatter = new SimpleFormatter();
+                                    fh.setFormatter(formatter);
+                                    logOpened = true;
+                                }
+
+                                // the following statement is used to log any messages
+
+                                Date d = new Date(statement.getTimestamp()/* * 1000*/);
+                                StringBuilder builder = new StringBuilder();
+                                builder.append("Time: ");
+                                builder.append(d.toString());
+                                builder.append("; ");
+                                builder.append("Sql query: ");
+                                builder.append(statement.getRawSql());
+
+                                logger.info(builder.toString());
+                            }
 
                             row.addIDColumn(statement.getLogId());
                             row.addTimestampColumn(statement.getTimestamp());

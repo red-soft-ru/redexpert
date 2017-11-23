@@ -74,6 +74,12 @@ public class LoggerPanel extends JPanel {
     private JComboBox<Filter.FilterType> comboBoxFilterType;
     private JTextField txtFldSqlFilter;
 
+    public JCheckBox getCheckLogToFile() {
+        return checkLogToFile;
+    }
+
+    JCheckBox checkLogToFile;
+
     public LoggerPanel() {
         super(new BorderLayout());
 
@@ -201,6 +207,14 @@ public class LoggerPanel extends JPanel {
                 perfLoggerController.setTextFilter(txtFldSqlFilter.getText());
             }
         });
+
+        checkLogToFile = new JCheckBox("Log to file");
+        final GridBagConstraints gbc_checkLogToFile = new GridBagConstraints();
+        gbc_checkLogToFile.anchor = GridBagConstraints.BASELINE;
+        gbc_checkLogToFile.insets = new Insets(0, 0, 5, 5);
+        gbc_checkLogToFile.gridx = 3;
+        gbc_checkLogToFile.gridy = 0;
+        filterPanel.add(checkLogToFile, gbc_checkLogToFile);
 
         final JSplitPane splitPane = new JSplitPane();
         splitPane.setResizeWeight(0.8);

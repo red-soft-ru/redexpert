@@ -1237,8 +1237,8 @@ public class DefaultStatementExecutor implements StatementExecutor {
     private void finished() throws SQLException {
 
         if (stmnt != null) {
-
-            stmnt.close();
+            if(!stmnt.isClosed())
+                stmnt.close();
         }
 
         closeConnection(conn);

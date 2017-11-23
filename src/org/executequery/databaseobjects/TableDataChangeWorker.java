@@ -478,6 +478,8 @@ public class TableDataChangeWorker {
         if (connection != null) {
 
             try {
+                boolean keepAlive = true;
+                if(!keepAlive)
                 connection.close();
             } catch (SQLException e) {
             }

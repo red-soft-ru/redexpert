@@ -22,6 +22,7 @@ package org.executequery.gui.browser;
 
 import java.io.Serializable;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Vector;
 
@@ -474,7 +475,6 @@ public class ColumnData implements Serializable {
                 domainNotNull = rs.getInt(8) == 1;
                 domainDefault = rs.getString(9);
             }
-            executor.releaseResources();
             domainType = getSqlTypeFromRDBtype(domainType, domainSubType);
             sqlType = domainType;
             columnSize = domainSize;
@@ -500,8 +500,14 @@ public class ColumnData implements Serializable {
             } else domainCharset = domainCharset.trim();
             setCharset(domainCharset);
 
-        } catch (Exception e) {
-            Log.error(e.getMessage());
+        } catch (SQLException e) {
+            Log.debug("Error get ColumnData get Domain:", e);
+        }
+        catch (Exception e) {
+            Log.error("Error get ColumnData get Domain:", e);
+        }
+        finally {
+            executor.releaseResources();
         }
 
     }

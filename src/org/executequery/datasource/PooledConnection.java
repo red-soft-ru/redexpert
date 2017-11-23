@@ -21,33 +21,53 @@
 package org.executequery.datasource;
 
 import org.executequery.log.Log;
+import org.underworldlabs.swing.util.SwingWorker;
 
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Pooled connection wrapper.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PooledConnection implements Connection {
 
     private String id = UUID.randomUUID().toString();
 
-    /** this connections use count */
+    boolean free;
+
+    Semaphore mutex;
+
+    Lock lock;
+
+    /**
+     * this connections use count
+     */
     private int useCount;
 
-    /** indicates whether this connection is in use */
+    /**
+     * indicates whether this connection is in use
+     */
     private boolean inUse;
 
-    /** indicates whether to close this connection */
+    /**
+     * indicates whether to close this connection
+     */
     private boolean closeOnReturn;
 
-    /** the original auto-commit mode from the real connection */
+    /**
+     * the original auto-commit mode from the real connection
+     */
     private boolean originalAutoCommit;
 
-    /** the real JDBC connection that this object wraps */
+    /**
+     * the real JDBC connection that this object wraps
+     */
     private Connection realConnection;
 
     private List<PooledConnectionListener> listeners;
@@ -56,10 +76,9 @@ public class PooledConnection implements Connection {
      * Creates a new PooledConnection object with the
      * specified connection as the source.
      *
-     * @param the real java.sql.Connection
+     * @param realConnection real java.sql.Connection
      */
     public PooledConnection(Connection realConnection) {
-
         this(realConnection, false);
     }
 
@@ -67,10 +86,13 @@ public class PooledConnection implements Connection {
      * Creates a new PooledConnection object with the
      * specified connection as the source.
      *
-     * @param the real java.sql.Connection
+     * @param realConnection real java.sql.Connection
      */
     public PooledConnection(Connection realConnection, boolean closeOnReturn) {
 
+        mutex = new Semaphore(1);
+        lock = new ReentrantLock(true);
+        free = true;
         useCount = 0;
         this.realConnection = realConnection;
         this.closeOnReturn = closeOnReturn;
@@ -102,7 +124,7 @@ public class PooledConnection implements Connection {
     }
 
     /**
-     *  Determine if the connection is available
+     * Determine if the connection is available
      *
      * @return true if the connection can be used
      */
@@ -154,7 +176,8 @@ public class PooledConnection implements Connection {
                 realConnection.close();
             }
 
-        } catch (SQLException e) {}
+        } catch (SQLException e) {
+        }
 
         realConnection = null;
     }
@@ -186,7 +209,8 @@ public class PooledConnection implements Connection {
 
                     realConnection.setAutoCommit(originalAutoCommit);
 
-                } catch (SQLException e) {}
+                } catch (SQLException e) {
+                }
 
             }
 
@@ -210,86 +234,190 @@ public class PooledConnection implements Connection {
 
     public Statement createStatement() throws SQLException {
         checkOpen();
-        return realConnection.createStatement();
+        setFree(false);
+        return new PooledStatement(this, realConnection.createStatement());
+
     }
 
     public Statement createStatement(int resultSetType, int resultSetConcurrency)
-        throws SQLException {
+            throws SQLException {
         checkOpen();
-        return realConnection.createStatement(resultSetType,resultSetConcurrency);
+        setFree(false);
+        return new PooledStatement(this, realConnection.createStatement(resultSetType, resultSetConcurrency));
     }
 
     public PreparedStatement prepareStatement(String sql) throws SQLException {
         checkOpen();
-        return realConnection.prepareStatement(sql);
+        setFree(false);
+        return new PooledStatement(this, realConnection.prepareStatement(sql));
     }
 
     public PreparedStatement prepareStatement(String sql,
                                               int resultSetType,
                                               int resultSetConcurrency)
-        throws SQLException {
+            throws SQLException {
         checkOpen();
-        return realConnection.prepareStatement(sql,resultSetType,resultSetConcurrency);
+        setFree(false);
+        return new PooledStatement(this, realConnection.prepareStatement(sql, resultSetType, resultSetConcurrency));
     }
 
     public CallableStatement prepareCall(String sql) throws SQLException {
         checkOpen();
-        return realConnection.prepareCall(sql);
+        setFree(false);
+        return new PooledStatement(this, realConnection.prepareCall(sql));
     }
 
     public CallableStatement prepareCall(String sql,
                                          int resultSetType,
                                          int resultSetConcurrency)
-        throws SQLException {
+            throws SQLException {
         checkOpen();
-        return realConnection.prepareCall(sql, resultSetType,resultSetConcurrency);
+        setFree(false);
+        return new PooledStatement(this, realConnection.prepareCall(sql, resultSetType, resultSetConcurrency));
     }
 
     public void clearWarnings() throws SQLException {
         checkOpen();
-        try { realConnection.clearWarnings(); } catch (SQLException e) { handleException(e); } }
+        try {
+            realConnection.clearWarnings();
+        } catch (SQLException e) {
+            handleException(e);
+        }
+    }
 
     public void commit() throws SQLException {
-        checkOpen(); try { realConnection.commit(); } catch (SQLException e) { handleException(e); } }
+        checkOpen();
+        try {
+            realConnection.commit();
+        } catch (SQLException e) {
+            handleException(e);
+        }
+    }
 
     public boolean getAutoCommit() throws SQLException {
-        checkOpen(); try { return realConnection.getAutoCommit(); } catch (SQLException e) { handleException(e); return false; }
+        checkOpen();
+        try {
+            return realConnection.getAutoCommit();
+        } catch (SQLException e) {
+            handleException(e);
+            return false;
+        }
     }
+
     public String getCatalog() throws SQLException {
-        checkOpen(); try { return realConnection.getCatalog(); } catch (SQLException e) { handleException(e); return null; } }
+        checkOpen();
+        try {
+            return realConnection.getCatalog();
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
+    }
 
     public DatabaseMetaData getMetaData() throws SQLException {
-        checkOpen(); try { return realConnection.getMetaData(); } catch (SQLException e) { handleException(e); return null; } }
+        checkOpen();
+        try {
+            return new PooledDatabaseMetaData(this, realConnection.getMetaData());
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
+    }
 
     public int getTransactionIsolation() throws SQLException {
-        checkOpen(); try { return realConnection.getTransactionIsolation(); } catch (SQLException e) { handleException(e); return -1; } }
+        checkOpen();
+        try {
+            return realConnection.getTransactionIsolation();
+        } catch (SQLException e) {
+            handleException(e);
+            return -1;
+        }
+    }
 
     public Map<String, Class<?>> getTypeMap() throws SQLException {
-        checkOpen(); try { return realConnection.getTypeMap(); } catch (SQLException e) { handleException(e); return null; } }
+        checkOpen();
+        try {
+            return realConnection.getTypeMap();
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
+    }
 
     public SQLWarning getWarnings() throws SQLException {
-        checkOpen(); try { return realConnection.getWarnings(); } catch (SQLException e) { handleException(e); return null; } }
+        checkOpen();
+        try {
+            return realConnection.getWarnings();
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
+    }
 
     public boolean isReadOnly() throws SQLException {
-        checkOpen(); try { return realConnection.isReadOnly(); } catch (SQLException e) { handleException(e); return false; } }
+        checkOpen();
+        try {
+            return realConnection.isReadOnly();
+        } catch (SQLException e) {
+            handleException(e);
+            return false;
+        }
+    }
 
     public String nativeSQL(String sql) throws SQLException {
-        checkOpen(); try { return realConnection.nativeSQL(sql); } catch (SQLException e) { handleException(e); return null; } }
+        checkOpen();
+        try {
+            return realConnection.nativeSQL(sql);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
+    }
 
     public void rollback() throws SQLException {
-        checkOpen(); try {  realConnection.rollback(); } catch (SQLException e) { handleException(e); } }
+        checkOpen();
+        try {
+            realConnection.rollback();
+        } catch (SQLException e) {
+            handleException(e);
+        }
+    }
 
     public void setAutoCommit(boolean autoCommit) throws SQLException {
-        checkOpen(); try { realConnection.setAutoCommit(autoCommit); } catch (SQLException e) { handleException(e); } }
+        checkOpen();
+        try {
+            realConnection.setAutoCommit(autoCommit);
+        } catch (SQLException e) {
+            handleException(e);
+        }
+    }
 
     public void setCatalog(String catalog) throws SQLException {
-        checkOpen(); try { realConnection.setCatalog(catalog); } catch (SQLException e) { handleException(e); } }
+        checkOpen();
+        try {
+            realConnection.setCatalog(catalog);
+        } catch (SQLException e) {
+            handleException(e);
+        }
+    }
 
     public void setReadOnly(boolean readOnly) throws SQLException {
-        checkOpen(); try { realConnection.setReadOnly(readOnly); } catch (SQLException e) { handleException(e); } }
+        checkOpen();
+        try {
+            realConnection.setReadOnly(readOnly);
+        } catch (SQLException e) {
+            handleException(e);
+        }
+    }
 
     public void setTransactionIsolation(int level) throws SQLException {
-        checkOpen(); try { realConnection.setTransactionIsolation(level); } catch (SQLException e) { handleException(e); } }
+        checkOpen();
+        try {
+            realConnection.setTransactionIsolation(level);
+        } catch (SQLException e) {
+            handleException(e);
+        }
+    }
 
     public boolean isClosed() throws SQLException {
         if (realConnection == null) {
@@ -302,38 +430,78 @@ public class PooledConnection implements Connection {
         if (realConnection != null && realConnection.isClosed()) {
             throw new SQLException("Connection is closed.");
         }
-        if(realConnection == null) {
+        if (realConnection == null) {
             throw new SQLException("Connection is closed.");
         }
     }
 
     public int getHoldability() throws SQLException {
-        checkOpen(); try { return realConnection.getHoldability(); } catch (SQLException e) { handleException(e); return 0; } }
+        checkOpen();
+        try {
+            return realConnection.getHoldability();
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
+    }
 
     public void setHoldability(int holdability) throws SQLException {
-        checkOpen(); try { realConnection.setHoldability(holdability); } catch (SQLException e) { handleException(e); } }
+        checkOpen();
+        try {
+            realConnection.setHoldability(holdability);
+        } catch (SQLException e) {
+            handleException(e);
+        }
+    }
 
     public java.sql.Savepoint setSavepoint() throws SQLException {
-        checkOpen(); try { return realConnection.setSavepoint(); } catch (SQLException e) { handleException(e); return null; } }
+        checkOpen();
+        try {
+            return realConnection.setSavepoint();
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
+    }
 
     public java.sql.Savepoint setSavepoint(String name) throws SQLException {
-        checkOpen(); try { return realConnection.setSavepoint(name); } catch (SQLException e) { handleException(e); return null; } }
+        checkOpen();
+        try {
+            return realConnection.setSavepoint(name);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
+    }
 
     public void rollback(java.sql.Savepoint savepoint) throws SQLException {
-        checkOpen(); try { realConnection.rollback(savepoint); } catch (SQLException e) { handleException(e); } }
+        checkOpen();
+        try {
+            realConnection.rollback(savepoint);
+        } catch (SQLException e) {
+            handleException(e);
+        }
+    }
 
     public void releaseSavepoint(java.sql.Savepoint savepoint) throws SQLException {
-        checkOpen(); try { realConnection.releaseSavepoint(savepoint); } catch (SQLException e) { handleException(e); } }
+        checkOpen();
+        try {
+            realConnection.releaseSavepoint(savepoint);
+        } catch (SQLException e) {
+            handleException(e);
+        }
+    }
 
     public Statement createStatement(int resultSetType,
                                      int resultSetConcurrency,
                                      int resultSetHoldability) throws SQLException {
         checkOpen();
         try {
-            return realConnection.createStatement(
-                resultSetType, resultSetConcurrency, resultSetHoldability);
-        }
-        catch (SQLException e) {
+            setFree(false);
+            return new PooledStatement(this, realConnection.createStatement(
+                    resultSetType, resultSetConcurrency, resultSetHoldability));
+        } catch (SQLException e) {
+            setFree(true);
             handleException(e);
             return null;
         }
@@ -344,10 +512,11 @@ public class PooledConnection implements Connection {
                                               int resultSetHoldability) throws SQLException {
         checkOpen();
         try {
-            return realConnection.prepareStatement(
-                sql, resultSetType, resultSetConcurrency, resultSetHoldability);
-        }
-        catch (SQLException e) {
+            setFree(false);
+            return new PooledStatement(this, realConnection.prepareStatement(
+                    sql, resultSetType, resultSetConcurrency, resultSetHoldability));
+        } catch (SQLException e) {
+            setFree(true);
             handleException(e);
             return null;
         }
@@ -358,10 +527,11 @@ public class PooledConnection implements Connection {
                                          int resultSetHoldability) throws SQLException {
         checkOpen();
         try {
-            return realConnection.prepareCall(
-                sql, resultSetType, resultSetConcurrency, resultSetHoldability);
-        }
-        catch (SQLException e) {
+            setFree(false);
+            return new PooledStatement(this, realConnection.prepareCall(
+                    sql, resultSetType, resultSetConcurrency, resultSetHoldability));
+        } catch (SQLException e) {
+            setFree(true);
             handleException(e);
             return null;
         }
@@ -370,9 +540,10 @@ public class PooledConnection implements Connection {
     public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
         checkOpen();
         try {
-            return realConnection.prepareStatement(sql, autoGeneratedKeys);
-        }
-        catch (SQLException e) {
+            setFree(false);
+            return new PooledStatement(this, realConnection.prepareStatement(sql, autoGeneratedKeys));
+        } catch (SQLException e) {
+            setFree(true);
             handleException(e);
             return null;
         }
@@ -381,9 +552,10 @@ public class PooledConnection implements Connection {
     public PreparedStatement prepareStatement(String sql, int columnIndexes[]) throws SQLException {
         checkOpen();
         try {
-            return realConnection.prepareStatement(sql, columnIndexes);
-        }
-        catch (SQLException e) {
+            setFree(false);
+            return new PooledStatement(this, realConnection.prepareStatement(sql, columnIndexes));
+        } catch (SQLException e) {
+            setFree(true);
             handleException(e);
             return null;
         }
@@ -392,9 +564,10 @@ public class PooledConnection implements Connection {
     public PreparedStatement prepareStatement(String sql, String columnNames[]) throws SQLException {
         checkOpen();
         try {
-            return realConnection.prepareStatement(sql, columnNames);
-        }
-        catch (SQLException e) {
+            setFree(false);
+            return new PooledStatement(this, realConnection.prepareStatement(sql, columnNames));
+        } catch (SQLException e) {
+            setFree(true);
             handleException(e);
             return null;
         }
@@ -421,7 +594,12 @@ public class PooledConnection implements Connection {
     }
 
     public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
-        checkOpen(); try { realConnection.setTypeMap(map); } catch (SQLException e) { handleException(e); }
+        checkOpen();
+        try {
+            realConnection.setTypeMap(map);
+        } catch (SQLException e) {
+            handleException(e);
+        }
     }
 
     // ------------------------------------------------------------------
@@ -559,32 +737,57 @@ public class PooledConnection implements Connection {
         }
     }
 
-	public void setSchema(String schema) throws SQLException {
-		// TODO Auto-generated method stub
-		
-	}
+    public void setSchema(String schema) throws SQLException {
+        // TODO Auto-generated method stub
 
-	public String getSchema() throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    }
 
-	public void abort(Executor executor) throws SQLException {
-		// TODO Auto-generated method stub
-		
-	}
+    public String getSchema() throws SQLException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	public void setNetworkTimeout(Executor executor, int milliseconds)
-			throws SQLException {
-		// TODO Auto-generated method stub
-		
-	}
+    public void abort(Executor executor) throws SQLException {
+        // TODO Auto-generated method stub
 
-	public int getNetworkTimeout() throws SQLException {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    }
 
+    public void setNetworkTimeout(Executor executor, int milliseconds)
+            throws SQLException {
+        // TODO Auto-generated method stub
+
+    }
+
+    public int getNetworkTimeout() throws SQLException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    public boolean isFree() {
+        return free;
+    }
+
+    /*public void setFree(boolean flag) {
+
+    }*/
+
+    public void setFree(boolean flag) {
+
+        if (!flag) try{
+            mutex.acquire();
+            free = flag;
+        }catch (InterruptedException e)
+        {
+            Log.debug("Mutex Threads Exception:",e);
+        }
+        else {
+            if (!free) {
+                mutex.release();
+                free = flag;
+            }
+        }
+
+    }
 }
 
 

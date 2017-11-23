@@ -67,7 +67,9 @@ public class TransactionAgnosticResultSet extends DelegatingResultSet {
 
                         connection.commit();
                     }
-                    connection.close();
+                    boolean keepAlive = true;
+                    if(!keepAlive)
+                        connection.close();
                     
                 } catch (SQLException e) {
                     

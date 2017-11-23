@@ -51,6 +51,13 @@ public abstract class AbstractNamedObject implements NamedObject,
     /** the parent object */
     private NamedObject parent;
 
+    private boolean keepAlive;
+
+    public AbstractNamedObject()
+    {
+        keepAlive=true;//need change
+    }
+
     /**
      * Returns the parent named object of this object.
      *
@@ -63,7 +70,7 @@ public abstract class AbstractNamedObject implements NamedObject,
     /**
      * Sets the parent object to that specified.
      *
-     * @param the parent named object
+     * @param  parent named object
      */
     public void setParent(NamedObject parent) {
         this.parent = parent;
@@ -104,9 +111,16 @@ public abstract class AbstractNamedObject implements NamedObject,
      */
     protected void releaseResources(ResultSet rs) {
         try {
+            Statement st = rs.getStatement();
             if (rs != null) {
+                if(!rs.isClosed())
 
                 rs.close();
+            }
+            if(st != null)
+            {
+                if(!st.isClosed())
+                    st.close();
             }
         } catch (SQLException sqlExc) {}
     }
@@ -119,8 +133,8 @@ public abstract class AbstractNamedObject implements NamedObject,
     protected void releaseResources(Connection connection) {
         try {
             if (connection != null) {
-             
-                connection.close();
+                if(!keepAlive)
+                    connection.close();
             }
         } catch (SQLException e) {}
     }
@@ -144,8 +158,8 @@ public abstract class AbstractNamedObject implements NamedObject,
     protected void releaseResources(Statement stmnt) {
         try {
             if (stmnt != null) {
-                
-                stmnt.close();
+                if(!stmnt.isClosed())
+                    stmnt.close();
             }
         } catch (SQLException sqlExc) {}
     }

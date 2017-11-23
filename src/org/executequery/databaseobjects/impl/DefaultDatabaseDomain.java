@@ -3,12 +3,11 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
+import org.executequery.datasource.ConnectionManager;
+import org.executequery.datasource.PooledConnection;
 import org.underworldlabs.jdbc.DataSourceException;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,7 +96,7 @@ public class DefaultDatabaseDomain extends DefaultDatabaseExecutable
             String _schema = getSchemaName();
 
             columns = new ArrayList<>();
-            if (dmd.getConnection().getClass().getName().contains("FBConnection")) {
+            if (ConnectionManager.realConnection(dmd).getClass().getName().contains("FBConnection")) {
                 statement = dmd.getConnection().createStatement();
 
                 ResultSet rs = statement.executeQuery("SELECT first 1\n" +

@@ -393,8 +393,8 @@ public class MetaDataValues implements ConnectionListener {
     /** <p>Retrieves the column names for the specified
      *  database table and schema as an array.
      *
-     *  @param the database table name
-     *  @param the database schema name
+     *  @param table database table name
+     *  @param schema database schema name
      *  @return the column name
      */
     public Map<String, String> getColumnProperties(String schema, 
@@ -448,7 +448,7 @@ public class MetaDataValues implements ConnectionListener {
      * objects containing all relevant information on the table indexes
      * for the specified table.
      *
-     * @param the table's name
+     * @param table table's name
      * @return a <code>Vector</code> of <code>ColumnIndexData</code> objects
      */
     public Vector<ColumnIndex> getTableIndexes(String catalog, 
@@ -1090,7 +1090,8 @@ public class MetaDataValues implements ConnectionListener {
     private void releaseResources(Statement stmnt) {
         try {
             if (stmnt != null) {
-                stmnt.close();
+                if(!stmnt.isClosed())
+                    stmnt.close();
             }
         }
         catch (SQLException sqlExc) {}
@@ -1117,9 +1118,11 @@ public class MetaDataValues implements ConnectionListener {
 
     private void releaseResources(ResultSet rs) {
         try {
+            Statement st = rs.getStatement();
             if (rs != null) {
                 rs.close();
             }
+            releaseResources(st);
         }
         catch (SQLException sqlExc) {}
         finally {
@@ -1297,8 +1300,8 @@ public class MetaDataValues implements ConnectionListener {
     /** <p>Retrieves the column names for the specified
      *  database table and schema as an array.
      *
-     *  @param the database table name
-     *  @param the database schema name
+     *  @param table database table name
+     *  @param schema database schema name
      *  @return the column names array
      */
     public String[] getColumnNames(String table, String schema) 
@@ -1339,8 +1342,8 @@ public class MetaDataValues implements ConnectionListener {
      *  database table and schema as a <code>Vector</code>
      *  object.
      *
-     *  @param the database table name
-     *  @param the database schema name
+     *  @param table database table name
+     *  @param schema database schema name
      *  @return the column names <code>Vector</code>
      */
     public Vector<String> getColumnNamesVector(String table, String schema) 
@@ -1476,8 +1479,8 @@ public class MetaDataValues implements ConnectionListener {
      *  <code>ColumnData</code> objects and added to the
      *  <code>Vector</code> object to be returned.
      *
-     *  @param the database table name
-     *  @param the database schema name
+     *  @param name database table name
+     *  @param schema database schema name
      *  @return the table column meta data
      */
     public Vector<ColumnData> getColumnMetaDataVector(String name, String schema) 
@@ -1760,14 +1763,14 @@ public class MetaDataValues implements ConnectionListener {
     /**
      * Indicates a connection has been established.
      * 
-     * @param the encapsulating event
+     * @param connectionEvent encapsulating event
      */
     public void connected(ConnectionEvent connectionEvent) {}
 
     /**
      * Indicates a connection has been closed.
      * 
-     * @param the encapsulating event
+     * @param connectionEvent encapsulating event
      */
     public void disconnected(ConnectionEvent connectionEvent) {
 

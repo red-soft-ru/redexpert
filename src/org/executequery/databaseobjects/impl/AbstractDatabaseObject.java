@@ -33,6 +33,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.TablePrivilege;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.Log;
 
 /**
  * Abstract database object implementation.
@@ -350,7 +351,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     /**
      * Retrieves the data for this object (where applicable).
      * 
-     * @param whether to rollback if a DataSourceException is thrown
+     * @param rollbackOnError to rollback if a DataSourceException is thrown
      * @return the data for this object
      */
     public ResultSet getData(boolean rollbackOnError) throws DataSourceException {
@@ -412,6 +413,24 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             throw new DataSourceException(e);
         } 
 
+    }
+
+    public void releaseResources()
+    {
+        if (statement != null) {
+
+            try {
+                if (!statement.isClosed())
+                    //Log.info("Close statement");
+                    statement.close();
+                statement = null;
+
+            } catch (SQLException e) {
+
+                Log.error("Error releaseResources in AbstractDatabaseObject:",e);
+            }
+
+        }
     }
     
     public void cancelStatement() {

@@ -325,6 +325,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                         }
 
                     } catch (SQLException e) {
+                        Log.error("Error get imported keys for "+getName()+": "+e.getMessage());
                     }
                 }
 
@@ -416,7 +417,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                 } catch (Exception e) {
                     Log.error("Error loading check-constraints:" + result.getErrorMessage(), e);
                 }
-                executor.releaseResources();
+                finally {
+                    executor.releaseResources();
+                }
                 constraints.removeAll(Collections.singleton(null));
 
                 return constraints;

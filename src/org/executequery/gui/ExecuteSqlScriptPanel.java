@@ -302,8 +302,9 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
          
             statusBar.cleanup();
         }
-        
-        closeConnection();
+        boolean keepAlive = true;
+        if(!keepAlive)
+            closeConnection();
         EventMediator.deregisterListener(this);
     }
 
@@ -428,7 +429,9 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
             } finally {
 
-                closeConnection();
+                boolean keepAlive = true;
+                if(!keepAlive)
+                    closeConnection();
                 enableButtons(true, false, false, false);
             }
         }
@@ -449,8 +452,10 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
                 outputPanel.appendError("Error during rollback:\n" + e.getMessage());
                 
             } finally {
-                
-                closeConnection();
+
+                boolean keepAlive = true;
+                if(!keepAlive)
+                    closeConnection();
                 enableButtons(true, false, false, false);
             }
         }

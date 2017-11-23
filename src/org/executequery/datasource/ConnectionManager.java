@@ -21,6 +21,8 @@
 package org.executequery.datasource;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -119,6 +121,12 @@ public final class ConnectionManager {
             return connection;
         }
 
+    }
+
+    public static Connection realConnection(DatabaseMetaData dmd) throws SQLException {
+        if(dmd instanceof PooledDatabaseMetaData)
+            return ((PooledDatabaseMetaData)dmd).getRealConnection();
+        else return dmd.getConnection();
     }
 
     /**

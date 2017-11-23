@@ -389,8 +389,12 @@ public class TableDataTab extends JPanel
 
             } catch (Exception e) {
                 Log.error("Error retrieving data for table - " + databaseObject.getName() + ". Try to rebuild table model.");
+                databaseObject.releaseResources();
                 ResultSet resultSet = databaseObject.getMetaData();
                 tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection(), columnDataList);
+            }
+            finally {
+                databaseObject.releaseResources();
             }
             createResultSetTable();
             List<String> nonEditableCols = new ArrayList<>();
@@ -525,7 +529,10 @@ public class TableDataTab extends JPanel
                 items.add(rs.getObject(1));
             }
         } catch (Exception e) {
-            Log.error(e.getMessage());
+            Log.error("Error get Foreign keys:"+e.getMessage());
+        }
+        finally {
+            querySender.releaseResources();
         }
         items.add(null);
         return items;

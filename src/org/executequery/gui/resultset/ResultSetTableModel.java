@@ -243,8 +243,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                     resultSet.close();
 
                     if (statement != null) {
-
-                        statement.close();
+                        if(!statement.isClosed())
+                            statement.close();
                     }
 
                 } catch (SQLException e) {
@@ -471,8 +471,6 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             String tableName = "";
             int zeroBaseIndex = 0;
             int g = 1;
-            //int count = rsmd.getColumnCount();
-            //for (int i = 1; i <= count; i++)
             while (resultSet.next()) {
 
                 zeroBaseIndex = g - 1;
@@ -518,7 +516,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                     }
 
                 } catch (Exception e) {
-                    Log.error(e.getMessage());
+                    Log.error("Error get result set from metadata"+e.getMessage());
 
                 }
                 if (i < count - 1)
@@ -539,7 +537,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
             if (e instanceof InterruptedException) {
 
-                Log.debug("ResultSet generation interrupted.", e);
+                Log.error("ResultSet generation interrupted.", e);
 
             } else {
 

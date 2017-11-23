@@ -48,7 +48,7 @@ import org.underworldlabs.util.MiscUtils;
 /**
  * Default database host object implementation.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DefaultDatabaseHost extends AbstractNamedObject
         implements DatabaseHost {
@@ -704,7 +704,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             */
 
             boolean isFirebirdConnection = false;
-            Connection connection = dmd.getConnection();
+            Connection connection = ConnectionManager.realConnection(dmd);
             if (connection.getClass().getName().contains("FBConnection"))
                 isFirebirdConnection = true;
 
@@ -728,31 +728,9 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                     String computedSource = null;
 
                     Statement statement = dmd.getConnection().createStatement();
-                    ResultSet sourceRS = statement.executeQuery("select " +
-                            " RRF.RDB$FIELD_SOURCE" +
-                            " from RDB$FIELDS RF, " +
-                            "rdb$relation_fields RRF\n" +
-                            "where\n" +
-                            "    RRF.rdb$field_name = '" + column.getName() + "'\n" +
-                            "    and\n" +
-                            "    RRF.rdb$relation_name = '" + table + "'\n" +
-                            "    and\n" +
-                            "    RF.rdb$field_name = RRF.rdb$field_source");
-                    if (sourceRS.next()) {
-                        computedSource = sourceRS.getString(1);
-                        releaseResources(sourceRS);
-                    }
-
-                    if (computedSource != null && !computedSource.isEmpty() ) {
-                        column.setDomain(computedSource);
-                    }
-
-                    if (isGen.compareToIgnoreCase("YES") == 0) {
-                        column.setGenerated(true);
-//                        Statement statement = dmd.getConnection().createStatement();
-                        /*ResultSet*/
-                        sourceRS = statement.executeQuery("select RF.RDB$COMPUTED_SOURCE, " +
-                                " RRF.RDB$FIELD_NAME" +
+                    try {
+                        ResultSet sourceRS = statement.executeQuery("select " +
+                                " RRF.RDB$FIELD_SOURCE" +
                                 " from RDB$FIELDS RF, " +
                                 "rdb$relation_fields RRF\n" +
                                 "where\n" +
@@ -763,15 +741,42 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                                 "    RF.rdb$field_name = RRF.rdb$field_source");
                         if (sourceRS.next()) {
                             computedSource = sourceRS.getString(1);
-                            releaseResources(sourceRS);
+                            sourceRS.close();
                         }
-                        if (fieldLength != 0)
-                            column.setColumnSize(fieldLength);
+
                         if (computedSource != null && !computedSource.isEmpty()) {
-//                            column.setTypeName(computedSource);
-                            column.setComputedSource(computedSource);
+                            column.setDomain(computedSource);
                         }
+
+                        if (isGen.compareToIgnoreCase("YES") == 0) {
+                            column.setGenerated(true);
+//                        Statement statement = dmd.getConnection().createStatement();
+                        /*ResultSet*/
+                            sourceRS = statement.executeQuery("select RF.RDB$COMPUTED_SOURCE, " +
+                                    " RRF.RDB$FIELD_NAME" +
+                                    " from RDB$FIELDS RF, " +
+                                    "rdb$relation_fields RRF\n" +
+                                    "where\n" +
+                                    "    RRF.rdb$field_name = '" + column.getName() + "'\n" +
+                                    "    and\n" +
+                                    "    RRF.rdb$relation_name = '" + table + "'\n" +
+                                    "    and\n" +
+                                    "    RF.rdb$field_name = RRF.rdb$field_source");
+                            if (sourceRS.next()) {
+                                computedSource = sourceRS.getString(1);
+                                sourceRS.close();
+                            }
+                            if (fieldLength != 0)
+                                column.setColumnSize(fieldLength);
+                            if (computedSource != null && !computedSource.isEmpty()) {
+//                            column.setTypeName(computedSource);
+                                column.setComputedSource(computedSource);
+                            }
+                        }
+                    } finally {
+                        statement.close();
                     }
+
                 }
                 columns.add(column);
             }

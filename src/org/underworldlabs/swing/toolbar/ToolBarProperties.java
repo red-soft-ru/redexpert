@@ -38,6 +38,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.executequery.log.Log;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
@@ -251,7 +252,7 @@ public class ToolBarProperties {
             return 1;
         }
         catch (Exception e) {
-            e.printStackTrace();
+            Log.error("Error method saveTools in class ToolBarProperties:",e);
             return 0;
         }
         finally {
@@ -309,7 +310,7 @@ public class ToolBarProperties {
             }
         }
         catch (Exception e) {
-            e.printStackTrace();
+            Log.error("Error method loadDefaults in class ToolBarProperties:",e);
             GUIUtils.displayErrorMessage(
                     null, "Error opening default tools definitions.");
         }
@@ -415,7 +416,7 @@ public class ToolBarProperties {
                 
             }
             catch (Exception e) {
-                e.printStackTrace();
+                Log.error("Error method loadTools in class ToolBarProperties:",e);
                 GUIUtils.displayErrorMessage(
                         null, 
                         "Error opening tools definitions.\nResorting to system defaults.");
@@ -645,7 +646,7 @@ public class ToolBarProperties {
                 
             }
             catch (Exception e) {
-                e.printStackTrace();
+                Log.error("Error method parse in class ToolBarProperties:",e);
             }
             
         }

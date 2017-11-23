@@ -5,15 +5,16 @@ import ch.sla.jdbcperflogger.model.ConnectionInfo;
 import biz.redsoft.net.AbstractLogReceiver;
 import biz.redsoft.net.LogProcessor;
 import biz.redsoft.net.ServerLogReceiver;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.RollingFileAppender;
 
 import javax.swing.*;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.FileHandler;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 public class PerfLoggerController {
     private final AbstractLogReceiver logReceiver;
@@ -29,8 +30,9 @@ public class PerfLoggerController {
     private final ScheduledExecutorService refreshDataScheduledExecutorService;
     private boolean forceRefresh;
 
-    Logger logger = Logger.getLogger("JDBCLog");
-    FileHandler fh;
+    /** The Log4J Logger object */
+    private final static Logger logger = Logger.getLogger(PerfLoggerController.class);
+
     boolean logOpened;
 
     PerfLoggerController(final AbstractLogReceiver logReceiver, LoggerPanel loggerPanel) {
@@ -46,6 +48,18 @@ public class PerfLoggerController {
         forceRefresh = false;
 
         logOpened = false;
+        String filePath = "sql.log";
+        PatternLayout layout = new PatternLayout("%-5p %d %m%n");
+        RollingFileAppender appender = null;
+        try {
+            appender = new RollingFileAppender(layout, filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        appender.setName("JdbcLog");
+        appender.setMaxFileSize("1MB");
+        appender.activateOptions();
+        Logger.getRootLogger().addAppender(appender);
     }
 
     void startReciever() {
@@ -184,17 +198,6 @@ public class PerfLoggerController {
 
                             if (loggerPanel.getCheckLogToFile().isSelected()) {
                                 // log to file
-                                // This block configure the logger with handler and formatter
-                                if (!logOpened) {
-                                    fh = new FileHandler("sql.log");
-                                    logger.addHandler(fh);
-                                    SimpleFormatter formatter = new SimpleFormatter();
-                                    fh.setFormatter(formatter);
-                                    logOpened = true;
-                                }
-
-                                // the following statement is used to log any messages
-
                                 Date d = new Date(statement.getTimestamp()/* * 1000*/);
                                 StringBuilder builder = new StringBuilder();
                                 builder.append("Time: ");

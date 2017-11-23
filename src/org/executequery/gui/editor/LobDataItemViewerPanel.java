@@ -113,7 +113,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
         } catch (Exception e) {
 
-            e.printStackTrace();
+            Log.error("Error init class LobDataItemViewerPanel:",e);
         }
 
     }
@@ -241,7 +241,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
             else try {
                 dataAsText = new String(data, charset);
             } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                Log.error("Error method loadTextData in class LobDataItemViewerPanel:",e);
                 dataAsText = new String(data);
             }
             char[] charArray = dataAsText.toCharArray();
@@ -400,7 +400,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
                     imageScroll.setViewportView(imageLabel);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.error("Error method open in class LobDataItemViewerPanel:",e);
             }
 
         }

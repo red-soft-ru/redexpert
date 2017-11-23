@@ -46,6 +46,7 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
+import org.executequery.log.Log;
 import org.underworldlabs.swing.plaf.UIUtils;
 
 /**
@@ -107,7 +108,7 @@ public abstract class WizardProcessPanel extends JPanel
         try {
             init();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.error("Error init class WizardProcessPanel:",e);
         }
     }
     

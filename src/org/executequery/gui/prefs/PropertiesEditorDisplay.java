@@ -24,6 +24,7 @@ package org.executequery.gui.prefs;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.executequery.log.Log;
 import org.underworldlabs.util.SystemProperties;
 
 /** <p>The Query Editor properties panel.
@@ -39,7 +40,7 @@ public class PropertiesEditorDisplay extends AbstractPropertiesBasePanel {
             init();
         }
         catch (Exception e) {
-            e.printStackTrace();
+            Log.error("Error init Class PropertiesEditorDisplay:",e);
         }
     }
     

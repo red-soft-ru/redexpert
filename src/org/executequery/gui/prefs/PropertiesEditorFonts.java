@@ -34,6 +34,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.executequery.log.Log;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.util.SystemProperties;
@@ -61,7 +62,7 @@ public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
         try {
             jbInit();
         } catch(Exception e) {
-            e.printStackTrace();
+            Log.error("Error init Class PropertiesEditorFonts:",e);
         }
     }
     

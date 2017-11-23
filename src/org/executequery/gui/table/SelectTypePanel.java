@@ -249,7 +249,7 @@ public class SelectTypePanel extends JPanel {
             charsets.add(0, CreateTableSQLSyntax.NONE);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.error("Error getting charsets for SelectTypePanel:",e);
             return;
         }
     }

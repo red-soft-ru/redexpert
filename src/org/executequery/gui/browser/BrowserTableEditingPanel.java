@@ -849,7 +849,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         } catch (DataSourceException e) {
 
-            controller.handleException(e);
+            ///controller.handleException(e);
+            Log.error("Error load table:",e);
 
             descriptionTable.resetDatabaseTable();
             constraintsTable.resetConstraintsTable();
@@ -904,6 +905,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                     try {
                         Thread.sleep(200);
                     } catch (InterruptedException e) {
+                        Log.error("Error load data row count:",e);
                     }
 
                     Log.debug("Retrieving data row count for table - " + table.getName());

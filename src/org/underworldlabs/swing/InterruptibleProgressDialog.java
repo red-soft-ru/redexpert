@@ -37,6 +37,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.executequery.log.Log;
 import org.underworldlabs.Constants;
 import org.underworldlabs.swing.util.Interruptible;
 
@@ -97,7 +98,7 @@ public class InterruptibleProgressDialog extends JDialog
 
         } catch (Exception e) {
 
-            e.printStackTrace();
+            Log.error("Error init class InterruptibleProgressDialog:",e);
         }
 
     }

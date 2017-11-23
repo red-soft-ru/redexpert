@@ -36,6 +36,7 @@ import org.executequery.Constants;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
 
@@ -67,7 +68,7 @@ public abstract class TableConstraintsPanel extends JPanel
         try {
             jbInit();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.error("Error init class TableConstraintsPanel:",e);
         }
         
     }
@@ -167,7 +168,7 @@ public abstract class TableConstraintsPanel extends JPanel
                 table.getColumnModel().getColumn(3).setCellEditor(
                             new ComboBoxCellEditor(getTableColumnData()));
             } catch (ArrayIndexOutOfBoundsException e) { // TODO: what is this - test
-                e.printStackTrace();
+                Log.error("Error method setData in class TableConstraintsPanel:",e);
             }
         }
         

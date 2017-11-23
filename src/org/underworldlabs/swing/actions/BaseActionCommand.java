@@ -20,6 +20,8 @@
 
 package org.underworldlabs.swing.actions;
 
+import org.executequery.log.Log;
+
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
@@ -132,11 +134,11 @@ public class BaseActionCommand extends AbstractAction {
             command = (BaseCommand)object;
         } 
         catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            Log.error("Error method setCommand in class BaseActionCommand:",e);
             throw new InternalError();
         }         
         catch (Exception e) {
-            e.printStackTrace();
+            Log.error("Error method setCommand in class BaseActionCommand:",e);
         } 
         
     }

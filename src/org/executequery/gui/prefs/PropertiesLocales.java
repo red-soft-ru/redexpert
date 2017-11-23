@@ -37,6 +37,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.executequery.GUIUtilities;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.util.StringSorter;
 import org.underworldlabs.util.SystemProperties;
@@ -62,7 +63,7 @@ public class PropertiesLocales extends AbstractPropertiesBasePanel
         try {
             jbInit();
         } catch(Exception e) {
-            e.printStackTrace();
+            Log.error("Error init Class PropertiesLocales:",e);
         } finally {
             GUIUtilities.showNormalCursor();
         }

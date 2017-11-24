@@ -3,6 +3,7 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.datasource.ConnectionManager;
+import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.DatabaseMetaData;
@@ -90,6 +91,13 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
             throw new DataSourceException(e);
 
         } finally {
+            if(statement!=null)
+                try {
+                    if(!statement.isClosed())
+                        statement.close();
+                } catch (SQLException e) {
+                    Log.error("Error close statement in method getSequenceValue in class DefaultDatabaseSequence",e);
+                }
 
             setMarkedForReload(false);
         }
@@ -131,7 +139,13 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
             throw new DataSourceException(e);
 
         } finally {
-
+            if(statement!=null)
+                try {
+                    if(!statement.isClosed())
+                        statement.close();
+                } catch (SQLException e) {
+                    Log.error("Error close statement in method getDescription in class DefaultDatabaseSequence",e);
+                }
             setMarkedForReload(false);
         }
     }

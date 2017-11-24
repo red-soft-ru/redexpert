@@ -503,6 +503,10 @@ public class ColumnData implements Serializable {
         } catch (SQLException e) {
             Log.debug("Error get ColumnData get Domain:", e);
         }
+        catch (NullPointerException e)
+        {
+            Log.debug("Error get ColumnData get Domain:", e);
+        }
         catch (Exception e) {
             Log.error("Error get ColumnData get Domain:", e);
         }

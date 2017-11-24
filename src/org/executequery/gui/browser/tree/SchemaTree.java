@@ -323,9 +323,10 @@ public class SchemaTree extends DynamicTree
         public void exportAsDrag(JComponent comp, InputEvent e, int action) {
             
             if (loadingNode) {
-
+                // I hope that this 'hack' will clear awt blah blah blah error
+                return;
                 // hack! 
-                throw new SuppressedException(Bundles.get("SchemaTree.error.exportAsDrag"));
+//                throw new SuppressedException(Bundles.get("SchemaTree.error.exportAsDrag"));
             }
             
             super.exportAsDrag(comp, e, action);

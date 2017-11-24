@@ -77,14 +77,14 @@ public class ResultSetDelimitedFileWriter {
                         boolean willQuoteValue = (quoteCharacterValues && columns[i - 1].isCharacterType());
                         if (willQuoteValue) {
                             
-                            sb.append("\"");                            
+                            sb.append("\"");
                         }
                         
                         sb.append(value);
 
                         if (willQuoteValue) {
                             
-                            sb.append("\"");                            
+                            sb.append("\"");
                         }
                         
                     }

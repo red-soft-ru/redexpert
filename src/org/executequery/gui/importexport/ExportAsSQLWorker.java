@@ -30,7 +30,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
@@ -401,13 +404,23 @@ public class ExportAsSQLWorker extends BaseImportExportWorker {
 
     }
 
+    private static final String NEW_LINE_REPLACEMENT = "\\\\n";
+    private static final String CARRIAGE_RETURN_REPLACEMENT = "\\\\r";
+    private static final String QUOTE_REPLACEMENT = "''";
+
+    private Matcher newLineMatcher = Pattern.compile("\n").matcher(StringUtils.EMPTY);
+    private Matcher carriageReturnMatcher = Pattern.compile("\r").matcher(StringUtils.EMPTY);
+    private Matcher quoteMatcher = Pattern.compile("'").matcher(StringUtils.EMPTY);
+
     private String formatString(String value) {
 
         if (value != null) {
 
-            return value.replaceAll("\n", "\\\\n").
-                replaceAll("\r", "\\\\r").
-                replaceAll("'", "''");
+            String formattedValue = newLineMatcher.reset(value).replaceAll(NEW_LINE_REPLACEMENT);
+            formattedValue = carriageReturnMatcher.reset(formattedValue).replaceAll(CARRIAGE_RETURN_REPLACEMENT);
+            formattedValue = quoteMatcher.reset(formattedValue).replaceAll(QUOTE_REPLACEMENT);
+
+            return formattedValue;
         }
 
         return value;

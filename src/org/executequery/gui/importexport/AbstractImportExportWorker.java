@@ -36,6 +36,7 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JOptionPane;
@@ -197,7 +198,7 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
      * @param table - the database table name
      * @param columns - the columns to select from the table
      */
-    protected ResultSet getResultSet(String table, Vector<?> columns) throws DataSourceException, SQLException {
+    protected ResultSet getResultSet(String table, List<?> columns) throws DataSourceException, SQLException {
 
         // check the columns and retrieve if null
         if (columns == null) {
@@ -233,7 +234,7 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
         return stmnt.executeQuery(query.toString());
     }
 
-    private String columnNamesAsCommaSeparatedString(String table, Vector<?> columns) throws DataSourceException, SQLException {
+    private String columnNamesAsCommaSeparatedString(String table, List<?> columns) throws DataSourceException, SQLException {
         
         StringBuilder sb = new StringBuilder();
         Database database = new LiquibaseDatabaseFactory().createDatabase(getConnection().getMetaData().getDatabaseProductName());

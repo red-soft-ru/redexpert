@@ -1944,10 +1944,9 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
 
     @Override
     public void connectionImported(ConnectionRepositoryEvent connectionRepositoryEvent) {
-        
-        System.out.println("imported");
-        
-//        tree.reset(createTreeStructure());
+
+        // nothing to see here        
+
     }
     
     @Override

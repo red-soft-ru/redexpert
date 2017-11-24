@@ -20,15 +20,23 @@
 
 package org.executequery.gui.importexport;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.log.Log;
@@ -103,7 +111,9 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
         // --------------------------------
 
         ResultSet rset = null;
-        PrintWriter writer = null;
+//        PrintWriter writer = null;
+        
+        BufferedWriter writer = null;
         try {
 
             // define the delimiter
@@ -167,11 +177,12 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
                 appendProgressText(outputBuffer);
 
                 // retrieve the columns to be exported (or all)
-                Vector<ColumnData> columns = getColumns(dto.getTableName());
+                List<ColumnData> columns = new ArrayList<>(getColumns(dto.getTableName()));
                 columnCount = columns.size();
 
                 // initialise the writer
-                writer = new PrintWriter(new FileWriter(exportFile, false), true);
+                Path path = Paths.get(exportFile.getAbsolutePath());
+                writer = Files.newBufferedWriter(path, Charset.forName("UTF-8"));
                 
                 // print the column names if specified to do so
                 if (includeColumnNames) {
@@ -181,7 +192,9 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
                             rowData.append(delim);
                         }
                     }
-                    writer.println(rowData.toString());
+                    writer.write(rowData.toString());
+                    writer.newLine();
+                    
                     rowData.setLength(0);
                 }
 
@@ -206,28 +219,31 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
                     for (int j = 1; j <= columnCount; j++) {
 
                         String value = rset.getString(j);
+                        ColumnData column = columns.get(j - 1);
 
                         if (value == null || rset.wasNull()) {
 
                             value = Constants.EMPTY;
 
-                        } else if (trimWhitespace) {
-
-                            value = value.trim();
-                        }
-
-                        ColumnData column = (ColumnData) columns.get(j - 1);
-
-                        if (column.isDateDataType() && 
-                                (parseDateValues && dateFormat != null)) {
-
-                            value = dateFormat.format(rset.getDate(j));
-                        
-                        } else {
+                        } else { 
                             
-                            value = formatString(value);
-                        }
+                            if ((parseDateValues && dateFormat != null) &&
+                                    column.isDateDataType()) {
+    
+                                value = dateFormat.format(rset.getDate(j));
+                            
+                            } else {
 
+                                if (trimWhitespace) {
+                                    
+                                    value = value.trim();
+                                }
+
+                                value = formatString(value);
+                            }
+
+                        }
+                        
                         boolean isCharType = column.isCharacterType();
                         if (isCharType && quoteCharacterValues) {
                             
@@ -248,7 +264,9 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
 
                     }
                     
-                    writer.println(rowData.toString());
+                    writer.write(rowData.toString());
+                    writer.newLine();
+
                     rowData.setLength(0);
                     totalRecordCount++;
                     recordCount++;
@@ -316,9 +334,18 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
         }
     }
     
+    private static final String NEW_LINE_REPLACEMENT = "\\\\n";
+    private static final String CARRIAGE_RETURN_REPLACEMENT = "\\\\r";
+
+    private Matcher newLineMatcher = Pattern.compile("\n").matcher(StringUtils.EMPTY);
+    private Matcher carriageReturnMatcher = Pattern.compile("\r").matcher(StringUtils.EMPTY);
+    
     private String formatString(String value) {
 
-        return value.replaceAll("\n", "\\\\n").replaceAll("\r", "\\\\r");
+        String formattedValue = newLineMatcher.reset(value).replaceAll(NEW_LINE_REPLACEMENT);
+        formattedValue = carriageReturnMatcher.reset(formattedValue).replaceAll(CARRIAGE_RETURN_REPLACEMENT);
+        
+        return formattedValue;
     }
 
     private void logException(Throwable e) {

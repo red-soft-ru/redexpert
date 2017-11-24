@@ -105,6 +105,8 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
         charset = CreateTableSQLSyntax.NONE;
         if (recordDataItem instanceof ClobRecordDataItem)
             charset = ((ClobRecordDataItem) recordDataItem).getCharset();
+        if (charset == null)
+            charset = CreateTableSQLSyntax.NONE;
         if (!charset.equals(CreateTableSQLSyntax.NONE))
             charset = MiscUtils.getJavaCharsetFromSqlCharset(charset);
         try {
@@ -113,7 +115,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
 
         } catch (Exception e) {
 
-            Log.error("Error init class LobDataItemViewerPanel:",e);
+            Log.error("Error init class LobDataItemViewerPanel:", e);
         }
 
     }
@@ -241,7 +243,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
             else try {
                 dataAsText = new String(data, charset);
             } catch (UnsupportedEncodingException e) {
-                Log.error("Error method loadTextData in class LobDataItemViewerPanel:",e);
+                Log.error("Error method loadTextData in class LobDataItemViewerPanel:", e);
                 dataAsText = new String(data);
             }
             char[] charArray = dataAsText.toCharArray();
@@ -400,7 +402,7 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
                     imageScroll.setViewportView(imageLabel);
                 }
             } catch (IOException e) {
-                Log.error("Error method open in class LobDataItemViewerPanel:",e);
+                Log.error("Error method open in class LobDataItemViewerPanel:", e);
             }
 
         }

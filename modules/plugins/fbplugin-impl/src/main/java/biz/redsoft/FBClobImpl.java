@@ -40,6 +40,8 @@ public class FBClobImpl implements IFBClob {
 
     @Override
     public void close() throws SQLException {
+        if (transaction == null)
+            return;
         transaction.commit();
         ((FBBlob)detached).free();
         ((FBBlob) detached).getGdsHelper().setCurrentTransaction(null);

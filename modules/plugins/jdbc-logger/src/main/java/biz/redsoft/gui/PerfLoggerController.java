@@ -168,7 +168,7 @@ public class PerfLoggerController {
 
         }
 
-        void doRefreshData() {
+        synchronized void doRefreshData() {
             List<String> tempColumnNames = new ArrayList<>();
             List<Class<?>> tempColumnTypes = new ArrayList<>();
             final List<Object[]> tempRows = new ArrayList<>();

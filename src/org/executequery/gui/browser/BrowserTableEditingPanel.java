@@ -1103,11 +1103,13 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     private void updateRowCount(final String text) {
-/*        GUIUtils.invokeLater(new Runnable() {
+        GUIUtils.invokeLater(new Runnable() {
             public void run() {
-                rowCountField.setText(text);
+                synchronized (rowCountField) {
+                    rowCountField.setText(text);
+                }
             }
-        });*/
+        });
     }
 
     private void createButtonsEditingPanel() {

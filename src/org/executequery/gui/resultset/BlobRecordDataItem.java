@@ -20,15 +20,14 @@
 
 package org.executequery.gui.resultset;
 
-import java.io.ByteArrayInputStream;
-import java.sql.Blob;
-import java.sql.SQLException;
-
 import biz.redsoft.IFBBlob;
-import biz.redsoft.IFBClob;
 import org.executequery.log.Log;
 import org.executequery.util.mime.MimeType;
 import org.executequery.util.mime.MimeTypes;
+
+import java.io.ByteArrayInputStream;
+import java.sql.Blob;
+import java.sql.SQLException;
 
 public class BlobRecordDataItem extends AbstractLobRecordDataItem {
 
@@ -84,7 +83,7 @@ public class BlobRecordDataItem extends AbstractLobRecordDataItem {
     @Override
     protected byte[] readLob() {
 
-        if(isValueNull())
+        if (isValueNull())
             return null;
         Object value = getValue();
         if (value instanceof String) { // eg. oracle RAW type

@@ -20,15 +20,6 @@
 
 package org.executequery.gui.editor;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.gui.resultset.ResultSetTable;
@@ -37,40 +28,63 @@ import org.underworldlabs.swing.table.RowNumberHeader;
 import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Simple SQL result set display panel.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ResultSetPanel extends JPanel {
 
-    /** the table display */
+    /**
+     * the table display
+     */
     private ResultSetTable table;
 
-    /** the table model */
+    /**
+     * the table model
+     */
     private ResultSetTableModel model;
 
-    /** the table scroll pane */
+    /**
+     * the table scroll pane
+     */
     private JScrollPane scroller;
 
-    /** the table sorter */
+    /**
+     * the table sorter
+     */
     private TableSorter sorter;
 
-    /** whether to display the row header */
+    /**
+     * whether to display the row header
+     */
     private boolean showRowHeader;
 
-    /** the associated meta data panel */
+    /**
+     * the associated meta data panel
+     */
     private ResultSetMetaDataPanel metaDataPanel;
 
-    /** table pop-up menu */
+    /**
+     * table pop-up menu
+     */
     private ResultSetTablePopupMenu popupMenu;
 
-    /** the row number header */
+    /**
+     * the row number header
+     */
     private RowNumberHeader rowNumberHeader;
 
     private final ResultSetTableContainer resultSetTableContainer;
 
-    /** Creates a new instance of ResultSetPanel */
+    /**
+     * Creates a new instance of ResultSetPanel
+     */
     public ResultSetPanel(ResultSetTableContainer resultSetTableContainer) {
 
         super(new BorderLayout());
@@ -89,8 +103,8 @@ public class ResultSetPanel extends JPanel {
         table.getTableHeader().setBackground(bg);
 
         scroller = new JScrollPane(table,
-                                   JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                                   JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scroller.setBackground(bg);
         scroller.setBorder(null);
         scroller.getViewport().setBackground(bg);
@@ -129,25 +143,25 @@ public class ResultSetPanel extends JPanel {
     }
 
     public List<List<RecordDataItem>> filter(String pattern) {
-        
+
         List<List<RecordDataItem>> filteredRows = new ArrayList<List<RecordDataItem>>();
         for (int i = 0, n = model.getRowCount(); i < n; i++) {
 
             List<RecordDataItem> row = model.getRowDataForRow(i);
             for (RecordDataItem recordDataItem : row) {
-                
+
                 if (recordDataItem.valueContains(pattern)) {
 
                     filteredRows.add(row);
                     break;
                 }
-                
+
             }
 
         }
         return filteredRows;
     }
-    
+
     public int setResultSet(ResultSetTableModel model, boolean showRowNumber) {
 
         this.model = model;
@@ -158,7 +172,7 @@ public class ResultSetPanel extends JPanel {
             buildTable(rowCount);
 
         } else {
-            
+
             DefaultTable emptyTable = new DefaultTable(model);
             table.setTableColumnWidth(SystemProperties.getIntProperty("user", "results.table.column.width"));
             scroller.getViewport().add(emptyTable);
@@ -224,9 +238,8 @@ public class ResultSetPanel extends JPanel {
         if (rowNumberHeader == null) {
             rowNumberHeader = new RowNumberHeader(table);
             rowNumberHeader.setBackground(SystemProperties.getColourProperty(
-                                "user", "editor.results.background.colour"));
-        }
-        else {
+                    "user", "editor.results.background.colour"));
+        } else {
             rowNumberHeader.setTable(table);
         }
         scroller.setRowHeaderView(rowNumberHeader);
@@ -259,7 +272,7 @@ public class ResultSetPanel extends JPanel {
         if (model != null) {
 
             model.setHoldMetaData(SystemProperties.getBooleanProperty(
-                                            "user", "editor.results.metadata"));
+                    "user", "editor.results.metadata"));
         }
 
     }

@@ -70,8 +70,8 @@ public final class ConnectionRepositoryChangeListener implements ConnectionRepos
 
     private DatabaseConnectionRepository databaseConnectionRepository() {
 
-        return (DatabaseConnectionRepository)RepositoryCache.load(
-                    DatabaseConnectionRepository.REPOSITORY_ID);
+        return (DatabaseConnectionRepository) RepositoryCache.load(
+                DatabaseConnectionRepository.REPOSITORY_ID);
     }
 
 }

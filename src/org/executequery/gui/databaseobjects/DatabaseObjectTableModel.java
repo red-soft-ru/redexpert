@@ -20,23 +20,23 @@
 
 package org.executequery.gui.databaseobjects;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.databaseobjects.impl.DefaultDatabaseColumn;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Table model for db objects display.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
 
-    protected String[] header = {"", "Name", "Datatype", "Size", "Scale", "Required", "Default", "Computed_Source", "Description","Domain"};
+    protected String[] header = {"", "Name", "Datatype", "Size", "Scale", "Required", "Default", "Computed_Source", "Description", "Domain"};
 
     /**
      * the database table columns
@@ -218,7 +218,7 @@ public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
                 defaultDatabaseColumn.setColumnDescription((String) value);
                 break;
             case 9:
-                defaultDatabaseColumn.setDomain((String)value);
+                defaultDatabaseColumn.setDomain((String) value);
                 break;
         }
 

@@ -20,52 +20,56 @@
 
 package org.executequery.gui.text;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
-import java.io.File;
-
-import javax.swing.BorderFactory;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.border.Border;
-
 import org.executequery.Constants;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
 import org.underworldlabs.swing.menu.SimpleTextComponentPopUpMenu;
 
-/** 
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
+import java.io.File;
+
+/**
  * This panel is used within those components that display
  * SQL text. Typically this will be used within functions that
  * modify the database schema and the SQL produced as a result
  * will be displayed here with complete syntax highlighting and
  * other associated visual enhancements.<br>
- *
+ * <p>
  * Examples of use include within the Create Table and Browser
  * Panel features where table modifications are reflected in
  * executable SQL.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SimpleSqlTextPanel extends DefaultTextEditorContainer
-                                implements KeywordListener {
+        implements KeywordListener {
 
-    /** The SQL text pane */
+    /**
+     * The SQL text pane
+     */
     protected SQLTextPane textPane;
 
-    /** Whether test is to be appended */
+    /**
+     * Whether test is to be appended
+     */
     private boolean appending;
-    
-    /** The StringBuffer if appending */
+
+    /**
+     * The StringBuffer if appending
+     */
     private StringBuffer sqlBuffer;
-    
-    /** The text area's scroller */
+
+    /**
+     * The text area's scroller
+     */
     private JScrollPane sqlScroller;
-    
-    /** The default border */
+
+    /**
+     * The default border
+     */
     private Border defaultBorder;
 
     private SimpleTextComponentPopUpMenu popup;
@@ -76,7 +80,7 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
 
     public SimpleSqlTextPanel(boolean appending) {
         super(new BorderLayout());
-        
+
         try {
             init();
         } catch (Exception e) {
@@ -90,13 +94,13 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
     private void init() throws Exception {
 
         setBorder(BorderFactory.createTitledBorder("SQL"));
-        
+
         textPane = new SQLTextPane();
         textPane.setFont(new Font("monospaced", Font.PLAIN, 12));
 //        textPane.setBackground(null);
         textPane.setDragEnabled(true);
         textComponent = textPane;
-        
+
         popup = new SimpleTextComponentPopUpMenu(textPane);
 
         sqlScroller = new JScrollPane(textPane);
@@ -107,15 +111,15 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
     public JPopupMenu getPopup() {
         return popup;
     }
-   
+
     public void addPopupMenuItem(JMenuItem menuItem, int index) {
         popup.add(menuItem, index);
     }
-    
+
     public void setSQLKeywords(boolean reset) {
         textPane.setSQLKeywords(true);
     }
-    
+
     /**
      * Notification of a new keyword added to the list.
      */
@@ -141,39 +145,41 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
     public void setScrollPaneBorder(Border border) {
         sqlScroller.setBorder(border);
     }
-    
+
     public void setSQLText(String text) {
         textPane.deleteAll();
         textPane.setText(text == null ? Constants.EMPTY : text);
-        
+
         if (appending) {
             sqlBuffer.setLength(0);
             //sqlBuffer.delete(0, sqlBuffer.length());
             sqlBuffer.append(text);
         }
-        
+
     }
-    
+
     public void disableUpdates(boolean disable) {
-        textPane.disableUpdates(disable);        
+        textPane.disableUpdates(disable);
     }
-    
+
     public void setCaretPosition(int position) {
         textPane.setCaretPosition(position);
     }
-    
-    /** <p>Sets the SQL text pane's background colour
-     *  to the specified value.
+
+    /**
+     * <p>Sets the SQL text pane's background colour
+     * to the specified value.
      *
-     *  @param the background colour to apply
+     * @param the background colour to apply
      */
     public void setSQLTextBackground(Color background) {
         textPane.setBackground(background);
     }
-    
-    /** <p>Appends the specified text to the SQL text pane.
+
+    /**
+     * <p>Appends the specified text to the SQL text pane.
      *
-     *  @param the text to append
+     * @param the text to append
      */
     public void appendSQLText(String text) {
         textPane.deleteAll();
@@ -185,49 +191,52 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
         if (appending) {
             sqlBuffer.append(text);
             textPane.setText(sqlBuffer.toString());
-        }
-        else {
+        } else {
             textPane.setText(text);
         }
     }
-    
-    /** <p>Retrieves the SQL text as contained
-     *  within the SQL text pane.
+
+    /**
+     * <p>Retrieves the SQL text as contained
+     * within the SQL text pane.
      *
-     *  @return the SQL text
+     * @return the SQL text
      */
     public String getSQLText() {
         return textPane.getText();
     }
-    
-    /** <p>Returns wether the text pane contains any text.
+
+    /**
+     * <p>Returns wether the text pane contains any text.
      *
-     *  @return <code>true</code> if the text pane has text |
-     *          <code>false</code> otherwise
+     * @return <code>true</code> if the text pane has text |
+     * <code>false</code> otherwise
      */
     public boolean isEmpty() {
         return textPane.getText().length() == 0;
     }
-    
-    /** <p>Sets the SQL text pane to be editable or not
-     *  as specified by the passed in value.
+
+    /**
+     * <p>Sets the SQL text pane to be editable or not
+     * as specified by the passed in value.
      *
-     *  @param <code>true</code> to be editable |
-     *         <code>false</code> otherwise
+     * @param <code>true</code> to be editable |
+     *                          <code>false</code> otherwise
      */
     public void setSQLTextEditable(boolean editable) {
         textPane.setEditable(editable);
     }
-    
-    /** <p>Sets the SQL text pane appending as specified.
+
+    /**
+     * <p>Sets the SQL text pane appending as specified.
      *
-     *  @param <code>true</code> to append |
-     *         <code>false</code> otherwise
+     * @param <code>true</code> to append |
+     *                          <code>false</code> otherwise
      */
     public void setAppending(boolean appending) {
         this.appending = appending;
     }
-    
+
     public String getPrintJobName() {
         return "Red Expert - SQL Editor";
     }
@@ -235,15 +244,15 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
     public SQLTextPane getTextPane() {
         return textPane;
     }
-    
+
     public int save(File file) {
 
         String text = textPane.getText();
 
         TextFileWriter writer = null;
-        
+
         if (file != null) {
-            
+
             writer = new TextFileWriter(text, file.getAbsolutePath());
 
         } else {
@@ -258,7 +267,7 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
 
         return true;
     }
-    
+
 }
 
 

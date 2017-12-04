@@ -20,15 +20,15 @@
 
 package org.executequery.actions.filecommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.Application;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-/** 
+import java.awt.event.ActionEvent;
+
+/**
  * Command execution for File | Exit.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ExitCommand implements BaseCommand {
 

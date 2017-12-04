@@ -20,43 +20,36 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.sql.ResultSet;
-
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-
 import org.executequery.gui.SortableColumnsTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.underworldlabs.swing.plaf.UIUtils;
 
+import javax.swing.*;
+import java.awt.*;
+import java.sql.ResultSet;
+
 /**
  * Displays data types from the current connection.
- * 
- * @author   Takis Diakoumis
+ *
+ * @author Takis Diakoumis
  */
 public class DataTypesPanel extends ConnectionPropertiesPanel {
-    
+
     private ResultSetTableModel model;
 
     private JScrollPane scrollPane;
-    
+
     public DataTypesPanel() {
 
         super(new GridBagLayout());
         init();
     }
-    
+
     private void init() {
-        
+
         model = new ResultSetTableModel();
         JTable table = new SortableColumnsTable(model);
-        
+
         setTableProperties(table);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
@@ -65,7 +58,7 @@ public class DataTypesPanel extends ConnectionPropertiesPanel {
     }
 
     public void setDataTypeError(String message) {
-        
+
         remove(scrollPane);
 
         StringBuilder sb = new StringBuilder();
@@ -85,47 +78,47 @@ public class DataTypesPanel extends ConnectionPropertiesPanel {
                 GridBagConstraints.CENTER,
                 GridBagConstraints.BOTH,
                 new Insets(5, 5, 5, 5), 0, 0));
-        
+
         validate();
         repaint();
     }
-    
+
     public void setDataTypes(ResultSet rs) {
 
         addScrollPane();
         model.createTable(rs);
         model.fireTableStructureChanged();
-        
+
         validate();
         repaint();
     }
-    
+
     private void addScrollPane() {
-        
+
         if (!contains(scrollPane)) {
 
             removeAll();
             add(scrollPane, new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                    GridBagConstraints.SOUTHEAST, 
+                    GridBagConstraints.SOUTHEAST,
                     GridBagConstraints.BOTH,
                     new Insets(5, 5, 5, 5), 0, 0));
         }
-    
+
     }
 
     private boolean contains(Component component) {
 
         for (Component c : getComponents()) {
-            
+
             if (c == component) {
-                
+
                 return true;
             }
         }
-        
+
         return false;
     }
-    
+
 }
 
 

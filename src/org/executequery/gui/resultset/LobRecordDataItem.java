@@ -22,17 +22,17 @@ package org.executequery.gui.resultset;
 
 
 public interface LobRecordDataItem extends RecordDataItem {
-	
-	int length();
-	
-	byte[] getData();
 
-	String getLobRecordItemName();
-	
-	String asBinaryString();
+    int length();
 
-	void setData(byte[] data);
-	
+    byte[] getData();
+
+    String getLobRecordItemName();
+
+    String asBinaryString();
+
+    void setData(byte[] data);
+
 }
 
 

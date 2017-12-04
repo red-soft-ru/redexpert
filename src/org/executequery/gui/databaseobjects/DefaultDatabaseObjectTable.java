@@ -24,11 +24,13 @@ package org.executequery.gui.databaseobjects;
  * Simple database object table display using all default values
  * for column properties, renderers etc.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DefaultDatabaseObjectTable extends AbstractDatabaseObjectTable {
 
-    /** Creates a new instance of DefaultDatabaseObjectTable */
+    /**
+     * Creates a new instance of DefaultDatabaseObjectTable
+     */
     public DefaultDatabaseObjectTable() {
         initTableDisplayDefaults();
         initDefaultTableModel();

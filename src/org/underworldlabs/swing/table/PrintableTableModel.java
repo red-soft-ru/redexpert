@@ -24,7 +24,7 @@ package org.underworldlabs.swing.table;
  * Defines a table model where certain values may be modified
  * for table printing.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface PrintableTableModel {
 
@@ -36,7 +36,7 @@ public interface PrintableTableModel {
      * @return the value to print
      */
     public String getPrintValueAt(int row, int col);
-    
+
 }
 
 

@@ -25,8 +25,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObjectFactory;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DatabaseObjectFactoryImpl implements DatabaseObjectFactory {
 
@@ -34,7 +33,7 @@ public class DatabaseObjectFactoryImpl implements DatabaseObjectFactory {
 
         return new DefaultDatabaseHost(databaseConnection);
     }
-    
+
 }
 
 

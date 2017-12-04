@@ -23,14 +23,13 @@ package org.executequery.databaseobjects;
 import java.util.List;
 
 
-
 public interface TableIndex extends NamedObject {
 
     int NORMAL_INDEX = 0;
     int BITMAP_INDEX = 1;
     int UNSORTED_INDEX = 2;
     int UNIQUE_INDEX = 3;
-    
+
     List<DatabaseColumn> getColumns();
 
     void setColumns(List<DatabaseColumn> columns);
@@ -42,11 +41,11 @@ public interface TableIndex extends NamedObject {
     void setIndexType(int indexType);
 
     String getCreateSQLText();
-    
+
     DatabaseTable getTable();
 
     void clearColumns();
-    
+
 }
 
 

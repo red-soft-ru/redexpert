@@ -20,26 +20,27 @@
 
 package org.underworldlabs.swing;
 
+import javax.swing.*;
 import java.util.Vector;
-import javax.swing.DefaultComboBoxModel;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 @SuppressWarnings("unchecked")
 public class UpdatableComboBoxModel extends DefaultComboBoxModel {
-    
+
     private Vector values;
-    
+
     public UpdatableComboBoxModel(Object[] _values) {
         values = new Vector(_values.length);
         for (int i = 0; i < _values.length; i++) {
             values.add(_values[i]);
         }
     }
-    
-    /** Creates a new instance of UpdatableComboBoxModel */
+
+    /**
+     * Creates a new instance of UpdatableComboBoxModel
+     */
     public UpdatableComboBoxModel(Vector values) {
         this.values = values;
     }

@@ -20,48 +20,51 @@
 
 package org.executequery.actions.helpcommands;
 
+import org.executequery.gui.HelpWindow;
+import org.underworldlabs.swing.actions.BaseCommand;
+
 import java.awt.event.ActionEvent;
 
-import org.underworldlabs.swing.actions.BaseCommand;
-import org.executequery.gui.HelpWindow;
-
-/** 
+/**
  * Executes the Help command.<br>
  * This will open the system help in a separate window.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class HelpCommand implements BaseCommand {
-    
-    /** Document help target ID */
+
+    /**
+     * Document help target ID
+     */
     private String target;
-    
-    public HelpCommand() {}
+
+    public HelpCommand() {
+    }
 
     public HelpCommand(String page) {
         target = page;
     }
-    
+
     public void execute(ActionEvent e) {
-        
+
         String aCommand = e.getActionCommand();
-        
+
         if (aCommand != null) {
-            
+
             if (aCommand.length() > 0) {
                 target = aCommand;
             }
             if ("Help Topics".equals(aCommand)) {
                 target = null;
             }
-            
+
         } else {
             target = null;
-        } 
-        
+        }
+
         new HelpWindow(target);
     }
-    
+
 }
 
 

@@ -23,35 +23,50 @@ package org.executequery.databaseobjects;
 /**
  * Simple database object definition.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SimpleDatabaseObject implements java.io.Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	/** the node type */
+    /**
+     * the node type
+     */
     private int type;
 
-    /** the name of the associated schema */
+    /**
+     * the name of the associated schema
+     */
     private String schemaName;
-    
+
     // a 'parent' entity name - eg table name for a column
     private String parentName;
 
-    /** the name of the associated catalog */
+    /**
+     * the name of the associated catalog
+     */
     private String catalogName;
-    
-    /** the meta data key identifier (@see BrowserConstants)*/
+
+    /**
+     * the meta data key identifier (@see BrowserConstants)
+     */
     private String metaDataKey;
-    
-    /** the name of this node */
+
+    /**
+     * the name of this node
+     */
     private String name;
-    
-    /** object remarks */
+
+    /**
+     * object remarks
+     */
     private String remarks;
-    
-    /** Creates a new instance of SimpleDatabaseObject */
-    public SimpleDatabaseObject() {}
+
+    /**
+     * Creates a new instance of SimpleDatabaseObject
+     */
+    public SimpleDatabaseObject() {
+    }
 
     public int getType() {
         return type;
@@ -108,7 +123,7 @@ public class SimpleDatabaseObject implements java.io.Serializable {
     public void setRemarks(String remarks) {
         this.remarks = remarks;
     }
-    
+
 }
 
 

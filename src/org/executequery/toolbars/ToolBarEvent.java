@@ -25,11 +25,11 @@ import org.executequery.event.ApplicationEvent;
 public interface ToolBarEvent extends ApplicationEvent {
 
     String DEFAULT_KEY = "defaultKey";
-    
+
     String TOOL_BAR_CHANGED = "toolBarChanged";
-    
+
     String getKey();
-    
+
 }
 
 

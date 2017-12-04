@@ -20,33 +20,37 @@
 
 package org.executequery.gui.browser.nodes;
 
-import java.util.List;
-
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
-
 import org.executequery.databaseobjects.NamedObject;
 import org.underworldlabs.jdbc.DataSourceException;
 
-/** 
- *
- * @author   Takis Diakoumis
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.MutableTreeNode;
+import java.util.List;
+
+/**
+ * @author Takis Diakoumis
  */
 public class DefaultDatabaseObjectNode extends DefaultMutableTreeNode {
-                                       //implements DatabaseObjectNode {
-    
-    /** the underlying database object associated with this node */
+    //implements DatabaseObjectNode {
+
+    /**
+     * the underlying database object associated with this node
+     */
     private NamedObject databaseObject;
-    
-    /** indicates that children have been retrieved */
+
+    /**
+     * indicates that children have been retrieved
+     */
     private boolean childrenRetrieved;
 
-    /** Creates a new instance of DefaultDatabaseObjectNode */
+    /**
+     * Creates a new instance of DefaultDatabaseObjectNode
+     */
     public DefaultDatabaseObjectNode(NamedObject databaseObject) {
         super(databaseObject);
         this.databaseObject = databaseObject;
     }
-    
+
     /**
      * Returns the database user object of this node.
      *
@@ -55,7 +59,7 @@ public class DefaultDatabaseObjectNode extends DefaultMutableTreeNode {
     public NamedObject getDatabaseObject() {
         return databaseObject;
     }
-        
+
     /**
      * Adds this object's children as expanded nodes.
      */
@@ -64,13 +68,13 @@ public class DefaultDatabaseObjectNode extends DefaultMutableTreeNode {
             List<DatabaseObjectNode> children = getChildObjects();
             if (children != null) {
                 for (int i = 0, n = children.size(); i < n; i++) {
-                    add((MutableTreeNode)children.get(i));
+                    add((MutableTreeNode) children.get(i));
                 }
             }
             childrenRetrieved = true;
         }
     }
-    
+
     /**
      * Returns the children associated with this node.
      *
@@ -79,7 +83,7 @@ public class DefaultDatabaseObjectNode extends DefaultMutableTreeNode {
     public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
         return null;
     }
-    
+
     /**
      * Indicates whether this node is a leaf node.
      *
@@ -99,7 +103,7 @@ public class DefaultDatabaseObjectNode extends DefaultMutableTreeNode {
     }
 
     /**
-     * Propagates the call to the underlying database object 
+     * Propagates the call to the underlying database object
      * and removes all children from this node.
      */
     public void reset() {
@@ -107,7 +111,7 @@ public class DefaultDatabaseObjectNode extends DefaultMutableTreeNode {
         removeAllChildren();
         childrenRetrieved = false;
     }
-    
+
     /**
      * Propagates the call to the underlying database object.
      */
@@ -128,14 +132,14 @@ public class DefaultDatabaseObjectNode extends DefaultMutableTreeNode {
     public void setName(String name) {
         databaseObject.setName(name);
     }
-    
+
     /**
      * Propagates the call to the underlying database object.
      */
     public String getDisplayName() {
         return databaseObject.getShortName();
     }
-    
+
     /**
      * Propagates the call to the underlying database object.
      */
@@ -149,7 +153,7 @@ public class DefaultDatabaseObjectNode extends DefaultMutableTreeNode {
     public String toString() {
         return getDisplayName();
     }
-    
+
 }
 
 

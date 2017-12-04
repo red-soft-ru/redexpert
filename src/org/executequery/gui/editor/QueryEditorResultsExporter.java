@@ -20,39 +20,6 @@
 
 package org.executequery.gui.editor;
 
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JTextField;
-import javax.swing.table.TableModel;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.gui.DefaultPanelButton;
@@ -73,67 +40,77 @@ import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
+import javax.swing.*;
+import javax.swing.table.TableModel;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.*;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class QueryEditorResultsExporter extends AbstractBaseDialog {
-    
+
     // column headers check
     private JCheckBox columnHeadersCheck;
 
     // use quotes check
     private JCheckBox applyQuotesCheck;
-    
+
     // the export type combo
     private JComboBox typeCombo;
 
     // the delimiter combo
     private JComboBox delimCombo;
-    
+
     // custom delimiter field
     private JTextField customDelimField;
-    
+
     // the file text field
     private JTextField fileNameField;
-    
+
     // The table model to be exported
     private TableModel model;
-    
+
     public QueryEditorResultsExporter(TableModel model) {
 
         super(GUIUtilities.getParentFrame(), "Export Query Results", true);
         this.model = model;
         init();
-        
+
         pack();
         this.setLocation(GUIUtilities.getLocationForDialog(this.getSize()));
         setVisible(true);
     }
-    
+
     private void init() {
 
-        ReflectiveAction action = new ReflectiveAction(this);       
-        
-        String[] delims = {"Pipe","Comma","Semi-colon","Hash","Custom"};
+        ReflectiveAction action = new ReflectiveAction(this);
+
+        String[] delims = {"Pipe", "Comma", "Semi-colon", "Hash", "Custom"};
         delimCombo = ActionUtilities.createComboBox(action, delims, "delimeterChanged");
-        
+
         String[] types = {"Delimited File", "Excel Spreadsheet", "XML"};
         typeCombo = ActionUtilities.createComboBox(action, types, "exportTypeChanged");
-        
+
         customDelimField = new CharLimitedTextField(1);
         fileNameField = WidgetFactory.createTextField();
-        
+
         JButton browseButton = new DefaultInlineFieldButton(action);
         browseButton.setText("Browse");
         browseButton.setActionCommand("browse");
-        
+
         JButton okButton = new DefaultPanelButton(action, Bundles.get("common.ok.button"), "export");
         JButton cancelButton = new DefaultPanelButton(action, Bundles.get("common.cancel.button"), "cancel");
-        
+
         columnHeadersCheck = new JCheckBox("Include column names as first row");
         applyQuotesCheck = new JCheckBox("Use double quotes for char/varchar/longvarchar columns", true);
-        
+
         // the button panel
         JPanel btnPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -147,7 +124,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         int labelInsetsTop = 10;
         int fieldInsetsTop = 5;
-        
+
         // the base panel
         JPanel base = new JPanel(new GridBagLayout());
         gbc.insets = new Insets(10, 5, 10, 5);
@@ -197,7 +174,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         gbc.insets.top = fieldInsetsTop;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        base.add(customDelimField, gbc);        
+        base.add(customDelimField, gbc);
         gbc.gridx = 0;
         gbc.gridy++;
         gbc.gridwidth = 1;
@@ -214,7 +191,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         gbc.insets.left = 0;
         gbc.fill = GridBagConstraints.NONE;
         base.add(browseButton, gbc);
-        
+
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.gridx = 0;
@@ -224,23 +201,23 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         gbc.anchor = GridBagConstraints.EAST;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         base.add(btnPanel, gbc);
-        
+
         Dimension baseDim = new Dimension(650, 280);
         base.setPreferredSize(baseDim);
 
         base.setBorder(BorderFactory.createEtchedBorder());
-        
+
         Container c = getContentPane();
         c.setLayout(new GridBagLayout());
         c.add(base, new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                            GridBagConstraints.SOUTHEAST, GridBagConstraints.BOTH,
-                            new Insets(5, 5, 5, 5), 0, 0));
+                GridBagConstraints.SOUTHEAST, GridBagConstraints.BOTH,
+                new Insets(5, 5, 5, 5), 0, 0));
 
         setResizable(false);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         customDelimField.setEnabled(false);
     }
-    
+
     public void dispose() {
         model = null;
         super.dispose();
@@ -261,13 +238,13 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         }
 
     }
-    
+
     public void exportTypeChanged(ActionEvent e) {
         int index = typeCombo.getSelectedIndex();
         delimCombo.setEnabled(index == 0);
         columnHeadersCheck.setEnabled(index != 2);
     }
-    
+
     public void delimeterChanged(ActionEvent e) {
         int index = delimCombo.getSelectedIndex();
         boolean enableCustom = (index == 4);
@@ -276,7 +253,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             customDelimField.requestFocus();
         }
     }
-    
+
     public void browse(ActionEvent e) {
 
         FileChooserDialog fileChooser = new FileChooserDialog();
@@ -288,7 +265,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         int result = fileChooser.showDialog(GUIUtilities.getInFocusDialogOrWindow(), "Select");
         if (result == JFileChooser.CANCEL_OPTION) {
-            
+
             return;
         }
 
@@ -298,12 +275,12 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         int exportFormatType = getExportFormatType();
         if (exportFormatType == ImportExportDataProcess.EXCEL) {
-            
+
             suffix = ".xls";
 
         } else if (exportFormatType == ImportExportDataProcess.XML) {
-        
-            suffix = ".xml";            
+
+            suffix = ".xml";
         }
 
         path = appendToPath(path, suffix);
@@ -316,33 +293,32 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         }
         return path;
     }
-    
+
     public void cancel(ActionEvent e) {
         dispose();
     }
-    
+
     public void export(ActionEvent e) {
         String value = fileNameField.getText();
         if (MiscUtils.isNull(value)) {
             GUIUtilities.displayErrorMessage("You must specify a file to export to.");
             return;
         }
-        
+
         // check if it exists
         if (FileUtils.fileExists(value)) {
             int confirm = GUIUtilities.
                     displayConfirmCancelDialog("Overwrite existing file?");
             if (confirm == JOptionPane.CANCEL_OPTION) {
                 return;
-            } 
-            else if (confirm == JOptionPane.NO_OPTION) {
+            } else if (confirm == JOptionPane.NO_OPTION) {
                 fileNameField.selectAll();
                 fileNameField.requestFocus();
                 return;
             }
         }
-        
-        if (getExportFormatType() == ImportExportDataProcess.DELIMITED 
+
+        if (getExportFormatType() == ImportExportDataProcess.DELIMITED
                 && delimCombo.getSelectedIndex() == 4) {
 
             value = customDelimField.getText();
@@ -356,16 +332,17 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         SwingWorker worker = new SwingWorker() {
             public Object construct() {
-                
+
                 return doExport();
             }
+
             public void finished() {
 
                 GUIUtilities.displayInformationMessage("Result set export complete.");
                 dispose();
             }
         };
-        worker.start();   
+        worker.start();
     }
 
     private Object doExport() {
@@ -374,22 +351,22 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
             return exportDelimited();
         } else if (exportFormatType == ImportExportDataProcess.EXCEL) {
-            
+
             return exportExcel();
 
         } else {
-            
+
             return exportXML();
         }
     }
-    
+
     private Object exportXML() {
 
         ResultSetTableModelToXMLWriter writer = new ResultSetTableModelToXMLWriter((ResultSetTableModel) model, fileNameField.getText());
         try {
-            
+
             writer.write();
-        
+
         } catch (ParserConfigurationException e) {
 
             return handleError(e);
@@ -406,7 +383,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         String message = "Error writing to file:\n\n" + e.getMessage();
         GUIUtilities.displayExceptionErrorDialog(message, e);
-      
+
         return "failed";
     }
 
@@ -422,24 +399,24 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             ExcelWorkbookBuilder builder = createExcelWorkbookBuilder();
 
             builder.createSheet("Result Set Export");
-            
+
             int rowCount = model.getRowCount();
             int columnCount = model.getColumnCount();
 
             progressDialog = progressDialog(rowCount);
 
             List<String> values = new ArrayList<String>(columnCount);
-            
+
             if (columnHeadersCheck.isSelected()) {
 
                 for (int i = 0; i < columnCount; i++) {
-                    
+
                     values.add(model.getColumnName(i));
                 }
 
-                builder.addRowHeader(values);            
+                builder.addRowHeader(values);
             }
-            
+
             for (int i = 0; i < rowCount; i++) {
 
                 values.clear();
@@ -451,28 +428,29 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 }
 
                 builder.addRow(values);
-                progressDialog.increment(i+1);
+                progressDialog.increment(i + 1);
             }
-            
+
             builder.writeTo(outputStream);
-            
+
             return "done";
 
         } catch (IOException e) {
 
             return handleError(e);
-        
+
         } finally {
 
             if (progressDialog != null && progressDialog.isVisible()) {
                 progressDialog.dispose();
                 progressDialog = null;
             }
-            
+
             if (outputStream != null) {
                 try {
                     outputStream.close();
-                } catch (IOException e) {}
+                } catch (IOException e) {
+                }
             }
 
         }
@@ -488,7 +466,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         progressDialog.setLocation(GUIUtilities.getLocationForDialog(progressDialog.getSize()));
         progressDialog.setVisible(true);
-        
+
         return progressDialog;
     }
 
@@ -496,16 +474,16 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
         return new FileOutputStream(fileNameField.getText(), false);
     }
-    
+
     private ExcelWorkbookBuilder createExcelWorkbookBuilder() {
-        
+
         return new DefaultExcelWorkbookBuilder();
     }
-    
+
     private Object exportDelimited() {
         int delimIndex = delimCombo.getSelectedIndex();
         char delim = 0;
-        
+
         switch (delimIndex) {
             case 0:
                 delim = '|';
@@ -523,20 +501,20 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 delim = customDelimField.getText().charAt(0);
                 break;
         }
-        
+
         ResultsProgressDialog progressDialog = null;
         PrintWriter writer = null;
         File exportFile = null;
-        
+
         try {
             exportFile = new File(fileNameField.getText());
-            
+
             StringBuilder rowLines = new StringBuilder(5000);
             writer = new PrintWriter(new FileWriter(exportFile, false), true);
-            
+
             int rowCount = model.getRowCount();
             int columnCount = model.getColumnCount();
-            
+
             progressDialog = progressDialog(rowCount);
 
             if (columnHeadersCheck.isSelected()) {
@@ -549,7 +527,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 writer.println(rowLines.toString());
                 rowLines.setLength(0);
             }
-            
+
             boolean applyQuotes = applyQuotesCheck.isSelected();
             for (int i = 0; i < rowCount; i++) {
 
@@ -557,32 +535,32 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
 
                     Object value = model.getValueAt(i, j);
                     if (applyQuotes && isCDATA((RecordDataItem) value)) {
-                    
-                        rowLines.append("\""+valueAsString(value)+"\"");
-                    
+
+                        rowLines.append("\"" + valueAsString(value) + "\"");
+
                     } else {
-                        
+
                         rowLines.append(valueAsString(value));
                     }
-                    
+
                     if (j != columnCount - 1) {
 
                         rowLines.append(delim);
                     }
-                    
+
                 }
 
                 writer.println(rowLines.toString());
                 rowLines.setLength(0);
-                progressDialog.increment(i+1);
+                progressDialog.increment(i + 1);
             }
-            
+
             return "done";
 
         } catch (IOException e) {
-        
+
             return handleError(e);
-        
+
         } finally {
             if (progressDialog != null && progressDialog.isVisible()) {
                 progressDialog.dispose();
@@ -592,11 +570,11 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
                 writer.close();
             }
         }
-        
+
     }
-    
+
     private boolean isCDATA(RecordDataItem valueAt) {
-        
+
         int type = valueAt.getDataType();
         return (type == Types.CHAR ||
                 type == Types.VARCHAR ||
@@ -606,19 +584,19 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
     private String valueAsString(Object value) {
 
         if (value instanceof RecordDataItem) {
-            
+
             RecordDataItem recordDataItem = (RecordDataItem) value;
             if (!recordDataItem.isValueNull()) {
 
                 return recordDataItem.getDisplayValue().toString();
-            
+
             } else {
-                
+
                 return "";
             }
-            
+
         } else {
-        
+
             return (value != null ? value.toString() : "");
         }
 
@@ -636,7 +614,7 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             JPanel base = new JPanel(new GridBagLayout());
             GridBagConstraints gbc = new GridBagConstraints();
 
-            gbc.insets = new Insets(5,5,5,5);
+            gbc.insets = new Insets(5, 5, 5, 5);
             gbc.anchor = GridBagConstraints.NORTHWEST;
             gbc.fill = GridBagConstraints.HORIZONTAL;
             base.add(new JLabel("Exporting result set..."), gbc);
@@ -653,12 +631,12 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
             Container c = this.getContentPane();
             c.setLayout(new GridBagLayout());
             c.add(base, new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                                GridBagConstraints.SOUTHEAST, 
-                                GridBagConstraints.BOTH,
-                                new Insets(5, 5, 5, 5), 0, 0));
+                    GridBagConstraints.SOUTHEAST,
+                    GridBagConstraints.BOTH,
+                    new Insets(5, 5, 5, 5), 0, 0));
 
             setResizable(false);
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));            
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         }
 
         public void increment(int value) {
@@ -666,16 +644,17 @@ public class QueryEditorResultsExporter extends AbstractBaseDialog {
         }
 
         public void dispose() {
-            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));            
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             try {
                 Thread.sleep(500);
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {
+            }
             setVisible(false);
             super.dispose();
         }
 
     } // class ResultsProgressDialog
-    
+
 }
 
 

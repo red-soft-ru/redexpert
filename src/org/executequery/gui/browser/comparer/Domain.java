@@ -6,29 +6,29 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 
 public class Domain {
-    public Domain(Comparer comp)
-    {
-        comparer=comp;
+    public Domain(Comparer comp) {
+        comparer = comp;
         init();
 
     }
-    public void init()
-    {
-        firstConnection=comparer.firstConnection;
-        secondConnection=comparer.secondConnection;
+
+    public void init() {
+        firstConnection = comparer.firstConnection;
+        secondConnection = comparer.secondConnection;
         procedure = comparer.procedure;
     }
+
     Procedure procedure;
     Comparer comparer;
     StatementExecutor firstConnection;
     StatementExecutor secondConnection;
-    public  String collect = "select rdb$fields.rdb$field_name\n"
+    public String collect = "select rdb$fields.rdb$field_name\n"
             + "from rdb$fields\n"
             + "where (rdb$fields.rdb$system_flag = 0) and (rdb$fields.rdb$field_name not starting with 'RDB$')";
 
-    private  String query = "";
+    private String query = "";
 
-    public  ArrayList<String> getInfo(StatementExecutor con, String domain) {
+    public ArrayList<String> getInfo(StatementExecutor con, String domain) {
         ArrayList<String> info = new ArrayList<>();
 
         query = "select rdb$fields.rdb$field_name,\n" + //1
@@ -45,7 +45,7 @@ public class Domain {
                 + "where rdb$fields.rdb$field_name = '" + domain + "';";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
+            ResultSet rs = con.execute(query, true).getResultSet();
 
             while (rs.next()) {
                 info.add(replaceCode.replaceType(rs.getString(2).trim(),
@@ -71,7 +71,7 @@ public class Domain {
         return info;
     }
 
-    public  String create(String domain) {
+    public String create(String domain) {
         String scriptPart = "";
 
         if (!comparer.createdObjects.contains("domain " + domain)) {
@@ -94,7 +94,7 @@ public class Domain {
         return scriptPart;
     }
 
-    public  String alter(String domain) {
+    public String alter(String domain) {
         String scriptPart = "";
 
         ArrayList<String> info = new ArrayList<>();
@@ -131,8 +131,8 @@ public class Domain {
                     + "where rdb$fields.rdb$field_name = '" + domain + "'";
 
             try {
-                
-                ResultSet rs = firstConnection.execute(query,true).getResultSet();
+
+                ResultSet rs = firstConnection.execute(query, true).getResultSet();
 
                 while (rs.next()) {
                     String ch = replaceCode.noNull(rs.getString(10)).trim();
@@ -162,7 +162,7 @@ public class Domain {
         return scriptPart;
     }
 
-    public  String drop(String domain) {
+    public String drop(String domain) {
         String scriptPart = "";
 
         if (!comparer.droppedObjects.contains("domain " + domain)) {
@@ -203,7 +203,7 @@ public class Domain {
                     + "order by rdb$procedure_parameters.rdb$parameter_number";
 
             try {
-                ResultSet rs = secondConnection.execute(query,true).getResultSet();
+                ResultSet rs = secondConnection.execute(query, true).getResultSet();
 
                 ArrayList<String> line = new ArrayList<String>();
 
@@ -251,7 +251,7 @@ public class Domain {
                                         + "where rdb$fields.rdb$field_name = '" + domain + "'";
 
                                 try {
-                                    ResultSet rs = secondConnection.execute(query,true).getResultSet();
+                                    ResultSet rs = secondConnection.execute(query, true).getResultSet();
 
                                     while (rs.next()) {
                                         String param = "";
@@ -301,7 +301,7 @@ public class Domain {
                                         + "where rdb$fields.rdb$field_name = '" + domain + "'";
 
                                 try {
-                                    ResultSet rs = secondConnection.execute(query,true).getResultSet();
+                                    ResultSet rs = secondConnection.execute(query, true).getResultSet();
 
                                     while (rs.next()) {
                                         String param = "";

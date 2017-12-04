@@ -21,40 +21,39 @@
 package org.executequery.gui.prefs;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.util.SystemProperties;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PropertiesConns extends AbstractPropertiesBasePanel {
-    
+
     private SimplePreferencesPanel preferencesPanel;
 
     public PropertiesConns() {
         try {
             init();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     private void init() {
 
-    	List<UserPreference> list = new ArrayList<UserPreference>();
+        List<UserPreference> list = new ArrayList<UserPreference>();
 
         list.add(new UserPreference(
-                    UserPreference.CATEGORY_TYPE,
-                    null,
-                    "General",
-                    null));
+                UserPreference.CATEGORY_TYPE,
+                null,
+                "General",
+                null));
 
         String key = "connection.usepool";
         list.add(new UserPreference(
@@ -100,7 +99,7 @@ public class PropertiesConns extends AbstractPropertiesBasePanel {
                 key,
                 "Connect at startup",
                 Boolean.valueOf(SystemProperties.getProperty("user", key))));
-        
+
         key = "startup.connection.name";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
@@ -109,21 +108,21 @@ public class PropertiesConns extends AbstractPropertiesBasePanel {
                 SystemProperties.getProperty("user", key),
                 connectionNames()));
 
-        UserPreference[] preferences = 
-                (UserPreference[])list.toArray(new UserPreference[list.size()]);
+        UserPreference[] preferences =
+                (UserPreference[]) list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
 
     }
-   
+
     public void restoreDefaults() {
         preferencesPanel.restoreDefaults();
     }
-    
+
     public void save() {
         preferencesPanel.savePreferences();
     }
-    
+
     private String[] connectionNames() {
 
         List<DatabaseConnection> connections = connections();
@@ -137,8 +136,8 @@ public class PropertiesConns extends AbstractPropertiesBasePanel {
     }
 
     private List<DatabaseConnection> connections() {
-        
-        return ((DatabaseConnectionRepository)RepositoryCache.load(
+
+        return ((DatabaseConnectionRepository) RepositoryCache.load(
                 DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
     }
 

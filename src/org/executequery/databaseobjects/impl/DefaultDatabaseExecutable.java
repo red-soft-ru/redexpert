@@ -20,14 +20,6 @@
 
 package org.executequery.databaseobjects.impl;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import biz.redsoft.IFBDatabaseMetadata;
 import org.executequery.databaseobjects.DatabaseExecutable;
 import org.executequery.databaseobjects.DatabaseMetaTag;
@@ -36,30 +28,45 @@ import org.executequery.databaseobjects.ProcedureParameter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
  * @author takisd
  */
-public class DefaultDatabaseExecutable extends AbstractDatabaseObject 
-                                       implements DatabaseExecutable {
-    
-    /** the meta tag parent object */
+public class DefaultDatabaseExecutable extends AbstractDatabaseObject
+        implements DatabaseExecutable {
+
+    /**
+     * the meta tag parent object
+     */
     private DatabaseMetaTag metaTagParent;
 
-    /** proc parameters */
+    /**
+     * proc parameters
+     */
     private List<ProcedureParameter> parameters;
 
-    /** the proc type */
+    /**
+     * the proc type
+     */
     private short executableType;
 
     private String procedureSourceCode;
-    
-    public DefaultDatabaseExecutable() {}
-    
+
+    public DefaultDatabaseExecutable() {
+    }
+
     public DefaultDatabaseExecutable(DatabaseMetaTag metaTagParent, String name) {
         this.metaTagParent = metaTagParent;
         setName(name);
-        
+
         if (metaTagParent.getCatalog() != null) {
             setCatalogName(metaTagParent.getCatalog().getName());
         }
@@ -69,7 +76,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         }
 
     }
-    
+
     /**
      * Indicates whether this executable object has any parameters.
      *
@@ -79,23 +86,23 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         List<ProcedureParameter> _parameters = getParameters();
         return _parameters != null && !_parameters.isEmpty();
     }
-   
+
     /**
      * Adds the specified values as a single parameter to this object.
      */
     public ProcedureParameter addParameter(String name, int type, int dataType,
-                             String sqlType, int size) {
+                                           String sqlType, int size) {
         if (parameters == null) {
-        
+
             parameters = new ArrayList<ProcedureParameter>();
         }
 
         ProcedureParameter parameter = new ProcedureParameter(name, type, dataType, sqlType, size);
         parameters.add(parameter);
-        
+
         return parameter;
     }
-    
+
     /**
      * Returns this object's parameters as an array.
      */
@@ -103,8 +110,8 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         if (parameters == null) {
             getParameters();
         }
-        return (ProcedureParameter[])parameters.toArray(new
-                                       ProcedureParameter[parameters.size()]);
+        return (ProcedureParameter[]) parameters.toArray(new
+                ProcedureParameter[parameters.size()]);
     }
 
     public boolean supportCatalogOrSchemaInFunctionOrProcedureCalls() throws DataSourceException {
@@ -114,71 +121,68 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
             return dmd.supportsCatalogsInProcedureCalls() || dmd.supportsSchemasInProcedureCalls();
 
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
 
             throw new DataSourceException(e);
         }
     }
 
     public boolean supportCatalogInFunctionOrProcedureCalls() throws DataSourceException {
-        
+
         try {
-            
+
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
             return dmd.supportsCatalogsInProcedureCalls();
-            
-        }
-        catch (SQLException e) {
-            
+
+        } catch (SQLException e) {
+
             throw new DataSourceException(e);
         }
     }
-    
+
     public boolean supportSchemaInFunctionOrProcedureCalls() throws DataSourceException {
-        
+
         try {
-            
+
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
             return dmd.supportsSchemasInProcedureCalls();
-            
-        }
-        catch (SQLException e) {
-            
+
+        } catch (SQLException e) {
+
             throw new DataSourceException(e);
         }
     }
-    
+
     /**
      * Returns this object's parameters.
      */
     public List<ProcedureParameter> getParameters() throws DataSourceException {
 
         if (!isMarkedForReload() && parameters != null) {
-        
+
             return parameters;
         }
-        
+
         ResultSet rs = null;
         try {
 
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
             parameters = new ArrayList<ProcedureParameter>();
-            
+
             String _catalog = getCatalogName();
             String _schema = getSchemaName();
 
             int type = getType();
             if (type == SYSTEM_FUNCTION ||
-                    type == SYSTEM_STRING_FUNCTIONS || 
+                    type == SYSTEM_STRING_FUNCTIONS ||
                     type == SYSTEM_NUMERIC_FUNCTIONS ||
                     type == SYSTEM_DATE_TIME_FUNCTIONS) {
-                
+
                 _catalog = null;
                 _schema = null;
-            
+
             } else {
-              
+
                 // check that the db supports catalog and 
                 // schema names for this call
                 if (!dmd.supportsCatalogsInProcedureCalls()) {
@@ -193,22 +197,22 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
             rs = dmd.getProcedureColumns(_catalog, _schema, getName(), null);
             while (rs.next()) {
-            
+
                 parameters.add(new ProcedureParameter(rs.getString(4),
-                                                      rs.getInt(5),
-                                                      rs.getInt(6),
-                                                      rs.getString(7),
-                                                      rs.getInt(8)));
+                        rs.getInt(5),
+                        rs.getInt(6),
+                        rs.getString(7),
+                        rs.getInt(8)));
             }
-        
+
             return parameters;
-        
+
         } catch (SQLException e) {
-          
+
             throw new DataSourceException(e);
 
         } finally {
-          
+
             releaseResources(rs);
             setMarkedForReload(false);
         }
@@ -289,7 +293,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                     ClassLoader cl = new URLClassLoader(urls, dmd.getClass().getClassLoader());
                     clazzdb = cl.loadClass("biz.redsoft.FBDatabaseMetadataImpl");
                     odb = clazzdb.newInstance();
-                    IFBDatabaseMetadata db = (IFBDatabaseMetadata)odb;
+                    IFBDatabaseMetadata db = (IFBDatabaseMetadata) odb;
 
                     procedureSourceCode = db.getProcedureSourceCode(dmd, getName());
 

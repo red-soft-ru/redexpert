@@ -20,16 +20,6 @@
 
 package org.executequery.sql;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.sql.*;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import biz.redsoft.IFBDatabasePerformance;
 import biz.redsoft.IFBPerformanceInfo;
 import org.executequery.Constants;
@@ -46,35 +36,61 @@ import org.executequery.util.ThreadWorker;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.util.MiscUtils;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.sql.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Determines the type of exeuted query and returns appropriate results.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class QueryDispatcher {
 
-    /** the parent controller */
+    /**
+     * the parent controller
+     */
     private QueryDelegate delegate;
 
-    /** thread worker object */
+    /**
+     * thread worker object
+     */
     private ThreadWorker worker;
 
-    /** the query sender database mediator */
+    /**
+     * the query sender database mediator
+     */
     private StatementExecutor querySender;
 
-    /** indicates verbose logging output */
+    /**
+     * indicates verbose logging output
+     */
     private boolean verboseLogging;
 
-    /** Indicates that an execute is in progress */
+    /**
+     * Indicates that an execute is in progress
+     */
     private boolean executing;
 
-    /** connection commit mode */
+    /**
+     * connection commit mode
+     */
     private boolean autoCommit;
 
-    /** The query execute duration time */
+    /**
+     * The query execute duration time
+     */
     private String duration;
 
-    /** indicates that the current execution has been cancelled */
+    /**
+     * indicates that the current execution has been cancelled
+     */
     private boolean statementCancelled;
 
     private QueryTokenizer queryTokenizer;
@@ -97,15 +113,15 @@ public class QueryDispatcher {
 
     public QueryDispatcher(QueryDelegate runner) {
         try {
-        this.delegate = runner;
+            this.delegate = runner;
 
-        querySender = new DefaultStatementExecutor(null, true);
+            querySender = new DefaultStatementExecutor(null, true);
 
-        setAutoCommit(userProperties().getBooleanProperty("editor.connection.commit"));
+            setAutoCommit(userProperties().getBooleanProperty("editor.connection.commit"));
 
-        initialiseLogging();
+            initialiseLogging();
 
-        queryTokenizer = new QueryTokenizer();
+            queryTokenizer = new QueryTokenizer();
         } catch (NoClassDefFoundError e) {
             e.printStackTrace();
         }
@@ -151,8 +167,8 @@ public class QueryDispatcher {
             if (querySender != null) {
                 querySender.closeConnection();
             }
+        } catch (SQLException sqlExc) {
         }
-        catch (SQLException sqlExc) {}
     }
 
     /**
@@ -179,7 +195,7 @@ public class QueryDispatcher {
      * indicates that the query should be executed in its entirety -
      * not split up into mulitple queries (where applicable).
      *
-     * @param query query string
+     * @param query          query string
      * @param executeAsBlock to execute in entirety, false otherwise
      */
     public void executeSQLQuery(String query, boolean executeAsBlock) {
@@ -193,8 +209,8 @@ public class QueryDispatcher {
      * indicates that the query should be executed in its entirety -
      * not split up into mulitple queries (where applicable).
      *
-     * @param dc connection object
-     * @param query query string
+     * @param dc             connection object
+     * @param query          query string
      * @param executeAsBlock to execute in entirety, false otherwise
      */
     public void executeSQLQuery(DatabaseConnection dc,
@@ -235,7 +251,7 @@ public class QueryDispatcher {
                 if (statementCancelled) {
 
                     setOutputMessage(SqlMessages.PLAIN_MESSAGE,
-                                     "Statement cancelled");
+                            "Statement cancelled");
                     delegate.setStatusMessage(" Statement cancelled");
                 }
 
@@ -321,7 +337,6 @@ public class QueryDispatcher {
 
     /**
      * Returns whether a a query is currently being executed.
-     *
      */
     public boolean isExecuting() {
 
@@ -334,7 +349,7 @@ public class QueryDispatcher {
      * flag indicates that the query should be executed in its entirety -
      * not split up into mulitple queries (where applicable).
      *
-     * @param sql query string
+     * @param sql            query string
      * @param executeAsBlock to execute in entirety, false otherwise
      */
     private Object executeSQL(String sql, boolean executeAsBlock) {
@@ -497,7 +512,7 @@ public class QueryDispatcher {
                             e.printStackTrace();
                         }
 
-                        IFBDatabasePerformance db = (IFBDatabasePerformance)odb;
+                        IFBDatabasePerformance db = (IFBDatabasePerformance) odb;
                         try {
 
                             db.setConnection(connection);
@@ -541,7 +556,7 @@ public class QueryDispatcher {
                         printExecutionPlan(before, after);
 
                         setOutputMessage(SqlMessages.ERROR_MESSAGE,
-                                         message);
+                                message);
                         setStatusMessage(ERROR_EXECUTING);
 
                     } else {
@@ -558,7 +573,7 @@ public class QueryDispatcher {
 
                 } else {
 
-                    end  = System.currentTimeMillis();
+                    end = System.currentTimeMillis();
 
                     // check that we executed a 'normal' statement (not a proc)
                     if (result.getType() != QueryTypes.EXECUTE) {
@@ -567,7 +582,7 @@ public class QueryDispatcher {
                         if (updateCount == -1) {
 
                             printExecutionPlan(before, after);
-                            
+
                             setOutputMessage(SqlMessages.ERROR_MESSAGE,
                                     result.getErrorMessage());
                             setStatusMessage(ERROR_EXECUTING);
@@ -598,13 +613,13 @@ public class QueryDispatcher {
                     } else {
 
                         @SuppressWarnings("rawtypes")
-                        Map results = (Map)result.getOtherResult();
+                        Map results = (Map) result.getOtherResult();
 
                         if (results == null) {
 
                             printExecutionPlan(before, after);
 
-                            setOutputMessage(SqlMessages.ERROR_MESSAGE,result.getErrorMessage());
+                            setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage());
                             setStatusMessage(ERROR_EXECUTING);
 
                         } else {
@@ -618,16 +633,16 @@ public class QueryDispatcher {
 
                                 setOutputMessage(SqlMessages.PLAIN_MESSAGE,
                                         updateCount +
-                                        ((updateCount > 1) ?
-                                            " rows affected." : " row affected."));
+                                                ((updateCount > 1) ?
+                                                        " rows affected." : " row affected."));
                             }
 
                             String SPACE = " = ";
-                            for (Iterator<?> i = results.keySet().iterator(); i.hasNext();) {
+                            for (Iterator<?> i = results.keySet().iterator(); i.hasNext(); ) {
 
                                 String key = i.next().toString();
                                 setOutputMessage(SqlMessages.PLAIN_MESSAGE,
-                                                 key + SPACE + results.get(key));
+                                        key + SPACE + results.get(key));
                             }
 
                         }
@@ -635,7 +650,7 @@ public class QueryDispatcher {
                     }
 
                 }
-                
+
                 // execution times
                 if (end == 0) {
 
@@ -664,8 +679,8 @@ public class QueryDispatcher {
         } catch (OutOfMemoryError e) {
 
             setOutputMessage(SqlMessages.ERROR_MESSAGE,
-                    "Resources exhausted while executing query.\n"+
-                    "The query result set was too large to return.");
+                    "Resources exhausted while executing query.\n" +
+                            "The query result set was too large to return.");
 
             setStatusMessage(ERROR_EXECUTING);
 
@@ -731,7 +746,7 @@ public class QueryDispatcher {
                 e.printStackTrace();
             }
 
-            IFBDatabasePerformance db = (IFBDatabasePerformance)odb;
+            IFBDatabasePerformance db = (IFBDatabasePerformance) odb;
             try {
 
                 db.setConnection(connection);
@@ -741,11 +756,11 @@ public class QueryDispatcher {
                 e.printStackTrace();
             }
 
-                if (before != null && after != null) {
-                    IFBPerformanceInfo resultPerfomanceInfo = after.processInfo(before, after);
+            if (before != null && after != null) {
+                IFBPerformanceInfo resultPerfomanceInfo = after.processInfo(before, after);
 
-                    setOutputMessage(SqlMessages.PLAIN_MESSAGE, resultPerfomanceInfo.getPerformanceInfo());
-                }
+                setOutputMessage(SqlMessages.PLAIN_MESSAGE, resultPerfomanceInfo.getPerformanceInfo());
+            }
         }
 
     }
@@ -785,7 +800,7 @@ public class QueryDispatcher {
                     e.printStackTrace();
                 }
 
-                IFBDatabasePerformance db = (IFBDatabasePerformance)odb;
+                IFBDatabasePerformance db = (IFBDatabasePerformance) odb;
                 try {
 
                     setOutputMessage(SqlMessages.PLAIN_MESSAGE, db.getLastExecutedPlan(resultSet));
@@ -816,7 +831,7 @@ public class QueryDispatcher {
     }
 
     private Object executeProcedureOrFunction(String sql, String procQuery)
-        throws SQLException {
+            throws SQLException {
 
         logExecution(sql.trim());
 
@@ -858,7 +873,7 @@ public class QueryDispatcher {
      * pane for the specified start and end values.
      *
      * @param start the start time in millis
-     * @param end the end time in millis
+     * @param end   the end time in millis
      */
     private void logExecutionTime(long start, long end) {
 
@@ -901,7 +916,7 @@ public class QueryDispatcher {
                     SqlMessages.ACTION_MESSAGE, EXECUTING);
             setOutputMessage(
                     SqlMessages.ACTION_MESSAGE_PREFORMAT,
-                    query.substring(0, subIndex-1).trim() + SUBSTRING);
+                    query.substring(0, subIndex - 1).trim() + SUBSTRING);
         }
 
     }
@@ -913,7 +928,7 @@ public class QueryDispatcher {
 
             if (e instanceof SQLException) {
 
-                SQLException sqlExc = (SQLException)e;
+                SQLException sqlExc = (SQLException) e;
                 sqlExc = sqlExc.getNextException();
 
                 if (sqlExc != null) {
@@ -981,7 +996,9 @@ public class QueryDispatcher {
 
     }
 
-    /** matcher to remove new lines from log messages */
+    /**
+     * matcher to remove new lines from log messages
+     */
     private Matcher newLineMatcher;
 
     /**
@@ -1036,12 +1053,15 @@ public class QueryDispatcher {
 
     }
 
-    /** Closes the current connection. */
+    /**
+     * Closes the current connection.
+     */
     public void destroyConnection() {
         if (querySender != null) {
             try {
                 querySender.destroyConnection();
-            } catch (SQLException e) {}
+            } catch (SQLException e) {
+            }
         }
     }
 
@@ -1093,8 +1113,8 @@ public class QueryDispatcher {
         int tableIndex = query.indexOf("TABLE");
         int functionIndex = query.indexOf("FUNCTION");
         return createIndex != -1 &&
-               tableIndex == -1 &&
-               functionIndex > createIndex;
+                tableIndex == -1 &&
+                functionIndex > createIndex;
     }
 
     private boolean isNotSingleStatementExecution(String query) {

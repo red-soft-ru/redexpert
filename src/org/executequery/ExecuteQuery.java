@@ -22,20 +22,20 @@ package org.executequery;
 
 import org.executequery.gui.HelpWindow;
 
-/** 
+/**
  * The entry point for Execute Query.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public final class ExecuteQuery {
-    
+
     public ExecuteQuery() {
-        
+
         new ApplicationLauncher().startup();
     }
-    
+
     public static void main(String[] args) {
-        
+
         // make sure the installed java version is at least 1.7
         /*
         if (!MiscUtils.isMinJavaVersion(1, 7)) {
@@ -54,27 +54,27 @@ public final class ExecuteQuery {
         */
 
         if (isHelpStartupOnly(args)) {
-            
+
             HelpWindow.main(args);
-            
+
         } else {
 
             ApplicationContext.getInstance().startup(args);
             new ExecuteQuery();
         }
-            
+
     }
-    
+
     private static boolean isHelpStartupOnly(String[] args) {
-        
+
         if (args.length > 0) {
 
             return args[0].toUpperCase().equals("HELP");
         }
 
-        return false; 
+        return false;
     }
-    
+
 }
 
 

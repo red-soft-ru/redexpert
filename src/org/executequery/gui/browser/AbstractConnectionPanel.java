@@ -20,15 +20,12 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.GridBagConstraints;
-import java.awt.LayoutManager;
-
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.ActionPanel;
 import org.underworldlabs.swing.DefaultFieldLabel;
+
+import javax.swing.*;
+import java.awt.*;
 
 public abstract class AbstractConnectionPanel extends ActionPanel {
 
@@ -75,7 +72,7 @@ public abstract class AbstractConnectionPanel extends ActionPanel {
     }
 
     protected void addLabelFieldPair(JPanel panel, String label,
-            JComponent field, String toolTip, GridBagConstraints gbc) {
+                                     JComponent field, String toolTip, GridBagConstraints gbc) {
 
         gbc.gridy++;
         gbc.gridx = 0;
@@ -104,7 +101,7 @@ public abstract class AbstractConnectionPanel extends ActionPanel {
     }
 
     class ComponentToolTipPair {
-        
+
         final JComponent component;
         final String toolTip;
 
@@ -112,11 +109,11 @@ public abstract class AbstractConnectionPanel extends ActionPanel {
             this.component = component;
             this.toolTip = toolTip;
         }
-        
+
     }
 
     protected String bundleString(String key) {
-        
+
         return Bundles.get(getClass(), key);
     }
 

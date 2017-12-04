@@ -22,12 +22,16 @@ package org.executequery.event;
 
 public interface QueryBookmarkEvent extends ApplicationEvent {
 
-    /** Method name for bookmark added */
+    /**
+     * Method name for bookmark added
+     */
     String BOOKMARK_ADDED = "queryBookmarkAdded";
 
-    /** Method name for bookmark added */
+    /**
+     * Method name for bookmark added
+     */
     String BOOKMARK_REMOVED = "queryBookmarkRemoved";
-    
+
 }
 
 

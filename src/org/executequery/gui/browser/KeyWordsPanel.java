@@ -20,55 +20,55 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-
 import org.executequery.gui.DefaultTable;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.table.SingleColumnTableModel;
 
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class KeyWordsPanel extends ConnectionPropertiesPanel {
-    
-    /** table displaying sql92 keywords */
+
+    /**
+     * table displaying sql92 keywords
+     */
     private JTable savedWordsTable;
-    
-    /** table displaying database specific keywords */
+
+    /**
+     * table displaying database specific keywords
+     */
     private JTable keywordsTable;
-    
-    /** table model for the databse specific table */
+
+    /**
+     * table model for the databse specific table
+     */
     private SingleColumnTableModel model;
-    
-    /** Creates a new instance of KeyWordsPanel */
+
+    /**
+     * Creates a new instance of KeyWordsPanel
+     */
     public KeyWordsPanel() {
 
         super(new GridBagLayout());
 
         init();
     }
-    
-    private void init() {        
+
+    private void init() {
         // setup the database specific words table
         model = new SingleColumnTableModel();
         keywordsTable = new DefaultTable(model);
         setTableProperties(keywordsTable);
-        
+
         JPanel panel1 = new JPanel(new BorderLayout());
         panel1.setBorder(BorderFactory.createTitledBorder("Database Specific"));
         panel1.add(new JScrollPane(keywordsTable));
-        
+
         List<String> sql92 = keywords().getSQL92();
         savedWordsTable = new DefaultTable(
                 new SingleColumnTableModel(null, sql92));
@@ -101,20 +101,20 @@ public class KeyWordsPanel extends ConnectionPropertiesPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.ipadx = 0;
-        gbc.ipady = 0;        
+        gbc.ipady = 0;
         add(base, gbc);
     }
-    
+
     private KeywordRepository keywords() {
 
-        return (KeywordRepository)RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
+        return (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
     }
 
     public void setDatabaseKeywords(String[] words) {
- 
+
         model.setValues(words);
     }
-    
+
 }
 
 

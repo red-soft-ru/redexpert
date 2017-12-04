@@ -20,53 +20,57 @@
 
 package org.underworldlabs.swing.table;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Paint;
-
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.UIManager;
-import javax.swing.table.DefaultTableCellRenderer;
-
 import org.underworldlabs.Constants;
 import org.underworldlabs.swing.plaf.UIUtils;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.*;
 
 /**
  * Simple header renderer with tool tip text and configurable height.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class DefaultTableHeaderRenderer extends DefaultTableCellRenderer { 
+public class DefaultTableHeaderRenderer extends DefaultTableCellRenderer {
 
-    /** the height of the header */
+    /**
+     * the height of the header
+     */
     private int height;
 
-    /** the light gradient colour 1 */
+    /**
+     * the light gradient colour 1
+     */
     private Color colour1;
 
-    /** the dark gradient colour 2 */
+    /**
+     * the dark gradient colour 2
+     */
     private Color colour2;
 
-    /** whether to fill a gradient background */
+    /**
+     * whether to fill a gradient background
+     */
     private boolean fillGradient;
 
-    /** the default height - 22 */
+    /**
+     * the default height - 22
+     */
     protected static final int DEFAULT_HEIGHT = 24;
-    
-    /** Creates a new instance of DefaultTableHeaderRenderer */
+
+    /**
+     * Creates a new instance of DefaultTableHeaderRenderer
+     */
     public DefaultTableHeaderRenderer() {
         this(DEFAULT_HEIGHT);
     }
 
-    /** Creates a new instance of DefaultTableHeaderRenderer */
+    /**
+     * Creates a new instance of DefaultTableHeaderRenderer
+     */
     public DefaultTableHeaderRenderer(int height) {
-        
+
         this.height = height;
 
         setHorizontalAlignment(JLabel.CENTER);
@@ -78,7 +82,7 @@ public class DefaultTableHeaderRenderer extends DefaultTableCellRenderer {
         }
 
     }
-    
+
     public Component getTableCellRendererComponent(JTable table,
                                                    Object value,
                                                    boolean isSelected,
@@ -96,24 +100,24 @@ public class DefaultTableHeaderRenderer extends DefaultTableCellRenderer {
         setToolTipText(label);
 
         if (!UIUtils.isNativeMacLookAndFeel()) {
-        	
-        	setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+
+            setBorder(UIManager.getBorder("TableHeader.cellBorder"));
 
         } else {
 
-        	Color color = UIManager.getColor("controlShadow");
-			if (column == 0) {
-        		
-        		setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, color));
+            Color color = UIManager.getColor("controlShadow");
+            if (column == 0) {
 
-        	} else {
+                setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, color));
 
-        		setBorder(BorderFactory.createMatteBorder(1, 0, 1, 1, color));        		
-        	}
-        	
+            } else {
+
+                setBorder(BorderFactory.createMatteBorder(1, 0, 1, 1, color));
+            }
+
         }
-        
-        
+
+
         setFont(UIManager.getFont("TableHeader.font"));
         setForeground(UIManager.getColor("TableHeader.foreground"));
         setBackground(UIManager.getColor("TableHeader.background"));
@@ -126,12 +130,12 @@ public class DefaultTableHeaderRenderer extends DefaultTableCellRenderer {
             int width = getWidth();
             int height = getHeight();
 
-            Graphics2D g2 = (Graphics2D)g;
+            Graphics2D g2 = (Graphics2D) g;
             Paint originalPaint = g2.getPaint();
-            GradientPaint fade = new GradientPaint(0, height, colour2, 0, (int)(height * 0.5), colour1);
+            GradientPaint fade = new GradientPaint(0, height, colour2, 0, (int) (height * 0.5), colour1);
 
             g2.setPaint(fade);
-            g2.fillRect(0,0, width, height);
+            g2.fillRect(0, 0, width, height);
 
             g2.setPaint(originalPaint);
         }
@@ -141,11 +145,11 @@ public class DefaultTableHeaderRenderer extends DefaultTableCellRenderer {
     public boolean isOpaque() {
         return !fillGradient;
     }
-    
+
     public Dimension getPreferredSize() {
         return new Dimension(getWidth(), height);
     }
-    
+
     public int getHeight() {
         return height;
     }

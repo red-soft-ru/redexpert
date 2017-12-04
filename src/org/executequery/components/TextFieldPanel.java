@@ -20,19 +20,18 @@
 
 package org.executequery.components;
 
-import java.awt.LayoutManager;
-
-import javax.swing.JPanel;
 import org.underworldlabs.swing.TextFieldFocusController;
+
+import javax.swing.*;
+import java.awt.*;
 
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class TextFieldPanel extends JPanel
-                            implements TextFieldFocusController {
-    
+        implements TextFieldFocusController {
+
     public TextFieldPanel() {
         super();
     }
@@ -40,14 +39,14 @@ public class TextFieldPanel extends JPanel
     public TextFieldPanel(boolean isDoubleBuffered) {
         super(isDoubleBuffered);
     }
-    
+
     public TextFieldPanel(LayoutManager layout) {
         super(layout);
     }
-    
+
     public TextFieldPanel(LayoutManager layout, boolean isDoubleBuffered) {
         super(layout, isDoubleBuffered);
     }
-    
+
 }
 

@@ -20,47 +20,49 @@
 
 package org.executequery.gui;
 
-import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-
 import org.executequery.ActiveComponent;
 import org.executequery.GUIUtilities;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.GlassPanePanel;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+
 /**
  * Base dialog to be extended.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class BaseDialog extends AbstractBaseDialog
-                        implements FocusListener,
-                                   ActionContainer {
+        implements FocusListener,
+        ActionContainer {
 
-    /** the content panel */
+    /**
+     * the content panel
+     */
     private JPanel contentPanel;
 
-    /** Creates a new instance of BaseDialog */
+    /**
+     * Creates a new instance of BaseDialog
+     */
     public BaseDialog(String name, boolean modal) {
         this(name, modal, null);
     }
 
-    /** Creates a new instance of BaseDialog */
+    /**
+     * Creates a new instance of BaseDialog
+     */
     public BaseDialog(String name, boolean modal, boolean resizeable) {
         this(name, modal, null);
         setResizable(resizeable);
     }
 
-    /** Creates a new instance of BaseDialog */
+    /**
+     * Creates a new instance of BaseDialog
+     */
     public BaseDialog(String name, boolean modal, JPanel panel) {
         super(GUIUtilities.getParentFrame(), name, modal);
         addDisplayComponentWithEmptyBorder(panel);
@@ -123,13 +125,13 @@ public class BaseDialog extends AbstractBaseDialog
     // ------------------------------------------
 
     /**
-     *  Removes this dialog from the application
-     *  controller <code>GUIUtilities</code> object before
-     *  a call to <code>super.dispose()</code>.
+     * Removes this dialog from the application
+     * controller <code>GUIUtilities</code> object before
+     * a call to <code>super.dispose()</code>.
      */
     public void dispose() {
         if (contentPanel instanceof ActiveComponent) {
-            ((ActiveComponent)contentPanel).cleanup();
+            ((ActiveComponent) contentPanel).cleanup();
         }
         contentPanel = null;
         GUIUtilities.deregisterDialog(this);
@@ -163,13 +165,13 @@ public class BaseDialog extends AbstractBaseDialog
     }
 
     /**
-     *  Called for a change in focus as specified. This
-     *  method will pass this object into <code>GUIUtilities</code>
-     *  methods <code>setFocusedDialog(JDialog)</code> and
-     *  <code>removeFocusedDialog(JDialog)</code> depending on
-     *  the focus parameter specified.
+     * Called for a change in focus as specified. This
+     * method will pass this object into <code>GUIUtilities</code>
+     * methods <code>setFocusedDialog(JDialog)</code> and
+     * <code>removeFocusedDialog(JDialog)</code> depending on
+     * the focus parameter specified.
      *
-     *  @param whether this dialog has focus
+     * @param whether this dialog has focus
      */
     private void dialogFocusChanged(boolean hasFocus) {
         if (hasFocus) {
@@ -192,8 +194,8 @@ public class BaseDialog extends AbstractBaseDialog
         getContentPane().setLayout(new GridBagLayout());
         getContentPane().add(panel,
                 new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                GridBagConstraints.SOUTHEAST, GridBagConstraints.BOTH,
-                new Insets(5, 5, 5, 5), 0, 0));
+                        GridBagConstraints.SOUTHEAST, GridBagConstraints.BOTH,
+                        new Insets(5, 5, 5, 5), 0, 0));
     }
 
     /**
@@ -238,7 +240,7 @@ public class BaseDialog extends AbstractBaseDialog
         if (contentPanel instanceof FocusComponentPanel) {
 
             GUIUtils.requestFocusInWindow(
-                    ((FocusComponentPanel)contentPanel).getDefaultFocusComponent());
+                    ((FocusComponentPanel) contentPanel).getDefaultFocusComponent());
         }
 
         toFront();

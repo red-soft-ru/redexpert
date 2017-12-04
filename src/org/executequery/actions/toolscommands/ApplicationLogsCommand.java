@@ -20,10 +20,6 @@
 
 package org.executequery.actions.toolscommands;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.JOptionPane;
-
 import org.executequery.GUIUtilities;
 import org.executequery.gui.SystemLogsViewer;
 import org.executequery.repository.LogRepository;
@@ -32,9 +28,11 @@ import org.executequery.util.ThreadUtils;
 import org.underworldlabs.swing.actions.BaseCommand;
 import org.underworldlabs.swing.actions.ReflectiveAction;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ApplicationLogsCommand extends ReflectiveAction implements BaseCommand {
 
@@ -96,10 +94,10 @@ public class ApplicationLogsCommand extends ReflectiveAction implements BaseComm
                 } else {
 
                     GUIUtilities.addCentralPane(SystemLogsViewer.TITLE,
-                                                SystemLogsViewer.FRAME_ICON,
-                                                new SystemLogsViewer(type),
-                                                null,
-                                                true);
+                            SystemLogsViewer.FRAME_ICON,
+                            new SystemLogsViewer(type),
+                            null,
+                            true);
                 }
             }
 
@@ -108,7 +106,7 @@ public class ApplicationLogsCommand extends ReflectiveAction implements BaseComm
 
     private SystemLogsViewer logViewer() {
 
-        return (SystemLogsViewer)GUIUtilities.getCentralPane(SystemLogsViewer.TITLE);
+        return (SystemLogsViewer) GUIUtilities.getCentralPane(SystemLogsViewer.TITLE);
     }
 
     private boolean isLogViewerOpen() {

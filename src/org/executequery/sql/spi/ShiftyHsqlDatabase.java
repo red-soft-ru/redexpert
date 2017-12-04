@@ -30,7 +30,7 @@ public class ShiftyHsqlDatabase extends HsqlDatabase {
         }
         return "\"" + columnName + "\"";
     }
-    
+
 }
 
 

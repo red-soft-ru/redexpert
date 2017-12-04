@@ -23,22 +23,22 @@ package org.executequery;
 /**
  * Simple exception wrapper for validation check errors.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ValidationException extends AbstractBaseRuntimeException {
-    
-	private static final long serialVersionUID = 1L;
-    
+
+    private static final long serialVersionUID = 1L;
+
     public ValidationException(String message) {
 
         super(message);
     }
-    
+
     public ValidationException(Throwable cause) {
-        
+
         super(cause);
     }
-    
+
     public ValidationException(String message, Throwable cause) {
 
         super(message, cause);

@@ -26,22 +26,22 @@ package org.executequery.gui.importexport;
  * classes handling the actual data transfer tasks after
  * all required details have been completed by the user.
  *
- * @author   Takis Diakoumis
- * @date   16 April 2003
+ * @author Takis Diakoumis
+ * @date 16 April 2003
  */
 public interface ImportExportWorker {
-    
-    /** 
-     * Cancels the current data transfer process. 
+
+    /**
+     * Cancels the current data transfer process.
      */
     public void cancelTransfer();
-    
+
     /**
      * Indicates a data transfer process has completed
      * and clean-up can be performed.
      */
     public void finished();
-    
+
 }
 
 

@@ -20,20 +20,22 @@
 
 package org.executequery.actions.toolscommands;
 
-import java.awt.event.ActionEvent;
 import org.executequery.GUIUtilities;
-import org.underworldlabs.swing.actions.BaseCommand;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.prefs.PropertiesPanel;
+import org.underworldlabs.swing.actions.BaseCommand;
 
-/** <p>Executes the Tools | Preferences command.
+import java.awt.event.ActionEvent;
+
+/**
+ * <p>Executes the Tools | Preferences command.
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PreferencesCommand extends OpenFrameCommand
-                                implements BaseCommand {
-    
+        implements BaseCommand {
+
     public void execute(ActionEvent e) {
         try {
             GUIUtilities.showWaitCursor();
@@ -41,13 +43,12 @@ public class PreferencesCommand extends OpenFrameCommand
             PropertiesPanel panel = new PropertiesPanel(dialog);
             dialog.addDisplayComponentWithEmptyBorder(panel);
             dialog.display();
-        }
-        finally {
+        } finally {
             GUIUtilities.showNormalCursor();
         }
 
     }
-    
+
 }
 
 

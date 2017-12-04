@@ -20,15 +20,16 @@
 
 package org.executequery.actions.windowcommands;
 
-import java.awt.event.ActionEvent;
 import org.executequery.GUIUtilities;
 import org.executequery.actions.othercommands.AbstractBaseCommand;
+
+import java.awt.event.ActionEvent;
 
 /**
  * Executes the action to select the next tab in the focused
  * docked or scrolling tab pane.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CloseAllTabsInSelectedContainerAction extends AbstractBaseCommand {
 
@@ -36,7 +37,7 @@ public class CloseAllTabsInSelectedContainerAction extends AbstractBaseCommand {
 
         GUIUtilities.closeAllTabsInSelectedContainer();
     }
-    
+
 }
 
 

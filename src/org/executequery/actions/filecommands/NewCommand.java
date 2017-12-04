@@ -22,11 +22,11 @@ package org.executequery.actions.filecommands;
 
 import org.executequery.actions.toolscommands.EditorCommand;
 
-/** 
+/**
  * <p>Command execution for File | New.
  * This will open a new Query Editor frame only.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class NewCommand extends EditorCommand { //OpenFrameCommand
 //                        implements BaseCommand {

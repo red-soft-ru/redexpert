@@ -6,9 +6,7 @@ import liquibase.change.core.CreateTableChange;
 import liquibase.database.Database;
 import liquibase.database.core.FirebirdDatabase;
 import liquibase.database.core.MySQLDatabase;
-import liquibase.datatype.DataTypeFactory;
 import liquibase.datatype.LiquibaseDataType;
-import liquibase.exception.DatabaseException;
 import liquibase.exception.UnexpectedLiquibaseException;
 import liquibase.sqlgenerator.SqlGeneratorFactory;
 import liquibase.statement.*;
@@ -25,7 +23,7 @@ import java.util.List;
  */
 public class FirebirdCreateTableChange extends CreateTableChange {
 
-    FirebirdCreateTableChange () {
+    FirebirdCreateTableChange() {
         super();
     }
 

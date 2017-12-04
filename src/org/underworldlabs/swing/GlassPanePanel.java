@@ -20,25 +20,25 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.event.MouseEvent;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.event.MouseInputListener;
+import java.awt.event.MouseEvent;
 
 /**
  * Empty non-opaque panel to be used as a glass pane for event capture.
- * 
- * @author   Takis Diakoumis
+ *
+ * @author Takis Diakoumis
  */
 public class GlassPanePanel extends JPanel
-                            implements MouseInputListener {
-    
+        implements MouseInputListener {
+
     public GlassPanePanel() {
         setVisible(false);
         setOpaque(false);
         addMouseListener(this);
         addMouseMotionListener(this);
     }
- 
+
     /**
      * Override to return false.
      */
@@ -49,39 +49,46 @@ public class GlassPanePanel extends JPanel
     /**
      * Invoked when a mouse button is pressed on a component and then dragged.
      */
-    public void mouseDragged(MouseEvent e) {}
+    public void mouseDragged(MouseEvent e) {
+    }
 
     /**
      * Invoked when the mouse cursor has been moved onto a component
      * but no buttons have been pushed.
      */
-    public void mouseMoved(MouseEvent e) {}
+    public void mouseMoved(MouseEvent e) {
+    }
 
     /**
      * Invoked when the mouse button has been clicked (pressed
      * and released) on a component.
      */
-    public void mouseClicked(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e) {
+    }
 
     /**
      * Invoked when a mouse button has been pressed on a component.
      */
-    public void mousePressed(MouseEvent e) {}
+    public void mousePressed(MouseEvent e) {
+    }
 
     /**
      * Invoked when a mouse button has been released on a component.
      */
-    public void mouseReleased(MouseEvent e) {}
+    public void mouseReleased(MouseEvent e) {
+    }
 
     /**
      * Invoked when the mouse enters a component.
      */
-    public void mouseEntered(MouseEvent e) {}
+    public void mouseEntered(MouseEvent e) {
+    }
 
     /**
      * Invoked when the mouse exits a component.
      */
-    public void mouseExited(MouseEvent e) {}
+    public void mouseExited(MouseEvent e) {
+    }
 
 }
 

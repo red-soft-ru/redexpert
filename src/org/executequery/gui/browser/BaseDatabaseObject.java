@@ -20,103 +20,125 @@
 
 package org.executequery.gui.browser;
 
-import java.util.List;
 import org.executequery.databaseobjects.NamedObject;
 import org.underworldlabs.jdbc.DataSourceException;
 
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class BaseDatabaseObject implements NamedObject {
-    
-    /** the node type */
+
+    /**
+     * the node type
+     */
     private int type;
 
-    /** whether this a system type node */
+    /**
+     * whether this a system type node
+     */
     private boolean systemObject;
-    
-    /** the name of the associated schema */
+
+    /**
+     * the name of the associated schema
+     */
     private String schemaName;
-    
+
     // a 'parent' entity name - eg table name for a column
     private String parentName;
 
-    /** the name of the associated catalog */
+    /**
+     * the name of the associated catalog
+     */
     private String catalogName;
-    
-    /** the meta data key identifier (@see BrowserConstants)*/
+
+    /**
+     * the meta data key identifier (@see BrowserConstants)
+     */
     private String metaDataKey;
-    
-    /** the name of this node */
+
+    /**
+     * the name of this node
+     */
     private String name;
 
-    /** any remarks associated with this object */
+    /**
+     * any remarks associated with this object
+     */
     private String remarks;
-    
-    /** whether this is the default connected catalog */
+
+    /**
+     * whether this is the default connected catalog
+     */
     private boolean defaultCatalog;
-    
+
     private boolean useInQuery;
-    
+
     public BaseDatabaseObject() {
         useInQuery = true;
     }
-    
+
     public BaseDatabaseObject(int type, String name) {
         useInQuery = true;
         this.name = name;
         this.type = type;
     }
-        
+
     public int drop() {
         return 0;
     }
-    public NamedObject getParent() {return null;}
-    public void setParent(NamedObject parent) {}
-    
+
+    public NamedObject getParent() {
+        return null;
+    }
+
+    public void setParent(NamedObject parent) {
+    }
+
     public List<NamedObject> getObjects() throws DataSourceException {
         return null;
     }
-    
-    public void reset() {}
-    
+
+    public void reset() {
+    }
+
     public int getType() {
         return type;
     }
-    
+
     public void setType(int type) {
         this.type = type;
     }
-    
+
     public String getSchemaName() {
         return schemaName;
     }
-    
+
     public void setSchemaName(String schemaName) {
         this.schemaName = schemaName;
     }
-    
+
     public String getCatalogName() {
         return catalogName;
     }
-    
+
     public void setCatalogName(String catalogName) {
         this.catalogName = catalogName;
     }
-    
+
     public String getMetaDataKey() {
         return metaDataKey;
     }
-    
+
     public void setMetaDataKey(String metaDataKey) {
         this.metaDataKey = metaDataKey;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
@@ -124,27 +146,27 @@ public class BaseDatabaseObject implements NamedObject {
     public String getDescription() {
         return getName();
     }
-    
+
     public String getShortName() {
         return getName();
     }
-    
+
     public String toString() {
         return name;
     }
-    
+
     public String getRemarks() {
         return remarks;
     }
-    
+
     public void setRemarks(String remarks) {
         this.remarks = remarks;
     }
-    
+
     public boolean isDefaultCatalog() {
         return defaultCatalog;
     }
-    
+
     public void setDefaultCatalog(boolean defaultCatalog) {
         this.defaultCatalog = defaultCatalog;
     }
@@ -172,7 +194,7 @@ public class BaseDatabaseObject implements NamedObject {
     public void setSystemObject(boolean systemObject) {
         this.systemObject = systemObject;
     }
- 
+
     /**
      * Creates and returns a copy of this object.
      *

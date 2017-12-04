@@ -21,25 +21,24 @@
 package org.executequery.http;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class RemoteHttpResponse {
 
     private final String response;
-    
+
     private final int statusCode;
 
     public RemoteHttpResponse(int statusCode, String response) {
-    
+
         super();
-        
+
         this.statusCode = statusCode;
         this.response = response;
     }
 
     public String getResponse() {
-        
+
         return response;
     }
 
@@ -47,12 +46,12 @@ public class RemoteHttpResponse {
 
         return statusCode;
     }
-    
+
     public String toString() {
 
         return "Status code: " + statusCode + "\n\nResponse text:\n" + response;
     }
-    
+
 }
 
 

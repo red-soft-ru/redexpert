@@ -20,18 +20,15 @@
 
 package org.executequery.components;
 
-import java.awt.Dialog;
-import java.awt.Font;
-
-import javax.swing.JEditorPane;
-import javax.swing.UIManager;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.text.html.HTMLDocument;
-
 import org.executequery.util.SystemWebBrowserLauncher;
 import org.underworldlabs.swing.DialogMessageContent;
 import org.underworldlabs.swing.plaf.UIUtils;
+
+import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.text.html.HTMLDocument;
+import java.awt.*;
 
 public class SimpleHtmlContentPane extends JEditorPane implements DialogMessageContent {
 
@@ -52,7 +49,7 @@ public class SimpleHtmlContentPane extends JEditorPane implements DialogMessageC
                 UIUtils.asHexColor("OptionPane.foreground") + ";}";
 
         ((HTMLDocument) getDocument()).getStyleSheet().addRule(bodyRule);
-        
+
         addHyperlinkListener(new OpensLinkInBrowserListener());
     }
 
@@ -63,11 +60,11 @@ public class SimpleHtmlContentPane extends JEditorPane implements DialogMessageC
             if (isActiveEvent(e)) {
 
                 try {
-                
+
                     new SystemWebBrowserLauncher().launch(e.getDescription());
-                
+
                 } finally {
-                    
+
                     dialog.dispose();
                 }
 
@@ -79,12 +76,12 @@ public class SimpleHtmlContentPane extends JEditorPane implements DialogMessageC
 
             return HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType());
         }
-        
+
     }
 
     public void setDialog(Dialog dialog) {
         this.dialog = dialog;
     }
-    
+
 }
 

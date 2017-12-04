@@ -20,14 +20,14 @@
 
 package org.executequery.sql.liquibase;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.View;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /* liquibase moved this out of core after 3.0.8 */
 
@@ -38,7 +38,7 @@ public class MaxDBDatabase extends AbstractJdbcDatabase {
 
     public MaxDBDatabase() {
         super.setCurrentDateTimeFunction("TIMESTAMP");
-        super.sequenceNextValueFunction="%s.NEXTVAL";
+        super.sequenceNextValueFunction = "%s.NEXTVAL";
         systemTablesAndViews.add("---");
 
         systemTablesAndViews.add("ACTIVECONFIGURATION");

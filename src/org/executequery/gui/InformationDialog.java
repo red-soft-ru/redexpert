@@ -20,47 +20,41 @@
 
 package org.executequery.gui;
 
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.io.IOException;
-
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-
 import org.executequery.localization.Bundles;
 import org.underworldlabs.util.FileUtils;
 
+import javax.swing.*;
+import java.awt.*;
+import java.io.IOException;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class InformationDialog extends ActionDialog {
 
     public static final int RESOURCE_PATH_VALUE = 0;
     public static final int TEXT_CONTENT_VALUE = 1;
-    
-    /** Creates a new instance of InformationDialog */
+
+    /**
+     * Creates a new instance of InformationDialog
+     */
     public InformationDialog(String name, String value, int valueType) {
 
         super(name, true);
 
         try {
-        
-            String text = null;            
-            
+
+            String text = null;
+
             if (valueType == RESOURCE_PATH_VALUE) {
-            
+
                 text = FileUtils.loadResource(value);
 
             } else {
-                
+
                 text = value;
             }
-            
+
             JTextArea textArea = new JTextArea(text);
             textArea.setFont(new Font("monospaced", Font.PLAIN, 11));
             textArea.setEditable(false);
@@ -87,19 +81,19 @@ public class InformationDialog extends ActionDialog {
             gbc.fill = GridBagConstraints.NONE;
             gbc.anchor = GridBagConstraints.CENTER;
             panel.add(closeButton, gbc);
-            
-            panel.setPreferredSize(new Dimension(650,500));
-            
+
+            panel.setPreferredSize(new Dimension(650, 500));
+
             addDisplayComponent(panel);
             display();
-        
+
         } catch (IOException e) {
-          
+
             e.printStackTrace();
         }
 
     }
-    
+
 }
 
 

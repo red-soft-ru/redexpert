@@ -20,36 +20,41 @@
 
 package org.executequery.gui.browser;
 
-import java.sql.SQLException;
-
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 
+import java.sql.SQLException;
+
 /**
  * Performs SQL execution tasks from browser components.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class BrowserQueryExecuter {
-    
+
     public static final int UPDATE_CANCELLED = 99;
-    
-    /** query sender object */
+
+    /**
+     * query sender object
+     */
     private StatementExecutor querySender;
-    
-    /** Creates a new instance of BorwserQueryExecuter */
-    public BrowserQueryExecuter() {}
-    
+
+    /**
+     * Creates a new instance of BorwserQueryExecuter
+     */
+    public BrowserQueryExecuter() {
+    }
+
     /**
      * Drops the specified database object.
      *
-     * @param dc - the database connection
+     * @param dc     - the database connection
      * @param object - the object to be dropped
      */
-    public int dropObject(DatabaseConnection dc, BaseDatabaseObject object) 
-        throws SQLException {
+    public int dropObject(DatabaseConnection dc, BaseDatabaseObject object)
+            throws SQLException {
 
         String queryStart = null;
         int type = object.getType();
@@ -59,7 +64,7 @@ public class BrowserQueryExecuter {
             case BrowserConstants.SCHEMA_NODE:
             case BrowserConstants.OTHER_NODE:
                 GUIUtilities.displayErrorMessage(
-                    "Dropping objects of this type is not currently supported");
+                        "Dropping objects of this type is not currently supported");
                 return UPDATE_CANCELLED;
 
             case BrowserConstants.FUNCTIONS_NODE:

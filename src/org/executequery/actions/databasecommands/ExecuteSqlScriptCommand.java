@@ -20,22 +20,21 @@
 
 package org.executequery.actions.databasecommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.ExecuteSqlScriptPanel;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-/** 
- *
- * @author   Takis Diakoumis
+import java.awt.event.ActionEvent;
+
+/**
+ * @author Takis Diakoumis
  */
 public class ExecuteSqlScriptCommand extends OpenFrameCommand
-                                implements BaseCommand {
-    
+        implements BaseCommand {
+
     public void execute(ActionEvent e) {
-        
+
         if (!isConnected()) {
 
             return;
@@ -46,18 +45,18 @@ public class ExecuteSqlScriptCommand extends OpenFrameCommand
             GUIUtilities.showWaitCursor();
 
             GUIUtilities.addCentralPane(ExecuteSqlScriptPanel.TITLE,
-                    ExecuteSqlScriptPanel.FRAME_ICON, 
+                    ExecuteSqlScriptPanel.FRAME_ICON,
                     new ExecuteSqlScriptPanel(),
                     null,
                     true);
 
         } finally {
-          
+
             GUIUtilities.showNormalCursor();
         }
 
     }
-    
+
 }
 
 

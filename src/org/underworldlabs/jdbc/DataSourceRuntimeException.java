@@ -23,12 +23,12 @@ package org.underworldlabs.jdbc;
 /**
  * Generic runtime exception thrown by data source related methods/classes.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DataSourceRuntimeException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
-    
+
     public DataSourceRuntimeException() {
         super();
     }
@@ -44,7 +44,7 @@ public class DataSourceRuntimeException extends RuntimeException {
     public DataSourceRuntimeException(Throwable cause) {
         super(cause);
     }
-    
+
     public DataSourceRuntimeException(String message, Throwable cause) {
         super(message, cause);
     }

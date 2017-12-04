@@ -7,7 +7,6 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObjectFactory;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.gui.editor.ConnectionChangeListener;
-import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.editor.QueryWithPosition;
 import org.executequery.gui.text.SQLTextPane;
 import org.executequery.log.Log;

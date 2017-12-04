@@ -20,6 +20,15 @@
 
 package org.executequery.databaseobjects.impl;
 
+import org.apache.commons.lang.StringUtils;
+import org.executequery.databasemediators.ConnectionMediator;
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.*;
+import org.executequery.datasource.ConnectionManager;
+import org.executequery.log.Log;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.*;
@@ -27,23 +36,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-import org.executequery.databasemediators.ConnectionMediator;
-import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseCatalog;
-import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.DatabaseSchema;
-import org.executequery.databaseobjects.DatabaseSource;
-import org.executequery.databaseobjects.DatabaseTable;
-import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.TablePrivilege;
-import org.executequery.datasource.ConnectionManager;
-import org.executequery.log.Log;
-import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.MiscUtils;
 
 /**
  * Default database host object implementation.
@@ -751,7 +743,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         if (isGen.compareToIgnoreCase("YES") == 0) {
                             column.setGenerated(true);
 //                        Statement statement = dmd.getConnection().createStatement();
-                        /*ResultSet*/
+                            /*ResultSet*/
                             sourceRS = statement.executeQuery("select RF.RDB$COMPUTED_SOURCE, " +
                                     " RRF.RDB$FIELD_NAME" +
                                     " from RDB$FIELDS RF, " +

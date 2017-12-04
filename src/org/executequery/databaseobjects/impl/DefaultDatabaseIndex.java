@@ -21,7 +21,7 @@ public class DefaultDatabaseIndex extends DefaultDatabaseExecutable {
         private String fieldName;
         private int fieldPosition;
 
-        DatabaseIndexColumn () {
+        DatabaseIndexColumn() {
 
         }
 
@@ -122,7 +122,7 @@ public class DefaultDatabaseIndex extends DefaultDatabaseExecutable {
     private boolean isActive;
     private boolean isUnique;
 
-    public DefaultDatabaseIndex (String name) {
+    public DefaultDatabaseIndex(String name) {
         setName(name);
     }
 

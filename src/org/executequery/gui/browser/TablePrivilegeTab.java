@@ -20,66 +20,58 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.BorderLayout;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-
 import org.executequery.databaseobjects.TablePrivilege;
 import org.executequery.gui.DefaultTable;
 import org.underworldlabs.swing.table.TableSorter;
 
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class TablePrivilegeTab extends JPanel {
-    
+
     private JTable table;
     private JPanel tablePanel;
     private JLabel noResultsLabel;
     private TablePrivilegeModel model;
-    
+
     public TablePrivilegeTab() {
         super(new BorderLayout());
         try {
             jbInit();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        }        
+        }
     }
-    
+
     private void jbInit() throws Exception {
-        
+
         model = new TablePrivilegeModel();
         table = new DefaultTable();
         table.setModel(new TableSorter(model, table.getTableHeader()));
         table.setColumnSelectionAllowed(false);
         table.getTableHeader().setReorderingAllowed(false);
-        
+
         tablePanel = new JPanel(new BorderLayout());
         tablePanel.add(new JScrollPane(table), BorderLayout.CENTER);
         tablePanel.setBorder(BorderFactory.createTitledBorder("Table Access Rights"));
-        
+
         noResultsLabel = new JLabel("No privilege information for this object is available.",
-        JLabel.CENTER);
-        
+                JLabel.CENTER);
+
     }
-    
+
     public JTable getTable() {
         return table;
     }
-    
+
     public void setValues(List<TablePrivilege> values) {
         if (values == null) {
             setValues(new TablePrivilege[0]);
-        } 
-        else {
+        } else {
             TablePrivilege[] _values = new TablePrivilege[values.size()];
             for (int i = 0; i < _values.length; i++) {
                 _values[i] = values.get(i);
@@ -87,87 +79,86 @@ public class TablePrivilegeTab extends JPanel {
             setValues(_values);
         }
     }
-    
+
     public void setValues(TablePrivilege[] values) {
         if (values == model.getValues()) {
             return;
         }
         removeAll();
-        
+
         if (values == null || values.length == 0) {
             add(noResultsLabel, BorderLayout.CENTER);
-        }
-        else {
+        } else {
             model.setValues(values);
             add(tablePanel, BorderLayout.CENTER);
         }
     }
-    
+
     private class TablePrivilegeModel extends AbstractDatabaseTableViewModel {
-        
+
         private TablePrivilege[] values;
-        private String[] header = {"Grantor","Grantee","Privilege","Grantable"};
-        
+        private String[] header = {"Grantor", "Grantee", "Privilege", "Grantable"};
+
         public TablePrivilegeModel() {
             values = new TablePrivilege[0];
         }
-        
+
         public TablePrivilege[] getValues() {
             return values;
         }
-        
+
         public void setValues(TablePrivilege[] values) {
             this.values = values;
             fireTableDataChanged();
         }
-        
+
         public int getRowCount() {
             return values.length;
         }
-        
+
         public int getColumnCount() {
             return 4;
         }
-        
+
         public String getColumnName(int col) {
             return header[col];
         }
-        
+
         public Object getValueAt(int row, int col) {
             TablePrivilege object = values[row];
-            
+
             switch (col) {
-                
+
                 case 0:
                     return object.getGrantor();
-                    
+
                 case 1:
                     return object.getGrantee();
-                    
+
                 case 2:
                     return object.getPrivilege();
-                    
+
                 case 3:
                     return object.getGrantable();
-                    
+
                 default:
                     return "NULL";
-                    
+
             }
-            
+
         }
-        
+
         public Class getColumnClass(int col) {
             return String.class;
         }
-        
+
         public boolean isCellEditable() {
             return false;
         }
-        
+
     }
-    
-    
+
+
 }
 
 

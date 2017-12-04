@@ -20,54 +20,54 @@
 
 package org.executequery.repository.spi;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Vector;
-
 import org.executequery.log.Log;
 import org.executequery.repository.SqlCommandHistoryRepository;
 import org.executequery.util.UserProperties;
 import org.executequery.util.UserSettingsProperties;
 import org.underworldlabs.util.FileUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Vector;
+
 public class SqlCommandHistoryRepositoryImpl implements SqlCommandHistoryRepository {
 
     private static final String FILE_PATH = "sql-command.history";
-    
+
     private UserSettingsProperties settings;
 
     public void addSqlCommand(String query) {
 
         if (!hasQueryAtZero(query)) {
-        
+
             final Vector<String> history = getSqlCommandHistory();
-    
+
             int size = history.size();
             if (size == maxHistoryCount()) {
-    
+
                 history.remove(size - 1);
             }
 
             history.add(0, query);
-    
+
             writeHistory(history);
         }
     }
 
     private boolean hasQueryAtZero(String query) {
-        
+
         final Vector<String> history = getSqlCommandHistory();
 
         if (history.isEmpty()) {
-            
+
             return false;
         }
-        
+
         String queryAtZero = history.get(0);
-        
+
         return (queryAtZero.compareTo(query) == 0);
     }
-    
+
     private int maxHistoryCount() {
 
         return UserProperties.getInstance().getIntProperty("editor.history.count");
@@ -82,65 +82,65 @@ public class SqlCommandHistoryRepositoryImpl implements SqlCommandHistoryReposit
     public Vector<String> getSqlCommandHistory() {
 
         try {
-            
+
             File file = new File(filePath());
 
             if (!file.exists()) {
-            
+
                 return emptyHistory();
-                
-            }  else {
-                
+
+            } else {
+
                 Object object = FileUtils.readObject(file);
 
                 if (object == null || !(object instanceof Vector)) {
-                    
+
                     return emptyHistory();
 
                 } else {
-                    
-                    return (Vector<String>)object;
+
+                    return (Vector<String>) object;
                 }
             }
 
         } catch (IOException e) {
 
             if (Log.isDebugEnabled()) {
-                
+
                 Log.debug("IO error opening SQL command history.", e);
             }
-            
+
             return emptyHistory();
         }
 
     }
 
     private void writeHistory(Vector<String> history) {
-        
+
         try {
 
             FileUtils.writeObject(history, filePath());
 
         } catch (IOException e) {
-            
+
             if (Log.isDebugEnabled()) {
-                
+
                 Log.debug("IO error storing SQL command history.", e);
             }
 
         }
 
     }
-    
+
     private Vector<String> emptyHistory() {
 
         return new Vector<String>();
     }
-    
+
     private String filePath() {
-        
+
         if (settings == null) {
-        
+
             settings = new UserSettingsProperties();
         }
 

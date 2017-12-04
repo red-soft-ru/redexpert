@@ -20,44 +20,35 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PasswordDialog extends JDialog {
-    
+
     public static final int OK = 1;
     public static final int CANCEL = 0;
-    
+
     private JButton okButton;
     private JButton cancelButton;
-    
+
     private JPasswordField field;
-    
+
     private String message;
-    
+
     private int result;
-    
-    /** <p>Constructs a new instance with the specified owner,
-     *  title and message.
+
+    /**
+     * <p>Constructs a new instance with the specified owner,
+     * title and message.
      *
-     *  @param the dialog owner
-     *  @param the dialog title
-     *  @param the dialog message displayed
+     * @param the dialog owner
+     * @param the dialog title
+     * @param the dialog message displayed
      */
     public PasswordDialog(Frame owner, String title, String message) {
         super(owner, title, true);
@@ -65,36 +56,37 @@ public class PasswordDialog extends JDialog {
         jbInit();
         display();
     }
-    
+
     private void jbInit() {
         try {
             JPanel base = new JPanel(new GridBagLayout());
-            
+
             okButton = new JButton("OK");
             cancelButton = new JButton("Cancel");
-            
+
             Insets btnIns = new Insets(2, 2, 2, 2);
             okButton.setMargin(btnIns);
             cancelButton.setMargin(btnIns);
-            
+
             Dimension btnDim = new Dimension(65, 25);
             okButton.setPreferredSize(btnDim);
             cancelButton.setPreferredSize(btnDim);
-            
+
             ActionListener buttonListener = new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    buttons_actionPerformed(e); }
+                    buttons_actionPerformed(e);
+                }
             };
-            
+
             okButton.addActionListener(buttonListener);
             cancelButton.addActionListener(buttonListener);
-            
+
             field = new JPasswordField();
-            field.setPreferredSize(new Dimension(250,20));
+            field.setPreferredSize(new Dimension(250, 20));
             field.addActionListener(buttonListener);
-            
+
             GridBagConstraints gbc = new GridBagConstraints();
-            Insets ins = new Insets(10,15,0,15);
+            Insets ins = new Insets(10, 15, 0, 15);
             gbc.gridwidth = 2;
             gbc.insets = ins;
             gbc.anchor = GridBagConstraints.NORTHWEST;
@@ -113,40 +105,40 @@ public class PasswordDialog extends JDialog {
             gbc.insets.left = 5;
             gbc.gridx = 1;
             base.add(cancelButton, gbc);
-            
+
             setResizable(false);
             getContentPane().add(base);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     public String getValue() {
-        
+
         if (result == CANCEL) {
             return null;
         }
-        
+
         char[] pwd = field.getPassword();
-        
+
         StringBuffer pwdBuffer = new StringBuffer(10);
-        
+
         for (int i = 0; i < pwd.length; i++) {
             pwdBuffer.append(pwd[i]);
             pwd[i] = 0;
         }
-        
+
         return pwdBuffer.toString();
     }
-    
+
     public int getResult() {
         return result;
     }
-    
+
     private void buttons_actionPerformed(ActionEvent e) {
         result = -1;
-        
+
         if (e.getSource() == cancelButton) {
             result = CANCEL;
         } else {
@@ -154,13 +146,13 @@ public class PasswordDialog extends JDialog {
         }
         setVisible(false);
     }
-    
+
     private void display() {
         pack();
         setLocation(GUIUtils.getPointToCenter(getOwner(), getSize()));
         setVisible(true);
     }
-    
+
 }
 
 

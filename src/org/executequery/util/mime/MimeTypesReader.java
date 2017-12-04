@@ -21,24 +21,19 @@
 package org.executequery.util.mime;
 
 // Commons Logging imports
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-// DOM imports
-import org.w3c.dom.Text;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Node;
-import org.w3c.dom.Element;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 
-// JDK imports
-import java.io.InputStream;
-import java.util.ArrayList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.InputStream;
+import java.util.ArrayList;
+
+// DOM imports
+// JDK imports
 
 
 /**
@@ -48,10 +43,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
  */
 final class MimeTypesReader {
 
-    /** The logger to use */
+    /**
+     * The logger to use
+     */
     private Log logger = null;
-    
-    
+
+
     MimeTypesReader(Log logger) {
         if (logger == null) {
             this.logger = LogFactory.getLog(this.getClass());
@@ -62,9 +59,9 @@ final class MimeTypesReader {
 
     MimeType[] read(String filepath) {
         return read(MimeTypesReader.class.getClassLoader()
-                                   .getResourceAsStream(filepath));
+                .getResourceAsStream(filepath));
     }
-    
+
     MimeType[] read(InputStream stream) {
         MimeType[] types = null;
         try {
@@ -74,14 +71,16 @@ final class MimeTypesReader {
             types = visit(document);
         } catch (Exception e) {
             if (logger.isWarnEnabled()) {
-              logger.warn(e.toString() + " while loading mime-types");
+                logger.warn(e.toString() + " while loading mime-types");
             }
             types = new MimeType[0];
         }
         return types;
     }
-    
-    /** Scan through the document. */
+
+    /**
+     * Scan through the document.
+     */
     private MimeType[] visit(Document document) {
         MimeType[] types = null;
         Element element = document.getDocumentElement();
@@ -90,31 +89,37 @@ final class MimeTypesReader {
         }
         return (types == null) ? (new MimeType[0]) : types;
     }
-    
-    /** Read Element named mime-types. */
+
+    /**
+     * Read Element named mime-types.
+     */
     private MimeType[] readMimeTypes(Element element) {
         ArrayList types = new ArrayList();
         NodeList nodes = element.getChildNodes();
-        for (int i=0; i<nodes.getLength(); i++) {
+        for (int i = 0; i < nodes.getLength(); i++) {
             Node node = nodes.item(i);
             if (node.getNodeType() == Node.ELEMENT_NODE) {
                 Element nodeElement = (Element) node;
                 if (nodeElement.getTagName().equals("mime-type")) {
                     MimeType type = readMimeType(nodeElement);
-                    if (type != null) { types.add(type); }
+                    if (type != null) {
+                        types.add(type);
+                    }
                 }
             }
         }
         return (MimeType[]) types.toArray(new MimeType[types.size()]);
     }
-    
-    /** Read Element named mime-type. */
+
+    /**
+     * Read Element named mime-type.
+     */
     private MimeType readMimeType(Element element) {
         String name = null;
         String description = null;
         MimeType type = null;
         NamedNodeMap attrs = element.getAttributes();
-        for (int i=0; i<attrs.getLength(); i++) {
+        for (int i = 0; i < attrs.getLength(); i++) {
             Attr attr = (Attr) attrs.item(i);
             if (attr.getName().equals("name")) {
                 name = attr.getValue();
@@ -125,7 +130,7 @@ final class MimeTypesReader {
         if ((name == null) || (name.trim().equals(""))) {
             return null;
         }
-        
+
         try {
             type = new MimeType(name);
         } catch (MimeTypeException mte) {
@@ -136,9 +141,9 @@ final class MimeTypesReader {
             return null;
         }
         type.setDescription(description);
-        
+
         NodeList nodes = element.getChildNodes();
-        for (int i=0; i<nodes.getLength(); i++) {
+        for (int i = 0; i < nodes.getLength(); i++) {
             Node node = nodes.item(i);
             if (node.getNodeType() == Node.ELEMENT_NODE) {
                 Element nodeElement = (Element) node;
@@ -151,26 +156,30 @@ final class MimeTypesReader {
         }
         return type;
     }
-    
-    /** Read Element named ext. */
+
+    /**
+     * Read Element named ext.
+     */
     private void readExt(Element element, MimeType type) {
         NodeList nodes = element.getChildNodes();
-        for (int i=0; i<nodes.getLength(); i++) {
+        for (int i = 0; i < nodes.getLength(); i++) {
             Node node = nodes.item(i);
             if (node.getNodeType() == Node.TEXT_NODE) {
                 type.addExtension(((Text) node).getData());
             }
         }
     }
-    
-    /** Read Element named magic. */
+
+    /**
+     * Read Element named magic.
+     */
     private void readMagic(Element element, MimeType mimeType) {
         // element.getValue();
         String offset = null;
         String content = null;
         String type = null;
         NamedNodeMap attrs = element.getAttributes();
-        for (int i=0; i<attrs.getLength(); i++) {
+        for (int i = 0; i < attrs.getLength(); i++) {
             Attr attr = (Attr) attrs.item(i);
             if (attr.getName().equals("offset")) {
                 offset = attr.getValue();

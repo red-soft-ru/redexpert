@@ -23,39 +23,38 @@ package org.executequery.gui.browser;
 import javax.swing.table.AbstractTableModel;
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class TablePKeyModel extends AbstractTableModel {
-    
+
     private String[] header = {"Name", "Column"};
-    
+
     private String keyName;
     private String column;
-    
+
     public TablePKeyModel(String s1, String s2) {
         keyName = s1;
         column = s2;
     }
-    
+
     public int getColumnCount() {
         return 2;
     }
-    
+
     public int getRowCount() {
         return 1;
     }
-    
+
     public Object getValueAt(int row, int col) {
-        
-        switch(col) {
+
+        switch (col) {
             case 0:
                 return keyName;
             case 1:
@@ -64,32 +63,32 @@ public class TablePKeyModel extends AbstractTableModel {
                 return null;
         }
     }
-    
+
     public void setValueAt(Object value, int row, int col) {
-        
+
         switch (col) {
             case 0:
-                keyName = (String)value;
+                keyName = (String) value;
                 break;
             case 1:
-                column = (String)value;
+                column = (String) value;
                 break;
         }
-        
+
         fireTableRowsUpdated(row, row);
     }
-    
+
     public boolean isCellEditable(int row, int col) {
         if (col == 0)
             return true;
         else
             return false;
     }
-    
+
     public String getColumnName(int col) {
         return header[col];
     }
-    
+
 }
 
 

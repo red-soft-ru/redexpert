@@ -20,38 +20,43 @@
 
 package org.executequery.gui.editor;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-
 import org.underworldlabs.swing.AbstractStatusBarPanel;
 import org.underworldlabs.swing.ProgressBar;
 import org.underworldlabs.swing.ProgressBarFactory;
 
+import javax.swing.*;
+
 /**
  * Query Editor status bar panel.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class QueryEditorStatusBar extends AbstractStatusBarPanel {
-    
-    /** The buffer containing constantly changing values */
+
+    /**
+     * The buffer containing constantly changing values
+     */
     private StringBuffer caretBuffer;
-    
-    /** the progress bar */
+
+    /**
+     * the progress bar
+     */
     private ProgressBar progressBar;
-    
-    /** the status bar panel fixed height */
+
+    /**
+     * the status bar panel fixed height
+     */
     private static final int HEIGHT = 26;
-    
+
     public QueryEditorStatusBar() {
         super(HEIGHT);
         init();
     }
-    
+
     private void init() {
-        
+
         caretBuffer = new StringBuffer();
-     
+
         // setup the progress bar
         progressBar = ProgressBarFactory.create(false, true);
 
@@ -66,7 +71,7 @@ public class QueryEditorStatusBar extends AbstractStatusBarPanel {
         getLabel(3).setHorizontalAlignment(JLabel.CENTER);
         getLabel(4).setHorizontalAlignment(JLabel.CENTER);
     }
-    
+
     /**
      * Cleanup code to ensure the progress thread is dead.
      */
@@ -74,7 +79,7 @@ public class QueryEditorStatusBar extends AbstractStatusBarPanel {
         progressBar.cleanup();
         progressBar = null;
     }
-    
+
     /**
      * Starts the progress bar.
      */
@@ -95,18 +100,18 @@ public class QueryEditorStatusBar extends AbstractStatusBarPanel {
     public void setExecutionTime(String text) {
         setLabelText(2, text);
     }
-    
+
     /**
      * Sets the editor commit status to the text specified.
-     */    
+     */
     public void setCommitStatus(boolean autoCommit) {
-        
+
         setLabelText(5, " Auto-Commit: " + autoCommit);
     }
 
     /**
      * Sets the editor insert mode to that specified.
-     */    
+     */
     public void setInsertionMode(String text) {
         setLabelText(3, text);
     }
@@ -117,7 +122,7 @@ public class QueryEditorStatusBar extends AbstractStatusBarPanel {
     public void setStatus(String text) {
         setLabelText(0, text);
     }
-    
+
     /**
      * Sets the caret position to be formatted.
      *
@@ -129,7 +134,7 @@ public class QueryEditorStatusBar extends AbstractStatusBarPanel {
         setLabelText(4, caretBuffer.toString());
         caretBuffer.setLength(0);
     }
- 
+
 }
 
 

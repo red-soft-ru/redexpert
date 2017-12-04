@@ -20,26 +20,22 @@
 
 package org.executequery.gui;
 
-import java.awt.Dimension;
-import java.awt.Insets;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionListener;
-
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JButton;
 
 public class DefaultPanelButton extends JButton {
 
     private static final int DEFAULT_WIDTH = 75;
-    
+
     private static final int DEFAULT_HEIGHT = GUIConstants.DEFAULT_BUTTON_HEIGHT;
-    
+
     private static final Insets DEFAULT_INSETS = new Insets(2, 2, 2, 2);
-    
+
     private int defaultWidth;
-    
+
     private int defaultHeight;
-    
+
     public DefaultPanelButton() {
         super();
     }
@@ -63,14 +59,14 @@ public class DefaultPanelButton extends JButton {
     public DefaultPanelButton(String text, String actionCommand) {
         super(text);
         setActionCommand(actionCommand);
-    }    
-    
+    }
+
     public DefaultPanelButton(ActionListener actionListener, String text, String actionCommand) {
         super(text);
         addActionListener(actionListener);
         setActionCommand(actionCommand);
-    }    
-    
+    }
+
     public Dimension getPreferredSize() {
 
         validateDimension();
@@ -82,26 +78,26 @@ public class DefaultPanelButton extends JButton {
         if (!isPreferredSizeSet()) {
 
             Dimension preferredSizeUI = getUI().getPreferredSize(this);
-            
+
             Dimension size = new Dimension(
-                    Math.max(preferredSizeUI.width, getDefaultWidth()), 
+                    Math.max(preferredSizeUI.width, getDefaultWidth()),
                     Math.max(preferredSizeUI.height, getDefaultHeight()));
-    
+
             setPreferredSize(size);
             setMinimumSize(size);
         }
 
     }
-    
+
     public Insets getMargin() {
 
         return DEFAULT_INSETS;
     }
-    
+
     public int getDefaultWidth() {
 
         if (defaultWidth == 0) {
-            
+
             defaultWidth = DEFAULT_WIDTH;
         }
         return defaultWidth;
@@ -112,9 +108,9 @@ public class DefaultPanelButton extends JButton {
     }
 
     public int getDefaultHeight() {
-        
+
         if (defaultHeight == 0) {
-            
+
             defaultHeight = DEFAULT_HEIGHT;
         }
         return defaultHeight;

@@ -20,11 +20,9 @@
 
 package org.executequery.gui.resultset;
 
-import java.io.File;
-import java.sql.Types;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -35,16 +33,16 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import java.io.File;
+import java.sql.Types;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+ * @author Takis Diakoumis
+ * @version $Revision$
+ * @date $Date$
  */
 public class ResultSetTableModelToXMLWriter {
 
@@ -58,9 +56,9 @@ public class ResultSetTableModelToXMLWriter {
     }
 
     public void write() throws ParserConfigurationException, TransformerException {
-        
+
         DocumentBuilder documentBuilder = documentBuilder();
-        
+
         Document document = documentBuilder.newDocument();
         Element rootElement = element(document, "result-set");
         document.appendChild(rootElement);
@@ -72,13 +70,13 @@ public class ResultSetTableModelToXMLWriter {
         Map<String, String> cdata = new HashMap<String, String>();
         Element dataElement = element(document, "data");
         for (int i = 0, n = model.getRowCount(); i < n; i++) {
-            
+
             Element rowElement = element(document, "row");
             dataElement.appendChild(rowElement);
             attribute(document, rowElement, "number", String.valueOf(i + 1));
 
             dataElement.appendChild(rowElement);
-            
+
             for (int j = 0, m = model.getColumnCount(); j < m; j++) {
 
                 Element valueElement = element(document, model.getColumnName(j));
@@ -86,45 +84,45 @@ public class ResultSetTableModelToXMLWriter {
                 if (!valueAt.isValueNull()) {
 
                     valueElement.appendChild(document.createTextNode(valueAt.toString()));
-                    
+
                     String name = valueAt.getName();
                     if (isCDATA(valueAt) && !cdata.containsKey(name)) {
-                        
+
                         cdata.put(name, name);
                     }
-                    
-                
+
+
                 } else {
 
                     valueElement.appendChild(document.createTextNode("NULL"));
                 }
-                
+
                 rowElement.appendChild(valueElement);
             }
-            
+
         }
         rootElement.appendChild(dataElement);
 
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes"); 
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-        
+
         StringBuilder sb = new StringBuilder("query");
         for (Entry<String, String> entry : cdata.entrySet()) {
 
             sb.append(" ").append(entry.getKey());
         }
-        transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, sb.toString()); 
+        transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, sb.toString());
         System.out.println(sb);
         DOMSource source = new DOMSource(document);
         StreamResult result = new StreamResult(new File(outputPath));
- 
+
         transformer.transform(source, result);
     }
 
     private boolean isCDATA(RecordDataItem valueAt) {
-        
+
         int type = valueAt.getDataType();
         return (type == Types.CHAR ||
                 type == Types.VARCHAR ||
@@ -136,20 +134,20 @@ public class ResultSetTableModelToXMLWriter {
         Attr attr = document.createAttribute(name);
         attr.setValue(value);
         element.setAttributeNode(attr);
-        
+
         return attr;
     }
 
     private Element element(Document document, String name) {
-        
+
         return document.createElement(name);
     }
-    
+
     private DocumentBuilder documentBuilder() throws ParserConfigurationException {
 
         return DocumentBuilderFactory.newInstance().newDocumentBuilder();
     }
-    
+
 }
 
 

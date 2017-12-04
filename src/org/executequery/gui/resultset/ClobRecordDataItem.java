@@ -20,16 +20,16 @@
 
 package org.executequery.gui.resultset;
 
-import java.io.*;
-import java.sql.Clob;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
 import biz.redsoft.IFBClob;
 import org.executequery.Constants;
 import org.executequery.log.Log;
 import org.underworldlabs.util.SystemProperties;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.sql.Clob;
+import java.sql.SQLException;
 
 public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 
@@ -79,7 +79,7 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
     @Override
     protected byte[] readLob() {
 
-        if(isValueNull())
+        if (isValueNull())
             return null;
 
         Object value = getValue();

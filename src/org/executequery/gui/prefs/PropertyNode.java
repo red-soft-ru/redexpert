@@ -24,8 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PropertyNode {
 
@@ -33,7 +32,8 @@ public class PropertyNode {
     private String label;
     private List<PropertyNode> children;
 
-    public PropertyNode() {}
+    public PropertyNode() {
+    }
 
     public PropertyNode(int nodeID, String label) {
         this.nodeID = nodeID;

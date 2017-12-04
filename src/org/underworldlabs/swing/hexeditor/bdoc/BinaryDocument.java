@@ -1,8 +1,9 @@
 package org.underworldlabs.swing.hexeditor.bdoc;
 
-import java.lang.reflect.Array;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.*;
-import java.io.*;
 
 
 public class BinaryDocument extends Observable {

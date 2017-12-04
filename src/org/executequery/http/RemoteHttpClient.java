@@ -23,15 +23,14 @@ package org.executequery.http;
 import java.util.Map;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface RemoteHttpClient {
 
     boolean hostReachable(String host);
-    
+
     RemoteHttpResponse httpGetRequest(String host, String path);
-    
+
     RemoteHttpResponse httpPostRequest(String host, String path, Map<String, String> params);
 
     void setHttp(String http);

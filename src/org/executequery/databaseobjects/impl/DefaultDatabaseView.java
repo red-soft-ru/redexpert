@@ -78,7 +78,7 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
 
         return true;
     }
-    
+
 }
 
 

@@ -20,25 +20,18 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.KeyStroke;
-import javax.swing.MenuElement;
+import javax.swing.*;
 import javax.swing.event.MenuKeyEvent;
 import javax.swing.event.MenuKeyListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 public class PopupMenuButton extends RolloverButton {
 
     private JPopupMenu menu;
-    
+
     public PopupMenuButton(Icon icon, String toolTipText) {
-        
+
         super();
 
         menu = createMenu();
@@ -47,7 +40,7 @@ public class PopupMenuButton extends RolloverButton {
         Action action = new PopupMenuAction();
 
         if (icon != null) {
-         
+
             action.putValue(Action.SMALL_ICON, icon);
         }
 
@@ -58,7 +51,7 @@ public class PopupMenuButton extends RolloverButton {
     public void addSeparator() {
         menu.addSeparator();
     }
-    
+
     public void addMenuItem(JMenuItem menuItem) {
         menu.add(menuItem);
     }
@@ -93,55 +86,57 @@ public class PopupMenuButton extends RolloverButton {
     class PopupMenuKeyListener implements MenuKeyListener {
 
         public void menuKeyReleased(MenuKeyEvent e) {
-            
+
             if (e.getKeyCode() != KeyEvent.VK_ENTER) {
-                
+
                 return;
             }
 
             MenuElement[] menuElements = e.getMenuSelectionManager().getSelectedPath();
 
-            if (menuElements.length == 2 
+            if (menuElements.length == 2
                     && (menuElements[1] instanceof JMenuItem)) {
 
-                JMenuItem menuItem = (JMenuItem)menuElements[1];
-                
+                JMenuItem menuItem = (JMenuItem) menuElements[1];
+
                 menuItem.getAction().actionPerformed(actionEventForMenuItem(menuItem));
-                
+
                 menu.setVisible(false);
             }
-            
+
         }
 
         private ActionEvent actionEventForMenuItem(JMenuItem menuItem) {
 
-            return new ActionEvent(menuItem, ActionEvent.ACTION_FIRST, 
-                            menuItem.getActionCommand());
+            return new ActionEvent(menuItem, ActionEvent.ACTION_FIRST,
+                    menuItem.getActionCommand());
         }
 
-        public void menuKeyPressed(MenuKeyEvent e) {}
-        
-        public void menuKeyTyped(MenuKeyEvent e) {}
-        
+        public void menuKeyPressed(MenuKeyEvent e) {
+        }
+
+        public void menuKeyTyped(MenuKeyEvent e) {
+        }
+
     }
 
     class PopupMenuAction extends AbstractAction {
 
         public void actionPerformed(ActionEvent e) {
-            
+
             showMenu();
         }
-        
+
     }
 
     public void setKeyStroke(KeyStroke keyStroke) {
-        
+
         if (getAction() != null) {
 
             getAction().putValue(Action.ACCELERATOR_KEY, keyStroke);
         }
     }
-    
+
 }
 
 

@@ -23,15 +23,14 @@ package org.executequery.repository;
 import java.util.List;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface EditorSQLShortcutRepository extends Repository {
 
     String REPOSITORY_ID = "editor-shortcuts";
-    
+
     List<EditorSQLShortcut> open();
-    
+
     void save(List<EditorSQLShortcut> shortcuts);
 
 }

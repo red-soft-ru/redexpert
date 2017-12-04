@@ -20,8 +20,6 @@
 
 package org.executequery.databasemediators;
 
-import java.util.List;
-
 import org.executequery.ApplicationException;
 import org.executequery.EventMediator;
 import org.executequery.databasemediators.spi.DefaultConnectionBuilder;
@@ -31,15 +29,17 @@ import org.executequery.event.DefaultConnectionEvent;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.GUIUtils;
 
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public final class ConnectionMediator {
 
     private static ConnectionMediator connectionMediator = new ConnectionMediator();
 
-    private ConnectionMediator() {}
+    private ConnectionMediator() {
+    }
 
     public static synchronized ConnectionMediator getInstance() {
 

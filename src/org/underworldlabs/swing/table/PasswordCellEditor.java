@@ -20,25 +20,23 @@
 
 package org.underworldlabs.swing.table;
 
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-
 import org.underworldlabs.Constants;
 import org.underworldlabs.util.MiscUtils;
 
+import javax.swing.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PasswordCellEditor extends JPasswordField
-                              implements TableCellEditorValue {
-    
+        implements TableCellEditorValue {
+
     public PasswordCellEditor() {
         super();
         setBorder(null);
         setHorizontalAlignment(JTextField.LEFT);
     }
-    
+
     /**
      * Returns the current editor value from the component
      * defining this object.
@@ -55,14 +53,14 @@ public class PasswordCellEditor extends JPasswordField
     public void resetValue() {
         setText(Constants.EMPTY);
     }
-    
+
     /**
      * Returns the current editor value string.
      */
     public String getValue() {
         return getEditorValue();
     }
-    
+
     /**
      * Sets the editor's value to that specified.
      *
@@ -71,7 +69,7 @@ public class PasswordCellEditor extends JPasswordField
     public void setValue(String value) {
         setText(value);
     }
-    
+
 }
 
 

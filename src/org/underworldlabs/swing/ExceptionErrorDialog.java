@@ -20,15 +20,12 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Toolkit;
+import org.executequery.gui.WidgetFactory;
+import org.executequery.log.Log;
+import org.underworldlabs.swing.util.IconUtilities;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -40,68 +37,82 @@ import java.sql.SQLException;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.UIManager;
-
-import org.executequery.gui.WidgetFactory;
-import org.executequery.log.Log;
-import org.underworldlabs.swing.util.IconUtilities;
-
 /**
  * Generic error dialog box displaying the stack trace.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class ExceptionErrorDialog extends AbstractBaseDialog 
-                                  implements ActionListener,
-                                             ComponentListener {
-    
-    /** the error message */
+public class ExceptionErrorDialog extends AbstractBaseDialog
+        implements ActionListener,
+        ComponentListener {
+
+    /**
+     * the error message
+     */
     private String message;
-    
-    /** the exception list */
+
+    /**
+     * the exception list
+     */
     private Vector<Throwable> exceptions;
-    
-    /** empty exception indicating the last in a chain */
+
+    /**
+     * empty exception indicating the last in a chain
+     */
     private Throwable noMoreExceptions;
-    
-    /** the stack trace text pane */
+
+    /**
+     * the stack trace text pane
+     */
     private JTextArea textPane;
-    
-    /** the show stack button */
+
+    /**
+     * the show stack button
+     */
     private JButton showStackButton;
-    
-    /** the close button */
+
+    /**
+     * the close button
+     */
     private JButton closeButton;
-    
-    /** the next excpetion button */
+
+    /**
+     * the next excpetion button
+     */
     private JButton nextButton;
 
-    /** the previous excpetion button */
+    /**
+     * the previous excpetion button
+     */
     private JButton previousButton;
 
-    /** the paste stack button */
+    /**
+     * the paste stack button
+     */
     private JButton pasteButton;
-    
-    /** the stack trace panel */
+
+    /**
+     * the stack trace panel
+     */
     private JPanel stackTracePanel;
-    
-    /** the default height */
+
+    /**
+     * the default height
+     */
     private int defaultHeight;
 
-    /** the default width */
+    /**
+     * the default width
+     */
     private int defaultWidth;
 
-    /** the current exception index (chained exceptions) */
+    /**
+     * the current exception index (chained exceptions)
+     */
     private int selectedIndex;
-    
+
     private static final int DEFAULT_WIDTH = 600;
-    
+
     public ExceptionErrorDialog(Frame owner, String message, Throwable exception) {
 
         super(owner, "Error Message", true);
@@ -115,28 +126,28 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
             exceptions.add(exception);
         }
         selectedIndex = 0;
-        
+
         try {
             init();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     private void init() throws Exception {
         Icon errorIcon = UIManager.getIcon("OptionPane.errorIcon");
         if (errorIcon == null) {
             // if we don't have one (some LAFs), try the warning icon
             errorIcon = UIManager.getIcon("OptionPane.warningIcon");
         }
-        
+
         closeButton = WidgetFactory.createButton(this, "Close");
         showStackButton = WidgetFactory.createButton(this, "Show Stack Trace");
-        
+
         // format the text
         StringBuilder sb = new StringBuilder();
         sb.append("<html><table border=\"0\" cellpadding=\"2\">");
-        
+
         String delim = "\n";
         boolean wasDelim = true;
         StringTokenizer st = new StringTokenizer(message, delim, true);
@@ -191,10 +202,10 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
 
         JPanel stackTraceBase = new JPanel(new BorderLayout());
         stackTraceBase.add(stackTracePanel, BorderLayout.CENTER);
-        
+
         Container contentPane = getContentPane();
         contentPane.setLayout(new GridBagLayout());
-        
+
         gbc.gridy = 0;
         gbc.gridx = 0;
         gbc.insets.top = 10;
@@ -212,43 +223,43 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
         contentPane.add(stackTraceBase, gbc);
 
         addComponentListener(this);
-        
+
         //this.setLayout(new BorderLayout());
         //add(contentPane, BorderLayout.CENTER);
-        
+
         pack();
         Dimension size = getSize();
-        
+
         // get the absolute center position and adjust 
         // for possible dialog expansion on stack trace
         Point location = GUIUtils.getPointToCenter(getOwner(), size);
-        location.y -= (STACK_HEIGHT/2);
+        location.y -= (STACK_HEIGHT / 2);
         setLocation(location);
 
         // set the height and width for resets
         defaultHeight = size.height;
         defaultWidth = DEFAULT_WIDTH;
-        
+
         setVisible(true);
-    }    
-    
+    }
+
     public Dimension getMinimumSize() {
 
         return new Dimension(Math.max(DEFAULT_WIDTH, getWidth()), getSize().height);
     }
-    
+
     /**
      * Builds the stack trace text pane and associated buttons in the case of SQLExceptions.
      */
     private void buildStackTracePanel() {
         if (textPane == null) {
             textPane = new JTextArea();
-            textPane.setMargin(new Insets(2,2,2,2));
+            textPane.setMargin(new Insets(2, 2, 2, 2));
             textPane.setEditable(false);
             textPane.setWrapStyleWord(false);
             textPane.setBackground(getBackground());
             JScrollPane scroller = new JScrollPane(textPane);
-            
+
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.fill = GridBagConstraints.BOTH;
             gbc.anchor = GridBagConstraints.NORTHWEST;
@@ -257,12 +268,12 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
             gbc.weightx = 1.0;
             gbc.weighty = 1.0;
             stackTracePanel.add(scroller, gbc);
-            
+
             pasteButton = new RolloverButton(
                     IconUtilities.loadDefaultIconResource("Paste16.png", true),
                     "Paste stack to clipboard");
             pasteButton.addActionListener(this);
-            
+
             gbc.gridy++;
             gbc.insets.top = 2;
             gbc.weighty = 0;
@@ -272,9 +283,9 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
             gbc.anchor = GridBagConstraints.WEST;
             stackTracePanel.add(pasteButton, gbc);
 
-            
+
             if (exceptions.get(selectedIndex) instanceof SQLException) {
-                SQLException sqlExc = (SQLException)exceptions.get(selectedIndex);
+                SQLException sqlExc = (SQLException) exceptions.get(selectedIndex);
                 if (sqlExc.getNextException() != null) {
                     nextButton = new JButton("Next Exception");
                     nextButton.addActionListener(this);
@@ -300,12 +311,14 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
             }
         }
     }
-    
-    /** the stack trace pane height */
+
+    /**
+     * the stack trace pane height
+     */
     private static final int STACK_HEIGHT = 220;
 
     /**
-     * Prints the specified exception's stack trace 
+     * Prints the specified exception's stack trace
      * to the text pane.
      *
      * @param e - the exception to be printed
@@ -316,8 +329,7 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
             PrintWriter out = new PrintWriter(sw);
             e.printStackTrace(out);
             textPane.setText(sw.toString());
-        }
-        else {
+        } else {
             textPane.setText("Exception stack trace not available.");
         }
         textPane.setCaretPosition(0);
@@ -325,7 +337,7 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
 
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
-        
+
         if (source == showStackButton) {
             buildStackTracePanel();
 
@@ -345,22 +357,21 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
         } else if (source == nextButton) {
             selectedIndex++;
             if (exceptions.size() - 1 < selectedIndex) {
-                SQLException sqlException = (SQLException)exceptions.get(selectedIndex - 1);
+                SQLException sqlException = (SQLException) exceptions.get(selectedIndex - 1);
                 SQLException nextSQLException = sqlException.getNextException();
-                
-                if (nextSQLException == null) {                    
+
+                if (nextSQLException == null) {
                     // add the dummy to the end
                     if (noMoreExceptions == null) {
                         noMoreExceptions = new Throwable();
                         exceptions.add(noMoreExceptions);
                     }
-                }
-                else {
+                } else {
                     exceptions.add(nextSQLException);
                 }
 
             }
-            
+
             Throwable currentException = exceptions.get(selectedIndex);
             printException(currentException);
 
@@ -368,26 +379,23 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
                 nextButton.setEnabled(false);
             }
             previousButton.setEnabled(true);
-        }
-        else if (source == previousButton) {
+        } else if (source == previousButton) {
             selectedIndex--;
             Throwable currentException = exceptions.get(selectedIndex);
             printException(currentException);
-            
+
             if (selectedIndex == 0) {
                 previousButton.setEnabled(false);
             }
             nextButton.setEnabled(true);
-        }
-        else if (source == pasteButton) {
+        } else if (source == pasteButton) {
             Toolkit.getDefaultToolkit().getSystemClipboard().
-                        setContents(new StringSelection(textPane.getText()), null);
-        }
-        else if (source == closeButton) {
+                    setContents(new StringSelection(textPane.getText()), null);
+        } else if (source == closeButton) {
             dispose();
         }
     }
-    
+
     /**
      * Invoked when the component's size changes.
      */
@@ -407,24 +415,27 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
         if (resizeRequired) {
             setSize(_size);
         }
-    
+
         Log.trace("Dialog resized - " + getSize());
     }
 
     /**
      * Invoked when the component's position changes.
-     */    
-    public void componentMoved(ComponentEvent e) {}
+     */
+    public void componentMoved(ComponentEvent e) {
+    }
 
     /**
      * Invoked when the component has been made visible.
      */
-    public void componentShown(ComponentEvent e) {}
+    public void componentShown(ComponentEvent e) {
+    }
 
     /**
      * Invoked when the component has been made invisible.
      */
-    public void componentHidden(ComponentEvent e) {}
+    public void componentHidden(ComponentEvent e) {
+    }
 
 }
 

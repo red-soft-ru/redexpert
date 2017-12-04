@@ -20,64 +20,60 @@
 
 package org.executequery.components.table;
 
-import java.awt.Color;
-import java.awt.Component;
-
-import javax.swing.BorderFactory;
-import javax.swing.JTree;
-import javax.swing.UIManager;
-
 import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Properties frame tree renderer.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PropertiesTreeCellRenderer extends AbstractTreeCellRenderer {
-    
+
     private Color textBackground;
     private Color textForeground;
     private Color selectionBackground;
-	private Color selectionForeground;
-    
+    private Color selectionForeground;
+
     public PropertiesTreeCellRenderer() {
 
         textBackground = UIManager.getColor("Tree.textBackground");
         textForeground = UIManager.getColor("Tree.textForeground");
-        selectionBackground = UIManager.getColor("Tree.selectionBackground");        
-        selectionForeground = UIManager.getColor("Tree.selectionForeground");        
+        selectionBackground = UIManager.getColor("Tree.selectionBackground");
+        selectionForeground = UIManager.getColor("Tree.selectionForeground");
 
         setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
     }
-    
-    public Component getTreeCellRendererComponent(JTree tree, 
+
+    public Component getTreeCellRendererComponent(JTree tree,
                                                   Object value,
-                                                  boolean isSelected, 
+                                                  boolean isSelected,
                                                   boolean isExpanded,
-                                                  boolean isLeaf, 
-                                                  int row, 
+                                                  boolean isLeaf,
+                                                  int row,
                                                   boolean hasFocus) {
-        
+
         this.selected = isSelected;
         this.hasFocus = hasFocus;
-        
+
         if (!isSelected) {
-           
+
             setBackground(textBackground);
             setForeground(textForeground);
 
         } else {
-          
+
             setBackground(selectionBackground);
             setForeground(selectionForeground);
         }
 
         setText(value.toString());
-        
+
         return this;
     }
-    
+
 }
 
 

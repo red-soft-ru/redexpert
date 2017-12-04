@@ -20,7 +20,7 @@
 
 package org.executequery;
 
-/** 
+/**
  * Defines those objects with resources attached
  * that need to be closed before the panel or internal
  * frame is disposed. These resources usually include
@@ -28,7 +28,7 @@ package org.executequery;
  * will be called from respective internal frame's dispose
  * method if required.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface ActiveComponent {
 
@@ -37,7 +37,7 @@ public interface ActiveComponent {
      * before this component is closed/disposed of.
      */
     public void cleanup();
-    
+
 }
 
 

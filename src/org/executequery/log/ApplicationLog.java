@@ -20,22 +20,20 @@
 
 package org.executequery.log;
 
-import java.io.IOException;
+import org.apache.log4j.*;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.RollingFileAppender;
+import java.io.IOException;
 
 /**
  * Provides methods to the Log4J logging methods.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ApplicationLog {
 
-    /** The Log4J Logger object */
+    /**
+     * The Log4J Logger object
+     */
     private Logger logger;
 
     private Appender appender;
@@ -48,8 +46,8 @@ public class ApplicationLog {
     private final String logFilePath;
 
     public ApplicationLog(String logFilePath, String loggerName,
-            String pattern, String level,
-            int maxBackupIndex, String maxFileSize) {
+                          String pattern, String level,
+                          int maxBackupIndex, String maxFileSize) {
 
         this.logFilePath = logFilePath;
         this.level = level;
@@ -81,15 +79,15 @@ public class ApplicationLog {
      * Returns whether the log level is set to TRACE.
      */
     public boolean isTraceEnabled() {
-    	
-    	return logger().isTraceEnabled();
+
+        return logger().isTraceEnabled();
     }
-    
+
     /**
      * Sets the logger level to that specified.
      *
      * @param level - the logger level to be set.<br>
-     *        Valid values are: ERROR, DEBUG, INFO, WARN, ALL, FATAL, TRACE
+     *              Valid values are: ERROR, DEBUG, INFO, WARN, ALL, FATAL, TRACE
      */
     public void setLevel(String level) {
 
@@ -105,7 +103,7 @@ public class ApplicationLog {
     /**
      * Logs a message at log level INFO.
      *
-     * @param message  the log message.
+     * @param message   the log message.
      * @param throwable the throwable.
      */
     public void info(Object message, Throwable throwable) {
@@ -116,7 +114,7 @@ public class ApplicationLog {
     /**
      * Logs a message at log level WARN.
      *
-     * @param message  the log message.
+     * @param message   the log message.
      * @param throwable the throwable.
      */
     public void warning(Object message, Throwable throwable) {
@@ -127,7 +125,7 @@ public class ApplicationLog {
     /**
      * Logs a message at log level DEBUG.
      *
-     * @param message  the log message.
+     * @param message the log message.
      */
     public void debug(Object message) {
 
@@ -141,7 +139,7 @@ public class ApplicationLog {
     /**
      * Logs a message at log level DEBUG.
      *
-     * @param message  the log message.
+     * @param message   the log message.
      * @param throwable the throwable.
      */
     public void debug(Object message, Throwable throwable) {
@@ -156,37 +154,37 @@ public class ApplicationLog {
     /**
      * Logs a message at log level TRACE.
      *
-     * @param message  the log message.
+     * @param message the log message.
      */
     public void trace(Object message) {
-        
+
         if (logger().isTraceEnabled()) {
-            
+
             logger().trace(message);
         }
-        
+
     }
-    
+
     /**
      * Logs a message at log level TRACE.
      *
-     * @param message  the log message.
+     * @param message   the log message.
      * @param throwable the throwable.
      */
     public void trace(Object message, Throwable throwable) {
-        
+
         if (logger().isTraceEnabled()) {
-            
+
             logger().trace(message, throwable);
         }
-        
+
     }
-    
+
     /**
      * Logs a message at log level ERROR.
      *
-     * @param message  the log message.
-     * @param e the throwable.
+     * @param message the log message.
+     * @param e       the throwable.
      */
     public void error(Object message, Throwable e) {
 
@@ -196,7 +194,7 @@ public class ApplicationLog {
     /**
      * Logs a message at log level INFO.
      *
-     * @param message  the log message.
+     * @param message the log message.
      */
     public void info(Object message) {
 
@@ -206,7 +204,7 @@ public class ApplicationLog {
     /**
      * Logs a message at log level WARN.
      *
-     * @param message  the log message.
+     * @param message the log message.
      */
     public void warning(Object message) {
 
@@ -216,7 +214,7 @@ public class ApplicationLog {
     /**
      * Logs a message at log level ERROR.
      *
-     * @param message  the log message.
+     * @param message the log message.
      */
     public void error(Object message) {
 
@@ -227,7 +225,7 @@ public class ApplicationLog {
      * Returns whether a logger exists and has been initialised.
      *
      * @return <code>true</code> if initialised |
-     *         <code>false</code> otherwise
+     * <code>false</code> otherwise
      */
     public boolean isLogEnabled() {
 

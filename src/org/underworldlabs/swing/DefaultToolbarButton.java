@@ -20,11 +20,9 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Insets;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionListener;
-
-import javax.swing.Action;
-import javax.swing.Icon;
 
 public class DefaultToolbarButton extends DefaultButton {
 
@@ -54,9 +52,9 @@ public class DefaultToolbarButton extends DefaultButton {
 
     @Override
     public Insets getInsets() {
-        
+
         return new Insets(5, 5, 5, 5);
     }
-    
+
 }
 

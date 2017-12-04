@@ -20,13 +20,13 @@
 
 package org.executequery.actions.windowcommands;
 
-import java.awt.event.ActionEvent;
 import org.executequery.GUIUtilities;
 import org.executequery.actions.othercommands.AbstractBaseCommand;
 
+import java.awt.event.ActionEvent;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CloseSelectedTabAction extends AbstractBaseCommand {
 
@@ -34,7 +34,7 @@ public class CloseSelectedTabAction extends AbstractBaseCommand {
 
         GUIUtilities.closeSelectedTab();
     }
-    
+
 }
 
 

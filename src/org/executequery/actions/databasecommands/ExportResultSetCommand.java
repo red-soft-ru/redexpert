@@ -20,23 +20,23 @@
 
 package org.executequery.actions.databasecommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.ExportResultSetPanel;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-/** 
+import java.awt.event.ActionEvent;
+
+/**
  * Execution for Export Excel
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ExportResultSetCommand extends OpenFrameCommand
-                                implements BaseCommand {
-    
+        implements BaseCommand {
+
     public void execute(ActionEvent e) {
-        
+
         if (!isConnected()) {
             return;
         }
@@ -53,20 +53,20 @@ public class ExportResultSetCommand extends OpenFrameCommand
                 GUIUtilities.showWaitCursor();
 
                 GUIUtilities.addCentralPane(ExportResultSetPanel.TITLE,
-                        ExportResultSetPanel.FRAME_ICON, 
+                        ExportResultSetPanel.FRAME_ICON,
                         new ExportResultSetPanel(),
                         null,
                         true);
 
             } finally {
-              
+
                 GUIUtilities.showNormalCursor();
             }
 
         }
 
     }
-    
+
 }
 
 

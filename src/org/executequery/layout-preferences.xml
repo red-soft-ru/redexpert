@@ -10,68 +10,68 @@
 
 <docked-tab-components>
 
-   <docked-tab>
-      <key>system.display.console</key>
-      <index>0</index>
-      <position>5</position>
-      <visible>true</visible>
-      <minimised>false</minimised>
-   </docked-tab>
+    <docked-tab>
+        <key>system.display.console</key>
+        <index>0</index>
+        <position>5</position>
+        <visible>true</visible>
+        <minimised>false</minimised>
+    </docked-tab>
 
-   <docked-tab>
-      <key>system.display.jdbclogger</key>
-      <index>1</index>
-      <position>2</position>
-      <visible>false</visible>
-      <minimised>true</minimised>
-   </docked-tab>
+    <docked-tab>
+        <key>system.display.jdbclogger</key>
+        <index>1</index>
+        <position>2</position>
+        <visible>false</visible>
+        <minimised>true</minimised>
+    </docked-tab>
 
-   <docked-tab>
-      <key>system.display.drivers</key>
-      <index>1</index>
-      <position>8</position>
-      <visible>true</visible>
-      <minimised>false</minimised>
-   </docked-tab>
+    <docked-tab>
+        <key>system.display.drivers</key>
+        <index>1</index>
+        <position>8</position>
+        <visible>true</visible>
+        <minimised>false</minimised>
+    </docked-tab>
 
-   <docked-tab>
-      <key>system.display.connections</key>
-      <index>0</index>
-      <position>8</position>
-      <visible>true</visible>
-      <minimised>false</minimised>
-   </docked-tab>
+    <docked-tab>
+        <key>system.display.connections</key>
+        <index>0</index>
+        <position>8</position>
+        <visible>true</visible>
+        <minimised>false</minimised>
+    </docked-tab>
 
-   <docked-tab>
-      <key>system.display.keywords</key>
-      <index>2</index>
-      <position>6</position>
-      <visible>false</visible>
-      <minimised>false</minimised>
-   </docked-tab>
+    <docked-tab>
+        <key>system.display.keywords</key>
+        <index>2</index>
+        <position>6</position>
+        <visible>false</visible>
+        <minimised>false</minimised>
+    </docked-tab>
 
-   <docked-tab>
-      <key>system.display.notepad</key>
-      <index>0</index>
-      <position>6</position>
-      <visible>false</visible>
-      <minimised>false</minimised>
-   </docked-tab>
+    <docked-tab>
+        <key>system.display.notepad</key>
+        <index>0</index>
+        <position>6</position>
+        <visible>false</visible>
+        <minimised>false</minimised>
+    </docked-tab>
 
-   <docked-tab>
-      <key>system.display.state-codes</key>
-      <index>0</index>
-      <position>4</position>
-      <visible>false</visible>
-      <minimised>false</minimised>
-   </docked-tab>
+    <docked-tab>
+        <key>system.display.state-codes</key>
+        <index>0</index>
+        <position>4</position>
+        <visible>false</visible>
+        <minimised>false</minimised>
+    </docked-tab>
 
-   <docked-tab>
-      <key>system.display.systemprops</key>
-      <index>2</index>
-      <position>4</position>
-      <visible>false</visible>
-      <minimised>false</minimised>
-   </docked-tab>
+    <docked-tab>
+        <key>system.display.systemprops</key>
+        <index>2</index>
+        <position>4</position>
+        <visible>false</visible>
+        <minimised>false</minimised>
+    </docked-tab>
 
 </docked-tab-components>

@@ -20,15 +20,6 @@
 
 package org.executequery.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Font;
-
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.text.JTextComponent;
-
 import org.apache.log4j.Appender;
 import org.apache.log4j.PatternLayout;
 import org.executequery.GUIUtilities;
@@ -36,16 +27,23 @@ import org.executequery.components.BasicPopupMenuListener;
 import org.executequery.components.TextAreaLogAppender;
 import org.executequery.log.Log;
 
+import javax.swing.*;
+import javax.swing.text.JTextComponent;
+import java.awt.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SystemOutputPanel extends AbstractDockedTabPanel implements ReadOnlyTextPane {
 
-    /** This panel's title */
+    /**
+     * This panel's title
+     */
     public static final String TITLE = "Output Console";
 
-    /** the output text area */
+    /**
+     * the output text area
+     */
     private JTextArea textArea;
 
     public SystemOutputPanel() {
@@ -56,7 +54,7 @@ public class SystemOutputPanel extends AbstractDockedTabPanel implements ReadOnl
 
             init();
 
-        } catch(Exception e) {
+        } catch (Exception e) {
 
             e.printStackTrace();
         }
@@ -153,10 +151,10 @@ public class SystemOutputPanel extends AbstractDockedTabPanel implements ReadOnl
     }
 
     public JTextComponent getTextComponent() {
-        
+
         return textArea;
     }
-    
+
 }
 
 

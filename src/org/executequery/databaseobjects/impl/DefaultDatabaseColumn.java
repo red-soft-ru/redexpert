@@ -20,18 +20,18 @@
 
 package org.executequery.databaseobjects.impl;
 
+import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.DatabaseObject;
+import org.executequery.databaseobjects.NamedObject;
+import org.underworldlabs.jdbc.DataSourceException;
+
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 import java.util.Map;
-
-import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseObject;
-import org.executequery.databaseobjects.NamedObject;
-import org.underworldlabs.jdbc.DataSourceException;
 
 /**
  * @author takisd

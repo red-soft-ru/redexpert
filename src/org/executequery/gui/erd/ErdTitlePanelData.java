@@ -20,99 +20,116 @@
 
 package org.executequery.gui.erd;
 
-import java.awt.Rectangle;
-
+import java.awt.*;
 import java.io.Serializable;
 
-/** <p>Save data for the ERD title panel.
+/**
+ * <p>Save data for the ERD title panel.
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ErdTitlePanelData implements Serializable {
-    
-    /** The title panel bounds */
+
+    /**
+     * The title panel bounds
+     */
     private Rectangle titleBounds;
-    /** The ERD name */
+    /**
+     * The ERD name
+     */
     private String erdName;
-    /** The date stamp */
+    /**
+     * The date stamp
+     */
     private String erdDate;
-    /** The description */
+    /**
+     * The description
+     */
     private String erdDescription;
-    /** The database type */
+    /**
+     * The database type
+     */
     private String erdDatabase;
-    /** The author */
+    /**
+     * The author
+     */
     private String erdAuthor;
-    /** The file name */
+    /**
+     * The file name
+     */
     private String erdFileName;
-    /** The revision number */
+    /**
+     * The revision number
+     */
     private String erdRevision;
-    
-    public ErdTitlePanelData() {}
-    
+
+    public ErdTitlePanelData() {
+    }
+
     public String getErdRevision() {
         return erdRevision;
     }
-    
+
     public void setErdRevision(String erdRevision) {
         this.erdRevision = erdRevision;
     }
-    
+
     public String getErdFileName() {
         return erdFileName;
     }
-    
+
     public void setErdFileName(String erdFileName) {
         this.erdFileName = erdFileName;
     }
-    
+
     public String getErdAuthor() {
         return erdAuthor;
     }
-    
+
     public void setErdAuthor(String erdAuthor) {
         this.erdAuthor = erdAuthor;
     }
-    
+
     public String getErdDatabase() {
         return erdDatabase;
     }
-    
+
     public void setErdDatabase(String erdDatabase) {
         this.erdDatabase = erdDatabase;
     }
-    
+
     public String getErdDescription() {
         return erdDescription;
     }
-    
+
     public void setErdDescription(String erdDescription) {
         this.erdDescription = erdDescription;
     }
-    
+
     public String getErdDate() {
         return erdDate;
     }
-    
+
     public void setErdDate(String erdDate) {
         this.erdDate = erdDate;
     }
-    
+
     public String getErdName() {
         return erdName;
     }
-    
+
     public void setErdName(String erdName) {
         this.erdName = erdName;
     }
-    
+
     public Rectangle getTitleBounds() {
         return titleBounds;
     }
-    
+
     public void setTitleBounds(Rectangle titleBounds) {
         this.titleBounds = titleBounds;
     }
-    
+
 }
 
 

@@ -20,54 +20,56 @@
 
 package org.executequery.gui;
 
-import java.awt.BorderLayout;
+import org.executequery.GUIUtilities;
+import org.executequery.components.BottomButtonPanel;
+import org.executequery.gui.erd.ErdGenerateProgressDialog;
+import org.executequery.gui.erd.ErdSelectionPanel;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.JPanel;
-
-import org.executequery.GUIUtilities;
-import org.executequery.gui.erd.ErdGenerateProgressDialog;
-import org.executequery.gui.erd.ErdSelectionPanel;
-import org.executequery.components.BottomButtonPanel;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class GenerateErdPanel extends JPanel
-                              implements ActionListener {
-    
+        implements ActionListener {
+
     public static final String TITLE = "Generate ERD";
 
-    /** The table selection panel */
+    /**
+     * The table selection panel
+     */
     private ErdSelectionPanel selectionPanel;
-    
-    /** the parent container */
+
+    /**
+     * the parent container
+     */
     private ActionContainer parent;
-    
+
     public GenerateErdPanel(ActionContainer parent) {
         super(new BorderLayout());
         this.parent = parent;
-        
+
         try {
             jbInit();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
     }
-    
+
     private void jbInit() throws Exception {
 
         selectionPanel = new ErdSelectionPanel();
         JPanel basePanel = new JPanel(new BorderLayout());
         basePanel.add(selectionPanel, BorderLayout.NORTH);
         basePanel.add(new BottomButtonPanel(this, "Generate", "erd", true),
-                                                BorderLayout.SOUTH);
+                BorderLayout.SOUTH);
         add(basePanel, BorderLayout.CENTER);
     }
-    
+
     /**
      * Releases database resources before closing.
      */
@@ -79,29 +81,29 @@ public class GenerateErdPanel extends JPanel
         if (inProcess) {
 
             parent.block();
-            
+
         } else {
-            
+
             parent.unblock();
         }
     }
-    
+
     public void actionPerformed(ActionEvent e) {
-        
+
         if (selectionPanel.hasSelections()) {
-            
+
             new ErdGenerateProgressDialog(selectionPanel.getDatabaseConnection(),
-                                          selectionPanel.getSelectedValues(),
-                                          selectionPanel.getSchema());
+                    selectionPanel.getSelectedValues(),
+                    selectionPanel.getSchema());
 
         } else {
-        
+
             GUIUtilities.displayErrorMessage(
-                            "You must select at least one table.");
+                    "You must select at least one table.");
         }
-        
+
     }
-    
+
 }
 
 

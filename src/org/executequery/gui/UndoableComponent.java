@@ -20,17 +20,18 @@
 
 package org.executequery.gui;
 
-/** <p>Interface defining those components that support
- *  undo and redo functions.
+/**
+ * <p>Interface defining those components that support
+ * undo and redo functions.
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface UndoableComponent {
-    
+
     public void redo();
-    
+
     public void undo();
-    
+
 }
 
 

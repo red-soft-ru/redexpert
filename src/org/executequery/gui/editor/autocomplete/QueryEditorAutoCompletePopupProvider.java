@@ -20,32 +20,6 @@
 
 package org.executequery.gui.editor.autocomplete;
 
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.KeyStroke;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseHost;
@@ -59,6 +33,27 @@ import org.executequery.sql.DerivedQuery;
 import org.executequery.sql.QueryTable;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.util.SwingWorker;
+
+import javax.swing.*;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupProvider, AutoCompletePopupListener,
         CaretListener, ConnectionChangeListener, FocusListener {
@@ -118,7 +113,7 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
 
         queryEditor.addConnectionChangeListener(this);
         queryEditorTextComponent().addFocusListener(this);
-        
+
         autoCompletePopupAction = new AutoCompletePopupAction(this);
         autoCompleteListItems = new ArrayList<AutoCompleteListItem>();
     }
@@ -131,10 +126,10 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
     }
 
     public void reset() {
-        
+
         connectionChanged(databaseHost.getDatabaseConnection());
     }
-    
+
     public Action getPopupAction() {
 
         return autoCompletePopupAction;
@@ -150,7 +145,7 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
             final Rectangle caretCoords = textComponent.modelToView(caret.getDot());
 
             addFocusActions();
-            
+
             resetCount = 0;
             captureAndResetListValues();
 
@@ -177,11 +172,14 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
 
                     popupHidden();
                 }
+
                 public void popupMenuCanceled(PopupMenuEvent e) {
 
                     popupHidden();
                 }
-                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
+
+                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                }
 
             });
 
@@ -306,7 +304,7 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
 
         String wordAtCursor = queryEditor.getWordToCursor();
         trace("Capturing and resetting list values for word [ " + wordAtCursor + " ]");
-        
+
         DerivedQuery derivedQuery = new DerivedQuery(queryEditor.getQueryAtCursor().getQuery());
         List<QueryTable> tables = derivedQuery.tableForWord(wordAtCursor);
 
@@ -317,12 +315,12 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
         }
 
         if (rebuildingList) {
-        
+
             popupMenu().scheduleReset(itemsStartingWith);
-        
+
         } else {
-            
-            popupMenu().reset(itemsStartingWith);            
+
+            popupMenu().reset(itemsStartingWith);
         }
 
     }
@@ -412,7 +410,7 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
         }
 
         List<AutoCompleteListItem> itemsStartingWith =
-            buildItemsStartingWithForList(searchList, tables, wordPrefix, hasDotIndex);
+                buildItemsStartingWithForList(searchList, tables, wordPrefix, hasDotIndex);
 
         if (itemsStartingWith.isEmpty()) {
 
@@ -423,7 +421,7 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
 
                 noProposalsAvailable(itemsStartingWith);
             }
-            
+
             return itemsStartingWith;
         }
         /* ----- might be a little sluggish right now ...
@@ -435,10 +433,10 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
         */
 
         if (rebuildingList) {
-            
+
             itemsStartingWith.add(0, buildingProposalsListItem());
         }
-        
+
         return itemsStartingWith;
     }
 
@@ -478,6 +476,7 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
     }
 
     private AutoCompleteListItemComparator autoCompleteListItemComparator = new AutoCompleteListItemComparator();
+
     static class AutoCompleteListItemComparator implements Comparator<AutoCompleteListItem> {
 
         public int compare(AutoCompleteListItem o1, AutoCompleteListItem o2) {
@@ -501,21 +500,22 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
     }
 
     private void noProposalsAvailable(List<AutoCompleteListItem> itemsStartingWith) {
-        
+
         if (rebuildingList) {
-            
-        	debug("Suggestions list still in progress");
+
+            debug("Suggestions list still in progress");
             itemsStartingWith.add(buildingProposalsListItem());
-        
+
         } else {
-            
-        	debug("Suggestions list completed - no matches found for input");
+
+            debug("Suggestions list completed - no matches found for input");
             itemsStartingWith.add(noProposalsListItem());
         }
-        
+
     }
-    
+
     private AutoCompleteListItem buildingProposalsAutoCompleteListItem;
+
     private AutoCompleteListItem buildingProposalsListItem() {
 
         if (buildingProposalsAutoCompleteListItem == null) {
@@ -528,6 +528,7 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
     }
 
     private AutoCompleteListItem noProposalsAutoCompleteListItem;
+
     private AutoCompleteListItem noProposalsListItem() {
 
         if (noProposalsAutoCompleteListItem == null) {
@@ -614,7 +615,7 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
                 case PAGE_UP:
                     autoCompletePopup.scrollSelectedIndexPageUp();
                     break;
-                }
+            }
 
         }
 
@@ -684,7 +685,7 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
 
                     int index = wordAtCursor.indexOf(".");
                     insertionIndex += index + 1;
-                    wordAtCursorLength -=  index + 1;
+                    wordAtCursorLength -= index + 1;
                 }
 
                 document.remove(insertionIndex, wordAtCursorLength);
@@ -714,15 +715,15 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
     public void connectionChanged(DatabaseConnection databaseConnection) {
 
         if (worker != null) {
-            
+
             worker.interrupt();
         }
-        
-    	if (autoCompleteListItems != null) {
-    		
-    		autoCompleteListItems.clear();
-    	}
-    	
+
+        if (autoCompleteListItems != null) {
+
+            autoCompleteListItems.clear();
+        }
+
         if (databaseHost != null) {
 
             databaseHost.close();
@@ -730,7 +731,7 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
 
         if (databaseConnection != null) {
 
-            databaseHost = databaseObjectFactory.createDatabaseHost(databaseConnection);            
+            databaseHost = databaseObjectFactory.createDatabaseHost(databaseConnection);
             scheduleListItemLoad();
         }
 
@@ -757,18 +758,18 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
             databaseHost = databaseObjectFactory.createDatabaseHost(selectedConnection);
         }
 
-    	selectionsFactory.build(databaseHost, autoCompleteKeywords, autoCompleteSchema, queryEditor);
+        selectionsFactory.build(databaseHost, autoCompleteKeywords, autoCompleteSchema, queryEditor);
 
         return true;
     }
 
     public void addListItems(List<AutoCompleteListItem> items) {
-        
+
         if (autoCompleteListItems == null) {
-            
+
             autoCompleteListItems = new ArrayList<AutoCompleteListItem>();
         }
-        
+
         autoCompleteListItems.addAll(items);
 //        Collections.sort(autoCompleteListItems, autoCompleteListItemComparatorByValue);
         reapplyIfVisible();
@@ -776,18 +777,19 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
 
     private int resetCount;
     private static final int RESET_COUNT_THRESHOLD = 20; // apply every 5 calls
+
     private void reapplyIfVisible() {
 
         if (popupMenu().isVisible()) {
-            
+
             if (++resetCount == RESET_COUNT_THRESHOLD) {
-                
+
                 trace("Reset count reached -- Resetting autocomplete popup list values");
 
                 captureAndResetListValues();
                 resetCount = 0;
             }
-            
+
         }
     }
 
@@ -805,45 +807,46 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
 
             public Object construct() {
 
-            	try {
-            	
-            		debug("Rebuilding suggestions list...");
-            		
-	                rebuildingList = true;
-	                rebuildListSelectionsItems();
-	                
-	                return "done";
-	                
-            	} finally {
-            	
-            		rebuildingList = false;
-            	}
+                try {
+
+                    debug("Rebuilding suggestions list...");
+
+                    rebuildingList = true;
+                    rebuildListSelectionsItems();
+
+                    return "done";
+
+                } finally {
+
+                    rebuildingList = false;
+                }
             }
 
             public void finished() {
 
                 try {
 
-                	rebuildingList = false;
-                	debug("Rebuilding suggestions list complete");
-                	
-                	// force
-                	resetCount = RESET_COUNT_THRESHOLD - 1;
-                	reapplyIfVisible();
+                    rebuildingList = false;
+                    debug("Rebuilding suggestions list complete");
+
+                    // force
+                    resetCount = RESET_COUNT_THRESHOLD - 1;
+                    reapplyIfVisible();
 
                 } finally {
-                    
+
                     popupMenu().done();
                 }
             }
 
         };
-        
+
         debug("Starting worker thread for suggestions list");
         worker.start();
     }
 
-    public void focusLost(FocusEvent e) {}
+    public void focusLost(FocusEvent e) {
+    }
 
     static class AutoCompleteListItemComparatorByValue implements Comparator<AutoCompleteListItem> {
 
@@ -851,24 +854,24 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
 
             return o1.getValue().toUpperCase().compareTo(o2.getValue().toUpperCase());
         }
-        
+
     }
 
     private void debug(String message) {
-            
+
         Log.debug(message);
     }
 
     private void trace(String message) {
-        
+
         Log.trace(message);
     }
-    
+
     private void debug(String message, Throwable e) {
-        
+
         Log.debug(message, e);
     }
-    
+
 }
 
 

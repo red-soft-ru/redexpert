@@ -26,9 +26,9 @@ import java.io.File;
 public class SvgImageWriterInfo extends AbstractImageWriterInfo {
 
     private boolean renderFontsAsImages;
-    
-    public SvgImageWriterInfo(BufferedImage buferredImage, 
-            File writeToFile, boolean renderFontsAsImages) {        
+
+    public SvgImageWriterInfo(BufferedImage buferredImage,
+                              File writeToFile, boolean renderFontsAsImages) {
         super(buferredImage, writeToFile);
         this.renderFontsAsImages = renderFontsAsImages;
     }

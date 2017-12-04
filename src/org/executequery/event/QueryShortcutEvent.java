@@ -22,12 +22,16 @@ package org.executequery.event;
 
 public interface QueryShortcutEvent extends ApplicationEvent {
 
-    /** Method name for shortcut added */
+    /**
+     * Method name for shortcut added
+     */
     String SHORTCUT_ADDED = "queryShortcutAdded";
 
-    /** Method name for shortcut added */
+    /**
+     * Method name for shortcut added
+     */
     String SHORTCUT_REMOVED = "queryShortcutRemoved";
-    
+
 }
 
 

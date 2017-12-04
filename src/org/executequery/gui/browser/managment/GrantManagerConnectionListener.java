@@ -1,6 +1,5 @@
 package org.executequery.gui.browser.managment;
 
-import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;

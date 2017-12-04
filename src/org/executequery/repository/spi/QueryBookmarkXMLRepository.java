@@ -20,10 +20,6 @@
 
 package org.executequery.repository.spi;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.executequery.repository.QueryBookmark;
 import org.executequery.repository.QueryBookmarkRepository;
 import org.executequery.repository.RepositoryException;
@@ -33,56 +29,60 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public final class QueryBookmarkXMLRepository extends AbstractXMLResourceReaderWriter<QueryBookmark> 
-    implements QueryBookmarkRepository {
-    
+public final class QueryBookmarkXMLRepository extends AbstractXMLResourceReaderWriter<QueryBookmark>
+        implements QueryBookmarkRepository {
+
     // -------------------------------------------
     // XML tag names and attributes
-    
+
     private static final String FILE_PATH = "querybookmarks.xml";
-    
+
     private static final String QUERY_BOOKMARKS = "query-bookmarks";
     private static final String BOOKMARK = "query-bookmark";
     private static final String ID = "id";
     private static final String NAME = "name";
     private static final String ORDER = "order";
-    
-    public QueryBookmarkXMLRepository() {}
 
-    public void save(List<QueryBookmark> bookmarks) 
-        throws RepositoryException {
-        write(filePath(), new QueryBookmarkParser(), 
+    public QueryBookmarkXMLRepository() {
+    }
+
+    public void save(List<QueryBookmark> bookmarks)
+            throws RepositoryException {
+        write(filePath(), new QueryBookmarkParser(),
                 new QueryBookmarkInputSource(bookmarks));
     }
 
     public List<QueryBookmark> open() {
-        
-        return (List<QueryBookmark>)read(filePath(), new QueryBookmarkHandler());
+
+        return (List<QueryBookmark>) read(filePath(), new QueryBookmarkHandler());
     }
-    
+
     private String filePath() {
-        
+
         UserSettingsProperties settings = new UserSettingsProperties();
-        
+
         return settings.getUserSettingsDirectory() + FILE_PATH;
     }
-    
+
     public String getId() {
 
         return REPOSITORY_ID;
     }
-    
-    class QueryBookmarkHandler 
-        extends AbstractXMLRepositoryHandler<QueryBookmark> {
+
+    class QueryBookmarkHandler
+            extends AbstractXMLRepositoryHandler<QueryBookmark> {
 
         private List<QueryBookmark> bookmarks;
 
         private QueryBookmark bookmark;
-        
+
         QueryBookmarkHandler() {
             bookmarks = new ArrayList<QueryBookmark>();
         }
@@ -91,7 +91,7 @@ public final class QueryBookmarkXMLRepository extends AbstractXMLResourceReaderW
                                  String qName, Attributes attrs) {
 
             contents().reset();
-            
+
             if (localNameIsKey(localName, BOOKMARK)) {
 
                 bookmark = new QueryBookmark();
@@ -101,7 +101,7 @@ public final class QueryBookmarkXMLRepository extends AbstractXMLResourceReaderW
             }
 
         }
-        
+
         public void endElement(String nameSpaceURI, String localName,
                                String qName) {
 
@@ -120,9 +120,9 @@ public final class QueryBookmarkXMLRepository extends AbstractXMLResourceReaderW
         }
 
     } // QueryBookmarkHandler
-    
+
     class QueryBookmarkInputSource extends InputSource {
-        
+
         private List<QueryBookmark> bookmarks;
 
         public QueryBookmarkInputSource(List<QueryBookmark> bookmarks) {
@@ -130,17 +130,18 @@ public final class QueryBookmarkXMLRepository extends AbstractXMLResourceReaderW
             super();
             this.bookmarks = bookmarks;
         }
-        
+
         public List<QueryBookmark> getQueryBookmarks() {
-            
+
             return bookmarks;
         }
-        
+
     } // class QueryBookmarkInputSource
-    
+
     class QueryBookmarkParser extends AbstractXMLRepositoryParser {
 
-        public QueryBookmarkParser() {}
+        public QueryBookmarkParser() {
+        }
 
         public void parse(InputSource input) throws SAXException, IOException {
 
@@ -149,20 +150,20 @@ public final class QueryBookmarkXMLRepository extends AbstractXMLResourceReaderW
                 throw new SAXException(
                         "Parser can only accept a QueryBookmarkInputSource");
             }
-            
-            parse((QueryBookmarkInputSource)input);
+
+            parse((QueryBookmarkInputSource) input);
         }
-        
-        public void parse(QueryBookmarkInputSource input) 
-            throws IOException, SAXException {
+
+        public void parse(QueryBookmarkInputSource input)
+                throws IOException, SAXException {
 
             validateHandler();
-            
+
             List<QueryBookmark> bookmarks = input.getQueryBookmarks();
-            
+
             handler().startDocument();
             newLine();
-            handler().startElement(NSU, QUERY_BOOKMARKS, 
+            handler().startElement(NSU, QUERY_BOOKMARKS,
                     QUERY_BOOKMARKS, attributes());
             newLine();
 
@@ -170,16 +171,16 @@ public final class QueryBookmarkXMLRepository extends AbstractXMLResourceReaderW
 
                 writeXMLRows(bookmarks);
             }
-            
+
             newLine();
-            
+
             handler().endElement(NSU, QUERY_BOOKMARKS, QUERY_BOOKMARKS);
             handler().endDocument();
 
         }
 
         private void writeXMLRows(List<QueryBookmark> bookmarks)
-            throws SAXException {
+                throws SAXException {
 
             for (QueryBookmark bookmark : bookmarks) {
 
@@ -187,16 +188,16 @@ public final class QueryBookmarkXMLRepository extends AbstractXMLResourceReaderW
 
                     bookmark.setId(generateUniqueId());
                 }
-                
+
                 newLineIndentOne();
 
-                attributes().addAttribute(NSU, ID, ID, 
+                attributes().addAttribute(NSU, ID, ID,
                         CDDATA, bookmark.getId());
 
-                attributes().addAttribute(NSU, NAME, NAME, 
+                attributes().addAttribute(NSU, NAME, NAME,
                         CDDATA, bookmark.getName());
 
-                attributes().addAttribute(NSU, ORDER, ORDER, 
+                attributes().addAttribute(NSU, ORDER, ORDER,
                         CDDATA, String.valueOf(bookmark.getOrder()));
 
                 handler().startElement(NSU, BOOKMARK, BOOKMARK, attributes());
@@ -206,7 +207,7 @@ public final class QueryBookmarkXMLRepository extends AbstractXMLResourceReaderW
 
                 String query = bookmark.getQuery();
                 handler().characters(query.toCharArray(), 0, query.length());
-                
+
                 newLineIndentOne();
                 handler().endElement(NSU, BOOKMARK, BOOKMARK);
                 newLine();
@@ -217,9 +218,9 @@ public final class QueryBookmarkXMLRepository extends AbstractXMLResourceReaderW
         private String generateUniqueId() {
             return MiscUtils.generateUniqueId();
         }
-        
+
     } // class QueryBookmarkParser
-    
+
 }
 
 

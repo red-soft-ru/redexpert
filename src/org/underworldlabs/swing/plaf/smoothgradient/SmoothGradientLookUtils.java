@@ -20,35 +20,30 @@
 
 package org.underworldlabs.swing.plaf.smoothgradient;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Insets;
-import java.awt.Toolkit;
-
-import javax.swing.AbstractButton;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.plaf.InsetsUIResource;
 import javax.swing.plaf.UIResource;
+import java.awt.*;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public final class SmoothGradientLookUtils {
 
     // Properties and Keys for Internal Use Only - May Change without Notice 
 
-    public static final boolean IS_BEFORE_14    = isBefore14();
-    public static final boolean IS_140          = is140();
+    public static final boolean IS_BEFORE_14 = isBefore14();
+    public static final boolean IS_140 = is140();
     public static final boolean IS_142_OR_LATER = is142orLater();
-    public static final boolean HAS_XP_LAF      = IS_142_OR_LATER;
+    public static final boolean HAS_XP_LAF = IS_142_OR_LATER;
 
     public static boolean isLowRes = isLowResolution();
-    
+
     private static boolean loggingEnabled;
 
     // Override default constructor;
-    private SmoothGradientLookUtils() {}
+    private SmoothGradientLookUtils() {
+    }
 
     /**
      * Checks and answers whether we have a true color system.
@@ -56,16 +51,16 @@ public final class SmoothGradientLookUtils {
     public static boolean isTrueColor(Component c) {
         return c.getToolkit().getColorModel().getPixelSize() >= 24;
     }
-    
+
     /**
      * Tries to look up the System property for the given key.
      * In untrusted environments this may throw a SecurityException.
-     * In this case, we catch the exception and answer an empty string. 
-     * 
-     * @param key   the name of the system property
+     * In this case, we catch the exception and answer an empty string.
+     *
+     * @param key the name of the system property
      * @return the system property's String value, or null if there's
-     *     no such value, or an empty String when
-     *     a SecurityException has been catched
+     * no such value, or an empty String when
+     * a SecurityException has been catched
      */
     public static String getSystemProperty(String key) {
         try {
@@ -79,13 +74,13 @@ public final class SmoothGradientLookUtils {
     /**
      * Tries to look up the System property for the given key.
      * In untrusted environments this may throw a SecurityException.
-     * In this case, we catch the exception and answer an empty string. 
-     * 
+     * In this case, we catch the exception and answer an empty string.
+     *
      * @param key          the name of the system property
      * @param defaultValue the default value if no property exists.
-     * @return the system property's String value, or the defaultValue 
-     *     if there's no such value, or an empty String when
-     *     a SecurityException has been catched
+     * @return the system property's String value, or the defaultValue
+     * if there's no such value, or an empty String when
+     * a SecurityException has been catched
      */
     public static String getSystemProperty(String key, String defaultValue) {
         try {
@@ -136,12 +131,12 @@ public final class SmoothGradientLookUtils {
      * Installs a narrow margin, if property <code>isNarrow</code> has been set.
      */
     public static void installNarrowMargin(
-        AbstractButton b,
-        String propertyPrefix) {
+            AbstractButton b,
+            String propertyPrefix) {
         Object value = b.getClientProperty(Options.IS_NARROW_KEY);
         boolean isNarrow = Boolean.TRUE.equals(value);
         String defaultsKey =
-            propertyPrefix + (isNarrow ? "narrowMargin" : "margin");
+                propertyPrefix + (isNarrow ? "narrowMargin" : "margin");
         Insets insets = b.getMargin();
         if (insets == null || insets instanceof UIResource) {
             b.setMargin(UIManager.getInsets(defaultsKey));
@@ -150,19 +145,20 @@ public final class SmoothGradientLookUtils {
 
     /**
      * Creates and answers the margin used by <code>JButton</code>
-     * and <code>JToggleButton</code>. Honors the screen resolution 
+     * and <code>JToggleButton</code>. Honors the screen resolution
      * and the global <code>isNarrowButtonsEnabled</code> property.<p>
-     * 
+     * <p>
      * Sun's L&F implementations use wide button margins.
+     *
      * @see Options#getUseNarrowButtons()
      */
     public static Insets createButtonMargin(boolean narrow) {
         int pad = 4;//narrow || Options.getUseNarrowButtons() ? 4 : 14;
         return isLowRes
-            ? (IS_BEFORE_14
+                ? (IS_BEFORE_14
                 ? new InsetsUIResource(0, pad, 1, pad)
                 : new InsetsUIResource(2, pad, 1, pad))
-            : (IS_BEFORE_14
+                : (IS_BEFORE_14
                 ? new InsetsUIResource(2, pad, 2, pad)
                 : new InsetsUIResource(3, pad, 3, pad));
     }
@@ -172,8 +168,8 @@ public final class SmoothGradientLookUtils {
     /**
      * Computes and answers a <code>Color</code> that is slightly brighter
      * than the specified <code>Color</code>. Required for 1.3 only.
-     * 
-     * @param color   the color used as basis for the brightened color
+     *
+     * @param color the color used as basis for the brightened color
      * @return a slightly brighter color
      */
     public static Color getSlightlyBrighter(Color color) {
@@ -183,18 +179,18 @@ public final class SmoothGradientLookUtils {
     /**
      * Computes and answers a <code>Color</code> that is slightly brighter
      * than the specified <code>Color</code>. Required for 1.3 only.
-     * 
-     * @param color   the color used as basis for the brightened color
-     * @param factor  the factor used to compute the brightness
+     *
+     * @param color  the color used as basis for the brightened color
+     * @param factor the factor used to compute the brightness
      * @return a slightly brighter color
      */
     public static Color getSlightlyBrighter(Color color, float factor) {
         float[] hsbValues = new float[3];
         Color.RGBtoHSB(
-            color.getRed(),
-            color.getGreen(),
-            color.getBlue(),
-            hsbValues);
+                color.getRed(),
+                color.getGreen(),
+                color.getBlue(),
+                hsbValues);
         float hue = hsbValues[0];
         float saturation = hsbValues[1];
         float brightness = hsbValues[2];
@@ -222,8 +218,8 @@ public final class SmoothGradientLookUtils {
 
     /**
      * Prints the given message to the console if logging is enabled.
-     * 
-     * @param message  the message to print
+     *
+     * @param message the message to print
      */
     public static void log(String message) {
         if (loggingEnabled) {
@@ -246,10 +242,10 @@ public final class SmoothGradientLookUtils {
      */
     private static boolean is142orLater() {
         String version = System.getProperty("java.version");
-        return !version.startsWith("1.2") 
-             && !version.startsWith("1.3")
-             && !version.startsWith("1.4.0")
-             && !version.startsWith("1.4.1");
+        return !version.startsWith("1.2")
+                && !version.startsWith("1.3")
+                && !version.startsWith("1.4.0")
+                && !version.startsWith("1.4.1");
     }
 
     /**

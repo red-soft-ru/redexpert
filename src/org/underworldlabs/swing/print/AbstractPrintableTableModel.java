@@ -27,11 +27,11 @@ import org.underworldlabs.swing.table.PrintableTableModel;
  * Defines a table model where certain values may be modified
  * for table printing.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public abstract class AbstractPrintableTableModel extends AbstractSortableTableModel
-                                                  implements PrintableTableModel {
-  
+        implements PrintableTableModel {
+
     /**
      * Returns the printable value at the specified row and column.
      *

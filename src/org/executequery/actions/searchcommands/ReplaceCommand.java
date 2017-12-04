@@ -20,30 +20,30 @@
 
 package org.executequery.actions.searchcommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.FindReplaceDialog;
 
-/** 
+import java.awt.event.ActionEvent;
+
+/**
  * <p>Executes the menu item Edit | Replace
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ReplaceCommand extends AbstractFindReplaceCommand {
-    
+
     public void execute(ActionEvent e) {
 
         if (!canOpenDialog()) {
 
             return;
         }
-        
-        BaseDialog dialog = createFindReplaceDialog();        
+
+        BaseDialog dialog = createFindReplaceDialog();
         dialog.addDisplayComponent(
                 new FindReplaceDialog(dialog, FindReplaceDialog.REPLACE));
         dialog.display();
-        
+
     }
 
 }

@@ -20,12 +20,6 @@
 
 package org.executequery.gui.menu;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.Action;
-import javax.swing.JMenuItem;
-
 import org.executequery.EventMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.event.ApplicationEvent;
@@ -38,27 +32,30 @@ import org.underworldlabs.swing.menu.MainMenu;
 import org.underworldlabs.swing.menu.MainMenuItem;
 import org.underworldlabs.swing.util.MenuScroller;
 
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class ConnectionsMenu extends MainMenu 
-                             implements ConnectionRepositoryListener {
+public class ConnectionsMenu extends MainMenu
+        implements ConnectionRepositoryListener {
 
     private List<JMenuItem> connectionMenuItemList;
-    
+
     public ConnectionsMenu() {
-        
+
         super();
-        
+
         MenuScroller.setScrollerFor(this, 20, 100, 3, 0);
-        
+
         createConnectionMenu();
         EventMediator.registerListener(this);
     }
 
     public boolean canHandleEvent(ApplicationEvent event) {
-        
+
         return (event instanceof ConnectionRepositoryEvent);
     }
 
@@ -67,14 +64,14 @@ public class ConnectionsMenu extends MainMenu
 
         reloadConnectionMenu();
     }
-    
+
     @Override
     public void connectionImported(
             ConnectionRepositoryEvent connectionRepositoryEvent) {
-        
+
         reloadConnectionMenu();
     }
-    
+
     public void connectionAdded(
             ConnectionRepositoryEvent connectionRepositoryEvent) {
 
@@ -95,12 +92,12 @@ public class ConnectionsMenu extends MainMenu
     private void createConnectionMenu() {
 
         if (connectionMenuItemList != null) {
-        
+
             for (JMenuItem menuItem : connectionMenuItemList) {
 
                 remove(menuItem);
             }
-            
+
         }
 
         resetConnectionMenuItemList();
@@ -114,41 +111,41 @@ public class ConnectionsMenu extends MainMenu
             menuItem.setActionCommand(connectionName);
 
             add(menuItem);
-            
+
             connectionMenuItemList.add(menuItem);
         }
 
     }
 
     private List<DatabaseConnection> connections() {
-        
-        return ((DatabaseConnectionRepository)RepositoryCache.load(
+
+        return ((DatabaseConnectionRepository) RepositoryCache.load(
                 DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
     }
-    
+
     private JMenuItem createSavedConnectionMenuItem() {
 
         JMenuItem menuItem = new MainMenuItem(loadAction());
-        
+
         menuItem.setIcon(null);
         menuItem.setMnemonic(0);
         menuItem.setAccelerator(null);
-        
+
         return menuItem;
     }
 
     private void resetConnectionMenuItemList() {
 
         if (connectionMenuItemList == null) {
-            
+
             connectionMenuItemList = new ArrayList<JMenuItem>();
-            
+
         } else {
-            
+
             connectionMenuItemList.clear();
         }
     }
-    
+
     private Action loadAction() {
 
         return ActionBuilder.get("connect-command");

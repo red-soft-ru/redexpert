@@ -25,29 +25,29 @@ import org.executequery.event.UserPreferenceListener;
 import org.executequery.util.HttpProxyConfigurator;
 
 public class HttpProxyUserPreferenceListener extends AbstractUserPreferenceListener
-                                         implements UserPreferenceListener {
+        implements UserPreferenceListener {
 
     private HttpProxyConfigurator httpProxyConfigurator;
-    
+
     public void preferencesChanged(UserPreferenceEvent event) {
 
         if (event.getEventType() == UserPreferenceEvent.PROXY
                 || event.getEventType() == UserPreferenceEvent.ALL) {
-         
+
             httpProxyConfigurator().configureHttpProxy();
         }
 
     }
 
     private HttpProxyConfigurator httpProxyConfigurator() {
-        
+
         if (httpProxyConfigurator == null) {
             httpProxyConfigurator = new HttpProxyConfigurator();
         }
 
         return httpProxyConfigurator;
     }
-    
+
 }
 
 

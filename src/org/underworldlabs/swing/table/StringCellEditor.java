@@ -20,23 +20,24 @@
 
 package org.underworldlabs.swing.table;
 
-import javax.swing.JTextField;
 import org.underworldlabs.Constants;
+
+import javax.swing.*;
 
 /**
  * Simple string value table column cell editor.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class StringCellEditor extends JTextField
-                              implements TableCellEditorValue {
-    
+        implements TableCellEditorValue {
+
     public StringCellEditor() {
         super();
         setBorder(null);
         setHorizontalAlignment(JTextField.LEFT);
     }
-    
+
     /**
      * Returns the current editor value from the component
      * defining this object.
@@ -53,14 +54,14 @@ public class StringCellEditor extends JTextField
     public void resetValue() {
         setText(Constants.EMPTY);
     }
-    
+
     /**
      * Returns the current editor value string.
      */
     public String getValue() {
         return getText();
     }
-    
+
     /**
      * Sets the editor's value to that specified.
      *
@@ -69,6 +70,6 @@ public class StringCellEditor extends JTextField
     public void setValue(String value) {
         setText(value);
     }
-    
+
 }
 

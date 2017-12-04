@@ -22,12 +22,7 @@ package org.underworldlabs.jdbc;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -40,17 +35,25 @@ import java.util.regex.Pattern;
  * @author Takis Diakoumis
  */
 public class NamedParameterQuery {
-    
-    /** the regex matcher for parameter substitution */
+
+    /**
+     * the regex matcher for parameter substitution
+     */
     private static Matcher MATCHER;
-    
-    /** the parameters to be applied for the current query */
+
+    /**
+     * the parameters to be applied for the current query
+     */
     private List parameters;
-    
-    /** the sql statement object to be executed */
+
+    /**
+     * the sql statement object to be executed
+     */
     private PreparedStatement pstmnt;
-    
-    /** the JDBC connection */
+
+    /**
+     * the JDBC connection
+     */
     private Connection connection;
 
     /**
@@ -75,13 +78,13 @@ public class NamedParameterQuery {
             prepareStatement(query);
         }
     }
-    
+
     /**
      * Prepares the statement using the specified query.
      *
      * @param the query to be executed
      */
-    public void prepareStatement(String query) {      
+    public void prepareStatement(String query) {
         try {
             buildStatement(query);
         } catch (SQLException e) {
@@ -112,18 +115,18 @@ public class NamedParameterQuery {
             end = MATCHER.end();
             parameters.add(query.substring(start + 1, end));
         }
-        
+
         query = MATCHER.replaceAll("?");
-        
+
         //Log.debug("Query: " + query);
 
         pstmnt = connection.prepareStatement(query);
     }
-    
+
     protected String getSetter(String fieldName) {
         char[] chars = fieldName.toCharArray();
         StringBuffer sb = new StringBuffer("get");
-        
+
         for (int i = 0; i < chars.length; i++) {
             if (i == 0) {
                 sb.append(Character.toUpperCase(chars[i]));
@@ -133,7 +136,7 @@ public class NamedParameterQuery {
         }
         return sb.toString();
     }
-    
+
     public void setValues(Object object) {
         try {
             Class[] params = new Class[0];
@@ -155,20 +158,20 @@ public class NamedParameterQuery {
                 */
 
                 if (fieldType == String.class) {
-                    setString(name, (String)value);
+                    setString(name, (String) value);
                 } else if (fieldType == Integer.class) {
-                    setInt(name, (Integer)value);
+                    setInt(name, (Integer) value);
                 } else if (fieldType == Double.class) {
-                    setDouble(name, (Double)value);
+                    setDouble(name, (Double) value);
                 } else if (fieldType == Float.class) {
-                    setFloat(name, (Float)value);
+                    setFloat(name, (Float) value);
                 } else if (fieldType == Long.class) {
-                    setLong(name, (Long)value);
+                    setLong(name, (Long) value);
                 } else if (fieldType == Boolean.class) {
-                    setBoolean(name, (Boolean)value);
+                    setBoolean(name, (Boolean) value);
                 } else if (fieldType == java.util.Date.class) {
                     if (value != null) {
-                        long _value = ((java.util.Date)value).getTime();
+                        long _value = ((java.util.Date) value).getTime();
                         setDate(name, new Date(_value));
                     } else {
                         setDate(name, null);
@@ -181,7 +184,7 @@ public class NamedParameterQuery {
         }
 
     }
-    
+
     protected int getParameterPosition(String name) {
         for (int i = 0, k = parameters.size(); i < k; i++) {
             if (name.equals(parameters.get(i))) {
@@ -190,7 +193,7 @@ public class NamedParameterQuery {
         }
         return -1;
     }
-    
+
     public ResultSet executeQuery() throws SQLException {
         return pstmnt.executeQuery();
     }
@@ -198,10 +201,10 @@ public class NamedParameterQuery {
     public int executeUpdate() throws SQLException {
         return pstmnt.executeUpdate();
     }
-    
+
     public void setString(String name, String value) throws SQLException {
         for (int i = 0, k = parameters.size(); i < k; i++) {
-            if (name.equals(parameters.get(i))) {                
+            if (name.equals(parameters.get(i))) {
                 if (value == null) {
                     pstmnt.setNull(i + 1, Types.VARCHAR);
                 } else {
@@ -270,7 +273,7 @@ public class NamedParameterQuery {
             }
         }
     }
-    
+
     public void setDate(String name, java.util.Date value) throws SQLException {
         for (int i = 0, k = parameters.size(); i < k; i++) {
             if (name.equals(parameters.get(i))) {
@@ -282,7 +285,7 @@ public class NamedParameterQuery {
             }
         }
     }
-    
+
     public void close() {
         try {
             if (pstmnt != null) {
@@ -292,7 +295,8 @@ public class NamedParameterQuery {
             if (MATCHER != null) {
                 MATCHER.reset();
             }
-        } catch (SQLException e) {}
+        } catch (SQLException e) {
+        }
     }
 
 }

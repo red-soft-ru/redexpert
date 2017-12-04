@@ -20,16 +20,14 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Component;
-
-import javax.swing.CellEditor;
-import javax.swing.JList;
+import javax.swing.*;
+import java.awt.*;
 
 //from http://www.jroller.com/santhosh/date/20050607
 public interface ListCellEditor extends CellEditor {
 
-    Component getListCellEditorComponent(JList list, Object value, 
-            boolean isSelected, int index); 
+    Component getListCellEditorComponent(JList list, Object value,
+                                         boolean isSelected, int index);
 
 }
 

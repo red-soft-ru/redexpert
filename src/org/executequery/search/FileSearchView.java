@@ -23,26 +23,25 @@ package org.executequery.search;
 import java.util.Vector;
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface FileSearchView {
-    
+
     public void setListData(Vector listData);
-    
+
     public void appendResults(String results);
-    
+
     public void setResultsSummary(String resultsSummary);
-    
+
     public void finished();
-    
+
 }
 
 

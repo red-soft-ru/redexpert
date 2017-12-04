@@ -20,20 +20,23 @@
 
 package org.executequery.gui.text.syntax;
 
-import java.util.regex.Matcher;
 import javax.swing.text.Style;
+import java.util.regex.Matcher;
 
 /**
  * Represents a matcher and style combo
- * @author   Takis Diakoumis
+ *
+ * @author Takis Diakoumis
  */
 public class TokenMatcher {
-    
+
     private int type;
     private Style style;
     private Matcher matcher;
 
-    /** Creates a new instance of TokenMatcher */
+    /**
+     * Creates a new instance of TokenMatcher
+     */
     public TokenMatcher(int type, Style style, Matcher matcher) {
         this.type = type;
         this.style = style;
@@ -63,7 +66,7 @@ public class TokenMatcher {
     public void setType(int type) {
         this.type = type;
     }
-    
+
 }
 
 

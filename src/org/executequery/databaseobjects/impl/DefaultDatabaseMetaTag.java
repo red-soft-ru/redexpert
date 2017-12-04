@@ -20,6 +20,11 @@
 
 package org.executequery.databaseobjects.impl;
 
+import org.apache.commons.lang.StringUtils;
+import org.executequery.databaseobjects.*;
+import org.executequery.log.Log;
+import org.underworldlabs.jdbc.DataSourceException;
+
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,37 +32,44 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-import org.executequery.databaseobjects.*;
-import org.executequery.log.Log;
-import org.underworldlabs.jdbc.DataSourceException;
-
 /**
  * Default meta tag object implementation.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class DefaultDatabaseMetaTag extends AbstractNamedObject 
-                                    implements DatabaseMetaTag {
-    
-    /** the catalog object for this meta tag */
+public class DefaultDatabaseMetaTag extends AbstractNamedObject
+        implements DatabaseMetaTag {
+
+    /**
+     * the catalog object for this meta tag
+     */
     private DatabaseCatalog catalog;
 
-    /** the schema object for this meta tag */
+    /**
+     * the schema object for this meta tag
+     */
     private DatabaseSchema schema;
-    
-    /** the host object for this meta tag */
+
+    /**
+     * the host object for this meta tag
+     */
     private DatabaseHost host;
 
-    /** the meta data key name of this object */
+    /**
+     * the meta data key name of this object
+     */
     private String metaDataKey;
-    
-    /** the child objects of this meta type */
+
+    /**
+     * the child objects of this meta type
+     */
     private List<NamedObject> children;
-    
-    /** Creates a new instance of DefaultDatabaseMetaTag */
+
+    /**
+     * Creates a new instance of DefaultDatabaseMetaTag
+     */
     public DefaultDatabaseMetaTag(DatabaseHost host,
-                                  DatabaseCatalog catalog, 
+                                  DatabaseCatalog catalog,
                                   DatabaseSchema schema,
                                   String metaDataKey) {
         this.host = host;
@@ -67,33 +79,33 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     /**
-     * Returns the db object with the specified name or null if 
+     * Returns the db object with the specified name or null if
      * it does not exist.
      *
-     * @param name  the name of the object
+     * @param name the name of the object
      * @return the NamedObject or null if not found
      */
     public NamedObject getNamedObject(String name) throws DataSourceException {
-        
+
         List<NamedObject> objects = getObjects();
         if (objects != null) {
-            
+
             name = name.toUpperCase();
-            
+
             for (NamedObject object : objects) {
-                
+
                 if (name.equals(object.getName().toUpperCase())) {
-                    
+
                     return object;
                 }
-                
+
             }
 
         }
-        
+
         return null;
     }
-    
+
     /**
      * Retrieves child objects classified as this tag type.
      * These may be database tables, functions, procedures, sequences, views, etc.
@@ -114,7 +126,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             if (isFunctionOrProcedure()) {
 
                 children = loadFunctionsOrProcedures(type);
-    
+
             } else if (isIndex()) {
 
                 children = loadIndices();
@@ -131,8 +143,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 children = loadDomains();
 
-            }else if (isRole()) {
-                children= loadRoles();
+            } else if (isRole()) {
+                children = loadRoles();
             } else if (isException()) {
 
                 children = loadExceptions();
@@ -161,41 +173,40 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 children = loadPackages();
 
-            }
-            else {
+            } else {
 
-                children = getHost().getTables(getCatalogName(), 
-                                               getSchemaName(), 
-                                               getMetaDataKey());
+                children = getHost().getTables(getCatalogName(),
+                        getSchemaName(),
+                        getMetaDataKey());
 
                 if (children != null && type == TABLE) {
 
                     // reset as editable tables for a default
                     // connection and meta type TABLE
-                    
+
                     List<NamedObject> _children = new ArrayList<NamedObject>(children.size());
                     for (NamedObject i : children) {
-    
-                        _children.add(new DefaultDatabaseTable((DatabaseObject)i));
+
+                        _children.add(new DefaultDatabaseTable((DatabaseObject) i));
                     }
-                    
+
                     children = _children;
-                
+
                 } else if (type == VIEW) {
-                    
+
                     List<NamedObject> _children = new ArrayList<NamedObject>(children.size());
                     for (NamedObject i : children) {
-    
-                        _children.add(new DefaultDatabaseView((DatabaseObject)i));
+
+                        _children.add(new DefaultDatabaseView((DatabaseObject) i));
                     }
-                    
+
                     children = _children;
-                    
+
                 } else if (type == GLOBAL_TEMPORARY) {
                     List<NamedObject> _children = new ArrayList<NamedObject>(children.size());
                     for (NamedObject i : children) {
 
-                        _children.add(new DefaultTemporaryDatabaseTable((DatabaseObject)i));
+                        _children.add(new DefaultTemporaryDatabaseTable((DatabaseObject) i));
                     }
 
                     children = _children;
@@ -207,7 +218,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         } else {
 
             // system functions break down further
-            
+
             children = getSystemFunctionTypes();
         }
 
@@ -218,12 +229,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     private void addAsParentToObjects(List<NamedObject> children) {
-        
+
         if (children != null) {
 
             for (NamedObject i : children) {
 
-                ((DatabaseObject)i).setParent(this);
+                ((DatabaseObject) i).setParent(this);
             }
 
         }
@@ -231,7 +242,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     private List<NamedObject> loadFunctionsOrProcedures(int type)
-        throws DataSourceException {
+            throws DataSourceException {
 
         try {
 
@@ -284,6 +295,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return getDomains();
 
     }
+
     private List<NamedObject> loadRoles()
             throws DataSourceException {
 
@@ -327,7 +339,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     private List<NamedObject> loadSystemDatabaseTriggers()
-        throws DataSourceException {
+            throws DataSourceException {
 
         return getSystemDatabaseTriggers();
 
@@ -341,14 +353,14 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     public boolean hasChildObjects() throws DataSourceException {
-        
+
         if (!isMarkedForReload() && children != null) {
-            
+
             return !children.isEmpty();
         }
 
         try {
-        
+
             int type = getSubType();
             if (type != SYSTEM_FUNCTION) {
 
@@ -375,7 +387,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         return hasIndices();
                     }
 
-                }  else if (isTrigger()) {
+                } else if (isTrigger()) {
 
                     if (type == TRIGGER) {
                         return hasTriggers();
@@ -399,8 +411,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         return hasRoles();
                     }
 
-                }
-                 else if (isException()) {
+                } else if (isException()) {
 
                     if (type == EXCEPTION) {
                         return hasException();
@@ -443,18 +454,18 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     }
 
                 } else {
-                    
-                    return getHost().hasTablesForType(getCatalogName(), getSchemaName(), getMetaDataKey());                
+
+                    return getHost().hasTablesForType(getCatalogName(), getSchemaName(), getMetaDataKey());
                 }
-                
+
             }
 
         } catch (SQLException e) {
-            
+
             logThrowable(e);
             return false;
         }
-        
+
         return true;
     }
 
@@ -487,6 +498,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         int type = getSubType();
         return type == DOMAIN;
     }
+
     private boolean isRole() {
 
         int type = getSubType();
@@ -544,12 +556,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         ResultSet rs = null;
         try {
-            
+
             rs = getFunctionsResultSet();
             return rs != null && rs.next();
-        
+
         } catch (SQLException e) {
-          
+
             logThrowable(e);
             return false;
 
@@ -560,20 +572,20 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     private boolean hasProcedures() {
-        
+
         ResultSet rs = null;
         try {
 
             rs = getProceduresResultSet();
             return rs != null && rs.next();
-            
+
         } catch (SQLException e) {
-            
+
             logThrowable(e);
             return false;
-            
+
         } finally {
-            
+
             releaseResources(rs);
         }
     }
@@ -653,6 +665,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             releaseResources(rs);
         }
     }
+
     private boolean hasRoles() {
 
         ResultSet rs = null;
@@ -809,16 +822,16 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
      * Loads the database functions.
      */
     private List<NamedObject> getFunctions() throws DataSourceException {
-        
+
         ResultSet rs = null;
         try {
-            
+
             rs = getFunctionsResultSet();
             List<NamedObject> list = new ArrayList<NamedObject>();
             if (rs != null) { // informix returns null rs
-            
+
                 while (rs.next()) {
-            
+
                     DefaultDatabaseFunction function = new DefaultDatabaseFunction(this, rs.getString(3));
                     function.setRemarks(rs.getString(4));
                     list.add(function);
@@ -826,9 +839,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
             }
             return list;
-        
+
         } catch (SQLException e) {
-          
+
             logThrowable(e);
             return new ArrayList<NamedObject>(0);
 
@@ -842,7 +855,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
      * Loads the database procedures.
      */
     private List<NamedObject> getProcedures() throws DataSourceException {
-        
+
         ResultSet rs = null;
         try {
 
@@ -859,7 +872,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             return list;
 
         } catch (SQLException e) {
-          
+
             logThrowable(e);
             return new ArrayList<NamedObject>(0);
 
@@ -917,7 +930,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             while (rs.next()) {
 
                 DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
-                    rs.getString(1).trim());
+                        rs.getString(1).trim());
                 trigger.setTableName(rs.getString(3));
                 trigger.setTriggerSequence(rs.getInt(4));
                 trigger.setTriggerActive(rs.getInt(6) != 1);
@@ -998,6 +1011,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             releaseResources(rs);
         }
     }
+
     private List<NamedObject> getRoles() throws DataSourceException {
 
         ResultSet rs = null;
@@ -1007,7 +1021,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             List<NamedObject> list = new ArrayList<NamedObject>();
             while (rs.next()) {
 
-                  DefaultDatabaseRole role=new DefaultDatabaseRole(this,rs.getObject(1).toString());
+                DefaultDatabaseRole role = new DefaultDatabaseRole(this, rs.getObject(1).toString());
                 list.add(role);
             }
 
@@ -1190,7 +1204,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             while (rs.next()) {
 
                 DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
-                    rs.getString(1).trim());
+                        rs.getString(1).trim());
                 trigger.setTableName(rs.getString(3));
                 trigger.setTriggerSequence(rs.getInt(4));
                 trigger.setTriggerActive(rs.getInt(6) != 1);
@@ -1249,10 +1263,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     private ResultSet getProceduresResultSet() throws SQLException {
-        
+
         String catalogName = catalogNameForQuery();
         String schemaName = schemaNameForQuery();
-        
+
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         return dmd.getProcedures(catalogName, schemaName, null);
     }
@@ -1351,6 +1365,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         return resultSet;
     }
+
     private ResultSet getRolesResultSet() throws SQLException {
 
         String catalogName = catalogNameForQuery();
@@ -1476,17 +1491,17 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         Statement statement = dmd.getConnection().createStatement();
 
         ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name,\n" +
-            "t.rdb$trigger_source,\n" +
-            "t.rdb$relation_name,\n" +
-            "t.rdb$trigger_sequence,\n" +
-            "t.rdb$trigger_type,\n" +
-            "t.rdb$trigger_inactive,\n" +
-            "t.rdb$description\n" +
-            "\n" +
-            "from rdb$triggers t\n" +
-            "where t.rdb$system_flag = 0" +
-            "and t.rdb$trigger_type > 114 \n" +
-            "order by t.rdb$trigger_name");
+                "t.rdb$trigger_source,\n" +
+                "t.rdb$relation_name,\n" +
+                "t.rdb$trigger_sequence,\n" +
+                "t.rdb$trigger_type,\n" +
+                "t.rdb$trigger_inactive,\n" +
+                "t.rdb$description\n" +
+                "\n" +
+                "from rdb$triggers t\n" +
+                "where t.rdb$system_flag = 0" +
+                "and t.rdb$trigger_type > 114 \n" +
+                "order by t.rdb$trigger_name");
 
         return resultSet;
     }
@@ -1513,29 +1528,29 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     private String schemaNameForQuery() {
-        
+
         return getHost().getSchemaNameForQueries(getSchemaName());
     }
 
     private String catalogNameForQuery() {
-        
+
         return getHost().getCatalogNameForQueries(getCatalogName());
     }
-    
+
     private ResultSet getFunctionsResultSet() throws SQLException {
-        
+
         try {
-        
+
             String catalogName = catalogNameForQuery();
             String schemaName = schemaNameForQuery();
-            
-            DatabaseMetaData dmd = getHost().getDatabaseMetaData();        
+
+            DatabaseMetaData dmd = getHost().getDatabaseMetaData();
             return dmd.getFunctions(catalogName, schemaName, null);
-        
+
         } catch (Throwable e) {
-            
+
             // possible SQLFeatureNotSupportedException
-            
+
             Log.warning("Error retrieving database functions - " + e.getMessage());
             Log.warning("Reverting to old function retrieval implementation");
 
@@ -1558,16 +1573,16 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         objects.add(new DefaultSystemFunctionMetaTag(
                 this, SYSTEM_STRING_FUNCTIONS, "String Functions"));
-        
+
         objects.add(new DefaultSystemFunctionMetaTag(
                 this, SYSTEM_NUMERIC_FUNCTIONS, "Numeric Functions"));
-        
+
         objects.add(new DefaultSystemFunctionMetaTag(
                 this, SYSTEM_DATE_TIME_FUNCTIONS, "Date/Time Functions"));
-        
+
         return objects;
     }
-    
+
     /**
      * Returns the sub-type indicator of this meta tag - the type this
      * meta tag ultimately represents.
@@ -1578,7 +1593,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         String key = getMetaDataKey();
         for (int i = 0; i < META_TYPES.length; i++) {
-        
+
             if (META_TYPES[i].equals(key)) {
 
                 return i;
@@ -1610,23 +1625,24 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     /**
      * Override to do nothing - name is the meta data key value.
      */
-    public void setName(String name) {}
+    public void setName(String name) {
+    }
 
     /**
-     * Returns the catalog name or null if there is 
+     * Returns the catalog name or null if there is
      * no catalog attached.
      */
     private String getCatalogName() {
 
         DatabaseCatalog _catalog = getCatalog();
         if (_catalog != null) {
-        
+
             return _catalog.getName();
         }
-        
+
         return null;
     }
-    
+
     /**
      * Returns the parent catalog object.
      *
@@ -1637,17 +1653,17 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     /**
-     * Returns the schema name or null if there is 
+     * Returns the schema name or null if there is
      * no schema attached.
      */
     private String getSchemaName() {
 
         DatabaseSchema _schema = getSchema();
         if (_schema != null) {
-        
+
             return _schema.getName();
         }
-        
+
         return null;
     }
 
@@ -1701,7 +1717,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     public void setSchema(DatabaseSchema schema) {
         this.schema = schema;
     }
-    
+
 }
 
 

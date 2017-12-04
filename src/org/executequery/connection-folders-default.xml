@@ -13,10 +13,10 @@
 
 <connection-folders>
 
-   <folder>
-      <id>61a05e8a-df1c-44fd-b8b7-8684691ee6ca</id>
-      <name>Favourites</name>
-      <connections/>
-   </folder>
+    <folder>
+        <id>61a05e8a-df1c-44fd-b8b7-8684691ee6ca</id>
+        <name>Favourites</name>
+        <connections/>
+    </folder>
 
 </connection-folders>

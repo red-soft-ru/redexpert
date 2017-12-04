@@ -20,57 +20,77 @@
 
 package org.executequery.base;
 
-import java.awt.Component;
-import javax.swing.Icon;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Represents a component within one of the application tab panes.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class TabComponent {
 
-    /** The component for this tab */
+    /**
+     * The component for this tab
+     */
     private Component component;
-    
-    /** The title for this tab */
+
+    /**
+     * The title for this tab
+     */
     private String title;
-    
-    /** The tool tip for this tab */
+
+    /**
+     * The tool tip for this tab
+     */
     private String toolTip;
-    
-    /** The icon for this tab */
+
+    /**
+     * The icon for this tab
+     */
     private Icon icon;
-    
-    /** the index of this component */
+
+    /**
+     * the index of this component
+     */
     private int index;
-    
-    /** the containers position */
+
+    /**
+     * the containers position
+     */
     private int position;
-    
-    /** the layout name of this tab component */
+
+    /**
+     * the layout name of this tab component
+     */
     private String layoutName;
-    
-    /** a possible title suffix */
+
+    /**
+     * a possible title suffix
+     */
     private String titleSuffix;
-    
-    /** the index of this tab for tabs with the same name */
+
+    /**
+     * the index of this tab for tabs with the same name
+     */
     private int sameTitleIndex;
 
-    /** the tab's display name */
+    /**
+     * the tab's display name
+     */
     private String displayName;
 
     public TabComponent(Component component,
-                        String title, 
-                        Icon icon, 
+                        String title,
+                        Icon icon,
                         String toolTip) {
         this(-1, component, title, icon, toolTip);
     }
 
     public TabComponent(int index,
                         Component component,
-                        String title, 
-                        Icon icon, 
+                        String title,
+                        Icon icon,
                         String toolTip) {
         this.index = index;
         this.component = component;
@@ -86,7 +106,7 @@ public class TabComponent {
     public void setComponent(Component component) {
         this.component = component;
     }
-    
+
     public String getDisplayName() {
         if (displayName == null) {
             if (titleSuffix != null) {
@@ -110,11 +130,11 @@ public class TabComponent {
     public boolean hasIcon() {
         return (icon != null);
     }
-    
+
     public boolean hasToolTipText() {
         return (toolTip != null);
     }
-    
+
     public String getToolTip() {
         return toolTip;
     }
@@ -130,7 +150,7 @@ public class TabComponent {
     public void setIcon(Icon icon) {
         this.icon = icon;
     }
- 
+
     public String toString() {
         return title;
     }
@@ -177,7 +197,7 @@ public class TabComponent {
     public void setSameTitleIndex(int sameTitleIndex) {
         this.sameTitleIndex = sameTitleIndex;
     }
-    
+
 }
 
 

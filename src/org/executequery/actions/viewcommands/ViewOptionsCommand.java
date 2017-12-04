@@ -20,8 +20,6 @@
 
 package org.executequery.actions.viewcommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
 import org.executequery.gui.NotepadDockedPanel;
 import org.executequery.gui.SystemOutputPanel;
@@ -32,17 +30,18 @@ import org.executequery.gui.jdbclogger.JdbcLoggerPanel;
 import org.executequery.gui.keywords.KeywordsDockedPanel;
 import org.executequery.gui.sqlstates.SQLStateCodesDockedPanel;
 
+import java.awt.event.ActionEvent;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ViewOptionsCommand extends AbstractViewOptionsCommand {
-    
+
     public void viewStatusBar(ActionEvent e) {
-        
+
         GUIUtilities.displayStatusBar(selectionFromEvent(e));
     }
-    
+
     public void viewConsole(ActionEvent e) {
 
         displayDockedComponent(e, SystemOutputPanel.PROPERTY_KEY);
@@ -87,7 +86,7 @@ public class ViewOptionsCommand extends AbstractViewOptionsCommand {
 
         GUIUtilities.displayDockedComponent(key, selectionFromEvent(e));
     }
-    
+
 }
 
 

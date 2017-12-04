@@ -20,14 +20,6 @@
 
 package org.executequery.repository.spi;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Properties;
-import java.util.Vector;
-
 import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseConnectionFactory;
@@ -42,8 +34,12 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+
 public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWriter<DatabaseConnection>
-                                             implements DatabaseConnectionRepository {
+        implements DatabaseConnectionRepository {
 
     private static final String FILE_PATH = "savedconnections.xml";
 
@@ -60,7 +56,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
     public DatabaseConnection add(DatabaseConnection databaseConnection) {
 
         String name = databaseConnection.getName();
-        
+
         int count = 1;
         while (nameExists(null, name)) {
 
@@ -69,10 +65,10 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
 
         databaseConnection.setName(name);
         connections().add(databaseConnection);
-        
+
         return databaseConnection;
     }
-    
+
     public DatabaseConnection findById(String id) {
 
         for (DatabaseConnection connection : connections()) {
@@ -93,14 +89,14 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
         synchronized (_connections) {
 
             for (DatabaseConnection connection : _connections) {
-                
+
                 if (connection.getName().equals(name)) {
-                    
+
                     return connection;
                 }
-                
+
             }
-            
+
         }
 
         return null;
@@ -120,17 +116,17 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
     public synchronized void save() {
 
         if (namesValid()) {
-            
+
             save(filePath(), connections);
         }
 
     }
 
     public void save(String path, List<DatabaseConnection> databaseConnections) {
-        
+
         write(path, new DatabaseConnectionParser(), new DatabaseConnectionInputSource(databaseConnections));
     }
-    
+
     public String getId() {
 
         return REPOSITORY_ID;
@@ -159,19 +155,19 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
     }
 
     public List<DatabaseConnection> open(String filePath) {
-        
+
         try {
-            
+
             return (List<DatabaseConnection>) read(filePath, new DatabaseConnectionHandler());
-            
+
         } catch (RepositoryException e) {
-            
+
             Log.error("Error reading saved connections file - " + e.getMessage(), e);
             return new ArrayList<DatabaseConnection>(0);
         }
-        
+
     }
-    
+
     private void ensureFileExists() {
 
         File file = new File(filePath());
@@ -274,8 +270,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                     connection().setPasswordEncrypted(Boolean.parseBoolean(value));
                 }
 
-            }
-            else if (localName.equals(PROPERTY)) {
+            } else if (localName.equals(PROPERTY)) {
 
                 if (advancedProperties == null) {
 
@@ -292,7 +287,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
         public void endElement(String nameSpaceURI, String localName, String qName) {
 
             // this could be better... o_O
-            
+
             String contentsAsString = contentsAsString();
             DatabaseConnection databaseConnection = connection();
             if (localNameIsKey(localName, NAME)) {
@@ -365,50 +360,50 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                 databaseConnection.setDriverId(contentsAsLong());
 
             } else if (localNameIsKey(localName, FOLDER_ID)) {
-                
+
                 databaseConnection.setFolderId(contentsAsString);
-                
+
             } else if (localNameIsKey(localName, DRIVER_NAME)) {
 
                 databaseConnection.setDriverName(contentsAsString);
 
             } else if (localNameIsKey(localName, SSH_STORE_PASSWORD)) {
-                
+
                 if (hasContents()) {
-                
+
                     databaseConnection.setSshPasswordStored(Boolean.valueOf(contentsAsString));
-                
+
                 } else {
 
                     databaseConnection.setSshPasswordStored(false);
                 }
-                
+
             } else if (localNameIsKey(localName, SSH_TUNNEL)) {
-                
+
                 if (hasContents()) {
-                    
+
                     databaseConnection.setSshTunnel(Boolean.valueOf(contentsAsString));
-                    
+
                 } else {
-                    
+
                     databaseConnection.setSshTunnel(false);
                 }
-                
+
             } else if (localNameIsKey(localName, SSH_USER_NAME)) {
-                
+
                 databaseConnection.setSshUserName(contentsAsString);
-                
+
             } else if (localNameIsKey(localName, SSH_PASSWORD)) {
-                
+
                 databaseConnection.setEncryptedSshPassword(contentsAsString);
-                
+
             } else if (localNameIsKey(localName, SSH_PORT)) {
-                
+
                 if (hasContents()) {
-                 
+
                     databaseConnection.setSshPort(contentsAsInt());
                 }
-                
+
             } else if (localNameIsKey(localName, AUTO_COMMIT)) {
 
                 if (hasContents()) {
@@ -416,8 +411,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                     databaseConnection.setAutoCommit(contentsAsBoolean());
                 }
 
-            }
-            else if (localNameIsKey(localName, TX_ISOLATION)) {
+            } else if (localNameIsKey(localName, TX_ISOLATION)) {
 
                 if (hasContents()) {
 
@@ -428,16 +422,14 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                     databaseConnection.setTransactionIsolation(-1);
                 }
 
-            }
-            else if (localNameIsKey(localName, ADVANCED)) {
+            } else if (localNameIsKey(localName, ADVANCED)) {
 
                 if (advancedProperties != null && advancedProperties.size() > 0) {
 
                     databaseConnection.setJdbcProperties(advancedProperties);
                 }
 
-            }
-            else if (localNameIsKey(localName, CONNECTION)) {
+            } else if (localNameIsKey(localName, CONNECTION)) {
 
                 if (databaseConnection != null) {
 
@@ -502,7 +494,8 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
 
     class DatabaseConnectionParser extends AbstractXMLRepositoryParser {
 
-        public DatabaseConnectionParser() {}
+        public DatabaseConnectionParser() {
+        }
 
         public void parse(InputSource input) throws SAXException, IOException {
 
@@ -512,11 +505,11 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                         "Parser can only accept a DatabaseDriverInputSource");
             }
 
-            parse((DatabaseConnectionInputSource)input);
+            parse((DatabaseConnectionInputSource) input);
         }
 
         public void parse(DatabaseConnectionInputSource input)
-            throws IOException, SAXException {
+                throws IOException, SAXException {
 
             validateHandler();
 
@@ -539,7 +532,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
         }
 
         private void writeXMLRows(List<DatabaseConnection> connections)
-            throws SAXException {
+                throws SAXException {
 
             for (DatabaseConnection connection : connections) {
 
@@ -558,7 +551,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                 writeXML(USER, connection.getUserName(), INDENT_TWO);
 
                 attributes().addAttribute(NSU, ENCRYPTED, ENCRYPTED, CDDATA,
-                                  valueToString(connection.isPasswordEncrypted()));
+                        valueToString(connection.isPasswordEncrypted()));
 
                 if (connection.isPasswordStored()) {
 
@@ -594,17 +587,17 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
 
                 writeXML(SSH_TUNNEL,
                         valueToString(connection.isSshTunnel()), INDENT_TWO);
-                
+
                 writeXML(SSH_USER_NAME, connection.getSshUserName(), INDENT_TWO);
 
-                writeXML(SSH_STORE_PASSWORD, 
+                writeXML(SSH_STORE_PASSWORD,
                         valueToString(connection.isSshPasswordStored()), INDENT_TWO);
-                
-                writeXML(SSH_PORT, 
+
+                writeXML(SSH_PORT,
                         valueToString(connection.getSshPort()), INDENT_TWO);
-                
+
                 if (connection.isSshPasswordStored()) {
-                 
+
                     writeXML(SSH_PASSWORD, connection.getSshPassword(), INDENT_TWO);
                 }
 
@@ -615,9 +608,9 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
 
                     Properties properties = connection.getJdbcProperties();
 
-                    for (Enumeration<?> i = properties.keys(); i.hasMoreElements();) {
+                    for (Enumeration<?> i = properties.keys(); i.hasMoreElements(); ) {
 
-                        String key  = (String)i.nextElement();
+                        String key = (String) i.nextElement();
 
                         attributes().addAttribute(
                                 Constants.EMPTY, KEY, KEY, CDDATA, key);

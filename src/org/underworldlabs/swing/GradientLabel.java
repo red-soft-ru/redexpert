@@ -20,58 +20,64 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Composite;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.Paint;
-import java.awt.RenderingHints;
-
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.UIManager;
 import org.underworldlabs.swing.plaf.UIUtils;
 
+import javax.swing.*;
+import java.awt.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class GradientLabel extends JComponent {
-    
-    /** The text to be displayed */
+
+    /**
+     * The text to be displayed
+     */
     private String text;
-    
-    /** The font */
+
+    /**
+     * The font
+     */
     private Font font;
-    
-    /** the image icon displayed */
+
+    /**
+     * the image icon displayed
+     */
     private ImageIcon icon;
-    
-    /** The component's left-hand gradient colour */
+
+    /**
+     * The component's left-hand gradient colour
+     */
     private Color leftGradientColor;
 
-    /** The component's right-hand gradient colour */
+    /**
+     * The component's right-hand gradient colour
+     */
     private Color rightGradientColor;
-    
-    /** The text label foreground colour */
+
+    /**
+     * The text label foreground colour
+     */
     private Color foregroundColor;
-    
-    /** indicates that a shadow should be dropped on the text */
+
+    /**
+     * indicates that a shadow should be dropped on the text
+     */
     private boolean shadowDropped;
-    
-    /** The component's insets */
+
+    /**
+     * The component's insets
+     */
     private static Insets insets;
-    
-    /** the default font size - 15pts */
+
+    /**
+     * the default font size - 15pts
+     */
     public static final float DEFAULT_FONT_SIZE = 15f;
-    
-    /** Creates a new instance with default component settings. */
+
+    /**
+     * Creates a new instance with default component settings.
+     */
     public GradientLabel() {
         this("", null, UIManager.getFont("Label.font").deriveFont(Font.BOLD, DEFAULT_FONT_SIZE));
     }
@@ -86,13 +92,13 @@ public class GradientLabel extends JComponent {
     public GradientLabel(String text, ImageIcon icon, Font font) {
         this(text, icon, font, null, null);
     }
-    
-    public GradientLabel(String text, ImageIcon icon, Font font, 
+
+    public GradientLabel(String text, ImageIcon icon, Font font,
                          Color leftGradientColor, Color rightGradientColor) {
         this(text, icon, font, leftGradientColor, rightGradientColor, null, false);
     }
 
-    public GradientLabel(String text, ImageIcon icon, Font font, 
+    public GradientLabel(String text, ImageIcon icon, Font font,
                          Color leftGradientColor, Color rightGradientColor,
                          Color foregroundColor, boolean shadowDropped) {
 
@@ -102,7 +108,7 @@ public class GradientLabel extends JComponent {
         this.setLeftGradientColor(leftGradientColor);
         this.setRightGradientColor(rightGradientColor);
         this.shadowDropped = shadowDropped;
-        
+
         if (foregroundColor == null) {
 
             foregroundColor = determineForegroundColour();
@@ -110,17 +116,17 @@ public class GradientLabel extends JComponent {
 
         setForeground(foregroundColor);
     }
-    
+
     private Color determineForegroundColour() {
 
         if (UIUtils.isNativeMacLookAndFeel()) {
-    	
+
             return UIManager.getColor("text");
-    	}    	
-    	return UIUtils.getColour("executequery.GradientLabel.foreground", "controlText");
+        }
+        return UIUtils.getColour("executequery.GradientLabel.foreground", "controlText");
     }
 
-    /** 
+    /**
      * Overides to return <code>true</code>.
      *
      * @return <code>true</code>
@@ -140,7 +146,7 @@ public class GradientLabel extends JComponent {
         }
         return insets;
     }
-    
+
     /**
      * Returns the label text foreground colour.
      *
@@ -149,7 +155,7 @@ public class GradientLabel extends JComponent {
     public Color getForeground() {
         return foregroundColor;
     }
-    
+
     /**
      * Returns the label text font.
      *
@@ -161,20 +167,20 @@ public class GradientLabel extends JComponent {
         }
         return font;
     }
-    
-    /** 
+
+    /**
      * Performs the painting for this component.
      *
      * @param the <code>Graphics</code> object to
-     *         perform the painting
+     *            perform the painting
      */
     protected void paintComponent(Graphics g) {
-        
-    	Graphics2D g2 = (Graphics2D)g;
-    	g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-    	
-    	super.paintComponent(g);
-        
+
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        super.paintComponent(g);
+
         int width = getWidth();
         int height = getHeight();
 
@@ -184,17 +190,17 @@ public class GradientLabel extends JComponent {
 
         if (color1 != null && color2 != null) {
             Paint paint = g2.getPaint();
-            GradientPaint fade = new GradientPaint(0, 0, color1, 
-                                    (int)(width * 0.9), 0, color2);
+            GradientPaint fade = new GradientPaint(0, 0, color1,
+                    (int) (width * 0.9), 0, color2);
             g2.setPaint(fade);
-            g2.fillRect(0,0, width, height);
+            g2.fillRect(0, 0, width, height);
             g2.setPaint(paint);
         }
-        
+
         Color lineColour = getSeparatorColour();
         if (lineColour != null) {
             g2.setColor(lineColour);
-            g2.drawLine(0, 0,  width, 0);
+            g2.drawLine(0, 0, width, 0);
         }
 
         // draw the icon and text
@@ -214,21 +220,21 @@ public class GradientLabel extends JComponent {
             FontMetrics metrics = getFontMetrics(_font);
             int fontHeight = metrics.getHeight();
             y = ((height - fontHeight) / 2) + fontHeight - 2;
-            
+
             if (isShadowDropped()) {
                 Composite composite = g2.getComposite();
                 g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
                 g2.setColor(Color.BLACK);
-                g2.drawString(text, x+2, y+2);
+                g2.drawString(text, x + 2, y + 2);
                 g2.setComposite(composite);
             }
 
             g2.setColor(getForeground());
-            g2.drawString(text, x, y);            
+            g2.drawString(text, x, y);
         }
     }
-    
-    /** 
+
+    /**
      * Returns the colour of the top border line.
      * This is the only border line painted by the component.
      * The default value returned is the value retrieved from
@@ -240,15 +246,17 @@ public class GradientLabel extends JComponent {
     public Color getSeparatorColour() {
         return UIUtils.getDefaultBorderColour();
     }
-    
+
     public Dimension getPreferredSize() {
         return new Dimension(getWidth(), getHeight());
     }
-    
-    /** the label height */
+
+    /**
+     * the label height
+     */
     private int height;
-    
-    /** 
+
+    /**
      * Calculates the height based on the font and icon size specified.
      *
      * @return the component's height
@@ -263,7 +271,7 @@ public class GradientLabel extends JComponent {
             if (icon != null) {
                 iconHeight = icon.getIconHeight();
             }
-            
+
             // get font height
             FontMetrics metrics = getFontMetrics(getFont());
             int fontHeight = metrics.getHeight();
@@ -272,11 +280,11 @@ public class GradientLabel extends JComponent {
         }
         return height;
     }
-    
+
     public void setIcon(ImageIcon icon) {
         this.icon = icon;
     }
-    
+
     /**
      * Returns the right hand gradient colour.
      * If this is null, the default colour used is retrieved using
@@ -301,42 +309,42 @@ public class GradientLabel extends JComponent {
      */
     public Color getLeftGradientColor() {
         if (leftGradientColor == null) {
-            
+
             if (!UIUtils.isNativeMacLookAndFeel()) {
-                
+
                 setLeftGradientColor(UIUtils.getDefaultActiveBackgroundColour());
-                
+
             } else {
 
                 setLeftGradientColor(leftGradientColourForMac());
             }
-            
+
         }
         return leftGradientColor;
     }
 
-    private Color leftGradientColourForMac() {        
+    private Color leftGradientColourForMac() {
         return UIManager.getColor("Focus.color");
     }
-    
+
     public void setText(String _text) {
         String oldValue = text;
-        
+
         if (_text == null) {
             text = "";
         } else {
             text = _text;
         }
 
-        firePropertyChange("text", oldValue, text);        
+        firePropertyChange("text", oldValue, text);
         if (oldValue == null || !text.equals(oldValue)) {
             revalidate();
             repaint();
         }
-        
+
     }
-    
-    /** 
+
+    /**
      * Returns the text string that this component displays.
      *
      * @return the text displayed
@@ -365,6 +373,6 @@ public class GradientLabel extends JComponent {
         super.setForeground(foregroundColor);
         this.foregroundColor = foregroundColor;
     }
-    
+
 }
 

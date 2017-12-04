@@ -20,35 +20,12 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.*;
-import java.awt.print.Printable;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.Timer;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.table.TableColumnModel;
-
-import org.executequery.Constants;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.TablePrivilege;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
-import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.databaseobjects.impl.TableColumnConstraint;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
@@ -75,9 +52,22 @@ import org.underworldlabs.swing.toolbar.PanelToolBar;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.table.TableColumnModel;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.print.Printable;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.util.*;
+import java.util.List;
+import java.util.Timer;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         implements ActionListener,
@@ -256,7 +246,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 GridBagConstraints.NORTH,
                 GridBagConstraints.HORIZONTAL,
                 new Insets(2, 2, 2, 2), 0, 0);
-        descTablePanel.add(buttonsEditingPanel,gbcDesc);
+        descTablePanel.add(buttonsEditingPanel, gbcDesc);
         descTablePanel.add(
                 new JScrollPane(descriptionTable),
                 new GridBagConstraints(
@@ -268,14 +258,13 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         descriptionTable.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if(e.getClickCount()>1)
-                {
+                if (e.getClickCount() > 1) {
                     int row = descriptionTable.getSelectedRow();
-                    if(row>=0) {
-                        row = ((TableSorter)descriptionTable.getModel()).modelIndex(row);
+                    if (row >= 0) {
+                        row = ((TableSorter) descriptionTable.getModel()).modelIndex(row);
                         DatabaseColumn column = descriptionTable.getDatabaseTableModel().getDatabaseColumns().get(row);
-                        BaseDialog dialog = new BaseDialog("Edit Column",true);
-                        InsertColumnPanel panel = new InsertColumnPanel(table,dialog,column);
+                        BaseDialog dialog = new BaseDialog("Edit Column", true);
+                        InsertColumnPanel panel = new InsertColumnPanel(table, dialog, column);
                         dialog.addDisplayComponent(panel);
                         dialog.display();
                     }
@@ -850,7 +839,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         } catch (DataSourceException e) {
 
             ///controller.handleException(e);
-            Log.error("Error load table:",e);
+            Log.error("Error load table:", e);
 
             descriptionTable.resetDatabaseTable();
             constraintsTable.resetConstraintsTable();
@@ -905,7 +894,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                     try {
                         Thread.sleep(200);
                     } catch (InterruptedException e) {
-                        Log.error("Error load data row count:",e);
+                        Log.error("Error load data row count:", e);
                     }
 
                     Log.debug("Retrieving data row count for table - " + table.getName());
@@ -1114,12 +1103,13 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     private void updateRowCount(final String text) {
-        GUIUtils.invokeLater(new Runnable() {
+/*        GUIUtils.invokeLater(new Runnable() {
             public void run() {
                 rowCountField.setText(text);
             }
-        });
+        });*/
     }
+
     private void createButtonsEditingPanel() {
         buttonsEditingPanel = new JPanel(new GridBagLayout());
         PanelToolBar bar = new PanelToolBar();
@@ -1150,7 +1140,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                 try {
                     DatabaseObjectChangeProvider docp = new DatabaseObjectChangeProvider(table);
-                    if(docp.applyDefinitionChanges())
+                    if (docp.applyDefinitionChanges())
                         setValues(table);
 
                 } catch (DataSourceException e) {

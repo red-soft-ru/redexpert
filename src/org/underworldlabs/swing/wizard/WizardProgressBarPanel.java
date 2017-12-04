@@ -20,24 +20,19 @@
 
 package org.underworldlabs.swing.wizard;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.SQLException;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
-
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.StyledLogPane;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.SQLException;
+
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
@@ -45,29 +40,39 @@ import org.underworldlabs.swing.StyledLogPane;
 /**
  * Wizard progress bar panel rendering a progress bar and stop button.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class WizardProgressBarPanel extends JPanel 
-                                    implements ActionListener {
-    
-    /** the stop button */
+public class WizardProgressBarPanel extends JPanel
+        implements ActionListener {
+
+    /**
+     * the stop button
+     */
     private JButton stopButton;
-    
-    /** The progress bar tracking the process */
+
+    /**
+     * The progress bar tracking the process
+     */
     private JProgressBar progressBar;
 
-    /** the parent process */
+    /**
+     * the parent process
+     */
     private InterruptibleWizardProcess parent;
-    
-    /** The text area displaying process info */
+
+    /**
+     * The text area displaying process info
+     */
     private StyledLogPane output;
 
-    
-    /** Creates a new instance of WizardProgressBarPanel */
+
+    /**
+     * Creates a new instance of WizardProgressBarPanel
+     */
     public WizardProgressBarPanel(InterruptibleWizardProcess parent) {
         super(new GridBagLayout());
         this.parent = parent;
-        
+
         output = new StyledLogPane();
         output.setBackground(getBackground());
 
@@ -75,7 +80,7 @@ public class WizardProgressBarPanel extends JPanel
 
         stopButton = new JButton("Stop");
         stopButton.addActionListener(this);
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0;
         gbc.gridx = 0;
@@ -108,7 +113,7 @@ public class WizardProgressBarPanel extends JPanel
             }
         });
     }
-    
+
     /**
      * Resets the progress bar to zero and clears the output text area.
      */
@@ -128,8 +133,8 @@ public class WizardProgressBarPanel extends JPanel
     public String getText() {
         return output.getText();
     }
-    
-    /** 
+
+    /**
      * Sets the text to be appended within the
      * progress info text area.
      *
@@ -144,7 +149,7 @@ public class WizardProgressBarPanel extends JPanel
         SwingUtilities.invokeLater(setProgressText);
     }
 
-    /** 
+    /**
      * Sets the text to be appended within the
      * progress info text area as an error message.
      *
@@ -173,21 +178,20 @@ public class WizardProgressBarPanel extends JPanel
         } else {
             exceptionName = e.getClass().getName();
         }
-        
+
         int index = exceptionName.lastIndexOf('.');
         if (index != -1) {
-            exceptionName = exceptionName.substring(index+1);
+            exceptionName = exceptionName.substring(index + 1);
         }
         outputBuffer.append(exceptionName);
         outputBuffer.append(" ] ");
-        
+
         if (e instanceof DataSourceException) {
             outputBuffer.append(e.getMessage());
-            outputBuffer.append(((DataSourceException)e).getExtendedMessage());
-        }
-        else if (e instanceof SQLException) {
+            outputBuffer.append(((DataSourceException) e).getExtendedMessage());
+        } else if (e instanceof SQLException) {
             outputBuffer.append(e.getMessage());
-            SQLException _e = (SQLException)e;
+            SQLException _e = (SQLException) e;
             outputBuffer.append("\nError Code: " + _e.getErrorCode());
 
             String state = _e.getSQLState();
@@ -195,8 +199,7 @@ public class WizardProgressBarPanel extends JPanel
                 outputBuffer.append("\nSQL State Code: " + state);
             }
 
-        }
-        else {
+        } else {
             outputBuffer.append(e.getMessage());
         }
 
@@ -204,7 +207,7 @@ public class WizardProgressBarPanel extends JPanel
     }
 
 
-    /** 
+    /**
      * Sets the progress bar's position during the process.
      * A value of -1 will set the progress bar to its set maximum.
      *
@@ -220,7 +223,7 @@ public class WizardProgressBarPanel extends JPanel
         SwingUtilities.invokeLater(setProgressBar);
     }
 
-    /** 
+    /**
      * Sets the progress bar's minimum value to the specified value.
      *
      * @param min - the minimum value
@@ -229,7 +232,7 @@ public class WizardProgressBarPanel extends JPanel
         progressBar.setMinimum(min);
     }
 
-    /** 
+    /**
      * Sets the progress bar's maximum value to the specified value.
      *
      * @param max - the maximum value
@@ -238,7 +241,7 @@ public class WizardProgressBarPanel extends JPanel
         progressBar.setMaximum(max);
     }
 
-    /** 
+    /**
      * Retrieves the progress bar's maximum value.
      *
      * @param the progress bar's maximum value
@@ -246,10 +249,11 @@ public class WizardProgressBarPanel extends JPanel
     public int getMaximum() {
         return progressBar.getMaximum();
     }
-    
-    /** <p>Sets the progress bar to track
-     *  indeterminate values - action of
-     *  unknown length is taking place.
+
+    /**
+     * <p>Sets the progress bar to track
+     * indeterminate values - action of
+     * unknown length is taking place.
      */
     public void setIndeterminate(boolean indeterminate) {
         progressBar.setIndeterminate(indeterminate);

@@ -20,7 +20,7 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Dialog;
+import java.awt.*;
 
 public interface DialogMessageContent {
 

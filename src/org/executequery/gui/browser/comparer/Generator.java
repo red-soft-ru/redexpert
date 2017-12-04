@@ -7,35 +7,35 @@ import java.util.ArrayList;
 
 public class Generator {
 
-    public Generator (Comparer comp)
-    {
-        comparer=comp;
+    public Generator(Comparer comp) {
+        comparer = comp;
         init();
     }
-    public void init()
-    {
-        firstConnection=comparer.firstConnection;
-        secondConnection=comparer.secondConnection;
+
+    public void init() {
+        firstConnection = comparer.firstConnection;
+        secondConnection = comparer.secondConnection;
         dependencies = comparer.dependencies;
     }
+
     Dependencies dependencies;
     Comparer comparer;
     StatementExecutor firstConnection;
     StatementExecutor secondConnection;
-    public   String collect = "select rdb$generators.rdb$generator_name\n"
+    public String collect = "select rdb$generators.rdb$generator_name\n"
             + "from rdb$generators\n"
             + "where rdb$generators.rdb$system_flag = 0";
 
-    private  String query = "";
+    private String query = "";
 
-    public  String getInfo(StatementExecutor con, String gen) {
+    public String getInfo(StatementExecutor con, String gen) {
         String info = "";
 
         query = "select gen_id(\"" + gen + "\", 0)\n"
                 + "from rdb$database";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
+            ResultSet rs = con.execute(query, true).getResultSet();
 
             while (rs.next()) {
 
@@ -52,7 +52,7 @@ public class Generator {
         return info;
     }
 
-    public  String create(String generator) {
+    public String create(String generator) {
         String scriptPart = "";
         if (!comparer.createdObjects.contains("generator " + generator)) {
 
@@ -67,7 +67,7 @@ public class Generator {
         return scriptPart;
     }
 
-    public  String alter(String generator) {
+    public String alter(String generator) {
         String scriptPart = "";
 
         String info = "";
@@ -83,7 +83,7 @@ public class Generator {
         return scriptPart;
     }
 
-    public  String drop(String generator) {
+    public String drop(String generator) {
         String scriptPart = "";
 
         ArrayList<ArrayList<String>> dep = new ArrayList<>();
@@ -94,7 +94,7 @@ public class Generator {
                 + "where rdb$dependencies.rdb$depended_on_name = '" + generator + "'";
 
         try {
-            ResultSet rs = secondConnection.execute(query,true).getResultSet();
+            ResultSet rs = secondConnection.execute(query, true).getResultSet();
 
             while (rs.next()) {
                 ArrayList<String> line = new ArrayList<String>();

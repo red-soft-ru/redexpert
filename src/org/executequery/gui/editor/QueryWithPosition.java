@@ -26,7 +26,7 @@ public class QueryWithPosition {
     private int end;
     private int position;
     private String query;
-    
+
     public QueryWithPosition(int position, int start, int end, String query) {
         super();
         this.position = position;
@@ -38,7 +38,7 @@ public class QueryWithPosition {
     public int getPosition() {
         return position;
     }
-    
+
     public String getQuery() {
         
         /*
@@ -68,18 +68,18 @@ public class QueryWithPosition {
 
         }
         */
-        
+
         return query;
     }
-    
+
     public int getStart() {
         return start;
     }
-    
+
     public int getEnd() {
         return end;
     }
-    
+
 }
 
 

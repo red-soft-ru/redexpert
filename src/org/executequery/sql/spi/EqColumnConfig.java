@@ -25,7 +25,6 @@ import liquibase.database.Database;
 import liquibase.database.core.MySQLDatabase;
 import liquibase.datatype.DataTypeFactory;
 import liquibase.datatype.LiquibaseDataType;
-
 import org.executequery.sql.liquibase.MaxDBDatabase;
 
 class EqColumnConfig extends AddColumnConfig {
@@ -48,10 +47,10 @@ class EqColumnConfig extends AddColumnConfig {
 
             return dataType.getName();
         }
-        
+
         return super.getType();
     }
-    
+
     public String getDefaultValue() {
 
         String columnDefaultValue = super.getDefaultValue();
@@ -88,7 +87,7 @@ class EqColumnConfig extends AddColumnConfig {
     private boolean shouldQuoteDefaultValue(Database database) {
 
         return database instanceof MySQLDatabase
-            || database instanceof MaxDBDatabase;
+                || database instanceof MaxDBDatabase;
     }
 
 }

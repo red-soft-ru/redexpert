@@ -20,19 +20,15 @@
 
 package org.underworldlabs.swing.plaf.smoothgradient;
 
-import java.awt.Component;
-import java.awt.Graphics;
+import javax.swing.*;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.basic.BasicTreeUI;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.Icon;
-import javax.swing.JComponent;
-import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.basic.BasicTreeUI;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public final class SmoothGradientTreeUI extends BasicTreeUI {
 
@@ -57,8 +53,8 @@ public final class SmoothGradientTreeUI extends BasicTreeUI {
         c.removePropertyChangeListener(lineStyleHandler);
         super.uninstallUI(c);
     }
-    
-    
+
+
     // Painting ***************************************************************
 
     protected void paintVerticalLine(Graphics g, JComponent c, int x, int top, int bottom) {
@@ -76,10 +72,10 @@ public final class SmoothGradientTreeUI extends BasicTreeUI {
     // Draws the icon centered at (x,y)
     protected void drawCentered(Component c, Graphics graphics, Icon icon, int x, int y) {
         icon.paintIcon(
-            c,
-            graphics,
-            x - icon.getIconWidth()  / 2 - 1,
-            y - icon.getIconHeight() / 2);
+                c,
+                graphics,
+                x - icon.getIconWidth() / 2 - 1,
+                y - icon.getIconHeight() / 2);
     }
 
     // Helper Code ************************************************************
@@ -87,18 +83,18 @@ public final class SmoothGradientTreeUI extends BasicTreeUI {
     private void updateLineStyle(Object lineStyle) {
         linesEnabled = !"None".equals(lineStyle);
     }
-    
+
     // Listens for changes of the line style property 
     private class LineStyleHandler implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent e) {
-            String name  = e.getPropertyName();
+            String name = e.getPropertyName();
             Object value = e.getNewValue();
             if (name.equals("Angled")) {
                 updateLineStyle(value);
             }
         }
     }
-    
+
 }
 
 

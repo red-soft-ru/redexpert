@@ -20,28 +20,27 @@
 
 package org.executequery.repository;
 
-import java.util.List;
-
 import org.executequery.databasemediators.DatabaseDriver;
 
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface DatabaseDriverRepository extends Repository {
 
     String REPOSITORY_ID = "database-drivers";
 
     void save();
-    
+
     DatabaseDriver findByName(String name);
-    
+
     DatabaseDriver findById(long id);
-    
+
     List<DatabaseDriver> findAll();
-    
+
     boolean nameExists(DatabaseDriver exclude, String name);
-    
+
 }
 
 

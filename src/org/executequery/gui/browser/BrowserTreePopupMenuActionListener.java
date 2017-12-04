@@ -20,12 +20,6 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.event.ActionEvent;
-import java.lang.reflect.Array;
-
-import javax.swing.*;
-import javax.swing.tree.TreePath;
-
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseHost;
@@ -41,18 +35,21 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.CreateDomainPanel;
 import org.executequery.gui.databaseobjects.CreateGeneratorPanel;
 import org.executequery.gui.databaseobjects.CreateViewPanel;
+import org.executequery.gui.importexport.ImportExportDataProcess;
 import org.executequery.gui.importexport.ImportExportDelimitedPanel;
 import org.executequery.gui.importexport.ImportExportExcelPanel;
-import org.executequery.gui.importexport.ImportExportDataProcess;
 import org.executequery.gui.importexport.ImportExportXMLPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.actions.ReflectiveAction;
 
+import javax.swing.*;
+import javax.swing.tree.TreePath;
+import java.awt.event.ActionEvent;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
@@ -213,7 +210,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     public void delete(ActionEvent e) {
         if (currentPath != null) {
-            DatabaseHostNode node = (DatabaseHostNode)currentPath.getLastPathComponent();
+            DatabaseHostNode node = (DatabaseHostNode) currentPath.getLastPathComponent();
             treePanel.deleteConnection(node);
         }
     }
@@ -249,7 +246,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         if (currentSelection != null) {
 
             String name = treePanel.buildConnectionName(
-                            currentSelection.getName() + " (" + Bundles.getCommon("copy")) + ")";
+                    currentSelection.getName() + " (" + Bundles.getCommon("copy")) + ")";
             DatabaseConnection dc = currentSelection.copy().withName(name);
             treePanel.newConnection(dc);
         }

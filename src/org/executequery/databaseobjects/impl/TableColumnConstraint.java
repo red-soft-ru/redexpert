@@ -20,9 +20,6 @@
 
 package org.executequery.databaseobjects.impl;
 
-import java.sql.DatabaseMetaData;
-import java.util.Map;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
@@ -30,65 +27,99 @@ import org.executequery.databaseobjects.NamedObject;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
+import java.sql.DatabaseMetaData;
+import java.util.Map;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class TableColumnConstraint extends AbstractDatabaseObjectElement 
-                                   implements ColumnConstraint {
-    
+public class TableColumnConstraint extends AbstractDatabaseObjectElement
+        implements ColumnConstraint {
+
     public static final String EMPTY = "";
 
-    /** the table column this constraint belongs to */
+    /**
+     * the table column this constraint belongs to
+     */
     private DatabaseTableColumn column;
 
-    /** The referenced catalog of this constraint */
+    /**
+     * The referenced catalog of this constraint
+     */
     private String referencedCatalog;
 
-    /** The referenced schema of this constraint */
+    /**
+     * The referenced schema of this constraint
+     */
     private String referencedSchema;
 
-    /** The referenced table of this constraint */
+    /**
+     * The referenced table of this constraint
+     */
     private String referencedTable;
-    
-    /** The referenced column of this constraint */
+
+    /**
+     * The referenced column of this constraint
+     */
     private String referencedColumn;
 
-    /** What happens to a foreign key when the primary key is updated */
+    /**
+     * What happens to a foreign key when the primary key is updated
+     */
     private short updateRule;
-    
-    /** What happens to the foreign key when primary is deleted */
+
+    /**
+     * What happens to the foreign key when primary is deleted
+     */
     private short deleteRule;
 
-    /** can the evaluation of foreign key constraints be deferred until commit */
+    /**
+     * can the evaluation of foreign key constraints be deferred until commit
+     */
     private short deferrability;
-    
-    /** The type of constraint */
+
+    /**
+     * The type of constraint
+     */
     private int keyType;
-    
-    /** Whether this constraint is new (for editing a table definition) */
+
+    /**
+     * Whether this constraint is new (for editing a table definition)
+     */
     private boolean newConstraint;
 
-    /** Whether this constraint is marked to be dropped */
+    /**
+     * Whether this constraint is marked to be dropped
+     */
     private boolean markedDeleted;
 
-    /** an original copy of this object */
+    /**
+     * an original copy of this object
+     */
     private TableColumnConstraint copy;
-    
-    /** the foreign key column */
+
+    /**
+     * the foreign key column
+     */
     private DatabaseColumn foreignKeyColumn;
-    
-    /** the column meta data map */
-    private Map<String,String> metaData;
+
+    /**
+     * the column meta data map
+     */
+    private Map<String, String> metaData;
 
     private String check;
-    
-    /** Creates a new instance of TableColumnConstraint */
+
+    /**
+     * Creates a new instance of TableColumnConstraint
+     */
     public TableColumnConstraint(int type) {
         this(null, type);
     }
 
-    /** Creates a new instance of TableColumnConstraint */
+    /**
+     * Creates a new instance of TableColumnConstraint
+     */
     public TableColumnConstraint(DatabaseTableColumn column, int keyType) {
         setColumn(column);
         setKeyType(keyType);
@@ -106,12 +137,12 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
      * @return the referenced column
      */
     public DatabaseColumn getForeignKeyReference() {
-        
+
         if (isForeignKey()) {
 
             return foreignKeyColumn;
         }
-        
+
         return null;
     }
 
@@ -155,7 +186,7 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
     public boolean isNewConstraint() {
         return newConstraint;
     }
-    
+
     /**
      * Sets this constraint as a new constraint as specified.
      *
@@ -186,7 +217,7 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
                 return null;
         }
     }
-    
+
     /**
      * Returns whether the schema has been defined.
      *
@@ -204,7 +235,7 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
     public void setKeyType(int keyType) {
         this.keyType = keyType;
     }
-    
+
     /**
      * Returns the constraint type identifier.
      *
@@ -260,7 +291,7 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
     }
 
     /**
-     * Sets the table column parent to this object 
+     * Sets the table column parent to this object
      * to that specified.
      *
      * @param column parent column
@@ -268,7 +299,7 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
     public void setColumn(DatabaseTableColumn column) {
         this.column = column;
     }
-    
+
     /**
      * Returns the catalog name parent to this column.
      *
@@ -328,7 +359,7 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
 
     @Override
     public void setCheck(String check) {
-        this.check=check;
+        this.check = check;
     }
 
     public void setReferencedCatalog(String referencedCatalog) {
@@ -366,11 +397,11 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
     public void setMarkedDeleted(boolean markedDeleted) {
         this.markedDeleted = markedDeleted;
     }
-    
+
     /**
      * Returns whether this constraint has been modified.
      * A modification exists where this constraint is not new,
-     * an internal value has changed or it has been marked 
+     * an internal value has changed or it has been marked
      * for deletion.
      *
      * @return true | false
@@ -380,7 +411,7 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
         if (isNewConstraint()) {
             return false;
         }
-        
+
         // check for a pending deletion
         if (isMarkedDeleted()) {
             return true;
@@ -390,11 +421,11 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
         if (copy == null) {
             return false;
         }
-        
+
         // allow for name changes only
         return !(copy.getName().equalsIgnoreCase(getName()));
     }
-    
+
     /**
      * Returns the ALTER TABLE statement to modify this constraint.
      */
@@ -407,7 +438,7 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
         if (isNewConstraint()) {
             return getCreateSQLText();
         }
-        
+
         StringBuffer sb = new StringBuffer();
         sb.append("ALTER TABLE ");
         sb.append(getTableName());
@@ -420,8 +451,7 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
             } else {
                 sb.append(copy.getName());
             }
-        }
-        else {
+        } else {
             // check for a name change
             if (!(copy.getName().equalsIgnoreCase(getName()))) {
                 sb.append(" RENAME CONSTRAINT ");
@@ -434,16 +464,16 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
         sb.append(";");
         return sb.toString();
     }
-    
+
     /**
-     * Returns the CONSTRAINT portion of the SQL statement 
+     * Returns the CONSTRAINT portion of the SQL statement
      * for this constraint.
      */
     public String getConstraintSQLText() {
         StringBuffer sb = new StringBuffer();
         sb.append("CONSTRAINT ");
         sb.append(getName() == null ? "" : getName());
-        
+
         int _type = getKeyType();
         switch (_type) {
             case PRIMARY_KEY:
@@ -459,11 +489,9 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
                 sb.append(" CHECK (");
                 break;
         }
-        if(_type!=CHECK_KEY) {
+        if (_type != CHECK_KEY) {
             sb.append(getColumnName());
-        }
-        else
-        {
+        } else {
             sb.append(getCheck());
         }
         sb.append(")");
@@ -478,7 +506,7 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
 
         return sb.toString();
     }
-    
+
     /**
      * Returns the ALTER TABLE statement to create this constraint.
      */
@@ -491,9 +519,9 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
         sb.append(";");
         return sb.toString();
     }
-    
+
     /**
-     * Makes a copy of itself. A copy of this object may 
+     * Makes a copy of itself. A copy of this object may
      * not always be required and may be made available only
      * when deemed necessary - ie. table meta changes.
      */
@@ -517,16 +545,16 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
         copyConstraint(this, clone);
         return clone;
     }
-    
+
     /**
-     * Copies the specified source object to the specified 
+     * Copies the specified source object to the specified
      * destination object of the same type.
      *
-     * @param source the source constraint object
+     * @param source      the source constraint object
      * @param destination the destination constraint
      */
-    protected void copyConstraint(TableColumnConstraint source, 
-                        TableColumnConstraint destination) {
+    protected void copyConstraint(TableColumnConstraint source,
+                                  TableColumnConstraint destination) {
         destination.setKeyType(source.getKeyType());
         destination.setColumn(source.getColumn());
         destination.setReferencedCatalog(source.getReferencedCatalog());
@@ -543,11 +571,11 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
     public void revert() {
 
         if (isMarkedDeleted()) {
-            
+
             setMarkedDeleted(false);
 
         } else if (isAltered()) {
-            
+
             copyConstraint(copy, this);
             copy = null;
         }
@@ -580,22 +608,22 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
     public void setMetaData(Map<String, String> metaData) {
         this.metaData = metaData;
         for (String key : this.metaData.keySet()) {
-            
+
             String value = this.metaData.get(key);
             if (StringUtils.isNotBlank(value)) {
                 if (StringUtils.equalsIgnoreCase("DELETE_RULE", key)) {
-                    
+
                     this.metaData.put(key, translateDeletedRule(shortValue(value)));
-    
+
                 } else if (StringUtils.equalsIgnoreCase("UPDATE_RULE", key)) {
-                    
+
                     this.metaData.put(key, translateUpdateRule(shortValue(value)));
-    
+
                 } else if (StringUtils.equalsIgnoreCase("DEFERRABILITY", key)) {
-                    
+
                     this.metaData.put(key, translateDeferrabilityRule(shortValue(value)));
                 }
-            }            
+            }
         }
     }
 
@@ -603,51 +631,51 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
 
         return Short.valueOf(value);
     }
-    
+
     private String translateDeferrabilityRule(Short value) {
 
         String translated = String.valueOf(value);
         if (isForeignKey()) {
-        
+
             switch (value) {
                 case DatabaseMetaData.importedKeyInitiallyDeferred:
                     return translated + " - importedKeyInitiallyDeferred";
-    
+
                 case DatabaseMetaData.importedKeyInitiallyImmediate:
                     return translated + " - importedKeyInitiallyImmediate";
-    
+
                 case DatabaseMetaData.importedKeyNotDeferrable:
                     return translated + " - importedKeyNotDeferrable";
             }
-        
+
         }
-        return translated; 
+        return translated;
     }
 
     private String translateDeletedRule(Short value) {
 
         String translated = String.valueOf(value);
         if (isForeignKey()) {
-        
+
             switch (value) {
                 case DatabaseMetaData.importedKeyNoAction:
                     return translated + " - importedKeyNoAction";
-    
+
                 case DatabaseMetaData.importedKeyCascade:
                     return translated + " - importedKeyCascade";
-    
+
                 case DatabaseMetaData.importedKeySetNull:
                     return translated + " - importedKeySetNull";
-    
+
                 case DatabaseMetaData.importedKeyRestrict:
                     return translated + " - importedKeyRestrict";
-    
+
                 case DatabaseMetaData.importedKeySetDefault:
                     return translated + " - importedKeySetDefault";
             }
-        
-        }        
-        return translated; 
+
+        }
+        return translated;
     }
 
     public Map<String, String> getMetaData() {
@@ -658,45 +686,47 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
 
         String translated = String.valueOf(value);
         if (isForeignKey()) {
-        
+
             switch (value) {
                 case DatabaseMetaData.importedKeyNoAction:
                     return translated + " - importedKeyNoAction";
-    
+
                 case DatabaseMetaData.importedKeyCascade:
                     return translated + " - importedKeyCascade";
-    
+
                 case DatabaseMetaData.importedKeySetNull:
                     return translated + " - importedKeySetNull";
-    
+
                 case DatabaseMetaData.importedKeyRestrict:
                     return translated + " - importedKeyRestrict";
-    
+
                 case DatabaseMetaData.importedKeySetDefault:
                     return translated + " - importedKeySetDefault";
             }
-        
-        }        
-        return translated; 
+
+        }
+        return translated;
     }
+
     @Override
     public int getType() {
-        
+
         if (isForeignKey()) {
-         
+
             return FOREIGN_KEY;
-        
+
         } else if (isPrimaryKey()) {
 
             return PRIMARY_KEY;
 
-        }if(isUniqueKey()) {
-            
+        }
+        if (isUniqueKey()) {
+
             return UNIQUE_KEY;
         } else return CHECK_KEY;
 
     }
-    
+
 }
 
 

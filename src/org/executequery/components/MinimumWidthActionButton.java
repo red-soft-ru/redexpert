@@ -20,30 +20,29 @@
 
 package org.executequery.components;
 
-import java.awt.Dimension;
-import java.awt.event.ActionListener;
-
 import org.underworldlabs.swing.DefaultButton;
 
-/** 
- *
- * @author   Takis Diakoumis
-*/
+import java.awt.*;
+import java.awt.event.ActionListener;
+
+/**
+ * @author Takis Diakoumis
+ */
 public class MinimumWidthActionButton extends DefaultButton {
 
     private final int minimumWidth;
-    
+
     public MinimumWidthActionButton(int minimumWidth,
-                                  ActionListener actionListener, 
-                                  String name, 
-                                  String command) {
+                                    ActionListener actionListener,
+                                    String name,
+                                    String command) {
 
         super(name);
         this.minimumWidth = minimumWidth;
         setActionCommand(command);
         addActionListener(actionListener);
     }
-    
+
     @Override
     public Dimension getPreferredSize() {
 

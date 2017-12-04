@@ -20,40 +20,27 @@
 
 package org.underworldlabs.swing.plaf.smoothgradient;
 
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Insets;
-import java.awt.Rectangle;
-
-import javax.swing.AbstractButton;
-import javax.swing.ButtonModel;
-import javax.swing.JComponent;
-import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicHTML;
 import javax.swing.plaf.metal.MetalToggleButtonUI;
 import javax.swing.text.View;
+import java.awt.*;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SmoothGradientToggleButtonUI extends MetalToggleButtonUI {
 
     private static final SmoothGradientToggleButtonUI INSTANCE =
-        new SmoothGradientToggleButtonUI();
-        
-    /* 
+            new SmoothGradientToggleButtonUI();
+
+    /*
      * Implementation note: The protected visibility prevents
      * the String value from being encrypted by the obfuscator.
      * An encrypted String key would break the client property lookup
      * in the #paint method below.
-     */    
+     */
     protected static final String HTML_KEY = BasicHTML.propertyKey;
 
     private boolean borderPaintsFocus;
@@ -68,8 +55,8 @@ public class SmoothGradientToggleButtonUI extends MetalToggleButtonUI {
     public void installDefaults(AbstractButton b) {
         super.installDefaults(b);
         borderPaintsFocus =
-            Boolean.TRUE.equals(
-                UIManager.get("ToggleButton.borderPaintsFocus"));
+                Boolean.TRUE.equals(
+                        UIManager.get("ToggleButton.borderPaintsFocus"));
     }
 
 
@@ -82,13 +69,13 @@ public class SmoothGradientToggleButtonUI extends MetalToggleButtonUI {
                 g.setColor(c.getBackground());
                 g.fillRect(0, 0, c.getWidth(), c.getHeight());
 
-                    Rectangle r =
+                Rectangle r =
                         new Rectangle(
-                            1,
-                            1,
-                            c.getWidth() - 2,
-                            c.getHeight() - 1);
-                    SmoothGradientUtils.add3DEffekt(g, r);
+                                1,
+                                1,
+                                c.getWidth() - 2,
+                                c.getHeight() - 1);
+                SmoothGradientUtils.add3DEffekt(g, r);
 
             }
         }
@@ -99,11 +86,11 @@ public class SmoothGradientToggleButtonUI extends MetalToggleButtonUI {
      * Paints the focus close to the button's border.
      */
     protected void paintFocus(
-        Graphics g,
-        AbstractButton b,
-        Rectangle viewRect,
-        Rectangle textRect,
-        Rectangle iconRect) {
+            Graphics g,
+            AbstractButton b,
+            Rectangle viewRect,
+            Rectangle textRect,
+            Rectangle iconRect) {
 
         if (borderPaintsFocus)
             return;
@@ -134,7 +121,7 @@ public class SmoothGradientToggleButtonUI extends MetalToggleButtonUI {
 
         viewRect.x += i.left;
         viewRect.y += i.top;
-        viewRect.width  -= (i.right  + viewRect.x);
+        viewRect.width -= (i.right + viewRect.x);
         viewRect.height -= (i.bottom + viewRect.y);
 
         Rectangle iconRect = new Rectangle();
@@ -145,29 +132,29 @@ public class SmoothGradientToggleButtonUI extends MetalToggleButtonUI {
 
         // layout the text and icon
         String text =
-            SwingUtilities.layoutCompoundLabel(
-                c,
-                fm,
-                b.getText(),
-                b.getIcon(),
-                b.getVerticalAlignment(),
-                b.getHorizontalAlignment(),
-                b.getVerticalTextPosition(),
-                b.getHorizontalTextPosition(),
-                viewRect,
-                iconRect,
-                textRect,
-                b.getText() == null ? 0 : getDefaultTextIconGap(b));
+                SwingUtilities.layoutCompoundLabel(
+                        c,
+                        fm,
+                        b.getText(),
+                        b.getIcon(),
+                        b.getVerticalAlignment(),
+                        b.getHorizontalAlignment(),
+                        b.getVerticalTextPosition(),
+                        b.getHorizontalTextPosition(),
+                        viewRect,
+                        iconRect,
+                        textRect,
+                        b.getText() == null ? 0 : getDefaultTextIconGap(b));
         // [Pending 1.4]: b.getIconTextGap());
 
         g.setColor(b.getBackground());
 
         if (model.isArmed() && model.isPressed() || model.isSelected())
-          paintButtonPressed(g, b);
+            paintButtonPressed(g, b);
 
         // Paint the Icon
         if (b.getIcon() != null)
-          paintIcon(g, b, iconRect);
+            paintIcon(g, b, iconRect);
 
 
         // Draw the Text
@@ -190,14 +177,14 @@ public class SmoothGradientToggleButtonUI extends MetalToggleButtonUI {
 
     /**
      * Checks and answers if this is button is in a tool bar.
-     * 
-     * @param b   the button to check
+     *
+     * @param b the button to check
      * @return true if in tool bar, false otherwise
      */
     protected boolean isToolBarButton(AbstractButton b) {
         Container parent = b.getParent();
         return parent != null
-            && (parent instanceof JToolBar
+                && (parent instanceof JToolBar
                 || parent.getParent() instanceof JToolBar);
     }
 

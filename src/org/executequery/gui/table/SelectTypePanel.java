@@ -12,8 +12,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.Types;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SelectTypePanel extends JPanel {
     private JLabel typeLabel;
@@ -137,7 +139,7 @@ public class SelectTypePanel extends JPanel {
                 || cd.getColumnType().toUpperCase().equals("CHAR"));
         setScaleVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL);
         setEncodingVisible(cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
-                ||cd.getSQLType()==Types.LONGVARCHAR || cd.getSQLType() == Types.CLOB
+                || cd.getSQLType() == Types.LONGVARCHAR || cd.getSQLType() == Types.CLOB
                 || cd.getColumnType().toUpperCase().equals("VARCHAR")
                 || cd.getColumnType().toUpperCase().equals("CHAR"));
     }
@@ -249,7 +251,7 @@ public class SelectTypePanel extends JPanel {
             charsets.add(0, CreateTableSQLSyntax.NONE);
 
         } catch (Exception e) {
-            Log.error("Error getting charsets for SelectTypePanel:",e);
+            Log.error("Error getting charsets for SelectTypePanel:", e);
             return;
         }
     }

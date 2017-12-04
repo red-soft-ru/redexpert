@@ -20,18 +20,17 @@
 
 package org.underworldlabs.swing.table;
 
-import java.awt.Component;
-import java.util.Hashtable;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import java.awt.*;
+import java.util.Hashtable;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class EachRowRenderer implements TableCellRenderer {
-    
+
     protected Hashtable<Integer, TableCellRenderer> renderers;
     protected TableCellRenderer renderer;
     protected TableCellRenderer defaultRenderer;
@@ -42,32 +41,32 @@ public class EachRowRenderer implements TableCellRenderer {
     }
 
     public void add(int row, TableCellRenderer renderer) {
-        renderers.put(Integer.valueOf(row),renderer);
+        renderers.put(Integer.valueOf(row), renderer);
     }
-    
+
     public Component getTableCellRendererComponent(JTable table,
-                                                   Object value, 
-                                                   boolean isSelected, 
+                                                   Object value,
+                                                   boolean isSelected,
                                                    boolean hasFocus,
-                                                   int row, 
+                                                   int row,
                                                    int column) {
 
-        renderer = (TableCellRenderer)renderers.get(Integer.valueOf(row));
+        renderer = (TableCellRenderer) renderers.get(Integer.valueOf(row));
 
         if (renderer == null) {
             renderer = defaultRenderer;
         }
 
         if (value != null && renderer instanceof DefaultTableCellRenderer) {
-            ((DefaultTableCellRenderer)renderer).setToolTipText(value.toString());
+            ((DefaultTableCellRenderer) renderer).setToolTipText(value.toString());
         }
 
         return renderer.getTableCellRendererComponent(table,
-                                                      value, 
-                                                      isSelected, 
-                                                      hasFocus, 
-                                                      row, 
-                                                      column);
+                value,
+                isSelected,
+                hasFocus,
+                row,
+                column);
 
     }
 

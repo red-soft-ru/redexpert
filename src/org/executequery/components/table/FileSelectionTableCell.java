@@ -20,29 +20,31 @@
 
 package org.executequery.components.table;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.JFileChooser;
-
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
 
 /**
  * Table cell with file selection button.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class FileSelectionTableCell extends BrowsingCellEditor {
-    
-    /** Creates a new instance of ComboBoxCellRenderer */
-    public FileSelectionTableCell() {}
-    
+
+    /**
+     * Creates a new instance of ComboBoxCellRenderer
+     */
+    public FileSelectionTableCell() {
+    }
+
     public void actionPerformed(ActionEvent e) {
         FileChooserDialog dialog = new FileChooserDialog();
         dialog.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
         int result = dialog.showOpenDialog(GUIUtilities.getInFocusDialogOrWindow());
-        
+
         if (result == JFileChooser.CANCEL_OPTION) {
             fireEditingStopped();
             return;

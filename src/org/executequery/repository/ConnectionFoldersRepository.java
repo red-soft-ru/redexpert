@@ -20,9 +20,9 @@
 
 package org.executequery.repository;
 
-import java.util.List;
-
 import org.executequery.gui.browser.ConnectionsFolder;
+
+import java.util.List;
 
 public interface ConnectionFoldersRepository extends Repository {
 
@@ -35,9 +35,9 @@ public interface ConnectionFoldersRepository extends Repository {
     List<ConnectionsFolder> findAll();
 
     ConnectionsFolder add(ConnectionsFolder connectionsFolder);
-    
+
     ConnectionsFolder findByName(String name);
-    
+
     ConnectionsFolder findById(String id);
 
     boolean nameExists(ConnectionsFolder exclude, String name);

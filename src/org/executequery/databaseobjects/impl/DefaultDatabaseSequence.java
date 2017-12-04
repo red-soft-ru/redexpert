@@ -23,7 +23,8 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
     /**
      * Creates a new instance.
      */
-    public DefaultDatabaseSequence() {}
+    public DefaultDatabaseSequence() {
+    }
 
     /**
      * Creates a new instance.
@@ -91,12 +92,12 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
             throw new DataSourceException(e);
 
         } finally {
-            if(statement!=null)
+            if (statement != null)
                 try {
-                    if(!statement.isClosed())
+                    if (!statement.isClosed())
                         statement.close();
                 } catch (SQLException e) {
-                    Log.error("Error close statement in method getSequenceValue in class DefaultDatabaseSequence",e);
+                    Log.error("Error close statement in method getSequenceValue in class DefaultDatabaseSequence", e);
                 }
 
             setMarkedForReload(false);
@@ -139,12 +140,12 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
             throw new DataSourceException(e);
 
         } finally {
-            if(statement!=null)
+            if (statement != null)
                 try {
-                    if(!statement.isClosed())
+                    if (!statement.isClosed())
                         statement.close();
                 } catch (SQLException e) {
-                    Log.error("Error close statement in method getDescription in class DefaultDatabaseSequence",e);
+                    Log.error("Error close statement in method getDescription in class DefaultDatabaseSequence", e);
                 }
             setMarkedForReload(false);
         }

@@ -2,11 +2,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.*;
 import org.executequery.gui.resultset.RecordDataItem;
-import org.underworldlabs.jdbc.DataSourceException;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 

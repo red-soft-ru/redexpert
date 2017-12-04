@@ -20,10 +20,13 @@
 
 package org.executequery.gui.text;
 
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
+import org.apache.commons.lang.StringUtils;
+import org.executequery.GUIUtilities;
+import org.executequery.gui.UndoableComponent;
+import org.executequery.log.Log;
+import org.underworldlabs.swing.actions.ActionBuilder;
 
-import javax.swing.Action;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent.EventType;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
@@ -35,55 +38,63 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
-
-import org.apache.commons.lang.StringUtils;
-import org.executequery.GUIUtilities;
-import org.executequery.gui.UndoableComponent;
-import org.executequery.log.Log;
-import org.underworldlabs.swing.actions.ActionBuilder;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
 /**
- * Undo manager for text components. 
+ * Undo manager for text components.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class TextUndoManager extends UndoManager 
-                             implements UndoableEditListener,
-                                        FocusListener {
-    
-    /** the text component this manager is assigned to */
+public class TextUndoManager extends UndoManager
+        implements UndoableEditListener,
+        FocusListener {
+
+    /**
+     * the text component this manager is assigned to
+     */
     private JTextComponent textComponent;
-    
-    /** the text component's document */
+
+    /**
+     * the text component's document
+     */
     private Document document;
-    
-    /** the current compound edit */
+
+    /**
+     * the current compound edit
+     */
     private CompoundEdit compoundEdit;
-    
-    /** The undo command */
+
+    /**
+     * The undo command
+     */
     private Action undoCommand;
-    
-    /** The redo command */
+
+    /**
+     * The redo command
+     */
     private Action redoCommand;
-    
+
     private boolean addNextInsert;
-    
+
     private static final String[] WHITESPACE = {"\t", " ", "\n", "\r"};
 
-    /** Creates a new instance of TextUndoManager */
+    /**
+     * Creates a new instance of TextUndoManager
+     */
     public TextUndoManager(JTextComponent textComponent) {
 
         this.textComponent = textComponent;
         document = textComponent.getDocument();
         document.addUndoableEditListener(this);
-        
+
         // add the focus listener
         textComponent.addFocusListener(this);
-        
+
         // retrieve the undo/redo actions from the cache
         undoCommand = ActionBuilder.get("undo-command");
         redoCommand = ActionBuilder.get("redo-command");
-        
+
         // initialise the compound edit
         compoundEdit = new CompoundEdit();
     }
@@ -94,7 +105,7 @@ public class TextUndoManager extends UndoManager
     public void focusGained(FocusEvent e) {
         // register this as an undo/redo component
         if (textComponent instanceof UndoableComponent) {
-            GUIUtilities.registerUndoRedoComponent((UndoableComponent)textComponent);
+            GUIUtilities.registerUndoRedoComponent((UndoableComponent) textComponent);
         }
         updateControls();
     }
@@ -105,7 +116,7 @@ public class TextUndoManager extends UndoManager
     public void focusLost(FocusEvent e) {
         if (undoCommand != null) {
             undoCommand.setEnabled(false);
-        }        
+        }
         if (redoCommand != null) {
             redoCommand.setEnabled(false);
         }
@@ -123,15 +134,15 @@ public class TextUndoManager extends UndoManager
         undoCommand.setEnabled(canUndo());
         redoCommand.setEnabled(canRedo());
     }
-    
+
     public void undoableEditHappened(UndoableEditEvent undoableEditEvent) {
-        
+
         UndoableEdit edit = undoableEditEvent.getEdit();
         AbstractDocument.DefaultDocumentEvent event = (AbstractDocument.DefaultDocumentEvent) edit;
         EventType eventType = event.getType();
 
         if (eventType == EventType.INSERT) {
-            
+
             try {
 
                 if (addNextInsert) {
@@ -140,7 +151,7 @@ public class TextUndoManager extends UndoManager
                 }
 
                 compoundEdit.addEdit(edit);
-                
+
                 int start = event.getOffset();
                 int length = event.getLength();
 
@@ -149,21 +160,21 @@ public class TextUndoManager extends UndoManager
 
                     addNextInsert = true;
                 }
-                
+
             } catch (BadLocationException e) {
-                
+
                 Log.debug(e);
             }
-            
+
         } else if (eventType == EventType.REMOVE) {
 
             add();
             compoundEdit.addEdit(edit);
             add();
-            
+
         } else if (eventType == EventType.CHANGE) {
-            
-            compoundEdit.addEdit(edit);            
+
+            compoundEdit.addEdit(edit);
         }
 
         redoCommand.setEnabled(false);
@@ -177,7 +188,7 @@ public class TextUndoManager extends UndoManager
         addEdit(compoundEdit);
         compoundEdit = new CompoundEdit();
     }
-    
+
     /**
      * Ensures the component regains focus and actions are updated.
      */
@@ -186,7 +197,7 @@ public class TextUndoManager extends UndoManager
         try {
 
             if (!canRedo()) {
-        
+
                 add();
             }
             super.undo();
@@ -217,7 +228,7 @@ public class TextUndoManager extends UndoManager
 
             return;
         }
-        
+
         // always enable the undo command
         undoCommand.setEnabled(true);
         redoCommand.setEnabled(canRedo());
@@ -236,7 +247,7 @@ public class TextUndoManager extends UndoManager
 
         document.removeUndoableEditListener(this);
     }
-    
+
     /**
      * Suspends this manager by removing itself from the document.
      */
@@ -246,10 +257,10 @@ public class TextUndoManager extends UndoManager
     }
 
     public void reset() {
-        
+
         discardAllEdits();
     }
-    
+
 }
 
 

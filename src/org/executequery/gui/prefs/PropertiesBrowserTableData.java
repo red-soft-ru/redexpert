@@ -20,68 +20,66 @@
 
 package org.executequery.gui.prefs;
 
+import org.underworldlabs.util.SystemProperties;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.underworldlabs.util.SystemProperties;
-
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+ * @author Takis Diakoumis
+ * @version $Revision$
+ * @date $Date$
  */
 public class PropertiesBrowserTableData extends AbstractPropertiesBasePanel {
-    
+
     private SimplePreferencesPanel preferencesPanel;
-    
+
     public PropertiesBrowserTableData() {
-        try  {
+        try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     private void init() {
 
         List<UserPreference> list = new ArrayList<UserPreference>();
 
         list.add(new UserPreference(
-                    UserPreference.CATEGORY_TYPE,
-                    null,
-                    "Database table data view tab",
-                    null));
+                UserPreference.CATEGORY_TYPE,
+                null,
+                "Database table data view tab",
+                null));
 
         String key = "browser.max.records";
         list.add(new UserPreference(
-                    UserPreference.INTEGER_TYPE,
-                    key,
-                    "Maximum records returned",
-                    SystemProperties.getProperty("user", key)));
+                UserPreference.INTEGER_TYPE,
+                key,
+                "Maximum records returned",
+                SystemProperties.getProperty("user", key)));
 
         key = "browser.always.show.table.editable.label";
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "Indicate when table data may be edited in-place",
-                    SystemProperties.getBooleanProperty("user", key)));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Indicate when table data may be edited in-place",
+                SystemProperties.getBooleanProperty("user", key)));
 
-        UserPreference[] preferences = 
-                (UserPreference[])list.toArray(new UserPreference[list.size()]);
+        UserPreference[] preferences =
+                (UserPreference[]) list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
     }
-    
+
     public void restoreDefaults() {
         preferencesPanel.restoreDefaults();
     }
-    
+
     public void save() {
         preferencesPanel.savePreferences();
     }
-   
+
 }
 
 

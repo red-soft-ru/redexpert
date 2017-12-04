@@ -20,6 +20,13 @@
 
 package org.executequery.datasource;
 
+import org.apache.commons.lang.StringUtils;
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.log.Log;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SystemProperties;
+
+import javax.sql.DataSource;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -27,64 +34,55 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.sql.DataSource;
-
-import org.apache.commons.lang.StringUtils;
-import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.log.Log;
-import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.SystemProperties;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ConnectionPoolImpl extends AbstractConnectionPool implements PooledConnectionListener {
 
     private int maximumConnections = MAX_POOL_SIZE;
-    
+
     private int minimumConnections = MIN_POOL_SIZE;
-    
+
     private int initialConnections = INITIAL_POOL_SIZE;
 
     private final List<PooledConnection> openConnections = Collections.synchronizedList(new ArrayList<PooledConnection>());
-    
+
     private final List<PooledConnection> activeConnections = Collections.synchronizedList(new ArrayList<PooledConnection>());
-    
+
     private final DatabaseConnection databaseConnection;
 
     private int defaultTxIsolation = -1;
-    
+
     private boolean supportsTransactions;
 
     private DataSource dataSource;
-    
+
     private SshTunnel sshTunnel;
-    
+
     public ConnectionPoolImpl(DatabaseConnection databaseConnection) {
 
         this.databaseConnection = databaseConnection;
-        
+
         if (Log.isDebugEnabled()) {
 
-            Log.debug("Creating new pool for connection " + databaseConnection.getName()); 
+            Log.debug("Creating new pool for connection " + databaseConnection.getName());
         }
-        
+
     }
 
     public DatabaseConnection getDatabaseConnection() {
-     
+
         return databaseConnection;
     }
-    
+
     public void connectionClosed(PooledConnection pooledConnection) {
 
         if (Log.isDebugEnabled()) {
-            
-            Log.debug("Removing connection " + pooledConnection.getId() 
+
+            Log.debug("Removing connection " + pooledConnection.getId()
                     + " from active connections list");
         }
-        
+
         activeConnections.remove(pooledConnection);
         reduceCapacity(minimumConnections);
     }
@@ -92,12 +90,12 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
     public void close(Connection connection) {
 
         if (connection != null) {
-        
+
             activeConnections.remove(connection);
-    
+
             PooledConnection pooledConnection = (PooledConnection) connection;
             pooledConnection.destroy();
-            
+
             openConnections.remove(pooledConnection);
         }
 
@@ -107,12 +105,12 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
     public synchronized void close() {
 
         if (Log.isDebugEnabled()) {
-            
-            Log.debug("Closing connection pool for connection " + databaseConnection.getName()); 
+
+            Log.debug("Closing connection pool for connection " + databaseConnection.getName());
         }
 
         for (Connection connection : openConnections) {
-            
+
             PooledConnection pooledConnection = (PooledConnection) connection;
             pooledConnection.destroy();
         }
@@ -126,23 +124,23 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
 
         int size = openConnections.size();
         if (Log.isTraceEnabled()) {
-            
-            Log.trace("Retrieving new connection from the pool with current size: [ " 
-                    + size + " ] from maximum pool capacity [ " + maximumConnections + " ]"); 
+
+            Log.trace("Retrieving new connection from the pool with current size: [ "
+                    + size + " ] from maximum pool capacity [ " + maximumConnections + " ]");
         }
-        
+
         if (databaseConnection.isSshTunnel() && sshTunnel == null) {
 
-            createSshTunnel();            
+            createSshTunnel();
         }
 
         if (size < minimumConnections) {
-            
+
             ensureCapacity(minimumConnections);
         }
 
         PooledConnection connection = getNextOpenAvailable();
-        
+
         if (connection != null) {
 
             try {
@@ -151,7 +149,8 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
                     close(connection);
                     return getConnection();
                 }
-            } catch (SQLException e) {}
+            } catch (SQLException e) {
+            }
 
             connection.setInUse(true);
             activeConnections.add(connection);
@@ -176,58 +175,58 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
         }
 
         if (Log.isDebugEnabled()) {
-            
-            Log.debug("Retrieving connection " + connection.getId()); 
+
+            Log.debug("Retrieving connection " + connection.getId());
         }
 
         return connection;
     }
 
     private void destroySshTunnel() {
-    
+
         if (sshTunnel != null) {
-            
+
             sshTunnel.disconnect(databaseConnection);
             sshTunnel = null;
         }
     }
-    
+
     private void createSshTunnel() {
 
         sshTunnel = new JschSshTunnel();
-        sshTunnel.connect(databaseConnection);        
+        sshTunnel.connect(databaseConnection);
     }
 
     private void ensureCapacity(int capacity) {
 
         if (Log.isDebugEnabled()) {
-            
-            Log.debug("Ensuring pool capacity " + capacity); 
+
+            Log.debug("Ensuring pool capacity " + capacity);
         }
-        
+
         while (openConnections.size() < capacity) {
 
             createConnection();
         }
-        
+
     }
 
     private void reduceCapacity(int capacity) {
 
         if (Log.isDebugEnabled()) {
-            
-            Log.debug("Reducing pool capacity " + capacity); 
+
+            Log.debug("Reducing pool capacity " + capacity);
         }
 
         while (openConnections.size() > capacity) {
-            
+
             PooledConnection connection = getNextOpenAvailable();
             if (connection != null) {
 
                 close(connection);
-            
+
             } else {
-                
+
                 break;
             }
 
@@ -238,19 +237,19 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
     private PooledConnection createConnection() {
 
         PooledConnection connection = null;
-        
+
         try {
 
             if (dataSource == null) {
-                
+
                 DatabaseConnection _databaseConnection = databaseConnection;
                 if (databaseConnection.isSshTunnel()) {
-                    
+
                     if (sshTunnel == null) {
 
                         createSshTunnel();
                     }
-                    
+
                     _databaseConnection = databaseConnection.copy();
                     _databaseConnection.setHost("localhost");
                     _databaseConnection.setPort(String.valueOf(sshTunnel.getTunnelPort()));
@@ -261,28 +260,28 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
 
             Connection realConnection = dataSource.getConnection();
             if (realConnection == null) {
-                
+
                 destroySshTunnel();
                 throw new DataSourceException(
                         "A connection to the database could not be " +
-                		"established.\nPlease ensure that the details " +
-                		"are correct and the supplied host is available.");
+                                "established.\nPlease ensure that the details " +
+                                "are correct and the supplied host is available.");
             }
 
             if (defaultTxIsolation == -1) {
- 
-                configureTransactionIsolationLevel(realConnection);                
+
+                configureTransactionIsolationLevel(realConnection);
             }
-            
+
             int transactionIsolation = databaseConnection.getTransactionIsolation();
             if (transactionIsolation != -1) {
 
                 try {
-                
+
                     realConnection.setTransactionIsolation(databaseConnection.getTransactionIsolation());
 
                 } catch (SQLException e) {
-                    
+
                     Log.warning("Error setting transaction isolation level: " + e.getMessage());
                 }
             }
@@ -291,12 +290,12 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
             connection.addPooledConnectionListener(this);
 
             openConnections.add(connection);
-            
+
             if (Log.isDebugEnabled()) {
 
-                Log.debug("Added new connection to the pool - " + connection.getId()); 
+                Log.debug("Added new connection to the pool - " + connection.getId());
             }
-            
+
         } catch (SQLException e) {
 
             destroySshTunnel();
@@ -312,28 +311,28 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
 
             defaultTxIsolation = connection.getTransactionIsolation();
             supportsTransactions = connection.getMetaData().supportsTransactions();
-            
+
         } catch (SQLException e) {
 
             rethrowAsDataSourceException(e);
         }
-        
+
     }
 
     private PooledConnection getNextOpenAvailable() {
-        
+
         for (PooledConnection pooledConnection : openConnections) {
-            
+
             if (pooledConnection.isAvailable()) {
-                
+
                 return pooledConnection;
             }
-            
+
         }
-        
+
         return null;
     }
-    
+
     public DataSource getDataSource() {
 
         return dataSource;
@@ -350,7 +349,7 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
     }
 
     public int getMinimumConnections() {
-        
+
         return minimumConnections;
     }
 
@@ -367,7 +366,7 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
     public boolean isTransactionSupported() {
 
         if (defaultTxIsolation == -1) {
-            
+
             Connection connection = getConnection();
             try {
 
@@ -379,7 +378,7 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
             }
 
         }
-        
+
         return supportsTransactions;
     }
 
@@ -389,24 +388,24 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
     }
 
     public int getInitialConnections() {
-        
+
         return initialConnections;
     }
-    
+
     public void setInitialConnections(int initialConnections) {
 
         if (initialConnections < 1) {
-            
+
             throw new IllegalArgumentException("Initial connection count must be at least 1");
         }
 
         this.initialConnections = initialConnections;
     }
-    
+
     public void setMaximumConnections(int maximumConnections) {
 
         if (maximumConnections < 1) {
-            
+
             throw new IllegalArgumentException("Maximum connection count must be at least 1");
         }
 
@@ -421,10 +420,10 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
     public void setMinimumConnections(int minimumConnections) {
 
         if (minimumConnections < 1) {
-            
+
             throw new IllegalArgumentException("Minimum connection count must be at least 1");
         }
-        
+
         this.minimumConnections = minimumConnections;
         ensureCapacity(minimumConnections);
     }
@@ -435,56 +434,57 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
 
             return;
         }
-        
+
         int isolationLevelToApply = isolationLevel;
         if (isolationLevelToApply == -1) {
-         
+
             isolationLevelToApply = defaultTxIsolation;
         }
 
-        Log.debug("Setting transaction isolation level to open connections as [ " 
+        Log.debug("Setting transaction isolation level to open connections as [ "
                 + nameForTransactionIsolationLevel(isolationLevelToApply) + " ]");
-        
+
         try {
-        
+
             synchronized (openConnections) {
 
                 for (Connection connection : openConnections) {
-    
+
                     if (!connection.isClosed()) {
-                    
+
                         connection.setTransactionIsolation(isolationLevelToApply);
                     }
-    
+
                 }
-                
+
             }
 
         } catch (SQLException e) {
-            
+
             throw new DataSourceException(e);
         }
-        
+
     }
 
     private String nameForTransactionIsolationLevel(int isolationLevel) {
 
         for (Field field : Connection.class.getFields()) {
-            
+
             String name = field.getName();
             if (StringUtils.startsWith(name, "TRANSACTION_")) {
-                
+
                 try {
                     if (isolationLevel == field.getInt(null)) {
-                        
+
                         return name;
                     }
-                } catch (IllegalArgumentException | IllegalAccessException e) {}
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                }
 
             }
-            
+
         }
-        
+
         return String.valueOf(isolationLevel);
     }
 

@@ -23,33 +23,32 @@ package org.executequery.gui.prefs;
 import org.underworldlabs.util.LabelValuePair;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PreferenceTableModelChangeEvent {
 
     private UserPreference userPreference;
-    
+
     public PreferenceTableModelChangeEvent(UserPreference userPreference) {
 
         this.userPreference = userPreference;
     }
-    
+
     public String getKey() {
-        
+
         return userPreference.getKey();
     }
-    
+
     public Object getValue() {
 
-        Object value = userPreference.getValue(); 
+        Object value = userPreference.getValue();
         if (value instanceof LabelValuePair) {
-            
+
             value = ((LabelValuePair) value).getValue();
         }
-        
+
         return value;
     }
-    
+
 }
 

@@ -20,18 +20,17 @@
 
 package org.executequery.util;
 
-import org.executequery.ApplicationException;
-
 import edu.stanford.ejalbert.BrowserLauncher;
 import edu.stanford.ejalbert.exception.BrowserLaunchingInitializingException;
 import edu.stanford.ejalbert.exception.UnsupportedOperatingSystemException;
+import org.executequery.ApplicationException;
 
 public class SystemWebBrowserLauncher {
 
     public void launch(final String url) {
 
         ThreadUtils.startWorker(new Runnable() {
-           
+
             public void run() {
 
                 try {
@@ -40,20 +39,20 @@ public class SystemWebBrowserLauncher {
                     launcher.openURLinBrowser(url);
 
                 } catch (BrowserLaunchingInitializingException e) {
-                    
+
                     throw new ApplicationException(e);
 
                 } catch (UnsupportedOperatingSystemException e) {
-                  
+
                     throw new ApplicationException(e);
                 }
 
             }
-            
+
         });
 
     }
-    
+
 }
 
 

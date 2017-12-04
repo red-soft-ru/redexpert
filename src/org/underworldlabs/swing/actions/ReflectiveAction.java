@@ -20,31 +20,30 @@
 
 package org.underworldlabs.swing.actions;
 
+import org.executequery.localization.Bundles;
+
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.lang.reflect.Method;
 
-import javax.swing.AbstractAction;
-
-import org.executequery.localization.Bundles;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ReflectiveAction extends AbstractAction {
-    
+
     private Object target;
 
-    public ReflectiveAction() {}
+    public ReflectiveAction() {
+    }
 
     public ReflectiveAction(Object target) {
         this.target = target;
     }
-    
+
     public final void actionPerformed(ActionEvent event) {
 
         preActionPerformed(event);
-        
+
         String command = event.getActionCommand();
 
         try {
@@ -73,11 +72,11 @@ public class ReflectiveAction extends AbstractAction {
             method.invoke(target, args);
 
         } catch (Exception e) {
-            
+
             throw new RuntimeException(e);
 
         }
-        
+
         postActionPerformed(event);
     }
 
@@ -87,17 +86,17 @@ public class ReflectiveAction extends AbstractAction {
     }
 
     public final void setTarget(Object target) {
-        
+
         this.target = target;
     }
 
     protected void postActionPerformed(ActionEvent e) {
-        
+
         // default do nothing
     }
 
     protected void preActionPerformed(ActionEvent e) {
-        
+
         // default do nothing
     }
 

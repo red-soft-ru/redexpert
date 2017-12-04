@@ -21,10 +21,10 @@
 package org.underworldlabs.swing.table;
 
 /**
- * Defines those objects providing generic table cell 
+ * Defines those objects providing generic table cell
  * editor functionality.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface TableCellEditorValue {
 
@@ -35,7 +35,7 @@ public interface TableCellEditorValue {
      * @return the editor's value
      */
     public String getEditorValue();
-    
+
 }
 
 

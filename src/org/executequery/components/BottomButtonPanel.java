@@ -20,48 +20,52 @@
 
 package org.executequery.components;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionListener;
-
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-
 import org.executequery.actions.othercommands.CancelCommand;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ActionBuilder;
 
-/** <p>Simple button panel with help, ok, cancel buttons.
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+
+/**
+ * <p>Simple button panel with help, ok, cancel buttons.
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class BottomButtonPanel extends JPanel {
-    
-    /** The 'OK' or similar button */
+
+    /**
+     * The 'OK' or similar button
+     */
     private JButton okButton;
-    
-    /** The 'Cancel' or close button */
+
+    /**
+     * The 'Cancel' or close button
+     */
     private JButton cancelButton;
-    
-    /** The 'Help' button */
+
+    /**
+     * The 'Help' button
+     */
     private JButton helpButton;
-    
-    /** Indicates whether this is a dialog */
+
+    /**
+     * Indicates whether this is a dialog
+     */
     private boolean isDialog;
-    
+
     public BottomButtonPanel(boolean isDialog) {
         super(new GridBagLayout());
         this.isDialog = isDialog;
-        try  {
+        try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     public BottomButtonPanel(ActionListener okListener, String okText,
                              String helpActionCommand) {
         this(okListener, okText, helpActionCommand, null, false);
@@ -77,17 +81,17 @@ public class BottomButtonPanel extends JPanel {
         this(okListener, okText, helpActionCommand, okActionCommand, false);
     }
 
-    public BottomButtonPanel(ActionListener okListener, 
+    public BottomButtonPanel(ActionListener okListener,
                              String okText,
-                             String helpActionCommand, 
-                             String okActionCommand, 
+                             String helpActionCommand,
+                             String okActionCommand,
                              boolean isDialog) {
         this(isDialog);
-        
+
         if (okActionCommand != null) {
             okButton.setActionCommand(okActionCommand);
         }
-        
+
         if (okListener != null) {
             okButton.addActionListener(okListener);
         }
@@ -96,14 +100,14 @@ public class BottomButtonPanel extends JPanel {
         helpButton.setText(localisedHelpLabel());
         helpButton.setActionCommand(helpActionCommand);
         helpButton.setIcon(null);
-        
+
         if (okText != null) {
             okButton.setText(okText);
         }
-        
+
     }
 
-    public BottomButtonPanel(ActionListener okListener, 
+    public BottomButtonPanel(ActionListener okListener,
                              String okText,
                              AbstractAction helpAction) {
         this(false);
@@ -115,7 +119,7 @@ public class BottomButtonPanel extends JPanel {
             okButton.setText(okText);
         }
     }
-    
+
     public BottomButtonPanel(AbstractAction okAction, AbstractAction helpAction) {
         this(false);
         okButton.setAction(okAction);
@@ -124,11 +128,11 @@ public class BottomButtonPanel extends JPanel {
     }
 
     private void init() throws Exception {
-        
+
         helpButton = new DefaultPanelButton(localisedHelpLabel());
         okButton = new DefaultPanelButton(Bundles.get("common.ok.button"));
         cancelButton = new DefaultPanelButton(new CancelCommand(isDialog));
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets.top = 5;
         gbc.anchor = GridBagConstraints.WEST;
@@ -142,24 +146,24 @@ public class BottomButtonPanel extends JPanel {
         gbc.gridx = 2;
         add(cancelButton, gbc);
     }
-    
+
     public void enableButtons(boolean enable) {
         okButton.setEnabled(enable);
         cancelButton.setEnabled(enable);
     }
-    
+
     public void setOkButtonActionListener(ActionListener l) {
         okButton.addActionListener(l);
     }
-    
+
     public void setCancelButtonText(String s) {
         cancelButton.setText(s);
     }
-    
+
     public void setOkButtonText(String s) {
         okButton.setText(s);
     }
-    
+
     public void setOkButtonAction(AbstractAction a) {
         okButton.setAction(a);
     }
@@ -171,11 +175,11 @@ public class BottomButtonPanel extends JPanel {
     public void setHelpButtonActionListener(ActionListener l) {
         helpButton.addActionListener(l);
     }
-    
+
     public void setHelpButtonAction(AbstractAction a) {
         helpButton.setAction(a);
     }
-    
+
     private String localisedHelpLabel() {
         return Bundles.get("common.help.button");
     }

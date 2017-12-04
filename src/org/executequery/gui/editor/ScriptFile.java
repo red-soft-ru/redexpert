@@ -25,13 +25,13 @@ import org.underworldlabs.util.MiscUtils;
 public class ScriptFile {
 
     private String fileName;
-    
+
     private String absolutePath;
 
     public boolean hasOpenFile() {
         return !MiscUtils.isNull(getAbsolutePath());
     }
-    
+
     public String getFileName() {
         return fileName;
     }
@@ -47,16 +47,16 @@ public class ScriptFile {
     public void setAbsolutePath(String absolutePath) {
 
         this.absolutePath = absolutePath;
-        
-        resetFileName(absolutePath);        
+
+        resetFileName(absolutePath);
     }
 
     private void resetFileName(String absolutePath) {
         if (hasOpenFile()) {
-            
+
             String separator = System.getProperty("file.separator");
             int index = absolutePath.lastIndexOf(separator);
-            
+
             if (index != -1) {
 
                 fileName = absolutePath.substring(index + 1);
@@ -65,7 +65,7 @@ public class ScriptFile {
 
                 fileName = absolutePath;
             }
-            
+
         }
     }
 

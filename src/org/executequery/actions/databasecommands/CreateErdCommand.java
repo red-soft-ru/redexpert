@@ -20,30 +20,30 @@
 
 package org.executequery.actions.databasecommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
-import org.underworldlabs.swing.actions.BaseCommand;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.erd.ErdViewerPanel;
+import org.underworldlabs.swing.actions.BaseCommand;
 
-/** 
+import java.awt.event.ActionEvent;
+
+/**
  * Command execution for Database | Create New ERD.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CreateErdCommand extends OpenFrameCommand
-                              implements BaseCommand {
-    
-    
+        implements BaseCommand {
+
+
     public void execute(ActionEvent e) {
         GUIUtilities.addCentralPane(ErdViewerPanel.TITLE,
-                                    ErdViewerPanel.FRAME_ICON, 
-                                    new ErdViewerPanel(null, null, true),
-                                    null,
-                                    true);
+                ErdViewerPanel.FRAME_ICON,
+                new ErdViewerPanel(null, null, true),
+                null,
+                true);
     }
-   
+
 }
 
 

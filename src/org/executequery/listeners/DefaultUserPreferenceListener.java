@@ -20,8 +20,6 @@
 
 package org.executequery.listeners;
 
-import java.util.Properties;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.event.UserPreferenceEvent;
 import org.executequery.event.UserPreferenceListener;
@@ -29,8 +27,10 @@ import org.executequery.util.SystemResources;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.GUIUtils;
 
+import java.util.Properties;
+
 public class DefaultUserPreferenceListener extends AbstractUserPreferenceListener
-                                           implements UserPreferenceListener {
+        implements UserPreferenceListener {
 
     public void preferencesChanged(UserPreferenceEvent event) {
 
@@ -40,10 +40,10 @@ public class DefaultUserPreferenceListener extends AbstractUserPreferenceListene
 
                 Properties properties = UserProperties.getInstance().getProperties();
                 if (properties != null) {
-                 
+
                     SystemResources.setUserPreferences(properties);
                 }
-                
+
                 String encoding = properties.getProperty("system.file.encoding");
                 if (StringUtils.isNotBlank(encoding)) {
 
@@ -54,7 +54,7 @@ public class DefaultUserPreferenceListener extends AbstractUserPreferenceListene
         });
 
     }
-    
+
 }
 
 

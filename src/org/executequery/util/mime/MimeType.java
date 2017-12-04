@@ -21,6 +21,7 @@
 package org.executequery.util.mime;
 
 // JDK imports
+
 import java.util.ArrayList;
 
 
@@ -32,68 +33,92 @@ import java.util.ArrayList;
  */
 public final class MimeType {
 
-    /** The primary and sub types separator */
+    /**
+     * The primary and sub types separator
+     */
     private final static String SEPARATOR = "/";
-    
-    /** The parameters separator */
+
+    /**
+     * The parameters separator
+     */
     private final static String PARAMS_SEP = ";";
-    
-    /** Special characters not allowed in content types. */
+
+    /**
+     * Special characters not allowed in content types.
+     */
     private final static String SPECIALS = "()<>@,;:\\\"/[]?=";
-    
-    
-    /** The Mime-Type full name */
+
+
+    /**
+     * The Mime-Type full name
+     */
     private String name = null;
 
-    /** The Mime-Type primary type */
+    /**
+     * The Mime-Type primary type
+     */
     private String primary = null;
 
-    /** The Mime-Type sub type */
+    /**
+     * The Mime-Type sub type
+     */
     private String sub = null;
 
-    /** The Mime-Type description */
+    /**
+     * The Mime-Type description
+     */
     private String description = null;
-    
-    /** The Mime-Type associated extensions */
+
+    /**
+     * The Mime-Type associated extensions
+     */
     private ArrayList extensions = null;
-    
-    /** The magic bytes associated to this Mime-Type */
+
+    /**
+     * The magic bytes associated to this Mime-Type
+     */
     private ArrayList magics = null;
-    
-    /** The minimum length of data to provides for magic analyzis */
+
+    /**
+     * The minimum length of data to provides for magic analyzis
+     */
     private int minLength = 0;
-    
-        
+
+
     /**
      * Creates a MimeType from a String.
+     *
      * @param name the MIME content type String.
      */
-     public MimeType(String name) throws MimeTypeException {
-        
+    public MimeType(String name) throws MimeTypeException {
+
         if (name == null || name.length() <= 0) {
             throw new MimeTypeException("The type can not be null or empty");
         }
-        
+
         // Split the two parts of the Mime Content Type
         String[] parts = name.split(SEPARATOR, 2);
-        
+
         // Checks validity of the parts
         if (parts.length != 2) {
             throw new MimeTypeException("Invalid Content Type " + name);
         }
         init(parts[0], parts[1]);
-     }    
-    
+    }
+
     /**
      * Creates a MimeType with the given primary type and sub type.
+     *
      * @param primary the content type primary type.
-     * @param sub the content type sub type.
+     * @param sub     the content type sub type.
      */
     public MimeType(String primary, String sub) throws MimeTypeException {
         init(primary, sub);
     }
-    
-    /** Init method used by constructors. */
+
+    /**
+     * Init method used by constructors.
+     */
     private void init(String primary, String sub) throws MimeTypeException {
 
         // Preliminary checks...
@@ -108,7 +133,7 @@ public final class MimeType {
         if ((clearedSub == null) || (clearedSub.length() <= 0) || (!isValid(clearedSub))) {
             throw new MimeTypeException("Invalid Sub Type " + clearedSub);
         }
-                
+
         // All is ok, assign values
         this.name = primary + SEPARATOR + clearedSub;
         this.primary = primary;
@@ -121,10 +146,11 @@ public final class MimeType {
      * Cleans a content-type.
      * This method cleans a content-type by removing its optional parameters
      * and returning only its <code>primary-type/sub-type</code>.
+     *
      * @param type is the content-type to clean.
      * @return the cleaned version of the specified content-type.
      * @throws MimeTypeException if something wrong occurs during the
-     *         parsing/cleaning of the specified type.
+     *                           parsing/cleaning of the specified type.
      */
     public final static String clean(String type) throws MimeTypeException {
         return (new MimeType(type)).getName();
@@ -133,6 +159,7 @@ public final class MimeType {
 
     /**
      * Return the name of this mime-type.
+     *
      * @return the name of this mime-type.
      */
     public String getName() {
@@ -141,6 +168,7 @@ public final class MimeType {
 
     /**
      * Return the primary type of this mime-type.
+     *
      * @return the primary type of this mime-type.
      */
     public String getPrimaryType() {
@@ -149,6 +177,7 @@ public final class MimeType {
 
     /**
      * Return the sub type of this mime-type.
+     *
      * @return the sub type of this mime-type.
      */
     public String getSubType() {
@@ -167,7 +196,7 @@ public final class MimeType {
      *
      * @param object the reference object with which to compare.
      * @return <code>true</code> if this mime-type is equal to the object
-     *         argument; <code>false</code> otherwise.
+     * argument; <code>false</code> otherwise.
      */
     public boolean equals(Object object) {
         try {
@@ -176,15 +205,16 @@ public final class MimeType {
             return false;
         }
     }
-    
+
     // Inherited Javadoc
     public int hashCode() {
         return name.hashCode();
     }
-    
-    
+
+
     /**
      * Return the description of this mime-type.
+     *
      * @return the description of this mime-type.
      */
     String getDescription() {
@@ -193,16 +223,18 @@ public final class MimeType {
 
     /**
      * Set the description of this mime-type.
+     *
      * @param description the description of this mime-type.
      */
     void setDescription(String description) {
         this.description = description;
     }
-    
+
     /**
      * Add a supported extension.
+     *
      * @param the extension to add to the list of extensions associated
-     *        to this mime-type.
+     *            to this mime-type.
      */
     void addExtension(String ext) {
         extensions.add(ext);
@@ -210,12 +242,13 @@ public final class MimeType {
 
     /**
      * Return the extensions of this mime-type
+     *
      * @return the extensions associated to this mime-type.
      */
     String[] getExtensions() {
         return (String[]) extensions.toArray(new String[extensions.size()]);
     }
-    
+
     void addMagic(int offset, String type, String magic) {
         // Some preliminary checks...
         if ((magic == null) || (magic.length() < 1)) {
@@ -227,30 +260,32 @@ public final class MimeType {
             minLength = Math.max(minLength, m.size());
         }
     }
-    
+
     int getMinLength() {
         return minLength;
     }
-    
+
     public boolean hasMagic() {
         return (magics.size() > 0);
     }
-    
+
     public boolean matches(String url) {
         boolean match = false;
         int index = url.lastIndexOf('.');
-        if ((index != -1) && (index < url.length()-1)) {
+        if ((index != -1) && (index < url.length() - 1)) {
             // There's an extension, so try to find if it matches mines
             match = extensions.contains(url.substring(index + 1));
-         }
-         return match;
+        }
+        return match;
     }
 
     public boolean matches(byte[] data) {
-        if (!hasMagic()) { return false; }
-        
+        if (!hasMagic()) {
+            return false;
+        }
+
         Magic tested = null;
-        for (int i=0; i<magics.size(); i++) {
+        for (int i = 0; i < magics.size(); i++) {
             tested = (Magic) magics.get(i);
             if (tested.matches(data)) {
                 return true;
@@ -259,31 +294,35 @@ public final class MimeType {
         return false;
     }
 
-    
-    /** Checks if the specified primary or sub type is valid. */
+
+    /**
+     * Checks if the specified primary or sub type is valid.
+     */
     private boolean isValid(String type) {
-        return    (type != null)
-               && (type.trim().length() > 0)
-               && !hasCtrlOrSpecials(type);
+        return (type != null)
+                && (type.trim().length() > 0)
+                && !hasCtrlOrSpecials(type);
     }
 
-    /** Checks if the specified string contains some special characters. */
+    /**
+     * Checks if the specified string contains some special characters.
+     */
     private boolean hasCtrlOrSpecials(String type) {
         int len = type.length();
         int i = 0;
         while (i < len) {
             char c = type.charAt(i);
             if (c <= '\032' || SPECIALS.indexOf(c) > 0) {
-            	return true;
+                return true;
             }
             i++;
         }
         return false;
     }
 
-    
+
     private class Magic {
-        
+
         private int offset;
         private byte[] magic = null;
 
@@ -296,27 +335,29 @@ public final class MimeType {
                 this.magic = magic.getBytes();
             }
         }
-        
+
         int size() {
             return (offset + magic.length);
         }
-        
+
         boolean matches(byte[] data) {
-            if (data == null) { return false; }
-            
+            if (data == null) {
+                return false;
+            }
+
             int idx = offset;
             if ((idx + magic.length) > data.length) {
                 return false;
             }
 
-            for (int i=0; i<magic.length; i++) {
+            for (int i = 0; i < magic.length; i++) {
                 if (magic[i] != data[idx++]) {
                     return false;
                 }
             }
-            return true;            
+            return true;
         }
-        
+
         private byte[] readBytes(String magic) {
             byte[] data = null;
 
@@ -324,7 +365,7 @@ public final class MimeType {
                 String tmp = magic.toLowerCase();
                 data = new byte[tmp.length() / 2];
                 int byteValue = 0;
-                for (int i=0; i<tmp.length(); i++) {
+                for (int i = 0; i < tmp.length(); i++) {
                     char c = tmp.charAt(i);
                     int number;
                     if (c >= '0' && c <= '9') {
@@ -338,17 +379,17 @@ public final class MimeType {
                         byteValue = number * 16;
                     } else {
                         byteValue += number;
-                        data[i/2] = (byte) byteValue;
+                        data[i / 2] = (byte) byteValue;
                     }
                 }
             }
             return data;
         }
-        
+
         public String toString() {
             StringBuffer buf = new StringBuffer();
             buf.append("[").append(offset)
-               .append("/").append(magic).append("]");
+                    .append("/").append(magic).append("]");
             return buf.toString();
         }
     }

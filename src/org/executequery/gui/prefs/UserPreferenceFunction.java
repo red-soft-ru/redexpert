@@ -21,15 +21,14 @@
 package org.executequery.gui.prefs;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface UserPreferenceFunction extends PreferenceChangeListener {
 
     void save();
-    
+
     void restoreDefaults();
-    
+
     void addPreferenceChangeListener(PreferenceChangeListener preferenceChangeListener);
 
 }

@@ -27,9 +27,9 @@ public class JpegImageWriterInfo extends AbstractImageWriterInfo {
 
     private final int imageQuality;
 
-    public JpegImageWriterInfo(BufferedImage buferredImage, 
-            File writeToFile, int imageQuality) {
-        
+    public JpegImageWriterInfo(BufferedImage buferredImage,
+                               File writeToFile, int imageQuality) {
+
         super(buferredImage, writeToFile);
         this.imageQuality = imageQuality;
     }

@@ -23,19 +23,18 @@ package org.executequery.repository;
 import java.util.Vector;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface SqlCommandHistoryRepository extends Repository {
 
     String REPOSITORY_ID = "sql-command-history";
-    
+
     void clearSqlCommandHistory();
-    
+
     void addSqlCommand(String query);
 
     Vector<String> getSqlCommandHistory();
-    
+
 }
 
 

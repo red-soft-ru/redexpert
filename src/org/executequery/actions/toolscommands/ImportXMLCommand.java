@@ -20,8 +20,6 @@
 
 package org.executequery.actions.toolscommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.BaseDialog;
@@ -29,39 +27,41 @@ import org.executequery.gui.importexport.ImportExportDataProcess;
 import org.executequery.gui.importexport.ImportExportXMLPanel;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-/** <p>Execution for Import XML command.
+import java.awt.event.ActionEvent;
+
+/**
+ * <p>Execution for Import XML command.
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ImportXMLCommand extends OpenFrameCommand implements BaseCommand {
-    
+
     public void execute(ActionEvent e) {
-        
+
         if (!isConnected()) {
             return;
         }
-        
+
         if (isActionableDialogOpen()) {
             GUIUtilities.acionableDialogToFront();
             return;
         }
-        
+
         if (!isDialogOpen(bundledString("title"))) {
             GUIUtilities.showWaitCursor();
             try {
                 BaseDialog dialog = createDialog(bundledString("title"), false, false);
-                ImportExportXMLPanel panel = 
+                ImportExportXMLPanel panel =
                         new ImportExportXMLPanel(dialog, ImportExportDataProcess.IMPORT);
                 dialog.addDisplayComponent(panel);
                 dialog.display();
-            }
-            finally {
+            } finally {
                 GUIUtilities.showNormalCursor();
             }
         }
 
-        
+
     }
-    
+
 }
 

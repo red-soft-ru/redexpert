@@ -20,32 +20,29 @@
 
 package org.underworldlabs.swing.plaf;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Insets;
-
 import javax.swing.border.LineBorder;
+import java.awt.*;
 
 public class BluerpleBorder extends LineBorder {
 
     private static final Insets INSETS = new Insets(5, 5, 5, 5);
-    
+
     public BluerpleBorder() {
 
         this(Color.GRAY);
     }
 
     public BluerpleBorder(Color colour) {
-        
+
         super(colour);
     }
-    
+
     @Override
     public Insets getBorderInsets(Component c) {
 
         return INSETS;
     }
-    
+
     @Override
     public Insets getBorderInsets(Component c, Insets insets) {
 
@@ -55,6 +52,6 @@ public class BluerpleBorder extends LineBorder {
         insets.right = INSETS.right;
         return insets;
     }
-    
+
 }
 

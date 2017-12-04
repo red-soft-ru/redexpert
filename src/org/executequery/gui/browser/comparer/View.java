@@ -7,31 +7,31 @@ import java.util.ArrayList;
 
 public class View {
 
-    public View(Comparer comp)
-    {
-        comparer=comp;
+    public View(Comparer comp) {
+        comparer = comp;
         init();
     }
-    public void init()
-    {
-        firstConnection=comparer.firstConnection;
-        secondConnection=comparer.secondConnection;
+
+    public void init() {
+        firstConnection = comparer.firstConnection;
+        secondConnection = comparer.secondConnection;
         dependencies = comparer.dependencies;
     }
+
     Dependencies dependencies;
     Comparer comparer;
     StatementExecutor firstConnection;
     StatementExecutor secondConnection;
-    public  final String collect = "select rdb$relations.rdb$relation_name\n"
+    public final String collect = "select rdb$relations.rdb$relation_name\n"
             + "from rdb$relations\n"
             + "where rdb$system_flag = 0 and rdb$relation_type = 1\n";
 
-    private  String query = "";
+    private String query = "";
 
-    public  ArrayList<String> v_fill = new ArrayList<String>();
-    public  ArrayList<String> v_create = new ArrayList<String>();
+    public ArrayList<String> v_fill = new ArrayList<String>();
+    public ArrayList<String> v_create = new ArrayList<String>();
 
-    public  ArrayList<String> getInfo(StatementExecutor con, String view) {
+    public ArrayList<String> getInfo(StatementExecutor con, String view) {
         ArrayList<String> info = new ArrayList<>();
         String columns = "";
         int num = 0;
@@ -43,8 +43,8 @@ public class View {
                 + "order by rdb$relation_fields.rdb$field_position";
 
         try {
-            ResultSet rs= con.execute(query,true).getResultSet();
-            
+            ResultSet rs = con.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
                 columns = columns + "\"" + rs.getString(1).trim() + "\", ";
@@ -66,8 +66,8 @@ public class View {
                 + "where rdb$relations.rdb$relation_name = '" + view + "' and rdb$relations.rdb$system_flag = 0";
 
         try {
-            ResultSet rs= con.execute(query,true).getResultSet();
-            
+            ResultSet rs = con.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
 
@@ -86,7 +86,7 @@ public class View {
         return info;
     }
 
-    public  String create(String view) {
+    public String create(String view) {
         String scriptPart = "";
         if (!comparer.createdObjects.contains("view " + view)) {
             ArrayList<ArrayList<String>> depTables = new ArrayList<>();
@@ -99,8 +99,8 @@ public class View {
                     + "and rdb$dependencies.rdb$field_name is not null";
 
             try {
-                ResultSet rs= firstConnection.execute(query,true).getResultSet();
-                
+                ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                 while (rs.next()) {
                     ArrayList<String> line = new ArrayList<String>();
@@ -132,8 +132,8 @@ public class View {
                     + "and rdb$dependencies.rdb$depended_on_type = 1";
 
             try {
-                ResultSet rs= firstConnection.execute(query,true).getResultSet();
-                
+                ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                 while (rs.next()) {
                     depViews.add(rs.getString(1).trim());
@@ -177,7 +177,7 @@ public class View {
         return scriptPart;
     }
 
-    public  String alter(String view) {
+    public String alter(String view) {
         String scriptPart = "";
 
         ArrayList<String> info = new ArrayList<>();
@@ -196,7 +196,7 @@ public class View {
         return scriptPart;
     }
 
-    public  String drop(String view) {
+    public String drop(String view) {
         String scriptPart = "";
 
         if (!comparer.droppedObjects.contains("view " + view)) {
@@ -209,7 +209,7 @@ public class View {
                     + "where rdb$dependencies.rdb$depended_on_name = '" + view + "'";
 
             try {
-                ResultSet rs =secondConnection.execute(query,true).getResultSet();
+                ResultSet rs = secondConnection.execute(query, true).getResultSet();
 
 
                 while (rs.next()) {
@@ -246,7 +246,7 @@ public class View {
         return scriptPart;
     }
 
-    public  String fill(String view) {
+    public String fill(String view) {
         String scriptPart = "";
 
         ArrayList<String> info = new ArrayList<>();

@@ -25,7 +25,7 @@ import java.awt.event.ActionEvent;
 /**
  * Command to format the sql text within the editor
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class FormatSQLCommand extends AbstractQueryEditorCommand {
 
@@ -35,9 +35,9 @@ public class FormatSQLCommand extends AbstractQueryEditorCommand {
 
             queryEditor().formatSQLtext();
         }
-        
+
     }
-    
+
 }
 
 

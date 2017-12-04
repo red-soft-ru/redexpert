@@ -6,33 +6,33 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 
 public class Index {
-    public Index(Comparer comp)
-    {
-        comparer=comp;
+    public Index(Comparer comp) {
+        comparer = comp;
         init();
     }
-    public void init()
-    {
-        firstConnection=comparer.firstConnection;
-        secondConnection=comparer.secondConnection;
+
+    public void init() {
+        firstConnection = comparer.firstConnection;
+        secondConnection = comparer.secondConnection;
         dependencies = comparer.dependencies;
     }
+
     Dependencies dependencies;
     Comparer comparer;
     StatementExecutor firstConnection;
     StatementExecutor secondConnection;
 
-    public  final String collect = "select rdb$indices.rdb$index_name\n"
+    public final String collect = "select rdb$indices.rdb$index_name\n"
             + "from rdb$indices\n"
             + "left outer join rdb$relation_constraints on rdb$relation_constraints.rdb$index_name = rdb$indices.rdb$index_name\n"
             + "where rdb$indices.rdb$system_flag = 0  and\n"
             + "      rdb$relation_constraints.rdb$index_name is null";
 
-    private  String query = "";
+    private String query = "";
 
-    public  ArrayList<String> indicesToFill = new ArrayList<String>();
+    public ArrayList<String> indicesToFill = new ArrayList<String>();
 
-    public  ArrayList<String> getInfo(StatementExecutor con, String index) {
+    public ArrayList<String> getInfo(StatementExecutor con, String index) {
         ArrayList<String> info = new ArrayList<>();
 
         query = "select rdb$indices.rdb$relation_name,\n" + //1
@@ -44,8 +44,8 @@ public class Index {
                 + "where rdb$indices.rdb$index_name = '" + index + "'";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
-            
+            ResultSet rs = con.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
                 info.add(rs.getString(1).trim());
@@ -70,8 +70,8 @@ public class Index {
         String indexFields = "";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
-            
+            ResultSet rs = con.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
                 indexFields = indexFields + "\"" + rs.getString(1).trim() + "\", ";
@@ -93,7 +93,7 @@ public class Index {
         return info;
     }
 
-    public  String create(String index) {
+    public String create(String index) {
         String scriptPart = "";
 
         ArrayList<String> info = new ArrayList<>();
@@ -110,7 +110,7 @@ public class Index {
                 + "order by rdb$index_segments.rdb$field_position";
 
         try {
-            ResultSet rs = firstConnection.execute(query,true).getResultSet();
+            ResultSet rs = firstConnection.execute(query, true).getResultSet();
 
             while (rs.next()) {
                 ArrayList<String> line = new ArrayList<String>();
@@ -159,7 +159,7 @@ public class Index {
         return scriptPart;
     }
 
-    public  String alter(String index) {
+    public String alter(String index) {
         String scriptPart = "";
 
         ArrayList<String> info = new ArrayList<String>();
@@ -171,7 +171,7 @@ public class Index {
         if (!info.get(0).equals(info2.get(0)) || !info.get(2).equals(info2.get(2))
                 || !info.get(3).equals(info2.get(3))
                 //|| !info.get(4).equals(info2.get(4))
-                || !replaceCode.compare_wo_r(info.get(4),(info2.get(4)))
+                || !replaceCode.compare_wo_r(info.get(4), (info2.get(4)))
                 || !info.get(5).equals(info2.get(5))) {
             scriptPart = drop(index);
             scriptPart = scriptPart + create(index);
@@ -183,7 +183,7 @@ public class Index {
         return scriptPart;
     }
 
-    public  String drop(String index) {
+    public String drop(String index) {
         String scriptPart = "";
 
         if (!comparer.droppedObjects.contains("index " + index)) {

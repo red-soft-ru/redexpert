@@ -20,34 +20,33 @@
 
 package org.executequery.actions.databasecommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.connections.ExportConnectionsPanel;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-/** 
- *
- *  @author   Takis Diakoumis
+import java.awt.event.ActionEvent;
+
+/**
+ * @author Takis Diakoumis
  */
 public class ExportConnectionsCommand extends OpenFrameCommand implements BaseCommand {
-    
+
     public void execute(ActionEvent e) {
-        
+
         try {
 
             GUIUtilities.showWaitCursor();
 
             BaseDialog dialog = new BaseDialog(ExportConnectionsPanel.TITLE, true);
             ExportConnectionsPanel panel = new ExportConnectionsPanel(dialog);
-            
+
             dialog.addDisplayComponentWithEmptyBorder(panel);
             dialog.display();
 
         } finally {
-          
+
             GUIUtilities.showNormalCursor();
         }
 

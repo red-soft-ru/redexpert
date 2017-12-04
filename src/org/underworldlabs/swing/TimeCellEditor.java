@@ -3,7 +3,6 @@ package org.underworldlabs.swing;
 import org.executequery.gui.resultset.RecordDataItem;
 
 import javax.swing.*;
-import javax.swing.event.CellEditorListener;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.MouseEvent;

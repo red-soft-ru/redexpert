@@ -7,21 +7,21 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Table {
-    public Table (Comparer comp)
-    {
-        comparer=comp;
+    public Table(Comparer comp) {
+        comparer = comp;
         init();
     }
-    public void init()
-    {
-        firstConnection=comparer.firstConnection;
-        secondConnection=comparer.secondConnection;
+
+    public void init() {
+        firstConnection = comparer.firstConnection;
+        secondConnection = comparer.secondConnection;
         dependencies = comparer.dependencies;
         domain = comparer.domain;
         constraint = comparer.constraint;
         procedure = comparer.procedure;
         index = comparer.index;
     }
+
     Index index;
     Procedure procedure;
     Constraint constraint;
@@ -31,15 +31,15 @@ public class Table {
     StatementExecutor firstConnection;
     StatementExecutor secondConnection;
 
-    public  final String collect = "select rdb$relation_name\n"
+    public final String collect = "select rdb$relation_name\n"
             + "from rdb$relations\n"
             + "where rdb$system_flag = 0 and rdb$relation_type <> 1";
 
-    public  ArrayList<ArrayList<String>> cf_fill = new ArrayList<>(); // 1 - таблица, 2 - поле
+    public ArrayList<ArrayList<String>> cf_fill = new ArrayList<>(); // 1 - таблица, 2 - поле
 
-    private  String query = "";
+    private String query = "";
 
-    public  ArrayList<String> getFields(StatementExecutor con, String table) {
+    public ArrayList<String> getFields(StatementExecutor con, String table) {
         ArrayList<String> infoFields = new ArrayList<>();
 
         query = "select rdb$relation_fields.rdb$field_name, rdb$relation_fields.rdb$field_name\n"
@@ -57,8 +57,8 @@ public class Table {
                 + "where rdb$relation_fields.rdb$relation_name = '" + table + "' and rdb$fields.rdb$computed_source is not null";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
-            
+            ResultSet rs = con.execute(query, true).getResultSet();
+
 
             ArrayList<ArrayList<String>> list = new ArrayList<>();
 
@@ -82,7 +82,7 @@ public class Table {
         return infoFields;
     }
 
-    public  ArrayList<String> fieldInfo(StatementExecutor con, String table, String field) {
+    public ArrayList<String> fieldInfo(StatementExecutor con, String table, String field) {
         ArrayList<String> info = new ArrayList<>();
         ArrayList<String> domains = new ArrayList<>();
 
@@ -92,8 +92,8 @@ public class Table {
 
         try {
 
-            ResultSet rs = con.execute(query,true).getResultSet();
-            
+            ResultSet rs = con.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
                 domains.add(rs.getString(1).trim());
@@ -123,8 +123,8 @@ public class Table {
                 + "' and rdb$relation_fields.rdb$field_name = '" + field + "'";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
-            
+            ResultSet rs = con.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
                 if (!replaceCode.noNull(rs.getString(11)).trim().equals("")) {
@@ -159,7 +159,7 @@ public class Table {
         return info;
     }
 
-    public  String create(String table) {
+    public String create(String table) {
         String scriptPartDom = "";
         String scriptPart = "";
 
@@ -176,8 +176,8 @@ public class Table {
                     + "and rdb$relation_fields.rdb$relation_name = '" + table + "'";
 
             try {
-                ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                
+                ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                 while (rs.next()) {
 
@@ -222,8 +222,8 @@ public class Table {
                                     + "where rdb$fields.rdb$field_name = '" + info.get(0) + "'";
 
                             try {
-                                ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                                
+                                ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                                 boolean c = false;
 
@@ -275,7 +275,7 @@ public class Table {
         return scriptPartDom + scriptPart;
     }
 
-    public  String drop(String table) {
+    public String drop(String table) {
         String scriptPart = "";
 
         query = "select rdb$indices.rdb$index_name\n"
@@ -285,8 +285,8 @@ public class Table {
                 + "and rdb$relation_constraints.rdb$constraint_name is null";
 
         try {
-            ResultSet rs = secondConnection.execute(query,true).getResultSet();
-            
+            ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
                 if (!comparer.droppedObjects.contains("index " + rs.getString(1).trim())) {
@@ -312,8 +312,8 @@ public class Table {
                 + "order by rdb$relation_constraints.rdb$constraint_type desc";
 
         try {
-            ResultSet rs = secondConnection.execute(query,true).getResultSet();
-            
+            ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
                 ArrayList<String> line = new ArrayList<String>();
@@ -354,8 +354,8 @@ public class Table {
                 + "where rdb$dependencies.rdb$depended_on_name = '" + table + "'";
 
         try {
-            ResultSet rs = secondConnection.execute(query,true).getResultSet();
-            
+            ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
                 ArrayList<String> line = new ArrayList<String>();
@@ -399,8 +399,8 @@ public class Table {
                                     + "and rdb$relation_fields.rdb$relation_name = '" + table + "'";
 
                             try {
-                                ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                                
+                                ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                                 while (rs.next()) {
                                     String param = "";
@@ -452,8 +452,8 @@ public class Table {
                                     + "and rdb$relation_fields.rdb$relation_name = '" + table + "'";
 
                             try {
-                                ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                                
+                                ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                                 while (rs.next()) {
                                     String param = "";
@@ -503,7 +503,7 @@ public class Table {
         return scriptPart;
     }
 
-    public  String alter(String table) {
+    public String alter(String table) {
         String scriptPartD = ""; //0
         String scriptPart = ""; //2
         String scriptPartUpdate = ""; //1
@@ -520,8 +520,8 @@ public class Table {
                 + "and rdb$relation_fields.rdb$relation_name = '" + table + "'";
 
         try {
-            ResultSet rs = firstConnection.execute(query,true).getResultSet();
-            
+            ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
 
@@ -720,8 +720,8 @@ public class Table {
                             + "' and rdb$relation_fields.rdb$field_name = '" + tableFields.get(k) + "'";
 
                     try {
-                        ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                        
+                        ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                         while (rs.next()) {
                             // обновить информацию
@@ -754,8 +754,8 @@ public class Table {
                 case "33": // домен в домен
                     if (!info.equals(info2)) {
                         try {
-                            ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                            
+                            ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                             boolean c = false;
 
@@ -801,8 +801,8 @@ public class Table {
 
                 case "31": // вычиляемое в домен
                     try {
-                        ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                        
+                        ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                         boolean c = false;
 
@@ -843,8 +843,8 @@ public class Table {
 
                 case "34": // обычное в домен
                     try {
-                        ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                        
+                        ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                         boolean c = false;
 
@@ -904,8 +904,8 @@ public class Table {
                                 + "' and rdb$relation_fields.rdb$field_name = '" + tableFields.get(k) + "'";
 
                         try {
-                            ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                            
+                            ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                             while (rs.next()) {
                                 // обновить информацию
@@ -965,8 +965,8 @@ public class Table {
                             + "' and rdb$relation_fields.rdb$field_name = '" + tableFields.get(k) + "'";
 
                     try {
-                        ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                        
+                        ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                         while (rs.next()) {
                             // обновить информацию
@@ -1011,8 +1011,8 @@ public class Table {
                                 + "where rdb$fields.rdb$field_name = '" + Integer.toString(num) + "'";
 
                         try {
-                            ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                            
+                            ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                             boolean c = false;
 
@@ -1049,8 +1049,8 @@ public class Table {
                             + "' and rdb$relation_fields.rdb$field_name = '" + tableFields.get(k) + "'";
 
                     try {
-                        ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                        
+                        ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                         while (rs.next()) {
                             // создать свой источник поля
@@ -1158,8 +1158,8 @@ public class Table {
                 + "where rdb$relation_fields.rdb$relation_name = '" + table + "'";
 
         try {
-            ResultSet rs = secondConnection.execute(query,true).getResultSet();
-            
+            ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
 
@@ -1202,8 +1202,8 @@ public class Table {
             //+ "or rdb$dependencies.rdb$dependent_type = 1))";
 
             try {
-                ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                
+                ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                 while (rs.next()) {
                     if (/*!rs.getString(1).trim().equals("5")
@@ -1243,8 +1243,8 @@ public class Table {
                     + "order by rdb$procedure_parameters.rdb$parameter_number";
 
             try {
-                ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                
+                ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                 while (rs.next()) {
                     ArrayList<String> line = new ArrayList<String>();
@@ -1288,8 +1288,8 @@ public class Table {
                                     + "where rdb$fields.rdb$field_name = '" + dP.get(1) + "'";
 
                             try {
-                                ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                                
+                                ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                                 while (rs.next()) {
                                     String param = "";
@@ -1339,8 +1339,8 @@ public class Table {
                                     + "where rdb$fields.rdb$field_name = '" + dP.get(1) + "'";
 
                             try {
-                                ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                                
+                                ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                                 while (rs.next()) {
                                     String param = "";
@@ -1390,8 +1390,8 @@ public class Table {
                     + "order by rdb$relation_constraints.rdb$constraint_type desc";
 
             try {
-                ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                
+                ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                 while (rs.next()) {
                     ArrayList<String> line = new ArrayList<String>();
@@ -1434,8 +1434,8 @@ public class Table {
                     + "and rdb$relation_constraints.rdb$index_name is null";
 
             try {
-                ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                
+                ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                 while (rs.next()) {
 
@@ -1471,7 +1471,7 @@ public class Table {
         return scriptPartD + scriptPartUpdate + scriptPart + scriptDefault;
     }
 
-    public  String fillTables(String rel, String f) {
+    public String fillTables(String rel, String f) {
 
         String scriptPart = "";
 
@@ -1482,8 +1482,8 @@ public class Table {
                 + "and rdb$relation_fields.rdb$field_name = '" + f + "'";
 
         try {
-            ResultSet rs = firstConnection.execute(query,true).getResultSet();
-            
+            ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
 
@@ -1500,7 +1500,7 @@ public class Table {
 
         if (!comparer.script.contains(scriptPart)) {
             return scriptPart;
-        } else{
+        } else {
             return "";
         }
     }

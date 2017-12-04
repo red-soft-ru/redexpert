@@ -20,23 +20,23 @@
 
 package org.executequery.actions.databasecommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
-import org.underworldlabs.swing.actions.BaseCommand;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.ExecuteProcedurePanel;
+import org.underworldlabs.swing.actions.BaseCommand;
 
-/** 
+import java.awt.event.ActionEvent;
+
+/**
  * Opens the execute stored objects panel.
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ExecuteStoredObjectCommand extends OpenFrameCommand
-                                        implements BaseCommand {
-    
+        implements BaseCommand {
+
     public void execute(ActionEvent e) {
-        
+
         if (!isConnected()) {
 
             return;
@@ -46,10 +46,10 @@ public class ExecuteStoredObjectCommand extends OpenFrameCommand
             GUIUtilities.showWaitCursor();
 
             GUIUtilities.addCentralPane(ExecuteProcedurePanel.TITLE,
-                                        ExecuteProcedurePanel.FRAME_ICON, 
-                                        new ExecuteProcedurePanel(),
-                                        null,
-                                        true);
+                    ExecuteProcedurePanel.FRAME_ICON,
+                    new ExecuteProcedurePanel(),
+                    null,
+                    true);
 
         } finally {
 

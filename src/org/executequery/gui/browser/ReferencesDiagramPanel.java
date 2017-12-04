@@ -20,23 +20,20 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.BorderLayout;
+import org.executequery.gui.erd.ErdViewerPanel;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.print.Printable;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
-
-import org.executequery.gui.erd.ErdViewerPanel;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ReferencesDiagramPanel extends JPanel {
-    
+
     private ErdViewerPanel viewerPanel;
-    
+
     public ReferencesDiagramPanel() {
         super(new BorderLayout());
         viewerPanel = new ErdViewerPanel(false, false);
@@ -45,21 +42,21 @@ public class ReferencesDiagramPanel extends JPanel {
         setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
         add(viewerPanel, BorderLayout.CENTER);
     }
-    
+
     public void cleanup() {
         viewerPanel.cleanup();
     }
-    
+
     public Printable getPrintable() {
         return viewerPanel.getPrintable();
     }
-    
-    @SuppressWarnings({ "rawtypes" })
+
+    @SuppressWarnings({"rawtypes"})
     public void setTables(List tableNames, List columnData) {
-        
+
         viewerPanel.resetTableValues(tableNames, columnData);
     }
-   
+
 }
 
 

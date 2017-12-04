@@ -21,18 +21,17 @@
 package org.executequery.event;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface DatabaseDriverListener extends ApplicationEventListener {
-    
+
     /**
      * Indicates that drivers have been updated
-     * 
+     *
      * @param the encapsulating event
      */
     public void driversUpdated(DatabaseDriverEvent databaseDriverEvent);
-    
+
 }
 
 

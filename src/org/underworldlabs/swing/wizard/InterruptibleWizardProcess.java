@@ -21,8 +21,8 @@
 package org.underworldlabs.swing.wizard;
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
@@ -30,15 +30,15 @@ package org.underworldlabs.swing.wizard;
 /**
  * Defines a wizard process that may be interrupted.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface InterruptibleWizardProcess {
-    
+
     /**
      * Performs the stop action.
      */
     public abstract void stop();
-    
+
 }
 
 

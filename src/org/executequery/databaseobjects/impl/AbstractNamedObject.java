@@ -20,42 +20,43 @@
 
 package org.executequery.databaseobjects.impl;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 
+import java.sql.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Abstract named database object implementation.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public abstract class AbstractNamedObject implements NamedObject,
-                                                     Cloneable {
-    
-    /** indicates whether this object has been marked for a reload */
+        Cloneable {
+
+    /**
+     * indicates whether this object has been marked for a reload
+     */
     private boolean markedForReload;
 
-    /** the name of this database object */
+    /**
+     * the name of this database object
+     */
     private String name;
-    
-    /** the parent object */
+
+    /**
+     * the parent object
+     */
     private NamedObject parent;
 
     private boolean keepAlive;
 
-    public AbstractNamedObject()
-    {
-        keepAlive=true;//need change
+    public AbstractNamedObject() {
+        keepAlive = true;//need change
     }
 
     /**
@@ -66,18 +67,18 @@ public abstract class AbstractNamedObject implements NamedObject,
     public NamedObject getParent() {
         return parent;
     }
-    
+
     /**
      * Sets the parent object to that specified.
      *
-     * @param  parent named object
+     * @param parent named object
      */
     public void setParent(NamedObject parent) {
         this.parent = parent;
     }
 
     /**
-     * Returns whether this object has been marked for a reload on the 
+     * Returns whether this object has been marked for a reload on the
      * next call to its meta data specific methods.
      *
      * @return true | false
@@ -97,7 +98,7 @@ public abstract class AbstractNamedObject implements NamedObject,
 
     /**
      * Marks this object as being 'reset', where for any loaded objectnode.
-     * these are cleared and a fresh database call would be made where 
+     * these are cleared and a fresh database call would be made where
      * appropriate.
      */
     public void reset() {
@@ -113,16 +114,16 @@ public abstract class AbstractNamedObject implements NamedObject,
         try {
             Statement st = rs.getStatement();
             if (rs != null) {
-                if(!rs.isClosed())
+                if (!rs.isClosed())
 
-                rs.close();
+                    rs.close();
             }
-            if(st != null)
-            {
-                if(!st.isClosed())
+            if (st != null) {
+                if (!st.isClosed())
                     st.close();
             }
-        } catch (SQLException sqlExc) {}
+        } catch (SQLException sqlExc) {
+        }
     }
 
     /**
@@ -133,23 +134,24 @@ public abstract class AbstractNamedObject implements NamedObject,
     protected void releaseResources(Connection connection) {
         try {
             if (connection != null) {
-                if(!keepAlive)
+                if (!keepAlive)
                     connection.close();
             }
-        } catch (SQLException e) {}
+        } catch (SQLException e) {
+        }
     }
 
     /**
      * Closes the specified sql statement and result set objects.
      *
      * @param stmnt statement to be closed
-     * @param rs the result set to be closed
+     * @param rs    the result set to be closed
      */
     protected void releaseResources(Statement stmnt, ResultSet rs) {
         releaseResources(rs);
         releaseResources(stmnt);
     }
-    
+
     /**
      * Closes the specified sql statement object.
      *
@@ -158,10 +160,11 @@ public abstract class AbstractNamedObject implements NamedObject,
     protected void releaseResources(Statement stmnt) {
         try {
             if (stmnt != null) {
-                if(!stmnt.isClosed())
+                if (!stmnt.isClosed())
                     stmnt.close();
             }
-        } catch (SQLException sqlExc) {}
+        } catch (SQLException sqlExc) {
+        }
     }
 
     /**
@@ -191,7 +194,7 @@ public abstract class AbstractNamedObject implements NamedObject,
     }
 
     Map<String, String> resultSetRowToMap(ResultSet rs) throws SQLException {
-        
+
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
 
@@ -200,18 +203,18 @@ public abstract class AbstractNamedObject implements NamedObject,
             metaColumnNames[i - 1] = rsmd.getColumnName(i);
         }
 
-        Map<String,String> metaData = new HashMap<String,String>(columnCount);
+        Map<String, String> metaData = new HashMap<String, String>(columnCount);
         for (int i = 1; i < columnCount; i++) {
             metaData.put(metaColumnNames[i - 1].toUpperCase(), rs.getString(i));
         }
- 
+
         return metaData;
     }
-    
+
     public String getDescription() {
 
         if (getType() != META_TAG) {
-        
+
             String metaDataKey = getMetaDataKey();
             if (StringUtils.isNotBlank(metaDataKey)) {
 
@@ -220,7 +223,7 @@ public abstract class AbstractNamedObject implements NamedObject,
         }
         return getName();
     }
-    
+
     /**
      * Sets the name of this database object as specified.
      *
@@ -256,40 +259,40 @@ public abstract class AbstractNamedObject implements NamedObject,
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }
-    
+
     protected final void logThrowable(Throwable e) {
-        
+
         if (Log.isDebugEnabled()) {
 
             if (e instanceof SQLException) {
-            
+
                 logSQLException((SQLException) e);
 
             } else if (e.getCause() != null && e.getCause() instanceof SQLException) {
-                
+
                 logSQLException((SQLException) e.getCause());
-                
+
             } else {
-                
+
                 e.printStackTrace();
             }
-            
+
         }
 
     }
-    
+
     protected final void logSQLException(SQLException e) {
 
         e.printStackTrace();
-        SQLException nextException = e; 
-        
+        SQLException nextException = e;
+
         while ((nextException = nextException.getNextException()) != null) {
-            
+
             nextException.printStackTrace();
         }
 
     }
-    
+
 }
 
 

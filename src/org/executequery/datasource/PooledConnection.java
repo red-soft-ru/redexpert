@@ -21,7 +21,6 @@
 package org.executequery.datasource;
 
 import org.executequery.log.Log;
-import org.underworldlabs.swing.util.SwingWorker;
 
 import java.sql.*;
 import java.util.*;
@@ -773,12 +772,11 @@ public class PooledConnection implements Connection {
 
     public void setFree(boolean flag) {
 
-        if (!flag) try{
+        if (!flag) try {
             mutex.acquire();
             free = flag;
-        }catch (InterruptedException e)
-        {
-            Log.debug("Mutex Threads Exception:",e);
+        } catch (InterruptedException e) {
+            Log.debug("Mutex Threads Exception:", e);
         }
         else {
             if (!free) {

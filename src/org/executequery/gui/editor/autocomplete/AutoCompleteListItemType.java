@@ -22,12 +22,12 @@ package org.executequery.gui.editor.autocomplete;
 
 public enum AutoCompleteListItemType {
 
-    SQL92_KEYWORD, 
+    SQL92_KEYWORD,
     USER_DEFINED_KEYWORD,
-    DATABASE_DEFINED_KEYWORD, 
-    DATABASE_TABLE, 
+    DATABASE_DEFINED_KEYWORD,
+    DATABASE_TABLE,
     DATABASE_TABLE_COLUMN,
-    DATABASE_VIEW, 
+    DATABASE_VIEW,
     DATABASE_SEQUENCE,
     DATABASE_DATA_TYPE,
     DATABASE_FUNCTION,
@@ -37,42 +37,42 @@ public enum AutoCompleteListItemType {
     GENERATING_LIST;
 
     public boolean isKeyword() {
-        
-        return this == SQL92_KEYWORD 
-            || this == USER_DEFINED_KEYWORD
-            || this == DATABASE_DEFINED_KEYWORD;
+
+        return this == SQL92_KEYWORD
+                || this == USER_DEFINED_KEYWORD
+                || this == DATABASE_DEFINED_KEYWORD;
     }
-    
+
     public boolean isTableColumn() {
-        
+
         return this == DATABASE_TABLE_COLUMN;
     }
 
     public boolean isTableView() {
-        
+
         return this == DATABASE_VIEW;
     }
-    
+
     public boolean isTable() {
 
         return this == DATABASE_TABLE;
     }
 
     public boolean isProcedure() {
-        
+
         return this == DATABASE_PROCEDURE;
     }
-    
+
     public boolean isFunction() {
-        
+
         return this == DATABASE_FUNCTION;
     }
 
     public boolean isSystemFunction() {
-        
+
         return this == SYSTEM_FUNCTION;
     }
-    
+
 }
 
 

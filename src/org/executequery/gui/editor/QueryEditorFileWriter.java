@@ -20,22 +20,22 @@
 
 package org.executequery.gui.editor;
 
-import java.io.File;
-
 import org.executequery.gui.SaveFunction;
 import org.executequery.gui.text.TextFileWriter;
+
+import java.io.File;
 
 public class QueryEditorFileWriter {
 
     public boolean write(String text, ScriptFile scriptFile, boolean saveAs) {
 
         String savePath = savePathFromScriptFile(scriptFile);
-        
+
         TextFileWriter writer = new TextFileWriter(
                 text, savePath, (!scriptFile.hasOpenFile() || saveAs));
 
         boolean saved = (writer.write() == SaveFunction.SAVE_COMPLETE);
-        
+
         if (saved) {
 
             File file = writer.getSavedFile();
@@ -43,20 +43,20 @@ public class QueryEditorFileWriter {
             scriptFile.setFileName(file.getName());
             scriptFile.setAbsolutePath(file.getAbsolutePath());
         }
-        
+
         return saved;
     }
 
     private String savePathFromScriptFile(ScriptFile scriptFile) {
 
         if (scriptFile.hasOpenFile()) {
-            
+
             return scriptFile.getAbsolutePath();
         }
-        
+
         return scriptFile.getFileName();
     }
-    
+
 }
 
 

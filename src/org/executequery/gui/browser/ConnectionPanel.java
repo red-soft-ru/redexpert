@@ -20,31 +20,6 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.net.URISyntaxException;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.SQLException;
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.EventMediator;
@@ -57,43 +32,51 @@ import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
-import org.executequery.datasource.DriverLoader;
-import org.executequery.event.ApplicationEvent;
-import org.executequery.event.ConnectionRepositoryEvent;
-import org.executequery.event.DatabaseDriverEvent;
-import org.executequery.event.DatabaseDriverListener;
-import org.executequery.event.DefaultConnectionRepositoryEvent;
+import org.executequery.event.*;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.FormPanelButton;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.drivers.DialogDriverPanel;
-import org.executequery.log.Log;
 import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.DefaultFieldLabel;
-import org.underworldlabs.swing.DefaultTextField;
-import org.underworldlabs.swing.DynamicComboBoxModel;
-import org.underworldlabs.swing.LinkButton;
-import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.net.URISyntaxException;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.util.*;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class ConnectionPanel extends AbstractConnectionPanel 
-                             implements DatabaseDriverListener,
-                                        ChangeListener {
+public class ConnectionPanel extends AbstractConnectionPanel
+        implements DatabaseDriverListener,
+        ChangeListener {
 
     private static class TraceMessageLoop
             implements Runnable {
 
-//        FBTraceManager fbTraceManager;
+        //        FBTraceManager fbTraceManager;
         String configuration = null;
         String database;
         String charSet;
@@ -104,7 +87,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         String traceUUID;
 
-        TraceMessageLoop(){
+        TraceMessageLoop() {
 //            fbTraceManager = new FBTraceManager();
 //            fbTraceManager.setLogger(System.out);
 //            traceUUID = UUID.randomUUID().toString();
@@ -166,10 +149,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
     TraceMessageLoop traceMessageLoop = null;
 
     private List<String> charsets;
-    
+
     // -------------------------------
     // text fields and combos
-    
+
     private static final String CONNECT_ACTION_COMMAND = "connect";
 
     private JComboBox driverCombo;
@@ -180,7 +163,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private JTextField userField;
     private JPasswordField passwordField;
     private JTextField hostField;
-//    private NumberTextField portField;
+    //    private NumberTextField portField;
     private JTextField portField;
     private JTextField sourceField;
     private JTextField urlField;
@@ -192,52 +175,72 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private JComboBox methodCombo;
 
     private JLabel statusLabel;
-    
+
     private JComboBox txCombo;
     private JButton txApplyButton;
 
     JPanel basicPanel;
     JPanel standardPanel;
     JPanel jdbcUrlPanel;
-    
+
     // -------------------------------
 
-    /** table model for jdbc properties key/values */
+    /**
+     * table model for jdbc properties key/values
+     */
     private JdbcPropertiesTableModel model;
-    
-    /** connect button */
+
+    /**
+     * connect button
+     */
     private JButton connectButton;
 
-    /** disconnect button */
+    /**
+     * disconnect button
+     */
     private JButton disconnectButton;
 
-    /** the saved jdbc drivers */
+    /**
+     * the saved jdbc drivers
+     */
     private List<DatabaseDriver> jdbcDrivers;
 
-    /** any advanced property keys/values */
+    /**
+     * any advanced property keys/values
+     */
     private String[][] advancedProperties;
-    
-    /** the tab basic/advanced tab pane */
+
+    /**
+     * the tab basic/advanced tab pane
+     */
     private JTabbedPane tabPane;
-    
-    /** the connection properties displayed */
+
+    /**
+     * the connection properties displayed
+     */
     private DatabaseConnection databaseConnection;
 
-    /** the host object representing this connection */
+    /**
+     * the host object representing this connection
+     */
     private DatabaseHost host;
-    
-    /** the browser's control object */
+
+    /**
+     * the browser's control object
+     */
     private BrowserController controller;
 
     private SSHTunnelConnectionPanel sshTunnelConnectionPanel;
-    
-    /** Creates a new instance of ConnectionPanel */
+
+    /**
+     * Creates a new instance of ConnectionPanel
+     */
     public ConnectionPanel(BrowserController controller) {
         super(new BorderLayout());
         this.controller = controller;
         init();
     }
-    
+
     private void init() {
 
         // ---------------------------------
@@ -248,13 +251,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
         auth.add("GSS");
         authCombo = new JComboBox(auth.toArray());
         authCombo.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED)
-            {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
                 Object selectedItem = e.getItem();
                 if (selectedItem.toString().equalsIgnoreCase(bundleString("BasicAu"))) {
                     basicPanel.setVisible(true);
-                }
-                else if (selectedItem.toString().equalsIgnoreCase("gss")) {
+                } else if (selectedItem.toString().equalsIgnoreCase("gss")) {
                     basicPanel.setVisible(false);
                 }
             }
@@ -265,20 +266,18 @@ public class ConnectionPanel extends AbstractConnectionPanel
         methods.add("JDBC");
         methodCombo = new JComboBox(methods.toArray());
         methodCombo.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED)
-            {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
                 Object selectedItem = e.getItem();
                 if (selectedItem.toString().equalsIgnoreCase(bundleString("Standard"))) {
                     standardPanel.setVisible(true);
                     jdbcUrlPanel.setVisible(false);
-                }
-                else if (selectedItem.toString().equalsIgnoreCase("jdbc")) {
+                } else if (selectedItem.toString().equalsIgnoreCase("jdbc")) {
                     standardPanel.setVisible(false);
                     jdbcUrlPanel.setVisible(true);
                 }
             }
         });
-        
+
         // initialise the fields
         nameField = createTextField();
         passwordField = createPasswordField();
@@ -292,13 +291,13 @@ public class ConnectionPanel extends AbstractConnectionPanel
         urlField = createMatchedWidthTextField();
 
         nameField.addFocusListener(new ConnectionNameFieldListener(this));
-        
+
         savePwdCheck = ActionUtilities.createCheckBox(bundleString("StorePassword"), "setStorePassword");
         encryptPwdCheck = ActionUtilities.createCheckBox(bundleString("EncryptPassword"), "setEncryptPassword");
-        
+
         savePwdCheck.addActionListener(this);
         encryptPwdCheck.addActionListener(this);
-        
+
         // retrieve the drivers
         buildDriversList();
 
@@ -308,7 +307,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         // ---------------------------------
         // add the basic connection fields
-        
+
         TextFieldPanel mainPanel = new TextFieldPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -319,10 +318,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         statusLabel = new DefaultFieldLabel();
         addLabelFieldPair(mainPanel, bundleString("statusLabel"),
-                                statusLabel, bundleString("statusLabel.tool-tip"), gbc);
+                statusLabel, bundleString("statusLabel.tool-tip"), gbc);
 
         addDriverFields(mainPanel, gbc);
-        
+
         gbc.insets.bottom = 5;
         addLabelFieldPair(mainPanel, bundleString("nameField"),
                 nameField, bundleString("nameField.tool-tip"), gbc);
@@ -341,7 +340,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         bgbc.anchor = GridBagConstraints.NORTHWEST;
         bgbc.insets = new Insets(5, 5, 5, 5);
 
-        JLabel userLabel = new DefaultFieldLabel( bundleString("userField"));
+        JLabel userLabel = new DefaultFieldLabel(bundleString("userField"));
         bgbc.gridx = 0;
         bgbc.gridwidth = 1;
         bgbc.weightx = 0;
@@ -369,7 +368,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 //        addLabelFieldPair(basicPanel, "Password:",
 //                passwordField, "Login password", gbc);
 
-        JButton showPassword = new LinkButton( bundleString("ShowPassword"));
+        JButton showPassword = new LinkButton(bundleString("ShowPassword"));
         showPassword.setActionCommand("showPassword");
         showPassword.addActionListener(this);
 
@@ -456,6 +455,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         JButton openFile = new JButton(bundleString("ChooseFile"));
         openFile.addActionListener(new ActionListener() {
             FileChooserDialog fileChooser = new FileChooserDialog();
+
             @Override
             public void actionPerformed(ActionEvent e) {
                 int returnVal = fileChooser.showOpenDialog(openFile);
@@ -556,33 +556,33 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.anchor = GridBagConstraints.NORTHEAST;
-        gbc.fill = GridBagConstraints.NONE; 
+        gbc.fill = GridBagConstraints.NONE;
         buttons.add(connectButton, gbc);
         gbc.gridx++;
         gbc.weightx = 0;
         buttons.add(disconnectButton, gbc);
-        
+
         gbc.insets.right = 0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         mainPanel.add(buttons, gbc);
-        
+
         // ---------------------------------
         // create the advanced panel
-        
+
         model = new JdbcPropertiesTableModel();
         JTable table = new DefaultTable(model);
         table.getTableHeader().setReorderingAllowed(false);
-        
+
         TableColumnModel tcm = table.getColumnModel();
-        
+
         TableColumn column = tcm.getColumn(2);
         column.setCellRenderer(new DeleteButtonRenderer());
         column.setCellEditor(new DeleteButtonEditor(table, new JCheckBox()));
         column.setMaxWidth(24);
         column.setMinWidth(24);
-        
+
         JScrollPane scroller = new JScrollPane(table);
-        
+
         // advanced jdbc properties
         JPanel advPropsPanel = new JPanel(new GridBagLayout());
         advPropsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("JDBCProperties")));
@@ -605,10 +605,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbc.insets.bottom = 10;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        advPropsPanel.add(scroller, gbc);        
-        
+        advPropsPanel.add(scroller, gbc);
+
         // transaction isolation
-        txApplyButton =  WidgetFactory.createInlineFieldButton(Bundles.get("common.apply.button"), "transactionLevelChanged");        
+        txApplyButton = WidgetFactory.createInlineFieldButton(Bundles.get("common.apply.button"), "transactionLevelChanged");
         txApplyButton.setToolTipText(bundleString("txApplyButton.tool-tip"));
         txApplyButton.setEnabled(false);
         txApplyButton.addActionListener(this);
@@ -658,26 +658,26 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbc.insets.left = 0;
         gbc.insets.right = 10;
         advTxPanel.add(txApplyButton, gbc);
-        
+
         JPanel advancedPanel = new JPanel(new BorderLayout());
-        advancedPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+        advancedPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         advancedPanel.add(advPropsPanel, BorderLayout.CENTER);
         advancedPanel.add(advTxPanel, BorderLayout.SOUTH);
-        
+
         JScrollPane scrollPane = new JScrollPane(mainPanel);
         scrollPane.setBorder(null);
 
         sshTunnelConnectionPanel = new SSHTunnelConnectionPanel();
-        
+
         tabPane = new JTabbedPane(JTabbedPane.BOTTOM);
         tabPane.addTab(bundleString("Basic"), scrollPane);
         tabPane.addTab(bundleString("Advanced"), advancedPanel);
         tabPane.addTab(bundleString("SSHTunnel"), sshTunnelConnectionPanel);
 
         tabPane.addChangeListener(this);
-        
+
         add(tabPane, BorderLayout.CENTER);
-        
+
         EventMediator.registerListener(this);
     }
 
@@ -691,14 +691,14 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
             String resource = FileUtils.loadResource("org/executequery/charsets.properties");
             String[] strings = resource.split("\n"/*System.getProperty("line.separator")*/);
-            for(String s : strings){
+            for (String s : strings) {
                 if (!s.startsWith("#") && !s.isEmpty())
                     charsets.add(s);
             }
             java.util.Collections.sort(charsets);
             charsets.add(0, "NONE");
 
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return;
         }
@@ -708,35 +708,37 @@ public class ConnectionPanel extends AbstractConnectionPanel
     public void stateChanged(ChangeEvent e) {
 
         if (tabPane.getSelectedIndex() == 2) {
-            
+
             populateConnectionObject();
             sshTunnelConnectionPanel.setValues(databaseConnection);
         }
-        
+
     }
-    
+
     private NumberTextField createNumberTextField() {
-        
+
         NumberTextField textField = WidgetFactory.createNumberTextField();
         formatTextField(textField);
-        
+
         return textField;
     }
 
     private JPasswordField createPasswordField() {
-        
+
         JPasswordField field = WidgetFactory.createPasswordField();
         formatTextField(field);
-        
+
         return field;
     }
 
     private JTextField createMatchedWidthTextField() {
-        
+
         JTextField textField = new DefaultTextField() {
             public Dimension getPreferredSize() {
                 return nameField.getPreferredSize();
-            };
+            }
+
+            ;
         };
         formatTextField(textField);
 
@@ -744,29 +746,29 @@ public class ConnectionPanel extends AbstractConnectionPanel
     }
 
     private JTextField createTextField() {
-        
+
         JTextField textField = WidgetFactory.createTextField();
         formatTextField(textField);
-        
+
         return textField;
     }
-    
+
     private void formatTextField(JTextField textField) {
         textField.setActionCommand(CONNECT_ACTION_COMMAND);
         textField.addActionListener(this);
     }
-    
+
     private JButton createButton(String text, String actionCommand, int mnemonic) {
 
         FormPanelButton button = new FormPanelButton(text, actionCommand);
-        
+
         button.setMnemonic(mnemonic);
         button.addActionListener(this);
         button.applyMaximumSize();
-        
+
         return button;
     }
-    
+
     public void connectionNameChanged() {
         if (panelSelected) {
             populateConnectionObject();
@@ -803,9 +805,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         for (int i = 0; i < size; i++) {
 
-            driverNames[i+1] = jdbcDrivers.get(i).toString();
+            driverNames[i + 1] = jdbcDrivers.get(i).toString();
         }
-        
+
         if (driverCombo == null) {
 
             DynamicComboBoxModel comboModel = new DynamicComboBoxModel();
@@ -814,12 +816,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         } else {
 
-            DynamicComboBoxModel comboModel = (DynamicComboBoxModel)driverCombo.getModel();
+            DynamicComboBoxModel comboModel = (DynamicComboBoxModel) driverCombo.getModel();
             comboModel.setElements(driverNames);
             driverCombo.setModel(comboModel);
             selectDriver();
         }
-        
+
     }
 
     /**
@@ -838,37 +840,35 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 GUIUtilities.displayInformationMessage(
                         bundleString("message.level-change1") + txLevel +
                                 bundleString("message.level-change2"));
-            }
-            catch (DataSourceException e) {
+            } catch (DataSourceException e) {
                 GUIUtilities.displayWarningMessage(
                         bundleString("warning.DataSourceException.level-change") +
-                        e.getMessage() + "\n\n");
+                                e.getMessage() + "\n\n");
+            } catch (Exception e) {
             }
-            catch (Exception e) {}
-        }
-        else {
+        } else {
             GUIUtilities.displayWarningMessage(
                     bundleString("warning.level-change"));
         }
     }
-    
+
     /**
      * Applies the tx level on open connections of the type selected.
      */
     private void applyTransactionLevel(boolean reloadProperties) throws DataSourceException {
-        
+
         // set the tx level from the combo selection
-        getTransactionIsolationLevel();        
+        getTransactionIsolationLevel();
         int isolationLevel = databaseConnection.getTransactionIsolation();
 
         // apply to open connections
         ConnectionManager.setTransactionIsolationLevel(databaseConnection, isolationLevel);
-        
+
         if (reloadProperties) {
-        
+
             controller.updateDatabaseProperties();
         }
-        
+
     }
 
     private boolean connectionNameExists() {
@@ -886,23 +886,23 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     private DatabaseConnectionRepository databaseConnectionRepository() {
 
-        return (DatabaseConnectionRepository)RepositoryCache.load(
-                    DatabaseConnectionRepository.REPOSITORY_ID);        
+        return (DatabaseConnectionRepository) RepositoryCache.load(
+                DatabaseConnectionRepository.REPOSITORY_ID);
     }
 
     /**
      * Acion implementation on selection of the Connect button.
      */
     public void connect() {
-        
+
         if (databaseConnection.isConnected()) {
 
             return;
         }
-        
+
         // ----------------------------
         // some validation
-        
+
         // make sure a name has been entered
         if (nameField.getText().trim().length() == 0) {
             GUIUtilities.displayErrorMessage(bundleString("error.emptyName"));
@@ -913,7 +913,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
             focusNameField();
             return;
         }
-        
+
         // check a driver is selected
         if (driverCombo.getSelectedIndex() == 0) {
             GUIUtilities.displayErrorMessage(bundleString("error.emptyDriver"));
@@ -925,27 +925,27 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
             String port = portField.getText();
             if (!StringUtils.isNumeric(port)) {
-                    
+
                 GUIUtilities.displayErrorMessage(bundleString("error.invalidPort"));
-                return;                    
+                return;
             }
 
         }
 
         if (!sshTunnelConnectionPanel.canConnect()) {
-            
+
             return;
         }
-        
+
         // otherwise - good to proceed
-        
+
         // populate the object with field values
         //populateConnectionObject();
-        
+
         populateAndSave();
-        
+
         try {
-        
+
             // connect
             GUIUtilities.showWaitCursor();
 
@@ -954,17 +954,17 @@ public class ConnectionPanel extends AbstractConnectionPanel
             boolean connected = host.connect();
 
             if (connected) {
-            
+
                 // apply the tx level if supplied
                 try {
-                
+
                     applyTransactionLevel(false);
 
                 } catch (DataSourceException e) {
 
                     GUIUtilities.displayWarningMessage(
                             bundleString("warning.DataSourceException.level-change") +
-                            e.getMessage() + "\n\n");
+                                    e.getMessage() + "\n\n");
                 }
 
                 Connection connection = host.getConnection();
@@ -1020,11 +1020,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
     }
 
     public void showPassword() {
-        
-        new ShowPasswordDialog(nameField.getText(), 
+
+        new ShowPasswordDialog(nameField.getText(),
                 MiscUtils.charsToString(passwordField.getPassword()));
     }
-    
+
     /**
      * Informed by a tree selection, this readies the form for
      * a new connection object and value change.
@@ -1036,15 +1036,15 @@ public class ConnectionPanel extends AbstractConnectionPanel
     }
 
     private boolean panelSelected = true;
-    
+
     private boolean populateAndSave() {
-        
+
         populateConnectionObject();
 
         EventMediator.fireEvent(
                 new DefaultConnectionRepositoryEvent(
                         this, ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) null));
-        
+
         return true;
     }
 
@@ -1065,7 +1065,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         panelSelected = true;
         if (databaseConnection != null) {
-            
+
             enableFields(databaseConnection.isConnected());
         }
         return true;
@@ -1076,18 +1076,18 @@ public class ConnectionPanel extends AbstractConnectionPanel
      * to be propagated back to the tree view.
      */
     private void checkNameUpdate() {
-    	
-    	if (connectionNameExists()) {
+
+        if (connectionNameExists()) {
             focusNameField();
-    	    return;
-    	}
+            return;
+        }
 
         String oldName = databaseConnection.getName();
         String newName = nameField.getText().trim();
         if (!oldName.equals(newName)) {
             databaseConnection.setName(newName);
             controller.nodeNameValueChanged(host);
-        }        
+        }
     }
 
     /**
@@ -1099,13 +1099,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
             if (traceMessageLoop != null) {
                 traceMessageLoop.stop();
             }
-        }
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             GUIUtilities.displayErrorMessage(
                     bundleString("error.disconnect") + e.getMessage());
         }
     }
-    
+
     /**
      * Retrieves the values from the jdbc properties table
      * and stores them within the current database connection.
@@ -1130,8 +1129,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
             if (!MiscUtils.isNull(key) && !MiscUtils.isNull(value)) {
 
                 if (key.equalsIgnoreCase("lc_ctype") || key.equalsIgnoreCase("useGSSAuth")
-                    || key.equalsIgnoreCase("roleName"))
-                        /*&& !charsetsCombo.getSelectedItem().toString().equals("NONE")*/
+                        || key.equalsIgnoreCase("roleName"))
+                    /*&& !charsetsCombo.getSelectedItem().toString().equals("NONE")*/
                     continue;
                 properties.setProperty(key, value);
             }
@@ -1173,8 +1172,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
         }
 
         int count = 0;
-        for (Enumeration<?> i = properties.propertyNames(); i.hasMoreElements();) {
-            String name = (String)i.nextElement();
+        for (Enumeration<?> i = properties.propertyNames(); i.hasMoreElements(); ) {
+            String name = (String) i.nextElement();
             if (!name.equalsIgnoreCase("password") && !name.equalsIgnoreCase("lc_ctype")
                     && !name.equalsIgnoreCase("useGSSAuth")
                     && !name.equalsIgnoreCase("process_id")
@@ -1187,10 +1186,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
         }
         model.fireTableDataChanged();
     }
-    
+
     /**
      * Indicates a connection has been established.
-     * 
+     *
      * @param databaseConnection connection properties object
      */
     public void connected(DatabaseConnection databaseConnection) {
@@ -1206,14 +1205,14 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     /**
      * Indicates a connection has been closed.
-     * 
+     *
      * @param databaseConnection connection properties object
      */
     public void disconnected(DatabaseConnection databaseConnection) {
         enableFields(false);
     }
 
-    /** 
+    /**
      * Enables/disables fields as specified.
      */
     private void enableFields(boolean enable) {
@@ -1227,7 +1226,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
             int count = ConnectionManager.getOpenConnectionCount(databaseConnection);
 
             statusLabel.setText(bundleString("status.Connected") + count +
-                    (count > 1 ? bundleString("status.Connected.connections") : bundleString("status.Connected.connection")) );
+                    (count > 1 ? bundleString("status.Connected.connections") : bundleString("status.Connected.connection")));
 
         } else {
 
@@ -1237,7 +1236,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         paintStatusLabel();
         setEncryptPassword();
     }
-    
+
     /**
      * Changes the state of the save and encrypt password
      * check boxes depending on the whether the encrypt
@@ -1248,10 +1247,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
         boolean encrypt = encryptPwdCheck.isSelected();
 
         if (encrypt && !savePwdCheck.isSelected()) {
-        
+
             savePwdCheck.setSelected(encrypt);
         }
-        
+
     }
 
     /**
@@ -1260,11 +1259,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
      * check box is selected.
      */
     public void setStorePassword() {
-        
+
         boolean store = savePwdCheck.isSelected();
         encryptPwdCheck.setEnabled(store);
     }
-    
+
     /**
      * Sets the values for the tx level on the connection object
      * based on the tx level in the tx combo.
@@ -1278,7 +1277,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
             return;
         }
 
-        int isolationLevel = isolationLevelFromSelection(index);        
+        int isolationLevel = isolationLevelFromSelection(index);
         databaseConnection.setTransactionIsolation(isolationLevel);
     }
 
@@ -1330,7 +1329,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         }
         txCombo.setSelectedIndex(index);
     }
-    
+
     /**
      * Selects the driver for the current connection.
      */
@@ -1361,7 +1360,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         }
     }
-    
+
     /**
      * Populates the values of the fields with the values of
      * the specified connection.
@@ -1370,7 +1369,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         // rebuild the driver list
         buildDriversList();
-        
+
         // populate the field values/selections
         savePwdCheck.setSelected(databaseConnection.isPasswordStored());
         encryptPwdCheck.setSelected(databaseConnection.isPasswordEncrypted());
@@ -1394,18 +1393,18 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         // set the jdbc properties
         setJdbcProperties();
-        
+
         // the tx level
         setTransactionIsolationLevel();
-        
+
         // enable/disable fields
         enableFields(databaseConnection.isConnected());
-        
+
         // shh tunnel where applicable
         sshTunnelConnectionPanel.setValues(databaseConnection);
-        
+
     }
-    
+
     /**
      * Populates the values of the selected connection
      * properties bject with the field values.
@@ -1438,10 +1437,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
             driverCombo.setSelectedIndex(driverIndex);
         }
-        
+
         if (driverIndex > 0) {
 
-            DatabaseDriver driver = (DatabaseDriver)jdbcDrivers.get(driverIndex - 1);
+            DatabaseDriver driver = (DatabaseDriver) jdbcDrivers.get(driverIndex - 1);
 
             databaseConnection.setJDBCDriver(driver);
             databaseConnection.setDriverName(driver.getName());
@@ -1463,7 +1462,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         // set the tx level on the connection props object
         getTransactionIsolationLevel();
-        
+
         // check if the name has to update the tree display
         checkNameUpdate();
     }
@@ -1476,7 +1475,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
      * @param host connection to set the fields to
      */
     public void setConnectionValue(DatabaseHost host) {
-        
+
         connectButton.setEnabled(false);
         disconnectButton.setEnabled(false);
 
@@ -1488,22 +1487,22 @@ public class ConnectionPanel extends AbstractConnectionPanel
         this.host = host;
 
         populateConnectionFields(host.getDatabaseConnection());
-        
+
         // set the focus field
         focusNameField();
 
         // queue a save
         EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(this,
-                ConnectionRepositoryEvent.CONNECTION_MODIFIED, 
+                ConnectionRepositoryEvent.CONNECTION_MODIFIED,
                 databaseConnection));
 
     }
-    
+
     private void focusNameField() {
         nameField.requestFocusInWindow();
         nameField.selectAll();
     }
-    
+
     /**
      * Forces a repaint using paintImmediately(...) on the
      * connection status label.
@@ -1518,54 +1517,54 @@ public class ConnectionPanel extends AbstractConnectionPanel
         };
         SwingUtilities.invokeLater(update);
     }
-    
+
     private class JdbcPropertiesTableModel extends AbstractTableModel {
-        
+
         protected String[] header = Bundles.getCommons(new String[]{"key", "value", ""});
-        
+
         public JdbcPropertiesTableModel() {
             advancedProperties = new String[20][2];
         }
-        
+
         public int getColumnCount() {
             return 3;
         }
-        
+
         public int getRowCount() {
             return advancedProperties.length;
         }
-        
+
         public Object getValueAt(int row, int col) {
-            
+
             if (col < 2) {
-                
+
                 return advancedProperties[row][col];
-                
+
             } else {
-                
+
                 return "";
             }
         }
-        
+
         public void setValueAt(Object value, int row, int col) {
             if (col < 2) {
-                advancedProperties[row][col] = (String)value;
+                advancedProperties[row][col] = (String) value;
                 fireTableRowsUpdated(row, row);
             }
         }
-        
+
         public boolean isCellEditable(int row, int col) {
             return true;
         }
-        
+
         public String getColumnName(int col) {
             return header[col];
         }
-        
+
         public Class<?> getColumnClass(int col) {
             return String.class;
         }
-        
+
     } // AdvConnTableModel
 
     private void addDriverFields(JPanel panel, GridBagConstraints gbc) {
@@ -1599,9 +1598,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbc.insets.right = 10;
         panel.add(button, gbc);
     }
-    
+
     public void addNewDriver() {
-        
+
         new DialogDriverPanel();
     }
 
@@ -1609,7 +1608,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         buildDriversList();
 
-        DatabaseDriver driver = (DatabaseDriver)databaseDriverEvent.getSource();
+        DatabaseDriver driver = (DatabaseDriver) databaseDriverEvent.getSource();
         driverCombo.setSelectedItem(driver.getName());
     }
 
@@ -1617,17 +1616,16 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         return (event instanceof DatabaseDriverEvent);
     }
-    
-    
-    
+
+
     class DeleteButtonEditor extends DefaultCellEditor {
-        
+
         private JButton button;
         private boolean isPushed;
         private final JTable table;
-        
+
         public DeleteButtonEditor(JTable table, JCheckBox checkBox) {
-            
+
             super(checkBox);
             this.table = table;
             button = new JButton();
@@ -1638,27 +1636,27 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 }
             });
         }
-        
-        public Component getTableCellEditorComponent(JTable table, 
+
+        public Component getTableCellEditorComponent(JTable table,
                                                      Object value,
-                                                     boolean isSelected, 
-                                                     int row, 
+                                                     boolean isSelected,
+                                                     int row,
                                                      int column) {
             isPushed = true;
             return button;
         }
-        
+
         public Object getCellEditorValue() {
-            
+
             if (isPushed) {
 
                 clearValueAt(table.getEditingRow());
             }
-            
+
             isPushed = false;
             return Constants.EMPTY;
         }
-        
+
         private void clearValueAt(int row) {
 
             table.setValueAt("", row, 0);
@@ -1670,16 +1668,16 @@ public class ConnectionPanel extends AbstractConnectionPanel
             isPushed = false;
             return super.stopCellEditing();
         }
-        
+
         protected void fireEditingStopped() {
 
             super.fireEditingStopped();
-      }
+        }
 
     } // DeleteButtonEditor
-    
+
     class DeleteButtonRenderer extends JButton implements TableCellRenderer {
-        
+
         public DeleteButtonRenderer() {
 
             setFocusPainted(false);
@@ -1687,23 +1685,24 @@ public class ConnectionPanel extends AbstractConnectionPanel
             setMargin(Constants.EMPTY_INSETS);
             setIcon(GUIUtilities.loadIcon("GcDelete16.png"));
             setPressedIcon(GUIUtilities.loadIcon("GcDeletePressed16.png"));
-            
+
             try {
                 setUI(new javax.swing.plaf.basic.BasicButtonUI());
-            } catch (NullPointerException nullExc) {}
+            } catch (NullPointerException nullExc) {
+            }
 
             setToolTipText(bundleString("delete.tool-tip"));
         }
-        
+
         public Component getTableCellRendererComponent(JTable table, Object value,
-                boolean isSelected, boolean hasFocus, int row, int column) {
+                                                       boolean isSelected, boolean hasFocus, int row, int column) {
 
             return this;
         }
 
     } // DeleteButtonRenderer
 
-    
+
 }
 
 

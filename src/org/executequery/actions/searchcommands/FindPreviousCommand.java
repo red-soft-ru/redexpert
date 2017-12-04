@@ -20,40 +20,40 @@
 
 package org.executequery.actions.searchcommands;
 
+import org.executequery.GUIUtilities;
+import org.executequery.gui.text.TextEditor;
+import org.executequery.search.TextAreaSearch;
+import org.underworldlabs.swing.actions.BaseCommand;
+
 import java.awt.event.ActionEvent;
 
-import org.executequery.GUIUtilities;
-import org.underworldlabs.swing.actions.BaseCommand;
-import org.executequery.search.TextAreaSearch;
-import org.executequery.gui.text.TextEditor;
-
-/** <p>Executes the menu item Search | Find Next.
+/**
+ * <p>Executes the menu item Search | Find Next.
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class FindPreviousCommand implements BaseCommand {
-    
+
     public void execute(ActionEvent e) {
-        
+
         TextEditor textFunction = null;
-        
+
         try {
             textFunction = GUIUtilities.getTextEditorInFocus();
             if (textFunction == null) {
                 return;
             }
-            
+
             if (textFunction.canSearch()) {
                 TextAreaSearch.setTextComponent(textFunction.getEditorTextComponent());
                 TextAreaSearch.setSearchDirection(TextAreaSearch.SEARCH_UP);
                 TextAreaSearch.findNext(false, true);
             }
-        }         
-        finally {
+        } finally {
             textFunction = null;
-        } 
-        
+        }
+
     }
-    
+
 }
 

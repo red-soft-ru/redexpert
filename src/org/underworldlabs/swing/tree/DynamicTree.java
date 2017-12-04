@@ -20,56 +20,60 @@
 
 package org.underworldlabs.swing.tree;
 
-import javax.swing.JTree;
-import javax.swing.ToolTipManager;
+import javax.swing.*;
 import javax.swing.text.Position;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
+import javax.swing.tree.*;
 
 /**
- * Dynamic JTree allowing moving of nodes up/down 
+ * Dynamic JTree allowing moving of nodes up/down
  * and provides convenience methods for removal/insertion of nodes.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DynamicTree extends JTree {
 //                         implements PropertyChangeListener,
 //                                    TreeSelectionListener {
 
-    /** directional constant for movements up the tree */
+    /**
+     * directional constant for movements up the tree
+     */
     public static final int MOVE_UP = 0;
-    
-    /** directional constant for movements down the tree */
+
+    /**
+     * directional constant for movements down the tree
+     */
     public static final int MOVE_DOWN = 1;
 
-    /** the tree's root node */
+    /**
+     * the tree's root node
+     */
     private DefaultMutableTreeNode root;
 
-    /** the tree model for the display */
+    /**
+     * the tree model for the display
+     */
     private DefaultTreeModel treeModel;
-    
+
     /** the previously selected path */
     //private TreePath previousSelectionPath;
-    
-    /** Creates a new instance of DynamicTree */
+
+    /**
+     * Creates a new instance of DynamicTree
+     */
     public DynamicTree(DefaultMutableTreeNode root) {
         this.root = root;
         init();
     }
 
     private static final int DEFAULT_ROW_HEIGHT = 18;
-    
+
     /**
-     * Returns the height of each row.  The default swing implementation 
+     * Returns the height of each row.  The default swing implementation
      * allows the renderer to determine the row height. In most cases this
-     * is ok, though i found that on some LAFs the renderer's value is too 
+     * is ok, though i found that on some LAFs the renderer's value is too
      * small making the rows too cramped (ie. gtk). as a result, this method
      * return a value of 20 if the rowHeight <= 0.
-     *
+     * <p>
      * This isn't ideal and a bit of a hack, but it works ok.
      */
     public int getRowHeight() {
@@ -79,7 +83,7 @@ public class DynamicTree extends JTree {
         }
         return h;
     }
-    
+
     private void init() {
         treeModel = new DefaultTreeModel(root);
         setModel(treeModel);
@@ -87,21 +91,21 @@ public class DynamicTree extends JTree {
         // lines on the branches
         putClientProperty("JTree.lineStyle", "Angled");
         setRootVisible(true);
-        
+
         // single selection only
         getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
         // add the property change listener
         //addPropertyChangeListener(this);
-        
+
         // add the tree selection listener
         //addTreeSelectionListener(this);
-        
+
         // register for tool tips
         ToolTipManager.sharedInstance().registerComponent(this);
     }
 
-    
+
     // --------------------------------------------------
     // ------- TreeSelectionListener implementation
     // --------------------------------------------------
@@ -113,11 +117,11 @@ public class DynamicTree extends JTree {
      * @param the event that characterizes the change
      *
     public void valueChanged(TreeSelectionEvent e) {
-        previousSelectionPath = e.getOldLeadSelectionPath();
-        System.out.println("old path: " + previousSelectionPath);
+    previousSelectionPath = e.getOldLeadSelectionPath();
+    System.out.println("old path: " + previousSelectionPath);
     }
-    */
-    
+     */
+
     // --------------------------------------------------
     // ------- PropertyChangeListener implementation
     // --------------------------------------------------
@@ -136,7 +140,7 @@ public class DynamicTree extends JTree {
     }
 */
 
-    /** 
+    /**
      * Expands the currently selected row.
      */
     public void expandSelectedRow() {
@@ -145,7 +149,7 @@ public class DynamicTree extends JTree {
             expandRow(row);
         }
     }
-    
+
     private int getTreeSelectionRow() {
         int selectedRow = -1;
         int[] selectedRows = getSelectionRows();
@@ -156,12 +160,12 @@ public class DynamicTree extends JTree {
     }
 
     /**
-     * Invoke this method if you've totally changed the children 
-     * of node and its childrens children... 
+     * Invoke this method if you've totally changed the children
+     * of node and its childrens children...
      * This will post a treeStructureChanged event.
      */
     public void nodeStructureChanged(TreeNode node) {
-        
+
         treeModel.nodeStructureChanged(node);
     }
 
@@ -171,21 +175,21 @@ public class DynamicTree extends JTree {
     }
 
     /**
-     * This sets the user object of the TreeNode identified by 
-     * path and posts a node changed. If you use custom user 
-     * objects in the TreeModel you're going to need to subclass 
-     * this and set the user object of the changed node 
+     * This sets the user object of the TreeNode identified by
+     * path and posts a node changed. If you use custom user
+     * objects in the TreeModel you're going to need to subclass
+     * this and set the user object of the changed node
      * to something meaningful.
      *
      * @param path to the node that the user has altered
-     * @param the new value from the TreeCellEditor
+     * @param the  new value from the TreeCellEditor
      */
     public void valueForPathChanged(TreePath path, Object newValue) {
         treeModel.valueForPathChanged(path, newValue);
     }
-    
-    /** 
-     * Returns the tree node from the root node with the 
+
+    /**
+     * Returns the tree node from the root node with the
      * specified user object. This will traverse the tree from
      * the root node to the root's children only, not its children's
      * children.
@@ -197,17 +201,17 @@ public class DynamicTree extends JTree {
 
         int childCount = root.getChildCount();
         for (int i = 0; i < childCount; i++) {
-        
+
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) root.getChildAt(i);
             if (node.getUserObject() == userObject) {
-            
+
                 return node;
             }
 
         }
         return null;
-    } 
-    
+    }
+
     /**
      * Returns the root node of this tree.
      *
@@ -216,21 +220,21 @@ public class DynamicTree extends JTree {
     public DefaultMutableTreeNode getRootNode() {
         return root;
     }
-    
+
     public void reset(DefaultMutableTreeNode root) {
-        
+
         setModel(new DefaultTreeModel(root));
         repaint();
     }
-    
+
     /**
-     * Invoke this method after you've changed how node is to be 
+     * Invoke this method after you've changed how node is to be
      * represented in the tree.
      */
     public void nodeChanged(TreeNode node) {
         treeModel.nodeChanged(node);
     }
-    
+
     /**
      * Returns the path component of the selected path.
      *
@@ -243,24 +247,24 @@ public class DynamicTree extends JTree {
         }
         return path.getLastPathComponent();
     }
-    
+
     /**
-     * Invoke this method if you've modified the TreeNodes 
+     * Invoke this method if you've modified the TreeNodes
      * upon which this model depends.
      */
     public void reload(TreeNode node) {
         treeModel.reload();
     }
-    
+
     /**
      * Returns the tree model.
-     * 
+     *
      * @return the tree model - an instance of DefaultTreeModel
      */
     public DefaultTreeModel getTreeModel() {
         return treeModel;
     }
-    
+
     /**
      * Adds the specified node to the root node of this tree.
      *
@@ -279,7 +283,7 @@ public class DynamicTree extends JTree {
 
         DefaultMutableTreeNode _node = (DefaultMutableTreeNode) node;
         treeModel.insertNodeInto(_node, root, root.getChildCount());
-        
+
         if (selectNode) {
 
             selectNode(_node);
@@ -288,29 +292,29 @@ public class DynamicTree extends JTree {
 
     public void insertNode(DefaultMutableTreeNode parent, DefaultMutableTreeNode newChild) {
         treeModel.insertNodeInto(newChild, parent, parent.getChildCount() - 1);
-    }    
-    
+    }
+
     public void nodesWereInserted(TreeNode parent, int[] childIndices) {
         treeModel.nodesWereInserted(parent, childIndices);
     }
-    
+
     public void selectNode(DefaultMutableTreeNode node) {
         TreePath path = new TreePath(node.getPath());
         scrollPathToVisible(path);
-        setSelectionPath(path);        
+        setSelectionPath(path);
     }
-    
+
     public int getIndexWithinParent(TreeNode node) {
-        
+
         MutableTreeNode parent = (MutableTreeNode) node.getParent();
         if (parent == null) {
-            
+
             parent = root;
         }
-        
+
         return parent.getIndex(node);
     }
-    
+
     /**
      * Moves the specified node in the specified direction.
      */
@@ -318,10 +322,10 @@ public class DynamicTree extends JTree {
 
         MutableTreeNode parent = (MutableTreeNode) node.getParent();
         if (parent == null) {
-            
+
             parent = root;
         }
-        
+
         int currentIndex = parent.getIndex(node);
         if (currentIndex <= 0 && direction == MOVE_UP) {
 
@@ -349,18 +353,18 @@ public class DynamicTree extends JTree {
 
         // remove node from root
         parent.remove(currentIndex);
-        MutableTreeNode _node = (MutableTreeNode)node;
-        
+        MutableTreeNode _node = (MutableTreeNode) node;
+
         // insert into the new index
         parent.insert(_node, newIndex);
 
         // fire event
         treeModel.nodeStructureChanged(parent);
-        
+
         TreePath path = null;
         if (node instanceof DefaultMutableTreeNode) {
 
-            path = new TreePath(((DefaultMutableTreeNode)node).getPath());
+            path = new TreePath(((DefaultMutableTreeNode) node).getPath());
 
         } else {
 
@@ -381,9 +385,9 @@ public class DynamicTree extends JTree {
         scrollPathToVisible(path);
         setSelectionPath(path);
     }
-    
+
     /**
-     * Selects the node that matches the specified prefix forward 
+     * Selects the node that matches the specified prefix forward
      * from the currently selected node.
      *
      * @param prefix - the prefix of the node to select
@@ -393,10 +397,10 @@ public class DynamicTree extends JTree {
         int selectedRow = getTreeSelectionRow();
 
         if (selectedRow == -1) {
-        
+
             return;
         }
-        
+
         TreePath path = getNextMatch(prefix, selectedRow, Position.Bias.Forward);
         if (path != null) {
 
@@ -414,19 +418,19 @@ public class DynamicTree extends JTree {
      * @param the prefix of the node to select after removal
      */
     public void removeSelection(String nextSelectionPrefix) {
-        TreeNode node = (TreeNode)getLastPathComponent();
+        TreeNode node = (TreeNode) getLastPathComponent();
 
         TreePath path = null;
         if (nextSelectionPrefix != null) {
             // get the row for the current path
             int selectedRow = getTreeSelectionRow();
-            path = getNextMatch(nextSelectionPrefix, 
-                                selectedRow, 
-                                Position.Bias.Backward);
+            path = getNextMatch(nextSelectionPrefix,
+                    selectedRow,
+                    Position.Bias.Backward);
         }
 
         // remove the node from the tree
-        treeModel.removeNodeFromParent((MutableTreeNode)node);
+        treeModel.removeNodeFromParent((MutableTreeNode) node);
         if (path != null) {
             scrollPathToVisible(path);
             setSelectionPath(path);
@@ -446,13 +450,13 @@ public class DynamicTree extends JTree {
         if (nextSelectionPrefix != null) {
             // get the row for the current path
             int selectedRow = getTreeSelectionRow();
-            path = getNextMatch(nextSelectionPrefix, 
-                                selectedRow, 
-                                Position.Bias.Backward);
+            path = getNextMatch(nextSelectionPrefix,
+                    selectedRow,
+                    Position.Bias.Backward);
         }
 
         // remove the node from the tree
-        treeModel.removeNodeFromParent((MutableTreeNode)node);
+        treeModel.removeNodeFromParent((MutableTreeNode) node);
         if (path != null) {
             scrollPathToVisible(path);
             setSelectionPath(path);
@@ -460,10 +464,10 @@ public class DynamicTree extends JTree {
     }
 
     public void moveSelection(int direction) {
-        TreeNode node = (TreeNode)getLastPathComponent();
+        TreeNode node = (TreeNode) getLastPathComponent();
         move(node, direction);
     }
-    
+
     /**
      * Moves the selected node up in the tree.
      */

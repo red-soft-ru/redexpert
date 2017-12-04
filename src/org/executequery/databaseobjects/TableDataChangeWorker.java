@@ -20,17 +20,17 @@
 
 package org.executequery.databaseobjects;
 
+import org.executequery.datasource.ConnectionManager;
+import org.executequery.gui.resultset.RecordDataItem;
+import org.executequery.log.Log;
+import org.underworldlabs.jdbc.DataSourceException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.executequery.datasource.ConnectionManager;
-import org.executequery.gui.resultset.RecordDataItem;
-import org.executequery.log.Log;
-import org.underworldlabs.jdbc.DataSourceException;
 
 /**
  * @author Takis Diakoumis
@@ -55,8 +55,8 @@ public class TableDataChangeWorker {
     public TableDataChangeWorker(DatabaseTableObject table) {
 
         this.tableObject = table;
-        if(table instanceof DatabaseTable)
-            this.table = (DatabaseTable)table;
+        if (table instanceof DatabaseTable)
+            this.table = (DatabaseTable) table;
         else this.table = null;
     }
 
@@ -72,13 +72,13 @@ public class TableDataChangeWorker {
 
             List<RecordDataItem> row = tableDataChange.getRowDataForRow();
             if (row.get(0).isDeleted()) {
-                if (table!=null&&table.hasPrimaryKey())
+                if (table != null && table.hasPrimaryKey())
                     result += executeDeletingWithPK(connection, table, row);
                 else
                     result += executedDeleting(connection, tableObject, row);
             } else if (row.get(0).isNew()) {
                 result += executeAdding(connection, tableObject, row);
-            } else if (table!=null&&table.hasPrimaryKey())
+            } else if (table != null && table.hasPrimaryKey())
                 result += executeWithPK(connection, table, row);
             else
                 result += executeChange(connection, tableObject, row);
@@ -263,7 +263,7 @@ public class TableDataChangeWorker {
             Log.info("Executing data change using statement - [ " + sql + " ]");
 
             statement = connection.prepareStatement(sql);
-            for (int i = 0,g=0; i < n; i++,g++) {
+            for (int i = 0, g = 0; i < n; i++, g++) {
                 RecordDataItem recordDataItem = changes.get(g);
                 if (!recordDataItem.isGenerated()) {
                     if (!recordDataItem.isNewValueNull()) {
@@ -479,8 +479,8 @@ public class TableDataChangeWorker {
 
             try {
                 boolean keepAlive = true;
-                if(!keepAlive)
-                connection.close();
+                if (!keepAlive)
+                    connection.close();
             } catch (SQLException e) {
             }
             connection = null;

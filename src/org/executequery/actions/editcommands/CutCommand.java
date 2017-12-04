@@ -20,24 +20,23 @@
 
 package org.executequery.actions.editcommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
 import org.executequery.gui.text.TextEditor;
 import org.underworldlabs.swing.actions.BaseCommand;
 
+import java.awt.event.ActionEvent;
+
 /**
  * <p>Performs the 'CUT' command and those objects
- *  implementing <code>TextEditor</code>.
- * 
- * @author   Takis Diakoumis
+ * implementing <code>TextEditor</code>.
+ *
+ * @author Takis Diakoumis
  */
 public class CutCommand implements BaseCommand {
-    
+
     /**
-     * 
      * Executes the cut command on the <code>TextEditor</code>.
-     * 
+     *
      * @param the originating event
      */
     public void execute(ActionEvent e) {
@@ -45,9 +44,9 @@ public class CutCommand implements BaseCommand {
         if (textFunction != null) {
             textFunction.cut();
         }
-        textFunction = null;        
+        textFunction = null;
     }
-    
+
 }
 
 

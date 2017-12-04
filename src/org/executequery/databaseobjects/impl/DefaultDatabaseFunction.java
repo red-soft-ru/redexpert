@@ -26,12 +26,14 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 /**
  * Default database function implementation.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class DefaultDatabaseFunction extends DefaultDatabaseExecutable 
-                                     implements DatabaseFunction {
-    
-    /** Creates a new instance of DefaultDatabaseFunction */
+public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
+        implements DatabaseFunction {
+
+    /**
+     * Creates a new instance of DefaultDatabaseFunction
+     */
     public DefaultDatabaseFunction(DatabaseMetaTag metaTagParent, String name) {
         super(metaTagParent, name);
     }

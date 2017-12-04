@@ -20,17 +20,18 @@
 
 package org.executequery.databaseobjects;
 
-import java.util.List;
 import org.underworldlabs.jdbc.DataSourceException;
+
+import java.util.List;
 
 /**
  * Defines a database executable object such as a function or
  * stored database procedure.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface DatabaseExecutable extends DatabaseObject {
-    
+
     /**
      * The executable (procedure) type.
      *
@@ -44,12 +45,12 @@ public interface DatabaseExecutable extends DatabaseObject {
      * @return true | false
      */
     boolean hasParameters();
-   
+
     /**
      * Adds the specified values as a single parameter to this object.
      */
     ProcedureParameter addParameter(String name, int type, int dataType, String sqlType, int size);
-    
+
     /**
      * Returns this object's parameters.
      */

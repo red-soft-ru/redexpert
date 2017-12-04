@@ -38,7 +38,7 @@ public class DatabaseObjectMetaDataPanel extends JPanel implements ResultSetTabl
     public DatabaseObjectMetaDataPanel() {
 
         super(new BorderLayout());
-        
+
         table = new ResultSetTable();
         tableModel = new ResultSetTableModel();
         table.setModel(new TableSorter(tableModel, table.getTableHeader()));
@@ -52,18 +52,19 @@ public class DatabaseObjectMetaDataPanel extends JPanel implements ResultSetTabl
 
         tableModel.createTable(resultSet);
     }
-    
+
     public JTable getTable() {
-        
+
         return table;
     }
-    
+
     public boolean isTransposeAvailable() {
 
         return false;
     }
 
-    public void transposeRow(TableModel tableModel, int row) {}
+    public void transposeRow(TableModel tableModel, int row) {
+    }
 }
 
 

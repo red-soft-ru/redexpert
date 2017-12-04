@@ -23,12 +23,13 @@ package org.executequery.gui.importexport;
 import org.underworldlabs.swing.wizard.DefaultWizardProcessModel;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ImportExportWizardModel extends DefaultWizardProcessModel {
 
-    /** Creates a new instance of ImportExportWizardModel */
+    /**
+     * Creates a new instance of ImportExportWizardModel
+     */
     public ImportExportWizardModel(int stepsCount, int transferType) {
 
         String firstTitle = "Database Connection and Export Type";
@@ -47,17 +48,17 @@ public class ImportExportWizardModel extends DefaultWizardProcessModel {
         setTitles(titles);
 
         String[] steps = {"Select database connection and transfer type",
-                          "Select the tables/columns",
-                          transferType == ImportExportDataProcess.IMPORT ?
-                              "Select the data file(s) to import from" :
-                              "Select the data file(s) to export to",
-                          "Set any further transfer options",
-                          transferType == ImportExportDataProcess.IMPORT ?
-                              "Import the data" :
-                              "Export the data"};
+                "Select the tables/columns",
+                transferType == ImportExportDataProcess.IMPORT ?
+                        "Select the data file(s) to import from" :
+                        "Select the data file(s) to export to",
+                "Set any further transfer options",
+                transferType == ImportExportDataProcess.IMPORT ?
+                        "Import the data" :
+                        "Export the data"};
         setSteps(steps);
     }
-    
+
 }
 
 

@@ -33,15 +33,15 @@ public abstract class AbstractUserPreferenceListener {
     }
 
     protected final boolean systemUserBooleanProperty(String key) {
-        
+
         return SystemProperties.getBooleanProperty(Constants.USER_PROPERTIES_KEY, key);
     }
-    
+
     protected final String systemUserProperty(String key) {
-        
+
         return SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, key);
     }
-    
+
 }
 
 

@@ -21,11 +21,10 @@
 package org.executequery.event;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class DefaultRecentOpenFileEvent extends AbstractApplicationEvent 
-                                        implements RecentOpenFileEvent {
+public class DefaultRecentOpenFileEvent extends AbstractApplicationEvent
+        implements RecentOpenFileEvent {
 
     public DefaultRecentOpenFileEvent(Object source, String method) {
 

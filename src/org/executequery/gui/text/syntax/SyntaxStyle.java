@@ -20,24 +20,27 @@
 
 package org.executequery.gui.text.syntax;
 
-import java.awt.Color;
+import java.awt.*;
 
 /**
  * Defines a syntax style for use with the document.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SyntaxStyle {
-    
+
     private int type;
     private int fontStyle;
     private Color foreground;
     private Color background;
-    
-    /** Creates a new instance of SyntaxStyle */
-    public SyntaxStyle() {}
-    
-    public SyntaxStyle(int type, int fontStyle, 
+
+    /**
+     * Creates a new instance of SyntaxStyle
+     */
+    public SyntaxStyle() {
+    }
+
+    public SyntaxStyle(int type, int fontStyle,
                        Color foreground, Color background) {
         this.type = type;
         this.fontStyle = fontStyle;
@@ -76,7 +79,7 @@ public class SyntaxStyle {
     public void setBackground(Color background) {
         this.background = background;
     }
-    
+
 }
 
 

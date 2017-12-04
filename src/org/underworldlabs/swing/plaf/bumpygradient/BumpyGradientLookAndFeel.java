@@ -20,49 +20,51 @@
 
 package org.underworldlabs.swing.plaf.bumpygradient;
 
-import java.awt.Color;
-
-import javax.swing.UIDefaults;
-
 import org.underworldlabs.swing.plaf.smoothgradient.SmoothGradientLookAndFeel;
 
+import javax.swing.*;
+import java.awt.*;
+
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class BumpyGradientLookAndFeel extends SmoothGradientLookAndFeel {
-    
-    /** The modified darker highlight for internal frame bumps */
+
+    /**
+     * The modified darker highlight for internal frame bumps
+     */
     private static Color internalFrameBumpsHighlight;
-    
-    /** Constructs the <code>PlasticLookAndFeel</code>. */
+
+    /**
+     * Constructs the <code>PlasticLookAndFeel</code>.
+     */
     public BumpyGradientLookAndFeel() {
         if (internalFrameBumpsHighlight == null)
-            internalFrameBumpsHighlight = new Color(198,198,246);
+            internalFrameBumpsHighlight = new Color(198, 198, 246);
     }
-    
+
     public String getID() {
         return "BumpyGradient";
     }
-    
+
     public String getName() {
         return "Bumpy Gradient Look and Feel";
     }
-    
+
     public String getDescription() {
         return "The Red Expert Bumpy Gradient Look and Feel - modified from " +
                 "The JGoodies Plastic Look and Feel";
     }
-    
+
     // Overriding Superclass Behavior ***************************************
-    
+
     /**
      * Initializes the class defaults, that is, overrides some UI delegates
      * with JGoodies Plastic implementations.
@@ -71,26 +73,26 @@ public class BumpyGradientLookAndFeel extends SmoothGradientLookAndFeel {
      */
     protected void initClassDefaults(UIDefaults table) {
         super.initClassDefaults(table);
-        
+
         String NAME_PREFIX = "org.underworldlabs.swing.plaf.bumpygradient.BumpyGradient";
-        
+
         // Overwrite some of the uiDefaults.
         Object[] uiDefaults = {
-            "RootPaneUI", NAME_PREFIX + "RootPaneUI",
-            "InternalFrameUI", NAME_PREFIX + "InternalFrameUI",
+                "RootPaneUI", NAME_PREFIX + "RootPaneUI",
+                "InternalFrameUI", NAME_PREFIX + "InternalFrameUI",
         };
 
         table.putDefaults(uiDefaults);
-        
+
     }
-    
+
     public static Color getInternalFrameBumpsHighlight() {
         if (internalFrameBumpsHighlight == null) {
-            internalFrameBumpsHighlight = new Color(198,198,246);
+            internalFrameBumpsHighlight = new Color(198, 198, 246);
         }
         return internalFrameBumpsHighlight;
     }
-    
+
 }
 
 

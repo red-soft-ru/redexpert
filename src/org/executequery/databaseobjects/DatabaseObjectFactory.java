@@ -25,7 +25,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 public interface DatabaseObjectFactory {
 
     DatabaseHost createDatabaseHost(DatabaseConnection databaseConnection);
-    
+
 }
 
 

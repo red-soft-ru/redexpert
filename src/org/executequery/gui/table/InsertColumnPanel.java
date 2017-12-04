@@ -8,7 +8,6 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
-import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.BaseDialog;
@@ -18,7 +17,6 @@ import org.executequery.gui.databaseobjects.CreateDomainPanel;
 import org.executequery.gui.text.SQLTextPane;
 import org.executequery.log.Log;
 import org.executequery.sql.spi.LiquibaseStatementGenerator;
-import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;

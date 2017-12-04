@@ -23,8 +23,7 @@ package org.executequery.gui.table;
 import org.executequery.gui.browser.ColumnConstraint;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface CreateTableSQLSyntax {
 
@@ -162,7 +161,7 @@ public interface CreateTableSQLSyntax {
      */
     String DROP_CONSTRAINT = " DROP CONSTRAINT ";
 
-    String NONE="NONE";
+    String NONE = "NONE";
 
 }
 

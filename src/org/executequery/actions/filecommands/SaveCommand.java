@@ -20,20 +20,20 @@
 
 package org.executequery.actions.filecommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
-import org.underworldlabs.swing.actions.BaseCommand;
 import org.executequery.gui.SaveFunction;
 import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.swing.actions.BaseCommand;
 
-/** 
+import java.awt.event.ActionEvent;
+
+/**
  * <p>Executes the File | Save command
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SaveCommand implements BaseCommand {
-    
+
     public void execute(ActionEvent e) {
 
         SaveFunction saveFunction = null;
@@ -56,7 +56,7 @@ public class SaveCommand implements BaseCommand {
         }
 
     }
-    
+
 }
 
 

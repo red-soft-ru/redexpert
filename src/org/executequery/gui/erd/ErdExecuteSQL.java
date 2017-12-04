@@ -20,65 +20,61 @@
 
 package org.executequery.gui.erd;
 
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
-import javax.swing.border.Border;
-
 import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.QueryDelegate;
 import org.executequery.sql.QueryDispatcher;
 import org.underworldlabs.swing.FlatSplitPane;
 
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ErdExecuteSQL extends ErdPrintableDialog
-                           implements QueryDelegate {
-    
-    /** The results text area */
+        implements QueryDelegate {
+
+    /**
+     * The results text area
+     */
     private JTextArea resultsArea;
-    
-    /** Utility to perform the execution */
+
+    /**
+     * Utility to perform the execution
+     */
     private QueryDispatcher queryAnalyser;
-    
-    /** The 'Cancel' button */
+
+    /**
+     * The 'Cancel' button
+     */
     private JButton cancelButton;
-    
-    /** The 'Close' button */
+
+    /**
+     * The 'Close' button
+     */
     private JButton closeButton;
-    
+
     public ErdExecuteSQL(ErdViewerPanel parent) {
         super("Perform Schema Changes");
-        
+
         try {
             jbInit();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         sqlText.setSQLText(parent.getAllSQLText());
-        
+
         display();
-        
+
     }
-    
+
     public ErdExecuteSQL(ErdViewerPanel parent, String sql) {
 
         super("Perform Schema Changes");
@@ -88,60 +84,61 @@ public class ErdExecuteSQL extends ErdPrintableDialog
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         sqlText.setSQLText(sql);
-        
+
         display();
-        
+
     }
-    
+
     private void jbInit() throws Exception {
         sqlText.setAppending(true);
-        
+
         resultsArea = new JTextArea();
         resultsArea.setEditable(false);
         resultsArea.setBackground(null);
-        resultsArea.setMargin(new Insets(2,2,2,2));
+        resultsArea.setMargin(new Insets(2, 2, 2, 2));
         JScrollPane resultsScroller = new JScrollPane(resultsArea);
-        
+
         Border panelBorder = BorderFactory.createMatteBorder(
-                    1, 1, 1, 1, GUIUtilities.getDefaultBorderColour());
-        
+                1, 1, 1, 1, GUIUtilities.getDefaultBorderColour());
+
         resultsScroller.setBorder(panelBorder);
         sqlText.setBorder(panelBorder);
-        
-        Dimension textDim = new Dimension(530,150);
+
+        Dimension textDim = new Dimension(530, 150);
         sqlText.setPreferredSize(textDim);
         resultsArea.setPreferredSize(textDim);
-        
+
         JSplitPane splitPane = new FlatSplitPane(JSplitPane.VERTICAL_SPLIT);
         splitPane.setTopComponent(sqlText);
         splitPane.setBottomComponent(resultsScroller);
         splitPane.setDividerLocation(0.5);
         splitPane.setDividerSize(5);
-        
+
         closeButton = new JButton(Bundles.get("common.close.button"));
         cancelButton = new JButton("Execute");
-        
+
         Dimension btnDim = new Dimension(80, 30);
         cancelButton.setPreferredSize(btnDim);
         closeButton.setPreferredSize(btnDim);
-        
+
         ActionListener btnListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                buttons_actionPerformed(e); }
+                buttons_actionPerformed(e);
+            }
         };
-        
+
         cancelButton.addActionListener(btnListener);
         closeButton.addActionListener(btnListener);
-        
+
         queryAnalyser = new QueryDispatcher(this);
-        
+
         Container c = getContentPane();
         c.setLayout(new GridBagLayout());
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5,5,5,5);
+        gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridwidth = 2;
@@ -159,28 +156,28 @@ public class ErdExecuteSQL extends ErdPrintableDialog
         gbc.gridx = 1;
         gbc.weightx = 0;
         c.add(closeButton, gbc);
-        
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);        
+
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
     }
-    
+
     private void execute() {
         resultsArea.append("Executing...");
         queryAnalyser.executeSQLQuery(sqlText.getSQLText(), false);
     }
-    
+
     public void setStopButtonEnabled(boolean enable) {
         if (enable) {
             cancelButton.setText("Stop");
         }
         cancelButton.setEnabled(enable);
     }
-    
+
     public void setOutputMessage(int type, String text) {
         resultsArea.append("\n\n" + text);
     }
-    
-    /** 
-     * Propagates the call to setOutputMessage(type, text) - 
+
+    /**
+     * Propagates the call to setOutputMessage(type, text) -
      * the selectTab is effectively ignored.
      *
      * @param the error message to display
@@ -191,7 +188,7 @@ public class ErdExecuteSQL extends ErdPrintableDialog
 
     public void setResult(int result, int type) {
         String text = null;
-        
+
         switch (type) {
             case 20:
                 text = "\n\nTable dropped.";
@@ -206,56 +203,80 @@ public class ErdExecuteSQL extends ErdPrintableDialog
                 text = "\n\nStatement executed successfully with result code 1.";
                 break;
         }
-        
+
         resultsArea.append(text);
     }
-    
+
     private void buttons_actionPerformed(ActionEvent e) {
         Object button = e.getSource();
-        
+
         if (button == closeButton) {
             queryAnalyser.closeConnection();
             queryAnalyser = null;
             dispose();
-        }
-        
-        else if (button == cancelButton) {
-            
+        } else if (button == cancelButton) {
+
             String btnText = cancelButton.getText();
-            
+
             if (btnText.equals("Execute"))
                 execute();
-            
+
             else if (btnText.equals("Stop")) {
                 queryAnalyser.interruptStatement();
                 resultsArea.append("\nProcess cancelled");
             }
-            
+
         }
-        
+
     }
-    
-    
+
+
     // -------------------------------------------
     // ---- Unimplemented QueryDelegate methods ----
     // -------------------------------------------
-    
-    public void finished(String message) {}
-    public void commitModeChanged(boolean autoCommit) {}
-    public void setStatusMessage(String text) {}
-    public void statementExecuted(String text) {}
-    public void executing() {}
-    public void rollback() {}
-    public void commit() {}
-    public void interrupt() {}
-    public void log(String message) {}
-    public void executeQuery(String query) {}
-    public void executeQuery(String query, boolean executeAsBlock) {}
-    public void setResultSet(ResultSet rs, String query) throws SQLException {}
-    public boolean isLogEnabled() {return false;}
-    
+
+    public void finished(String message) {
+    }
+
+    public void commitModeChanged(boolean autoCommit) {
+    }
+
+    public void setStatusMessage(String text) {
+    }
+
+    public void statementExecuted(String text) {
+    }
+
+    public void executing() {
+    }
+
+    public void rollback() {
+    }
+
+    public void commit() {
+    }
+
+    public void interrupt() {
+    }
+
+    public void log(String message) {
+    }
+
+    public void executeQuery(String query) {
+    }
+
+    public void executeQuery(String query, boolean executeAsBlock) {
+    }
+
+    public void setResultSet(ResultSet rs, String query) throws SQLException {
+    }
+
+    public boolean isLogEnabled() {
+        return false;
+    }
+
     // -------------------------------------------
-    
+
 }
 
 

@@ -27,18 +27,18 @@ public class SQLQueryFilter {
 
     public String extractQueryAt(String text, int position) {
 
-    	if (MiscUtils.isNull(text)) {
-        
-    		return Constants.EMPTY;
+        if (MiscUtils.isNull(text)) {
+
+            return Constants.EMPTY;
         }
-        
+
         char[] chars = text.toCharArray();
 
         if (position == chars.length) {
 
             position--;
         }
-        
+
         int start = -1;
         int end = -1;
         boolean wasSpaceChar = false;
@@ -50,24 +50,24 @@ public class SQLQueryFilter {
 
                 if (i == 0 || wasSpaceChar) {
 
-                	break;
-                    
+                    break;
+
                 } else if (start != -1) {
-                    
-                	if(chars[i - 1] == Constants.NEW_LINE_CHAR) {
-                        
-                    	break;
+
+                    if (chars[i - 1] == Constants.NEW_LINE_CHAR) {
+
+                        break;
 
                     } else if (Character.isSpaceChar(chars[i - 1])) {
-                
-                    	wasSpaceChar = true;
+
+                        wasSpaceChar = true;
                         i--;
                     }
-              
+
                 }
 
             } else if (!Character.isSpaceChar(chars[i])) {
-            	
+
                 wasSpaceChar = false;
                 start = i;
             }
@@ -77,13 +77,13 @@ public class SQLQueryFilter {
         if (start < 0) { // text not found
 
             for (int j = 0; j < chars.length; j++) {
-            
-            	if (!Character.isWhitespace(chars[j])) {
-                
-            		start = j;
+
+                if (!Character.isWhitespace(chars[j])) {
+
+                    start = j;
                     break;
                 }
-        
+
             }
 
         }
@@ -95,44 +95,44 @@ public class SQLQueryFilter {
 
                 if (i == chars.length - 1 || wasSpaceChar) {
 
-                	if (end == -1) {
-                 
-                    	end = i;
+                    if (end == -1) {
+
+                        end = i;
                     }
                     break;
 
                 } else if (end != -1) {
-                  
-                	if(chars[i + 1] == Constants.NEW_LINE_CHAR) {
-                        
-                		break;
+
+                    if (chars[i + 1] == Constants.NEW_LINE_CHAR) {
+
+                        break;
 
                     } else if (Character.isSpaceChar(chars[i + 1])) {
-                      
-                    	wasSpaceChar = true;
+
+                        wasSpaceChar = true;
                         i++;
                     }
 
                 }
 
             } else if (!Character.isSpaceChar(chars[i])) {
-              
-            	end = i;
+
+                end = i;
                 wasSpaceChar = false;
             }
-            
+
         }
 
         String query = text.substring(start, end + 1);
 
         if ((MiscUtils.isNull(query) && start != 0) || start == end) {
 
-        	return extractQueryAt(text, start);
+            return extractQueryAt(text, start);
         }
-        
+
         return query;
     }
-	
+
 }
 
 

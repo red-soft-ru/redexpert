@@ -20,38 +20,6 @@
 
 package org.executequery.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Vector;
-
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableColumnModel;
-
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.base.DefaultTabViewActionPanel;
@@ -69,82 +37,136 @@ import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.GUIUtils;
 
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumnModel;
+import java.awt.*;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 @SuppressWarnings("unchecked")
 public class CompareDataTypesPanel extends DefaultTabViewActionPanel
-                                   implements NamedView,
-                                              ListSelectionListener,
-                                              ConnectionListener {
-    
+        implements NamedView,
+        ListSelectionListener,
+        ConnectionListener {
+
     public static final String TITLE = "Compare Data Types ";
     public static final String FRAME_ICON = "CompareDataTypes16.png";
-    
-    /** the active connections combo box model */
+
+    /**
+     * the active connections combo box model
+     */
     private DynamicComboBoxModel connectionsModel_1;
 
-    /** the mapped connections combo box model */
+    /**
+     * the mapped connections combo box model
+     */
     private DynamicComboBoxModel connectionsModel_2;
 
-    /** the master list */
+    /**
+     * the master list
+     */
     private JList masterList;
-    
-    /** the mapped list */
+
+    /**
+     * the mapped list
+     */
     private JList mappedList;
-    
-    /** the active connections combo */
+
+    /**
+     * the active connections combo
+     */
     private JComboBox connectionsCombo;
 
-    /** the active connections combo */
+    /**
+     * the active connections combo
+     */
     private JComboBox connectionsCombo2;
 
-    /** the data type table view */
+    /**
+     * the data type table view
+     */
     private JTable table;
 
-    /** the table model */
+    /**
+     * the table model
+     */
     private DataTypesTableModel tableModel;
-    
-    /** the instance count */
+
+    /**
+     * the instance count
+     */
     private static int count = 1;
 
-    /** the column names */
+    /**
+     * the column names
+     */
     private String[] columns;
-    
-    /** the master list model */
+
+    /**
+     * the master list model
+     */
     private DataTypeListModel masterListModel;
-    
-    /** the master data type meta data list */
+
+    /**
+     * the master data type meta data list
+     */
     private List<List> masterTypes;
 
-    /** the mapped to data type meta data list */
+    /**
+     * the mapped to data type meta data list
+     */
     private List<List> mappedToTypes;
 
-    /** the table data */
+    /**
+     * the table data
+     */
     private List<List> tableData;
-    
-    /** the selected data type */
+
+    /**
+     * the selected data type
+     */
     private List<List> selectedDataType;
-    
-    /** the first database name filed */
+
+    /**
+     * the first database name filed
+     */
     private DisabledField databaseField_1;
 
-    /** the second database name filed */
+    /**
+     * the second database name filed
+     */
     private DisabledField databaseField_2;
 
-    /** the data type sorter */
+    /**
+     * the data type sorter
+     */
     private DataTypeRowSorter sorter;
-    
-    /** the result set column number for the type name */
+
+    /**
+     * the result set column number for the type name
+     */
     private static final int NAME_COLUMN = 1;
 
-    /** the result set column number for the type value */
+    /**
+     * the result set column number for the type value
+     */
     private static final int TYPE_COLUMN = 2;
 
     private DatabaseObjectFactory databaseObjectFactory;
-    
-    /** Creates a new instance of CompareDataTypesPanel */
+
+    /**
+     * Creates a new instance of CompareDataTypesPanel
+     */
     public CompareDataTypesPanel() {
         super(new BorderLayout());
         try {
@@ -153,11 +175,11 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
             e.printStackTrace();
         }
     }
-    
+
     private void init() throws Exception {
-        
+
         databaseObjectFactory = new DatabaseObjectFactoryImpl();
-        
+
         // combo boxes
         Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
         connectionsModel_1 = new DynamicComboBoxModel(connections);
@@ -167,7 +189,7 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
         connectionsCombo.setActionCommand("firstConnectionChanged");
 
         connectionsModel_2 = new DynamicComboBoxModel(
-                (Vector<DatabaseConnection>)connections);
+                (Vector<DatabaseConnection>) connections);
 
         connectionsCombo2 = WidgetFactory.createComboBox(connectionsModel_2);
         connectionsCombo2.addActionListener(this);
@@ -182,13 +204,13 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
         mappedList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         GridBagConstraints gbc = new GridBagConstraints();
-        
+
         JPanel leftPanel = new JPanel(new GridBagLayout());
         leftPanel.setBorder(BorderFactory.createTitledBorder("First Connection"));
-        
+
         databaseField_1 = new DisabledField();
-        
-        gbc.insets = new Insets(3,2,2,2);
+
+        gbc.insets = new Insets(3, 2, 2, 2);
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.gridy++;
         leftPanel.add(new JLabel("Connection:"), gbc);
@@ -220,12 +242,12 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.BOTH;
         leftPanel.add(new JScrollPane(masterList), gbc);
-        
+
         JPanel rightPanel = new JPanel(new GridBagLayout());
         rightPanel.setBorder(BorderFactory.createTitledBorder("Second Connection"));
-        
+
         databaseField_2 = new DisabledField();
-        
+
         gbc.gridy = 0;
         gbc.gridwidth = 1;
         gbc.insets.top = 0;
@@ -262,7 +284,7 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
         rightPanel.add(new JScrollPane(mappedList), gbc);
 
         // setup the top panel
-        JPanel topPanel = new JPanel(new GridLayout(1,2,3,3));
+        JPanel topPanel = new JPanel(new GridLayout(1, 2, 3, 3));
         topPanel.add(leftPanel);
         topPanel.add(rightPanel);
 
@@ -273,7 +295,7 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
         table.setCellSelectionEnabled(false);
         table.setRowSelectionAllowed(true);
         table.setColumnSelectionAllowed(false);
-        
+
         // setup the table panel
         JPanel tablePanel = new JPanel(new GridBagLayout());
         gbc.gridx = 0;
@@ -293,7 +315,7 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
         tablePanel.add(new JScrollPane(table), gbc);
 
         tablePanel.setBorder(BorderFactory.createLineBorder(
-                                GUIUtilities.getDefaultBorderColour()));
+                GUIUtilities.getDefaultBorderColour()));
 
         // setup the split panes
         JSplitPane verticalSplit = new SplitPaneFactory().createVertical();
@@ -301,12 +323,12 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
         verticalSplit.setBottomComponent(tablePanel);
         verticalSplit.setResizeWeight(0.7);
         verticalSplit.setDividerSize(5);
-        
-        setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
+
+        setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
         add(verticalSplit, BorderLayout.CENTER);
 
         sorter = new DataTypeRowSorter();
-        
+
         // startup load
         buildFirstConnectionValues();
         buildSecondConnectionValues();
@@ -324,23 +346,25 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
         return columnNames;
     }
 
-    /** Indicates whether the cell renderer has been applied */
+    /**
+     * Indicates whether the cell renderer has been applied
+     */
     private boolean rendererApplied;
 
     private void applyCellRenderer() {
         // init the cell renderer component
         TableColumnModel tcm = table.getColumnModel();
-        for (int i = 0, n = tcm.getColumnCount(); i < n; i++) { 
+        for (int i = 0, n = tcm.getColumnCount(); i < n; i++) {
             tcm.getColumn(i).setCellRenderer(new DataTypeCellRenderer());
         }
         rendererApplied = true;
     }
-    
+
     private List<List> buildDataTypeList(
             List<List> dataTypes, ResultSet rs, boolean reloadColumns) {
 
         try {
-            
+
             if (reloadColumns) {
                 // rebuild the columns based on the selection
                 columns = getColumnsArray(rs.getMetaData());
@@ -348,10 +372,10 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
 
             boolean addRow = true;
             List<String> row = null;
-            
+
             if (dataTypes != null) {
                 dataTypes.clear();
-            } else {            
+            } else {
                 dataTypes = new ArrayList<List>();
             }
 
@@ -361,8 +385,7 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
                 // if we're not reloading for a master, load the
                 // compared to values to check column names match
                 columnNames = getColumnsArray(rs.getMetaData());
-            } 
-            else {
+            } else {
                 columnNames = columns;
             }
 
@@ -372,7 +395,7 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
                 row = new ArrayList<String>(columns.length);
                 for (int i = 0; i < columns.length; i++) {
                     if (i > 0) {
-                        
+
                         if (containsColumn(columnNames, columns[i])) {
                             row.add(rs.getString(columns[i]));
                         }
@@ -402,7 +425,7 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
 
         return dataTypes;
     }
-    
+
     private boolean containsColumn(String[] columnNames, String column) {
         for (int i = 0; i < columnNames.length; i++) {
             if (column.equalsIgnoreCase(columnNames[i])) {
@@ -411,21 +434,20 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
         }
         return false;
     }
-    
+
     private void handleError(Throwable e) {
         GUIUtilities.displayExceptionErrorDialog(
                 "Error retrieving data types.\nThe system returned:\n\n" +
-                e.getMessage(), e);
+                        e.getMessage(), e);
     }
-    
+
     public void firstConnectionChanged() {
         GUIUtils.startWorker(new Runnable() {
             public void run() {
                 try {
                     setInProcess(true);
                     buildFirstConnectionValues();
-                }
-                finally {
+                } finally {
                     setInProcess(false);
                 }
             }
@@ -435,7 +457,7 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
     public void buildFirstConnectionValues() {
 
         // retrieve connection selection
-        DatabaseConnection databaseConnection = 
+        DatabaseConnection databaseConnection =
                 (DatabaseConnection) connectionsCombo.getSelectedItem();
         DatabaseHost host = hostForConnection(databaseConnection);
 
@@ -459,19 +481,19 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
 
             GUIUtilities.displayExceptionErrorDialog(
                     "Error retrieving data types for selected " +
-                    "connection:.\n\nThe system returned:\n" + 
-                    e.getExtendedMessage(), e);
+                            "connection:.\n\nThe system returned:\n" +
+                            e.getExtendedMessage(), e);
             return;
 
         } finally {
-            
+
             releaseResources(rs);
             host.close();
         }
 
         // sort the rows in alpha
         Collections.sort(masterTypes, sorter);
-        
+
         GUIUtils.invokeAndWait(new Runnable() {
             public void run() {
                 masterListModel.fireContentsChanged();
@@ -505,15 +527,14 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
             }
         });
     }
-    
+
     public void secondConnectionChanged() {
         GUIUtils.startWorker(new Runnable() {
             public void run() {
                 try {
                     setInProcess(true);
                     buildSecondConnectionValues();
-                }
-                finally {
+                } finally {
                     setInProcess(false);
                 }
             }
@@ -523,7 +544,7 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
     public void buildSecondConnectionValues() {
 
         // retrieve connection selection
-        DatabaseConnection databaseConnection = 
+        DatabaseConnection databaseConnection =
                 (DatabaseConnection) connectionsCombo2.getSelectedItem();
         DatabaseHost host = hostForConnection(databaseConnection);
 
@@ -538,7 +559,7 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
 
         ResultSet rs = null;
         try {
-            
+
             rs = host.getDataTypeInfo();
             mappedToTypes = buildDataTypeList(mappedToTypes, rs, false);
 
@@ -546,12 +567,12 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
 
             GUIUtilities.displayExceptionErrorDialog(
                     "Error retrieving data types for the selected " +
-                    "connection.\n\nThe system returned:\n" + 
-                    e.getExtendedMessage(), e);
+                            "connection.\n\nThe system returned:\n" +
+                            e.getExtendedMessage(), e);
             return;
 
         } finally {
-            
+
             releaseResources(rs);
             host.close();
         }
@@ -569,11 +590,13 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
 
     }
 
-    /** dummy reset value */
+    /**
+     * dummy reset value
+     */
     private Object[] dummyListData = new Object[0];
 
     private void generateMappedList() {
-        
+
         int index = masterList.getSelectedIndex();
         if (index == -1) {
             return;
@@ -588,7 +611,7 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
         if (masterTypes.size() == 0) {
             return;
         }
-        
+
         // retrieve the selected data type
         List row = masterTypes.get(index);
         String typeString = row.get(TYPE_COLUMN - 1).toString();
@@ -629,17 +652,17 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
             applyCellRenderer();
         }
     }
-    
+
     private void releaseResources(ResultSet rs) {
         try {
             if (rs != null) {
                 rs.close();
             }
+        } catch (SQLException sqlExc) {
         }
-        catch (SQLException sqlExc) {}
     }
 
-    /** 
+    /**
      * Called whenever the value of the selection changes.
      *
      * @param e the event that characterizes the change.
@@ -652,7 +675,7 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
 
         EventMediator.deregisterListener(this);
     }
-    
+
     private void enableCombos(boolean enable) {
         connectionsCombo.setEnabled(enable);
         connectionsCombo2.setEnabled(enable);
@@ -661,10 +684,10 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
     // ---------------------------------------------
     // ConnectionListener implementation
     // ---------------------------------------------
-    
+
     /**
      * Indicates a connection has been established.
-     * 
+     *
      * @param the encapsulating event
      */
     public void connected(ConnectionEvent connectionEvent) {
@@ -676,7 +699,7 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
 
     /**
      * Indicates a connection has been closed.
-     * 
+     *
      * @param the encapsulating event
      */
     public void disconnected(ConnectionEvent connectionEvent) {
@@ -687,7 +710,7 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
             enableCombos(false);
         }
         // TODO: NEED TO CHECK OPEN CONN
-        
+
     }
 
     public boolean canHandleEvent(ApplicationEvent event) {
@@ -731,15 +754,16 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
 
     // --------------------------------------------
 
-    
+
     class DataTypeListModel extends DefaultListModel {
-        
-        public DataTypeListModel() {}
-        
+
+        public DataTypeListModel() {
+        }
+
         public void fireContentsChanged() {
             fireContentsChanged(this, -1, -1);
         }
-        
+
         public Object getElementAt(int index) {
             if (masterTypes == null) {
                 return null;
@@ -753,39 +777,40 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
             }
             return masterTypes.size();
         }
-        
+
         public boolean isEmpty() {
             return getSize() == 0;
         }
-        
+
     }
-    
-    
+
+
     class DataTypesTableModel extends AbstractTableModel {
-        
-        public DataTypesTableModel() {}
-        
+
+        public DataTypesTableModel() {
+        }
+
         public String getColumnName(int column) {
             if (columns == null) {
                 return "";
             }
             return columns[column];
         }
-        
+
         public int getColumnCount() {
             if (columns == null) {
                 return 0;
             }
             return columns.length;
         }
-        
+
         public int getRowCount() {
             if (tableData == null) {
                 return 0;
             }
             return tableData.size();
         }
-        
+
         public Object getValueAt(int rowIndex, int columnIndex) {
             if (rowIndex >= tableData.size()) {
                 return null;
@@ -793,24 +818,24 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
             List row = tableData.get(rowIndex);
             return row.get(columnIndex);
         }
-        
+
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return false;
         }
-        
+
     }
- 
+
     // diff cell backgrounds
-    private Color masterTypeBg = new Color(153,204,153);
-    private Color diffTypeBg = new Color(255,255,102);
-    
+    private Color masterTypeBg = new Color(153, 204, 153);
+    private Color diffTypeBg = new Color(255, 255, 102);
+
     class DataTypeCellRenderer extends DefaultTableCellRenderer {
-        
-        public Component getTableCellRendererComponent(JTable table, 
+
+        public Component getTableCellRendererComponent(JTable table,
                                                        Object value,
-                                                       boolean isSelected, 
-                                                       boolean hasFocus, 
-                                                       int row, 
+                                                       boolean isSelected,
+                                                       boolean hasFocus,
+                                                       int row,
                                                        int column) {
 
             if (isSelected) {
@@ -820,8 +845,7 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
 
                 if (row == 0) {
                     setBackground(masterTypeBg);
-                }
-                else {
+                } else {
                     setBackground(table.getBackground());
                     if (column > 0) {
                         Object masterValue = selectedDataType.get(column);
@@ -834,24 +858,24 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
                 }
                 setForeground(table.getForeground());
             }
-            
+
             setValue(value);
             return this;
         }
-        
+
     }
-    
-    
+
+
     class DataTypeRowSorter implements Comparator {
-        
+
         public int compare(Object obj1, Object obj2) {
-            List<String> row1 = (List<String>)obj1;
-            List<String> row2 = (List<String>)obj2;
+            List<String> row1 = (List<String>) obj1;
+            List<String> row2 = (List<String>) obj2;
             return row1.get(NAME_COLUMN - 1).compareTo(row2.get(NAME_COLUMN - 1));
         }
 
     }
-    
+
 }
 
 

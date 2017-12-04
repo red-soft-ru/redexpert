@@ -20,23 +20,22 @@
 
 package org.executequery.gui.browser.nodes;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.ConnectionsFolder;
 
-/** 
- *
- * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+
+/**
+ * @author Takis Diakoumis
+ * @version $Revision$
+ * @date $Date$
  */
 public class ConnectionsFolderNode extends RootDatabaseObjectNode {
-    
+
     private final ConnectionsFolder connectionsFolder;
 
     public ConnectionsFolderNode(ConnectionsFolder connectionsFolder) {
@@ -49,30 +48,30 @@ public class ConnectionsFolderNode extends RootDatabaseObjectNode {
     public DatabaseObjectNode copy() {
 
         ConnectionsFolderNode copy = new ConnectionsFolderNode(connectionsFolder);
-        for (Enumeration<DatabaseObjectNode> i = children(); i.hasMoreElements();) {
-            
+        for (Enumeration<DatabaseObjectNode> i = children(); i.hasMoreElements(); ) {
+
             copy.add(i.nextElement().copy());
         }
-        
+
         return copy;
     }
-    
+
     @Override
     public boolean isDraggable() {
         return true;
     }
-    
+
     @Override
     public boolean isNameEditable() {
-        
+
         return true;
     }
-    
+
     /**
      * Propagates the call to the underlying database object.
      */
     public int getType() {
-        
+
         return NamedObject.BRANCH_NODE;
     }
 
@@ -80,59 +79,59 @@ public class ConnectionsFolderNode extends RootDatabaseObjectNode {
      * Returns the name of the root node.
      */
     public String getName() {
-        
+
         return connectionsFolder.getName();
     }
 
     public void setName(String name) {
-        
+
         connectionsFolder.setName(name);
     }
-    
+
     public ConnectionsFolder getConnectionsFolder() {
-     
+
         return connectionsFolder;
     }
 
     @SuppressWarnings("unchecked")
     public List<DatabaseHost> getDatabaseHosts() {
-        
+
         List<DatabaseHost> hosts = new ArrayList<DatabaseHost>(getChildCount());
-        for (Enumeration<DatabaseHostNode> i = children(); i.hasMoreElements();) {
-            
+        for (Enumeration<DatabaseHostNode> i = children(); i.hasMoreElements(); ) {
+
             DatabaseHostNode node = i.nextElement();
             DatabaseHost host = (DatabaseHost) node.getDatabaseObject();
             hosts.add(host);
         }
-        
+
         return hosts;
     }
-    
+
     @SuppressWarnings("unchecked")
     public List<DatabaseHostNode> getDatabaseHostNodes() {
-        
+
         List<DatabaseHostNode> nodes = new ArrayList<DatabaseHostNode>(getChildCount());
-        for (Enumeration<DatabaseHostNode> i = children(); i.hasMoreElements();) {
-            
+        for (Enumeration<DatabaseHostNode> i = children(); i.hasMoreElements(); ) {
+
             nodes.add(i.nextElement());
         }
-        
+
         return nodes;
     }
-    
+
     @SuppressWarnings("unchecked")
     public DatabaseObjectNode getHostNode(DatabaseConnection dc) {
 
-        for (Enumeration<DatabaseHostNode> i = children(); i.hasMoreElements();) {
-            
+        for (Enumeration<DatabaseHostNode> i = children(); i.hasMoreElements(); ) {
+
             DatabaseHostNode node = i.nextElement();
             if (((DatabaseHost) node.getDatabaseObject()).getDatabaseConnection() == dc) {
 
                 return node;
             }
-            
+
         }
-        
+
         return null;
     }
 
@@ -146,7 +145,7 @@ public class ConnectionsFolderNode extends RootDatabaseObjectNode {
         super.add(databaseHostNode);
         connectionsFolder.addConnection(databaseHostNode.getDatabaseConnection().getId());
     }
-    
+
 }
 
 

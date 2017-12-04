@@ -20,21 +20,17 @@
 
 package org.executequery.gui.resultset;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.sql.Types;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.table.DefaultTableCellRenderer;
-
 import org.executequery.Constants;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.*;
+import java.sql.Types;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 // much of this from the article Christmas Tree Applications at
 // http://java.sun.com/products/jfc/tsc/articles/ChristmasTree
@@ -42,8 +38,7 @@ import org.underworldlabs.util.SystemProperties;
 // results table.
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 

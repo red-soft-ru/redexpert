@@ -21,14 +21,13 @@
 package org.executequery.event;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class DefaultQueryShortcutEvent extends AbstractApplicationEvent 
-                                       implements QueryShortcutEvent {
+public class DefaultQueryShortcutEvent extends AbstractApplicationEvent
+        implements QueryShortcutEvent {
 
     public DefaultQueryShortcutEvent(Object source, String method) {
-        
+
         super(source, method);
     }
 

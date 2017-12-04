@@ -20,19 +20,19 @@
 
 package org.executequery.actions.databasecommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
 import org.executequery.datasource.ConnectionManager;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-/** 
+import java.awt.event.ActionEvent;
+
+/**
  * Executes the Database | Close Connection command.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DisconnectCommand implements BaseCommand {
-    
+
     public void execute(ActionEvent e) {
 
         if (!ConnectionManager.hasConnections()) {
@@ -42,7 +42,7 @@ public class DisconnectCommand implements BaseCommand {
 
         GUIUtilities.closeSelectedConnection();
     }
-    
+
 }
 
 

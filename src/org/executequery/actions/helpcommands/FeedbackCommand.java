@@ -20,23 +20,23 @@
 
 package org.executequery.actions.helpcommands;
 
-import java.awt.event.ActionEvent;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import org.executequery.GUIUtilities;
 import org.executequery.actions.othercommands.AbstractBaseCommand;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.FeedbackPanel;
 import org.executequery.log.Log;
 
-/** 
+import java.awt.event.ActionEvent;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+/**
  * Command to open the feedback dialog.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class FeedbackCommand extends AbstractBaseCommand {
-    
+
     public void execute(ActionEvent e) {
 
         String actionCommand = e.getActionCommand();
@@ -44,15 +44,15 @@ public class FeedbackCommand extends AbstractBaseCommand {
 
             Method method = getClass().getMethod(
                     actionCommand, new Class[]{ActionEvent.class});
-            
+
             method.invoke(this, e);
 
-        } catch (SecurityException | NoSuchMethodException | IllegalArgumentException 
+        } catch (SecurityException | NoSuchMethodException | IllegalArgumentException
                 | IllegalAccessException | InvocationTargetException e1) {
-            
+
             handleException(e1);
         }
-        
+
     }
 
     private void handleException(Throwable e) {
@@ -61,28 +61,28 @@ public class FeedbackCommand extends AbstractBaseCommand {
     }
 
     public void featureRequest(ActionEvent e) {
-        
+
         showDialog(FeedbackPanel.FEATURE_REQUEST, bundledString("featureRequest"));
     }
 
     public void userComments(ActionEvent e) {
-        
+
         showDialog(FeedbackPanel.USER_COMMENTS, bundledString("userComments"));
     }
 
     public void bugReport(ActionEvent e) {
-        
+
         showDialog(FeedbackPanel.BUG_REPORT, bundledString("reportBug"));
     }
 
     private void showDialog(int type, String title) {
-        
+
         GUIUtilities.showWaitCursor();
         try {
 
             BaseDialog dialog = new BaseDialog(title, true, true);
             FeedbackPanel panel = new FeedbackPanel(dialog, type);
-            
+
             dialog.addDisplayComponent(panel);
             dialog.display();
 

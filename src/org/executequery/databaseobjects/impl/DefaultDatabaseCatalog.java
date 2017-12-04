@@ -20,32 +20,35 @@
 
 package org.executequery.databaseobjects.impl;
 
-import java.util.List;
-import org.executequery.databaseobjects.DatabaseCatalog;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.DatabaseSchema;
-import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.*;
 import org.underworldlabs.jdbc.DataSourceException;
+
+import java.util.List;
 
 /**
  * Default database catalog object implementation.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class DefaultDatabaseCatalog extends AbstractDatabaseSource 
-                                    implements DatabaseCatalog {
+public class DefaultDatabaseCatalog extends AbstractDatabaseSource
+        implements DatabaseCatalog {
 
-    /** the schemas for this catalog */
+    /**
+     * the schemas for this catalog
+     */
     private List<DatabaseSchema> schemas;
 
-    /** Creates a new instance of DefaultDatabaseCatalog */
+    /**
+     * Creates a new instance of DefaultDatabaseCatalog
+     */
     public DefaultDatabaseCatalog(DatabaseHost host, String name) {
         super(host);
         setName(name);
     }
 
-    /** indicates whether the meta objects have been loaded */
+    /**
+     * indicates whether the meta objects have been loaded
+     */
     private boolean metaObjectsLoaded = false;
 
     /**
@@ -140,10 +143,10 @@ public class DefaultDatabaseCatalog extends AbstractDatabaseSource
      * @return the parent catalog object
      */
     public DatabaseCatalog getCatalog() {
-        
+
         return this;
     }
-    
+
     /**
      * Override to return value from getName().
      */
@@ -167,14 +170,15 @@ public class DefaultDatabaseCatalog extends AbstractDatabaseSource
     /**
      * Does nothing in this case.
      */
-    public void setSchemaName(String schema) {}
+    public void setSchemaName(String schema) {
+    }
 
     @Override
     public String getDescription() {
 
         return "CATALOG: " + getName();
     }
-    
+
 }
 
 

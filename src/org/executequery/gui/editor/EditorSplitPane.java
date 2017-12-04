@@ -20,27 +20,27 @@
 
 package org.executequery.gui.editor;
 
-import java.awt.Component;
-import javax.swing.JPanel;
 import org.underworldlabs.swing.FlatSplitPane;
 
+import javax.swing.*;
+import java.awt.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class EditorSplitPane extends FlatSplitPane {
 
     public EditorSplitPane(int newOrientation,
-                         Component newLeftComponent, Component newRightComponent) {
+                           Component newLeftComponent, Component newRightComponent) {
         super(newOrientation, newLeftComponent, newRightComponent);
     }
-    
+
     protected void setComponentBorder(Component comp) {
         if (comp instanceof JPanel) {
-            ((JPanel)comp).setBorder(lineBorder);
+            ((JPanel) comp).setBorder(lineBorder);
         }
     }
-    
+
 }
 
 

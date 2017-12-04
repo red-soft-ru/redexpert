@@ -20,19 +20,18 @@
 
 package org.executequery.gui.databaseobjects;
 
-import java.util.List;
-
-import javax.swing.table.TableColumnModel;
-
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.table.ColumnKeyRenderer;
 import org.underworldlabs.swing.table.TableSorter;
 
+import javax.swing.table.TableColumnModel;
+import java.util.List;
+
 /**
  * Simple database object table display.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public abstract class AbstractDatabaseObjectTable extends DefaultTable {
 

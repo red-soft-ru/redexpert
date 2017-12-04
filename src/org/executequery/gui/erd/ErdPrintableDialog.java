@@ -20,9 +20,6 @@
 
 package org.executequery.gui.erd;
 
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.event.ApplicationEvent;
@@ -33,68 +30,77 @@ import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
 import org.underworldlabs.swing.AbstractBaseDialog;
 
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+
 /**
  * A non-modal dialog containing an <code>SQLTextPanel</code>
  * object. This base class provides the functionality as
  * indicated within the <code>TextEditor</code> interface
  * including cut/copy/paste, save and print functions.
- * 
- * @author   Takis Diakoumis
+ *
+ * @author Takis Diakoumis
  */
 public class ErdPrintableDialog extends AbstractBaseDialog
-                                implements TextEditorContainer,
-                                           KeywordListener {
-    
-    /** The SQL text panel */
+        implements TextEditorContainer,
+        KeywordListener {
+
+    /**
+     * The SQL text panel
+     */
     protected SimpleSqlTextPanel sqlText;
-    
-    /** <p>Constructs a new instance with the specified name.
+
+    /**
+     * <p>Constructs a new instance with the specified name.
      *
-     *  @param the name of this dialog
+     * @param the name of this dialog
      */
     public ErdPrintableDialog(String name) {
         super(GUIUtilities.getParentFrame(), name, false);
         sqlText = new SimpleSqlTextPanel();
-        
+
         GUIUtilities.setFocusedDialog(this);
-        
+
         this.addFocusListener(new FocusListener() {
             public void focusGained(FocusEvent e) {
                 dialogFocusChanged(true);
             }
+
             public void focusLost(FocusEvent e) {
                 dialogFocusChanged(false);
             }
         });
         EventMediator.registerListener(this);
     }
-    
-    /** <p>Constructs a new instance with the specified name
-     *  and whether the SQL text panel should be created.
+
+    /**
+     * <p>Constructs a new instance with the specified name
+     * and whether the SQL text panel should be created.
      *
-     *  @param the name of this dialog
-     *  @param whether to create the SQL text panel
+     * @param the     name of this dialog
+     * @param whether to create the SQL text panel
      */
     public ErdPrintableDialog(String name, boolean createSQLPanel) {
         super(GUIUtilities.getParentFrame(), name, false);
-        
+
         if (createSQLPanel) {
             sqlText = new SimpleSqlTextPanel();
         }
-        
+
         GUIUtilities.setFocusedDialog(this);
-        
+
         this.addFocusListener(new FocusListener() {
             public void focusGained(FocusEvent e) {
                 dialogFocusChanged(true);
             }
+
             public void focusLost(FocusEvent e) {
                 dialogFocusChanged(false);
             }
         });
         EventMediator.registerListener(this);
     }
-    
+
     /**
      * Notification of a new keyword added to the list.
      */
@@ -117,40 +123,44 @@ public class ErdPrintableDialog extends AbstractBaseDialog
         return (event instanceof KeywordEvent);
     }
 
-    /** <p>Called for a change in focus as specified. This
-     *  method will pass this object into <code>GUIUtilities</code>
-     *  methods <code>setFocusedDialog(JDialog)</code> and
-     *  <code>removeFocusedDialog(JDialog)</code> depending on
-     *  the focus parameter specified.
+    /**
+     * <p>Called for a change in focus as specified. This
+     * method will pass this object into <code>GUIUtilities</code>
+     * methods <code>setFocusedDialog(JDialog)</code> and
+     * <code>removeFocusedDialog(JDialog)</code> depending on
+     * the focus parameter specified.
      *
-     *  @param whether this dialog has focus
+     * @param whether this dialog has focus
      */
     private void dialogFocusChanged(boolean hasFocus) {
-        
+
         if (hasFocus)
             GUIUtilities.setFocusedDialog(this);
         else
             GUIUtilities.removeFocusedDialog(this);
-        
+
     }
-    
-    /** <p>Simple call to make this dialog visible. */
+
+    /**
+     * <p>Simple call to make this dialog visible.
+     */
     protected void display() {
         pack();
         this.setLocation(GUIUtilities.getLocationForDialog(this.getSize()));
         setVisible(true);
     }
-    
-    /** <p>Removes this dialog from the application
-     *  controller <code>GUIUtilities</code> object before
-     *  a call to <code>super.dispose()</code>.
+
+    /**
+     * <p>Removes this dialog from the application
+     * controller <code>GUIUtilities</code> object before
+     * a call to <code>super.dispose()</code>.
      */
     public void dispose() {
         EventMediator.deregisterListener(this);
         GUIUtilities.removeFocusedDialog(this);
         super.dispose();
     }
-    
+
     public String getDisplayName() {
         return "";
     }
@@ -158,15 +168,15 @@ public class ErdPrintableDialog extends AbstractBaseDialog
     // ------------------------------------------------
     // ----- TextEditorContainer implementations ------
     // ------------------------------------------------
-    
+
     /**
-     * Returns the SQL text pane as the TextEditor component 
+     * Returns the SQL text pane as the TextEditor component
      * that this container holds.
      */
     public TextEditor getTextEditor() {
         return sqlText;
     }
-    
+
 }
 
 

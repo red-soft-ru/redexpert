@@ -20,12 +20,11 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Insets;
-
-import javax.swing.JPasswordField;
-import javax.swing.text.Document;
-
 import org.executequery.gui.GUIConstants;
+
+import javax.swing.*;
+import javax.swing.text.Document;
+import java.awt.*;
 
 public class DefaultPasswordField extends JPasswordField {
 
@@ -58,12 +57,12 @@ public class DefaultPasswordField extends JPasswordField {
 
         return GUIConstants.DEFAULT_FIELD_MARGIN;
     }
-    
+
     public int getHeight() {
 
         return Math.max(super.getHeight(), GUIConstants.DEFAULT_FIELD_HEIGHT);
     }
-    
+
 }
 
 

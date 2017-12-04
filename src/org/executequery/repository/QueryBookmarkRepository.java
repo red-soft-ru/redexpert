@@ -23,15 +23,14 @@ package org.executequery.repository;
 import java.util.List;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface QueryBookmarkRepository extends Repository {
 
     String REPOSITORY_ID = "query-bookmarks";
-    
+
     List<QueryBookmark> open();
-    
+
     void save(List<QueryBookmark> bookmarks);
 
 }

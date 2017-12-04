@@ -31,7 +31,7 @@ import org.executequery.repository.RepositoryException;
 public class RecentFileIOListener implements FileIOListener {
 
     public void inputComplete(FileIOEvent fileIoEvent) {
-        
+
         addRecentlyOpenedFile(fileIoEvent);
     }
 
@@ -41,7 +41,7 @@ public class RecentFileIOListener implements FileIOListener {
     }
 
     public boolean canHandleEvent(ApplicationEvent event) {
-        
+
         return (event instanceof FileIOEvent);
     }
 
@@ -53,7 +53,7 @@ public class RecentFileIOListener implements FileIOListener {
 
         } catch (RepositoryException e) {
 
-            Log.error("An IO error occurred writing to the recent open files list: " 
+            Log.error("An IO error occurred writing to the recent open files list: "
                     + e.getMessage());
         }
 
@@ -61,8 +61,8 @@ public class RecentFileIOListener implements FileIOListener {
 
     private RecentlyOpenFileRepository recentlyOpenFileRepository() {
 
-        return (RecentlyOpenFileRepository)RepositoryCache.load(
-                    RecentlyOpenFileRepository.REPOSITORY_ID);        
+        return (RecentlyOpenFileRepository) RepositoryCache.load(
+                RecentlyOpenFileRepository.REPOSITORY_ID);
     }
 
 }

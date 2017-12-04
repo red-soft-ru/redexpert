@@ -22,10 +22,10 @@ package org.executequery.util;
 
 import org.underworldlabs.swing.util.SwingWorker;
 
-/** 
+/**
  * Thread worker wrapper.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public abstract class ThreadWorker extends SwingWorker {
 

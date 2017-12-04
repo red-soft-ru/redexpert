@@ -23,8 +23,7 @@ package org.underworldlabs.swing;
 import java.awt.event.MouseEvent;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface GlassPaneSelectionListener {
 
@@ -33,7 +32,7 @@ public interface GlassPaneSelectionListener {
      * way - usually any type of mouse event.
      */
     public void glassPaneSelected(MouseEvent e);
-    
+
 }
 
 

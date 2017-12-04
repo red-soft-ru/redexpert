@@ -20,67 +20,74 @@
 
 package org.executequery.base;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Point;
-import java.awt.Rectangle;
+import org.underworldlabs.swing.FlatSplitPane;
+
+import javax.swing.*;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-
-import org.underworldlabs.swing.FlatSplitPane;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class BaseApplicationPane extends JPanel
-                                 implements PropertyChangeListener {
-   
-    /** The outline panel shown when dragging */
+        implements PropertyChangeListener {
+
+    /**
+     * The outline panel shown when dragging
+     */
     private DragPanel dragPanel;
-    
-    /** Temp value for the tab pane a move is occurring from */
+
+    /**
+     * Temp value for the tab pane a move is occurring from
+     */
     private DockedTabPane fromTabPane;
-    
-    /** Temp value for the tab pane a move is occurring to */
+
+    /**
+     * Temp value for the tab pane a move is occurring to
+     */
     private DockedTabPane toTabPane;
 
-    /** The tab pane position for a new tab */
+    /**
+     * The tab pane position for a new tab
+     */
     private int newTabPanePosition;
-    
-    /** The mediator/controller class */
+
+    /**
+     * The mediator/controller class
+     */
     private DesktopMediator desktopMediator;
 
     // ---------------------------------------
     // primary desktop components
     // ---------------------------------------
-    
-    /** the left main split pane */
+
+    /**
+     * the left main split pane
+     */
     private FlatSplitPane leftSplitPane;
 
-    /** the right main split pane */
+    /**
+     * the right main split pane
+     */
     private FlatSplitPane rightSplitPane;
 
-    
-    /** Creates a new instance of BaseApplicationPane */
+
+    /**
+     * Creates a new instance of BaseApplicationPane
+     */
     public BaseApplicationPane(DesktopMediator desktopMediator) {
         super(new BorderLayout());
         this.desktopMediator = desktopMediator;
         init();
     }
-    
+
     private void init() {
         // init the main split panes
         leftSplitPane = new FlatSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         leftSplitPane.setDividerSize(0);
         //configureSplitPane(leftSplitPane);
-        
+
         rightSplitPane = new FlatSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         rightSplitPane.setResizeWeight(1.0);
         rightSplitPane.setDividerSize(0);
@@ -91,52 +98,51 @@ public class BaseApplicationPane extends JPanel
 
 //        leftSplitPane.setBorder(BorderFactory.createEmptyBorder(1,3,0,0));
 //        rightSplitPane.setBorder(BorderFactory.createEmptyBorder(1,0,0,1));
-        
+
         // add the left main pane to the right main pane
         rightSplitPane.setLeftComponent(leftSplitPane);
 
         add(rightSplitPane, BorderLayout.CENTER);
-        
+
         leftSplitPane.addPropertyChangeListener(this);
         rightSplitPane.addPropertyChangeListener(this);
     }
-    
+
     /**
      * Provides notification of split pane divider movement events.
      *
      * @param the change event
      */
     public void propertyChange(PropertyChangeEvent e) {
-            String name = e.getPropertyName();
-            if ("dividerLocation".equals(name)) {
-                int position = -1;
-                String value = e.getNewValue().toString();
-                Object source = e.getSource();
-                if (source == leftSplitPane) {
-                    if (leftSplitPane.getLeftComponent() == null) {
-                        return;
-                    }
-                    position = SwingConstants.LEFT;
-                } 
-                else if (source == rightSplitPane) {
-                    if (rightSplitPane.getRightComponent() == null) {
-                        return;
-                    }
-                    position = SwingConstants.RIGHT;
+        String name = e.getPropertyName();
+        if ("dividerLocation".equals(name)) {
+            int position = -1;
+            String value = e.getNewValue().toString();
+            Object source = e.getSource();
+            if (source == leftSplitPane) {
+                if (leftSplitPane.getLeftComponent() == null) {
+                    return;
                 }
-                desktopMediator.splitPaneDividerMoved(position, Integer.parseInt(value));
+                position = SwingConstants.LEFT;
+            } else if (source == rightSplitPane) {
+                if (rightSplitPane.getRightComponent() == null) {
+                    return;
+                }
+                position = SwingConstants.RIGHT;
+            }
+            desktopMediator.splitPaneDividerMoved(position, Integer.parseInt(value));
 /*
             Log.debug("property change: " + e.getPropertyName() +
             " old value: " + e.getOldValue() + " new value: " + e.getNewValue());
 */
 
-            }
-        
+        }
+
     }
 
     /**
      * Sets the split pane divider location for the split pane
-     * at the specified location <code>SwingConstants.LEFT | 
+     * at the specified location <code>SwingConstants.LEFT |
      * SwingConstants.RIGHT</code> to the specified value.
      *
      * @param the split pane location
@@ -146,25 +152,24 @@ public class BaseApplicationPane extends JPanel
         if (position == SwingConstants.LEFT) {
             if (leftSplitPane != null) {
                 if (leftSplitPane.getLeftComponent() != null &&
-                        leftSplitPane.getRightComponent() != null) {                
+                        leftSplitPane.getRightComponent() != null) {
                     leftSplitPane.setDividerLocation(location);
                 }
             }
-        }
-        else if (position == SwingConstants.RIGHT) {
+        } else if (position == SwingConstants.RIGHT) {
             if (rightSplitPane != null) {
                 if (rightSplitPane.getLeftComponent() != null &&
-                        rightSplitPane.getRightComponent() != null) {                
+                        rightSplitPane.getRightComponent() != null) {
                     rightSplitPane.setDividerLocation(location);
                 }
             }
         }
     }
-    
+
     /**
      * Notifies all registered listeners of a tab minimised event.
      *
-     * @param the event 
+     * @param the event
      */
     public void fireTabMinimised(DockedTabEvent e) {
         desktopMediator.fireTabMinimised(e);
@@ -173,7 +178,7 @@ public class BaseApplicationPane extends JPanel
     /**
      * Notifies all registered listeners of a tab selected event.
      *
-     * @param the event 
+     * @param the event
      */
     public void fireTabSelected(DockedTabEvent e) {
         desktopMediator.fireTabSelected(e);
@@ -182,16 +187,16 @@ public class BaseApplicationPane extends JPanel
     /**
      * Notifies all registered listeners of a tab deselected event.
      *
-     * @param the event 
+     * @param the event
      */
     public void fireTabDeselected(DockedTabEvent e) {
         desktopMediator.fireTabDeselected(e);
     }
-    
+
     /**
      * Notifies all registered listeners of a tab closed event.
      *
-     * @param the event 
+     * @param the event
      */
     public void fireTabClosed(DockedTabEvent e) {
         desktopMediator.fireTabClosed(e);
@@ -205,8 +210,8 @@ public class BaseApplicationPane extends JPanel
     }
 
     /**
-     * Resets the split pane component in the specified 
-     * position to the preferred sizes of the split pane 
+     * Resets the split pane component in the specified
+     * position to the preferred sizes of the split pane
      * children components.
      *
      * @param the position of the pane
@@ -231,11 +236,11 @@ public class BaseApplicationPane extends JPanel
                     rightSplitPane.restoreDividerLocation();
                 }
                 break;
-        }        
+        }
     }
 
-    /** 
-     * Indicates whether the split pane at the specified 
+    /**
+     * Indicates whether the split pane at the specified
      * position (left or right) is visible.
      * This will always return true for a center position.
      *
@@ -276,7 +281,7 @@ public class BaseApplicationPane extends JPanel
      *
      * @param the component to add
      * @param the position this component is to be added<br>
-     *        one of: <code>SwingConstants.WEST | CENTER | EAST</code>
+     *            one of: <code>SwingConstants.WEST | CENTER | EAST</code>
      */
     public void addComponent(Component c, int position) {
         switch (position) {
@@ -320,12 +325,12 @@ public class BaseApplicationPane extends JPanel
                 leftSplitPane.setRightComponent(c);
                 break;
              */
-                
-        }        
+
+        }
     }
 
     /**
-     *  Invoked when a mouse button has been released on a tab.
+     * Invoked when a mouse button has been released on a tab.
      *
      * @param the encapsulating event object
      */
@@ -337,7 +342,7 @@ public class BaseApplicationPane extends JPanel
 
                 int x = e.getX();
                 int y = e.getY();
-                
+
                 if (fromTabPane == null) {
                     fromTabPane = e.getSourceTabPane();
                 }
@@ -354,14 +359,13 @@ public class BaseApplicationPane extends JPanel
                     desktopMediator.addDockedTab(tabComponent, newTabPanePosition, true);
                     return;
                 }
-                
+
                 // move tab if required
                 if (fromTabPane != null && toTabPane != null) {
                     if (fromTabPane == toTabPane) {
                         int toIndex = fromTabPane.getTabAtLocation(x, y);
                         fromTabPane.moveTab(fromIndex, toIndex);
-                    }
-                    else {
+                    } else {
                         Rectangle tabRect = dragPanel.getTabRectangle();
                         int toIndex = toTabPane.getTabRectangleIndex(tabRect);
 
@@ -388,7 +392,7 @@ public class BaseApplicationPane extends JPanel
                     Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
     }
-    
+
     /**
      * Invoked when a mouse button is pressed on a tab and then dragged.
      *
@@ -406,29 +410,29 @@ public class BaseApplicationPane extends JPanel
         Point point = SwingUtilities.convertPoint(e.getSourceTabPane(), x, y, this);
         x = point.x;
         y = point.y;
-        
+
         int height = getHeight();
         int width = getWidth();
-        
+
         double placementFactor = 0.2;
-        int heightRange = (int)(height * placementFactor);
-        int widthRange =  (int)(width * placementFactor);
-        
+        int heightRange = (int) (height * placementFactor);
+        int widthRange = (int) (width * placementFactor);
+
         int leftPaneWidth = desktopMediator.getPaneWidth(SwingConstants.WEST);
         int rightPaneWidth = desktopMediator.getPaneWidth(SwingConstants.EAST);
         int centerPaneWidth = desktopMediator.getPaneWidth(SwingConstants.CENTER);
-        
+
         //Log.debug("west: "+desktopMediator.isPaneVisible(SwingConstants.WEST));
-        
+
         // check left/right extremes where there may no tab and split panes
         if (x < widthRange) { // left side
             //Log.debug("AA");
             if (!desktopMediator.isPaneVisible(SwingConstants.WEST)) {
                 //Log.debug("BB");
-                Rectangle tabPaneRect = new Rectangle(0, 
-                                                      0,
-                                                      widthRange,
-                                                      height);
+                Rectangle tabPaneRect = new Rectangle(0,
+                        0,
+                        widthRange,
+                        height);
 
                 // add the y offset for this panel
                 tabPaneRect.y += getYOffset();
@@ -436,22 +440,20 @@ public class BaseApplicationPane extends JPanel
                 if (dragPanel == null) {
                     dragPanel = new DragPanel(tabPaneRect);
                     desktopMediator.addDragPanel(dragPanel);
-                }
-                else {
+                } else {
                     dragPanel.reset(tabPaneRect);
                 }
                 newTabPanePosition = SwingConstants.NORTH_WEST;
                 return;
             }
-        }
-        else if (x > (width - widthRange)) { // right side
+        } else if (x > (width - widthRange)) { // right side
             //Log.debug("CC");
             if (!desktopMediator.isPaneVisible(SwingConstants.EAST)) {
                 //Log.debug("DD");
-                Rectangle tabPaneRect = new Rectangle(width - widthRange, 
-                                                      0,
-                                                      widthRange,
-                                                      height);
+                Rectangle tabPaneRect = new Rectangle(width - widthRange,
+                        0,
+                        widthRange,
+                        height);
 
                 // add the y offset for this panel
                 tabPaneRect.y += getYOffset();
@@ -459,8 +461,7 @@ public class BaseApplicationPane extends JPanel
                 if (dragPanel == null) {
                     dragPanel = new DragPanel(tabPaneRect);
                     desktopMediator.addDragPanel(dragPanel);
-                }
-                else {
+                } else {
                     dragPanel.reset(tabPaneRect);
                 }
                 newTabPanePosition = SwingConstants.NORTH_EAST;
@@ -472,14 +473,14 @@ public class BaseApplicationPane extends JPanel
         if (y > (height - heightRange)) {
             //Log.debug("ZZ");
             // bottom-left region
-            if (x < leftPaneWidth && 
+            if (x < leftPaneWidth &&
                     !desktopMediator.hasDockedComponentAtPosition(SwingConstants.SOUTH_WEST)) {
                 if (leftSplitPane == null || leftSplitPane.getLeftComponent() == null) return;
-                Rectangle tabPaneRect = 
+                Rectangle tabPaneRect =
                         new Rectangle(leftSplitPane.getLeftComponent().getX(),
-                                      height - heightRange - ApplicationConstants.SPLIT_PANE_DIVIDER_SIZE,
-                                      leftPaneWidth,
-                                      heightRange);
+                                height - heightRange - ApplicationConstants.SPLIT_PANE_DIVIDER_SIZE,
+                                leftPaneWidth,
+                                heightRange);
 
                 // add the y offset for this panel
                 tabPaneRect.y += getYOffset();
@@ -487,22 +488,21 @@ public class BaseApplicationPane extends JPanel
                 if (dragPanel == null) {
                     dragPanel = new DragPanel(tabPaneRect);
                     desktopMediator.addDragPanel(dragPanel);
-                }
-                else {
+                } else {
                     dragPanel.reset(tabPaneRect);
                 }
                 newTabPanePosition = SwingConstants.SOUTH_WEST;
                 return;
             }
             // bottom-right region
-            else if (x > (width - rightPaneWidth) && 
-                        !desktopMediator.hasDockedComponentAtPosition(SwingConstants.SOUTH_EAST)) {
+            else if (x > (width - rightPaneWidth) &&
+                    !desktopMediator.hasDockedComponentAtPosition(SwingConstants.SOUTH_EAST)) {
                 //Log.debug("YY");
-                Rectangle tabPaneRect = 
+                Rectangle tabPaneRect =
                         new Rectangle(rightSplitPane.getRightComponent().getX(),
-                                      height - heightRange - ApplicationConstants.SPLIT_PANE_DIVIDER_SIZE,
-                                      rightPaneWidth - ApplicationConstants.SPLIT_PANE_DIVIDER_SIZE,
-                                      heightRange);
+                                height - heightRange - ApplicationConstants.SPLIT_PANE_DIVIDER_SIZE,
+                                rightPaneWidth - ApplicationConstants.SPLIT_PANE_DIVIDER_SIZE,
+                                heightRange);
 
                 // add the y offset for this panel
                 tabPaneRect.y += getYOffset();
@@ -510,64 +510,62 @@ public class BaseApplicationPane extends JPanel
                 if (dragPanel == null) {
                     dragPanel = new DragPanel(tabPaneRect);
                     desktopMediator.addDragPanel(dragPanel);
-                }
-                else {
+                } else {
                     dragPanel.reset(tabPaneRect);
                 }
                 newTabPanePosition = SwingConstants.SOUTH_EAST;
                 return;
             }
             // bottom-center region
-            else if (x > leftPaneWidth && x < (width - rightPaneWidth) && 
-                        !desktopMediator.hasDockedComponentAtPosition(SwingConstants.SOUTH)) {
+            else if (x > leftPaneWidth && x < (width - rightPaneWidth) &&
+                    !desktopMediator.hasDockedComponentAtPosition(SwingConstants.SOUTH)) {
                 //Log.debug("XX");
-                Rectangle tabPaneRect = 
+                Rectangle tabPaneRect =
                         new Rectangle(
-                            leftPaneWidth + 
-                                ApplicationConstants.SPLIT_PANE_DIVIDER_SIZE + 
-                                ApplicationConstants.TAB_COMPONENT_BORDER_THICKNESS, 
-                            height - heightRange,
-                            centerPaneWidth,
-                            heightRange - ApplicationConstants.SPLIT_PANE_DIVIDER_SIZE);
+                                leftPaneWidth +
+                                        ApplicationConstants.SPLIT_PANE_DIVIDER_SIZE +
+                                        ApplicationConstants.TAB_COMPONENT_BORDER_THICKNESS,
+                                height - heightRange,
+                                centerPaneWidth,
+                                heightRange - ApplicationConstants.SPLIT_PANE_DIVIDER_SIZE);
 
                 // add the y offset for this panel
                 tabPaneRect.y += getYOffset();
-                
+
                 if (dragPanel == null) {
                     dragPanel = new DragPanel(tabPaneRect);
                     desktopMediator.addDragPanel(dragPanel);
-                }
-                else {
+                } else {
                     dragPanel.reset(tabPaneRect);
                 }
                 newTabPanePosition = SwingConstants.SOUTH;
                 return;
             }
-            
+
         }
-        
+
         //Log.debug("XXXXXXXXXX");
-        
+
         // ------------------------------------------------------------
         // otherwise we must be in the region with existing tab panes
-        
+
         newTabPanePosition = -1;
         DockedTabPane tabPane = null;
         Component component = null;
         Component lastComponent = this;
 
         //Log.debug("BEFORE - x: " + x + " y: " + y);
-        
+
         // need to loop through the split pane layers
         // until the end or when we locate a tab pane
-        
+
         while ((component = lastComponent.getComponentAt(x, y)) != null) {
 
             if (component == lastComponent) { // short-circuit
                 //Log.debug("component: " + component.getClass().getName());
-                
+
                 if (component instanceof DockedTabPane) {
-                    tabPane = (DockedTabPane)component;
+                    tabPane = (DockedTabPane) component;
                     break;
                 }
                 //Log.debug("KK");
@@ -580,11 +578,11 @@ public class BaseApplicationPane extends JPanel
 
             // check if we're over a glass pane on the tab pane
             if (component instanceof BaseRootPane.GlassPanePanel) {
-                component = ((BaseRootPane.GlassPanePanel)component).getComponentBelow();
+                component = ((BaseRootPane.GlassPanePanel) component).getComponentBelow();
             }
 
             if (component instanceof DockedTabPane) {
-                tabPane = (DockedTabPane)component;
+                tabPane = (DockedTabPane) component;
                 break;
             }
             lastComponent = component;
@@ -595,9 +593,9 @@ public class BaseApplicationPane extends JPanel
             //Log.debug("LL");
             return;
         }
-        
+
         //Log.debug("AFTER - x: " + x + " y: " + y);
-        
+
         if (tabPane.intersectsTabArea(x, y)) {
             Rectangle tabRect = tabPane.getTabRectangleAtLocation(x, y);
             if (tabRect == null) {
@@ -606,38 +604,36 @@ public class BaseApplicationPane extends JPanel
 
             // recalculate based on the position of the tab pane
             point = SwingUtilities.convertPoint(
-                        tabPane, tabPane.getLocation(), this);
+                    tabPane, tabPane.getLocation(), this);
 
             //Log.debug("point calced: "+point);
-            
+
             Rectangle tabPaneRect = new Rectangle(tabPane.getBounds());
 
             // reset the origin
             tabPaneRect.x = point.x;// - ApplicationConstants.TAB_COMPONENT_BORDER_THICKNESS;
             tabPaneRect.y = point.y;
-            
+
             // add the y offset for this panel
             tabPaneRect.y += getYOffset();// + tabRect.height;
-            
+
             //Log.debug("setting rect: " + tabPaneRect);
-            
+
             // ----------
             // this works but need to do same where no tab pane above
             // tabPaneRect.y += getYOffset() + tabRect.height;
             // ----------
-            
+
             if (dragPanel == null) {
                 dragPanel = new DragPanel(tabRect, tabPaneRect);
                 desktopMediator.addDragPanel(dragPanel);
-            } 
-            else {
+            } else {
                 dragPanel.reset(tabRect, tabPaneRect);
             }
 
             //Log.debug("bounds: " + dragPanel.getBounds());
-            
-        }
-        else {
+
+        } else {
             if (dragPanel != null) {
                 desktopMediator.removeDragPanel(dragPanel);
                 dragPanel = null;
@@ -646,19 +642,19 @@ public class BaseApplicationPane extends JPanel
         }
         fromTabPane = e.getSourceTabPane();
         toTabPane = tabPane;
-    }    
+    }
 
     private int getYOffset() {
         //Log.debug("base location " + getLocation());
 
         //Point offsetPoint = SwingUtilities.convertPoint(
         //                            this, getLocation(), desktopMediator.getFrame().getContentPane());
-        
+
         //Log.debug("offset calc: " + offsetPoint.y);
         return getLocation().y + 20;//offsetPoint.y;// + 17;
         //return getBounds().y + 34; //17;
     }
-    
+
 }
 
 

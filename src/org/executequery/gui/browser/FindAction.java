@@ -20,145 +20,121 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.List;
-import java.util.Vector;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Position;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.WidgetFactory;
 import org.underworldlabs.swing.plaf.UIUtils;
 
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Position;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.List;
+import java.util.Vector;
+
 /**
- *
- * Modified from the original by Santhosh Kumar 
+ * Modified from the original by Santhosh Kumar
  * from http://www.jroller.com/santhosh/category/Swing
- * 
- * @author   Santhosh Kumar, Takis Diakoumis
+ *
+ * @author Santhosh Kumar, Takis Diakoumis
  */
 @SuppressWarnings("unchecked")
-public abstract class FindAction<T> extends AbstractAction 
-                                    implements DocumentListener, 
-                                               KeyListener {
+public abstract class FindAction<T> extends AbstractAction
+        implements DocumentListener,
+        KeyListener {
 
     private JPanel searchPanel;
 
-	private JTextField searchField;
-	
-	private JPopupMenu popup;
+    private JTextField searchField;
 
-	private JList resultsList;
-	
-	public FindAction() {
+    private JPopupMenu popup;
 
-		super("Incremental Search");
+    private JList resultsList;
+
+    public FindAction() {
+
+        super("Incremental Search");
 
         putValue(Action.ACCELERATOR_KEY, INVOKE_KEY_STROKE);
         putValue(Action.SMALL_ICON, GUIUtilities.loadIcon("Zoom16.png"));
 
-	    init();
-	}
+        init();
+    }
 
     private void init() {
 
         searchPanel = new JPanel(new GridBagLayout());
-	    popup = new JPopupMenu();
+        popup = new JPopupMenu();
 
-	    searchField = WidgetFactory.createTextField();
-	    searchField.setPreferredSize(new Dimension(270, 22));
+        searchField = WidgetFactory.createTextField();
+        searchField.setPreferredSize(new Dimension(270, 22));
 
-	    resultsList = initSearchResultsList();
-	    JScrollPane scrollPane = new JScrollPane(resultsList);
-	    scrollPane.setPreferredSize(new Dimension(300, 150));
-	    
-		JLabel label = new JLabel(" Search: ");
+        resultsList = initSearchResultsList();
+        JScrollPane scrollPane = new JScrollPane(resultsList);
+        scrollPane.setPreferredSize(new Dimension(300, 150));
 
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.insets.left = 3;
-		gbc.insets.top = 3;
-		gbc.insets.bottom = 3;
-		searchPanel.add(label, gbc);
-		gbc.gridx = 1;
-		gbc.insets.right = 3;
-		gbc.insets.left = 0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		searchPanel.add(searchField, gbc);
-		gbc.gridx = 0;
-		gbc.gridy++;
-		gbc.gridwidth = 2;
-		gbc.insets.left = 3;
-		gbc.insets.top = 0;
-		gbc.fill = GridBagConstraints.BOTH;
+        JLabel label = new JLabel(" Search: ");
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets.left = 3;
+        gbc.insets.top = 3;
+        gbc.insets.bottom = 3;
+        searchPanel.add(label, gbc);
+        gbc.gridx = 1;
+        gbc.insets.right = 3;
+        gbc.insets.left = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        searchPanel.add(searchField, gbc);
+        gbc.gridx = 0;
+        gbc.gridy++;
+        gbc.gridwidth = 2;
+        gbc.insets.left = 3;
+        gbc.insets.top = 0;
+        gbc.fill = GridBagConstraints.BOTH;
         searchPanel.add(scrollPane, gbc);
-		
-		popup.setBorder(BorderFactory.createLineBorder(UIUtils.getDefaultBorderColour()));
-		popup.add(searchPanel);
-		
-		// when the window containing the "comp" has registered Esc key
-		// then on pressing Esc instead of search popup getting closed
-		// the event is sent to the window. to overcome this we
-		// register an action for Esc.
-		searchField.registerKeyboardAction(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				popup.setVisible(false);
-			}
-		}, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-				JComponent.WHEN_FOCUSED);
+
+        popup.setBorder(BorderFactory.createLineBorder(UIUtils.getDefaultBorderColour()));
+        popup.add(searchPanel);
+
+        // when the window containing the "comp" has registered Esc key
+        // then on pressing Esc instead of search popup getting closed
+        // the event is sent to the window. to overcome this we
+        // register an action for Esc.
+        searchField.registerKeyboardAction(new ActionListener() {
+                                               public void actionPerformed(ActionEvent e) {
+                                                   popup.setVisible(false);
+                                               }
+                                           }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                JComponent.WHEN_FOCUSED);
     }
 
-	private JList initSearchResultsList() {
+    private JList initSearchResultsList() {
 
-	    final JList list = new JList();
+        final JList list = new JList();
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         ListCellRenderer listCellRenderer = getListCellRenderer();
         if (listCellRenderer != null) {
-        
+
             list.setCellRenderer(listCellRenderer);
         }
-        
+
         list.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() >= 2) {
                     listValueSelected((T) list.getSelectedValue());
-                } 
+                }
             }
         });
 
         list.addKeyListener(new KeyAdapter() {
             public void keyReleased(KeyEvent e) {
                 int keyCode = e.getKeyCode();
-                if (keyCode == KeyEvent.VK_ENTER) {                
+                if (keyCode == KeyEvent.VK_ENTER) {
                     listValueSelected((T) list.getSelectedValue());
                 } else if (keyCode == KeyEvent.VK_BACK_SPACE) {
                     searchField.requestFocus();
@@ -172,163 +148,163 @@ public abstract class FindAction<T> extends AbstractAction
     private void listValueSelected(T selection) {
 
         hidePopup();
-	    listValueSelected(component, selection);
-	}
+        listValueSelected(component, selection);
+    }
 
-	protected abstract ListCellRenderer getListCellRenderer();
+    protected abstract ListCellRenderer getListCellRenderer();
 
     protected abstract void listValueSelected(JComponent component, T selection);
-	
-	protected void foundValues(List<T> values) {
 
-	    Vector<T> listData = new Vector<T>(values.size());
-	    listData.addAll(values);
+    protected void foundValues(List<T> values) {
 
-	    resultsList.setListData(listData);
-	}
-	
-	protected final void hidePopup() {
+        Vector<T> listData = new Vector<T>(values.size());
+        listData.addAll(values);
 
-	    popup.setVisible(false);
-	    clearResultsListData();
-	}
+        resultsList.setListData(listData);
+    }
+
+    protected final void hidePopup() {
+
+        popup.setVisible(false);
+        clearResultsListData();
+    }
 
     private void clearResultsListData() {
 
         resultsList.setListData(new Object[0]);
     }
-	
-	private JComponent component = null;
 
-	protected final JComponent getInstalledComponent() {
+    private JComponent component = null;
 
-	    return component;
-	}
-	
-	protected boolean ignoreCase() {
-		
-		return ignoreCase;
-	}
-	
-	private boolean ignoreCase;
+    protected final JComponent getInstalledComponent() {
 
-	/*-------------------------------------------------[ ActionListener ]---------------------------------------------------*/
+        return component;
+    }
 
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == searchField)
-			popup.setVisible(false);
-		else {
+    protected boolean ignoreCase() {
+
+        return ignoreCase;
+    }
+
+    private boolean ignoreCase;
+
+    /*-------------------------------------------------[ ActionListener ]---------------------------------------------------*/
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == searchField)
+            popup.setVisible(false);
+        else {
 //			component = (JComponent) e.getSource();
-			ignoreCase = (e.getModifiers() & ActionEvent.SHIFT_MASK) != 0;
+            ignoreCase = (e.getModifiers() & ActionEvent.SHIFT_MASK) != 0;
 
-			searchField.removeActionListener(this);
-			searchField.removeKeyListener(this);
-			searchField.getDocument().removeDocumentListener(this);
-			initSearch(e);
-			searchField.addActionListener(this);
-			searchField.addKeyListener(this);
-			searchField.getDocument().addDocumentListener(this);
+            searchField.removeActionListener(this);
+            searchField.removeKeyListener(this);
+            searchField.getDocument().removeDocumentListener(this);
+            initSearch(e);
+            searchField.addActionListener(this);
+            searchField.addKeyListener(this);
+            searchField.getDocument().addDocumentListener(this);
 
-			clearResultsListData();
-			
-			Rectangle rect = component.getVisibleRect();
+            clearResultsListData();
+
+            Rectangle rect = component.getVisibleRect();
 //            popup.show(comp, rect.x = 5, rect.y - popup.getPreferredSize().height
 //                    - 10);
-			popup.show(component, rect.x = 80, rect.y);
+            popup.show(component, rect.x = 80, rect.y);
             searchField.requestFocus();
-		}
-	}
+        }
+    }
 
-	// can be overridden by subclasses to change initial search text etc.
-	protected void initSearch(ActionEvent ae) {
-		searchField.setText(""); // NOI18N
-		searchField.setForeground(Color.black);
-	}
+    // can be overridden by subclasses to change initial search text etc.
+    protected void initSearch(ActionEvent ae) {
+        searchField.setText(""); // NOI18N
+        searchField.setForeground(Color.black);
+    }
 
-	private void changed(Position.Bias bias) {
-		// note: popup.pack() doesn't work for first character insert
+    private void changed(Position.Bias bias) {
+        // note: popup.pack() doesn't work for first character insert
 //		popup.setVisible(false);
-		popup.setVisible(true);
+        popup.setVisible(true);
 
-		String searchText = searchField.getText();
-		
-		searchField.requestFocus();
+        String searchText = searchField.getText();
+
+        searchField.requestFocus();
         searchField.setForeground(changed(component, searchText, bias) ? Color.black
-						: Color.red);
-		
-		if (StringUtils.isBlank(searchText)) {
-		    
-		    clearResultsListData();
-		}
-		
-	}
+                : Color.red);
 
-	// should search for given text and select item and
-	// return true if search is successfull
-	protected abstract boolean changed(JComponent comp, String text, Position.Bias bias);
+        if (StringUtils.isBlank(searchText)) {
 
-	/*-----------------[ DocumentListener ]---------------------------*/
+            clearResultsListData();
+        }
 
-	public void insertUpdate(DocumentEvent e) {
-		changed(null);
-	}
+    }
 
-	public void removeUpdate(DocumentEvent e) {
-		changed(null);
-	}
+    // should search for given text and select item and
+    // return true if search is successfull
+    protected abstract boolean changed(JComponent comp, String text, Position.Bias bias);
 
-	public void changedUpdate(DocumentEvent e) {
-	}
+    /*-----------------[ DocumentListener ]---------------------------*/
 
-	/*------------------[ KeyListener ]-------------------------------*/
+    public void insertUpdate(DocumentEvent e) {
+        changed(null);
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        changed(null);
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+    }
+
+    /*------------------[ KeyListener ]-------------------------------*/
 
 	/*
 	protected boolean shiftDown = false;
 	protected boolean controlDown = false;
     */
 
-	public void keyPressed(KeyEvent keyEvent) {
+    public void keyPressed(KeyEvent keyEvent) {
 
-	    int keyCode = keyEvent.getKeyCode();
-	    
-	    if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_TAB) {
-	        
-	        setFirstListItemSelectedAndFocus();
-	    }
-	}
+        int keyCode = keyEvent.getKeyCode();
 
-	private void setFirstListItemSelectedAndFocus() {
+        if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_TAB) {
 
-	    if (resultsList.getModel().getSize() > 0) {
-	        
-	        resultsList.setSelectedIndex(0);
-	        resultsList.requestFocus();
-	    }
-	    
+            setFirstListItemSelectedAndFocus();
+        }
+    }
+
+    private void setFirstListItemSelectedAndFocus() {
+
+        if (resultsList.getModel().getSize() > 0) {
+
+            resultsList.setSelectedIndex(0);
+            resultsList.requestFocus();
+        }
+
     }
 
     public void keyTyped(KeyEvent e) {
-	}
+    }
 
-	public void keyReleased(KeyEvent e) {
-	}
+    public void keyReleased(KeyEvent e) {
+    }
 
-	/*--------------[ Installation ]--------------*/
+    /*--------------[ Installation ]--------------*/
 
-	public void install(JComponent component) {
+    public void install(JComponent component) {
 
-	    this.component = component;
-	    
-		component.registerKeyboardAction(
-		        this, INVOKE_KEY_STROKE, JComponent.WHEN_IN_FOCUSED_WINDOW);
+        this.component = component;
+
+        component.registerKeyboardAction(
+                this, INVOKE_KEY_STROKE, JComponent.WHEN_IN_FOCUSED_WINDOW);
 
 //		comp.registerKeyboardAction(this, KeyStroke.getKeyStroke('I',
 //				KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK),
 //				JComponent.WHEN_FOCUSED);
-	}
+    }
 
-    public static final KeyStroke INVOKE_KEY_STROKE = 
-        KeyStroke.getKeyStroke('I', KeyEvent.CTRL_MASK);
+    public static final KeyStroke INVOKE_KEY_STROKE =
+            KeyStroke.getKeyStroke('I', KeyEvent.CTRL_MASK);
 
 }
 

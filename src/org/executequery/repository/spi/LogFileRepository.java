@@ -20,18 +20,18 @@
 
 package org.executequery.repository.spi;
 
-import java.io.IOException;
-
 import org.executequery.ApplicationException;
 import org.executequery.repository.LogRepository;
 import org.executequery.util.ApplicationProperties;
 import org.executequery.util.UserSettingsProperties;
 import org.underworldlabs.util.FileUtils;
 
+import java.io.IOException;
+
 public class LogFileRepository implements LogRepository {
 
     public String load(int type) {
-        
+
         String path = pathForType(type);
 
         return loadFromPath(path);
@@ -42,7 +42,7 @@ public class LogFileRepository implements LogRepository {
         int[] types = {ACTIVITY, EXPORT, IMPORT};
 
         for (int type : types) {
-            
+
             reset(type);
         }
 
@@ -51,21 +51,21 @@ public class LogFileRepository implements LogRepository {
     public void reset(int type) {
 
         String path = pathForType(type);
-        
+
         reset(path);
     }
 
     public String getLogFilePath(int type) {
-        
+
         return pathForType(type);
     }
-    
+
     public String getLogFileDirectory() {
 
         UserSettingsProperties settings = new UserSettingsProperties();
 
         return settings.getUserSettingsBaseHome() + LOG_FILE_DIR_NAME +
-            System.getProperty("file.separator");
+                System.getProperty("file.separator");
     }
 
     public String getId() {
@@ -79,12 +79,13 @@ public class LogFileRepository implements LogRepository {
 
             FileUtils.writeFile(path, "");
 
-        } catch (IOException e) {}
+        } catch (IOException e) {
+        }
 
     }
 
     private String loadFromPath(String path) {
-        
+
         try {
 
             return FileUtils.loadFile(path);
@@ -109,7 +110,7 @@ public class LogFileRepository implements LogRepository {
             case EXPORT:
                 fileName = getProperty(EQ_EXPORT_LOG_KEY);
                 break;
-            
+
             case IMPORT:
                 fileName = getProperty(EQ_IMPORT_LOG_KEY);
                 break;
@@ -118,9 +119,9 @@ public class LogFileRepository implements LogRepository {
 
         return getLogFileDirectory() + fileName;
     }
-    
+
     private String getProperty(String key) {
-        
+
         return ApplicationProperties.getInstance().getProperty(key);
     }
 

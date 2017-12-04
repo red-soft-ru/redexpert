@@ -23,11 +23,11 @@ package org.underworldlabs.swing;
 public interface TabPopupMenuContainer {
 
     boolean isTabPopupEnabled();
-    
+
     void showPopup(int index, int x, int y);
-    
+
     boolean isTabPopupShowing();
-    
+
 }
 
 

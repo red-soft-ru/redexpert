@@ -20,19 +20,6 @@
 
 package org.executequery.gui.databaseobjects;
 
-import java.awt.Point;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.List;
-
-import javax.swing.DefaultCellEditor;
-import javax.swing.JTextField;
-import javax.swing.event.ChangeEvent;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableColumnModel;
-
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseObject;
@@ -43,30 +30,52 @@ import org.executequery.databaseobjects.impl.TableColumnConstraint;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
 
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumnModel;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
-                                           implements KeyListener {//,
-                                                      //CellEditorListener {
-    
-    /** the db table displayed */
+        implements KeyListener {//,
+    //CellEditorListener {
+
+    /**
+     * the db table displayed
+     */
     private DatabaseTable databaseTable;
-    
-    /** The constraint type combo box cell editor */
+
+    /**
+     * The constraint type combo box cell editor
+     */
     private ComboBoxCellEditor keyTypeEditor;
 
-    /** The column name combo box cell editor */
+    /**
+     * The column name combo box cell editor
+     */
     private ComboBoxCellEditor columnNameEditor;
 
-    /** The referenced schema name combo box cell editor */
+    /**
+     * The referenced schema name combo box cell editor
+     */
     private ComboBoxCellEditor refSchemaEditor;
 
-    /** The referenced table name combo box cell editor */
+    /**
+     * The referenced table name combo box cell editor
+     */
     private ComboBoxCellEditor refTableEditor;
 
-    /** The referenced column name combo box cell editor */
+    /**
+     * The referenced column name combo box cell editor
+     */
     private ComboBoxCellEditor refColumnEditor;
 
     private static final int KEY_TYPE_COL_INDEX = 2;
@@ -74,9 +83,11 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
     private static final int REF_SCHEMA_COL_INDEX = 4;
     private static final int REF_TABLE_COL_INDEX = 5;
     private static final int REF_COLUMN_COL_INDEX = 6;
-    private static final int CHECK_COL_INDEX=7;
-    
-    /** Creates a new instance of EditableColumnConstraintTable */
+    private static final int CHECK_COL_INDEX = 7;
+
+    /**
+     * Creates a new instance of EditableColumnConstraintTable
+     */
     public EditableColumnConstraintTable() {
         super();
         getColumnConstraintTableModel().setEditable(true);
@@ -84,14 +95,15 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
         setCellEditors();
         addMouseListener(new MouseHandler());
     }
-    
+
     /**
      * Resets and clears the currently displayed table.
      */
     public void resetConstraintsTable() {
         try {
             setDatabaseTable(null);
-        } catch (DataSourceException e) {}
+        } catch (DataSourceException e) {
+        }
     }
 
     /**
@@ -104,7 +116,7 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
     }
 
     /**
-     * Deletes or marks to delete the currently selected 
+     * Deletes or marks to delete the currently selected
      * database table constraint (JTable row).
      */
     public void deleteSelectedConstraint() {
@@ -112,16 +124,15 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
         if (selectedRow == -1) {
             return;
         }
-        
+
         ColumnConstraintTableModel _model = getColumnConstraintTableModel();
-        TableColumnConstraint constraint = 
-                (TableColumnConstraint)_model.getValueAt(selectedRow, 0);
+        TableColumnConstraint constraint =
+                (TableColumnConstraint) _model.getValueAt(selectedRow, 0);
 
         // if its a new column - just remove it
         if (constraint.isNewConstraint()) {
             _model.deleteConstraintAt(selectedRow);
-        }
-        else { // otherwise mark to drop
+        } else { // otherwise mark to drop
             constraint.setMarkedDeleted(true);
             _model.fireTableRowsUpdated(selectedRow, selectedRow);
         }
@@ -145,29 +156,31 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
 
             setConstraintData(null);
         }
-        
+
         if (!editorsLoaded) {
-        
+
             setCellEditors();
         }
 
         if (databaseTable != null) {
-        
-            List<DatabaseColumn> tableColumns = databaseTable.getColumns();    
+
+            List<DatabaseColumn> tableColumns = databaseTable.getColumns();
             if (tableColumns != null && !tableColumns.isEmpty()) {
-                
-                columnNameEditor.setSelectionValues(tableColumns.toArray());            
+
+                columnNameEditor.setSelectionValues(tableColumns.toArray());
             }
-    
+
             Object[] refSchemas = databaseTable.getHost().getSchemas().toArray();
             refSchemaEditor.setSelectionValues(refSchemas);
         }
 
     }
 
-    /** flag indicating that the editors have been initialised */
+    /**
+     * flag indicating that the editors have been initialised
+     */
     private boolean editorsLoaded;
-    
+
     /**
      * Sets the editor renderers for respective cells.
      */
@@ -183,12 +196,12 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
             keyTypeEditor = new ComboBoxCellEditor(keys);
         }
         tcm.getColumn(KEY_TYPE_COL_INDEX).setCellEditor(keyTypeEditor);
-        
+
         if (columnNameEditor == null) {
             columnNameEditor = new ComboBoxCellEditor();
         }
         tcm.getColumn(COLUMN_NAME_COL_INDEX).setCellEditor(columnNameEditor);
-        
+
         if (refSchemaEditor == null) {
             refSchemaEditor = new ComboBoxCellEditor();
         }
@@ -206,10 +219,10 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
 
         editorsLoaded = true;
     }
-    
-    /** 
+
+    /**
      * Informs the listeners the editor has ended editing.
-     * Any required lists in subsequent columns are loaded 
+     * Any required lists in subsequent columns are loaded
      * dependant on prior selections.
      */
     public void editingStopped(ChangeEvent e) {
@@ -222,22 +235,22 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
 
         // call to super implementation
         super.editingStopped(e);
-        
+
         // load any required lists
         try {
-            
+
             if (column == REF_SCHEMA_COL_INDEX) { // schema selection
                 // load the schema tables
                 Object value = refSchemaEditor.getCellEditorValue();
 
                 if (value instanceof DatabaseSchema) {
-                    
-                    DatabaseSchema schema = (DatabaseSchema)value;
+
+                    DatabaseSchema schema = (DatabaseSchema) value;
                     Object[] tables = schema.getTables().toArray();
                     refTableEditor.setSelectionValues(tables);
 
                 } else {
-                  
+
                     // clear any existing selections
                     refTableEditor.setSelectionValues(null);
                 }
@@ -247,12 +260,12 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
                 Object value = refTableEditor.getCellEditorValue();
                 if (value instanceof DatabaseObject) {
 
-                    DatabaseObject table = (DatabaseObject)value;
+                    DatabaseObject table = (DatabaseObject) value;
                     Object[] columns = table.getColumns().toArray();
                     refColumnEditor.setSelectionValues(columns);
 
                 } else {
-                  
+
                     // clear any existing selections
                     refColumnEditor.setSelectionValues(null);
                 }
@@ -260,17 +273,15 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
             }
 
         } catch (DataSourceException exc) {
-          
+
             GUIUtilities.displayExceptionErrorDialog(
                     "Error retrieving selected schema tables:\n" +
-                    exc.getExtendedMessage(), exc);
+                            exc.getExtendedMessage(), exc);
         }
 
         Object value = getValueAt(editingRow2, editingColumn2);
-        
-        
-        
-                
+
+
     }
 
     /**
@@ -284,9 +295,9 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
 
             if (cellEditor != null && cellEditor instanceof DefaultCellEditor) {
 
-                DefaultCellEditor _cellEditor = (DefaultCellEditor)cellEditor;
+                DefaultCellEditor _cellEditor = (DefaultCellEditor) cellEditor;
                 if (_cellEditor.getComponent() instanceof JTextField) {
-                    ((JTextField)_cellEditor.
+                    ((JTextField) _cellEditor.
                             getComponent()).addKeyListener(this);
                 }
 
@@ -297,14 +308,14 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
     public void keyReleased(KeyEvent e) {
 
         Object source = e.getSource();
-        
+
         if (source instanceof JTextField) {
 
             int row = getEditingRow();
             int col = getEditingColumn();
 
             // listeners only exist on string class columns
-            String value = ((JTextField)source).getText();
+            String value = ((JTextField) source).getText();
             tableChanged(row, col, value);
         }
 
@@ -315,8 +326,8 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
      * column has changed to the specified value and notifies the
      * table model.
      *
-     * @param row the table row edited
-     * @param col the table column edited
+     * @param row   the table row edited
+     * @param col   the table column edited
      * @param value the value to be set
      */
     public void tableChanged(int row, int col, Object value) {
@@ -327,12 +338,14 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
      * Invoked when a key has been typed.
      * This event occurs when a key press is followed by a key release.
      */
-    public void keyTyped(KeyEvent e) {}
+    public void keyTyped(KeyEvent e) {
+    }
 
     /**
      * Invoked when a key has been pressed.
      */
-    public void keyPressed(KeyEvent e) {}
+    public void keyPressed(KeyEvent e) {
+    }
 
     /**
      * Mouse adapter class to handle click events within
@@ -343,7 +356,7 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
         public void mouseClicked(MouseEvent e) {
             int mouseX = e.getX();
             int mouseY = e.getY();
-            
+
             int col = columnAtPoint(new Point(mouseX, mouseY));
             if (col != 0) {
                 return;
@@ -351,8 +364,8 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
 
             int row = rowAtPoint(new Point(mouseX, mouseY));
             ColumnConstraintTableModel _model = getColumnConstraintTableModel();
-            TableColumnConstraint constraint = 
-                    (TableColumnConstraint)_model.getValueAt(row, 0);
+            TableColumnConstraint constraint =
+                    (TableColumnConstraint) _model.getValueAt(row, 0);
 
             if (constraint.isMarkedDeleted()) {
                 constraint.setMarkedDeleted(false);
@@ -360,7 +373,7 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
             }
 
         }
-        
+
     } // class MouseHandler
 
 }

@@ -2,32 +2,32 @@ package org.underworldlabs.swing.hexeditor.bdoc;
 
 public class AnnotationChangedEvent extends BinaryDocumentEvent {
 
-  // CONSTANTS
-  public static final int ADDED         = 0;
-  public static final int DELETED       = 1;
-  public static final int MODIFIED      = 2;
-  
-  // PRIVATE MEMBERS
-  private int type;
-  private AnnotatedByteSpan annotation;
+    // CONSTANTS
+    public static final int ADDED = 0;
+    public static final int DELETED = 1;
+    public static final int MODIFIED = 2;
 
-  // CONSTRUCTOR
-  public AnnotationChangedEvent( BinaryDocument bDoc, AnnotatedByteSpan annotation, int type ) {
-    super(bDoc);
-    this.annotation = annotation;
-    this.type = type;
-  }
+    // PRIVATE MEMBERS
+    private int type;
+    private AnnotatedByteSpan annotation;
 
-  // GETTERS
-  public int getType() {
-    return type;
-  }
+    // CONSTRUCTOR
+    public AnnotationChangedEvent(BinaryDocument bDoc, AnnotatedByteSpan annotation, int type) {
+        super(bDoc);
+        this.annotation = annotation;
+        this.type = type;
+    }
 
-  public AnnotatedByteSpan getAnnotation() {
-    return annotation;
-  }
+    // GETTERS
+    public int getType() {
+        return type;
+    }
 
-  public AnnotatedBinaryDocument getAnnotatedBinaryDocument() {
-    return (AnnotatedBinaryDocument) getDocument();
-  }
+    public AnnotatedByteSpan getAnnotation() {
+        return annotation;
+    }
+
+    public AnnotatedBinaryDocument getAnnotatedBinaryDocument() {
+        return (AnnotatedBinaryDocument) getDocument();
+    }
 }

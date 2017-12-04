@@ -20,36 +20,36 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.util.Map;
-
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-
 import org.executequery.gui.SortableColumnsTable;
 import org.underworldlabs.swing.table.PropertyWrapperModel;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.Map;
 
 /**
  * Simple panel displaying database meta data properties.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DatabasePropertiesPanel extends ConnectionPropertiesPanel {
-    
-    /** table model */
+
+    /**
+     * table model
+     */
     private PropertyWrapperModel model;
-    
-    /** the table */
+
+    /**
+     * the table
+     */
     private JTable table;
-    
+
     public DatabasePropertiesPanel() {
-        
+
         super(new GridBagLayout());
         init();
     }
-    
+
     private void init() {
 
         model = new PropertyWrapperModel(PropertyWrapperModel.SORT_BY_KEY);
@@ -58,23 +58,23 @@ public class DatabasePropertiesPanel extends ConnectionPropertiesPanel {
         setTableProperties(table);
 
         GridBagConstraints gbc = new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                                        GridBagConstraints.SOUTHEAST, 
-                                        GridBagConstraints.BOTH,
-                                        new Insets(5, 5, 5, 5), 0, 0);
+                GridBagConstraints.SOUTHEAST,
+                GridBagConstraints.BOTH,
+                new Insets(5, 5, 5, 5), 0, 0);
 
-        add(new JScrollPane(table), gbc); 
+        add(new JScrollPane(table), gbc);
     }
-    
+
     public void setDatabaseProperties(Map<Object, Object> properties) {
 
         model.setValues(properties, true);
     }
 
     public JTable getTable() {
-        
+
         return table;
     }
-    
+
 }
 
 

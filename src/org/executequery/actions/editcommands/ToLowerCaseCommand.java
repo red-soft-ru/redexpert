@@ -20,25 +20,26 @@
 
 package org.executequery.actions.editcommands;
 
-import java.awt.event.ActionEvent;
 import org.executequery.GUIUtilities;
-import org.underworldlabs.swing.actions.BaseCommand;
 import org.executequery.gui.text.TextEditor;
+import org.underworldlabs.swing.actions.BaseCommand;
+
+import java.awt.event.ActionEvent;
 
 /**
  * To Lower Case command execution.
- * @author   Takis Diakoumis
+ *
+ * @author Takis Diakoumis
  */
 public class ToLowerCaseCommand implements BaseCommand {
-    
+
     /**
-     * 
      * Executes the to-lower-case command on the <code>TextEditor</code>.
-     * 
+     *
      * @param the originating event
      */
     public void execute(ActionEvent e) {
-        TextEditor textFunction = (TextEditor)GUIUtilities.getTextEditorInFocus();
+        TextEditor textFunction = (TextEditor) GUIUtilities.getTextEditorInFocus();
         if (textFunction != null) {
             textFunction.changeSelectionCase(false);
         }

@@ -24,7 +24,7 @@ package org.underworldlabs.swing;
  * Defines those containers with text field components
  * would like the text selected when that field is traversed to.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  * @see CustomKeyboardFocusManager
  */
 public interface TextFieldFocusController {

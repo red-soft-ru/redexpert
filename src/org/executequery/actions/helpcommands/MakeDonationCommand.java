@@ -22,11 +22,11 @@ package org.executequery.actions.helpcommands;
 
 import org.executequery.actions.AbstractUrlLauncherCommand;
 
-/** 
+/**
  * Executes the Help | Make Donation command.<br>
  * This will open a browser window with URL http://executequery.org.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class MakeDonationCommand extends AbstractUrlLauncherCommand {
 

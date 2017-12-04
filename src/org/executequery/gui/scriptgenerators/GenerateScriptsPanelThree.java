@@ -20,24 +20,6 @@
 
 package org.executequery.gui.scriptgenerators;
 
-import java.awt.Component;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
@@ -47,39 +29,50 @@ import org.underworldlabs.swing.ComponentTitledPanel;
 import org.underworldlabs.swing.DefaultFieldLabel;
 import org.underworldlabs.swing.FileSelector;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+
 /**
  * Step three panel in the generate scripts wizard.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class GenerateScriptsPanelThree extends JPanel 
-                                       implements ActionListener,
-                                                  ItemListener,
-                                                  GenerateScriptsPanel {
+public class GenerateScriptsPanelThree extends JPanel
+        implements ActionListener,
+        ItemListener,
+        GenerateScriptsPanel {
 
-    /** save to path field */
+    /**
+     * save to path field
+     */
     private JTextField pathField;
 
     private JCheckBox constraintsCheck;
     private JCheckBox consAsAlterCheck;
     private JCheckBox consInCreateCheck;
-    
+
     private JCheckBox writeToFileCheck;
     private JCheckBox useCascadeCheck;
     private JCheckBox openInQueryEditor;
-    
-    /** the parent controller */
+
+    /**
+     * the parent controller
+     */
     private GenerateScriptsWizard parent;
 
     private ComponentTitledPanel createTableOptionsPanel;
 
     private GridBagConstraints gbc;
-    
+
     public GenerateScriptsPanelThree(GenerateScriptsWizard parent) {
-        
-        super(new GridBagLayout());        
+
+        super(new GridBagLayout());
         this.parent = parent;
-        
+
         try {
             init();
         } catch (Exception e) {
@@ -90,7 +83,7 @@ public class GenerateScriptsPanelThree extends JPanel
     private void init() throws Exception {
 
         openInQueryEditor = new JCheckBox("View in a new Query Editor", true);
-        
+
         gbc = new GridBagConstraints();
         gbc.gridx++;
         gbc.gridy++;
@@ -108,14 +101,14 @@ public class GenerateScriptsPanelThree extends JPanel
         gbc.insets.bottom = 0;
         gbc.weighty = 1.0;
         gbc.weightx = 1.0;
-        
+
         if (parent.getScriptType() == GenerateScriptsWizard.CREATE_TABLES) {
 
             createTableOptionsPanel();
             add(createTableOptionsPanel, gbc);
 
         } else {
-          
+
             createUseCascadeCheck();
             useCascadeCheck.setBorder(BorderFactory.createEmptyBorder(0, 13, 0, 0));
             add(useCascadeCheck, gbc);
@@ -154,7 +147,7 @@ public class GenerateScriptsPanelThree extends JPanel
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx++;
         gbc.gridy++;
-        gbc.insets = new Insets(7,5,5,5);
+        gbc.insets = new Insets(7, 5, 5, 5);
         gbc.anchor = GridBagConstraints.NORTHWEST;
         fileOutputPanel.add(label, gbc);
         gbc.gridx = 1;
@@ -167,7 +160,7 @@ public class GenerateScriptsPanelThree extends JPanel
         gbc.insets.top = 3;
         gbc.insets.right = 5;
         fileOutputPanel.add(browseButton, gbc);
-        
+
         return panel;
     }
 
@@ -197,55 +190,55 @@ public class GenerateScriptsPanelThree extends JPanel
         _panel.add(consAsAlterCheck);
         _panel.add(consInCreateCheck);
     }
-    
+
     public void panelSelected() {
-        
+
         if (parent.getScriptType() == GenerateScriptsWizard.CREATE_TABLES) {
 
             if (createTableOptionsPanel == null) {
-                
+
                 createTableOptionsPanel();
             }
-            
+
             resetOptionsComponents(createTableOptionsPanel, useCascadeCheck);
 
         } else {
-            
+
             if (useCascadeCheck == null) {
-                
+
                 createUseCascadeCheck();
             }
-            
+
             resetOptionsComponents(useCascadeCheck, createTableOptionsPanel);
         }
 
     }
 
     private void resetOptionsComponents(Component componentToAdd, Component componentToRemove) {
-        
+
         if (!contains(componentToAdd)) {
-            
+
             remove(componentToRemove);
             add(componentToAdd, gbc);
         }
 
     }
-    
+
     private boolean contains(Component component) {
-        
+
         Component[] components = getComponents();
         for (Component c : components) {
-            
+
             if (c == component) {
-                
+
                 return true;
             }
-            
+
         }
 
         return false;
     }
-    
+
     /**
      * Whether to include the CASCADE keyword within DROP statments.
      *
@@ -259,7 +252,7 @@ public class GenerateScriptsPanelThree extends JPanel
     }
 
     /**
-     * Returns the constraints definition format - 
+     * Returns the constraints definition format -
      * as ALTER TABLE statements or within the CREATE TABLE statements.
      */
     protected int getConstraintsStyle() {
@@ -274,31 +267,31 @@ public class GenerateScriptsPanelThree extends JPanel
                 }
 
             }
-            
+
         }
         return -1;
     }
 
     protected boolean hasOutputStrategy() {
 
-        return openInQueryEditor() || (isWritingToFile() && hasOutputFile()); 
+        return openInQueryEditor() || (isWritingToFile() && hasOutputFile());
     }
-    
+
     protected boolean openInQueryEditor() {
-     
+
         return openInQueryEditor.isSelected();
     }
-    
+
     protected boolean isWritingToFile() {
-        
+
         return writeToFileCheck.isSelected();
     }
-    
+
     protected boolean hasOutputFile() {
-        
+
         return StringUtils.isNotBlank(getOutputFilePath());
     }
-    
+
     /**
      * Returns the output file path.
      *
@@ -308,20 +301,20 @@ public class GenerateScriptsPanelThree extends JPanel
         return pathField.getText();
     }
 
-    
+
     public void actionPerformed(ActionEvent e) {
-        FileSelector textFiles = new FileSelector(new String[] {"txt"}, "Text files");
-        FileSelector sqlFiles = new FileSelector(new String[] {"sql"}, "SQL files");
-        
+        FileSelector textFiles = new FileSelector(new String[]{"txt"}, "Text files");
+        FileSelector sqlFiles = new FileSelector(new String[]{"sql"}, "SQL files");
+
         FileChooserDialog fileChooser = new FileChooserDialog();
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.addChoosableFileFilter(textFiles);
         fileChooser.addChoosableFileFilter(sqlFiles);
-        
+
         fileChooser.setDialogTitle("Select File...");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
-        
+
         int result = fileChooser.showDialog(GUIUtilities.getInFocusDialogOrWindow(), "Select");
         if (result == JFileChooser.CANCEL_OPTION) {
             return;
@@ -335,14 +328,14 @@ public class GenerateScriptsPanelThree extends JPanel
     }
 
     /**
-     * Invoked when the include constraints checkbox has 
+     * Invoked when the include constraints checkbox has
      * been selected/deselected.
-     */    
+     */
     public void itemStateChanged(ItemEvent e) {
         enableConstraintChecks(e.getStateChange() == ItemEvent.SELECTED);
     }
 
-    /** 
+    /**
      * Enables/disables the constraints check boxes as specified.
      */
     private void enableConstraintChecks(boolean enable) {

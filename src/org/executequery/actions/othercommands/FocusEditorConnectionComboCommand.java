@@ -20,27 +20,25 @@
 
 package org.executequery.actions.othercommands;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.JPanel;
-
 import org.executequery.GUIUtilities;
 import org.executequery.gui.editor.QueryEditor;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class FocusEditorConnectionComboCommand extends AbstractBaseCommand {
-    
+
     public void execute(ActionEvent e) {
         JPanel panel = GUIUtilities.getSelectedCentralPane();
         if (panel instanceof QueryEditor) {
-            QueryEditor editor = (QueryEditor)panel;
+            QueryEditor editor = (QueryEditor) panel;
             editor.selectConnectionCombo();
-        }        
+        }
     }
-    
+
 }
 
 

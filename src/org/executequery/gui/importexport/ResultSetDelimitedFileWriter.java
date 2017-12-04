@@ -20,6 +20,9 @@
 
 package org.executequery.gui.importexport;
 
+import org.executequery.gui.browser.ColumnData;
+import org.executequery.log.Log;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -27,23 +30,20 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
-import org.executequery.gui.browser.ColumnData;
-import org.executequery.log.Log;
-
 public class ResultSetDelimitedFileWriter {
 
-    public int write(String fileName, String delimiter, ResultSet resultSet, 
-            boolean columnNamesAsFirstRow, boolean quoteCharacterValues) throws InterruptedException {
+    public int write(String fileName, String delimiter, ResultSet resultSet,
+                     boolean columnNamesAsFirstRow, boolean quoteCharacterValues) throws InterruptedException {
 
         Log.info("Writing result set to file [ " + fileName + " ]");
-        
+
         PrintWriter writer = null;
         try {
 
             StringBuilder sb = new StringBuilder();
             writer = new PrintWriter(new FileWriter(fileName, false), true);
 
-            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();            
+            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
             ColumnData[] columns = columnData(resultSetMetaData);
 
             if (columnNamesAsFirstRow) {
@@ -76,33 +76,33 @@ public class ResultSetDelimitedFileWriter {
 
                         boolean willQuoteValue = (quoteCharacterValues && columns[i - 1].isCharacterType());
                         if (willQuoteValue) {
-                            
+
                             sb.append("\"");
                         }
-                        
+
                         sb.append(value);
 
                         if (willQuoteValue) {
-                            
+
                             sb.append("\"");
                         }
-                        
+
                     }
-                    
+
                     if (i < columnCount) {
-                     
+
                         sb.append(delimiter);
                     }
-                    
+
                 }
 
                 writer.println(sb.toString());
                 writer.flush();
 
-                recordCount++;                
+                recordCount++;
                 sb.setLength(0);
             }
-            
+
             return recordCount;
 
         } catch (IOException e) {
@@ -114,62 +114,62 @@ public class ResultSetDelimitedFileWriter {
             handleError(e);
 
         } finally {
-            
+
             if (writer != null) {
 
                 writer.close();
             }
-            
+
         }
 
         return -1;
     }
 
-    private String columnNames(String delimiter, 
-            ResultSetMetaData resultSetMetaData) throws SQLException {
+    private String columnNames(String delimiter,
+                               ResultSetMetaData resultSetMetaData) throws SQLException {
 
         StringBuilder sb = new StringBuilder();
         for (int i = 1, n = resultSetMetaData.getColumnCount(); i <= n; i++) {
-            
+
             sb.append(resultSetMetaData.getColumnLabel(i));
             sb.append(delimiter);
         }
 
         return sb.substring(0, sb.length() - delimiter.length());
     }
-    
+
     private String columnNames(ColumnData[] columns, String delimiter) {
-        
+
         StringBuilder sb = new StringBuilder();
-        
+
         for (ColumnData columndData : columns) {
-            
+
             sb.append(columndData.getColumnName());
             sb.append(delimiter);
         }
-        
+
         return sb.substring(0, sb.length() - delimiter.length());
     }
-    
+
     private ColumnData[] columnData(ResultSetMetaData resultSetMetaData) throws SQLException {
-        
+
         int columnCount = resultSetMetaData.getColumnCount();
         ColumnData[] columns = new ColumnData[columnCount];
         for (int i = 1; i <= columnCount; i++) {
-            
-            ColumnData columnData = new ColumnData(resultSetMetaData.getColumnLabel(i),null);
+
+            ColumnData columnData = new ColumnData(resultSetMetaData.getColumnLabel(i), null);
             columnData.setSQLType(resultSetMetaData.getColumnType(i));
             columns[i - 1] = columnData;
         }
-        
+
         return columns;
     }
-    
+
     private void handleError(Throwable e) {
-        
+
         throw new ImportExportDataException(e);
     }
-    
+
 }
 
 

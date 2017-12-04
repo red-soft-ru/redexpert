@@ -20,25 +20,25 @@
 
 package org.executequery.util;
 
-import java.awt.Color;
-import java.util.Properties;
-
 import org.underworldlabs.util.SystemProperties;
+
+import java.awt.*;
+import java.util.Properties;
 
 abstract class AbstractPropertiesBase {
 
     /**
      * The name of the property bundle to be accessed.
-     * 
+     *
      * @return property bundle name
      */
     protected abstract String propertyBundle();
 
     protected final boolean propertiesLoaded() {
-        
+
         return SystemProperties.hasProperties(propertyBundle());
     }
-    
+
     /**
      * Returns the properties object with the specified name in the cache.
      *
@@ -51,20 +51,20 @@ abstract class AbstractPropertiesBase {
     }
 
     /**
-     * Loads and stores in the cache the properties file at the 
-     * specified package resource path. The properties are stored 
+     * Loads and stores in the cache the properties file at the
+     * specified package resource path. The properties are stored
      * in the cache under the specified name and accessed using that name.
      *
      * @param name - the cache name to store the props
      * @param path - the package resource path to the properties file
      */
     protected final void loadPropertiesResource(String name, String path) {
-        
+
         SystemProperties.loadPropertiesResource(name, path);
     }
 
     /**
-     * Loads and stores in the cache the properties file at the 
+     * Loads and stores in the cache the properties file at the
      * specified file system path. The properties are stored in the
      * cache under the specified name and accessed using that name.
      *
@@ -72,12 +72,12 @@ abstract class AbstractPropertiesBase {
      * @param path - the file system to the properties file
      */
     protected final void loadProperties(String name, String path, Properties defaults) {
-        
+
         SystemProperties.loadProperties(name, path, defaults);
     }
 
     /**
-     * Loads and stores in the cache the properties file at the 
+     * Loads and stores in the cache the properties file at the
      * specified file system path. The properties are stored in the
      * cache under the specified name and accessed using that name.
      *
@@ -85,7 +85,7 @@ abstract class AbstractPropertiesBase {
      * @param path - the file system to the properties file
      */
     protected final void loadProperties(String name, String path) {
-        
+
         SystemProperties.loadProperties(name, path);
     }
 
@@ -99,68 +99,68 @@ abstract class AbstractPropertiesBase {
 
         return SystemProperties.getProperties(propertyBundle());
     }
-    
+
     public final boolean containsKey(String key) {
 
         return SystemProperties.containsKey(propertyBundle(), key);
     }
-    
+
     /**
      * Sets a property with a <code>String</code> value<br>
      *
-     * @param key - the property key
+     * @param key   - the property key
      * @param value - the property value
      */
     public final void setStringProperty(String key, String value) {
 
         SystemProperties.setProperty(propertyBundle(), key, value);
     }
-    
+
     /**
      * Sets a property using the <code>Properties</code>
      * method <code>setProperty(key, value)</code><br>
      *
-     * @param key - the property key
+     * @param key   - the property key
      * @param value - the property value
      */
     public final void setProperty(String key, String value) {
-        
+
         SystemProperties.setProperty(propertyBundle(), key, value);
     }
-    
+
     /**
      * Sets a property with an <code>int</code> value<br>
      *
-     * @param key - the property key
+     * @param key   - the property key
      * @param value - the property value
      */
     public final void setIntProperty(String key, int value) {
 
         SystemProperties.setIntProperty(propertyBundle(), key, value);
     }
-    
+
     /**
      * Sets a property with a <code>boolean</code> value<br>
      *
-     * @param key - the property key
+     * @param key   - the property key
      * @param value - the property value
      */
-    public final void setBooleanProperty(String key,  boolean value) {
+    public final void setBooleanProperty(String key, boolean value) {
 
         SystemProperties.setBooleanProperty(propertyBundle(), key, value);
     }
-    
+
     /**
      * Sets a property with a <code>Color</code> value<br>
      *
-     * @param key - the property key
+     * @param key   - the property key
      * @param value - the property value
      */
     public final void setColourProperty(String key, Color value) {
-        
+
         SystemProperties.setColourProperty(propertyBundle(), key, value);
     }
-    
+
     /**
      * Retrieves a property of type <code>int</code><br>
      *
@@ -171,7 +171,7 @@ abstract class AbstractPropertiesBase {
 
         return SystemProperties.getIntProperty(propertyBundle(), key);
     }
-    
+
     /**
      * Retrieves a property of type <code>boolean</code><br>
      *
@@ -182,7 +182,7 @@ abstract class AbstractPropertiesBase {
 
         return SystemProperties.getBooleanProperty(propertyBundle(), key);
     }
-    
+
     /**
      * Retrieves a property of object type <code>Color</code><br>
      *
@@ -190,10 +190,10 @@ abstract class AbstractPropertiesBase {
      * @return the <code>Color</code> value
      */
     public final Color getColourProperty(String key) {
-        
+
         return SystemProperties.getColourProperty(propertyBundle(), key);
     }
-    
+
     /**
      * Retrieves a property using the <code>Properties</code>
      * method <code>getProperty(key)</code><br>
@@ -205,7 +205,7 @@ abstract class AbstractPropertiesBase {
 
         return SystemProperties.getProperty(propertyBundle(), key);
     }
-    
+
     /**
      * Retrieves a property of object type <code>String</code><br>
      *
@@ -216,12 +216,12 @@ abstract class AbstractPropertiesBase {
 
         return getProperty(key);
     }
-    
+
     /**
      * Returns the property with the specified name, formatting it with
      * the <code>java.text.MessageFormat.format()</code> method.
      *
-     * @param key - the property key
+     * @param key  - the property key
      * @param args The positional parameters
      */
     public final String getProperty(String name, Object[] args) {

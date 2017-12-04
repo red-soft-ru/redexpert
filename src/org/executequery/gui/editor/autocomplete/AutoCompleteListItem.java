@@ -20,17 +20,17 @@
 
 package org.executequery.gui.editor.autocomplete;
 
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.sql.QueryTable;
+
+import java.util.List;
 
 public class AutoCompleteListItem {
 
     private final String value;
 
     private final String description;
-    
+
     private final AutoCompleteListItemType type;
 
     private final String displayValue;
@@ -40,39 +40,39 @@ public class AutoCompleteListItem {
     private String upperCaseValue;
 
     private String insertionValue;
-    
+
     public AutoCompleteListItem(String value, String displayValue, String description,
-            AutoCompleteListItemType type) {
+                                AutoCompleteListItemType type) {
 
         this(value, null, displayValue, description, type);
     }
 
-    public AutoCompleteListItem(String value, String parentName, String displayValue, 
-            String description, AutoCompleteListItemType type) {
+    public AutoCompleteListItem(String value, String parentName, String displayValue,
+                                String description, AutoCompleteListItemType type) {
 
         super();
-        
+
         this.value = value;
         this.parentName = parentName;
         this.description = description;
         this.type = type;
-        
+
         if (type.isFunction() || type.isSystemFunction()) {
-            
+
             this.displayValue = displayValue + "()";
 
         } else {
-            
+
             this.displayValue = displayValue;
         }
-        
+
     }
 
     public boolean isNothingProposed() {
 
         return (type == AutoCompleteListItemType.NOTHING_PROPOSED);
     }
-    
+
     public boolean isKeyword() {
         return type.isKeyword();
     }
@@ -80,23 +80,23 @@ public class AutoCompleteListItem {
     public boolean isTableColumn() {
         return type.isTableColumn();
     }
-    
+
     public boolean isTable() {
         return type.isTable();
     }
-    
+
     public boolean isSchemaObject() {
         return type.isTableColumn() || type.isTable();
     }
-    
+
     public String getDisplayValue() {
         return displayValue;
     }
-    
+
     public String getDescription() {
         return description;
     }
-    
+
     public String getValue() {
         return value;
     }
@@ -108,22 +108,22 @@ public class AutoCompleteListItem {
         }
         return upperCaseValue;
     }
-    
+
     public String getInsertionValue() {
-        
+
         if (insertionValue == null) {
-            
+
             if (type.isTableColumn()) {
-                
+
                 int dotIndex = value.indexOf('.');
                 insertionValue = value.substring(dotIndex + 1);
 
             } else if (type.isFunction() || type.isSystemFunction()) {
-                
+
                 insertionValue = value + "()";
-                
+
             } else {
-                
+
                 insertionValue = value;
             }
 
@@ -131,62 +131,62 @@ public class AutoCompleteListItem {
 
         return insertionValue;
     }
-    
+
     public boolean isForPrefix(List<QueryTable> tables, String prefix, boolean prefixHadAlias) {
-        
+
         boolean hasTables = !(tables == null || tables.isEmpty());
         if ((type.isKeyword() || type.isTable())) {
 
             if (prefixHadAlias) {
-                
+
                 return false;
             }
-            
+
             if (!hasTables || !type.isTable()) { // keyword
 
                 return getUpperCaseValue().startsWith(prefix, 0);
             }
         }
-        
+
         if (!hasTables) { // ??? hhhmmmmmm
-            
+
             return getInsertionValue().regionMatches(true, 0, prefix, 0, prefix.length());
         }
-        
+
         if (parentName != null) { // shouldn't here but does TODO:
-        
+
             for (QueryTable table : tables) {
-                
+
                 String name = table.getCompareName();
                 if (parentName.regionMatches(true, 0, name, 0, name.length())) {
-                
+
                     if (StringUtils.isBlank(prefix)) {
-                        
+
                         return true;
                     }
-                    
+
                     return getInsertionValue().regionMatches(true, 0, prefix, 0, prefix.length());
                 }
-                
+
             }
         }
 
         return false;
     }
-    
+
     public AutoCompleteListItemType getType() {
         return type;
     }
- 
+
     public String getParentName() {
         return parentName;
     }
-    
+
     @Override
     public String toString() {
         return getDisplayValue();
     }
-    
+
 }
 
 

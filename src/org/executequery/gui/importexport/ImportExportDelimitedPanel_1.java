@@ -20,92 +20,98 @@
 
 package org.executequery.gui.importexport;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.util.Vector;
-import javax.swing.ButtonGroup;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import org.underworldlabs.swing.DynamicComboBoxModel;
-import org.underworldlabs.swing.MultiLineLabel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.WidgetFactory;
+import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.MultiLineLabel;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.Vector;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ImportExportDelimitedPanel_1 extends JPanel {
-    
-    /** Single table export radio button */
+
+    /**
+     * Single table export radio button
+     */
     private JRadioButton singleRadio;
 
-    /** Multiple table export radio button */
+    /**
+     * Multiple table export radio button
+     */
     private JRadioButton multipleRadio;
-    
-    /** The connection combo selection */
-    private JComboBox connectionsCombo; 
 
-    /** the schema combo box model */
+    /**
+     * The connection combo selection
+     */
+    private JComboBox connectionsCombo;
+
+    /**
+     * the schema combo box model
+     */
     private DynamicComboBoxModel connectionsModel;
 
-    /** The controlling object for this process */
+    /**
+     * The controlling object for this process
+     */
     private ImportExportDataProcess parent;
-    
-    /** <p>Creates a new instance with the specified
-     *  process as the parent.
+
+    /**
+     * <p>Creates a new instance with the specified
+     * process as the parent.
      *
-     *  @param the parent controlling the process
+     * @param the parent controlling the process
      */
     public ImportExportDelimitedPanel_1(ImportExportDataProcess parent) {
         super(new GridBagLayout());
         this.parent = parent;
-        
+
         try {
             jbInit();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
     }
-    
-    /** <p>Initialises the state of this instance and
-     *  lays out components on the panel. */
+
+    /**
+     * <p>Initialises the state of this instance and
+     * lays out components on the panel.
+     */
     private void jbInit() throws Exception {
         singleRadio = new JRadioButton("Single Table");
         multipleRadio = new JRadioButton("Multiple Tables");
-        
+
         singleRadio.setMnemonic('S');
         multipleRadio.setMnemonic('M');
-        
+
         ButtonGroup bg = new ButtonGroup();
         bg.add(singleRadio);
         bg.add(multipleRadio);
         singleRadio.setSelected(true);
-        
+
         StringBuffer sb = new StringBuffer(500);
 
         int type = parent.getTransferType();
         if (type == ImportExportDataProcess.EXPORT) {
             sb.append("Single table export retrieves requested data from one ").
-            append("table only. This will also allow for the selection of individual ").
-            append("columns from that table.\n\nSelecting a multiple table export ").
-            append("does not allow for individual column selection and all ").
-            append("columns within selected tables are exported.\n");
-        } 
-        else if (type == ImportExportDataProcess.IMPORT) {
+                    append("table only. This will also allow for the selection of individual ").
+                    append("columns from that table.\n\nSelecting a multiple table export ").
+                    append("does not allow for individual column selection and all ").
+                    append("columns within selected tables are exported.\n");
+        } else if (type == ImportExportDataProcess.IMPORT) {
             sb.append("Single table import inserts data into one table only.").
-            append(" This will also allow for the selection of individual ").
-            append("columns from that table.\n\nSelecting a multiple table import ").
-            append("does not allow for individual column selection and all ").
-            append("columns within selected tables are assumed to be held within the ").
-            append("file or files selected.");
+                    append(" This will also allow for the selection of individual ").
+                    append("columns from that table.\n\nSelecting a multiple table import ").
+                    append("does not allow for individual column selection and all ").
+                    append("columns within selected tables are assumed to be held within the ").
+                    append("file or files selected.");
         }
-        
+
         // combo boxes
         Vector connections = ConnectionManager.getActiveConnections();
         connectionsModel = new DynamicComboBoxModel(connections);
@@ -114,7 +120,7 @@ public class ImportExportDelimitedPanel_1 extends JPanel {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy++;
         gbc.gridx = 0;
-        gbc.insets = new Insets(7,5,5,5);
+        gbc.insets = new Insets(7, 5, 5, 5);
         gbc.anchor = GridBagConstraints.NORTHWEST;
         add(new JLabel("Connection:"), gbc);
         gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -137,11 +143,11 @@ public class ImportExportDelimitedPanel_1 extends JPanel {
         gbc.gridy++;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(multipleRadio, gbc);
-        
+
         setPreferredSize(parent.getChildDimension());
     }
-    
-    /** 
+
+    /**
      * Returns the type of import/export process
      * to be conducted - single or multiple table.
      *
@@ -154,7 +160,7 @@ public class ImportExportDelimitedPanel_1 extends JPanel {
             return ImportExportDataProcess.MULTIPLE_TABLE;
         }
     }
-    
+
     /**
      * Sets the connection selection to that specified.
      *
@@ -163,14 +169,14 @@ public class ImportExportDelimitedPanel_1 extends JPanel {
     public void setDatabaseConnection(DatabaseConnection dc) {
         connectionsCombo.setSelectedItem(dc);
     }
-    
+
     /**
      * Returns the selected database connection properties object.
      *
      * @return the connection properties object
      */
     public DatabaseConnection getDatabaseConnection() {
-        return (DatabaseConnection)connectionsCombo.getSelectedItem();
+        return (DatabaseConnection) connectionsCombo.getSelectedItem();
     }
 
 }

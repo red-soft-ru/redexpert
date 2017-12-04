@@ -25,8 +25,9 @@ import org.underworldlabs.util.DesEncrypter;
 
 public class DefaultDesPasswordEncoderDecoder implements PasswordEncoderDecoder {
 
-    DefaultDesPasswordEncoderDecoder() {}
-    
+    DefaultDesPasswordEncoderDecoder() {
+    }
+
     public String decode(String key, String value) {
         return DesEncrypter.decrypt(key, value);
     }

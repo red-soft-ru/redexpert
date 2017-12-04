@@ -21,26 +21,35 @@
 package org.executequery.gui.table;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface TableFunction extends TableModifier {
-    
-    /** Inserts a row before the selection. */
+
+    /**
+     * Inserts a row before the selection.
+     */
     public void insertBefore();
-    
-    /** Inserts a row after the selection. */
+
+    /**
+     * Inserts a row after the selection.
+     */
     public void insertAfter();
-    
-    /** Deletes the selected row. */
+
+    /**
+     * Deletes the selected row.
+     */
     public void deleteRow();
-    
-    /** Moves the selected row up. */
+
+    /**
+     * Moves the selected row up.
+     */
     public void moveColumnUp();
-    
-    /** Moves the selected row down. */
+
+    /**
+     * Moves the selected row down.
+     */
     public void moveColumnDown();
-    
+
 }
 
 

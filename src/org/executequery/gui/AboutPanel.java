@@ -20,21 +20,6 @@
 
 package org.executequery.gui;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.util.Calendar;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-
 import org.executequery.ActiveComponent;
 import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
@@ -45,14 +30,23 @@ import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
  * System About panel.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class AboutPanel extends BaseDialog
-                        implements ActiveComponent,
-                                   ActionListener {
+        implements ActiveComponent,
+        ActionListener {
 
     public static final String TITLE = "About";
     public static final String FRAME_ICON = "Information16.png";
@@ -104,7 +98,7 @@ public class AboutPanel extends BaseDialog
 
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.insets = new Insets(5,5,5,5);
+        gbc.insets = new Insets(5, 5, 5, 5);
         gbc.weightx = 1.0;
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.fill = GridBagConstraints.BOTH;
@@ -157,7 +151,7 @@ public class AboutPanel extends BaseDialog
         okButton.setMnemonic('O');
 
         GridBagConstraints gbc = new GridBagConstraints();
-        Insets ins = new Insets(7,0,0,0);
+        Insets ins = new Insets(7, 0, 0, 0);
         gbc.insets = ins;
 
         buttonPanel.add(okButton, gbc);
@@ -222,7 +216,7 @@ public class AboutPanel extends BaseDialog
 
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.insets = new Insets(5,5,5,5);
+        gbc.insets = new Insets(5, 5, 5, 5);
         gbc.weightx = 1.0;
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.fill = GridBagConstraints.BOTH;
@@ -259,7 +253,7 @@ public class AboutPanel extends BaseDialog
                 RenderingHints.VALUE_ANTIALIAS_ON);
 
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
-                            RenderingHints.VALUE_RENDER_QUALITY);
+                RenderingHints.VALUE_RENDER_QUALITY);
     }
 
     class ScrollingCreditsPanel extends JPanel {
@@ -330,6 +324,7 @@ public class AboutPanel extends BaseDialog
 
         private int yOffset;
         int count = 0;
+
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
             int width = getWidth();
@@ -338,7 +333,7 @@ public class AboutPanel extends BaseDialog
             g.setColor(Color.WHITE);
             g.fillRect(0, 0, width, height);
 
-            Graphics2D g2d = (Graphics2D)g;
+            Graphics2D g2d = (Graphics2D) g;
 
             renderingHintsForText(g2d);
 
@@ -372,7 +367,7 @@ public class AboutPanel extends BaseDialog
                 g2d.drawString(titles[i], x, y + yOffset + height);
 
                 if (i == names.length - 1) {
-                    if (Math.abs(yOffset) >= (y+ height)) {
+                    if (Math.abs(yOffset) >= (y + height)) {
                         yOffset = 0;
                     }
                 }
@@ -431,7 +426,8 @@ public class AboutPanel extends BaseDialog
 
                                 Thread.sleep(500);
 
-                            } catch (InterruptedException e) {}
+                            } catch (InterruptedException e) {
+                            }
 
                         } else {
 
@@ -481,7 +477,7 @@ public class AboutPanel extends BaseDialog
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
 
-            Graphics2D g2d = (Graphics2D)g;
+            Graphics2D g2d = (Graphics2D) g;
 
             int imageWidth = eqImage.getWidth(this);
             int imageHeight = eqImage.getHeight(this);
@@ -501,9 +497,9 @@ public class AboutPanel extends BaseDialog
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
                 g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
-                    RenderingHints.VALUE_RENDER_QUALITY);
+                        RenderingHints.VALUE_RENDER_QUALITY);
                 g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                    RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                        RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
             }
 

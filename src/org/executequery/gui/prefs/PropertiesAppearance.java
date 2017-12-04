@@ -20,60 +20,60 @@
 
 package org.executequery.gui.prefs;
 
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.JComboBox;
-
 import org.executequery.GUIUtilities;
 import org.executequery.plaf.LookAndFeelType;
 import org.underworldlabs.util.LabelValuePair;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * System preferences appearance panel.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PropertiesAppearance extends AbstractPropertiesBasePanel implements ItemListener {
 
     private SimplePreferencesPanel preferencesPanel;
 
     public PropertiesAppearance() {
-        try  {
+        try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    /** Initializes the state of this instance. */
+    /**
+     * Initializes the state of this instance.
+     */
     private void init() throws Exception {
 
-    	List<UserPreference> list = new ArrayList<UserPreference>();
+        List<UserPreference> list = new ArrayList<UserPreference>();
 
         list.add(new UserPreference(
-                    UserPreference.CATEGORY_TYPE,
-                    null,
-                    "General",
-                    null));
+                UserPreference.CATEGORY_TYPE,
+                null,
+                "General",
+                null));
 
         String key = "system.display.statusbar";
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "Status bar",
-                    Boolean.valueOf(stringUserProperty(key))));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Status bar",
+                Boolean.valueOf(stringUserProperty(key))));
 
         key = "system.display.console";
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "System console",
-                    Boolean.valueOf(stringUserProperty(key))));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "System console",
+                Boolean.valueOf(stringUserProperty(key))));
 
         key = "system.display.jdbclogger";
         list.add(new UserPreference(
@@ -84,86 +84,86 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel implements
 
         key = "system.display.connections";
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "Connections",
-                    Boolean.valueOf(stringUserProperty(key))));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Connections",
+                Boolean.valueOf(stringUserProperty(key))));
 
         key = "system.display.drivers";
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "Drivers",
-                    Boolean.valueOf(stringUserProperty(key))));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Drivers",
+                Boolean.valueOf(stringUserProperty(key))));
 
         key = "system.display.keywords";
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "SQL Keywords",
-                    Boolean.valueOf(stringUserProperty(key))));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "SQL Keywords",
+                Boolean.valueOf(stringUserProperty(key))));
 
         key = "system.display.state-codes";
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "SQL State Codes",
-                    Boolean.valueOf(stringUserProperty(key))));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "SQL State Codes",
+                Boolean.valueOf(stringUserProperty(key))));
 
         key = "system.display.systemprops";
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "System properties palette",
-                    Boolean.valueOf(stringUserProperty(key))));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "System properties palette",
+                Boolean.valueOf(stringUserProperty(key))));
 
         list.add(new UserPreference(
-                    UserPreference.CATEGORY_TYPE,
-                    null,
-                    "Appearance",
-                    null));
+                UserPreference.CATEGORY_TYPE,
+                null,
+                "Appearance",
+                null));
 
         key = "startup.display.lookandfeel";
         list.add(new UserPreference(
-                    UserPreference.ENUM_TYPE,
-                    key,
-                    "Look and feel (requires restart)",
-                    LookAndFeelType.valueOf(stringUserProperty(key)),
-                    lookAndFeelValuePairs()));
+                UserPreference.ENUM_TYPE,
+                key,
+                "Look and feel (requires restart)",
+                LookAndFeelType.valueOf(stringUserProperty(key)),
+                lookAndFeelValuePairs()));
 
         key = "display.aa.fonts";
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "Use anti-alias fonts (requires restart)",
-                    Boolean.valueOf(stringUserProperty(key))));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Use anti-alias fonts (requires restart)",
+                Boolean.valueOf(stringUserProperty(key))));
 
         key = "desktop.background.custom.colour";
         list.add(new UserPreference(
-                    UserPreference.COLOUR_TYPE,
-                    key,
-                    "Desktop background",
-                    SystemProperties.getColourProperty("user", key)));
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Desktop background",
+                SystemProperties.getColourProperty("user", key)));
 
         key = "decorate.dialog.look";
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "Decorate dialogs",
-                    Boolean.valueOf(stringUserProperty(key))));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Decorate dialogs",
+                Boolean.valueOf(stringUserProperty(key))));
 
         key = "decorate.frame.look";
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "Decorate frame",
-                    Boolean.valueOf(stringUserProperty(key))));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Decorate frame",
+                Boolean.valueOf(stringUserProperty(key))));
 
         UserPreference[] preferences =
-                (UserPreference[])list.toArray(new UserPreference[list.size()]);
+                (UserPreference[]) list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
-        
+
         lookAndFeelCombBox().addItemListener(this);
     }
 
@@ -222,19 +222,19 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel implements
         LookAndFeelType[] lookAndFeelTypes = LookAndFeelType.values();
         LabelValuePair[] values = new LabelValuePair[lookAndFeelTypes.length];
         for (int i = 0; i < lookAndFeelTypes.length; i++) {
-            
+
             LookAndFeelType lookAndFeelType = lookAndFeelTypes[i];
             values[i] = new LabelValuePair(lookAndFeelType, lookAndFeelType.getDescription());
         }
-        
+
         return values;
     }
 
     public LookAndFeelType getSelectedLookAndFeel() {
-        
+
         return (LookAndFeelType) lookAndFeelCombBox().getSelectedItem();
     }
-    
+
     public void restoreDefaults() {
         preferencesPanel.savePreferences();
     }

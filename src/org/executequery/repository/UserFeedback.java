@@ -26,11 +26,11 @@ import java.util.Map;
 public class UserFeedback {
 
     private String name;
-    
+
     private String email;
-    
+
     private String remarks;
-    
+
     private String type;
 
     public UserFeedback(String name, String email, String remarks, String type) {
@@ -56,19 +56,19 @@ public class UserFeedback {
     public String getType() {
         return type;
     }
-    
+
     public Map<String, String> asMap() {
-        
+
         final Map<String, String> map = new HashMap<String, String>();
 
         map.put("remarks", getRemarks());
         map.put("name", getName());
         map.put("email", getEmail());
         map.put("type", getType());
-        
+
         return map;
     }
-    
+
 }
 
 

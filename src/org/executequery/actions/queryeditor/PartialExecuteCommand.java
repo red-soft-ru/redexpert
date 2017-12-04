@@ -22,10 +22,10 @@ package org.executequery.actions.queryeditor;
 
 import java.awt.event.ActionEvent;
 
-/** 
+/**
  * The Query Editor's selective at cursor execute command.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PartialExecuteCommand extends AbstractQueryEditorCommand {
 
@@ -35,9 +35,9 @@ public class PartialExecuteCommand extends AbstractQueryEditorCommand {
 
             queryEditor().executeSQLAtCursor();
         }
-        
+
     }
-    
+
 }
 
 

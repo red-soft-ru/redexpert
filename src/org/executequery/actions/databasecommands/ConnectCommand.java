@@ -20,8 +20,6 @@
 
 package org.executequery.actions.databasecommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -31,20 +29,23 @@ import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.actions.BaseCommand;
 import org.underworldlabs.util.MiscUtils;
 
-/** <p>Executes the Database | Connect... | New Connection command.
+import java.awt.event.ActionEvent;
+
+/**
+ * <p>Executes the Database | Connect... | New Connection command.
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ConnectCommand extends OpenFrameCommand implements BaseCommand {
-    
+
     public void execute(ActionEvent e) {
-        
-        GUIUtilities.ensureDockedTabVisible(ConnectionsTreePanel.PROPERTY_KEY);        
+
+        GUIUtilities.ensureDockedTabVisible(ConnectionsTreePanel.PROPERTY_KEY);
         ConnectionsTreePanel panel = connectionsPanel();
 
         String command = e.getActionCommand();
         if (MiscUtils.isNull(command) || "New Connection".equals(command)) {
-            
+
             panel.newConnection();
 
         } else {
@@ -62,16 +63,16 @@ public class ConnectCommand extends OpenFrameCommand implements BaseCommand {
 
     private DatabaseConnectionRepository databaseConnectionRepository() {
 
-        return (DatabaseConnectionRepository)RepositoryCache.load(
-                    DatabaseConnectionRepository.REPOSITORY_ID);        
+        return (DatabaseConnectionRepository) RepositoryCache.load(
+                DatabaseConnectionRepository.REPOSITORY_ID);
     }
 
     private ConnectionsTreePanel connectionsPanel() {
 
-        return (ConnectionsTreePanel)GUIUtilities.
-            getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+        return (ConnectionsTreePanel) GUIUtilities.
+                getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
     }
-    
+
 }
 
 

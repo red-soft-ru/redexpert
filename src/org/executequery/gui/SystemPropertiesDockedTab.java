@@ -20,39 +20,46 @@
 
 package org.executequery.gui;
 
-import java.awt.BorderLayout;
-import javax.swing.JTabbedPane;
 import org.underworldlabs.swing.HeapMemoryPanel;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * System properties docked component.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SystemPropertiesDockedTab extends AbstractDockedTabActionPanel {
-    
+
     public static final String TITLE = "System Properties";
-    
-    /** the system properties panel */
+
+    /**
+     * the system properties panel
+     */
     private SystemPropertiesPanel propertiesPanel;
-    
-    /** the heap resources panel */
+
+    /**
+     * the heap resources panel
+     */
     private HeapMemoryPanel resourcesPanel;
-    
-    /** Creates a new instance of SystemPropertiesDockedTab */
+
+    /**
+     * Creates a new instance of SystemPropertiesDockedTab
+     */
     public SystemPropertiesDockedTab() {
         super(new BorderLayout());
         init();
     }
-    
+
     private void init() {
         propertiesPanel = new SystemPropertiesPanel();
         resourcesPanel = new HeapMemoryPanel();
-        
+
         JTabbedPane tabs = new JTabbedPane();
         tabs.add("System", propertiesPanel);
         tabs.add("Resources", resourcesPanel);
-        
+
         add(tabs, BorderLayout.CENTER);
     }
 
@@ -78,9 +85,9 @@ public class SystemPropertiesDockedTab extends AbstractDockedTabActionPanel {
     // ----------------------------------------
 
     public static final String MENU_ITEM_KEY = "viewSystemProperties";
-    
+
     public static final String PROPERTY_KEY = "system.display.systemprops";
-    
+
     /**
      * Returns the display title for this view.
      *

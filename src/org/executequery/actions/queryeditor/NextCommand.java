@@ -22,13 +22,13 @@ package org.executequery.actions.queryeditor;
 
 import java.awt.event.ActionEvent;
 
-/** 
+/**
  * The Query Editor's Next Query command execution.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class NextCommand extends AbstractQueryEditorCommand {
-    
+
     public void execute(ActionEvent e) {
 
         if (isQueryEditorTheCentralPanel()) {
@@ -37,7 +37,7 @@ public class NextCommand extends AbstractQueryEditorCommand {
         }
 
     }
-    
+
 }
 
 

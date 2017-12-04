@@ -40,28 +40,27 @@ import javax.mail.internet.MimeMessage;
 import java.util.Properties;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class UserFeedbackRepositoryImpl implements UserFeedbackRepository {
 
     private static final String FEEDBACK_POST_ADDRESS = "rdb.support@red-soft.biz";
-    
+
     private static final String ADDRESS = "red-soft.biz";
 
     private static final String MAIL_SERVER = "mail.red-soft.biz";
-    
+
     public void postFeedback(UserFeedback userFeedback) throws RepositoryException {
 
         try {
-        
+
             Log.info("Sending feedback to rdb.support@red-soft.biz");
 
             saveEntriesToPreferences(userFeedback);
-            
+
             if (siteAvailable()) {
 
-                try{
+                try {
                     // Get system properties
                     Properties properties = System.getProperties();
 
@@ -89,15 +88,15 @@ public class UserFeedbackRepositoryImpl implements UserFeedbackRepository {
                     // Send message
                     Transport.send(message);
                     System.out.println("Sent message successfully....");
-                }catch (MessagingException mex) {
+                } catch (MessagingException mex) {
                     mex.printStackTrace();
                 }
 
             }
-            
+
         } catch (RemoteHttpClientException e) {
-            
-            handleException(e);            
+
+            handleException(e);
         }
 
     }
@@ -127,23 +126,23 @@ public class UserFeedbackRepositoryImpl implements UserFeedbackRepository {
     public void cancel() {
 //        cancelled = true;
     }
-    
+
     private String ioExceptionMessage() {
 
         return "An error occured posting the feedback report.\n" +
-            "This feature requires an active internet connection.\n" +
-            "If using a proxy server, please configure this through " +
-            "the user preferences > general selection.";
+                "This feature requires an active internet connection.\n" +
+                "If using a proxy server, please configure this through " +
+                "the user preferences > general selection.";
     }
 
     private String genericExceptionMessage() {
 
         return "An error occured posting the feedback report to\n" +
-            "http://red-soft.biz. Please try again later.";
+                "http://red-soft.biz. Please try again later.";
     }
 
     private RemoteHttpClient remoteHttpClient() {
-        
+
         return new DefaultRemoteHttpClient();
     }
 
@@ -164,7 +163,7 @@ public class UserFeedbackRepositoryImpl implements UserFeedbackRepository {
 
         if (savePrefs) {
             SystemResources.setUserPreferences(
-                                SystemProperties.getProperties("user"));
+                    SystemProperties.getProperties("user"));
         }
     }
 

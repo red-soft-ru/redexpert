@@ -20,30 +20,26 @@
 
 package org.executequery.gui.browser;
 
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.table.AbstractTableModel;
-
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseSchema;
 import org.executequery.databaseobjects.SimpleDatabaseObject;
 import org.underworldlabs.jdbc.DataSourceException;
 
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SchemaPanel extends BrowserNodeBasePanel {
-    
+
     public static final String NAME = "SchemaPanel";
-    
+
     private JLabel noResultsLabel;
-    
+
     private SchemaModel model;
-    
+
     private BrowserController controller;
 
     public SchemaPanel(BrowserController controller) {
@@ -53,48 +49,50 @@ public class SchemaPanel extends BrowserNodeBasePanel {
 
         try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     private void init() throws Exception {
 
         noResultsLabel = new JLabel("No information for this object is available.",
-                                    JLabel.CENTER);
+                JLabel.CENTER);
 
         JTable table = table();
         model = new SchemaModel();
-        table.setModel(model);        
+        table.setModel(model);
         table.getColumnModel().getColumn(2).setPreferredWidth(150);
         table.getColumnModel().getColumn(3).setPreferredWidth(100);
-        
+
         tablePanel().setBorder(BorderFactory.createTitledBorder("Available Objects"));
         setHeaderText("Database Schema");
         setHeaderIcon(GUIUtilities.loadIcon("User24.png"));
     }
-    
+
     protected String getPrintablePrefixLabel() {
 
         return "Database Schema: ";
     }
-    
+
     public String getLayoutName() {
         return NAME;
     }
-    
-    public void refresh() {}
-    public void cleanup() {}
-    
+
+    public void refresh() {
+    }
+
+    public void cleanup() {
+    }
+
     public JTable getTable() {
         return table();
     }
-    
+
     public void setValues(DatabaseSchema schema) {
         typeField().setText(schema.getName());
         boolean hadResults = model.getRowCount() > 0;
-        
+
         List<SimpleDatabaseObject> values = null;
         try {
             values = schema.getSchemaObjects();
@@ -107,8 +105,7 @@ public class SchemaPanel extends BrowserNodeBasePanel {
             tablePanel().remove(scroller());
             tablePanel().add(noResultsLabel, getPanelConstraints());
             tablePanel().validate();
-        }
-        else {
+        } else {
             if (!hadResults) {
                 tablePanel().remove(noResultsLabel);
                 tablePanel().add(scroller(), getPanelConstraints());
@@ -117,41 +114,42 @@ public class SchemaPanel extends BrowserNodeBasePanel {
         }
 
     }
-    
+
     private class SchemaModel extends AbstractTableModel {
 
         private List<SimpleDatabaseObject> values;
-        private String[] header = {"Catalog","Schema","Name","Type","Remarks"};
-        
-        public SchemaModel() {}
-        
+        private String[] header = {"Catalog", "Schema", "Name", "Type", "Remarks"};
+
+        public SchemaModel() {
+        }
+
         public void setValues(List<SimpleDatabaseObject> values) {
             this.values = values;
             fireTableDataChanged();
         }
-        
+
         public int getRowCount() {
             if (values == null) {
                 return 0;
             }
             return values.size();
         }
-        
+
         public int getColumnCount() {
             return 5;
         }
-        
+
         public String getColumnName(int col) {
             return header[col];
         }
-        
+
         public Object getValueAt(int row, int col) {
-            
+
             if (values.size() <= row) {
 
                 return "NULL";
             }
-            
+
             SimpleDatabaseObject object = values.get(row);
             switch (col) {
                 case 0:
@@ -165,12 +163,12 @@ public class SchemaPanel extends BrowserNodeBasePanel {
                 case 4:
                     return object.getRemarks();
                 default:
-                    return "NULL";                    
+                    return "NULL";
             }
         }
-        
+
     }
-    
+
 }
 
 

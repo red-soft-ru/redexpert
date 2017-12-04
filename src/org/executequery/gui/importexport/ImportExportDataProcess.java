@@ -20,117 +20,148 @@
 
 package org.executequery.gui.importexport;
 
-import java.awt.Dimension;
-import java.util.Vector;
-
-import javax.swing.JDialog;
-
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.gui.browser.ColumnData;
 
-/** 
+import javax.swing.*;
+import java.awt.*;
+import java.util.Vector;
+
+/**
  * Interface defining an import or export
  * process. This interface will be implemented
  * by those classes handling data transfer tasks
  * including both the delimited file import/export
  * and the XML file import/export.
- *
+ * <p>
  * <p>Retrieval of common information within each
  * process is defined in addition to some minor
  * view information such as the size of child
  * components within the 'wizard' type functionality
  * that is each process.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface ImportExportDataProcess {
-    
+
     // ------------------------------------------------
     // ---- Import/Export process types constants -----
     // ------------------------------------------------
-    
+
     int XML = 12;
     int DELIMITED = 13;
     int EXCEL = 14;
-    
-    /** The import from XML process */
+
+    /**
+     * The import from XML process
+     */
     int IMPORT_XML = 0;
-    /** The export to XML process */
+    /**
+     * The export to XML process
+     */
     int EXPORT_XML = 1;
-    /** The import from delimited file process */
+    /**
+     * The import from delimited file process
+     */
     int IMPORT_DELIMITED = 2;
-    /** The export to delimited file process */
+    /**
+     * The export to delimited file process
+     */
     int EXPORT_DELIMITED = 3;
-    /** The export process */
+    /**
+     * The export process
+     */
     int IMPORT = 4;
-    /** The import process */
+    /**
+     * The import process
+     */
     int EXPORT = 5;
-    /** Denotes a single table export process */
+    /**
+     * Denotes a single table export process
+     */
     int SINGLE_TABLE = 6;
-    /** Denotes a multiple table export process */
+    /**
+     * Denotes a multiple table export process
+     */
     int MULTIPLE_TABLE = 7;
-    /** On error log and continue */
+    /**
+     * On error log and continue
+     */
     int LOG_AND_CONTINUE = 8;
-    /** On error stop transfer */
+    /**
+     * On error stop transfer
+     */
     int STOP_TRANSFER = 9;
-    /** A single file export - multiple table */
+    /**
+     * A single file export - multiple table
+     */
     int SINGLE_FILE = 10;
-    /** A multiple file export - multiple table */
+    /**
+     * A multiple file export - multiple table
+     */
     int MULTIPLE_FILE = 11;
-    
-    
-    /** indicator for commit and end of file */
+
+
+    /**
+     * indicator for commit and end of file
+     */
     int COMMIT_END_OF_FILE = -99;
 
-    /** indicator for commit and end of all files */
+    /**
+     * indicator for commit and end of all files
+     */
     int COMMIT_END_OF_ALL_FILES = -98;
 
-    /** XML format with schema element */
+    /**
+     * XML format with schema element
+     */
     int SCHEMA_ELEMENT = 0;
 
-    /** XML format with table element only */
+    /**
+     * XML format with table element only
+     */
     int TABLE_ELEMENT = 1;
 
     /**
      * Returns the transfer format - XML, CSV etc.
      */
     int getTransferFormat();
-    
-    /** 
-     * Stops the current process. 
+
+    /**
+     * Stops the current process.
      */
     void stopTransfer();
-    
-    /** 
-     * Flags the current transfer process as cancelled. 
+
+    /**
+     * Flags the current transfer process as cancelled.
      */
     void cancelTransfer();
-    
-    /** 
+
+    /**
      * Retrieves the selected rollback size for the transfer.
      *
      * @return the rollback size
      */
     int getRollbackSize();
-    
-    /** 
+
+    /**
      * Retrieves the action on an error occuring during the import/export process.
      *
      * @return the action on error -<br>either:
-     *          <code>ImportExportProcess.LOG_AND_CONTINUE</code> or
-     *          <code>ImportExportProcess.STOP_TRANSFER</code>
+     * <code>ImportExportProcess.LOG_AND_CONTINUE</code> or
+     * <code>ImportExportProcess.STOP_TRANSFER</code>
      */
     int getOnError();
-    
-    /** 
-     * Retrieves the date format for date fields contained within 
+
+    /**
+     * Retrieves the date format for date fields contained within
      * the data file/database table.
      *
      * @return the date format (ie. ddMMyyy)
      */
     String getDateFormat();
-    
+
     /**
      * Returns whether to parse date values.
      *
@@ -138,95 +169,95 @@ public interface ImportExportDataProcess {
      */
     boolean parseDateValues();
 
-    /** 
+    /**
      * Retrieves the column names for this process.
      *
      * @return the column names
      */
     Vector<ColumnData> getSelectedColumns();
-    
-    /** 
+
+    /**
      * Retrieves the size of the child panel to be added to the main base panel.
      *
-     *  @return the size of the child panel
+     * @return the size of the child panel
      */
     Dimension getChildDimension();
-    
-    /** 
+
+    /**
      * Retrieves the <code>MetaDataValues</code> object defined for this process.
      *
      * @return the <code>MetaDataValues</code> helper class
      */
     MetaDataValues getMetaDataUtility();
-    
-    /** 
+
+    /**
      * Returns the type of transfer - single or multiple table.
      *
      * @return the type of transfer
      */
     int getTableTransferType();
-    
-    /** 
-     * Begins an import process. 
+
+    /**
+     * Begins an import process.
      */
     void doImport();
-    
-    /** 
-     * Begins an export process. 
+
+    /**
+     * Begins an export process.
      */
     void doExport();
-    
-    /** 
+
+    /**
      * Returns the type of transfer - import or export.
      *
      * @return the transfer type - import/export
      */
     int getTransferType();
-    
-    
+
+
     /**
      * Returns whether this process defines an export.
-     *  
+     *
      * @return
      */
     boolean isExport();
-    
-    /** 
+
+    /**
      * Retrieves the selected tables for this process.
      *
      * @return the selected table names
      */
     String[] getSelectedTables();
-    
-    /** 
-     * Retrieves the table name for this process in the case 
+
+    /**
+     * Retrieves the table name for this process in the case
      * of a single table import/export.
      *
      * @return the table name
      */
     String getTableName();
-    
-    /** 
+
+    /**
      * Returns the type of multiple table transfer - single or multiple file.
      *
      * @return the type of multiple table transfer
      */
     int getMutlipleTableTransferType();
-    
-    /** 
+
+    /**
      * Returns whether the table transfer type is single or multiple file.
      *
      * @return true | false
      */
     boolean isSingleFileExport();
-    
+
     /**
      * Returns the schema name where applicable.
      *
      * @return the schema name
      */
     String getSchemaName();
-    
+
     /**
      * Returns the selected database connection properties object.
      *
@@ -241,16 +272,16 @@ public interface ImportExportDataProcess {
      */
     int getXMLFormat();
 
-    /** 
-     * Indicates whether the process (import only) should 
+    /**
+     * Indicates whether the process (import only) should
      * be run as a batch process.
      *
      * @return whether to run as a batch process
      */
     boolean runAsBatchProcess();
 
-    /** 
-     * Returns a <code>Vector</code> of <code>DataTransferObject</code> 
+    /**
+     * Returns a <code>Vector</code> of <code>DataTransferObject</code>
      * objects containing all relevant data for the process.
      *
      * @return a <code>Vector</code> of <code>DataTransferObject</code> objects
@@ -266,8 +297,8 @@ public interface ImportExportDataProcess {
     boolean includeColumnNames();
 
     boolean quoteCharacterValues();
-    
-    /** 
+
+    /**
      * Retrieves the selected type of delimiter within
      * the file to be used with this process.
      *
@@ -289,14 +320,14 @@ public interface ImportExportDataProcess {
      * @return true | false
      */
     boolean trimWhitespace();
-    
+
     /**
      * Returns the dialog container for this process.
      *
      * @return the dialog or null if there is no dialog
      */
     JDialog getDialog();
-    
+
 }
 
 

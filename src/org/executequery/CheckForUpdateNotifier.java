@@ -20,39 +20,31 @@
 
 package org.executequery;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.swing.*;
-
-import jdk.nashorn.internal.parser.JSONParser;
 import org.executequery.components.SimpleHtmlContentPane;
 import org.executequery.components.StatusBarPanel;
-import org.executequery.gui.PulsatingCircle;
 import org.executequery.gui.InformationDialog;
+import org.executequery.gui.PulsatingCircle;
 import org.executequery.log.Log;
 import org.executequery.repository.LatestVersionRepository;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.util.UserProperties;
-import org.json.JSONObject;
 import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.InterruptibleProgressDialog;
 import org.underworldlabs.swing.util.Interruptible;
 import org.underworldlabs.swing.util.SwingWorker;
 
+import javax.swing.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
- * Checks to see if a newer version of Execute Query is available. 
- * 
- * @author   Takis Diakoumis
+ * Checks to see if a newer version of Execute Query is available.
+ *
+ * @author Takis Diakoumis
  */
 public class CheckForUpdateNotifier implements Interruptible {
 

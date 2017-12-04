@@ -20,14 +20,14 @@
 
 package org.executequery.databaseobjects;
 
-import java.util.List;
 import org.executequery.gui.resultset.RecordDataItem;
 
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+ * @author Takis Diakoumis
+ * @version $Revision$
+ * @date $Date$
  */
 public class TableDataChange {
 

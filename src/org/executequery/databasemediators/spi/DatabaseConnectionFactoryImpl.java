@@ -26,12 +26,12 @@ import org.executequery.databasemediators.DatabaseConnectionFactory;
 public class DatabaseConnectionFactoryImpl implements DatabaseConnectionFactory {
 
     public DatabaseConnection create() {
-        
+
         return create(null);
     }
 
     public DatabaseConnection create(String name) {
-        
+
         return new DefaultDatabaseConnection(name);
     }
 

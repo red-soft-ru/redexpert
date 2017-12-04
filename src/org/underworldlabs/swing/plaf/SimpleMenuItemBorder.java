@@ -23,9 +23,9 @@ package org.underworldlabs.swing.plaf;
 import javax.swing.plaf.BorderUIResource;
 
 public class SimpleMenuItemBorder extends BorderUIResource.EmptyBorderUIResource {
-    
+
     public SimpleMenuItemBorder() {
-    
+
         super(2, 2, 2, 2);
     }
 

@@ -24,14 +24,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
-/** 
- *
- * @author   Takis Diakoumis
+/**
+ * @author Takis Diakoumis
  */
 public interface ExcelWorkbookBuilder {
 
     void reset();
-    
+
     void createSheet(String sheetName);
 
     void addRowHeader(List<String> values);

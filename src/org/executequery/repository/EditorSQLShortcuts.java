@@ -24,21 +24,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class EditorSQLShortcuts {
 
     private static EditorSQLShortcuts instance;
-    
+
     private EditorSQLShortcutRepository editorSQLShortcutRepository;
 
     private List<EditorSQLShortcut> shortcuts;
 
     private EditorSQLShortcuts() {
 
-        editorSQLShortcutRepository = (EditorSQLShortcutRepository) 
-            RepositoryCache.load(EditorSQLShortcutRepository.REPOSITORY_ID);
+        editorSQLShortcutRepository = (EditorSQLShortcutRepository)
+                RepositoryCache.load(EditorSQLShortcutRepository.REPOSITORY_ID);
     }
 
     public static synchronized EditorSQLShortcuts getInstance() {
@@ -50,7 +49,7 @@ public class EditorSQLShortcuts {
 
         return instance;
     }
-    
+
     public void addShortcut(EditorSQLShortcut shortcut) throws RepositoryException {
         loadShortcuts();
         shortcuts.add(shortcut);
@@ -60,13 +59,13 @@ public class EditorSQLShortcuts {
     public void save() throws RepositoryException {
         save(shortcuts);
     }
-    
+
     public void save(List<EditorSQLShortcut> shortcuts) throws RepositoryException {
         editorSQLShortcutRepository.save(shortcuts);
         this.shortcuts = shortcuts;
     }
 
-    public List<EditorSQLShortcut> getEditorShortcuts() {        
+    public List<EditorSQLShortcut> getEditorShortcuts() {
         loadShortcuts();
         return shortcuts;
     }
@@ -82,19 +81,19 @@ public class EditorSQLShortcuts {
 
             return false;
         }
-        
+
         return (findShortcutByShortcutText(shortcutText) != null);
     }
 
     public void removeShortcutByShortcutText(String name) {
-        
+
         EditorSQLShortcut shortcut = findShortcutByShortcutText(name);
-        
+
         if (shortcut != null) {
-            
+
             removeShortcut(shortcut);
         }
-        
+
     }
 
     public void removeShortcut(EditorSQLShortcut shortcut) {
@@ -102,18 +101,18 @@ public class EditorSQLShortcuts {
     }
 
     public EditorSQLShortcut findShortcutByShortcutText(String text) {
-        
+
         loadShortcuts();
-        
+
         for (EditorSQLShortcut shortcut : shortcuts) {
-            
+
             if (shortcut.getShortcut().equals(text)) {
 
                 return shortcut;
             }
-            
+
         }
-        
+
         return null;
     }
 

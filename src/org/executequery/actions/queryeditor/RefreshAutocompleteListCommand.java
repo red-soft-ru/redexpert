@@ -23,10 +23,9 @@ package org.executequery.actions.queryeditor;
 import java.awt.event.ActionEvent;
 
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+ * @author Takis Diakoumis
+ * @version $Revision$
+ * @date $Date$
  */
 public class RefreshAutocompleteListCommand extends AbstractQueryEditorCommand {
 
@@ -36,9 +35,9 @@ public class RefreshAutocompleteListCommand extends AbstractQueryEditorCommand {
 
             queryEditor().refreshAutocompleteList();
         }
-        
+
     }
-    
+
 }
 
 

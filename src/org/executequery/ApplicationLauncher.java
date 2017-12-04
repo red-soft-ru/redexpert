@@ -20,20 +20,6 @@
 
 package org.executequery;
 
-import java.awt.Color;
-import java.awt.KeyboardFocusManager;
-import java.awt.Toolkit;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
-
-import javax.swing.JComponent;
-import javax.swing.JMenuBar;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -43,12 +29,7 @@ import org.executequery.log.Log;
 import org.executequery.plaf.LookAndFeelType;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
-import org.executequery.util.ApplicationProperties;
-import org.executequery.util.HttpProxyConfigurator;
-import org.executequery.util.LookAndFeelLoader;
-import org.executequery.util.SystemResources;
-import org.executequery.util.ThreadUtils;
-import org.executequery.util.UserProperties;
+import org.executequery.util.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.CustomKeyboardFocusManager;
 import org.underworldlabs.swing.PasswordDialog;
@@ -58,16 +39,21 @@ import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
+import java.awt.*;
+import java.lang.reflect.Field;
+import java.util.*;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ApplicationLauncher {
 
     // agent.jar
     // http://blog.dutchworks.nl/2011/01/09/make-intellij-idea-behave-properly-in-linux-docks/
     // asm license: http://asm.ow2.org/license.html
-    
+
     public void startup() {
 
         try {
@@ -75,7 +61,7 @@ public class ApplicationLauncher {
             applySystemProperties();
             macSettings();
             x11Settings();
-            
+
             boolean dirsCreated = SystemResources.createUserHomeDirSettings();
             aaFonts();
 
@@ -152,7 +138,7 @@ public class ApplicationLauncher {
             advanceSplash(splash);
 
             // initialise the frame
-            final ExecuteQueryFrame frame =  createFrame();
+            final ExecuteQueryFrame frame = createFrame();
 
             GUIUtilities.initDesktop(frame);
 
@@ -172,7 +158,7 @@ public class ApplicationLauncher {
             advanceSplash(splash);
 
             boolean openConnection =
-                booleanUserProperty("startup.connection.connect");
+                    booleanUserProperty("startup.connection.connect");
 
             advanceSplash(splash);
 
@@ -209,7 +195,7 @@ public class ApplicationLauncher {
 
             printSystemProperties();
 
-            frame.setTitle("Red Expert - " +  System.getProperty("executequery.minor.version"));
+            frame.setTitle("Red Expert - " + System.getProperty("executequery.minor.version"));
 
             // auto-login if selected
             if (openConnection) {
@@ -219,7 +205,7 @@ public class ApplicationLauncher {
 
             doCheckForUpdate();
 
-        } catch(Exception e) {
+        } catch (Exception e) {
 
             e.printStackTrace();
         }
@@ -228,20 +214,20 @@ public class ApplicationLauncher {
 
     private void printSystemProperties() {
         if (Log.isTraceEnabled()) {
-            
+
             Log.trace(" --- System properties --- ");
 
             List<String> keys = new ArrayList<>();
             Properties properties = System.getProperties();
-            for (Enumeration<Object> i = properties.keys(); i.hasMoreElements();) {
-                
-                keys.add((String) i.nextElement());                    
+            for (Enumeration<Object> i = properties.keys(); i.hasMoreElements(); ) {
+
+                keys.add((String) i.nextElement());
             }
-            
+
             Collections.sort(keys);
             for (String key : keys) {
 
-                Log.trace(key + ": " + properties.getProperty(key));                    
+                Log.trace(key + ": " + properties.getProperty(key));
             }
         }
     }
@@ -262,7 +248,7 @@ public class ApplicationLauncher {
                 && !(MiscUtils.isNull(country))
                 && !(MiscUtils.isNull(timezone));
         */
-        
+
         return StringUtils.isNotBlank(language);
     }
 
@@ -308,7 +294,7 @@ public class ApplicationLauncher {
 
         String encoding = stringApplicationProperty("system.file.encoding");
         if (StringUtils.isNotBlank(encoding)) {
-            
+
             System.setProperty("file.encoding", encoding);
         }
 
@@ -342,7 +328,8 @@ public class ApplicationLauncher {
             KeyboardFocusManager.setCurrentKeyboardFocusManager(
                     new CustomKeyboardFocusManager());
 
-        } catch (SecurityException e) {}
+        } catch (SecurityException e) {
+        }
     }
 
     private void storeSystemLocaleProperties() {
@@ -361,9 +348,9 @@ public class ApplicationLauncher {
         System.setProperty("user.country", stringUserProperty("locale.country"));
         System.setProperty("user.language", stringUserProperty("locale.language"));
         System.setProperty("user.timezone", stringUserProperty("locale.timezone"));
-        
+
         Locale.setDefault(new Locale(stringUserProperty("locale.language")));
-        
+
     }
 
     private void printVersionInfo() {
@@ -392,11 +379,11 @@ public class ApplicationLauncher {
     private SplashPanel createSplashPanel() {
 
         return new SplashPanel(
-                        progressBarColour(),
-                        "/org/executequery/images/SplashImage.png",
-                        versionString(),
-                        versionTextColour(),
-                        220, 220);
+                progressBarColour(),
+                "/org/executequery/images/SplashImage.png",
+                versionString(),
+                versionTextColour(),
+                220, 220);
 //        5, 15); // top-left
     }
 
@@ -409,7 +396,7 @@ public class ApplicationLauncher {
 
         String minorVersion = System.getProperty("executequery.minor.version");
         if (minorVersion.endsWith(".0")) {
-            
+
             minorVersion = minorVersion.substring(0, minorVersion.length() - 2);
         }
         return "version " + minorVersion;
@@ -480,8 +467,8 @@ public class ApplicationLauncher {
 
     private DatabaseConnectionRepository databaseConnectionRepository() {
 
-        return (DatabaseConnectionRepository)RepositoryCache.load(
-                    DatabaseConnectionRepository.REPOSITORY_ID);
+        return (DatabaseConnectionRepository) RepositoryCache.load(
+                DatabaseConnectionRepository.REPOSITORY_ID);
     }
 
     private void openConnection(DatabaseConnection dc) {
@@ -526,17 +513,17 @@ public class ApplicationLauncher {
     }
 
     private void x11Settings() {
-        
+
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Class<?> xtoolkit = toolkit.getClass();
         if (xtoolkit.getName().equals("sun.awt.X11.XToolkit")) {
 
             try {
-            
+
                 Field awtAppClassName = xtoolkit.getDeclaredField("awtAppClassName");
                 awtAppClassName.setAccessible(true);
                 awtAppClassName.set(null, ExecuteQueryFrame.TITLE);
-            
+
             } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException e) {
 
                 e.printStackTrace();
@@ -555,20 +542,20 @@ public class ApplicationLauncher {
         */
 
     }
-    
+
     private void macSettings() {
 
         if (UIUtils.isMac()) {
-            
+
             // could also use: -Xdock:name="Execute Query"
-            
+
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", ExecuteQueryFrame.TITLE);
         }
 
     }
 
-    
+
 }
 
 

@@ -15,7 +15,8 @@ public class DefaultDatabaseException extends DefaultDatabaseExecutable
     /**
      * Creates a new instance.
      */
-    public DefaultDatabaseException() {}
+    public DefaultDatabaseException() {
+    }
 
     /**
      * Creates a new instance.

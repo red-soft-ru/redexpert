@@ -20,20 +20,6 @@
 
 package org.executequery.gui.editor;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.event.MouseEvent;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-
-import javax.swing.Icon;
-import javax.swing.JComponent;
-import javax.swing.JTabbedPane;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.table.TableModel;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.UserPreferencesManager;
@@ -50,10 +36,20 @@ import org.underworldlabs.swing.plaf.TabRolloverEvent;
 import org.underworldlabs.swing.plaf.TabSelectionListener;
 import org.underworldlabs.util.MiscUtils;
 
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.table.TableModel;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
 /**
  * The Query Editor's results panel.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         implements TabRollOverListener,

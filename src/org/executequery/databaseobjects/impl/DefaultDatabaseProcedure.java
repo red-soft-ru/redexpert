@@ -31,15 +31,16 @@ import java.util.List;
 /**
  * Default database procedure implementation.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable 
-                                      implements DatabaseProcedure {
-    
+public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
+        implements DatabaseProcedure {
+
     /**
      * Creates a new instance of DefaultDatabaseProcedure.
      */
-    public DefaultDatabaseProcedure() {}
+    public DefaultDatabaseProcedure() {
+    }
 
     /**
      * Creates a new instance of DefaultDatabaseProcedure
@@ -56,7 +57,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
         setName(name);
         setSchemaName(schema);
     }
-    
+
     /**
      * Returns the database object type.
      *

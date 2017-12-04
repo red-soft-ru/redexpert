@@ -20,11 +20,10 @@
 
 package org.executequery.gui.browser;
 
-import javax.swing.Action;
-import javax.swing.Icon;
-
 import org.executequery.gui.GUIConstants;
 import org.underworldlabs.swing.DefaultButton;
+
+import javax.swing.*;
 
 public class DefaultInlineFieldButton extends DefaultButton {
 
@@ -48,10 +47,10 @@ public class DefaultInlineFieldButton extends DefaultButton {
         super(text);
     }
 
-    public int getHeight() {        
+    public int getHeight() {
         return GUIConstants.DEFAULT_FIELD_HEIGHT + 1;
     }
-    
+
 }
 
 

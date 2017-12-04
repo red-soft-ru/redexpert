@@ -26,23 +26,23 @@ package org.executequery.event;
  * Implementing classes will be notified of connection
  * creation and disconnection events.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface ConnectionListener extends ApplicationEventListener {
-    
+
     /**
      * Indicates a connection has been established.
-     * 
+     *
      * @param the encapsulating event
      */
     public void connected(ConnectionEvent connectionEvent);
 
     /**
      * Indicates a connection has been closed.
-     * 
+     *
      * @param the encapsulating event
      */
     public void disconnected(ConnectionEvent connectionEvent);
-    
+
 }
 

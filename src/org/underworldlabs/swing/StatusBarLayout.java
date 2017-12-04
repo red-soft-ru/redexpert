@@ -20,60 +20,63 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Insets;
-import java.awt.LayoutManager2;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * Simple horizontal layout where components are effectively set
  * to a specified size and resized optionally to fill the width
  * of a status bar within a frame, panel etc.
- * Effective when some labels within a status bar are a fixed width 
+ * Effective when some labels within a status bar are a fixed width
  * and where others should fill the remaining space.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class StatusBarLayout implements LayoutManager2, Serializable {
-    
-    /** the height of this status bar */
+
+    /**
+     * the height of this status bar
+     */
     private int height;
-    
-    /** default layout height of 20px */
+
+    /**
+     * default layout height of 20px
+     */
     public static final int DEFAULT_HEIGHT = 20;
-    
-    /** The constraints/component pairs */
-    private Hashtable<StatusBarLayoutConstraints,Component> componentsMap;
-    
-    /** The tool bar constraints */
+
+    /**
+     * The constraints/component pairs
+     */
+    private Hashtable<StatusBarLayoutConstraints, Component> componentsMap;
+
+    /**
+     * The tool bar constraints
+     */
     private Vector<StatusBarLayoutConstraints> constraintsList;
 
-    /** the constraints comparator for ordering */
+    /**
+     * the constraints comparator for ordering
+     */
     private transient ConstraintsComparator comparator;
-    
-    /** Creates a new instance of StatusBarLayout */
+
+    /**
+     * Creates a new instance of StatusBarLayout
+     */
     public StatusBarLayout() {
         this(DEFAULT_HEIGHT);
     }
 
-    /** 
+    /**
      * Creates a new instance of StatusBarLayout with
      * the specified height.
-     * 
+     *
      * @param the height of the status bar
      */
     public StatusBarLayout(int height) {
         this.height = height;
         constraintsList = new Vector<StatusBarLayoutConstraints>();
-        componentsMap = new Hashtable<StatusBarLayoutConstraints,Component>();
+        componentsMap = new Hashtable<StatusBarLayoutConstraints, Component>();
         comparator = new ConstraintsComparator();
     }
 
@@ -82,13 +85,14 @@ public class StatusBarLayout implements LayoutManager2, Serializable {
      * and thus any cached calculations should be flushed.
      * <p>
      * This method is called by AWT when the invalidate method is called
-     * on the Container.  Since the invalidate method may be called 
+     * on the Container.  Since the invalidate method may be called
      * asynchronously to the event thread, this method may be called
      * asynchronously.
      *
-     * @param target  the affected container
+     * @param target the affected container
      */
-    public synchronized void invalidateLayout(Container target) {}
+    public synchronized void invalidateLayout(Container target) {
+    }
 
     /**
      * Not used by this class.
@@ -96,7 +100,8 @@ public class StatusBarLayout implements LayoutManager2, Serializable {
      * @param name the name of the component
      * @param comp the component
      */
-    public void addLayoutComponent(String name, Component comp) {}
+    public void addLayoutComponent(String name, Component comp) {
+    }
 
     /**
      * Not used by this class.
@@ -105,7 +110,7 @@ public class StatusBarLayout implements LayoutManager2, Serializable {
      */
     public void removeLayoutComponent(Component comp) {
         if (componentsMap.containsValue(comp)) {
-            for (Enumeration i = componentsMap.keys(); i.hasMoreElements();) {
+            for (Enumeration i = componentsMap.keys(); i.hasMoreElements(); ) {
                 Object object = i.nextElement();
                 if (componentsMap.get(object) == comp) {
                     componentsMap.remove(object);
@@ -118,26 +123,25 @@ public class StatusBarLayout implements LayoutManager2, Serializable {
 
     /**
      * Adds the specified component with the specified constraints
-     * to the layout. Constraints must be an instance of 
+     * to the layout. Constraints must be an instance of
      * <code>StatusBarLayoutConstraints</code>.
      *
-     * @param comp the component
+     * @param comp        the component
      * @param constraints constraints
      */
     public void addLayoutComponent(Component comp, Object constraints) {
         //StatusBarLayoutConstraints
         if (constraints instanceof StatusBarLayoutConstraints) {
-            
-            StatusBarLayoutConstraints _constraints = 
-                        (StatusBarLayoutConstraints)constraints;
-            
+
+            StatusBarLayoutConstraints _constraints =
+                    (StatusBarLayoutConstraints) constraints;
+
             componentsMap.put(_constraints, comp);
             constraintsList.add(_constraints);
-            
-        }
-        else if (constraints != null) {
+
+        } else if (constraints != null) {
             throw new IllegalArgumentException(
-            "cannot add to layout: constraints must be a StatusBarLayoutConstraints");
+                    "cannot add to layout: constraints must be a StatusBarLayoutConstraints");
         }
 
     }
@@ -146,11 +150,11 @@ public class StatusBarLayout implements LayoutManager2, Serializable {
      * Returns the preferred dimensions for this layout, given the components
      * in the specified target container.
      *
-     * @param target  the container that needs to be laid out
+     * @param target the container that needs to be laid out
      * @return the dimension
      */
     public Dimension preferredLayoutSize(Container target) {
-        
+
         // calculate component layout positions
         int _width = 0;
         int _height = height;
@@ -163,7 +167,7 @@ public class StatusBarLayout implements LayoutManager2, Serializable {
         Insets insets = target.getInsets();
         _width += (insets.left + insets.right);
         _height += (insets.top + insets.bottom);// + 1;
-        
+
         return new Dimension(_width, _height);
     }
 
@@ -171,7 +175,7 @@ public class StatusBarLayout implements LayoutManager2, Serializable {
      * Returns the minimum dimensions needed to lay out the components
      * contained in the specified target container.
      *
-     * @param target  the container that needs to be laid out 
+     * @param target the container that needs to be laid out
      * @return the dimension
      */
     public Dimension minimumLayoutSize(Container target) {
@@ -186,7 +190,7 @@ public class StatusBarLayout implements LayoutManager2, Serializable {
      * Returns the maximum dimensions the target container can use
      * to lay out the components it contains.
      *
-     * @param target  the container that needs to be laid out 
+     * @param target the container that needs to be laid out
      * @return the dimenion
      */
     public Dimension maximumLayoutSize(Container target) {
@@ -199,7 +203,7 @@ public class StatusBarLayout implements LayoutManager2, Serializable {
      * alignment will be returned. Otherwise, the alignment needed
      * to place the children along the X axis will be returned.
      *
-     * @param target  the container
+     * @param target the container
      * @return the alignment >= 0.0f && <= 1.0f
      */
     public synchronized float getLayoutAlignmentX(Container target) {
@@ -212,7 +216,7 @@ public class StatusBarLayout implements LayoutManager2, Serializable {
      * alignment will be returned. Otherwise, the alignment needed
      * to place the children along the Y axis will be returned.
      *
-     * @param target  the container
+     * @param target the container
      * @return the alignment >= 0.0f && <= 1.0f
      */
     public synchronized float getLayoutAlignmentY(Container target) {
@@ -223,19 +227,18 @@ public class StatusBarLayout implements LayoutManager2, Serializable {
      * Called by the AWT <!-- XXX CHECK! --> when the specified container
      * needs to be laid out.
      *
-     * @param target  the container to lay out
-     *
-     * @exception AWTError  if the target isn't the container specified to the
-     *                      BoxLayout constructor
+     * @param target the container to lay out
+     * @throws AWTError if the target isn't the container specified to the
+     *                  BoxLayout constructor
      */
     public void layoutContainer(Container target) {
-	
+
         // order the indexes
         Collections.sort(constraintsList, comparator);
-        
+
         // calculate component layout positions
         Rectangle[] rects = computePositions(target);
-        
+
         // flush changes to the container
         for (int i = 0; i < rects.length; i++) {
             Component c = componentsMap.get(constraintsList.get(i));
@@ -250,16 +253,16 @@ public class StatusBarLayout implements LayoutManager2, Serializable {
 
         // parent container insets
         Insets insets = target.getInsets();
-        
+
         int resizeCount = 0;
         int totalComponentWidth = 0;
         Rectangle[] rects = new Rectangle[constraintsList.size()];
-        
+
         for (int i = 0; i < rects.length; i++) {
             StatusBarLayoutConstraints cons = constraintsList.get(i);
             int preferredWidth = cons.getPreferredWidth();
             boolean resizeToFit = cons.isResizeable();
-            
+
             // will need to reset x values after all 
             // widths have been calculated
 
@@ -275,7 +278,7 @@ public class StatusBarLayout implements LayoutManager2, Serializable {
         // let the resizable components fill the rest
         if (resizeCount > 0 && totalComponentWidth < targetDim.width) {
             fillWidth = ((targetDim.width - insets.left - insets.right
-                    - totalComponentWidth)/resizeCount);// - 1;
+                    - totalComponentWidth) / resizeCount);// - 1;
         }
 
         int xPosn = insets.left;
@@ -295,15 +298,15 @@ public class StatusBarLayout implements LayoutManager2, Serializable {
     }
 
     static final long serialVersionUID = -2564060189545121492L;
-    
-    
+
+
     class ConstraintsComparator implements Comparator {
-        
+
         public int compare(Object obj1, Object obj2) {
 
-            StatusBarLayoutConstraints cons1 = (StatusBarLayoutConstraints)obj1;
-            StatusBarLayoutConstraints cons2 = (StatusBarLayoutConstraints)obj2;
-            return cons1.getIndex() -  cons2.getIndex();
+            StatusBarLayoutConstraints cons1 = (StatusBarLayoutConstraints) obj1;
+            StatusBarLayoutConstraints cons2 = (StatusBarLayoutConstraints) obj2;
+            return cons1.getIndex() - cons2.getIndex();
         }
     }
 

@@ -20,15 +20,11 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Dimension;
-import java.awt.Insets;
-import java.awt.event.ActionListener;
-
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JButton;
-
 import org.executequery.gui.GUIConstants;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
 
 public class DefaultButton extends JButton {
 
@@ -68,7 +64,7 @@ public class DefaultButton extends JButton {
     public Dimension getPreferredSize() {
 
         validateDimension();
-        
+
         Dimension preferredSize = super.getPreferredSize();
         preferredSize.height = getHeight();
 
@@ -80,11 +76,11 @@ public class DefaultButton extends JButton {
         if (!isPreferredSizeSet()) {
 
             Dimension preferredSizeUI = getUI().getPreferredSize(this);
-            
+
             Dimension size = new Dimension(
-                    Math.max(preferredSizeUI.width, getWidth()), 
+                    Math.max(preferredSizeUI.width, getWidth()),
                     Math.max(preferredSizeUI.height, getHeight()));
-    
+
             setPreferredSize(size);
             setMinimumSize(size);
         }
@@ -93,14 +89,14 @@ public class DefaultButton extends JButton {
 
     @Override
     public Insets getInsets() {
-        
+
         return GUIConstants.DEFAULT_BUTTON_INSETS;
     }
 
     public int getHeight() {
 
-        return Math.max(super.getHeight(), GUIConstants.DEFAULT_BUTTON_HEIGHT); 
+        return Math.max(super.getHeight(), GUIConstants.DEFAULT_BUTTON_HEIGHT);
     }
-    
+
 }
 

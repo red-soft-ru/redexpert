@@ -26,9 +26,9 @@ import java.io.File;
 public interface ImageWriterInfo {
 
     File getWriteToFile();
-    
+
     BufferedImage getBufferedImage();
-    
+
 }
 
 

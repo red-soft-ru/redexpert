@@ -20,16 +20,17 @@
 
 package org.executequery.databaseobjects;
 
-import java.util.List;
 import org.underworldlabs.jdbc.DataSourceException;
+
+import java.util.List;
 
 /**
  * Defines a database catalog object.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface DatabaseSchema extends DatabaseSource {
-    
+
     /**
      * Returns the parent catalog object.
      *
@@ -43,7 +44,7 @@ public interface DatabaseSchema extends DatabaseSource {
      * @return the schema objects
      */
     List<SimpleDatabaseObject> getSchemaObjects() throws DataSourceException;
-    
+
 }
 
 

@@ -20,21 +20,21 @@
 
 package org.executequery.databaseobjects;
 
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.impl.ColumnInformation;
+import org.underworldlabs.jdbc.DataSourceException;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
 
-import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.impl.ColumnInformation;
-import org.underworldlabs.jdbc.DataSourceException;
-
 /**
  * Defines a database host object.
  * This is the top-level object for a particular database connection.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface DatabaseHost extends NamedObject {
 
@@ -77,7 +77,7 @@ public interface DatabaseHost extends NamedObject {
      * @return the meta type objects
      */
     List<DatabaseMetaTag> getMetaObjects(DatabaseCatalog catalog,
-            DatabaseSchema schema) throws DataSourceException;
+                                         DatabaseSchema schema) throws DataSourceException;
 
     /**
      * Returns the catalogs hosted by this host.
@@ -98,44 +98,44 @@ public interface DatabaseHost extends NamedObject {
      * belonging to the specified catalog and schema.
      *
      * @param catalog the table catalog name
-     * @param schema the table schema name
-     * @param type the table type
+     * @param schema  the table schema name
+     * @param type    the table type
      * @return the hosted tables
      */
     List<NamedObject> getTables(String catalog, String schema, String type)
-        throws DataSourceException;
+            throws DataSourceException;
 
     /**
      * Returns the columns of the specified database object.
      *
      * @param catalog the table catalog name
-     * @param schema the table schema name
-     * @param table the database object name
+     * @param schema  the table schema name
+     * @param table   the database object name
      * @return the columns
      */
     List<DatabaseColumn> getColumns(String catalog, String schema, String table)
-        throws DataSourceException;
+            throws DataSourceException;
 
     /**
      * Returns the exported keys columns of the specified database object.
      *
      * @param catalog the table catalog name
-     * @param schema the table schema name
-     * @param table the database object name
+     * @param schema  the table schema name
+     * @param table   the database object name
      * @return the exported keys
      */
     List<DatabaseColumn> getExportedKeys(String catalog, String schema, String table)
-        throws DataSourceException;
+            throws DataSourceException;
 
     /**
      * Returns the priviliges of the specified object.
      *
      * @param catalog the table catalog name
-     * @param schema the table schema name
-     * @param table the database object name
+     * @param schema  the table schema name
+     * @param table   the database object name
      */
     List<TablePrivilege> getPrivileges(String catalog, String schema, String table)
-        throws DataSourceException;
+            throws DataSourceException;
 
     /**
      * Retrieves key/value pair database properties.
@@ -176,8 +176,8 @@ public interface DatabaseHost extends NamedObject {
      * Returns the column names of the specified database object.
      *
      * @param catalog the table catalog name
-     * @param schema the table schema name
-     * @param table the database object name
+     * @param schema  the table schema name
+     * @param table   the database object name
      * @return the column names
      */
     List<String> getColumnNames(String catalog, String schema, String table)
@@ -188,8 +188,8 @@ public interface DatabaseHost extends NamedObject {
      * belonging to the specified catalog and schema.
      *
      * @param catalog the table catalog name
-     * @param schema the table schema name
-     * @param type the table type
+     * @param schema  the table schema name
+     * @param type    the table type
      * @return the hosted tables
      */
     List<String> getTableNames(String catalog, String schema, String type)
@@ -232,7 +232,7 @@ public interface DatabaseHost extends NamedObject {
      * Returns the default prefix name value for objects from this host.
      * ie. default catalog or schema name - with schema taking precedence.
      *
-     *  @return the default database object prefix
+     * @return the default database object prefix
      */
     String getDefaultNamePrefix();
 
@@ -240,7 +240,7 @@ public interface DatabaseHost extends NamedObject {
      * Returns the default database source object - schema or catalog with
      * schema taking precedence.
      *
-     *  @return the default database object prefix
+     * @return the default database object prefix
      */
     DatabaseSource getDefaultDatabaseSource();
 
@@ -248,8 +248,8 @@ public interface DatabaseHost extends NamedObject {
      * Returns the database source object with the specified name - schema or
      * catalog with schema taking precedence.
      *
-     *  @param name
-     *  @return the default database object prefix
+     * @param name
+     * @return the default database object prefix
      */
     DatabaseSource getDatabaseSource(String name);
 
@@ -265,7 +265,7 @@ public interface DatabaseHost extends NamedObject {
 
     boolean supportsMixedCaseQuotedIdentifiers();
 
-    List<ColumnInformation> getColumnInformation(String catalog, String schema,String table) throws DataSourceException;
+    List<ColumnInformation> getColumnInformation(String catalog, String schema, String table) throws DataSourceException;
 
     String getCatalogNameForQueries(String catalogName);
 

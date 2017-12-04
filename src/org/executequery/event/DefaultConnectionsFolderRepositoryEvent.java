@@ -22,8 +22,8 @@ package org.executequery.event;
 
 import org.executequery.gui.browser.ConnectionsFolder;
 
-public class DefaultConnectionsFolderRepositoryEvent extends AbstractApplicationEvent  
-                                                     implements ConnectionsFolderRepositoryEvent {
+public class DefaultConnectionsFolderRepositoryEvent extends AbstractApplicationEvent
+        implements ConnectionsFolderRepositoryEvent {
 
     private transient final ConnectionsFolder connectionsFolder;
 
@@ -33,14 +33,14 @@ public class DefaultConnectionsFolderRepositoryEvent extends AbstractApplication
         super(source, method);
         this.connectionsFolder = connectionsFolder;
     }
-    
+
     public ConnectionsFolder getConnectionsFolder() {
         return connectionsFolder;
     }
 
     static final long serialVersionUID = -808275690803701194L;
 
-    
+
 }
 
 

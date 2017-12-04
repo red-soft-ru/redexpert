@@ -20,38 +20,37 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.Point;
+import org.executequery.GUIUtilities;
+import org.executequery.databaseobjects.NamedObject;
+import org.underworldlabs.jdbc.DataSourceException;
+
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.table.AbstractTableModel;
-
-import org.executequery.GUIUtilities;
-import org.executequery.databaseobjects.NamedObject;
-import org.underworldlabs.jdbc.DataSourceException;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class MetaKeyPanel extends BrowserNodeBasePanel {
-    
+
     public static final String NAME = "MetaKeyPanel";
-    
+
     private MetaKeyModel model;
-    
+
     private JLabel noValuesLabel;
-    
+
     private Map cache;
-    
+
     private static String HEADER_PREFIX = "Database Object: ";
-    
-    /** the browser's control object */
+
+    /**
+     * the browser's control object
+     */
     private BrowserController controller;
 
     public MetaKeyPanel(BrowserController controller) {
@@ -61,39 +60,39 @@ public class MetaKeyPanel extends BrowserNodeBasePanel {
 
         try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     private void init() throws Exception {
 
         noValuesLabel = new JLabel("No objects of this type are available.", JLabel.CENTER);
-        
+
         tablePanel().setBorder(BorderFactory.createTitledBorder("Available Objects"));
-        
+
         model = new MetaKeyModel();
         table().setModel(model);
-        
+
         // add the mouse listener
         table().addMouseListener(new MouseHandler());
-        
+
         setHeaderIcon(GUIUtilities.loadIcon("DatabaseObject24.png"));
 
         cache = new HashMap();
     }
-    
+
     public String getLayoutName() {
         return NAME;
     }
-    
+
     public void refresh() {
         cache.clear();
     }
-    
-    public void cleanup() {}
-    
+
+    public void cleanup() {
+    }
+
     protected String getPrintablePrefixLabel() {
 
         return "";
@@ -119,30 +118,30 @@ public class MetaKeyPanel extends BrowserNodeBasePanel {
         }
         setValues(metaTag.getName(), values);
     }
-    
+
     public void setValues(String name) {
 
-        setValues(name, (String[])cache.get(name));
+        setValues(name, (String[]) cache.get(name));
     }
-    
+
     public void setValues(String name, String[] values) {
         tablePanel().removeAll();
         typeField().setText(name);
-        
+
         if (values == null || values.length == 0) {
             tablePanel().add(noValuesLabel, getPanelConstraints());
-        }
-        else {
+        } else {
             model.setValues(values);
             tablePanel().add(scroller(), getPanelConstraints());
         }
-        
+
         setHeaderText(HEADER_PREFIX + name);
     }
-    
+
     private class MouseHandler extends MouseAdapter {
 
-        public MouseHandler() {}
+        public MouseHandler() {
+        }
 
         public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() < 2) {
@@ -163,37 +162,37 @@ public class MetaKeyPanel extends BrowserNodeBasePanel {
     }
 
     private class MetaKeyModel extends AbstractTableModel {
-        
+
         private String[] values;
         private String header = "Object Name";
-        
+
         public MetaKeyModel() {
             values = new String[0];
         }
-        
+
         public void setValues(String[] values) {
             this.values = values;
             fireTableDataChanged();
         }
-        
+
         public int getRowCount() {
             return values.length;
         }
-        
+
         public int getColumnCount() {
             return 1;
         }
-        
+
         public String getColumnName(int col) {
             return header;
         }
-        
+
         public Object getValueAt(int row, int col) {
             return values[row];
         }
-        
+
     }
-    
+
 }
 
 

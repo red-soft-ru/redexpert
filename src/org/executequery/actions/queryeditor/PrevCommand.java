@@ -22,22 +22,22 @@ package org.executequery.actions.queryeditor;
 
 import java.awt.event.ActionEvent;
 
-/** 
+/**
  * The Query Editor's Previous Query command execution.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PrevCommand extends AbstractQueryEditorCommand {
-    
+
     public void execute(ActionEvent e) {
-        
+
         if (isQueryEditorTheCentralPanel()) {
-            
+
             queryEditor().selectPreviousQuery();
         }
-        
+
     }
-    
+
 }
 
 

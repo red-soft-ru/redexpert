@@ -3,8 +3,7 @@ package org.executequery.gui.databaseobjects;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.DatabaseHost;
-
-import org.executequery.databaseobjects.impl.*;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.ColumnData;
@@ -20,7 +19,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.sql.Types;
 
 public class CreateDomainPanel extends JPanel implements KeyListener {
     private JLabel fieldLabel;

@@ -25,8 +25,7 @@ import org.executequery.databasemediators.DatabaseDriver;
 import java.sql.Driver;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface DriverLoader {
 

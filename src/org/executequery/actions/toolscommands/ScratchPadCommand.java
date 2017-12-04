@@ -20,26 +20,27 @@
 
 package org.executequery.actions.toolscommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
 import org.executequery.gui.ScratchPadPanel;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-/** <p>Command execution for a new Scratch Pad
+import java.awt.event.ActionEvent;
+
+/**
+ * <p>Command execution for a new Scratch Pad
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ScratchPadCommand implements BaseCommand {
-    
+
     public void execute(ActionEvent e) {
         GUIUtilities.addCentralPane(ScratchPadPanel.TITLE,
-                                    ScratchPadPanel.FRAME_ICON, 
-                                    new ScratchPadPanel(),
-                                    null,
-                                    true);
+                ScratchPadPanel.FRAME_ICON,
+                new ScratchPadPanel(),
+                null,
+                true);
     }
-    
+
 }
 
 

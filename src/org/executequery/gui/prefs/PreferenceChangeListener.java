@@ -21,12 +21,11 @@
 package org.executequery.gui.prefs;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface PreferenceChangeListener {
 
     void preferenceChange(PreferenceChangeEvent e);
-    
+
 }
 

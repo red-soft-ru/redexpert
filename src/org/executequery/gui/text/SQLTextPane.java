@@ -20,52 +20,53 @@
 
 package org.executequery.gui.text;
 
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.event.KeyEvent;
-
-import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.TabSet;
-import javax.swing.text.TabStop;
-
 import org.executequery.gui.editor.QueryEditorSettings;
 import org.executequery.gui.text.syntax.SQLSyntaxDocument;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
 
+import javax.swing.*;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.text.*;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+
 /**
  * Base SQL text pane object.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SQLTextPane extends JTextPane
-                         implements CaretListener {
+        implements CaretListener {
 
-    /** The SQL syntax document */
+    /**
+     * The SQL syntax document
+     */
     protected SQLSyntaxDocument document;
 
-    /** whether a caretUpdate will be called */
+    /**
+     * whether a caretUpdate will be called
+     */
     private boolean doCaretUpdate;
 
-    /** The current font width for painting */
+    /**
+     * The current font width for painting
+     */
     protected int fontWidth;
 
-    /** The current font height for painting */
+    /**
+     * The current font height for painting
+     */
     protected int fontHeight;
 
-    /** Creates a new instance of SQLTextPane */
+    /**
+     * Creates a new instance of SQLTextPane
+     */
     public SQLTextPane() {
 
         KeywordRepository keywordRepository =
-            (KeywordRepository)RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
+                (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
 
         document = new SQLSyntaxDocument(keywordRepository.getSQLKeywords(), this);
 
@@ -98,7 +99,7 @@ public class SQLTextPane extends JTextPane
 
     private KeywordRepository keywords() {
 
-        return (KeywordRepository)RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
+        return (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
     }
 
     /**
@@ -119,7 +120,8 @@ public class SQLTextPane extends JTextPane
 
             document.replace(0, document.getLength(), "", null);
 
-        } catch (BadLocationException badLoc) {}
+        } catch (BadLocationException badLoc) {
+        }
 
     }
 

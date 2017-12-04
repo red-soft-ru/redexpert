@@ -20,42 +20,41 @@
 
 package org.executequery.gui.importexport;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseSource;
 import org.executequery.databaseobjects.DatabaseTable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DefaultImportExportDataModel implements ImportExportDataModel {
 
     private String singleFileExport;
-    
+
     private DatabaseHost databaseHost;
-    
+
     private DatabaseSource databaseSource;
-    
+
     private List<DatabaseTable> databaseTables;
-    
+
     private List<DatabaseColumn> databaseTableColumns;
-    
+
     private ImportExportType importExportType;
 
     private ImportExportFileType importExportFileType;
 
     private List<ImportExportFile> importExportFiles;
-    
+
     private OnErrorOption onErrorOption;
-    
+
     private boolean hostSelectionChanged;
-    
+
     private boolean importExportTypeChanged;
-    
+
     public boolean isMultipleTableImportExport() {
         return ImportExportType.isMultipleTableImportExport(importExportType);
     }
@@ -65,7 +64,7 @@ public class DefaultImportExportDataModel implements ImportExportDataModel {
     }
 
     public void setDatabaseHost(DatabaseHost databaseHost) {
-        
+
         hostSelectionChanged = (this.databaseHost != databaseHost);
 
         this.databaseHost = databaseHost;
@@ -75,7 +74,7 @@ public class DefaultImportExportDataModel implements ImportExportDataModel {
         return databaseSource;
     }
 
-    public void setDatabaseSource(DatabaseSource databaseSource) {     
+    public void setDatabaseSource(DatabaseSource databaseSource) {
         this.databaseSource = databaseSource;
     }
 
@@ -88,39 +87,39 @@ public class DefaultImportExportDataModel implements ImportExportDataModel {
     }
 
     public ImportExportFile getImportExportFileForTable(DatabaseTable databaseTable) {
-        
+
         if (isSingleFileMultiTableExport()) {
-            
+
             ImportExportFile importExportFile = new ImportExportFile(databaseTable);
             importExportFile.setFile(getSingleFileExport());
             importExportFile.setDatabaseTableColumns(databaseTableColumns);
-            
+
             return importExportFile;
         }
 
         for (ImportExportFile importExportFile : importExportFiles) {
-            
+
             if (importExportFile.getDatabaseTable() == databaseTable) {
-                
+
                 return importExportFile;
             }
-            
+
         }
 
         return null;
     }
-    
+
     public List<ImportExportFile> getImportExportFiles() {
-        
+
         if (importExportFiles == null) {
-            
+
             importExportFiles = new ArrayList<ImportExportFile>();
         }
 
         if (isSingleFileMultiTableExport()) {
 
             importExportFiles.clear();
-            
+
             ImportExportFile importExportFile = new ImportExportFile(
                     databaseTables.get(0), databaseTableColumns);
             importExportFile.setFile(singleFileExport);
@@ -128,29 +127,29 @@ public class DefaultImportExportDataModel implements ImportExportDataModel {
 
             return importExportFiles;
         }
-        
+
         boolean addTable;
         for (DatabaseTable databaseTable : databaseTables) {
 
             addTable = true;
-            
+
             for (ImportExportFile importExportFile : importExportFiles) {
 
                 if (importExportFile.getDatabaseTable() == databaseTable) {
                     addTable = false;
                     break;
                 }
-                
+
             }
 
             if (addTable) {
 
-                ImportExportFile importExportFile = new ImportExportFile(databaseTable);                
+                ImportExportFile importExportFile = new ImportExportFile(databaseTable);
                 if (!isMultipleTableImportExport()) {
-                
+
                     importExportFile.setDatabaseTableColumns(databaseTableColumns);
                 }
-                
+
                 importExportFiles.add(importExportFile);
             }
 
@@ -160,18 +159,18 @@ public class DefaultImportExportDataModel implements ImportExportDataModel {
         List<ImportExportFile> toBeRemoved = new ArrayList<ImportExportFile>();
 
         for (ImportExportFile importExportFile : importExportFiles) {
-            
-            removeTable = true;            
+
+            removeTable = true;
             DatabaseTable databaseTableFromImportExportFile = importExportFile.getDatabaseTable();
-            
+
             for (DatabaseTable databaseTable : databaseTables) {
-                
+
                 if (databaseTable == databaseTableFromImportExportFile) {
                     removeTable = false;
                     break;
-                    
+
                 }
-                
+
             }
 
             if (removeTable) {
@@ -179,11 +178,11 @@ public class DefaultImportExportDataModel implements ImportExportDataModel {
             }
 
         }
-        
+
         if (!toBeRemoved.isEmpty()) {
             importExportFiles.removeAll(toBeRemoved);
         }
-        
+
         return importExportFiles;
     }
 
@@ -202,7 +201,7 @@ public class DefaultImportExportDataModel implements ImportExportDataModel {
     public void setImportExportType(ImportExportType importExportType) {
 
         importExportTypeChanged = (this.importExportType != importExportType);
-        
+
         this.importExportType = importExportType;
     }
 
@@ -239,14 +238,14 @@ public class DefaultImportExportDataModel implements ImportExportDataModel {
     }
 
     public boolean isSingleFileMultiTableExport() {
-        return (isMultipleTableImportExport() 
+        return (isMultipleTableImportExport()
                 && getImportExportFileType() == ImportExportFileType.SINGLE_FILE);
     }
-    
+
     public boolean isExport() {
         return ImportExportType.isDataExport(getImportExportType());
     }
-    
+
 }
 
 

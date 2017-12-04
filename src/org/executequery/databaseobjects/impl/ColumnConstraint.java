@@ -27,8 +27,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.underworldlabs.jdbc.DataSourceException;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface ColumnConstraint extends DatabaseObjectElement {
 
@@ -156,7 +155,7 @@ public interface ColumnConstraint extends DatabaseObjectElement {
     /**
      * Returns whether this constraint has been modified.
      * A modification exists where this constraint is not new,
-     * an internal value has changed or it has been marked 
+     * an internal value has changed or it has been marked
      * for deletion.
      *
      * @return true | false
@@ -187,7 +186,7 @@ public interface ColumnConstraint extends DatabaseObjectElement {
     short getDeleteRule();
 
     short getDeferrability();
-    
+
 }
 
 

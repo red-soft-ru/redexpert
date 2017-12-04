@@ -28,10 +28,10 @@ import org.executequery.util.SystemErrLogger;
 /**
  * Logging preference change listener.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class LogUserPreferenceListener extends AbstractUserPreferenceListener
-                                       implements UserPreferenceListener {
+        implements UserPreferenceListener {
 
     private static final String SYSTEM_LOG_OUT_KEY = "system.log.out";
 
@@ -40,21 +40,21 @@ public class LogUserPreferenceListener extends AbstractUserPreferenceListener
     private static final String SYSTEM_LOG_LEVEL_KEY = "system.log.level";
 
     private final SystemErrLogger errLogger;
-    
+
     private final SystemErrLogger outLogger;
-    
-    public LogUserPreferenceListener(SystemErrLogger errLogger, 
-            SystemErrLogger outLogger) {
-        
+
+    public LogUserPreferenceListener(SystemErrLogger errLogger,
+                                     SystemErrLogger outLogger) {
+
         this.errLogger = errLogger;
         this.outLogger = outLogger;
     }
-    
+
     public void preferencesChanged(UserPreferenceEvent event) {
 
         if (event.getEventType() == UserPreferenceEvent.ALL
                 || event.getEventType() == UserPreferenceEvent.LOG) {
-            
+
             Log.setLevel(systemUserProperty(SYSTEM_LOG_LEVEL_KEY));
 
             if (errLogger != null) {
@@ -68,9 +68,9 @@ public class LogUserPreferenceListener extends AbstractUserPreferenceListener
             }
 
         }
-        
+
     }
-    
+
 }
 
 

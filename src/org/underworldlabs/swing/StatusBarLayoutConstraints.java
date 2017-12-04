@@ -21,23 +21,30 @@
 package org.underworldlabs.swing;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class StatusBarLayoutConstraints {
-    
-    /** the component's index in the status bar */
+
+    /**
+     * the component's index in the status bar
+     */
     private int index;
-    
-    /** the component's preferred width */
+
+    /**
+     * the component's preferred width
+     */
     private int preferredWidth;
-    
-    /** Indicates whether the component may be resized horizontally to fill */
+
+    /**
+     * Indicates whether the component may be resized horizontally to fill
+     */
     private boolean resizeable;
-    
-    /** Creates a new instance of StatusBarLayoutConstraints */
-    public StatusBarLayoutConstraints(int index, 
-                                      int preferredWidth, 
+
+    /**
+     * Creates a new instance of StatusBarLayoutConstraints
+     */
+    public StatusBarLayoutConstraints(int index,
+                                      int preferredWidth,
                                       boolean resizeable) {
         this.index = index;
         this.preferredWidth = preferredWidth;
@@ -55,7 +62,7 @@ public class StatusBarLayoutConstraints {
     public int getIndex() {
         return index;
     }
-    
+
 }
 
 

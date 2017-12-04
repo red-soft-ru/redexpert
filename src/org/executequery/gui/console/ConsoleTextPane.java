@@ -21,11 +21,13 @@
 package org.executequery.gui.console;
 
 import javax.swing.*;
-
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
-import java.awt.datatransfer.*;
-import java.awt.event.*;
-
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Iterator;
 import java.util.List;
@@ -39,22 +41,23 @@ import java.util.List;
  * where command outputs are displayed.
  * This class handles key and mouse events.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ConsoleTextPane extends JTextPane {
     private Console parent;
     private ConsoleKeyAdapter _keyListener;
     private MouseAdapter _mouseListener;
-    
+
     /**
      * Creates a new text area for the console.
+     *
      * @param parent <code>Console</code> parent
      */
-    
+
     public ConsoleTextPane(Console parent) {
         super();
         this.parent = parent;
-        
+
         new DropTarget(this, new DnDHandler());
         _keyListener = new ConsoleKeyAdapter();
         addKeyListener(_keyListener);
@@ -67,7 +70,7 @@ public class ConsoleTextPane extends JTextPane {
         };
         addMouseListener(_mouseListener);
     }
-    
+
     class ConsoleKeyAdapter extends KeyAdapter {
         public void keyPressed(KeyEvent evt) {
             int key = evt.getKeyCode();
@@ -82,7 +85,8 @@ public class ConsoleTextPane extends JTextPane {
                         // we wait 1 second otherwise the prompt could not display as expected
                         try {
                             Thread.sleep(1000);
-                        } catch (InterruptedException ie) { }
+                        } catch (InterruptedException ie) {
+                        }
                         parent.displayPrompt();
                     default:
                         evt.consume();
@@ -95,7 +99,7 @@ public class ConsoleTextPane extends JTextPane {
                     return;
                 }
             }
-            
+
             switch (key) {
                 case KeyEvent.VK_DELETE:                    // we delete a char
                     parent.deleteChar();
@@ -146,18 +150,18 @@ public class ConsoleTextPane extends JTextPane {
                     evt.consume();
             }
         }
-        
+
         public void keyTyped(KeyEvent evt) {
             if (parent.getTypingLocation() < getDocument().getLength()) {
                 evt.consume();
                 return;
             }
-            
+
             if (getCaretPosition() < parent.getUserLimit())
                 setCaretPosition(parent.getUserLimit());
-            
+
             char c = evt.getKeyChar();
-            
+
             if (c != KeyEvent.CHAR_UNDEFINED && !evt.isAltDown()) {
                 if (c >= 0x20 && c != 0x7f)
                     parent.add(String.valueOf(c));
@@ -165,19 +169,28 @@ public class ConsoleTextPane extends JTextPane {
             evt.consume();
         }
     }
-    
+
     class DnDHandler implements DropTargetListener {
-        public void dragEnter(DropTargetDragEvent evt) { }
-        public void dragOver(DropTargetDragEvent evt) { }
-        public void dragExit(DropTargetEvent evt) { }
-        public void dragScroll(DropTargetDragEvent evt) { }
-        public void dropActionChanged(DropTargetDragEvent evt) { }
-        
+        public void dragEnter(DropTargetDragEvent evt) {
+        }
+
+        public void dragOver(DropTargetDragEvent evt) {
+        }
+
+        public void dragExit(DropTargetEvent evt) {
+        }
+
+        public void dragScroll(DropTargetDragEvent evt) {
+        }
+
+        public void dropActionChanged(DropTargetDragEvent evt) {
+        }
+
         public void drop(DropTargetDropEvent evt) {
             DataFlavor[] flavors = evt.getCurrentDataFlavors();
             if (flavors == null)
                 return;
-            
+
             boolean dropCompleted = false;
             for (int i = flavors.length - 1; i >= 0; i--) {
                 if (flavors[i].isFlavorJavaFileListType()) {
@@ -190,15 +203,16 @@ public class ConsoleTextPane extends JTextPane {
                             buf.append(' ').append(((File) iterator.next()).getPath());
                         parent.add(buf.toString());
                         dropCompleted = true;
-                    } catch (Exception e) { }
+                    } catch (Exception e) {
+                    }
                 }
             }
             evt.dropComplete(dropCompleted);
         }
     }
-    
+
     /***************************************************************************
-  Patch
+     Patch
      -> Memory management improvements : it may help the garbage collector.
      -> Author : Julien Ponge (julien@izforge.com)
      -> Date : 23, May 2001
@@ -206,9 +220,9 @@ public class ConsoleTextPane extends JTextPane {
     protected void finalize() throws Throwable {
         removeKeyListener(_keyListener);
         removeMouseListener(_mouseListener);
-        
+
         super.finalize();
-        
+
         parent = null;
         _keyListener = null;
         _mouseListener = null;

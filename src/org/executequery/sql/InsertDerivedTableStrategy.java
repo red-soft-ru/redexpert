@@ -30,18 +30,18 @@ public class InsertDerivedTableStrategy extends AbstractDerivedTableStrategy {
 
         int index = query.indexOf(INSERT);
         if (index != -1) {
-            
+
             String portion = query.substring(index + INSERT.length()).trim();
-            
+
             index = portion.indexOf('(');
             if (index != -1) {
-                
-                tables = portion.substring(0, index); 
-            
+
+                tables = portion.substring(0, index);
+
             }
 
         }
-        
+
         return tables;
     }
 

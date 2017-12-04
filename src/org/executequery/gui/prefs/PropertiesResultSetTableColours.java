@@ -21,28 +21,27 @@
 package org.executequery.gui.prefs;
 
 
+import org.underworldlabs.util.SystemProperties;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.underworldlabs.util.SystemProperties;
-
 /**
  * The properties for the editor's results panel cell colours
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
 
     private SimplePreferencesPanel preferencesPanel;
 
     public PropertiesResultSetTableColours() {
-        
+
         super();
         try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -59,17 +58,17 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
 
         String key = "results.table.cell.background.colour";
         list.add(new UserPreference(
-                    UserPreference.COLOUR_TYPE,
-                    key,
-                    "Default cell background",
-                    SystemProperties.getColourProperty("user", key)));
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Default cell background",
+                SystemProperties.getColourProperty("user", key)));
 
         key = "results.table.cell.null.background.colour";
         list.add(new UserPreference(
-                    UserPreference.COLOUR_TYPE,
-                    key,
-                    "Null value cell background",
-                    SystemProperties.getColourProperty("user", key)));
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Null value cell background",
+                SystemProperties.getColourProperty("user", key)));
 
         key = "results.table.cell.null.adding.background.colour";
         list.add(new UserPreference(
@@ -154,26 +153,26 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
                 key,
                 "Alternating row background",
                 SystemProperties.getColourProperty("user", key)));
-        
-        UserPreference[] preferences = (UserPreference[])list.toArray(new UserPreference[list.size()]);
+
+        UserPreference[] preferences = (UserPreference[]) list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
 
     }
 
     public void restoreDefaults() {
-        
+
         Properties defaults = defaultsForTheme();
         UserPreference[] preferences = preferencesPanel.getPreferences();
         for (UserPreference userPreference : preferences) {
-            
+
             if (userPreference.getType() == UserPreference.COLOUR_TYPE) {
-             
+
                 userPreference.reset(asColour(defaults.getProperty(userPreference.getKey())));
             }
-            
+
         }
-        
+
         preferencesPanel.fireTableDataChanged();
     }
 

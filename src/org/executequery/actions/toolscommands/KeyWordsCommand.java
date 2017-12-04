@@ -20,46 +20,45 @@
 
 package org.executequery.actions.toolscommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
-import org.underworldlabs.swing.actions.BaseCommand;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.UserDefinedWordsPanel;
+import org.underworldlabs.swing.actions.BaseCommand;
 
-/** 
+import java.awt.event.ActionEvent;
+
+/**
  * Executes the Tools | User Defined Keywords command.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class KeyWordsCommand extends OpenFrameCommand
-                             implements BaseCommand {
-    
+        implements BaseCommand {
+
     public void execute(ActionEvent e) {
         if (isActionableDialogOpen()) {
             GUIUtilities.acionableDialogToFront();
             return;
         }
-        
+
         if (!isDialogOpen(UserDefinedWordsPanel.TITLE)) {
             try {
                 GUIUtilities.showWaitCursor();
-                BaseDialog dialog = 
+                BaseDialog dialog =
                         createDialog(UserDefinedWordsPanel.TITLE, false, false);
-                UserDefinedWordsPanel panel = 
+                UserDefinedWordsPanel panel =
                         new UserDefinedWordsPanel(dialog);
                 dialog.addDisplayComponentWithEmptyBorder(panel);
                 dialog.display();
-                GUIUtilities.showNormalCursor();            
-            }
-            finally {
+                GUIUtilities.showNormalCursor();
+            } finally {
                 GUIUtilities.showNormalCursor();
             }
         }
 
     }
-    
+
 }
 
 

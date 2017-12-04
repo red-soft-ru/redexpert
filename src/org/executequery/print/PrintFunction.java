@@ -22,32 +22,32 @@ package org.executequery.print;
 
 import java.awt.print.Printable;
 
-/** 
+/**
  * Defines those objects that have printing support.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface PrintFunction {
-    
-    /** 
+
+    /**
      * Returns whether the object (panel) is in a printable state.
      *
      * @return Whether the object can print
      */
     boolean canPrint();
-    
-    /** 
+
+    /**
      * Returns the <code>Printable</code> object.
      */
     Printable getPrintable();
-    
-    /** 
+
+    /**
      * The name for this print job.
      *
      * @return the print job's name
      */
     String getPrintJobName();
-    
+
 }
 
 

@@ -21,13 +21,12 @@
 package org.executequery;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public final class ExecuteQuerySystemError extends InternalError {
 
     private static final long serialVersionUID = 1L;
-    
+
     public ExecuteQuerySystemError() {
         super();
     }

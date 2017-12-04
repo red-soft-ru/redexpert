@@ -29,17 +29,17 @@ public class UpdateDerivedTableStrategy extends AbstractDerivedTableStrategy {
 
         int index = query.indexOf(UPDATE);
         if (index != -1) {
-            
+
             String portion = query.substring(index + UPDATE.length()).trim();
-            
+
             index = portion.indexOf(SET);
             if (index != -1) {
 
-                tables = portion.substring(0, index); 
+                tables = portion.substring(0, index);
             }
-            
+
         }
-        
+
         return tables;
     }
 

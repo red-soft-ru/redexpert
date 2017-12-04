@@ -20,24 +20,23 @@
 
 package org.executequery.actions.viewcommands;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.JCheckBoxMenuItem;
-
 import org.underworldlabs.swing.actions.ReflectiveAction;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
 
 abstract class AbstractViewOptionsCommand extends ReflectiveAction {
 
     protected final boolean selectionFromEvent(ActionEvent e) {
-        
+
         return checkBoxMenuItemFromEvent(e).isSelected();
     }
 
     protected final JCheckBoxMenuItem checkBoxMenuItemFromEvent(ActionEvent e) {
 
-        return (JCheckBoxMenuItem)e.getSource();
+        return (JCheckBoxMenuItem) e.getSource();
     }
-    
+
 }
 
 

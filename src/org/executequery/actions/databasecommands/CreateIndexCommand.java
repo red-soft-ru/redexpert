@@ -20,24 +20,24 @@
 
 package org.executequery.actions.databasecommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.CreateIndexPanel;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-/** 
+import java.awt.event.ActionEvent;
+
+/**
  * Command execution for Database | Create Index.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CreateIndexCommand extends OpenFrameCommand
-                                implements BaseCommand {
-    
+        implements BaseCommand {
+
     public void execute(ActionEvent e) {
-        
+
         if (!isConnected()) {
             return;
         }
@@ -53,23 +53,23 @@ public class CreateIndexCommand extends OpenFrameCommand
 
                 GUIUtilities.showWaitCursor();
 
-                BaseDialog dialog = 
+                BaseDialog dialog =
                         createDialog(CreateIndexPanel.TITLE, false);
-                
+
                 CreateIndexPanel panel = new CreateIndexPanel(dialog);
-                
+
                 dialog.addDisplayComponentWithEmptyBorder(panel);
                 dialog.display();
 
             } finally {
-              
+
                 GUIUtilities.showNormalCursor();
             }
 
         }
 
     }
-    
+
 }
 
 

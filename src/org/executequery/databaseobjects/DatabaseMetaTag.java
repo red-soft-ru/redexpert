@@ -27,19 +27,19 @@ import org.underworldlabs.jdbc.DataSourceException;
  * This type of object is really only a database object type identifier
  * as in TABLE, FUNCTION, VIEW etc...
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface DatabaseMetaTag extends NamedObject {
 
     /**
-     * Returns the db object with the specified name or null if 
+     * Returns the db object with the specified name or null if
      * it does not exist.
      *
-     * @param name  the name of the object
+     * @param name the name of the object
      * @return the NamedObject or null if not found
      */
     NamedObject getNamedObject(String name) throws DataSourceException;
-            
+
     /**
      * Returns the parent host object.
      *
@@ -68,10 +68,10 @@ public interface DatabaseMetaTag extends NamedObject {
      * @return the sub-type
      */
     int getSubType();
-    
+
     /**
      * Indicates whether child objects exist for this meta tag.
-     * 
+     *
      * @return true | false
      * @throws DataSourceException
      */

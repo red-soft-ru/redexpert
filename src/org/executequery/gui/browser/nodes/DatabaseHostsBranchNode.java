@@ -20,21 +20,19 @@
 
 package org.executequery.gui.browser.nodes;
 
+import org.executequery.databaseobjects.NamedObject;
+
+import javax.swing.tree.MutableTreeNode;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.tree.MutableTreeNode;
-
-import org.executequery.databaseobjects.NamedObject;
-
-/** 
- *
- * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+/**
+ * @author Takis Diakoumis
+ * @version $Revision$
+ * @date $Date$
  */
 public class DatabaseHostsBranchNode extends DatabaseObjectNode {
-    
+
     private final String name;
 
     private List<DatabaseHostNode> hostNodes = new ArrayList<DatabaseHostNode>();
@@ -43,18 +41,19 @@ public class DatabaseHostsBranchNode extends DatabaseObjectNode {
 
         this.name = name;
     }
-    
+
     /**
-     * Propagates the call to the underlying database object 
+     * Propagates the call to the underlying database object
      * and removes all children from this node.
      */
-    public void reset() {}
-    
+    public void reset() {
+    }
+
     /**
      * Propagates the call to the underlying database object.
      */
     public int getType() {
-        
+
         return NamedObject.ROOT;
     }
 
@@ -62,33 +61,34 @@ public class DatabaseHostsBranchNode extends DatabaseObjectNode {
      * Returns the name of the root node.
      */
     public String getName() {
-        
+
         return name;
     }
 
     /**
      * Does nothing. Name of the root node may not be changed.
      */
-    public void setName(String name) {}
-    
+    public void setName(String name) {
+    }
+
     /**
      * Propagates the call to the underlying database object.
      */
     public String getDisplayName() {
-        
+
         return getName();
     }
-    
+
     /**
      * Propagates the call to the underlying database object.
      */
     public String getMetaDataKey() {
-        
+
         return null;
     }
 
     public List<DatabaseHostNode> getHostNodes() {
-        
+
         return hostNodes;
     }
 
@@ -99,10 +99,10 @@ public class DatabaseHostsBranchNode extends DatabaseObjectNode {
             throw new IllegalArgumentException("Node must be of type DatabaseHostNode");
         }
 
-        hostNodes.add((DatabaseHostNode)newChild);
+        hostNodes.add((DatabaseHostNode) newChild);
         super.add(newChild);
     }
-    
+
 }
 
 

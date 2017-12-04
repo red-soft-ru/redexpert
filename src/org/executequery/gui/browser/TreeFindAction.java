@@ -20,73 +20,65 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.Component;
+import org.apache.commons.lang.StringUtils;
+import org.executequery.localization.Bundles;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.text.Position;
+import javax.swing.tree.TreePath;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JTree;
-import javax.swing.ListCellRenderer;
-import javax.swing.border.Border;
-import javax.swing.text.Position;
-import javax.swing.tree.TreePath;
-
-import org.apache.commons.lang.StringUtils;
-import org.executequery.localization.Bundles;
-
 /**
- *
- * Modified from the original by Santhosh Kumar 
+ * Modified from the original by Santhosh Kumar
  * from http://www.jroller.com/santhosh/category/Swing
- * 
+ * <p>
  * Usage: new TreeFindAction().install(tree);
  *
- * @author   Santhosh Kumar, Takis Diakoumis
+ * @author Santhosh Kumar, Takis Diakoumis
  */
 public class TreeFindAction extends FindAction<TreePath> {
 
-	public TreeFindAction() {
+    public TreeFindAction() {
 
-	    super();
-	    
+        super();
+
         putValue(Action.SHORT_DESCRIPTION, Bundles.get("BrowserTreeRootPopupMenu.searchNodes"));
     }
 
     protected boolean changed(JComponent comp, String searchString, Position.Bias bias) {
 
         if (StringUtils.isBlank(searchString)) {
-            
+
             return false;
         }
-        
-		JTree tree = (JTree) comp;
-		String prefix = searchString;
 
-		if (ignoreCase()) {
+        JTree tree = (JTree) comp;
+        String prefix = searchString;
+
+        if (ignoreCase()) {
 
             prefix = prefix.toUpperCase();
         }
 
-		boolean wildcardStart = prefix.startsWith("*");
-		if (wildcardStart) {
+        boolean wildcardStart = prefix.startsWith("*");
+        if (wildcardStart) {
 
-		    prefix = prefix.substring(1);
-		
-		} else {
+            prefix = prefix.substring(1);
 
-		    prefix = "^" + prefix;
-		}
-		prefix = prefix.replaceAll("\\*", ".*");
-		
-		Matcher matcher = Pattern.compile(prefix).matcher("");
-		List<TreePath> matchedPaths = new ArrayList<TreePath>();
-		for (int i = 1; i < tree.getRowCount(); i++) {
+        } else {
+
+            prefix = "^" + prefix;
+        }
+        prefix = prefix.replaceAll("\\*", ".*");
+
+        Matcher matcher = Pattern.compile(prefix).matcher("");
+        List<TreePath> matchedPaths = new ArrayList<TreePath>();
+        for (int i = 1; i < tree.getRowCount(); i++) {
 
             TreePath path = tree.getPathForRow(i);
             String text = tree.convertValueToText(path.getLastPathComponent(),
@@ -104,105 +96,105 @@ public class TreeFindAction extends FindAction<TreePath> {
 
             matcher.reset(text);
             if (matcher.find()) {
-                
+
                 matchedPaths.add(path);
             }
-		    
-		}
 
-		foundValues(matchedPaths);
+        }
 
-		return !(matchedPaths.isEmpty());
-	}
+        foundValues(matchedPaths);
 
-	private void changeSelection(JTree tree, TreePath path) {
-	    tree.setSelectionPath(path);
-		tree.scrollPathToVisible(path);
-	}
+        return !(matchedPaths.isEmpty());
+    }
 
-	public TreePath getNextMatch(JTree tree, String prefix, int startingRow,
-			Position.Bias bias) {
+    private void changeSelection(JTree tree, TreePath path) {
+        tree.setSelectionPath(path);
+        tree.scrollPathToVisible(path);
+    }
 
-		int max = tree.getRowCount();
-		if (prefix == null) {
-			throw new IllegalArgumentException();
-		}
-		if (startingRow < 0 || startingRow >= max) {
-			throw new IllegalArgumentException();
-		}
+    public TreePath getNextMatch(JTree tree, String prefix, int startingRow,
+                                 Position.Bias bias) {
 
-		if (ignoreCase()) {
-			prefix = prefix.toUpperCase();
-	    }
+        int max = tree.getRowCount();
+        if (prefix == null) {
+            throw new IllegalArgumentException();
+        }
+        if (startingRow < 0 || startingRow >= max) {
+            throw new IllegalArgumentException();
+        }
 
-		// start search from the next/previous element froom the
-		// selected element
-		int increment = (bias == null || bias == Position.Bias.Forward) ? 1 : -1;
+        if (ignoreCase()) {
+            prefix = prefix.toUpperCase();
+        }
 
-		int row = startingRow;
-		do {
+        // start search from the next/previous element froom the
+        // selected element
+        int increment = (bias == null || bias == Position.Bias.Forward) ? 1 : -1;
 
-		    TreePath path = tree.getPathForRow(row);
-			String text = tree.convertValueToText(path.getLastPathComponent(),
-					tree.isRowSelected(row), tree.isExpanded(row), true, row,
-					false);
+        int row = startingRow;
+        do {
 
-			if (ignoreCase()) {
+            TreePath path = tree.getPathForRow(row);
+            String text = tree.convertValueToText(path.getLastPathComponent(),
+                    tree.isRowSelected(row), tree.isExpanded(row), true, row,
+                    false);
 
-			    text = text.toUpperCase();
-			}
+            if (ignoreCase()) {
 
-			if (text.startsWith(prefix)) {
-				
-			    return path;
-			}
-		
-			row = (row + increment + max) % max;
+                text = text.toUpperCase();
+            }
 
-		} while (row != startingRow);
+            if (text.startsWith(prefix)) {
 
-		return null;
-	}
-	
-	protected void listValueSelected(JComponent component, TreePath selection) {
-	    
-	    changeSelection((JTree) component, selection);
-	}
-	
-	protected boolean ignoreCase() {
+                return path;
+            }
 
-		return true;
-	}
+            row = (row + increment + max) % max;
 
-	protected ListCellRenderer getListCellRenderer() {
-	    
-	    return new TreePathListCellRenderer();
-	}
+        } while (row != startingRow);
 
-	private static final Border cellRendererBorder = BorderFactory.createEmptyBorder(2, 2, 2, 2);
-	
-	class TreePathListCellRenderer extends JLabel implements ListCellRenderer {
+        return null;
+    }
+
+    protected void listValueSelected(JComponent component, TreePath selection) {
+
+        changeSelection((JTree) component, selection);
+    }
+
+    protected boolean ignoreCase() {
+
+        return true;
+    }
+
+    protected ListCellRenderer getListCellRenderer() {
+
+        return new TreePathListCellRenderer();
+    }
+
+    private static final Border cellRendererBorder = BorderFactory.createEmptyBorder(2, 2, 2, 2);
+
+    class TreePathListCellRenderer extends JLabel implements ListCellRenderer {
 
         public TreePathListCellRenderer() {
 
-	        super();
-	        setBorder(cellRendererBorder);
+            super();
+            setBorder(cellRendererBorder);
         }
 
-	    public Component getListCellRendererComponent(JList list, Object value,
-                int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList list, Object value,
+                                                      int index, boolean isSelected, boolean cellHasFocus) {
 
             TreePath treePath = (TreePath) value;
-            
+
             setText(treePath.getLastPathComponent().toString());
 
             if (isSelected) {
-            
+
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
 
             } else {
-              
+
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
             }
@@ -213,9 +205,9 @@ public class TreeFindAction extends FindAction<TreePath> {
 
             return this;
         }
-	    
-	}
-	
+
+    }
+
 }
 
 

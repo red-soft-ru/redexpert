@@ -20,29 +20,29 @@
 
 package org.executequery.actions.toolscommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.editor.QueryEditor;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-/** 
+import java.awt.event.ActionEvent;
+
+/**
  * Command execution for a new Query Editor
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class EditorCommand extends OpenFrameCommand
-                           implements BaseCommand {
-    
+        implements BaseCommand {
+
     public void execute(ActionEvent e) {
         GUIUtilities.addCentralPane(QueryEditor.TITLE,
-                                    QueryEditor.FRAME_ICON, 
-                                    new QueryEditor(),
-                                    null,
-                                    true);
+                QueryEditor.FRAME_ICON,
+                new QueryEditor(),
+                null,
+                true);
     }
-    
+
 }
 
 

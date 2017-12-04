@@ -31,55 +31,78 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DefaultConnectionPool implements ConnectionPool {
 
-    /** a variable denoting a fixed number of connections */
+    /**
+     * a variable denoting a fixed number of connections
+     */
     public static final int FIXED_POOL_SCHEME = 1;
-    
-    /** a variable denoting a dynamic number of connections */
+
+    /**
+     * a variable denoting a dynamic number of connections
+     */
     public static final int DYNAMIC_POOL_SCHEME = 0;
-    
-    /** variable to indicate transactions are supported */
+
+    /**
+     * variable to indicate transactions are supported
+     */
     public static final int TRANSACTIONS_SUPPORTED = 1;
 
-    /** variable to indicate transactions are supported */
+    /**
+     * variable to indicate transactions are supported
+     */
     public static final int TRANSACTIONS_NOT_SUPPORTED = 0;
 
-    /** the minimum number of connections to open */
+    /**
+     * the minimum number of connections to open
+     */
     private int minimumConnections;
-    
-    /** the maximum number of connections to open */
+
+    /**
+     * the maximum number of connections to open
+     */
     private int maximumConnections;
-    
-    /** the maxium use count for a connection */
+
+    /**
+     * the maxium use count for a connection
+     */
     private int maximumUseCount;
-    
-    /** the <code>DataSource</code> object which establishes connections */
+
+    /**
+     * the <code>DataSource</code> object which establishes connections
+     */
     private DataSource dataSource;
-    
-    /** the connection 'container' */
+
+    /**
+     * the connection 'container'
+     */
     private List<PooledConnection> pool;
-    
-    /** the connection default tx isolation level */
+
+    /**
+     * the connection default tx isolation level
+     */
     private int defaultTxIsolation;
 
-    /** connection transaction support */
+    /**
+     * connection transaction support
+     */
     private int transactionSupported = -1;
 
-    /** the scheme for this connection pool */
+    /**
+     * the scheme for this connection pool
+     */
     private int poolScheme;
 
     private int initialConnections;
-    
+
     public DefaultConnectionPool() {
         this(null);
     }
-    
+
     /**
-     * Creates a new connection pool using the specified 
+     * Creates a new connection pool using the specified
      * data source.
      *
      * @param the data source for this pool
@@ -94,7 +117,7 @@ public class DefaultConnectionPool implements ConnectionPool {
 
     /**
      * Returns the pool connection scheme.
-     * 
+     *
      * @return pool scheme - static or dynamic
      */
     public int getPoolScheme() {
@@ -103,10 +126,10 @@ public class DefaultConnectionPool implements ConnectionPool {
 
     /**
      * Sets the pool connection scheme to that specified.
-     * 
+     *
      * @param the pool scheme - FIXED_POOL_SCHEME | DYNAMIC_POOL_SCHEME
-     * @throws IllegalArgumentException if the pool scheme is not 
-     *         either of those specified above.
+     * @throws IllegalArgumentException if the pool scheme is not
+     *                                  either of those specified above.
      */
     public void setPoolScheme(int poolScheme) throws IllegalArgumentException {
         if (poolScheme != FIXED_POOL_SCHEME || poolScheme != DYNAMIC_POOL_SCHEME) {
@@ -114,22 +137,22 @@ public class DefaultConnectionPool implements ConnectionPool {
         }
         this.poolScheme = poolScheme;
     }
-    
-    public void setMaximumConnections(int maximumConnections) 
-        throws IllegalArgumentException {
+
+    public void setMaximumConnections(int maximumConnections)
+            throws IllegalArgumentException {
         if (maximumConnections < 1) {
             throw new IllegalArgumentException(
                     "Maximum number of connections must be at least 1");
         }
         this.maximumConnections = maximumConnections;
     }
-    
+
     public int getMaximumConnections() {
         return maximumConnections;
     }
-    
+
     public void setMinimumConnections(int minimumConnections)
-        throws IllegalArgumentException {
+            throws IllegalArgumentException {
         if (minimumConnections < 0) {
             throw new IllegalArgumentException(
                     "Minimum number of connections must be at least 0");
@@ -146,11 +169,11 @@ public class DefaultConnectionPool implements ConnectionPool {
     }
 
     public void setTransactionIsolationLevel(int isolationLevel) {
-    
+
         if (!isTransactionSupported()) {
             return;
         }
-        
+
         // check if we reset to default
         if (isolationLevel == -1) {
             isolationLevel = defaultTxIsolation;
@@ -163,12 +186,11 @@ public class DefaultConnectionPool implements ConnectionPool {
                     c.setTransactionIsolation(isolationLevel);
                 }
             }
-        } 
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
         }
     }
-    
+
     public DataSource getDataSource() {
         return dataSource;
     }
@@ -176,11 +198,11 @@ public class DefaultConnectionPool implements ConnectionPool {
     public int getInitialConnections() {
         return initialConnections;
     }
-    
+
     public void setInitialConnections(int initialConnections) {
         this.initialConnections = initialConnections;
     }
-    
+
     public synchronized Connection getConnection() throws DataSourceException {
 
         /*
@@ -220,8 +242,8 @@ public class DefaultConnectionPool implements ConnectionPool {
 
                     c.setInUse(true);
                     return c;
-                } 
-            } 
+                }
+            }
 
         } catch (SQLException e) {
 
@@ -235,71 +257,68 @@ public class DefaultConnectionPool implements ConnectionPool {
                 pool.add(c);
                 //Log.debug("pool size after single add: " + pool.size());
                 return c;
-            }
-            catch (SQLException e) {
+            } catch (SQLException e) {
                 throw new DataSourceException(e);
             }
         }
-        
+
         // return a temporary connection
         if (poolScheme == DYNAMIC_POOL_SCHEME) {
             try {
                 if (Log.isDebugEnabled()) {
                     Log.debug("Dynamic pool scheme detected - " +
-                              "creating connection for single-use.");
+                            "creating connection for single-use.");
                 }
                 return new PooledConnection(dataSource.getConnection(), true);
-            }
-            catch (SQLException e) {
+            } catch (SQLException e) {
                 throw new DataSourceException(e);
             }
-        }
-        else {
+        } else {
             throw new DataSourceException(
-                    "All open connections are currently in use. "+
-                    "Consider creating a larger pool and setting the scheme to dynamic");
+                    "All open connections are currently in use. " +
+                            "Consider creating a larger pool and setting the scheme to dynamic");
         }
 
     }
-    
+
     /**
      * Ensures that the pool size is at least at the minimum
      * number of connections specified.
      */
     protected void ensureCapacity() throws DataSourceException {
-        
+
         if (dataSource == null) {
-        
+
             throw new DataSourceException("Data source not initialised");
         }
 
         try {
-            
+
             while (pool.size() < minimumConnections) {
-            
+
                 Connection connection = dataSource.getConnection();
-                
+
                 if (connection == null) {
-                
+
                     throw new DataSourceException(
                             "An unexpected NULL connection was returned from the " +
-                            "data source.\nPlease ensure all relevant fields " +
-                            "for your driver have been entered correctly and try again.");
+                                    "data source.\nPlease ensure all relevant fields " +
+                                    "for your driver have been entered correctly and try again.");
                 }
-                
+
                 pool.add(new PooledConnection(connection));
             }
 
             // initialise the default tx level if not done yet
-            if (transactionSupported == -1 && 
+            if (transactionSupported == -1 &&
                     defaultTxIsolation == -1 && !pool.isEmpty()) {
-                
+
                 PooledConnection conn = pool.get(0);
 
                 DatabaseMetaData dmd = conn.getMetaData();
-                
+
                 if (dmd.supportsTransactions()) {
-                
+
                     transactionSupported = TRANSACTIONS_SUPPORTED;
                     defaultTxIsolation = conn.getTransactionIsolation();
 
@@ -310,8 +329,7 @@ public class DefaultConnectionPool implements ConnectionPool {
                 }
             }
 
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
         }
         // mainly here for unexpected dumps noticed with some drivers
@@ -320,16 +338,16 @@ public class DefaultConnectionPool implements ConnectionPool {
             throw new DataSourceException(e);
         }
     }
-    
+
     public void close(Connection connection) {
         try {
-            
+
             Connection realConnection = null;
-            
+
             // check if this is a PooledConnection
             // and if it exists in the pool
             if (connection instanceof PooledConnection) {
-                
+
                 pool.remove(connection);
                 realConnection = ((PooledConnection) connection).getRealConnection();
             }
@@ -337,9 +355,8 @@ public class DefaultConnectionPool implements ConnectionPool {
             if (realConnection != null) {
                 realConnection.close();
             }
-            
-        }
-        catch (SQLException e) {
+
+        } catch (SQLException e) {
             throw new DataSourceException(e);
         }
     }
@@ -347,7 +364,7 @@ public class DefaultConnectionPool implements ConnectionPool {
     public void close() {
         try {
             for (int i = 0, k = pool.size(); i < k; i++) {
-                PooledConnection c = (PooledConnection)pool.get(i);
+                PooledConnection c = (PooledConnection) pool.get(i);
                 Connection realConnection = c.getRealConnection();
                 if (realConnection != null) {
                     realConnection.close();
@@ -356,16 +373,15 @@ public class DefaultConnectionPool implements ConnectionPool {
             pool.clear();
             pool = null;
             dataSource = null;
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
         }
     }
-    
+
     public int getSize() {
         return pool.size();
     }
-    
+
     public int getPoolActiveSize() {
         int size = 0;
         for (int i = 0, k = pool.size(); i < k; i++) {
@@ -381,8 +397,8 @@ public class DefaultConnectionPool implements ConnectionPool {
         return maximumUseCount;
     }
 
-    public void setMaximumUseCount(int maximumUseCount) 
-        throws IllegalArgumentException {
+    public void setMaximumUseCount(int maximumUseCount)
+            throws IllegalArgumentException {
         if (maximumUseCount == 0) {
             throw new IllegalArgumentException(
                     "Maximum connection use count can not be zero");
@@ -393,7 +409,7 @@ public class DefaultConnectionPool implements ConnectionPool {
     public boolean isTransactionSupported() {
         return transactionSupported == TRANSACTIONS_SUPPORTED;
     }
-    
+
 }
 
 

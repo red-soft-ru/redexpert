@@ -20,13 +20,6 @@
 
 package org.executequery.databaseobjects.impl;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
@@ -35,33 +28,50 @@ import org.executequery.databaseobjects.TablePrivilege;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.Log;
 
+import java.sql.*;
+import java.util.List;
+
 /**
  * Abstract database object implementation.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public abstract class AbstractDatabaseObject extends AbstractNamedObject
-                                             implements DatabaseObject {
+        implements DatabaseObject {
 
-    /** the host parent object */
+    /**
+     * the host parent object
+     */
     private DatabaseHost host;
 
-    /** the catalog name */
+    /**
+     * the catalog name
+     */
     private String catalogName;
 
-    /** the schema name */
+    /**
+     * the schema name
+     */
     private String schemaName;
 
-    /** the object's remarks */
+    /**
+     * the object's remarks
+     */
     private String remarks;
 
-    /** this objects columns */
+    /**
+     * this objects columns
+     */
     private List<DatabaseColumn> columns;
 
-    /** the data row count */
+    /**
+     * the data row count
+     */
     private int dataRowCount = -1;
 
-    /** statement object for open queries */
+    /**
+     * statement object for open queries
+     */
     private Statement statement;
 
     /**
@@ -106,7 +116,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
         if (StringUtils.isNotBlank(_schema)) {
 
-        	return _schema;
+            return _schema;
         }
 
         return getCatalogName(); // may still be null
@@ -148,8 +158,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             DatabaseHost host = getHost();
             if (host != null) {
                 columns = host.getColumns(getCatalogName(),
-                                          getSchemaName(),
-                                          getName());
+                        getSchemaName(),
+                        getName());
 
                 if (columns != null) {
                     for (DatabaseColumn i : columns) {
@@ -158,8 +168,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 }
 
             }
-        }
-        finally {
+        } finally {
             setMarkedForReload(false);
         }
         return columns;
@@ -174,8 +183,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         DatabaseHost host = getHost();
         if (host != null) {
             return host.getPrivileges(getCatalogName(),
-                                      getSchemaName(),
-                                      getName());
+                    getSchemaName(),
+                    getName());
         }
         return null;
     }
@@ -320,7 +329,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             }
 
             if (!connection.getAutoCommit()) {
-                
+
                 connection.commit();
             }
 
@@ -328,16 +337,16 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
         } catch (SQLException e) {
 
-           throw new DataSourceException(e);
+            throw new DataSourceException(e);
 
-        }  finally {
+        } finally {
 
             releaseResources(stmnt, rs);
             releaseResources(connection);
         }
 
     }
-    
+
     /**
      * Retrieves the data for this object (where applicable).
      *
@@ -345,50 +354,51 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
      */
     public ResultSet getData() throws DataSourceException {
 
-        return executeQuery(recordsQueryString());        
+        return executeQuery(recordsQueryString());
     }
-        
+
     /**
      * Retrieves the data for this object (where applicable).
-     * 
+     *
      * @param rollbackOnError to rollback if a DataSourceException is thrown
      * @return the data for this object
      */
     public ResultSet getData(boolean rollbackOnError) throws DataSourceException {
-        
+
         try {
-        
+
             return executeQuery(recordsQueryString());
-            
+
         } catch (DataSourceException e) {
-            
+
             if (rollbackOnError) {
                 try {
                     getHost().getConnection().rollback();
-                } catch (SQLException e1) {}
+                } catch (SQLException e1) {
+                }
             }
 
             throw e;
         }
     }
-    
+
     public ResultSet getMetaData() throws DataSourceException {
         try {
-            
+
             DatabaseHost databaseHost = getHost();
             String _catalog = databaseHost.getCatalogNameForQueries(getCatalogName());
             String _schema = databaseHost.getSchemaNameForQueries(getSchemaName());
 
             DatabaseMetaData dmd = databaseHost.getDatabaseMetaData();
             return dmd.getColumns(_catalog, _schema, getName(), null);
-        
+
         } catch (SQLException e) {
             throw new DataSourceException(e);
         }
     }
-    
+
     private ResultSet executeQuery(String query) throws DataSourceException {
-        
+
         Connection connection = null;
         ResultSet rs = null;
 
@@ -399,7 +409,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
                     statement.close();
 
-                } catch (SQLException e) {}
+                } catch (SQLException e) {
+                }
             }
 
             connection = getHost().getTemporaryConnection();
@@ -411,12 +422,11 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         } catch (SQLException e) {
 
             throw new DataSourceException(e);
-        } 
+        }
 
     }
 
-    public void releaseResources()
-    {
+    public void releaseResources() {
         if (statement != null) {
 
             try {
@@ -427,12 +437,12 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
             } catch (SQLException e) {
 
-                Log.error("Error releaseResources in AbstractDatabaseObject:",e);
+                Log.error("Error releaseResources in AbstractDatabaseObject:", e);
             }
 
         }
     }
-    
+
     public void cancelStatement() {
 
         if (statement != null) {
@@ -482,7 +492,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 || (isLowerCase(name) && host.storesLowerCaseQuotedIdentifiers())
                 || (isUpperCase(name) && host.storesUpperCaseQuotedIdentifiers())
                 || (isMixedCase(name) && (host.storesMixedCaseQuotedIdentifiers()
-                        || host.supportsMixedCaseQuotedIdentifiers()))) {
+                || host.supportsMixedCaseQuotedIdentifiers()))) {
 
             return quotedDatabaseObjectName(name);
         }

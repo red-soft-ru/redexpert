@@ -20,31 +20,33 @@
 
 package org.executequery.actions.othercommands;
 
-import java.awt.event.ActionEvent;
-import javax.swing.JPanel;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.browser.BrowserViewPanel;
 import org.executequery.gui.table.TableFunction;
 
-/** <p>
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+
+/**
  * A Class class.
- * <P>
- * @author   Takis Diakoumis
+ * <p>
+ *
+ * @author Takis Diakoumis
  */
 public class DeleteColumnCommand extends AbstractBaseCommand {
-    
+
     public void execute(ActionEvent e) {
 
         JPanel panel = GUIUtilities.getSelectedCentralPane();
-        
+
         if (panel != null) {
-        
+
             TableFunction tableFunction = null;
-            
+
             // check if the current panel is a TableFunction
             if (panel instanceof TableFunction) {
-            
-                tableFunction = (TableFunction)panel;
+
+                tableFunction = (TableFunction) panel;
             }
 
             // otherwise, check if we are on the browser
@@ -52,10 +54,10 @@ public class DeleteColumnCommand extends AbstractBaseCommand {
             // TableFunction implementation
             else if (panel instanceof BrowserViewPanel) {
 
-                BrowserViewPanel viewPanel = (BrowserViewPanel)panel;
+                BrowserViewPanel viewPanel = (BrowserViewPanel) panel;
                 if (viewPanel.getCurrentView() instanceof TableFunction) {
-                
-                    tableFunction = (TableFunction)viewPanel.getCurrentView();
+
+                    tableFunction = (TableFunction) viewPanel.getCurrentView();
                 }
 
             }
@@ -67,7 +69,7 @@ public class DeleteColumnCommand extends AbstractBaseCommand {
             }
 
         }
-        
+
     }
 
 }

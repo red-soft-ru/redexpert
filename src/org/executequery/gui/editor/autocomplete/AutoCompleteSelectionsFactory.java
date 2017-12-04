@@ -20,12 +20,6 @@
 
 package org.executequery.gui.editor.autocomplete;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.sql.*;
-import java.util.*;
-
 import biz.redsoft.IFBDatabaseConnection;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -41,6 +35,12 @@ import org.executequery.log.Log;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.util.MiscUtils;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.sql.*;
+import java.util.*;
 
 public class AutoCompleteSelectionsFactory {
 

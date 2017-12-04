@@ -25,19 +25,23 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 /**
  * System database function implementation.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SystemDatabaseFunction extends DefaultDatabaseFunction {
-    
-    /** indicates the actual function type */
+
+    /**
+     * indicates the actual function type
+     */
     private int realType;
-    
-    /** Creates a new instance of SystemDatabaseFunction */
+
+    /**
+     * Creates a new instance of SystemDatabaseFunction
+     */
     public SystemDatabaseFunction(DatabaseMetaTag metaTagParent, String name, int type) {
         super(metaTagParent, name);
         realType = type;
     }
-    
+
     /**
      * Returns the database object type.
      *
@@ -46,11 +50,11 @@ public class SystemDatabaseFunction extends DefaultDatabaseFunction {
     public int getType() {
         return SYSTEM_FUNCTION;
     }
-    
+
     public int getRealType() {
         return realType;
     }
-    
+
 }
 
 

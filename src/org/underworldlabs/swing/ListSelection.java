@@ -23,18 +23,18 @@ package org.underworldlabs.swing;
 /**
  * Defines components allowing multi-selection add and remove functionality.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface ListSelection {
-    
+
     public void removeAllAction();
-    
+
     public void removeOneAction();
-    
+
     public void selectAllAction();
-    
+
     public void selectOneAction();
-    
+
 }
 
 

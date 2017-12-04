@@ -20,29 +20,6 @@
 
 package org.executequery.gui.keywords;
 
-import java.awt.BorderLayout;
-import java.awt.Font;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Vector;
-
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableColumnModel;
-
 import org.executequery.Constants;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
@@ -50,11 +27,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.datasource.ConnectionManager;
-import org.executequery.event.ApplicationEvent;
-import org.executequery.event.ConnectionEvent;
-import org.executequery.event.ConnectionListener;
-import org.executequery.event.KeywordEvent;
-import org.executequery.event.KeywordListener;
+import org.executequery.event.*;
 import org.executequery.gui.AbstractDockedTabActionPanel;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.WidgetFactory;
@@ -66,59 +39,82 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
 import org.underworldlabs.util.MiscUtils;
 
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumnModel;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.*;
+import java.util.List;
+
 /**
  * Docked keywords panel.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class KeywordsDockedPanel extends AbstractDockedTabActionPanel
-                                 implements KeyListener,
-                                            MouseListener,
-                                            ConnectionListener,
-                                            KeywordListener {
-    
+        implements KeyListener,
+        MouseListener,
+        ConnectionListener,
+        KeywordListener {
+
     public static final String TITLE = "Keywords";
-    
-    /** sql keywords */
+
+    /**
+     * sql keywords
+     */
     private List<SqlKeyword> keywords;
-    
-    /** the table display */
+
+    /**
+     * the table display
+     */
     private JTable table;
-    
-    /** the table model */
+
+    /**
+     * the table model
+     */
     private KeywordModel model;
-    
-    /** the scroller */
+
+    /**
+     * the scroller
+     */
     private JScrollPane scroller;
-    
-    /** the search text field */
+
+    /**
+     * the search text field
+     */
     private JTextField searchField;
-    
-    /** Creates a new instance of KeywordsDockedPanel */
+
+    /**
+     * Creates a new instance of KeywordsDockedPanel
+     */
     public KeywordsDockedPanel() {
 
         super(new BorderLayout());
-        
+
         init();
     }
-    
+
     private void init() {
         Font font = new Font("Dialog", Font.PLAIN, Constants.DEFAULT_FONT_SIZE);
-        
+
         // retrieve the keywords
         loadKeywords();
-        
+
         // add any keywords from open connections
-        Vector<DatabaseConnection> activeConns = 
+        Vector<DatabaseConnection> activeConns =
                 ConnectionManager.getActiveConnections();
         if (activeConns != null && !activeConns.isEmpty()) {
-            
+
             for (int i = 0, n = activeConns.size(); i < n; i++) {
                 addDatabaseConnectionKewords(activeConns.get(i), false);
             }
-            
+
         }
-        
+
         // sort the keywords
         Collections.sort(keywords, new KeywordComparator());
 
@@ -132,7 +128,7 @@ public class KeywordsDockedPanel extends AbstractDockedTabActionPanel
         table.setDragEnabled(true);
         table.addMouseListener(this);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        
+
         // ---------------------------------------
         // the tool bar
         PanelToolBar tools = new PanelToolBar();
@@ -142,46 +138,46 @@ public class KeywordsDockedPanel extends AbstractDockedTabActionPanel
         searchField.addActionListener(this);
         searchField.setActionCommand("search");
         tools.addTextField(searchField);
-        tools.addButton(this, "search", 
-                GUIUtilities.getAbsoluteIconPath("Zoom16.png"), 
+        tools.addButton(this, "search",
+                GUIUtilities.getAbsoluteIconPath("Zoom16.png"),
                 "Search for a key word in the list");
 
         searchField.addKeyListener(this);
-        
+
         scroller = new JScrollPane(table);
-        
-        setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
+
+        setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
         add(tools, BorderLayout.NORTH);
         add(scroller, BorderLayout.CENTER);
-        
+
         // register as a connection and keyword listener
         EventMediator.registerListener(this);
     }
-    
+
     private void loadKeywords() {
         List<String> sql92 = keywords().getSQL92();
         List<String> user = keywords().getUserDefinedSQL();
-        
+
         int sql92Size = sql92.size();
         int userSize = user.size();
-        
+
         // build the displayed list
         keywords = new ArrayList<SqlKeyword>(sql92Size + userSize);
 
         for (int i = 0; i < sql92Size; i++) {
-            
+
             keywords.add(new SqlKeyword(sql92.get(i).trim(), true, false, false));
         }
 
         for (int i = 0; i < userSize; i++) {
-            
+
             keywords.add(new SqlKeyword(user.get(i).trim(), false, false, true));
         }
     }
-    
+
     private KeywordRepository keywords() {
 
-        return (KeywordRepository)RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
+        return (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
     }
 
     /**
@@ -190,13 +186,13 @@ public class KeywordsDockedPanel extends AbstractDockedTabActionPanel
     public void keywordsAdded(KeywordEvent e) {
         // reload the sql92 and user defined words
         loadKeywords();
-        
+
         // reload all connected db words
         Vector<DatabaseConnection> conns = ConnectionManager.getActiveConnections();
         for (int i = 0, n = conns.size(); i < n; i++) {
             addDatabaseConnectionKewords(conns.get(i), false);
         }
-        
+
         // resort and update the model
         Collections.sort(keywords, new KeywordComparator());
         model.fireTableDataChanged();
@@ -224,27 +220,27 @@ public class KeywordsDockedPanel extends AbstractDockedTabActionPanel
         for (int i = 0, n = keywords.size(); i < n; i++) {
 
             if (keywords.get(i).getText().startsWith(text)) {
-            
+
                 // select the table row
                 table.setRowSelectionInterval(i, i);
-                
+
                 // scroll the view
                 Rectangle cell = table.getCellRect(i, 0, true);
-                
+
                 scroller.getViewport().
                         setViewPosition(new Point(cell.x, cell.y));
-                
+
                 break;
             }
 
         }
-        
+
     }
-    
+
     private void addDatabaseConnectionKewords(DatabaseConnection databaseConnection, boolean reset) {
 
-        DatabaseHost databaseHost = 
-            new DatabaseObjectFactoryImpl().createDatabaseHost(databaseConnection);
+        DatabaseHost databaseHost =
+                new DatabaseObjectFactoryImpl().createDatabaseHost(databaseConnection);
 
         try {
 
@@ -259,25 +255,25 @@ public class KeywordsDockedPanel extends AbstractDockedTabActionPanel
             boolean wordsAdded = false;
 
             for (int i = 0; i < words.length; i++) {
-                
+
                 exists = false;
                 String word = words[i].trim().toUpperCase();
-                
+
                 for (int j = 0, n = keywords.size(); j < n; j++) {
 
                     SqlKeyword keyword = keywords.get(j);
-                    
+
                     // check if it exists
                     if (keyword.getText().equals(word)) {
-                    
+
                         exists = true;
-                        
+
                         // if its a user defined one - override
                         if (keyword.isUserDefined()) {
                             keyword.setDatabaseSpecific(true);
                             keyword.setDatabaseProductName(databaseProductName);
                         }
-                        
+
                         break;
                     }
 
@@ -300,41 +296,41 @@ public class KeywordsDockedPanel extends AbstractDockedTabActionPanel
             }
 
         } catch (DataSourceException e) {
-            
+
             Log.error("Error retrieving database key words for connection " + databaseConnection.getName());
-        
+
         } finally {
-            
+
             databaseHost.close();
         }
 
     }
-    
+
     // ------------------------------------------
     // ConnectionListner implementation
     // ------------------------------------------
-    
+
     public boolean canHandleEvent(ApplicationEvent event) {
-        return (event instanceof ConnectionEvent) 
-            || (event instanceof KeywordEvent);
+        return (event instanceof ConnectionEvent)
+                || (event instanceof KeywordEvent);
     }
 
     /**
      * Indicates a connection has been established.
      * Reloads the keywords to add any db specific words
      * as retrieved from the meta data.
-     * 
+     *
      * @param the encapsulating event
      */
     public void connected(ConnectionEvent connectionEvent) {
 
         addDatabaseConnectionKewords(connectionEvent.getDatabaseConnection(), true);
-        
+
     }
 
     /**
      * Indicates a connection has been closed.
-     * 
+     *
      * @param the encapsulating event
      */
     public void disconnected(ConnectionEvent connectionEvent) {
@@ -348,16 +344,17 @@ public class KeywordsDockedPanel extends AbstractDockedTabActionPanel
     // MouseListener implementation 
     // -------------------------------------------------------------
 
-    /** indicates that text has been inserted */
+    /**
+     * indicates that text has been inserted
+     */
     private boolean inserted = false;
-    
+
     public void mouseClicked(MouseEvent e) {
         int count = e.getClickCount();
         if (count == 2 && inserted) {
             table.setFocusable(true);
             return;
-        }
-        else if (count < 2) {
+        } else if (count < 2) {
             inserted = false;
             return;
         }
@@ -368,7 +365,7 @@ public class KeywordsDockedPanel extends AbstractDockedTabActionPanel
         JPanel panel = GUIUtilities.getSelectedCentralPane();
         if (panel instanceof QueryEditor) {
             table.setFocusable(false);
-            ((QueryEditor)panel).insertTextAtCaret(keyword);
+            ((QueryEditor) panel).insertTextAtCaret(keyword);
             inserted = true;
         }
     }
@@ -376,10 +373,15 @@ public class KeywordsDockedPanel extends AbstractDockedTabActionPanel
     public void mousePressed(MouseEvent e) {
         mouseClicked(e);
     }
-    
-    public void mouseReleased(MouseEvent e) {}
-    public void mouseEntered(MouseEvent e) {}
-    public void mouseExited(MouseEvent e) {}
+
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
+    }
 
     // -------------------------------------------------------------
 
@@ -390,12 +392,14 @@ public class KeywordsDockedPanel extends AbstractDockedTabActionPanel
     /**
      * Invoked when a key has been typed.
      */
-    public void keyTyped(KeyEvent e) {}
+    public void keyTyped(KeyEvent e) {
+    }
 
     /**
      * Invoked when a key has been pressed.
      */
-    public void keyPressed(KeyEvent e) {}
+    public void keyPressed(KeyEvent e) {
+    }
 
     /**
      * Invoked when a key has been released.
@@ -404,13 +408,13 @@ public class KeywordsDockedPanel extends AbstractDockedTabActionPanel
         search();
     }
 
-    
+
     // ----------------------------------------
     // DockedTabView Implementation
     // ----------------------------------------
 
     public static final String MENU_ITEM_KEY = "viewKeywords";
-    
+
     public static final String PROPERTY_KEY = "system.display.keywords";
 
     /**
@@ -465,33 +469,34 @@ public class KeywordsDockedPanel extends AbstractDockedTabActionPanel
     public String toString() {
         return TITLE;
     }
-    
+
     /**
      * Keyword table model.
      */
     private class KeywordModel extends AbstractTableModel {
-        
-        public KeywordModel() {}
-        
+
+        public KeywordModel() {
+        }
+
         public int getColumnCount() {
             return 1;
         }
-        
+
         public int getRowCount() {
             if (keywords == null) {
                 return 0;
             }
             return keywords.size();
         }
-        
+
         public Object getValueAt(int row, int col) {
             return keywords.get(row);
         }
-        
+
         public boolean isCellEditable(int row, int col) {
             return false;
         }
-        
+
         public Class<?> getColumnClass(int col) {
             return String.class;
         }
@@ -506,7 +511,7 @@ public class KeywordsDockedPanel extends AbstractDockedTabActionPanel
             return obj1.getText().compareTo(obj2.getText());
         }
     } // class KeywordComparator
-    
+
 }
 
 

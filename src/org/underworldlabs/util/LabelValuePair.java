@@ -21,17 +21,17 @@
 package org.underworldlabs.util;
 
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+ * @author Takis Diakoumis
+ * @version $Revision$
+ * @date $Date$
  */
 public class LabelValuePair implements java.io.Serializable {
-    
+
     private String label;
     private Object value;
-    
-    public LabelValuePair() {}
+
+    public LabelValuePair() {
+    }
 
     public LabelValuePair(Object value, String label) {
         this.label = label;
@@ -41,17 +41,17 @@ public class LabelValuePair implements java.io.Serializable {
     public Object getValue() {
         return value;
     }
-    
+
     public String getLabel() {
         return label;
     }
-    
+
     @Override
     public String toString() {
         return label;
     }
-    
-    
+
+
 }
 
 

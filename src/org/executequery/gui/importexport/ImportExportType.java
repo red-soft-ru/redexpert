@@ -24,23 +24,23 @@ enum ImportExportType {
 
     EXPORT_SQL_ALL_TABLES,
     EXPORT_SQL_ONE_TABLE;
-    
+
     public static boolean isMultipleTableImportExport(ImportExportType importExportType) {
-     
+
         return importExportType == EXPORT_SQL_ALL_TABLES;
     }
 
     public static boolean isDataExport(ImportExportType importExportType) {
-        
+
         ImportExportType[] exportTypes = {
                 EXPORT_SQL_ALL_TABLES,
                 EXPORT_SQL_ONE_TABLE
         };
-        
+
         for (ImportExportType type : exportTypes) {
-        
+
             if (importExportType == type) {
-                
+
                 return true;
             }
 

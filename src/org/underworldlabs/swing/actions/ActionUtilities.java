@@ -20,38 +20,34 @@
 
 package org.underworldlabs.swing.actions;
 
-import java.awt.Insets;
-import java.awt.event.ActionListener;
-import java.util.Vector;
-
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-
 import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.DefaultToolbarButton;
 import org.underworldlabs.swing.util.IconUtilities;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.util.Vector;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ActionUtilities {
-    
-    private ActionUtilities() {}
 
-    public static JButton createButton(ActionListener actionListener, 
+    private ActionUtilities() {
+    }
+
+    public static JButton createButton(ActionListener actionListener,
                                        Icon icon,
-                                       String name, 
+                                       String name,
                                        String command) {
         JButton item = new DefaultButton(name);
         item.setActionCommand(command);
-        
+
         if (icon != null) {
             item.setIcon(icon);
         }
-        
+
         if (actionListener != null) {
             item.addActionListener(actionListener);
         }
@@ -59,7 +55,7 @@ public class ActionUtilities {
         return item;
     }
 
-    public static JButton createButton(ActionListener actionListener, 
+    public static JButton createButton(ActionListener actionListener,
                                        String command,
                                        Icon icon,
                                        String toolTipText) {
@@ -68,52 +64,52 @@ public class ActionUtilities {
 
         item.setToolTipText(toolTipText);
         item.setActionCommand(command);
-        
+
         if (actionListener != null) {
             item.addActionListener(actionListener);
         }
-        
+
         return item;
     }
 
-    public static JButton createToolbarButton(ActionListener actionListener, 
-                                       String command,
-                                       Icon icon,
-                                       String toolTipText) {
-        
+    public static JButton createToolbarButton(ActionListener actionListener,
+                                              String command,
+                                              Icon icon,
+                                              String toolTipText) {
+
         JButton item = new DefaultToolbarButton(icon);
         item.setMargin(new Insets(1, 1, 1, 1));
 
         item.setToolTipText(toolTipText);
         item.setActionCommand(command);
-        
+
         if (actionListener != null) {
             item.addActionListener(actionListener);
         }
-        
+
         return item;
     }
 
-    public static JButton createToolbarButton(ActionListener actionListener, 
-                                               String icon,
-                                               String toolTipText, 
-                                               String command) {
-        
+    public static JButton createToolbarButton(ActionListener actionListener,
+                                              String icon,
+                                              String toolTipText,
+                                              String command) {
+
         JButton item = new DefaultToolbarButton();
         return init(actionListener, icon, toolTipText, command, item);
     }
 
-    public static JButton createButton(ActionListener actionListener, 
-            String icon,
-            String toolTipText, 
-            String command) {
-        
+    public static JButton createButton(ActionListener actionListener,
+                                       String icon,
+                                       String toolTipText,
+                                       String command) {
+
         JButton button = new DefaultButton();
         return init(actionListener, icon, toolTipText, command, button);
     }
 
     private static JButton init(ActionListener actionListener, String icon, String toolTipText, String command,
-            JButton item) {
+                                JButton item) {
 
         if (icon != null) {
             item.setIcon(IconUtilities.loadIcon(icon));
@@ -122,35 +118,35 @@ public class ActionUtilities {
 
         item.setToolTipText(toolTipText);
         item.setActionCommand(command);
-        
+
         if (actionListener != null) {
             item.addActionListener(actionListener);
         }
-        
+
         return item;
     }
 
-    public static JButton createButton(String name, 
-                                       String icon, 
+    public static JButton createButton(String name,
+                                       String icon,
                                        String command,
                                        boolean iconOnly) {
         JButton item = new DefaultButton(name);
         item.setToolTipText(name);
         item.setActionCommand(command);
-        
+
         if (icon != null) {
             item.setIcon(IconUtilities.loadIcon(icon));
         }
-        
-        if(iconOnly) {
+
+        if (iconOnly) {
             item.setMargin(new Insets(1, 1, 1, 1));
             item.setText(null);
         }
         return item;
     }
 
-    public static JButton createButton(ActionListener actionListener, 
-                                       String name, 
+    public static JButton createButton(ActionListener actionListener,
+                                       String name,
                                        String command) {
         JButton item = new DefaultButton(name);
         item.setActionCommand(command);
@@ -165,12 +161,12 @@ public class ActionUtilities {
     }
 
     public static JCheckBox createCheckBox(ActionListener actionListener,
-                                           String name, 
-                                           String command, 
+                                           String name,
+                                           String command,
                                            boolean selected) {
         JCheckBox item = new JCheckBox(name, selected);
         item.setActionCommand(command);
-        
+
         if (actionListener != null) {
             item.addActionListener(actionListener);
         }
@@ -179,28 +175,28 @@ public class ActionUtilities {
     }
 
     public static JCheckBox createCheckBox(ActionListener actionListener,
-                                           String name, 
+                                           String name,
                                            String command) {
         return createCheckBox(actionListener, name, command, false);
     }
 
-    public static JCheckBox createCheckBox(String name, 
-                                           String command, 
+    public static JCheckBox createCheckBox(String name,
+                                           String command,
                                            boolean selected) {
         return createCheckBox(null, name, command, selected);
     }
 
-    public static JCheckBox createCheckBox(String name, 
+    public static JCheckBox createCheckBox(String name,
                                            String command) {
         return createCheckBox(null, name, command, false);
     }
 
-    public static JComboBox createComboBox(ActionListener actionListener, 
-                                           String[] values, 
+    public static JComboBox createComboBox(ActionListener actionListener,
+                                           String[] values,
                                            String command) {
         JComboBox combo = new JComboBox(values);
         combo.setActionCommand(command);
-        
+
         if (actionListener != null) {
             combo.addActionListener(actionListener);
         }
@@ -212,12 +208,12 @@ public class ActionUtilities {
         return createComboBox(null, values, command);
     }
 
-    public static JComboBox createComboBox(ActionListener actionListener, 
-                                           Vector<?> values, 
+    public static JComboBox createComboBox(ActionListener actionListener,
+                                           Vector<?> values,
                                            String command) {
         JComboBox combo = new JComboBox(values);
         combo.setActionCommand(command);
-        
+
         if (actionListener != null) {
             combo.addActionListener(actionListener);
         }

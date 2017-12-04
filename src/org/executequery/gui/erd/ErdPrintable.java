@@ -20,45 +20,50 @@
 
 package org.executequery.gui.erd;
 
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import org.executequery.GUIUtilities;
+import org.executequery.print.PrintingSupport;
+
+import java.awt.*;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 
-import org.executequery.GUIUtilities;
-import org.executequery.print.PrintingSupport;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ErdPrintable implements Printable {
-    
-    /** The print scale transform */
+
+    /**
+     * The print scale transform
+     */
     public static final double PRINT_SCALE = 0.7;
-    
-    /** The ERD parent panel */
+
+    /**
+     * The ERD parent panel
+     */
     private ErdViewerPanel parent;
 
-    /** The maximum number of pages */
+    /**
+     * The maximum number of pages
+     */
     private int maxNumPages;
 
-    /** The generated image */
+    /**
+     * The generated image
+     */
     //private BufferedImage image;
     //private Image image;
-    
+
     private ErdTable[] tablesArray;
-    
-    /** Constructs a new instance with the specified <code>
-     *  ErdViewerPanel</code> as the parent. */
+
+    /**
+     * Constructs a new instance with the specified <code>
+     * ErdViewerPanel</code> as the parent.
+     */
     public ErdPrintable(ErdViewerPanel parent) {
         this.parent = parent;
         maxNumPages = 1;
-        
+
         tablesArray = parent.getAllComponentsArray();
 
 /*
@@ -133,25 +138,25 @@ public class ErdPrintable implements Printable {
         //GUIUtilities.scheduleGC();
     }
 */
-        
+
     public int print(Graphics _g, PageFormat format, int pageIndex)
-        throws PrinterException {
-        
+            throws PrinterException {
+
         if (pageIndex >= maxNumPages) {// || image == null) {
 
             return NO_SUCH_PAGE;
         }
 
         //Log.debug("page index: " + pageIndex);
-        
-        PrintingSupport printingSupport = new PrintingSupport();        
+
+        PrintingSupport printingSupport = new PrintingSupport();
         format = printingSupport.getPageFormat();
 
-        Graphics2D g = (Graphics2D)_g;
-        
+        Graphics2D g = (Graphics2D) _g;
+
         //setRenderingHints(g);
         g.scale(PRINT_SCALE, PRINT_SCALE);
-        
+
         g.translate(format.getImageableX(), format.getImageableY());
 
 /*
@@ -165,14 +170,14 @@ public class ErdPrintable implements Printable {
                                         (int)extents.getWidth(), 
                                         (int)extents.getHeight(),
                                         Image.SCALE_SMOOTH);
-*/      
+*/
 //        int w = (int)(image.getWidth(parent) * (1/PRINT_SCALE));
 //        int h = (int)(image.getHeight(parent) * (1/PRINT_SCALE));
 
         // using the actual image size from the pane
         Dimension extents = parent.getMaxImageExtents();
-        int w = (int)(extents.getWidth() * PRINT_SCALE);
-        int h = (int)(extents.getHeight() * PRINT_SCALE);
+        int w = (int) (extents.getWidth() * PRINT_SCALE);
+        int h = (int) (extents.getHeight() * PRINT_SCALE);
 
         //Log.debug("w: " + w + " h: " + h);
 
@@ -183,26 +188,26 @@ public class ErdPrintable implements Printable {
         //int wPage = (int)format.getImageableWidth();
         //int hPage = (int)format.getImageableHeight();
 
-        int wPage = (int)(format.getImageableWidth());// / PRINT_SCALE);
-        int hPage = (int)(format.getImageableHeight());// / PRINT_SCALE);
+        int wPage = (int) (format.getImageableWidth());// / PRINT_SCALE);
+        int hPage = (int) (format.getImageableHeight());// / PRINT_SCALE);
 
 //        int nCol = (int)(Math.max((int)Math.ceil((double)w/wPage), 1) / PRINT_SCALE);
 //        int nRow = (int)(Math.max((int)Math.ceil((double)h/hPage), 1) / PRINT_SCALE);
-        int nCol = Math.max((int)Math.ceil((double)w/wPage), 1);
-        int nRow = Math.max((int)Math.ceil((double)h/hPage), 1);
+        int nCol = Math.max((int) Math.ceil((double) w / wPage), 1);
+        int nRow = Math.max((int) Math.ceil((double) h / hPage), 1);
 
         //Log.debug("nCol: " + nCol + " nRow: " + nRow);
-        
+
         maxNumPages = nCol * nRow;
-        
+
         //Log.debug("max pages: " + maxNumPages);
-        
+
         int iCol = pageIndex % nCol;
         int iRow = pageIndex / nCol;
-        
+
         int x = iCol * wPage;
         int y = iRow * hPage;
-        
+
 //        int wImage = (int)(Math.min(wPage, w-x));
 //        int hImage = (int)(Math.min(hPage, h-y));
 
@@ -210,15 +215,15 @@ public class ErdPrintable implements Printable {
         //Rectangle realClip = new Rectangle(x, y, wImage, hImage);
         //Rectangle fakeClip = new Rectangle(0, 0, wImage, hImage);
         // ------------------------------
-        
-        int clipWidth = (int)(wPage/PRINT_SCALE);
-        int clipHeight = (int)(hPage/PRINT_SCALE);
-        
+
+        int clipWidth = (int) (wPage / PRINT_SCALE);
+        int clipHeight = (int) (hPage / PRINT_SCALE);
+
         //g.setColor(Color.BLUE);
         //g.drawRect(1, 1, clipWidth, clipHeight);
 
-        x = (int)(x / PRINT_SCALE);
-        y = (int)(y / PRINT_SCALE);
+        x = (int) (x / PRINT_SCALE);
+        y = (int) (y / PRINT_SCALE);
 
         //Rectangle realClip = new Rectangle(x, y, wImage, hImage);
         //Rectangle fakeClip = new Rectangle(0, 0, wImage, hImage);
@@ -237,7 +242,7 @@ public class ErdPrintable implements Printable {
         parent.getDependenciesPanel().drawDependencies(g, -x, -y);
 
         for (int i = 0; i < tablesArray.length; i++) {
-            
+
             if (tablesArray[i].getBounds().intersects(realClip)) {
                 /*
                 Log.debug("table: " + tablesArray[i].getTableName()
@@ -245,13 +250,13 @@ public class ErdPrintable implements Printable {
                 */
                 tablesArray[i].setSelected(false);
                 tablesArray[i].drawTable(g,
-                                         tablesArray[i].getX() - x,
-                                         tablesArray[i].getY() - y);
+                        tablesArray[i].getX() - x,
+                        tablesArray[i].getY() - y);
             }
 
         }
 
-        
+
         //Log.debug("x: " + x + " y: " + y);
 
         
@@ -261,9 +266,9 @@ public class ErdPrintable implements Printable {
         g.transform(af);
 */
         //g.scale(_scale, _scale);
-        
+
 //        AffineTransform af = new AffineTransform();
-        
+
 //        double scale = 300.0/72.0;
 //        af.scale(PRINT_SCALE, PRINT_SCALE);
 //        g.transform(af);
@@ -302,25 +307,25 @@ public class ErdPrintable implements Printable {
         g.scale(PRINT_SCALE, PRINT_SCALE);
         g.drawImage(image, 0, 0, wImage, hImage, x, y, x+wImage, y+hImage, parent);
          */
-        
+
         GUIUtilities.scheduleGC();
         return PAGE_EXISTS;
-        
+
     }
-    
+
     protected void setRenderingHints(Graphics2D g) {
-        
+
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-            RenderingHints.VALUE_ANTIALIAS_ON);
-         
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
         g.setRenderingHint(RenderingHints.KEY_RENDERING,
-            RenderingHints.VALUE_RENDER_QUALITY);
-         
+                RenderingHints.VALUE_RENDER_QUALITY);
+
         g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
-            RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+                RenderingHints.VALUE_FRACTIONALMETRICS_ON);
 
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-            RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
 //        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
 //            RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -335,7 +340,7 @@ public class ErdPrintable implements Printable {
             RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
          */
     }
-    
+
 }
 
 

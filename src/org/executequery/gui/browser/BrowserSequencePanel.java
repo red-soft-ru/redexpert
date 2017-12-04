@@ -33,7 +33,9 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
     private Map cache;
 
-    /** the browser's control object */
+    /**
+     * the browser's control object
+     */
     private BrowserController controller;
 
     public BrowserSequencePanel(BrowserController controller) {
@@ -42,8 +44,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
         try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -97,7 +98,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
         JPanel base = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        Insets insets = new Insets(10,10,5,5);
+        Insets insets = new Insets(10, 10, 5, 5);
         gbc.anchor = GridBagConstraints.NORTHEAST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridx++;
@@ -161,15 +162,14 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
             sqlPane.setText(sequence.getCreateSQLText() +
                     "\n\n" +
                     sequence.getAlterSQLText());
-        }
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             controller.handleException(e);
         }
 
     }
 
     public void setValues(BaseDatabaseObject metaObject) {
-        DefaultDatabaseSequence sequence = (DefaultDatabaseSequence)cache.get(metaObject);
+        DefaultDatabaseSequence sequence = (DefaultDatabaseSequence) cache.get(metaObject);
         setValues(metaObject, sequence);
     }
 

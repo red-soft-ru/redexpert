@@ -20,14 +20,6 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.print.Printable;
-import java.util.HashMap;
-import java.util.Vector;
-
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.table.AbstractTableModel;
-
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -42,49 +34,71 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.GUIUtils;
 
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import java.awt.print.Printable;
+import java.util.HashMap;
+import java.util.Vector;
+
 /**
  * Database connection host panel.
  * Displays connection/host info and database properties once connected.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class HostPanel extends AbstractFormObjectViewPanel implements ConnectionListener {
-    
+
     public static final String NAME = "HostPanel";
-    
+
     private DisabledField databaseProductField;
     private DisabledField hostField;
     private DisabledField sourceField;
     private DisabledField schemaField;
     private DisabledField urlField;
-    
+
     private JTable schemaTable;
     private HostModel model;
-    
+
     private boolean initialised;
-    
-    /** the current host object */
+
+    /**
+     * the current host object
+     */
     private DatabaseHost host;
-    
-    /** the tab pane display */
+
+    /**
+     * the tab pane display
+     */
     private JTabbedPane tabPane;
-    
-    /** the connection info pane */
+
+    /**
+     * the connection info pane
+     */
     private ConnectionPanel connectionPanel;
-    
-    /** the key words panel */
+
+    /**
+     * the key words panel
+     */
     private KeyWordsPanel keyWordsPanel;
-    
-    /** the java sql types panel */
+
+    /**
+     * the java sql types panel
+     */
     private JavaSQLTypesPanel javaSqlTypesPanel;
-    
-    /** the database properties pane */
+
+    /**
+     * the database properties pane
+     */
     private DatabasePropertiesPanel databasePropertiesPanel;
-    
-    /** the data types panel */
+
+    /**
+     * the data types panel
+     */
     private DataTypesPanel dataTypesPanel;
-    
-    /** the browser's control object */
+
+    /**
+     * the browser's control object
+     */
     private BrowserController controller;
 
     public HostPanel(BrowserController controller) {
@@ -93,12 +107,11 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
 
         try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     private void init() throws Exception {
 
         connectionPanel = new ConnectionPanel(controller);
@@ -122,7 +135,7 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         // register with the event listener
         EventMediator.registerListener(this);
     }
-    
+
     /**
      * Indicates the panel is being selected in the pane
      */
@@ -140,11 +153,11 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
             tabPane.setSelectedIndex(0);
         }
     }
-    
+
     public void connectionNameChanged(String name) {
         connectionPanel.connectionNameChanged(name);
     }
-    
+
     /**
      * Informs any panels of a new selection being made.
      */
@@ -158,9 +171,9 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
     public boolean tabViewDeselected() {
         return connectionPanel.tabViewDeselected();
     }
-    
+
     public void setValues(DatabaseHost host) {
-        
+
         this.host = host;
         connectionPanel.setConnectionValue(host);
 
@@ -180,12 +193,12 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
      * Reloads the database properties meta data table panel.
      */
     protected void updateDatabaseProperties() {
-        
+
         if (!host.getDatabaseConnection().isConnected()) {
 
             return;
         }
-        
+
         try {
 
             databasePropertiesPanel.setDatabaseProperties(host.getDatabaseProperties());
@@ -198,12 +211,12 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         }
 
     }
-    
+
     /**
      * Loads the sql key words for this host.
      */
     protected void updateDatabaseKeywords() {
-        
+
         if (!host.getDatabaseConnection().isConnected()) {
             return;
         }
@@ -213,14 +226,14 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         } catch (DataSourceException e) {
             controller.handleException(e);
             keyWordsPanel.setDatabaseKeywords(new String[0]);
-       }
+        }
     }
-    
+
     /**
      * Loads the data type info for this host.
      */
     protected void updateDatabaseTypeInfo() {
-        
+
         if (!host.getDatabaseConnection().isConnected()) {
 
             return;
@@ -229,22 +242,22 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         try {
 
             dataTypesPanel.setDataTypes(host.getDataTypeInfo());
-            
+
         } catch (DataSourceException e) {
 
             dataTypesPanel.setDataTypeError(e.getExtendedMessage());
             Log.warning("Error retriving type info for host: " + e.getExtendedMessage());
 //            controller.handleException(e);
-        }        
+        }
     }
 
     private void changePanelData() {
-        
+
         // notify the database properties
         updateDatabaseProperties();
         //Hashtable properties = controller.getDatabaseProperties();
         //databasePropertiesPanel.setDatabaseProperties(properties);
-        
+
         // notify the keywords panel
         updateDatabaseKeywords();
         //String[] keywords = controller.getDatabaseKeywords();
@@ -257,10 +270,10 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         // enable the tabs
         enableConnectionTabs(host.getDatabaseConnection().isConnected());
     }
-    
+
     /**
      * Indicates a connection has been established.
-     * 
+     *
      * @param the encapsulating event
      */
     public void connected(ConnectionEvent connectionEvent) {
@@ -278,7 +291,7 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
 
     /**
      * Indicates a connection has been closed.
-     * 
+     *
      * @param the encapsulating event
      */
     public void disconnected(ConnectionEvent connectionEvent) {
@@ -295,33 +308,36 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
     public String getLayoutName() {
         return NAME;
     }
-    
-    public void refresh() {}    
-    public void cleanup() {}
-    
+
+    public void refresh() {
+    }
+
+    public void cleanup() {
+    }
+
     public Printable getPrintable() {
-        
+
         String hostText = hostField != null ? hostField.getText() : "";
         return new TablePrinter(schemaTable, "Database Server: " + hostText);
     }
-    
+
     public JTable getTable() {
         return schemaTable;
     }
-    
+
     public boolean isInitialised() {
         return initialised;
     }
-    
+
     public void setValues(String sourceName, String schemaName, Vector values) {
         sourceField.setText(sourceName);
         schemaField.setText(schemaName);
         model.setValues(values);
         initialised = true;
     }
-    
+
     public void setValues(String databaseName, String hostName, String sourceName,
-                            String schemaName, String urlName, Vector values) {
+                          String schemaName, String urlName, Vector values) {
         databaseProductField.setText(databaseName);
         hostField.setText(hostName);
         sourceField.setText(sourceName);
@@ -329,35 +345,35 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         urlField.setText(urlName);
         model.setValues(values);
     }
-    
+
     private class HostModel extends AbstractTableModel {
-        
+
         private Vector values = new Vector(0);
         private String header = "Catalog Name";
-        
+
         public void setValues(Vector values) {
             this.values = values;
             fireTableDataChanged();
         }
-        
+
         public int getRowCount() {
             return values.size();
         }
-        
+
         public int getColumnCount() {
             return 1;
         }
-        
+
         public String getColumnName(int col) {
             return header;
         }
-        
+
         public Object getValueAt(int row, int col) {
             return values.elementAt(row);
         }
-        
+
     } // class HostModel
-    
+
 } 
 
 

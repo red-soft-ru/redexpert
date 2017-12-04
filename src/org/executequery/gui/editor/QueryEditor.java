@@ -20,37 +20,6 @@
 
 package org.executequery.gui.editor;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.print.Printable;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
-import javax.swing.InputMap;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.text.JTextComponent;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
@@ -58,17 +27,7 @@ import org.executequery.base.DefaultTabView;
 import org.executequery.components.SplitPaneFactory;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
-import org.executequery.event.ApplicationEvent;
-import org.executequery.event.ConnectionEvent;
-import org.executequery.event.ConnectionListener;
-import org.executequery.event.KeywordEvent;
-import org.executequery.event.KeywordListener;
-import org.executequery.event.QueryBookmarkEvent;
-import org.executequery.event.QueryBookmarkListener;
-import org.executequery.event.QueryShortcutEvent;
-import org.executequery.event.QueryShortcutListener;
-import org.executequery.event.UserPreferenceEvent;
-import org.executequery.event.UserPreferenceListener;
+import org.executequery.event.*;
 import org.executequery.gui.FocusablePanel;
 import org.executequery.gui.SaveFunction;
 import org.executequery.gui.editor.autocomplete.QueryEditorAutoCompletePopupProvider;
@@ -85,19 +44,33 @@ import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.text.JTextComponent;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.print.Printable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
+
 /**
  * The Query Editor.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class QueryEditor extends DefaultTabView
-                         implements ConnectionListener,
-                                    QueryBookmarkListener,
-                                    QueryShortcutListener,
-                                    UserPreferenceListener,
-                                    TextEditor,
-                                    KeywordListener,
-                                    FocusablePanel {
+        implements ConnectionListener,
+        QueryBookmarkListener,
+        QueryShortcutListener,
+        UserPreferenceListener,
+        TextEditor,
+        KeywordListener,
+        FocusablePanel {
 
     public static final String TITLE = "Query Editor";
     public static final String FRAME_ICON = "Edit16.png";
@@ -106,54 +79,82 @@ public class QueryEditor extends DefaultTabView
 
     private static final String DEFAULT_SCRIPT_SUFFIX = ".sql";
 
-    /** editor open count for title numbering */
+    /**
+     * editor open count for title numbering
+     */
     private static int editorCountSequence = 1;
 
-    /** The editor's status bar */
+    /**
+     * The editor's status bar
+     */
     private QueryEditorStatusBar statusBar;
 
-    /** The editor's text pan panel */
+    /**
+     * The editor's text pan panel
+     */
     private QueryEditorTextPanel editorPanel;
 
-    /** The editor's results panel */
+    /**
+     * The editor's results panel
+     */
     private QueryEditorResultsPanel resultsPanel;
 
     private ScriptFile scriptFile;
 
-    /** flags the content as having being changed */
+    /**
+     * flags the content as having being changed
+     */
     private boolean contentChanged;
 
-    /** the editor's tool bar */
+    /**
+     * the editor's tool bar
+     */
     private QueryEditorToolBar toolBar;
 
-    /** the active connections combo */
+    /**
+     * the active connections combo
+     */
     private OpenConnectionsComboBox connectionsCombo;
 
-    /** The text pane's popup menu */
+    /**
+     * The text pane's popup menu
+     */
     private QueryEditorPopupMenu popup;
 
-    /** enable/disable max rows */
+    /**
+     * enable/disable max rows
+     */
     private JCheckBox maxRowCountCheckBox;
 
-    /** the max row count returned field */
+    /**
+     * the max row count returned field
+     */
     private NumberTextField maxRowCountField;
 
-    /** the result pane base panel */
+    /**
+     * the result pane base panel
+     */
     private JPanel resultsBase;
 
-    /** the editor split pane */
+    /**
+     * the editor split pane
+     */
     private JSplitPane splitPane;
 
-    /** sql query execution delegate */
+    /**
+     * sql query execution delegate
+     */
     private QueryEditorDelegate delegate;
 
     private TokenizingFormatter formatter;
 
     private JPanel toolsPanel;
-    
+
     private List<ConnectionChangeListener> connectionChangeListeners;
 
-    /** Constructs a new instance. */
+    /**
+     * Constructs a new instance.
+     */
     public QueryEditor() {
 
         this(null, null);
@@ -180,7 +181,7 @@ public class QueryEditor extends DefaultTabView
 
         super(new GridBagLayout());
 
-        try  {
+        try {
 
             init();
 
@@ -205,7 +206,7 @@ public class QueryEditor extends DefaultTabView
 
     private String defaultScriptName() {
         return DEFAULT_SCRIPT_PREFIX
-            + (editorCountSequence++) + DEFAULT_SCRIPT_SUFFIX;
+                + (editorCountSequence++) + DEFAULT_SCRIPT_SUFFIX;
     }
 
     private void init() throws Exception {
@@ -226,7 +227,7 @@ public class QueryEditor extends DefaultTabView
         baseEditorPanel.add(editorPanel, BorderLayout.CENTER);
         baseEditorPanel.add(statusBar, BorderLayout.SOUTH);
         baseEditorPanel.setBorder(BorderFactory.createMatteBorder(
-                                1, 1, 1, 1, GUIUtilities.getDefaultBorderColour()));
+                1, 1, 1, 1, GUIUtilities.getDefaultBorderColour()));
 
         // add to a base panel - when last tab closed visible set
         // to false on the tab pane and split collapses - want to avoid this
@@ -236,11 +237,10 @@ public class QueryEditor extends DefaultTabView
         if (new SplitPaneFactory().usesCustomSplitPane()) {
 
             splitPane = new EditorSplitPane(JSplitPane.VERTICAL_SPLIT,
-                                            baseEditorPanel, resultsBase);
-        }
-        else {
+                    baseEditorPanel, resultsBase);
+        } else {
             splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                                       baseEditorPanel, resultsBase);
+                    baseEditorPanel, resultsBase);
         }
 
         splitPane.setDividerSize(4);
@@ -252,7 +252,7 @@ public class QueryEditor extends DefaultTabView
                 editorPanel.getTextPaneActionMap(), editorPanel.getTextPaneInputMap());
 
         Vector<DatabaseConnection> connections =
-            ConnectionManager.getActiveConnections();
+                ConnectionManager.getActiveConnections();
         connectionsCombo = new OpenConnectionsComboBox(this, connections);
 
         maxRowCountCheckBox = new JCheckBox();
@@ -264,7 +264,7 @@ public class QueryEditor extends DefaultTabView
         });
 
         maxRowCountField = new MaxRowCountField(this);
-        
+
         toolsPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 0, 0, 0);
@@ -323,8 +323,8 @@ public class QueryEditor extends DefaultTabView
         gbc.insets.right = 2;
         gbc.fill = GridBagConstraints.BOTH;
         toolsPanel.add(maxRowCountField, gbc);
-        
-        splitPane.setBorder(BorderFactory.createEmptyBorder(0,3,3,3));
+
+        splitPane.setBorder(BorderFactory.createEmptyBorder(0, 3, 3, 3));
 
         JPanel base = new JPanel(new BorderLayout());
         base.add(toolsPanel, BorderLayout.NORTH);
@@ -349,7 +349,7 @@ public class QueryEditor extends DefaultTabView
 
         setEditorPreferences();
 
-        statusBar.setCaretPosition(1,1);
+        statusBar.setCaretPosition(1, 1);
         statusBar.setInsertionMode("INS");
     }
 
@@ -360,7 +360,7 @@ public class QueryEditor extends DefaultTabView
         filterTextField.setToolTipText("Apply filter to current result set");
 
         filterTextField.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {                
+            public void actionPerformed(ActionEvent e) {
 
                 resultsPanel.filter(filterTextField.getText());
             }
@@ -435,7 +435,9 @@ public class QueryEditor extends DefaultTabView
         return label;
     }
 
-    /** the last divider location before a output hide */
+    /**
+     * the last divider location before a output hide
+     */
     private int lastDividerLocation;
 
     private QueryEditorAutoCompletePopupProvider queryEditorAutoCompletePopupProvider;
@@ -511,7 +513,7 @@ public class QueryEditor extends DefaultTabView
         UserProperties userProperties = userProperties();
         if (userProperties.containsKey("editor.autocomplete.on")
                 && (!userProperties.containsKey("editor.autocomplete.keywords.on"))
-                        && !userProperties.containsKey("editor.autocomplete.schema.on")) {
+                && !userProperties.containsKey("editor.autocomplete.schema.on")) {
 
             // old property key
             boolean allOn = true;
@@ -525,7 +527,7 @@ public class QueryEditor extends DefaultTabView
         }
 
         return userProperties.getBooleanProperty("editor.autocomplete.keywords.on")
-            || userProperties.getBooleanProperty("editor.autocomplete.schema.on");
+                || userProperties.getBooleanProperty("editor.autocomplete.schema.on");
     }
 
     private boolean isAutoCommit() {
@@ -544,10 +546,10 @@ public class QueryEditor extends DefaultTabView
     }
 
     private boolean isToolsPanelVisible() {
-        
+
         return userProperties().getBooleanProperty("editor.display.toolsPanel");
     }
-    
+
     private UserProperties userProperties() {
 
         return UserProperties.getInstance();
@@ -604,7 +606,7 @@ public class QueryEditor extends DefaultTabView
         statusBar.stopProgressBar();
         setStopButtonEnabled(false);
         statusBar.setExecutionTime(message);
-        resetPanels();        
+        resetPanels();
     }
 
     /**
@@ -639,7 +641,7 @@ public class QueryEditor extends DefaultTabView
     /**
      * Sets the result set object.
      *
-     * @param the executed result set
+     * @param the     executed result set
      * @param whether to return the result set row count
      */
     public int setResultSet(ResultSet rset, boolean showRowNumber) throws SQLException {
@@ -680,12 +682,12 @@ public class QueryEditor extends DefaultTabView
     /**
      * Sets the result set object.
      *
-     * @param the executed result set
+     * @param the     executed result set
      * @param whether to return the result set row count
-     * @param the executed query of the result set
+     * @param the     executed query of the result set
      */
     public int setResultSet(ResultSet rset, boolean showRowNumber, String query)
-        throws SQLException {
+            throws SQLException {
 
         int rowCount = resultsPanel.setResultSet(rset, showRowNumber, getMaxRecords());
         revalidate();
@@ -768,10 +770,10 @@ public class QueryEditor extends DefaultTabView
     }
 
     public ResultSetTable getResultSetTable() {
-        
+
         return resultsPanel.getResultSetTable();
     }
-    
+
     public void setResultText(int updateCount, int type) {
 
         resultsPanel.setResultText(updateCount, type);
@@ -961,7 +963,7 @@ public class QueryEditor extends DefaultTabView
 
                 GUIUtilities.displayWarningMessage(
                         "Editor is currently executing.\nPlease wait until " +
-                        "finished or attempt to cancel the running query.");
+                                "finished or attempt to cancel the running query.");
             }
             return false;
         }
@@ -977,15 +979,15 @@ public class QueryEditor extends DefaultTabView
         }
 
         try {
-            
+
             cleanup();
-        
+
         } catch (Exception e) {
-            
+
             GUIUtilities.displayExceptionErrorDialog(
                     "An error occurred when closing this editor.\nWhile this could " +
-                    "be nothing, sometimes it helps to check the stack trace to see if anything " +
-                    "peculiar happened.\n\nThe system returned:\n" + e.getMessage(), e);
+                            "be nothing, sometimes it helps to check the stack trace to see if anything " +
+                            "peculiar happened.\n\nThe system returned:\n" + e.getMessage(), e);
         }
 
         return true;
@@ -1116,16 +1118,16 @@ public class QueryEditor extends DefaultTabView
     }
 
     public void setSelectedConnection(DatabaseConnection databaseConnection) {
-        
+
         if (connectionsCombo.contains(databaseConnection)) {
-            
+
             connectionsCombo.getModel().setSelectedItem(databaseConnection);
 
         } else {
-            
+
             selectConnection = databaseConnection;
         }
-        
+
     }
 
     public void preExecute() {
@@ -1153,7 +1155,7 @@ public class QueryEditor extends DefaultTabView
 
         delegate.executeQuery(null, true);
     }
-    
+
     /**
      * Executes the specified query.
      *
@@ -1387,11 +1389,11 @@ public class QueryEditor extends DefaultTabView
     public void changeSelectionToUnderscore() {
         editorPanel.changeSelectionToUnderscore();
     }
-    
+
     public void changeSelectionToCamelCase() {
         editorPanel.changeSelectionToCamelCase();
     }
-    
+
     // ---------------------------------------------
 
     // ---------------------------------------------
@@ -1407,7 +1409,7 @@ public class QueryEditor extends DefaultTabView
     }
 
     public int save(boolean saveAs) {
-        
+
         String text = editorPanel.getQueryAreaText();
 
         QueryEditorFileWriter writer = new QueryEditorFileWriter();
@@ -1468,9 +1470,9 @@ public class QueryEditor extends DefaultTabView
      * @param the encapsulating event
      */
     public void connected(ConnectionEvent connectionEvent) {
-        
+
         connectionsCombo.addElement(connectionEvent.getDatabaseConnection());
-        
+
         DatabaseConnection databaseConnection = connectionEvent.getDatabaseConnection();
         if (databaseConnection == selectConnection) {
 
@@ -1494,10 +1496,10 @@ public class QueryEditor extends DefaultTabView
 
     public boolean canHandleEvent(ApplicationEvent event) {
         return (event instanceof ConnectionEvent)
-            || (event instanceof KeywordEvent)
-            || (event instanceof UserPreferenceEvent)
-            || (event instanceof QueryShortcutEvent)
-            || (event instanceof QueryBookmarkEvent);
+                || (event instanceof KeywordEvent)
+                || (event instanceof UserPreferenceEvent)
+                || (event instanceof QueryShortcutEvent)
+                || (event instanceof QueryBookmarkEvent);
     }
 
     public void queryBookmarkAdded(QueryBookmarkEvent e) {
@@ -1520,15 +1522,15 @@ public class QueryEditor extends DefaultTabView
         String text = getSelectedText();
         if (text == null) {
 
-            QueryWithPosition queryAtCursor = getQueryAtCursor();            
+            QueryWithPosition queryAtCursor = getQueryAtCursor();
             start = queryAtCursor.getStart();
             end = queryAtCursor.getEnd();
             text = getQueryAtCursor().getQuery();
-            
+
         }
 
         String formattedText = formatter.format(text);
-        editorPanel.replaceRegion(start, end, formattedText);        
+        editorPanel.replaceRegion(start, end, formattedText);
 //        setEditorText(formattedText);
     }
 
@@ -1542,7 +1544,7 @@ public class QueryEditor extends DefaultTabView
         QueryEditorSettings.initialise();
 
         if (event.getEventType() == UserPreferenceEvent.QUERY_EDITOR
-                ||event.getEventType() == UserPreferenceEvent.ALL) {
+                || event.getEventType() == UserPreferenceEvent.ALL) {
 
             setEditorPreferences();
         }
@@ -1571,7 +1573,7 @@ public class QueryEditor extends DefaultTabView
         baseEditorPanel.setVisible(true);
         resultsBase.setVisible(false);
     }
-    
+
     public void toggleResultPane() {
 
         if (baseEditorPanel.isVisible()) {
@@ -1580,7 +1582,7 @@ public class QueryEditor extends DefaultTabView
             baseEditorPanel.setVisible(false);
 
         } else {
-        
+
             baseEditorPanel.setVisible(true);
             splitPane.setDividerLocation(lastDividerLocation);
         }
@@ -1588,16 +1590,16 @@ public class QueryEditor extends DefaultTabView
     }
 
     private void resetPanels() {
-        
+
         resultsBase.setVisible(true);
         baseEditorPanel.setVisible(true);
 
         if (lastDividerLocation > 0) {
-        
+
             splitPane.setDividerLocation(lastDividerLocation);
-            
+
         } else {
-            
+
             splitPane.setDividerLocation(0.5);
         }
     }

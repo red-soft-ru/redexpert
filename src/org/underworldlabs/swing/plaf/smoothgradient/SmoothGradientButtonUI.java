@@ -20,23 +20,14 @@
 
 package org.underworldlabs.swing.plaf.smoothgradient;
 
-import java.awt.Container;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-
-import javax.swing.AbstractButton;
-import javax.swing.ButtonModel;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JToolBar;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.metal.MetalButtonUI;
+import java.awt.*;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SmoothGradientButtonUI extends MetalButtonUI {
 
@@ -55,7 +46,7 @@ public class SmoothGradientButtonUI extends MetalButtonUI {
         super.installDefaults(b);
 //        PolishedLookUtils.installNarrowMargin(b, getPropertyPrefix());
         borderPaintsFocus =
-            Boolean.TRUE.equals(UIManager.get("Button.borderPaintsFocus"));
+                Boolean.TRUE.equals(UIManager.get("Button.borderPaintsFocus"));
     }
 
     /**
@@ -69,6 +60,7 @@ public class SmoothGradientButtonUI extends MetalButtonUI {
         b.addPropertyChangeListener(Options.IS_NARROW_KEY, listener);
     }
 */
+
     /**
      * Uninstalls the extra listener for a change of the isNarrow property.
      */ /*
@@ -81,7 +73,6 @@ public class SmoothGradientButtonUI extends MetalButtonUI {
     }
 */
     // Painting ***************************************************************
-
     public void update(Graphics g, JComponent c) {
         AbstractButton b = (AbstractButton) c;
         if (c.isOpaque()) {
@@ -93,11 +84,11 @@ public class SmoothGradientButtonUI extends MetalButtonUI {
 
                 if (is3D(b)) {
                     Rectangle r =
-                        new Rectangle(
-                            1,
-                            1,
-                            c.getWidth() - 2,
-                            c.getHeight() - 1);
+                            new Rectangle(
+                                    1,
+                                    1,
+                                    c.getWidth() - 2,
+                                    c.getHeight() - 1);
                     SmoothGradientUtils.add3DEffekt(g, r);
                 }
             }
@@ -109,18 +100,18 @@ public class SmoothGradientButtonUI extends MetalButtonUI {
      * Paints the focus with close to the button's border.
      */
     protected void paintFocus(
-        Graphics g,
-        AbstractButton b,
-        Rectangle viewRect,
-        Rectangle textRect,
-        Rectangle iconRect) {
+            Graphics g,
+            AbstractButton b,
+            Rectangle viewRect,
+            Rectangle textRect,
+            Rectangle iconRect) {
 
         if (borderPaintsFocus) {
             return;
         }
 
         boolean isDefault =
-            b instanceof JButton && ((JButton) b).isDefaultButton();
+                b instanceof JButton && ((JButton) b).isDefaultButton();
         int topLeftInset = isDefault ? 3 : 2;
         int width = b.getWidth() - 1 - topLeftInset * 2;
         int height = b.getHeight() - 1 - topLeftInset * 2;
@@ -133,21 +124,21 @@ public class SmoothGradientButtonUI extends MetalButtonUI {
 
     /**
      * Checks and answers if this is button is in a tool bar.
-     * 
-     * @param b   the button to check
+     *
+     * @param b the button to check
      * @return true if in tool bar, false otherwise
      */
     protected boolean isToolBarButton(AbstractButton b) {
         Container parent = b.getParent();
         return parent != null
-            && (parent instanceof JToolBar
+                && (parent instanceof JToolBar
                 || parent.getParent() instanceof JToolBar);
     }
 
     /**
      * Checks and answers if this button shall use a pseudo 3D effect
-     * 
-     * @param b  the button to check
+     *
+     * @param b the button to check
      * @return true indicates a 3D effect, false flat
      */
     protected boolean is3D(AbstractButton b) {
@@ -157,18 +148,18 @@ public class SmoothGradientButtonUI extends MetalButtonUI {
             return false;
         ButtonModel model = b.getModel();
         return SmoothGradientUtils.is3D("Button.")
-            && b.isBorderPainted()
-            && model.isEnabled()
-            && !(model.isPressed() && model.isArmed())
-            && !(b.getBorder() instanceof EmptyBorder);
+                && b.isBorderPainted()
+                && model.isEnabled()
+                && !(model.isPressed() && model.isArmed())
+                && !(b.getBorder() instanceof EmptyBorder);
 
         /*
-         * Implementation note regarding the last line: instead of checking 
+         * Implementation note regarding the last line: instead of checking
          * for the EmptyBorder in NetBeans, I'd prefer to just check the
          * 'borderPainted' property. I'd recommend to the NetBeans developers,
          * to switch this property on and off, instead of changing the border.
          */
-    } 
+    }
 
 }
 

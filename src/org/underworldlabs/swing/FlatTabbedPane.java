@@ -20,23 +20,24 @@
 
 package org.underworldlabs.swing;
 
-import javax.swing.JTabbedPane;
 import org.underworldlabs.swing.plaf.FlatTabbedPaneUI;
 
+import javax.swing.*;
+
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class FlatTabbedPane extends JTabbedPane {
 
-    public FlatTabbedPane() {}
+    public FlatTabbedPane() {
+    }
 
     public FlatTabbedPane(int tabPlacement) {
         super(tabPlacement);
@@ -45,7 +46,7 @@ public class FlatTabbedPane extends JTabbedPane {
     public void updateUI() {
         setUI(new FlatTabbedPaneUI());
     }
-    
+
 }
 
 

@@ -25,7 +25,7 @@ package org.executequery.gui;
  * a component panel completing a process may indicate for this
  * container to close.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface ActionContainer {
 
@@ -35,7 +35,7 @@ public interface ActionContainer {
      * @return true | false
      */
     public boolean isDialog();
-    
+
     /**
      * Indicates that a [long-running] process has begun.
      * This triggers the glass pane on and sets the cursor appropriately.
@@ -43,11 +43,11 @@ public interface ActionContainer {
     public void block();
 
     /**
-     * Indicates that a [long-running] process has ended. 
+     * Indicates that a [long-running] process has ended.
      * This triggers the glass pane off and sets the cursor appropriately.
      */
-    public void unblock();    
-    
+    public void unblock();
+
     /**
      * Indicates the process has completed.
      */

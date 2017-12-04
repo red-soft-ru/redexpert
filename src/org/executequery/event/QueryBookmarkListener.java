@@ -31,7 +31,7 @@ public interface QueryBookmarkListener extends ApplicationEventListener {
      * Notification of a bookmark removed from the list.
      */
     public void queryBookmarkRemoved(QueryBookmarkEvent e);
-    
+
 }
 
 

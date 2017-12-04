@@ -20,21 +20,11 @@
 
 package org.underworldlabs.swing.plaf.base;
 
-import java.awt.Rectangle;
-import java.awt.Shape;
-
-import javax.swing.JComponent;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicTextPaneUI;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultHighlighter;
-import javax.swing.text.Document;
-import javax.swing.text.Highlighter;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
-import javax.swing.text.View;
+import javax.swing.text.*;
+import java.awt.*;
 
 /**
  * An alternative UI delegate for JTextArea that paints the
@@ -44,9 +34,9 @@ import javax.swing.text.View;
  *
  * @author Alan Moore
  */
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CustomTextPaneUI extends BasicTextPaneUI {
     /**
@@ -61,7 +51,7 @@ public class CustomTextPaneUI extends BasicTextPaneUI {
         UIManager.put(key, name);
         UIManager.put(name, cls);
     }
-    
+
     /**
      * Creates a UI for a JTextPane.
      *
@@ -71,7 +61,7 @@ public class CustomTextPaneUI extends BasicTextPaneUI {
     public static ComponentUI createUI(JComponent c) {
         return new CustomTextPaneUI();
     }
-    
+
     /**
      * Creates the object to use for adding highlights.  This will
      * be a non-layered version of DefaultHighlighter, so that
@@ -84,7 +74,7 @@ public class CustomTextPaneUI extends BasicTextPaneUI {
         h.setDrawsLayeredHighlights(false);
         return h;
     }
-    
+
     /**
      * Causes the portion of the view responsible for the given part
      * of the model to be repainted. This is overridden to repaint the
@@ -95,26 +85,25 @@ public class CustomTextPaneUI extends BasicTextPaneUI {
      * @param p1 the end of the range >= p0
      */
     public void damageRange(JTextComponent t, int p0, int p1,
-    Position.Bias p0Bias, Position.Bias p1Bias) {
+                            Position.Bias p0Bias, Position.Bias p1Bias) {
         View rv = getRootView(t);
         Rectangle alloc = getVisibleEditorRect();
         Document doc = t.getDocument();
         if (rv != null && alloc != null && doc != null) {
             if (doc instanceof AbstractDocument) {
-                ((AbstractDocument)doc).readLock();
+                ((AbstractDocument) doc).readLock();
             }
             try {
                 rv.setSize(alloc.width, alloc.height);
                 Shape toDamage = rv.modelToView(p0, p0Bias, p1, p1Bias, alloc);
                 Rectangle rect = (toDamage instanceof Rectangle)
-                ? (Rectangle)toDamage
-                : toDamage.getBounds();
+                        ? (Rectangle) toDamage
+                        : toDamage.getBounds();
                 t.repaint(alloc.x, rect.y, alloc.width, rect.height);
-            }
-            catch (BadLocationException ex) {}
-            finally {
+            } catch (BadLocationException ex) {
+            } finally {
                 if (doc instanceof AbstractDocument) {
-                    ((AbstractDocument)doc).readUnlock();
+                    ((AbstractDocument) doc).readUnlock();
                 }
             }
         }

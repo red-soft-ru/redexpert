@@ -11,7 +11,7 @@ public class ComparerDBCommands extends OpenFrameCommand implements BaseCommand 
 
     public void execute(ActionEvent e) {
 
-        if (GUIUtilities.getCentralPane(ComparerDBPanel.TITLE)==null)
+        if (GUIUtilities.getCentralPane(ComparerDBPanel.TITLE) == null)
             GUIUtilities.addCentralPane(ComparerDBPanel.TITLE,
                     ComparerDBPanel.FRAME_ICON,
                     new ComparerDBPanel(),

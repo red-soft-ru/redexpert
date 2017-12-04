@@ -20,19 +20,6 @@
 
 package org.executequery.gui;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.JComboBox;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
-
 import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.gui.text.DefaultTextEditorContainer;
@@ -45,23 +32,29 @@ import org.underworldlabs.swing.toolbar.PanelToolBar;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class SystemLogsViewer extends DefaultTextEditorContainer 
-                              implements ItemListener,
-                                         TabView,
-                                         ActionListener {
-    
+public class SystemLogsViewer extends DefaultTextEditorContainer
+        implements ItemListener,
+        TabView,
+        ActionListener {
+
     public static final String TITLE = "System Log Viewer";
-    
+
     public static final String FRAME_ICON = "SystemOutput.png";
-    
+
     private JTextArea textArea;
-    
+
     private JComboBox logCombo;
-    
+
     private RolloverButton reloadButton;
     private RolloverButton trashButton;
 
@@ -79,14 +72,16 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
         }
 
     }
-    
-    /** <p>Initializes the state of this instance. */
+
+    /**
+     * <p>Initializes the state of this instance.
+     */
     private void init(final int type) throws Exception {
 
         String[] logs = {"System Log: ~/.redexpert/logs/eq.output.log",
-                         "Export Log: ~/.redexpert/logs/eq.export.log",
-                         "Import Log: ~/.redexpert/logs/eq.import.log"};
-        
+                "Export Log: ~/.redexpert/logs/eq.export.log",
+                "Import Log: ~/.redexpert/logs/eq.import.log"};
+
         logCombo = WidgetFactory.createComboBox(logs);
         logCombo.addItemListener(this);
 
@@ -95,11 +90,11 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
         textComponent = textArea;
 
         reloadButton = new RolloverButton("/org/executequery/icons/Refresh16.png",
-                                      "Reload this log file");
+                "Reload this log file");
 
         trashButton = new RolloverButton("/org/executequery/icons/Delete16.png",
-                                        "Reset this log file");
-        
+                "Reset this log file");
+
         reloadButton.addActionListener(this);
         trashButton.addActionListener(this);
 
@@ -110,8 +105,8 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
         tools.addSeparator();
         tools.addComboBox(logCombo);
 
-        simpleTextArea.setBorder(BorderFactory.createEmptyBorder(1,3,3,3));
-        
+        simpleTextArea.setBorder(BorderFactory.createEmptyBorder(1, 3, 3, 3));
+
         JPanel base = new JPanel(new BorderLayout());
         base.add(tools, BorderLayout.NORTH);
         base.add(simpleTextArea, BorderLayout.CENTER);
@@ -128,7 +123,7 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
             }
 
         });
-        
+
     }
 
     public void itemStateChanged(ItemEvent e) {
@@ -141,7 +136,7 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
 
         load(logCombo.getSelectedIndex());
     }
-    
+
     public void setSelectedLog(int type) {
 
         logCombo.setSelectedIndex(type);
@@ -150,7 +145,7 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
     private void load(final int type) {
 
         SwingWorker worker = new SwingWorker() {
-        
+
             public Object construct() {
 
                 GUIUtilities.showWaitCursor();
@@ -158,10 +153,11 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
 
                 return logRepository().load(type);
             }
+
             public void finished() {
-                
-                String content = (String)get();
-                
+
+                String content = (String) get();
+
                 setLogText(content);
             }
         };
@@ -172,24 +168,24 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
     private void setLogText(final String text) {
 
         try {
-        
+
             GUIUtils.invokeAndWait(new Runnable() {
 
                 public void run() {
-    
+
                     if (!MiscUtils.isNull(text)) {
-    
+
                         textArea.setText(text);
-    
+
                     } else {
-    
+
                         textArea.setText("");
                     }
-    
-                    textArea.setCaretPosition(0);                    
+
+                    textArea.setCaretPosition(0);
                 }
             });
-            
+
         } catch (OutOfMemoryError e) {
 
             GUIUtils.scheduleGC();
@@ -206,10 +202,10 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
         }
 
     }
-    
+
     private LogRepository logRepository() {
 
-        return (LogRepository)RepositoryCache.load(LogRepository.REPOSITORY_ID);
+        return (LogRepository) RepositoryCache.load(LogRepository.REPOSITORY_ID);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -223,23 +219,23 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
         } else if (source == trashButton) {
 
             if (resetConfirmed()) {
-                
+
                 int type = logCombo.getSelectedIndex();
 
                 logRepository().reset(type);
 
                 textArea.setText("");
-                
+
             }
-            
+
         }
 
     }
-    
+
     private boolean resetConfirmed() {
 
         String message = "Are you sure you want to reset the selected log file?";
-        
+
         return GUIUtilities.displayConfirmDialog(message) == JOptionPane.YES_OPTION;
     }
 
@@ -279,7 +275,7 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
     public String toString() {
         return TITLE;
     }
-    
+
 }
 
 

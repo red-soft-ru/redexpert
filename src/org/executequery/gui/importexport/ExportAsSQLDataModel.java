@@ -22,9 +22,8 @@ package org.executequery.gui.importexport;
 
 import org.executequery.databaseobjects.DatabaseHost;
 
-/** 
- *
- * @author   Takis Diakoumis
+/**
+ * @author Takis Diakoumis
  */
 public class ExportAsSQLDataModel extends DefaultImportExportDataModel {
 
@@ -32,7 +31,7 @@ public class ExportAsSQLDataModel extends DefaultImportExportDataModel {
     private boolean includePrimaryKeyConstraints;
     private boolean includeForeignKeyConstraints;
     private boolean includeUniqueKeyConstraints;
-    
+
     public ExportAsSQLDataModel(DatabaseHost databaseHost) {
         super();
         setDatabaseHost(databaseHost);
@@ -45,11 +44,11 @@ public class ExportAsSQLDataModel extends DefaultImportExportDataModel {
     public boolean includeCreateTableStatements() {
         return includeCreateTableStatements;
     }
-    
+
     public boolean includePrimaryKeyConstraints() {
         return includePrimaryKeyConstraints;
     }
-    
+
     public boolean includeForeignKeyConstraints() {
         return includeForeignKeyConstraints;
     }

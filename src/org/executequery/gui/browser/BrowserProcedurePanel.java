@@ -24,7 +24,6 @@ import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseExecutable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.ProcedureParameter;
-import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
 import org.executequery.databaseobjects.impl.DefaultDatabaseProcedure;
 import org.executequery.databaseobjects.impl.SystemDatabaseFunction;
 import org.executequery.gui.DefaultTable;
@@ -44,27 +43,28 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
-    
+
     public static final String NAME = "BrowserProcedurePanel";
-    
+
     private DisabledField procNameField;
     //private DisabledField schemaNameField;
-    
+
     private JLabel objectNameLabel;
-    
+
     private JTable table;
     private ProcedureTableModel model;
-    
+
     private Map cache;
 
     JTextPane sourceTextPane;
     JTextPane createSqlPane;
-    
-    /** the browser's control object */
+
+    /**
+     * the browser's control object
+     */
     private BrowserController controller;
 
     public BrowserProcedurePanel(BrowserController controller) {
@@ -73,14 +73,13 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
 
         try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
     }
-    
-    private void init() throws Exception {        
+
+    private void init() throws Exception {
         model = new ProcedureTableModel();
         table = new DefaultTable(model);
         table.getTableHeader().setReorderingAllowed(false);
@@ -123,14 +122,14 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
 
 
 //        tabs.add("Source", sourcePanel);
-        
+
         objectNameLabel = new JLabel();
         procNameField = new DisabledField();
         //schemaNameField = new DisabledField();
-        
+
         JPanel base = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        Insets insets = new Insets(10,10,5,5);
+        Insets insets = new Insets(10, 10, 5, 5);
         gbc.anchor = GridBagConstraints.NORTHEAST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridx++;
@@ -160,28 +159,29 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         ++gbc.gridy;
         gbc.insets.top = 0;
         //base.add(schemaNameField, gbc);
-        
+
         setHeaderText(bundleString("procedure"));
         setHeaderIcon(GUIUtilities.loadIcon("Procedure24.png", true));
         setContentPanel(base);
         cache = new HashMap();
-        
+
     }
-    
+
     public String getLayoutName() {
         return NAME;
     }
-    
+
     public Printable getPrintable() {
         return new TablePrinter(table, procNameField.getText());
     }
-    
+
     public void refresh() {
         cache.clear();
     }
-    
-    public void cleanup() {}
-    
+
+    public void cleanup() {
+    }
+
     public JTable getTable() {
         return table;
     }
@@ -191,7 +191,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
             cache.remove(object);
         }
     }
-    
+
     public boolean hasObject(Object object) {
         return cache.containsKey(object);
     }
@@ -199,7 +199,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
     public void setValues(DatabaseExecutable executeable) {
         int type = executeable.getType();
         if (executeable instanceof SystemDatabaseFunction) {
-            type = ((SystemDatabaseFunction)executeable).getRealType();
+            type = ((SystemDatabaseFunction) executeable).getRealType();
         }
 
         switch (type) {
@@ -245,18 +245,17 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
                 createSqlPane.setText(p.getCreateSQLText());
             }
 
-        } 
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             controller.handleException(e);
         }
 
     }
-    
+
     public void setValues(BaseDatabaseObject metaObject) {
-        DefaultDatabaseProcedure procedure = (DefaultDatabaseProcedure)cache.get(metaObject);
+        DefaultDatabaseProcedure procedure = (DefaultDatabaseProcedure) cache.get(metaObject);
         setValues(metaObject, procedure);
     }
-    
+
     public void setValues(BaseDatabaseObject metaObject, DefaultDatabaseProcedure procedure) {
         int type = metaObject.getType();
         switch (type) {
@@ -300,153 +299,154 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
 
         //schemaNameField.setText(metaObject.getSchemaName());
     }
-    
+
     private void setHeaderIcon(String icon) {
 
 //        setHeaderIcon(GUIUtilities.loadIcon(icon, true));
     }
-    
+
     class ProcedureTableModel extends AbstractTableModel {
-        
+
         private String UNKNOWN = "UNKNOWN";
         private String RETURN = "RETURN";
         private String RESULT = "RESULT";
         private String IN = "IN";
         private String INOUT = "INOUT";
         private String OUT = "OUT";
-        
+
         private String[] columns = Bundles.getCommons(new String[]{"parameter", "data-type", "mode"});
         private ProcedureParameter[] procParams;
-        
-        public ProcedureTableModel() {}
-        
+
+        public ProcedureTableModel() {
+        }
+
         public ProcedureTableModel(ProcedureParameter[] _procParams) {
             procParams = _procParams;
         }
-        
+
         public int getRowCount() {
-            
+
             if (procParams == null)
                 return 0;
-            
+
             return procParams.length;
         }
-        
+
         public int getColumnCount() {
             return columns.length;
         }
-        
+
         public void setValues(ProcedureParameter[] _procParams) {
-            
+
             if (_procParams == procParams)
                 return;
-            
+
             procParams = _procParams;
             fireTableDataChanged();
-            
+
         }
-        
+
         public Object getValueAt(int row, int col) {
             ProcedureParameter param = procParams[row];
-            
+
             switch (col) {
-                
+
                 case 0:
                     return param.getName();
-                    
+
                 case 1:
-                    
+
                     if (param.getSize() > 0)
                         return param.getSqlType() + "(" + param.getSize() + ")";
                     else
                         return param.getSqlType();
-                    
+
                 case 2:
                     int mode = param.getType();
-                    
+
                     switch (mode) {
-                        
+
                         case DatabaseMetaData.procedureColumnIn:
                             return IN;
-                            
+
                         case DatabaseMetaData.procedureColumnOut:
                             return OUT;
-                            
+
                         case DatabaseMetaData.procedureColumnInOut:
                             return INOUT;
-                            
+
                         case DatabaseMetaData.procedureColumnUnknown:
                             return UNKNOWN;
-                            
+
                         case DatabaseMetaData.procedureColumnResult:
                             return RESULT;
-                            
+
                         case DatabaseMetaData.procedureColumnReturn:
                             return RETURN;
-                            
+
                         default:
                             return UNKNOWN;
-                            
+
                     }
-                    
+
                 default:
                     return UNKNOWN;
-                    
+
             }
-            
+
         }
-        
+
         public void setValueAt(Object value, int row, int col) {
             ProcedureParameter param = procParams[row];
-            
+
             switch (col) {
-                
+
                 case 0:
-                    param.setName((String)value);
+                    param.setName((String) value);
                     break;
-                    
+
                 case 1:
-                    param.setSqlType((String)value);
+                    param.setSqlType((String) value);
                     break;
-                    
+
                 case 2:
-                    
+
                     if (value == IN)
                         param.setType(DatabaseMetaData.procedureColumnIn);
-                    
+
                     else if (value == OUT)
                         param.setType(DatabaseMetaData.procedureColumnOut);
-                    
+
                     else if (value == INOUT)
                         param.setType(DatabaseMetaData.procedureColumnInOut);
-                    
+
                     else if (value == UNKNOWN)
                         param.setType(DatabaseMetaData.procedureColumnUnknown);
-                    
+
                     else if (value == RESULT)
                         param.setType(DatabaseMetaData.procedureColumnResult);
-                    
+
                     else if (value == RETURN)
                         param.setType(DatabaseMetaData.procedureColumnReturn);
-                    
-                    
+
+
             }
-            
+
             fireTableCellUpdated(row, col);
-            
+
         }
-        
+
         public String getColumnName(int col) {
             return columns[col];
         }
-        
+
         public boolean isCellEditable(int row, int col) {
             return false;
         }
-        
+
     } // class ParameterTableModel
-    
-    
+
+
 }
 
 

@@ -20,92 +20,101 @@
 
 package org.executequery.gui.browser;
 
-import javax.swing.JButton;
-
 import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
 
+import javax.swing.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 class ConnectionsTreeToolBar extends PanelToolBar {
 
-    /** move connection up button */
+    /**
+     * move connection up button
+     */
     private JButton upButton;
-    
-    /** move connection down button */
+
+    /**
+     * move connection down button
+     */
     private JButton downButton;
 
-    /** the reload node button */
+    /**
+     * the reload node button
+     */
     private JButton reloadButton;
-    
-    /** new connection button */
+
+    /**
+     * new connection button
+     */
     @SuppressWarnings("unused")
     private JButton newConnectionButton;
 
-    /** delete connection button */
+    /**
+     * delete connection button
+     */
     private JButton deleteConnectionButton;
 
     private ConnectionsTreePanel treePanel;
-    
+
     public ConnectionsTreeToolBar(ConnectionsTreePanel treePanel) {
-        
+
         this.treePanel = treePanel;
 
         init();
     }
-    
+
     private void init() {
-        
+
         newConnectionButton = addButton(
-                treePanel, "newConnection", 
+                treePanel, "newConnection",
                 GUIUtilities.getAbsoluteIconPath("NewConnection16.png"),
                 Bundles.getCommon("newConnection.button"));
 
         addButton(
-                treePanel, "newFolder", 
-                GUIUtilities.getAbsoluteIconPath("NewFolder16.png"), 
+                treePanel, "newFolder",
+                GUIUtilities.getAbsoluteIconPath("NewFolder16.png"),
                 bundleString("newFolder"));
-        
+
         deleteConnectionButton = addButton(
-                treePanel, "deleteConnection", 
+                treePanel, "deleteConnection",
                 GUIUtilities.getAbsoluteIconPath("Delete16.png"),
                 Bundles.getCommon("delete.button"));
 
         upButton = addButton(
-                treePanel, "moveConnectionUp", 
+                treePanel, "moveConnectionUp",
                 GUIUtilities.getAbsoluteIconPath("Up16.png"),
                 bundleString("moveConnectionUp"));
 
         downButton = addButton(
-                treePanel, "moveConnectionDown", 
+                treePanel, "moveConnectionDown",
                 GUIUtilities.getAbsoluteIconPath("Down16.png"),
                 bundleString("moveConnectionDown"));
 
         reloadButton = addButton(
-                treePanel, "reloadSelection", 
+                treePanel, "reloadSelection",
 //                GUIUtilities.getAbsoluteIconPath("Reload16.png"), 
                 GUIUtilities.getAbsoluteIconPath("Refresh16.png"),
                 bundleString("reloadSelection"));
 
         addButton(
-                treePanel, "sortConnections", 
+                treePanel, "sortConnections",
                 GUIUtilities.getAbsoluteIconPath("SortAtoZ16.png"),
                 bundleString("sortConnections"));
 
         addButton(treePanel.getTreeFindAction());
 
         addButton(
-                treePanel, "collapseAll", 
+                treePanel, "collapseAll",
                 GUIUtilities.getAbsoluteIconPath("Collapse16.png"),
                 bundleString("collapseAll"));
 
     }
 
-    protected void enableButtons(final boolean enableUpButton, 
+    protected void enableButtons(final boolean enableUpButton,
                                  final boolean enableDownButton,
                                  final boolean enableReloadButton,
                                  final boolean enableDeleteButton) {
@@ -122,6 +131,7 @@ class ConnectionsTreeToolBar extends PanelToolBar {
 
         });
     }
+
     private String bundleString(String key) {
         return Bundles.get(getClass(), key);
     }

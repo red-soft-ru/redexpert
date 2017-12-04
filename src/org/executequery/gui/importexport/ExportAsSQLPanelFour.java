@@ -20,34 +20,27 @@
 
 package org.executequery.gui.importexport;
 
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-
 import org.executequery.gui.WidgetFactory;
 
+import javax.swing.*;
+import java.awt.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 class ExportAsSQLPanelFour extends AbstractImportExportPanel {
 
     private JComboBox errorCombo;
-    
+
     private JCheckBox createTableStatementsCheck;
     private JCheckBox includePrimaryConstraintsCheck;
     private JCheckBox includeForeignConstraintsCheck;
     private JCheckBox includeUniqueConstraintsCheck;
-    
+
     public ExportAsSQLPanelFour(ImportExportWizard importExportWizard) {
 
         super(new GridBagLayout(), importExportWizard);
-        
+
         init();
     }
 
@@ -59,9 +52,9 @@ class ExportAsSQLPanelFour extends AbstractImportExportPanel {
         includePrimaryConstraintsCheck = createIncludePrimaryConstraintsCheck();
         includeForeignConstraintsCheck = createIncludeForeignConstraintsCheck();
         includeUniqueConstraintsCheck = createIncludeUniqueConstraintsCheck();
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5,10,15,10);
+        gbc.insets = new Insets(5, 10, 15, 10);
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.gridwidth = 2;
         gbc.gridy = 0;
@@ -136,17 +129,17 @@ class ExportAsSQLPanelFour extends AbstractImportExportPanel {
     }
 
     public void panelSelected() {
-        
+
     }
 
     public boolean getIncludePrimaryKeyConstraints() {
-        
-        return includePrimaryConstraintsCheck.isSelected(); 
+
+        return includePrimaryConstraintsCheck.isSelected();
     }
-    
+
     public boolean getIncludeForeignKeyConstraints() {
-        
-        return includeForeignConstraintsCheck.isSelected(); 
+
+        return includeForeignConstraintsCheck.isSelected();
     }
 
     public boolean getIncludeCreateTableStatement() {
@@ -164,7 +157,7 @@ class ExportAsSQLPanelFour extends AbstractImportExportPanel {
         return errorCombo.getSelectedIndex() == 0 ?
                 OnErrorOption.LOG_AND_CONTINUE : OnErrorOption.STOP_TRANSFER;
     }
-    
+
 }
 
 

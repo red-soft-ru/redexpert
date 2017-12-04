@@ -20,16 +20,6 @@
 
 package org.executequery.gui.importexport;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
-
-import javax.swing.JComboBox;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-
 import org.executequery.ActiveComponent;
 import org.executequery.components.TableSelectionCombosGroup;
 import org.executequery.databaseobjects.DatabaseColumn;
@@ -41,51 +31,56 @@ import org.executequery.log.Log;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.wizard.DefaultWizardProcessModel;
 
+import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
-                               implements ActiveComponent, ImportExportWizard {
+        implements ActiveComponent, ImportExportWizard {
 
     public static final String TITLE = "Export as SQL";
 
     private static final Dimension panelSize = new Dimension(580, 420);
 
     private ExportAsSQLDataModel exportDataModel;
-    
+
     private TableSelectionCombosGroup tableSelectionCombosGroup;
 
     private ExportAsSQLPanelOne firstPanel;
 
     private ImportExportPanelTwo secondPanel;
-    
+
     private ImportExportPanelThree thirdPanel;
 
     private ExportAsSQLPanelFour fourthPanel;
 
     private ExportAsSQLWorker exportAsSQLWorker;
-    
+
     private NewImportExportProgressPanel fifthPanel;
-    
+
     private final ActionContainer parent;
 
     public ExportAsSQLWizard(ActionContainer parent) {
-    
+
         this(parent, null);
     }
-    
-    public ExportAsSQLWizard(ActionContainer parent, 
+
+    public ExportAsSQLWizard(ActionContainer parent,
                              DatabaseTable databaseTable) {
 
         this.parent = parent;
         init();
-        
+
         if (databaseTable != null) {
-            
+
             setInitialSelectionForTable(databaseTable);
         }
-        
+
     }
 
     private void init() {
@@ -94,7 +89,7 @@ public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
 
         tableSelectionCombosGroup = new TableSelectionCombosGroup();
         exportDataModel = createExportDataModel(tableSelectionCombosGroup.getSelectedHost());
-     
+
         firstPanel = new ExportAsSQLPanelOne(this);
         initAndAddPanel(firstPanel);
 
@@ -113,16 +108,16 @@ public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
         panel.setPreferredSize(panelSize);
         getModel().addPanel(panel);
     }
-    
+
     private ExportAsSQLDataModel createExportDataModel(DatabaseHost databaseHost) {
         return new ExportAsSQLDataModel(databaseHost);
     }
-    
+
     public String getFileSuffix() {
 
         return "sql";
     }
-    
+
     public void stopTransfer() {
         setButtonsEnabled(true);
         exportAsSQLWorker.cancelTransfer();
@@ -154,52 +149,52 @@ public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
         tableSelectionCombosGroup.close();
         exportDataModel.getDatabaseHost().close();
     }
-    
+
     public void enableButtons(boolean enable) {
         setButtonsEnabled(enable);
         setNextButtonEnabled(enable);
         setBackButtonEnabled(enable);
         setCancelButtonEnabled(enable);
     }
-    
+
     private boolean doNext() {
-        
+
         int index = getModel().getSelectedIndex();
 
         switch (index) {
 
             case 0:
-                
+
                 firstPanelToModel();
-    
+
                 if (secondPanel == null) {
                     secondPanel = new ImportExportPanelTwo(this);
                     initAndAddPanel(secondPanel);
                 }
-    
+
                 secondPanel.panelSelected();
                 break;
 
             case 1:
-                
+
                 if (!validateSecondPanelSelections()) {
                     return false;
                 }
-                
+
                 secondPanelToModel();
-    
+
                 if (thirdPanel == null) {
                     thirdPanel = new ImportExportPanelThree(this);
                     initAndAddPanel(thirdPanel);
                 }
-    
+
                 thirdPanel.panelSelected();
                 break;
 
             case 2:
 
                 thirdPanelToModel();
-                
+
                 if (!validateThirdPanelSelections()) {
                     return false;
                 }
@@ -208,12 +203,12 @@ public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
                     fourthPanel = new ExportAsSQLPanelFour(this);
                     initAndAddPanel(fourthPanel);
                 }
-    
+
                 fourthPanel.panelSelected();
                 break;
 
             case 3:
-                
+
                 fourthPanelToModel();
 
                 if (fifthPanel == null) {
@@ -225,7 +220,7 @@ public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
                 break;
 
         }
-        
+
         return true;
     }
 
@@ -242,11 +237,11 @@ public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
         }
 
     }
-    
+
     private void startExport() {
 
         if (exportAsSQLWorker == null) {
-            
+
             exportAsSQLWorker = new ExportAsSQLWorker(this);
         }
 
@@ -283,13 +278,13 @@ public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
             displayErrorDialog(bundledString("ImportExportPanelThree.invalidDataFileSelection"));
             return false;
         }
-        
+
         StringBuilder sb = new StringBuilder();
         List<ImportExportFile> exportFiles = exportDataModel.getImportExportFiles();
         for (ImportExportFile exportFile : exportFiles) {
-            
+
             if (exportFile.fileExists()) {
-                
+
                 sb.append("\t");
                 sb.append(exportFile.getFile().getName());
                 sb.append("\n");
@@ -298,33 +293,33 @@ public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
         }
 
         if (sb.length() > 0) {
-            
+
             int result = displayConfirmCancelDialog(bundledString("ImportExportPanelThree.filesExist", sb));
             if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.NO_OPTION) {
 
                 return false;
             }
-            
+
         }
-        
+
         return true;
     }
 
     private boolean validateSecondPanelSelections() {
 
         if (!secondPanel.hasSelections()) {
-            
+
             String errorMessage = null;
             if (exportDataModel.isMultipleTableImportExport()) {
 
                 errorMessage = "You must select at least one table";
-                
+
             } else {
 
                 errorMessage = "You must select at least one column";
             }
             displayErrorDialog(errorMessage);
-            
+
             return false;
         }
 
@@ -332,23 +327,23 @@ public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
     }
 
     private Component parentForDialog() {
-        
+
         if (parent.isDialog()) {
-            
+
             return (Component) parent;
         }
-        
+
         return null;
     }
-    
+
     private void displayErrorDialog(String errorMessage) {
 
-        GUIUtils.displayErrorMessage(parentForDialog(), errorMessage);        
+        GUIUtils.displayErrorMessage(parentForDialog(), errorMessage);
     }
 
     private int displayConfirmCancelDialog(String message) {
 
-        return GUIUtils.displayConfirmCancelDialog(parentForDialog(), message);        
+        return GUIUtils.displayConfirmCancelDialog(parentForDialog(), message);
     }
 
     @SuppressWarnings("unchecked")
@@ -358,14 +353,14 @@ public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
 
         List<DatabaseTable> tables = null;
         if (exportDataModel.isMultipleTableImportExport()) {
-        
+
             tables = (Vector<DatabaseTable>) secondPanel.getSelectedItems();
 
         } else {
-            
+
             tables = new ArrayList<DatabaseTable>(1);
             tables.add(tableSelectionCombosGroup.getSelectedTable());
-            
+
             exportDataModel.setDatabaseTableColumns(
                     (List<DatabaseColumn>) secondPanel.getSelectedItems());
         }
@@ -384,32 +379,32 @@ public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
                 !(exportDataModel.isMultipleTableImportExport()));
 
     }
-    
+
     private boolean doPrevious() {
-        
-        
+
+
         setCancelButtonText(Bundles.get("common.cancel.button"));
         setCancelButtonEnabled(true);
 
         return true;
     }
-    
+
     private class ExportAsSQLWizardModel extends DefaultWizardProcessModel {
-        
+
         public ExportAsSQLWizardModel() {
 
             String[] titles = {"Database Connection and Export Type",
-                               "Table Selection",
-                               "Data File Selection",
-                               "Options",
-                               "Exporting Data..."};
+                    "Table Selection",
+                    "Data File Selection",
+                    "Options",
+                    "Exporting Data..."};
             setTitles(titles);
 
             String[] steps = {"Select database connection and transfer type",
-                              "Select the tables/columns",
-                              "Select the data file(s) to export to",
-                              "Set any SQL statement output options",
-                              "Export the data"};
+                    "Select the tables/columns",
+                    "Select the data file(s) to export to",
+                    "Set any SQL statement output options",
+                    "Export the data"};
             setSteps(steps);
         }
 
@@ -419,7 +414,7 @@ public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
             }
             return false;
         }
-        
+
         public boolean next() {
             if (doNext()) {
                 return super.next();

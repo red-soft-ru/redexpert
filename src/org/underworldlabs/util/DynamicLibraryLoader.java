@@ -24,54 +24,53 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DynamicLibraryLoader extends URLClassLoader {
-    
+
     private ClassLoader parent = null;
 
     public DynamicLibraryLoader(URL[] urls) {
         super(urls, ClassLoader.getSystemClassLoader());
         parent = ClassLoader.getSystemClassLoader();
     }
-    
+
     public Class<?> loadLibrary(String clazz)
-      throws ClassNotFoundException {
+            throws ClassNotFoundException {
         return loadClass(clazz, true);
     }
-    
+
     public Class<?> loadLibrary(String clazz, boolean resolve)
-      throws ClassNotFoundException {
+            throws ClassNotFoundException {
         return loadClass(clazz, resolve);
     }
-    
+
     protected synchronized Class<?> loadClass(String classname, boolean resolve)
-      throws ClassNotFoundException {
+            throws ClassNotFoundException {
 
         Class<?> theClass = findLoadedClass(classname);
 
         if (theClass != null) {
             return theClass;
         }
-        
+
         try {
-            
+
             theClass = findBaseClass(classname);
 
         } catch (ClassNotFoundException cnfe) {
-        
+
             theClass = findClass(classname);
-        } 
-        
+        }
+
         if (resolve) {
             resolveClass(theClass);
         }
 
         return theClass;
-        
+
     }
-    
+
     private Class<?> findBaseClass(String name) throws ClassNotFoundException {
 
         if (parent == null) {
@@ -79,9 +78,9 @@ public class DynamicLibraryLoader extends URLClassLoader {
         } else {
             return parent.loadClass(name);
         }
-        
+
     }
-    
+
 }
 
 

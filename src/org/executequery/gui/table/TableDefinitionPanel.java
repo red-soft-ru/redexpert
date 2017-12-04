@@ -43,12 +43,10 @@ import java.awt.event.*;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Vector;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public abstract class TableDefinitionPanel extends JPanel
         implements TableModelListener {

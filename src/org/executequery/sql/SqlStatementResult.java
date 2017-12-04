@@ -20,40 +20,41 @@
 
 package org.executequery.sql;
 
+import org.executequery.Constants;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
-import org.executequery.Constants;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SqlStatementResult {
-    
-    private int type;
-    
-    private int updateCount;
-    
-    private int statementCount;
-    
-    private String message;
-    
-    private String otherErrorMessage;
-    
-    private ResultSet resultSet;
-    
-    private SQLException sqlException;
-    
-    private SQLWarning sqlWarning;
-    
-    private Throwable otherException;
-    
-    private Object otherResult;
-    
-    public SqlStatementResult() {}
 
-    public SqlStatementResult(ResultSet resultSet, 
+    private int type;
+
+    private int updateCount;
+
+    private int statementCount;
+
+    private String message;
+
+    private String otherErrorMessage;
+
+    private ResultSet resultSet;
+
+    private SQLException sqlException;
+
+    private SQLWarning sqlWarning;
+
+    private Throwable otherException;
+
+    private Object otherResult;
+
+    public SqlStatementResult() {
+    }
+
+    public SqlStatementResult(ResultSet resultSet,
                               SQLException sqlException,
                               SQLWarning sqlWarning) {
         this.resultSet = resultSet;
@@ -61,7 +62,7 @@ public class SqlStatementResult {
         this.sqlWarning = sqlWarning;
     }
 
-    public void reset(ResultSet resultSet, 
+    public void reset(ResultSet resultSet,
                       SQLException sqlException,
                       SQLWarning sqlWarning) {
         updateCount = -1;
@@ -79,13 +80,13 @@ public class SqlStatementResult {
         otherResult = null;
         otherErrorMessage = null;
     }
-    
+
     public ResultSet getResultSet() {
         return resultSet;
     }
 
     public String getErrorMessage() {
-        
+
         if (sqlException == null && otherErrorMessage == null) {
 
             return message;
@@ -95,7 +96,7 @@ public class SqlStatementResult {
             return otherErrorMessage;
 
         } else if (sqlException == null && otherException != null) {
-            
+
             return otherException.getMessage();
         }
 
@@ -104,10 +105,10 @@ public class SqlStatementResult {
         if (text != null) {
 
             int errorCode = 0;
-            
+
             StringBuilder message = new StringBuilder();
             SQLException sqlExc = sqlException;
-            
+
             while (true) {
 
                 if (sqlExc == null) {
@@ -145,16 +146,16 @@ public class SqlStatementResult {
             return message.toString();
 
         } else {
-          
+
             return "An indeterminate error has occurred";
         }
 
     }
-    
+
     public boolean isResultSet() {
         return resultSet != null;
     }
-    
+
     public void setResultSet(ResultSet resultSet) {
         this.resultSet = resultSet;
     }
@@ -162,12 +163,12 @@ public class SqlStatementResult {
     public boolean isException() {
         return sqlException != null || otherException != null;
     }
-    
+
     public boolean isInterrupted() {
-        return otherException instanceof InterruptedException 
+        return otherException instanceof InterruptedException
                 || otherException instanceof org.underworldlabs.util.InterruptedException;
     }
-    
+
     public SQLException getSqlException() {
         return sqlException;
     }

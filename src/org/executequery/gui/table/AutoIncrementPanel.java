@@ -3,11 +3,13 @@ package org.executequery.gui.table;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.text.SQLTextPane;
-import org.omg.CORBA.ShortHolder;
 import org.underworldlabs.swing.NumberTextField;
 
 import javax.swing.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 public class AutoIncrementPanel extends JPanel {
 

@@ -20,51 +20,33 @@
 
 package org.executequery.gui;
 
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
-
 import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractBaseDialog;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SimpleValueSelectionDialog {
-   
+
     protected String title;
     protected String value;
     protected String[] values;
-    
+
     protected boolean isCancelled;
-    
-    /** Creates a new instance of SimpleValueSelectionDialog */
+
+    /**
+     * Creates a new instance of SimpleValueSelectionDialog
+     */
     public SimpleValueSelectionDialog(String title, String[] values) {
         this.title = title;
         this.values = values;
     }
-    
+
     public int showDialog() {
         SelectionDialog dialog = new SelectionDialog(title, values);
         dialog.pack();
@@ -73,18 +55,18 @@ public class SimpleValueSelectionDialog {
         return isCancelled ? JOptionPane.CANCEL_OPTION : JOptionPane.OK_OPTION;
     }
 
-    public String getValue() {        
+    public String getValue() {
         return value;
     }
-    
+
     class SelectionDialog extends AbstractBaseDialog
-                          implements ActionListener,
-                                     MouseListener,
-                                     KeyListener,
-                                     WindowListener {
-        
+            implements ActionListener,
+            MouseListener,
+            KeyListener,
+            WindowListener {
+
         private JList list;
-        
+
         public SelectionDialog(String title, String[] values) {
             super(GUIUtilities.getParentFrame(), title, true);
 
@@ -108,7 +90,7 @@ public class SimpleValueSelectionDialog {
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.anchor = GridBagConstraints.NORTHWEST;
             gbc.fill = GridBagConstraints.BOTH;
-            gbc.insets = new Insets(5,5,5,5);
+            gbc.insets = new Insets(5, 5, 5, 5);
             gbc.weighty = 1.0;
             gbc.weightx = 1.0;
             gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -130,65 +112,88 @@ public class SimpleValueSelectionDialog {
             Container c = this.getContentPane();
             c.setLayout(new GridBagLayout());
             c.add(base, new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                                               GridBagConstraints.SOUTHEAST, 
-                                               GridBagConstraints.BOTH,
-                                               new Insets(5, 5, 5, 5), 0, 0));
+                    GridBagConstraints.SOUTHEAST,
+                    GridBagConstraints.BOTH,
+                    new Insets(5, 5, 5, 5), 0, 0));
             setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             setResizable(false);
         }
-        
+
         public void mouseClicked(MouseEvent e) {
             if (e.getClickCount() == 2) {
                 selectionMade();
                 dispose();
             }
         }
-        public void mouseEntered(MouseEvent e) {}
-        public void mousePressed(MouseEvent e) {}
-        public void mouseReleased(MouseEvent e) {}
-        public void mouseExited(MouseEvent e) {}
-        
+
+        public void mouseEntered(MouseEvent e) {
+        }
+
+        public void mousePressed(MouseEvent e) {
+        }
+
+        public void mouseReleased(MouseEvent e) {
+        }
+
+        public void mouseExited(MouseEvent e) {
+        }
+
         public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                 selectionMade();
                 dispose();
             }
         }
-        public void keyReleased(KeyEvent e) {}
-        public void keyTyped(KeyEvent e) {}
+
+        public void keyReleased(KeyEvent e) {
+        }
+
+        public void keyTyped(KeyEvent e) {
+        }
 
         public void windowClosing(WindowEvent e) {
             isCancelled = true;
         }
-        public void windowActivated(WindowEvent e) {}
-        public void windowClosed(WindowEvent e) {}
-        public void windowDeactivated(WindowEvent e) {}
-        public void windowDeiconified(WindowEvent e) {}
-        public void windowIconified(WindowEvent e) {}
-        public void windowOpened(WindowEvent e) {}
+
+        public void windowActivated(WindowEvent e) {
+        }
+
+        public void windowClosed(WindowEvent e) {
+        }
+
+        public void windowDeactivated(WindowEvent e) {
+        }
+
+        public void windowDeiconified(WindowEvent e) {
+        }
+
+        public void windowIconified(WindowEvent e) {
+        }
+
+        public void windowOpened(WindowEvent e) {
+        }
 
         private void selectionMade() {
             Object object = list.getSelectedValue();
-            
+
             if (object != null) {
                 value = object.toString();
             }
 
         }
-        
+
         public void actionPerformed(ActionEvent e) {
             String command = e.getActionCommand();
 
             if (command.equals("Cancel")) {
                 value = null;
                 isCancelled = true;
-            }
-            else {
+            } else {
                 selectionMade();
             }
             dispose();
         }
-        
+
     } // class SelectionDialog
 
 }

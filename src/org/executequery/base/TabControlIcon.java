@@ -20,28 +20,31 @@
 
 package org.executequery.base;
 
-import java.awt.Color;
-
-import javax.swing.Icon;
-import javax.swing.UIManager;
-
 import org.underworldlabs.swing.plaf.UIUtils;
 
+import javax.swing.*;
+import java.awt.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface TabControlIcon extends Icon {
-    
-    /** the icon width */
+
+    /**
+     * the icon width
+     */
     public static final int ICON_WIDTH = 7;
-    
-    /** the icon height */
+
+    /**
+     * the icon height
+     */
     public static final int ICON_HEIGHT = 7;
 
-    /** The icon image colour */
-    public static final Color ICON_COLOR = 
+    /**
+     * The icon image colour
+     */
+    public static final Color ICON_COLOR =
             UIUtils.getColour("executequery.TabbedPane.icon", UIManager.getColor("controlShadow").darker().darker());
-    
+
 }
 

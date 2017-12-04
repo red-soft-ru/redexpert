@@ -20,61 +20,55 @@
 
 package org.executequery.gui.help;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import javax.swing.BorderFactory;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.Popup;
-import javax.swing.PopupFactory;
-import javax.swing.SwingUtilities;
 import org.executequery.GUIUtilities;
 import org.underworldlabs.swing.GlassCapturePanel;
 import org.underworldlabs.swing.GlassPaneSelectionListener;
 import org.underworldlabs.swing.LinkButton;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class HelpPopupBase extends JPanel 
-                           implements ActionListener,
-                                      GlassPaneSelectionListener {
-    
-    /** the popup owner */
+public class HelpPopupBase extends JPanel
+        implements ActionListener,
+        GlassPaneSelectionListener {
+
+    /**
+     * the popup owner
+     */
     private Component owner;
-    
-    /** the owner's original glass pane */
+
+    /**
+     * the owner's original glass pane
+     */
     private Component ownersGlassPane;
-    
-    /** the temp glass pane added to the owner */
+
+    /**
+     * the temp glass pane added to the owner
+     */
     private GlassCapturePanel glassPane;
-    
-    public HelpPopupBase(String title, 
-                         Component viewComponent, 
+
+    public HelpPopupBase(String title,
+                         Component viewComponent,
                          MouseEvent e) {
         this(title, viewComponent, null, e);
     }
 
-    public HelpPopupBase(String title, 
-                         Component viewComponent, 
-                         Component owner, 
+    public HelpPopupBase(String title,
+                         Component viewComponent,
+                         Component owner,
                          MouseEvent event) {
         super(new GridBagLayout());
-        
+
         this.owner = owner;
-        
+
         if (owner instanceof JDialog) {
-            JDialog dialog = (JDialog)owner;
+            JDialog dialog = (JDialog) owner;
             ownersGlassPane = dialog.getGlassPane();
             glassPane = new GlassCapturePanel(dialog.getContentPane());
             dialog.setGlassPane(glassPane);
@@ -82,7 +76,7 @@ public class HelpPopupBase extends JPanel
         }
 
         glassPane.addGlassPaneSelectionListener(this);
-        
+
         JLabel titleLabel = new JLabel(title);
         Font font = titleLabel.getFont();
         titleLabel.setFont(font.deriveFont(Font.BOLD));
@@ -90,7 +84,7 @@ public class HelpPopupBase extends JPanel
         LinkButton linkButton = new LinkButton("Hide");
         linkButton.setAlignmentX(LinkButton.RIGHT);
         linkButton.addActionListener(this);
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets.top = 3;
         gbc.insets.bottom = 3;
@@ -117,14 +111,14 @@ public class HelpPopupBase extends JPanel
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.BOTH;
         add(viewComponent, gbc);
-        
+
         setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
         showPopup(event);
     }
 
     public void glassPaneSelected(MouseEvent e) {
         int id = e.getID();
-        switch(id) {
+        switch (id) {
             case MouseEvent.MOUSE_PRESSED:
             case MouseEvent.MOUSE_CLICKED:
             case MouseEvent.MOUSE_DRAGGED:
@@ -133,56 +127,56 @@ public class HelpPopupBase extends JPanel
                 return;
         }
     }
-    
+
     public void actionPerformed(ActionEvent e) {
         hidePopup();
     }
-    
+
     public void hidePopup() {
         try {
             if (popup != null) {
                 popup.hide();
             }
             popup = null;
-        }
-        finally {
+        } finally {
             if (glassPane != null) {
                 glassPane.setVisible(false);
             }
             // replace the original glass pane
             if (ownersGlassPane != null) {
                 if (owner instanceof JDialog) {
-                    JDialog dialog = (JDialog)owner;
+                    JDialog dialog = (JDialog) owner;
                     dialog.setGlassPane(ownersGlassPane);
                 }
             }
         }
     }
-    
-    /** the popup panel */
+
+    /**
+     * the popup panel
+     */
     private Popup popup;
-    
+
     public void showPopup(MouseEvent event) {
         if (owner == null) {
             owner = GUIUtilities.getInFocusDialogOrWindow();
         }
-        
+
         Point p = SwingUtilities.convertPoint(
-                                    (Component)event.getSource(), 
-                                    event.getX(), 
-                                    event.getY(), 
-                                    owner);
-        
+                (Component) event.getSource(),
+                event.getX(),
+                event.getY(),
+                owner);
+
         popup = PopupFactory.getSharedInstance().getPopup(owner, this, p.x, p.y);
         popup.show();
     }
-    
-    
-    
+
+
     public void setViewComponent(Component c) {
         add(c, BorderLayout.CENTER);
     }
-    
+
 }
 
 

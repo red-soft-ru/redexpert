@@ -20,38 +20,38 @@
 
 package org.executequery.gui.editor;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.TextFieldFocusController;
 import org.underworldlabs.util.SystemProperties;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-final class MaxRowCountField extends NumberTextField 
-                              implements TextFieldFocusController,
-                                         FocusListener,
-                                         ActionListener {
-    
+final class MaxRowCountField extends NumberTextField
+        implements TextFieldFocusController,
+        FocusListener,
+        ActionListener {
+
     private QueryEditor queryEditor;
-    
+
     MaxRowCountField(QueryEditor queryEditor) {
         super();
-        
+
         this.queryEditor = queryEditor;
-        
+
         setValue(SystemProperties.getIntProperty("user", "editor.max.records"));
         setToolTipText("Set the maximum rows returned (-1 for all)");
         setFocusAccelerator('r');
-        
+
         addFocusListener(this);
         addActionListener(this);
     }
- 
+
     public void actionPerformed(ActionEvent e) {
         queryEditor.resetCaretPositionToLast();
     }
@@ -60,7 +60,8 @@ final class MaxRowCountField extends NumberTextField
         selectAll();
     }
 
-    public void focusLost(FocusEvent e) {}
+    public void focusLost(FocusEvent e) {
+    }
 
 }
 

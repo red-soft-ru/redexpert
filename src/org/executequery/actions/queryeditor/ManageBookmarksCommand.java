@@ -20,15 +20,15 @@
 
 package org.executequery.actions.queryeditor;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.editor.ManageBookmarksPanel;
 
-/** 
+import java.awt.event.ActionEvent;
+
+/**
  * <p>The Query Editor's manage bookmarks command.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ManageBookmarksCommand extends AbstractQueryEditorCommand {
 
@@ -40,7 +40,7 @@ public class ManageBookmarksCommand extends AbstractQueryEditorCommand {
         dialog.display();
 
     }
-    
+
 }
 
 

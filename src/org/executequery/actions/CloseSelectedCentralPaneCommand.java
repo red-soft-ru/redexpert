@@ -20,10 +20,10 @@
 
 package org.executequery.actions;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
 import org.underworldlabs.swing.actions.BaseCommand;
+
+import java.awt.event.ActionEvent;
 
 public class CloseSelectedCentralPaneCommand implements BaseCommand {
 
@@ -31,6 +31,6 @@ public class CloseSelectedCentralPaneCommand implements BaseCommand {
 
         GUIUtilities.closeSelectedCentralPane();
     }
-    
+
 }
 

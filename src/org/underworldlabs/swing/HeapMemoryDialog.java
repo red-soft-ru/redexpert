@@ -20,29 +20,21 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Container;
-import java.awt.Dialog;
-import java.awt.Frame;
-import java.awt.Insets;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.JButton;
-import javax.swing.JDialog;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class HeapMemoryDialog extends JDialog 
-                              implements ActionListener {
-    
+public class HeapMemoryDialog extends JDialog
+        implements ActionListener {
+
     private HeapMemoryPanel heapPanel;
-    
+
     public HeapMemoryDialog(Frame owner) {
-        super(owner, "Java Heap Memory", false);        
+        super(owner, "Java Heap Memory", false);
         init();
     }
 
@@ -54,15 +46,15 @@ public class HeapMemoryDialog extends JDialog
     private void init() {
 
         heapPanel = new HeapMemoryPanel();
-        
+
         JButton closeButton = new JButton("Close");
         closeButton.addActionListener(this);
-        
+
         Container c = this.getContentPane();
         c.setLayout(new GridBagLayout());
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5,5,5,5);
+        gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.fill = GridBagConstraints.BOTH;
         c.add(heapPanel, gbc);
@@ -72,10 +64,10 @@ public class HeapMemoryDialog extends JDialog
         gbc.insets.bottom = 10;
         gbc.anchor = GridBagConstraints.CENTER;
         c.add(closeButton, gbc);
-        
+
         setResizable(false);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        
+
         pack();
         setLocation(GUIUtils.getPointToCenter(getOwner(), getSize()));
         setVisible(true);
@@ -84,14 +76,14 @@ public class HeapMemoryDialog extends JDialog
     public void actionPerformed(ActionEvent e) {
         dispose();
     }
-    
+
     public void dispose() {
         if (heapPanel != null) {
             heapPanel.stopTimer();
-        }        
+        }
         super.dispose();
     }
-    
+
 }
 
 

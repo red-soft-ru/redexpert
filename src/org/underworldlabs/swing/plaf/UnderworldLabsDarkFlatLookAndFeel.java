@@ -20,31 +20,31 @@
 
 package org.underworldlabs.swing.plaf;
 
-import javax.swing.UIDefaults;
+import javax.swing.*;
 
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+ * @author Takis Diakoumis
+ * @version $Revision$
+ * @date $Date$
  */
 public class UnderworldLabsDarkFlatLookAndFeel extends UnderworldLabsFlatLookAndFeel {
-    
+
     public UnderworldLabsDarkFlatLookAndFeel() {
-        
-        setCurrentTheme(darkBluerpleTheme());  
+
+        setCurrentTheme(darkBluerpleTheme());
     }
 
     private DarkBluerpleTheme darkBluerpleTheme() {
         DarkBluerpleTheme theme = new DarkBluerpleTheme() {
             @Override
             public void addCustomEntriesToTable(UIDefaults table) {
-                
+
                 super.addCustomEntriesToTable(table);
             }
+
             @Override
             public int getDefaultFontSize() {
-                
+
                 return 13;
             }
         };
@@ -52,17 +52,17 @@ public class UnderworldLabsDarkFlatLookAndFeel extends UnderworldLabsFlatLookAnd
     }
 
     public String getName() {
-        
+
         return "Dark UnderworldLabs Flat Look and Feel";
     }
-    
+
     public String getDescription() {
-        
+
         return "Themed extension to Smooth Gradient Look and Feel - modified from " +
                 "The JGoodies Plastic Look and Feel and inspired by the Darcula theme";
     }
-    
-    
+
+
 }
 
 

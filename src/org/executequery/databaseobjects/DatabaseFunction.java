@@ -23,10 +23,10 @@ package org.executequery.databaseobjects;
 /**
  * Defines a database function object.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface DatabaseFunction extends DatabaseExecutable {
-    
+
     /**
      * Returns the parent meta tag object.
      *

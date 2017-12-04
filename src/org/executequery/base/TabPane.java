@@ -23,7 +23,7 @@ package org.executequery.base;
 /**
  * Defines a tab pane with some simple focus methods.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface TabPane {
 
@@ -43,7 +43,7 @@ public interface TabPane {
      * @return true | false
      */
     boolean isFocused();
-    
+
     /**
      * Indicates a focus gain.
      */
@@ -54,15 +54,15 @@ public interface TabPane {
      */
     void focusLost();
 
-    
-	int getSelectedIndex();
-    
-	void removeIndex(int index);
-	
-	void removeSelectedTab();
+
+    int getSelectedIndex();
+
+    void removeIndex(int index);
+
+    void removeSelectedTab();
 
     void removeAllTabs();
-	
+
 }
 
 

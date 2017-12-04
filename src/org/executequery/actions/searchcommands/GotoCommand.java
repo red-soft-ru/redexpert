@@ -20,30 +20,31 @@
 
 package org.executequery.actions.searchcommands;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.JPanel;
-
 import org.executequery.GUIUtilities;
 import org.executequery.actions.othercommands.AbstractBaseCommand;
 import org.executequery.gui.editor.QueryEditor;
 
-/** <p>Command for Search | Go To
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+
+/**
+ * <p>Command for Search | Go To
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class GotoCommand extends AbstractBaseCommand {
-    
+
     public void execute(ActionEvent e) {
         JPanel panel = GUIUtilities.getSelectedCentralPane();
         if (panel instanceof QueryEditor) {
-            QueryEditor queryEditor = (QueryEditor)panel;            
+            QueryEditor queryEditor = (QueryEditor) panel;
             try {
                 queryEditor.goToRow(Integer.parseInt(
-                GUIUtilities.displayInputMessage(bundledString("goTo"), bundledString("lineNumber"))));
-            } catch (NumberFormatException numExc) {}
+                        GUIUtilities.displayInputMessage(bundledString("goTo"), bundledString("lineNumber"))));
+            } catch (NumberFormatException numExc) {
+            }
         }
-        panel = null;        
+        panel = null;
     }
 
 }

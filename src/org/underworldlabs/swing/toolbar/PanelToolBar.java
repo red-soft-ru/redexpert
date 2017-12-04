@@ -20,44 +20,37 @@
 
 package org.underworldlabs.swing.toolbar;
 
-import java.awt.Dimension;
-import java.awt.event.ActionListener;
-
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.util.IconUtilities;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+
 /**
  * Tab component tool bar panel.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PanelToolBar extends AbstractToolBarPanel {
-   
+
     public PanelToolBar() {
-        
+
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         setBorder(BorderFactory.createEmptyBorder(1, 2, 1, 1));
     }
 
     public JButton addButton(ActionListener action, String actionCommand,
-                              String icon, String toolTip, boolean enabled) {
+                             String icon, String toolTip, boolean enabled) {
 
         JButton button = new RolloverButton();
-        
+
         if (icon != null) {
 
             button.setIcon(IconUtilities.loadIcon(icon));
         }
-        
+
         button.setText(null);
         button.setToolTipText(toolTip);
         button.setActionCommand(actionCommand);
@@ -71,14 +64,14 @@ public class PanelToolBar extends AbstractToolBarPanel {
     public void removeButton(JButton button) {
         remove(button);
     }
-    
+
     public JButton addButton(ActionListener action, String actionCommand,
-                              String icon, String toolTip) {
+                             String icon, String toolTip) {
         return addButton(action, actionCommand, icon, toolTip, true);
     }
 
     public JButton addButton(Action action) {
-        
+
         JButton button = new RolloverButton();
 
         button.setAction(action);
@@ -109,7 +102,7 @@ public class PanelToolBar extends AbstractToolBarPanel {
     }
 
     private class PanelToolBarSeparator extends JLabel {
-        
+
         private static final int DEFAULT_WIDTH = 4;
 
         private int preferredWidth;
@@ -121,11 +114,11 @@ public class PanelToolBar extends AbstractToolBarPanel {
         public PanelToolBarSeparator(int preferredWidth) {
             this.preferredWidth = preferredWidth;
         }
-        
+
         public boolean isOpaque() {
             return !GUIUtils.isDefaultLookAndFeel();
         }
-        
+
         public Dimension getPreferredSize() {
             return new Dimension(preferredWidth, 1);
         }
@@ -139,7 +132,7 @@ public class PanelToolBar extends AbstractToolBarPanel {
         }
 
     }
-    
+
 }
 
 

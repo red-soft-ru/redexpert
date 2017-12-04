@@ -20,51 +20,50 @@
 
 package org.executequery.gui.console.commands;
 
-import org.underworldlabs.util.SystemProperties;
 import org.executequery.gui.console.Console;
 import org.executequery.gui.console.ConsoleListDir;
+import org.underworldlabs.util.SystemProperties;
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
 /**
  * This command lists current dir contents.
+ *
  * @author Romain Guy
  */
 
 /**
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ListCommand extends Command {
-    
+
     private static final String COMMAND_NAME = "ls";
     private static final String COMMAND_NAME_ALTERNATE = "dir";
-    
+
     public String getCommandName() {
         return COMMAND_NAME;
     }
-    
+
     public String getCommandSummary() {
         return SystemProperties.getProperty("console", "console.ls.command.help");
     }
-    
+
     public boolean handleCommand(Console console, String command) {
-        
+
         if (command.equals(COMMAND_NAME) || command.equals(COMMAND_NAME_ALTERNATE)) {
             ConsoleListDir.list(console, null);
             return true;
-        }
-        
-        else if (command.startsWith(COMMAND_NAME) || command.startsWith(COMMAND_NAME_ALTERNATE)) {
+        } else if (command.startsWith(COMMAND_NAME) || command.startsWith(COMMAND_NAME_ALTERNATE)) {
             ConsoleListDir.list(console, command.substring(2));
             return true;
         }
-        
+
         return false;
     }
 }

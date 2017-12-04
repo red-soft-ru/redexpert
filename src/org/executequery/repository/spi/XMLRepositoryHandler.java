@@ -23,13 +23,12 @@ package org.executequery.repository.spi;
 import java.util.List;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 interface XMLRepositoryHandler<T> {
 
     List<T> getRepositoryItemsList();
-    
+
 }
 
 

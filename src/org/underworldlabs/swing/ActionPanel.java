@@ -20,65 +20,65 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.LayoutManager;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Method;
-import javax.swing.JPanel;
 
 /**
  * Base panel with default action listener implementation using reflection.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public abstract class ActionPanel extends JPanel
-                                  implements ActionListener {
-    
+        implements ActionListener {
+
     private Object[] args;
     private Class<?>[] argTypes;
-    
+
     public ActionPanel() {
         super();
     }
-    
+
     public ActionPanel(boolean isDoubleBuffered) {
         super(isDoubleBuffered);
     }
-    
+
     public ActionPanel(LayoutManager layout) {
         super(layout);
     }
-    
+
     public ActionPanel(LayoutManager layout, boolean isDoubleBuffered) {
         super(layout, isDoubleBuffered);
     }
-    
+
     public void actionPerformed(ActionEvent e) {
 
         String command = e.getActionCommand();
-        
+
         try {
 
             if (argTypes == null) {
-                
+
                 argTypes = new Class[0];
             }
 
             Method method = getClass().getMethod(command, argTypes);
-            
+
             if (args == null) {
-        
+
                 args = new Object[0];
             }
 
             method.invoke(this, args);
-        
+
         } catch (Exception ex) {
-          
+
             ex.printStackTrace();
         }
-        
+
     }
-    
+
 }
 

@@ -35,55 +35,55 @@ public class QueryTable {
     }
 
     public String getAlias() {
-     
+
         return alias;
     }
-    
+
     public String getName() {
-     
+
         return name;
     }
 
     public String getCompareName() {
-        
+
         if (name.contains(".")) {
-            
+
             return name.substring(name.indexOf('.') + 1);
         }
         return name;
     }
-    
+
     public boolean hasCatalogOrSchemaPrefix() {
-        
+
         return name.contains(".");
     }
-    
+
     public String getCatalogOrSchemaPrefix() {
-        
+
         if (hasCatalogOrSchemaPrefix()) {
-            
-            return name.substring(0, name.indexOf('.')); 
+
+            return name.substring(0, name.indexOf('.'));
         }
-        return null;        
+        return null;
     }
-    
+
     public boolean isNameOrAlias(String nameOrAlias) {
 
         String testString = nameOrAlias.toUpperCase();
-        
+
         if (name.toUpperCase().equals(testString)) {
-            
+
             return true;
         }
-        
+
         if (StringUtils.isNotBlank(alias)) {
-            
+
             return alias.toUpperCase().equals(testString);
         }
-         
+
         return false;
     }
-    
+
 }
 
 

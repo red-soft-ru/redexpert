@@ -20,24 +20,24 @@
 
 package org.executequery.gui.databaseobjects;
 
-import java.util.List;
-
-import javax.swing.table.TableColumnModel;
-
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.table.ColumnConstraintRenderer;
 import org.underworldlabs.swing.table.TableSorter;
 
+import javax.swing.table.TableColumnModel;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public abstract class AbstractColumnConstraintTable extends DefaultTable {
-    
-    /** the table model */
+
+    /**
+     * the table model
+     */
     private ColumnConstraintTableModel model;
-    
+
     /**
      * Initialises the table with some default properties.
      */
@@ -48,22 +48,22 @@ public abstract class AbstractColumnConstraintTable extends DefaultTable {
         setRowSelectionAllowed(false);
         setSurrendersFocusOnKeystroke(true);
     }
-    
+
     /**
      * Initialises with the default model.
      */
     protected void initDefaultTableModel() {
         createModel();
     }
-    
+
     /**
      * Returns the table model as a DatabaseObjectTableModel.
      */
     protected ColumnConstraintTableModel getColumnConstraintTableModel() {
         return model;
     }
-    
-    /** 
+
+    /**
      * Initialises the cell renderer.
      */
     protected void initDefaultCellRenderer() {
@@ -80,14 +80,13 @@ public abstract class AbstractColumnConstraintTable extends DefaultTable {
     public void setConstraintData(List<ColumnConstraint> constraints) {
         if (model == null) {
             createModel();
-        }
-        else {
+        } else {
             model.setValues(constraints);
         }
     }
 
     private void createModel() {
-        
+
         model = new ColumnConstraintTableModel();
         setModel(new TableSorter(model, getTableHeader()));
         setColumnProperties();
@@ -108,7 +107,7 @@ public abstract class AbstractColumnConstraintTable extends DefaultTable {
         tcm.getColumn(5).setPreferredWidth(120);
         tcm.getColumn(6).setPreferredWidth(120);
     }
-    
+
 }
 
 

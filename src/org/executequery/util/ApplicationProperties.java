@@ -25,16 +25,16 @@ public final class ApplicationProperties extends AbstractPropertiesBase {
     private static final String PROPERTY_BUNDLE_NAME = "system";
 
     private static final String PROPERTY_BUNDLE_PATH = "org/executequery/eq.system.properties";
-    
+
     private static final ApplicationProperties instance = new ApplicationProperties();
 
     private ApplicationProperties() {
-        
+
         if (!propertiesLoaded()) {
 
             loadPropertiesResource(propertyBundle(), PROPERTY_BUNDLE_PATH);
         }
-        
+
     }
 
     public static synchronized ApplicationProperties getInstance() {

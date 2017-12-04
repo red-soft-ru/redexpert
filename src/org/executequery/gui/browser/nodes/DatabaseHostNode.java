@@ -20,40 +20,40 @@
 
 package org.executequery.gui.browser.nodes;
 
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.*;
+import org.executequery.util.UserProperties;
+import org.underworldlabs.jdbc.DataSourceException;
+
+import javax.swing.tree.TreeNode;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.swing.tree.TreeNode;
-
-import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseCatalog;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.DatabaseSchema;
-import org.executequery.databaseobjects.DatabaseSource;
-import org.executequery.util.UserProperties;
-import org.underworldlabs.jdbc.DataSourceException;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DatabaseHostNode extends DatabaseObjectNode {
-    
+
     private int order;
-    
-    /** the direct descendants of this object */
+
+    /**
+     * the direct descendants of this object
+     */
     private List<DatabaseObjectNode> children;
-    
-    /** indicates whether to show only default catalogs/schemas */
+
+    /**
+     * indicates whether to show only default catalogs/schemas
+     */
     private boolean defaultCatalogsAndSchemasOnly;
 
     private ConnectionsFolderNode parentFolder;
-    
-    /** Creates a new instance of DatabaseHostNode */
+
+    /**
+     * Creates a new instance of DatabaseHostNode
+     */
     public DatabaseHostNode(DatabaseHost host, ConnectionsFolderNode parentFolder) {
-        
+
         super(host);
         this.parentFolder = parentFolder;
         applyUserPreferences();
@@ -63,42 +63,42 @@ public class DatabaseHostNode extends DatabaseObjectNode {
     public DatabaseObjectNode copy() {
         return new DatabaseHostNode((DatabaseHost) getDatabaseObject(), parentFolder);
     }
-    
+
     @Override
     public boolean isDraggable() {
         return true;
     }
-    
+
     @Override
     public boolean isNameEditable() {
         return true;
     }
-    
+
     public void setParentFolder(ConnectionsFolderNode parentFolder) {
         this.parentFolder = parentFolder;
     }
-    
+
     public ConnectionsFolderNode getParentFolder() {
         return parentFolder;
     }
-    
+
     public void applyUserPreferences() {
 
         setDefaultCatalogsAndSchemasOnly(UserProperties.getInstance().getBooleanProperty(
-                        "browser.catalog.schema.defaults.only"));
+                "browser.catalog.schema.defaults.only"));
     }
-    
+
     /**
      * Returns whether the host is connected.
      */
     public boolean isConnected() {
         return getDatabaseConnection().isConnected();
     }
-    
+
     public DatabaseConnection getDatabaseConnection() {
-        return ((DatabaseHost)getDatabaseObject()).getDatabaseConnection();
+        return ((DatabaseHost) getDatabaseObject()).getDatabaseConnection();
     }
-    
+
     /**
      * Adds this object's children as expanded nodes.
      */
@@ -116,7 +116,7 @@ public class DatabaseHostNode extends DatabaseObjectNode {
     public void disconnected() {
         reset();
     }
-    
+
     /**
      * Indicates whether this node is a leaf node.
      *
@@ -139,15 +139,15 @@ public class DatabaseHostNode extends DatabaseObjectNode {
      * @return a list of children for this node
      */
     public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
-        
+
         if (children != null) {
 
             return children;
         }
-        
+
         // check for catalogs - then schemas - then meta tags
-        DatabaseHost host = (DatabaseHost)getDatabaseObject();
-        
+        DatabaseHost host = (DatabaseHost) getDatabaseObject();
+
         // check for catalogs
         List<?> _children = host.getCatalogs();
         if (_children == null || _children.isEmpty()) {
@@ -156,19 +156,19 @@ public class DatabaseHostNode extends DatabaseObjectNode {
             _children = host.getSchemas();
 
         } else { // have catalogs so add these
-          
+
             int count = _children.size();
             children = new ArrayList<DatabaseObjectNode>(count);
-            
+
             for (int i = 0; i < count; i++) {
-            
-                DatabaseCatalog catalog = (DatabaseCatalog)_children.get(i);
+
+                DatabaseCatalog catalog = (DatabaseCatalog) _children.get(i);
                 children.add(new DatabaseCatalogNode(catalog));
             }
 
             return children;
         }
-        
+
         // check we have schemas
         if (_children == null || _children.isEmpty()) {
 
@@ -176,13 +176,13 @@ public class DatabaseHostNode extends DatabaseObjectNode {
             _children = host.getMetaObjects();
 
         } else {  // have schemas so return these
-          
+
             int count = _children.size();
             children = new ArrayList<DatabaseObjectNode>(count);
-            
+
             for (int i = 0; i < count; i++) {
-            
-                DatabaseSchema schema = (DatabaseSchema)_children.get(i);
+
+                DatabaseSchema schema = (DatabaseSchema) _children.get(i);
                 children.add(new DatabaseSchemaNode(schema));
             }
 
@@ -191,13 +191,13 @@ public class DatabaseHostNode extends DatabaseObjectNode {
 
         // check we have meta tags
         if (_children != null && !_children.isEmpty()) {
-            
+
             int count = _children.size();
             children = new ArrayList<DatabaseObjectNode>(count);
 
             for (int i = 0; i < count; i++) {
 
-                DatabaseMetaTag metaTag = (DatabaseMetaTag)_children.get(i);
+                DatabaseMetaTag metaTag = (DatabaseMetaTag) _children.get(i);
                 children.add(new DatabaseObjectNode(metaTag));
             }
 
@@ -206,7 +206,7 @@ public class DatabaseHostNode extends DatabaseObjectNode {
 
         return null;
     }
-    
+
     /**
      * Clears out the children of this node.
      */
@@ -223,57 +223,57 @@ public class DatabaseHostNode extends DatabaseObjectNode {
             boolean defaultCatalogsAndSchemasOnly) {
 
         this.defaultCatalogsAndSchemasOnly = defaultCatalogsAndSchemasOnly;
-        
+
         ensureValidCatalogsAndSchemasVisible();
     }
 
     private void ensureValidCatalogsAndSchemasVisible() {
 
         if (children == null) {
-            
+
             return;
         }
 
         if (isDefaultCatalogsAndSchemasOnly()) {
-            
+
             showOnlyDefaults();
-            
+
         } else {
-            
+
             showAll();
         }
 
     }
-    
+
     private void showAll() {
 
         int index = 0;
-        
+
         for (DatabaseObjectNode node : children) {
-         
+
             if (!childExists(node)) {
-                
+
                 insert(node, index);
             }
-            
+
             index++;
         }
 
     }
 
     private void showOnlyDefaults() {
-        
+
         if (!hasDefaults()) {
-            
+
             return;
         }
-        
+
         int index = 0;
-        
+
         for (DatabaseObjectNode node : children) {
-         
+
             if (isDatabaseSourceNode(node)) {
-                
+
                 DatabaseSource source = databaseSourceObjectFromNode(node);
 
                 if (source.isDefault()) {
@@ -284,36 +284,36 @@ public class DatabaseHostNode extends DatabaseObjectNode {
                     }
 
                 } else {
-                    
+
                     if (getIndex(node) != -1) {
-                    
+
                         remove(node);
                     }
 
                 }
 
             }
-            
+
             index++;
         }
 
     }
-    
+
     private boolean hasDefaults() {
 
         for (DatabaseObjectNode node : children) {
-            
+
             if (isDatabaseSourceNode(node)) {
-                
+
                 DatabaseSource source = databaseSourceObjectFromNode(node);
 
                 if (source.isDefault()) {
 
                     return true;
                 }
-                
+
             }
-            
+
         }
 
         return false;
@@ -321,7 +321,7 @@ public class DatabaseHostNode extends DatabaseObjectNode {
 
     private DatabaseSource databaseSourceObjectFromNode(DatabaseObjectNode node) {
 
-        return (DatabaseSource)node.getDatabaseObject();
+        return (DatabaseSource) node.getDatabaseObject();
     }
 
     public boolean isDatabaseSourceNode(DatabaseObjectNode node) {
@@ -330,21 +330,21 @@ public class DatabaseHostNode extends DatabaseObjectNode {
     }
 
     private boolean childExists(TreeNode node) {
-        
-        for (Enumeration<?> i = children(); i.hasMoreElements();) {
-            
+
+        for (Enumeration<?> i = children(); i.hasMoreElements(); ) {
+
             if (i.nextElement().equals(node)) {
-                
+
                 return true;
             }
-            
+
         }
-        
+
         return false;
     }
 
     public int getOrder() {
-        
+
         return order;
     }
 
@@ -356,11 +356,11 @@ public class DatabaseHostNode extends DatabaseObjectNode {
     public void removeFromFolder() {
 
         if (parentFolder != null) {
-        
+
             parentFolder.removeNode(this);
         }
     }
-    
+
 }
 
 

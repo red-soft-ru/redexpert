@@ -23,13 +23,12 @@ package org.executequery.event;
 import java.util.EventListener;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface ApplicationEventListener extends EventListener {
 
     boolean canHandleEvent(ApplicationEvent event);
-    
+
 }
 
 

@@ -20,17 +20,6 @@
 
 package org.executequery.gui.importexport;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.util.Vector;
-
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -41,58 +30,81 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.ListSelectionPanel;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.Vector;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ImportExportPanel_2 extends JPanel
-                                 implements ItemListener {
-    
-    /** The table label */
+        implements ItemListener {
+
+    /**
+     * The table label
+     */
     private JLabel tableLabel;
-    
-    /** The table selection combo box */
+
+    /**
+     * The table selection combo box
+     */
     private JComboBox tableCombo;
-    
-    /** the schema combo box model */
+
+    /**
+     * the schema combo box model
+     */
     private DynamicComboBoxModel tableSelectionModel;
 
     private boolean useCatalogs;
-    
-    /** The object to retrieve table details */
+
+    /**
+     * The object to retrieve table details
+     */
     private MetaDataValues metaData;
-    
-    /** The list table/column list selection panel */
+
+    /**
+     * The list table/column list selection panel
+     */
     private ListSelectionPanel list;
-    
-    /** The selected transfer type - single/multiple tables */
+
+    /**
+     * The selected transfer type - single/multiple tables
+     */
     private int selectedTransferType;
-    
-    /** The schema combo box */
+
+    /**
+     * The schema combo box
+     */
     private JComboBox schemaCombo;
-    
-    /** The schema combo box model */
+
+    /**
+     * The schema combo box model
+     */
     private DynamicComboBoxModel schemaSelectionModel;
-    
-    /** The controlling object for this process */
+
+    /**
+     * The controlling object for this process
+     */
     private ImportExportDataProcess parent;
-    
+
     public ImportExportPanel_2(ImportExportDataProcess parent) {
         super(new GridBagLayout());
-        
+
         this.parent = parent;
-        
+
         try {
             jbInit();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     private void jbInit() throws Exception {
-        selectedTransferType = -1;        
+        selectedTransferType = -1;
         metaData = parent.getMetaDataUtility();
-        
+
         Vector schemas = metaData.getHostedSchemasVector();
         if (schemas == null || schemas.size() == 0) {
             useCatalogs = true;
@@ -110,9 +122,9 @@ public class ImportExportPanel_2 extends JPanel
         tableLabel = new JLabel("Table:");
         list = new ListSelectionPanel();
         setListData(parent.getTableTransferType());
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5,5,5,5);
+        gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.NORTHWEST;
         add(new JLabel("Schema:"), gbc);
         gbc.gridy = 1;
@@ -142,18 +154,19 @@ public class ImportExportPanel_2 extends JPanel
 
         setPreferredSize(parent.getChildDimension());
     }
-    
+
     public String getSelectedSchema() {
         Object schema = schemaCombo.getSelectedItem();
         if (schema != null) {
             return schema.toString();
-        }
-        else {
+        } else {
             return Constants.EMPTY;
         }
     }
-    
-    /** the last selected database connection */
+
+    /**
+     * the last selected database connection
+     */
     private DatabaseConnection databaseConnection;
 
     public void setListData(int transferType) {
@@ -161,10 +174,10 @@ public class ImportExportPanel_2 extends JPanel
         try {
             tableCombo.removeItemListener(this);
             schemaCombo.removeItemListener(this);
-            
+
             // check if we need to reload the meta data
             // based on the selected connection
-            if (databaseConnection == null || 
+            if (databaseConnection == null ||
                     databaseConnection != parent.getDatabaseConnection()) {
                 reload = true;
                 databaseConnection = parent.getDatabaseConnection();
@@ -192,12 +205,11 @@ public class ImportExportPanel_2 extends JPanel
                     } else {
                         useCatalogs = false;
                     }
-                }
-                catch (DataSourceException e) {
+                } catch (DataSourceException e) {
                     GUIUtilities.displayExceptionErrorDialog(
                             "Error retrieving the catalog/schema names for " +
-                            "the current connection.\n\nThe system returned:\n" + 
-                            e.getExtendedMessage(), e);
+                                    "the current connection.\n\nThe system returned:\n" +
+                                    e.getExtendedMessage(), e);
                     schemas = new Vector<String>(0);
                 }
 
@@ -234,16 +246,14 @@ public class ImportExportPanel_2 extends JPanel
                 // remove values and disable table combo
                 tableSelectionModel.removeAllElements();
                 enableTableComponents(false);
-            }
-            else if (transferType == ImportExportDataProcess.SINGLE_TABLE) {
+            } else if (transferType == ImportExportDataProcess.SINGLE_TABLE) {
                 // label the selection lists
                 list.setLabelText("Available Columns:", "Selected Columns:");
                 enableTableComponents(true);
                 tableCombo.setEnabled(false);
             }
 
-        }
-        finally {
+        } finally {
             if (reload) {
                 schemaComboSelection();
                 tableComboSelection();
@@ -253,15 +263,15 @@ public class ImportExportPanel_2 extends JPanel
         }
         selectedTransferType = transferType;
     }
-    
+
     private void enableTableComponents(boolean enable) {
         tableCombo.setEnabled(enable);
         tableLabel.setEnabled(enable);
     }
-    
+
     private void tableComboSelection() {
-        if (parent.getTableTransferType() == 
-                ImportExportDataProcess.MULTIPLE_TABLE || 
+        if (parent.getTableTransferType() ==
+                ImportExportDataProcess.MULTIPLE_TABLE ||
                 tableSelectionModel.getSize() == 0) {
             return;
         }
@@ -273,38 +283,36 @@ public class ImportExportPanel_2 extends JPanel
         if (value != null) {
             if (useCatalogs) {
                 catalogName = value.toString();
-            }
-            else {                    
+            } else {
                 schemaName = value.toString();
             }
         }
-        
+
         try {
-            String table = (String)tableCombo.getSelectedItem();
+            String table = (String) tableCombo.getSelectedItem();
             list.createAvailableList(
                     metaData.getColumnMetaDataVector(table, schemaName, catalogName));
-        }
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
                     "Error retrieving the table names for the selected " +
-                    "catalog/schema.\n\nThe system returned:\n" + 
-                    e.getExtendedMessage(), e);
+                            "catalog/schema.\n\nThe system returned:\n" +
+                            e.getExtendedMessage(), e);
         }
 
     }
-    
+
     public void setSelectedSchema(String schema) {
         schemaCombo.setSelectedItem(schema);
     }
-    
+
     public void setSelectedTable(String table) {
         tableCombo.setSelectedItem(table);
     }
-    
+
     public void selectAllAvailable() {
         list.selectAllAction();
     }
-    
+
     private void schemaComboSelection() {
         String catalogName = null;
         String schemaName = null;
@@ -313,8 +321,7 @@ public class ImportExportPanel_2 extends JPanel
         if (value != null) {
             if (useCatalogs) {
                 catalogName = value.toString();
-            }
-            else {                    
+            } else {
                 schemaName = value.toString();
             }
         }
@@ -324,36 +331,33 @@ public class ImportExportPanel_2 extends JPanel
             if (type == ImportExportDataProcess.MULTIPLE_TABLE) {
                 list.createAvailableList(
                         metaData.getTables(catalogName, schemaName, "TABLE"));
-            }
-            else {
+            } else {
                 tableSelectionModel.removeAllElements();
 
                 String[] tables = metaData.getTables(catalogName, schemaName, "TABLE");
                 if (tables != null && tables.length > 0) {
                     enableTableComponents(true);
                     tableSelectionModel.setElements(tables);
-                }
-                else {
+                } else {
                     list.clear();
                     tableCombo.setEnabled(false);
                 }
 
             }
-        }
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
                     "Error retrieving the table names for the selected " +
-                    "catalog/schema.\n\nThe system returned:\n" + 
-                    e.getExtendedMessage(), e);
+                            "catalog/schema.\n\nThe system returned:\n" +
+                            e.getExtendedMessage(), e);
         }
 
     }
-    
+
     /**
      * Invoked when an item has been selected or deselected by the user.
      * The code written for this method performs the operations
      * that need to occur when an item is selected (or deselected).
-     */    
+     */
     public void itemStateChanged(ItemEvent event) {
         // interested in selections only
         if (event.getStateChange() == ItemEvent.DESELECTED) {
@@ -367,11 +371,11 @@ public class ImportExportPanel_2 extends JPanel
             schemaComboSelection();
         }
     }
-    
+
     public boolean hasSelections() {
         return list.hasSelections();
     }
-    
+
     public Vector<ColumnData> getSelectedColumns() {
         int type = parent.getTableTransferType();
         if (type == ImportExportDataProcess.SINGLE_TABLE) {
@@ -380,25 +384,24 @@ public class ImportExportPanel_2 extends JPanel
             return null;
         }
     }
-    
+
     public String[] getSelectedTables() {
         int type = parent.getTableTransferType();
         String[] tables = null;
-        
+
         if (type == ImportExportDataProcess.SINGLE_TABLE) {
-            tables = new String[]{(String)tableCombo.getSelectedItem()};
-        }
-        else if (type == ImportExportDataProcess.MULTIPLE_TABLE) {
+            tables = new String[]{(String) tableCombo.getSelectedItem()};
+        } else if (type == ImportExportDataProcess.MULTIPLE_TABLE) {
             Vector v = list.getSelectedValues();
             tables = new String[v.size()];
             for (int i = 0; i < tables.length; i++) {
-                tables[i] = (String)v.elementAt(i);
-            }            
+                tables[i] = (String) v.elementAt(i);
+            }
         }
-        
+
         return tables;
     }
-    
+
 }
 
 

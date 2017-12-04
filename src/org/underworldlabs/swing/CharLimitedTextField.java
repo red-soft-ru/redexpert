@@ -20,31 +20,30 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Toolkit;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+import java.awt.*;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CharLimitedTextField extends JTextField {
 
     private int maxLength;
     private CharLimitedDocument charLimitedDocument;
-    
+
     public CharLimitedTextField(int maxLength) {
         this.maxLength = maxLength;
         this.charLimitedDocument = new CharLimitedDocument();
     }
-    
+
     public void setMaxLength(int maxLength) {
         this.maxLength = maxLength;
     }
-    
+
     public int getMaxLength() {
         return maxLength;
     }
@@ -55,7 +54,7 @@ public class CharLimitedTextField extends JTextField {
         }
         return charLimitedDocument;
     }
- 
+
     class CharLimitedDocument extends PlainDocument {
 
         private Toolkit toolkit;
@@ -65,7 +64,7 @@ public class CharLimitedTextField extends JTextField {
         }
 
         public void insertString(int offs, String str, AttributeSet a)
-            throws BadLocationException {
+                throws BadLocationException {
             if (getLength() >= maxLength) {
                 toolkit.beep();
                 return;

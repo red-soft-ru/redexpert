@@ -20,15 +20,6 @@
 
 package org.executequery.repository;
 
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.executequery.ExecuteQuerySystemError;
 import org.executequery.datasource.DatabaseDefinition;
 import org.underworldlabs.swing.actions.ActionBuilder;
@@ -37,25 +28,36 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Database definition loader and cache.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DatabaseDefinitionCache {
 
-    /** database definition cache */
+    /**
+     * database definition cache
+     */
     private static List<DatabaseDefinition> databaseDefinitions;
-    
-    private static final DatabaseDefinition nullDatabaseDefinition = 
+
+    private static final DatabaseDefinition nullDatabaseDefinition =
             new DatabaseDefinition(DatabaseDefinition.INVALID_DATABASE_ID, "");
 
-    private DatabaseDefinitionCache() {}
+    private DatabaseDefinitionCache() {
+    }
 
     public static DatabaseDefinition getDatabaseDefinition(int id) {
-        
+
         if (databaseDefinitions == null) {
-        
+
             load();
         }
 
@@ -80,7 +82,7 @@ public class DatabaseDefinitionCache {
         }
         return databaseDefinitions.get(index);
     }
-    
+
     /**
      * Returns the database definitions within a collection.
      */
@@ -90,19 +92,18 @@ public class DatabaseDefinitionCache {
         }
         return databaseDefinitions;
     }
-    
+
     /**
      * Loads the definitions from file.
      */
     public static synchronized void load() {
         InputStream input = null;
         ClassLoader cl = ActionBuilder.class.getClassLoader();
-        
+
         String path = "org/executequery/databases.xml";
         if (cl != null) {
             input = cl.getResourceAsStream(path);
-        }
-        else {
+        } else {
             input = ClassLoader.getSystemResourceAsStream(path);
         }
 
@@ -110,69 +111,66 @@ public class DatabaseDefinitionCache {
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
-            
+
             SAXParser parser = factory.newSAXParser();
             DatabaseHandler handler = new DatabaseHandler();
             parser.parse(input, handler);
-        } 
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new ExecuteQuerySystemError();
-        }
-        finally {
+        } finally {
             if (input != null) {
                 try {
                     input.close();
-                } catch (IOException e) {}
+                } catch (IOException e) {
+                }
             }
         }
 
     }
 
     static class DatabaseHandler extends DefaultHandler {
-        
+
         private DatabaseDefinition database = new DatabaseDefinition();
         private CharArrayWriter contents = new CharArrayWriter();
 
-        public DatabaseHandler() {}
-        
+        public DatabaseHandler() {
+        }
+
         public void startElement(String nameSpaceURI, String localName,
-                                 String qName, Attributes attrs) {           
+                                 String qName, Attributes attrs) {
             contents.reset();
             if (localName.equals("database")) {
                 database = new DatabaseDefinition();
-            }            
+            }
         }
-        
+
         public void endElement(String nameSpaceURI, String localName,
                                String qName) {
             if (localName.equals("id")) {
                 database.setId(Integer.parseInt(contents.toString()));
-            } 
-            else if (localName.equals("name")) {
+            } else if (localName.equals("name")) {
                 database.setName(contents.toString());
-            } 
-            else if (localName.equals("url")) {
+            } else if (localName.equals("url")) {
                 database.addUrlPattern(contents.toString());
-            }
-            else if (localName.equals("database")) {
+            } else if (localName.equals("database")) {
                 databaseDefinitions.add(database);
             }
         }
-        
+
         public void characters(char[] data, int start, int length) {
             contents.write(data, start, length);
         }
-        
+
         public void ignorableWhitespace(char[] data, int start, int length) {
             characters(data, start, length);
         }
-        
+
         public void error(SAXParseException spe) throws SAXException {
             throw new SAXException(spe.getMessage());
         }
     } // DatabaseHandler
-    
+
 }
 
 

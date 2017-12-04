@@ -20,81 +20,85 @@
 
 package org.executequery.gui.importexport;
 
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
 import org.executequery.gui.WidgetFactory;
 
+import javax.swing.*;
+import java.awt.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ImportExportExcelPanel_5 extends JPanel {
-    
-    /** The data format text field */
+
+    /**
+     * The data format text field
+     */
     private JTextField dateFormatField;
-    /** The on error combo box */
+    /**
+     * The on error combo box
+     */
     private JComboBox errorCombo;
-    /** The rollback combo box */
+    /**
+     * The rollback combo box
+     */
     private JComboBox rollbackCombo;
-    /** The batch process check box */
+    /**
+     * The batch process check box
+     */
     private JCheckBox batchCheck;
-    
-    /** The controlling object for this process */
+
+    /**
+     * The controlling object for this process
+     */
     private ImportExportDataProcess parent;
-    
-    /** <p>Creates a new instance with the specified
-     *  process as the parent.
+
+    /**
+     * <p>Creates a new instance with the specified
+     * process as the parent.
      *
-     *  @param the parent controlling the process
+     * @param the parent controlling the process
      */
     public ImportExportExcelPanel_5(ImportExportDataProcess parent) {
         super(new GridBagLayout());
         this.parent = parent;
-        
+
         try {
             jbInit();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
     }
-    
-    /** <p>Initialises the state of this instance and
-     *  lays out components on the panel. */
+
+    /**
+     * <p>Initialises the state of this instance and
+     * lays out components on the panel.
+     */
     private void jbInit() throws Exception {
         JLabel rollbackLabel = new JLabel("Rollback Segment Size:");
         JLabel dateFormatLabel = new JLabel("Date Format:");
-        
+
         dateFormatField = WidgetFactory.createTextField();
-        
+
         String[] errors = {"Log and Continue", "Stop Transfer"};
         errorCombo = WidgetFactory.createComboBox(errors);
-        
+
         String[] rolls = {"50", "100", "500", "1000", "5000",
-        "10000", "50000", "End of File"};
+                "10000", "50000", "End of File"};
         rollbackCombo = WidgetFactory.createComboBox(rolls);
         rollbackCombo.setSelectedIndex(2);
-        
+
         batchCheck = new JCheckBox("Run as a batch process");
-        
+
         Dimension comboDim = new Dimension(140, 20);
         errorCombo.setPreferredSize(comboDim);
         rollbackCombo.setPreferredSize(comboDim);
-        
+
         JLabel instructLabel = new JLabel("Enter any particulars of the spreadsheet " +
-                                          "files and select transfer options.");
-        
+                "files and select transfer options.");
+
         GridBagConstraints gbc = new GridBagConstraints();
-        Insets ins = new Insets(5,10,20,10);
+        Insets ins = new Insets(5, 10, 20, 10);
         gbc.insets = ins;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.gridwidth = 2;
@@ -130,9 +134,9 @@ public class ImportExportExcelPanel_5 extends JPanel {
         gbc.insets.left = 10;
         gbc.insets.top = 15;
         this.add(new JLabel("Select the NEXT button below to begin the process."), gbc);
-        
+
         int type = parent.getTransferType();
-        
+
         if (type == ImportExportDataProcess.EXPORT) {
             dateFormatField.setOpaque(false);
             dateFormatField.setEnabled(false);
@@ -142,27 +146,29 @@ public class ImportExportExcelPanel_5 extends JPanel {
             rollbackLabel.setEnabled(false);
             batchCheck.setEnabled(false);
         }
-        
+
     }
-    
-    /** <p>Retrieves the selected rollback size for
-     *  the transfer.
+
+    /**
+     * <p>Retrieves the selected rollback size for
+     * the transfer.
      *
-     *  @return the rollback size
+     * @return the rollback size
      */
     public int getRollbackSize() {
         if (!rollbackCombo.isEnabled() || rollbackCombo.getSelectedIndex() == 7)
             return -1;
         else
-            return Integer.parseInt((String)rollbackCombo.getSelectedItem());
+            return Integer.parseInt((String) rollbackCombo.getSelectedItem());
     }
-    
-    /** <p>Retrieves the action on an error occuring
-     *  during the import/export process.
+
+    /**
+     * <p>Retrieves the action on an error occuring
+     * during the import/export process.
      *
-     *  @return the action on error -<br>either:
-     *          <code>ImportExportProcess.LOG_AND_CONTINUE</code> or
-     *          <code>ImportExportProcess.STOP_TRANSFER</code>
+     * @return the action on error -<br>either:
+     * <code>ImportExportProcess.LOG_AND_CONTINUE</code> or
+     * <code>ImportExportProcess.STOP_TRANSFER</code>
      */
     public int getOnError() {
         if (errorCombo.getSelectedIndex() == 0)
@@ -170,25 +176,27 @@ public class ImportExportExcelPanel_5 extends JPanel {
         else
             return ImportExportDataProcess.STOP_TRANSFER;
     }
-    
-    /** <p>Indicates whether the process (import only)
-     *  should be run as a batch process.
+
+    /**
+     * <p>Indicates whether the process (import only)
+     * should be run as a batch process.
      *
-     *  @return whether to run as a batch process
+     * @return whether to run as a batch process
      */
     public boolean runAsBatchProcess() {
         return batchCheck.isSelected();
     }
-    
-    /** <p>Retrieves the date format for date fields
-     *  contained within the data file/database table.
+
+    /**
+     * <p>Retrieves the date format for date fields
+     * contained within the data file/database table.
      *
-     *  @return the date format (ie. ddMMyyy)
+     * @return the date format (ie. ddMMyyy)
      */
     public String getDateFormat() {
         return dateFormatField.getText();
     }
-    
+
 }
 
 

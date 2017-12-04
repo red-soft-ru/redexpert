@@ -25,7 +25,7 @@ import java.awt.event.ActionEvent;
 /**
  * Command to display the result set meta data from the editor
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ResultSetMetaDataCommand extends AbstractQueryEditorCommand {
 
@@ -35,9 +35,9 @@ public class ResultSetMetaDataCommand extends AbstractQueryEditorCommand {
 
             queryEditor().displayResultSetMetaData();
         }
-        
+
     }
-    
+
 }
 
 

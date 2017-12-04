@@ -24,10 +24,10 @@ package org.executequery.databaseobjects;
 /**
  * Defines a system function meta tag object.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface SystemFunctionMetaTag extends DatabaseObject {
-    
+
     /**
      * Returns the parent meta tag object.
      *

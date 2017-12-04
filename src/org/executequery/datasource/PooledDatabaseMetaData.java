@@ -7,8 +7,7 @@ import java.sql.*;
 public class PooledDatabaseMetaData extends FilterDatabaseMetaData {
     PooledConnection connection;
 
-    public PooledDatabaseMetaData(PooledConnection con,DatabaseMetaData dmd)
-    {
+    public PooledDatabaseMetaData(PooledConnection con, DatabaseMetaData dmd) {
         super(dmd);
         connection = con;
     }
@@ -20,7 +19,7 @@ public class PooledDatabaseMetaData extends FilterDatabaseMetaData {
 
     @Override
     public ResultSet getSchemas(String s, String s1) throws SQLException {
-        return inner.getSchemas(s,s1);
+        return inner.getSchemas(s, s1);
     }
 
     @Override
@@ -40,17 +39,17 @@ public class PooledDatabaseMetaData extends FilterDatabaseMetaData {
 
     @Override
     public ResultSet getFunctions(String s, String s1, String s2) throws SQLException {
-        return inner.getFunctions(s,s1,s2);
+        return inner.getFunctions(s, s1, s2);
     }
 
     @Override
     public ResultSet getFunctionColumns(String s, String s1, String s2, String s3) throws SQLException {
-        return inner.getFunctionColumns(s,s1,s2,s3);
+        return inner.getFunctionColumns(s, s1, s2, s3);
     }
 
     @Override
     public ResultSet getPseudoColumns(String s, String s1, String s2, String s3) throws SQLException {
-        return inner.getPseudoColumns(s,s1,s2,s3);
+        return inner.getPseudoColumns(s, s1, s2, s3);
     }
 
     @Override
@@ -68,8 +67,7 @@ public class PooledDatabaseMetaData extends FilterDatabaseMetaData {
         return inner.isWrapperFor(aClass);
     }
 
-    public Connection getConnection()
-    {
+    public Connection getConnection() {
         return connection;
     }
 

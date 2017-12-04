@@ -20,8 +20,6 @@
 
 package org.executequery.listeners;
 
-import javax.swing.JPanel;
-
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.event.ApplicationEvent;
@@ -29,6 +27,8 @@ import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.gui.editor.QueryEditor;
 import org.underworldlabs.util.SystemProperties;
+
+import javax.swing.*;
 
 public class OpenEditorConnectionListener implements ConnectionListener {
 

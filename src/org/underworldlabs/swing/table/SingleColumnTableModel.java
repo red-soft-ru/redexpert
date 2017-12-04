@@ -20,25 +20,32 @@
 
 package org.underworldlabs.swing.table;
 
+import javax.swing.table.AbstractTableModel;
 import java.util.List;
 import java.util.Vector;
-import javax.swing.table.AbstractTableModel;
 
 /**
  * Basic updateable table model with a single column.
- * 
- * @author   Takis Diakoumis
+ *
+ * @author Takis Diakoumis
  */
 public class SingleColumnTableModel extends AbstractTableModel {
-    
-    /** the column header */
+
+    /**
+     * the column header
+     */
     private String header;
-    
-    /** the data values */
+
+    /**
+     * the data values
+     */
     private String[] values;
-    
-    /** Creates a new instance of SingleColumnTableModel */
-    public SingleColumnTableModel() {}
+
+    /**
+     * Creates a new instance of SingleColumnTableModel
+     */
+    public SingleColumnTableModel() {
+    }
 
     public SingleColumnTableModel(String header) {
         this.header = header;
@@ -79,7 +86,7 @@ public class SingleColumnTableModel extends AbstractTableModel {
         this.values = values;
         fireTableDataChanged();
     }
-    
+
     public int getColumnCount() {
         return 1;
     }

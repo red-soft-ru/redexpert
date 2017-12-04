@@ -23,25 +23,25 @@ package org.executequery.imageio;
 public class DefaultImageWriterFactory implements ImageWriterFactory {
 
     public ImageWriter createImageWriterForGifImages() {
-        
+
         return new AcmeGifImageWriter();
     }
-    
+
     public ImageWriter createImageWriterForPngImages() {
-        
+
         return new BatikPngImageWriter();
     }
-    
+
     public ImageWriter createImageWriterForSvgImages() {
-        
+
         return new BatikSvgImageWriter();
     }
 
     public ImageWriter createImageWriterForJpegImages() {
-        
+
         return new DefaultJpegImageWriter();
     }
-    
+
 }
 
 

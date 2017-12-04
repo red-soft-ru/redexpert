@@ -21,16 +21,14 @@
 package org.executequery.util.mime;
 
 // JDK imports
+
+import org.apache.commons.logging.Log;
+
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // Commons Logging imports
-import org.apache.commons.logging.Log;
 
 
 /**
@@ -41,23 +39,35 @@ import org.apache.commons.logging.Log;
  * @author Jerome Charron - http://frutch.free.fr/
  */
 public final class MimeTypes {
-    
-    /** The default <code>application/octet-stream</code> MimeType */
+
+    /**
+     * The default <code>application/octet-stream</code> MimeType
+     */
     public final static String DEFAULT = "application/octet-stream";
 
-    /** All the registered MimeTypes */
+    /**
+     * All the registered MimeTypes
+     */
     private ArrayList types = new ArrayList();
 
-    /** All the registered MimeType indexed by name */
+    /**
+     * All the registered MimeType indexed by name
+     */
     private HashMap typesIdx = new HashMap();
 
-    /** MimeTypes indexed on the file extension */
+    /**
+     * MimeTypes indexed on the file extension
+     */
     private Map extIdx = new HashMap();
 
-    /** List of MimeTypes containing a magic char sequence */
+    /**
+     * List of MimeTypes containing a magic char sequence
+     */
     private List magicsIdx = new ArrayList();
 
-    /** The minimum length of data to provide to check all MimeTypes */
+    /**
+     * The minimum length of data to provide to check all MimeTypes
+     */
     private int minLength = 0;
 
     /**
@@ -68,9 +78,11 @@ public final class MimeTypes {
      * Value is the associated MimeType instance.
      */
     private static Map instances = new HashMap();
-    
-    
-    /** Should never be instanciated from outside */
+
+
+    /**
+     * Should never be instanciated from outside
+     */
     private MimeTypes(String filepath, Log logger) {
         MimeTypesReader reader = new MimeTypesReader(logger);
         add(reader.read(filepath));
@@ -82,12 +94,13 @@ public final class MimeTypes {
 
     /**
      * Return a MimeTypes instance.
+     *
      * @param filepath is the mime-types definitions xml file.
      * @return A MimeTypes instance for the specified filepath xml file.
      */
     public static MimeTypes get(String filepath) {
         MimeTypes instance = null;
-        synchronized(instances) {
+        synchronized (instances) {
             instance = (MimeTypes) instances.get(filepath);
             if (instance == null) {
                 instance = new MimeTypes(filepath, null);
@@ -99,13 +112,14 @@ public final class MimeTypes {
 
     /**
      * Return a MimeTypes instance.
+     *
      * @param filepath is the mime-types definitions xml file.
-     * @param logger is it Logger to uses for ouput messages.
+     * @param logger   is it Logger to uses for ouput messages.
      * @return A MimeTypes instance for the specified filepath xml file.
      */
     public static MimeTypes get(String filepath, Log logger) {
         MimeTypes instance = null;
-        synchronized(instances) {
+        synchronized (instances) {
             instance = (MimeTypes) instances.get(filepath);
             if (instance == null) {
                 instance = new MimeTypes(filepath, logger);
@@ -114,12 +128,13 @@ public final class MimeTypes {
         }
         return instance;
     }
-    
+
     /**
      * Find the Mime Content Type of a file.
+     *
      * @param file to analyze.
      * @return the Mime Content Type of the specified file, or
-     *         <code>null</code> if none is found.
+     * <code>null</code> if none is found.
      */
     public MimeType getMimeType(File file) {
         return getMimeType(file.getName());
@@ -127,23 +142,25 @@ public final class MimeTypes {
 
     /**
      * Find the Mime Content Type of a document from its URL.
+     *
      * @param url of the document to analyze.
      * @return the Mime Content Type of the specified document URL, or
-     *         <code>null</code> if none is found.
+     * <code>null</code> if none is found.
      */
     public MimeType getMimeType(URL url) {
-       return getMimeType(url.getPath());
+        return getMimeType(url.getPath());
     }
 
     /**
      * Find the Mime Content Type of a document from its name.
+     *
      * @param name of the document to analyze.
      * @return the Mime Content Type of the specified document name, or
-     *         <code>null</code> if none is found.
+     * <code>null</code> if none is found.
      */
     public MimeType getMimeType(String name) {
         MimeType[] founds = getMimeTypes(name);
-        if ((founds == null) || (founds.length <1)) {
+        if ((founds == null) || (founds.length < 1)) {
             // No mapping found, just return null
             return null;
         } else {
@@ -151,19 +168,18 @@ public final class MimeTypes {
             return founds[0];
         }
     }
-    
+
     /**
      * Find the Mime Content Type of a stream from its content.
      *
      * @param data are the first bytes of data of the content to analyze.
-     *        Depending on the length of provided data, all known MimeTypes are
-     *        checked. If the length of provided data is greater or egals to
-     *        the value returned by {@link #getMinLength()}, then all known
-     *        MimeTypes are checked, otherwise only the MimeTypes that could be
-     *        analyzed with the length of provided data are analyzed.
-     *
+     *             Depending on the length of provided data, all known MimeTypes are
+     *             checked. If the length of provided data is greater or egals to
+     *             the value returned by {@link #getMinLength()}, then all known
+     *             MimeTypes are checked, otherwise only the MimeTypes that could be
+     *             analyzed with the length of provided data are analyzed.
      * @return The Mime Content Type found for the specified data, or
-     *         <code>null</code> if none is found.
+     * <code>null</code> if none is found.
      * @see #getMinLength()
      */
     public MimeType getMimeType(byte[] data) {
@@ -194,16 +210,16 @@ public final class MimeTypes {
      * @param name of the document to analyze.
      * @param data are the first bytes of the document's content.
      * @return the Mime Content Type of the specified document, or
-     *         <code>null</code> if none is found.
+     * <code>null</code> if none is found.
      * @see #getMinLength()
      */
     public MimeType getMimeType(String name, byte[] data) {
-        
+
         // First, try to get the mime-type from the name
         MimeType mimeType = null;
         MimeType[] mimeTypes = getMimeTypes(name);
         if (mimeTypes == null) {
-            
+
             // No mime-type found, so trying to analyse the content
             mimeType = getMimeType(data);
 
@@ -224,18 +240,19 @@ public final class MimeTypes {
         }
         return mimeType;
     }
-   
-   /**
-    * Return a MimeType from its name.
-    */
-   public MimeType forName(String name) {
-      return (MimeType) typesIdx.get(name);
-   }
+
+    /**
+     * Return a MimeType from its name.
+     */
+    public MimeType forName(String name) {
+        return (MimeType) typesIdx.get(name);
+    }
 
     /**
      * Return the minimum length of data to provide to analyzing methods
      * based on the document's content in order to check all the known
      * MimeTypes.
+     *
      * @return the minimum length of data to provide.
      * @see #getMimeType(byte[])
      * @see #getMimeType(String, byte[])
@@ -243,21 +260,25 @@ public final class MimeTypes {
     public int getMinLength() {
         return minLength;
     }
-    
-    
+
+
     /**
      * Add the specified mime-types in the repository.
+     *
      * @param types are the mime-types to add.
      */
     void add(MimeType[] types) {
-        if (types == null) { return; }
-        for (int i=0; i<types.length; i++) {
+        if (types == null) {
+            return;
+        }
+        for (int i = 0; i < types.length; i++) {
             add(types[i]);
         }
     }
-    
+
     /**
      * Add the specified mime-type in the repository.
+     *
      * @param type is the mime-type to add.
      */
     void add(MimeType type) {
@@ -268,7 +289,7 @@ public final class MimeTypes {
         // Update the extensions index...
         String[] exts = type.getExtensions();
         if (exts != null) {
-            for (int i=0; i<exts.length; i++) {
+            for (int i = 0; i < exts.length; i++) {
                 List list = (List) extIdx.get(exts[i]);
                 if (list == null) {
                     // No type already registered for this extension...
@@ -292,18 +313,18 @@ public final class MimeTypes {
     private MimeType[] getMimeTypes(String name) {
         List mimeTypes = null;
         int index = name.lastIndexOf('.');
-        if ((index != -1) && (index != name.length()-1)) {
+        if ((index != -1) && (index != name.length() - 1)) {
             // There's an extension, so try to find
             // the corresponding mime-types
             String ext = name.substring(index + 1);
             mimeTypes = (List) extIdx.get(ext);
         }
-        
+
         return (mimeTypes != null)
-                    ? (MimeType[]) mimeTypes.toArray(new MimeType[mimeTypes.size()])
-                    : null;
+                ? (MimeType[]) mimeTypes.toArray(new MimeType[mimeTypes.size()])
+                : null;
     }
-    
+
 }
 
 

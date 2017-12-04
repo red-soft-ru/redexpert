@@ -20,39 +20,39 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.BorderLayout;
-import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 import org.executequery.gui.DefaultTable;
 
+import javax.swing.*;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class TableIndexPanel extends JPanel {
-    
-    /** the table display model */
+
+    /**
+     * the table display model
+     */
     private ColumnIndexTableModel model;
-    
-    /** the table display */
+
+    /**
+     * the table display
+     */
     private JTable table;
-    
+
     public TableIndexPanel() {
         super(new BorderLayout());
         try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     private void init() throws Exception {
         model = new ColumnIndexTableModel();
         table = new DefaultTable(model);
@@ -65,7 +65,7 @@ public class TableIndexPanel extends JPanel {
 
         add(new JScrollPane(table), BorderLayout.CENTER);
     }
-    
+
     private void initColumnProperties() {
         TableColumnModel tcm = table.getColumnModel();
         TableColumn col = tcm.getColumn(0);
@@ -73,16 +73,25 @@ public class TableIndexPanel extends JPanel {
         col = tcm.getColumn(2);
         col.setPreferredWidth(150);
         col = tcm.getColumn(3);
-        col.setPreferredWidth(90);        
+        col.setPreferredWidth(90);
     }
-    
-    public void insertBefore() {}
-    public void insertAfter() {}
-    public void deleteRow() {}
-    public void setSQLText() {}
-    public void setSQLText(String values, int type) {}
-    
-    /** 
+
+    public void insertBefore() {
+    }
+
+    public void insertAfter() {
+    }
+
+    public void deleteRow() {
+    }
+
+    public void setSQLText() {
+    }
+
+    public void setSQLText(String values, int type) {
+    }
+
+    /**
      * Retrieves the currently selected/created table name.
      *
      * @return the table name
@@ -91,17 +100,21 @@ public class TableIndexPanel extends JPanel {
         return null;
     }
 
-    public void moveColumnUp() {}
-    public void moveColumnDown() {}
+    public void moveColumnUp() {
+    }
 
-    
-    
+    public void moveColumnDown() {
+    }
+
+
     private class MouseHandler extends MouseAdapter {
-        public MouseHandler() {}
+        public MouseHandler() {
+        }
+
         public void mouseClicked(MouseEvent e) {
             int mouseX = e.getX();
             int mouseY = e.getY();
-            
+
             int col = table.columnAtPoint(new Point(mouseX, mouseY));
             // if we haven't clicked on column 0 - bail
             if (col != 0) {
@@ -114,7 +127,7 @@ public class TableIndexPanel extends JPanel {
                 return;
             }
 
-            ColumnIndex index = (ColumnIndex)object;            
+            ColumnIndex index = (ColumnIndex) object;
             // if this constraint is marked to be dropped, unmark it
             if (index.isMarkedDeleted()) {
                 index.setMarkedDeleted(false);

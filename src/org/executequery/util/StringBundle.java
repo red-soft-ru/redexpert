@@ -20,36 +20,44 @@
 
 package org.executequery.util;
 
-import java.text.MessageFormat;
-import java.util.ResourceBundle;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.log.Log;
+
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 
 /**
  * Resource bundle wrapper.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class StringBundle {
-    
-    /** the wrapped resource */
+
+    /**
+     * the wrapped resource
+     */
     private ResourceBundle bundle;
-    
-    /** the package name this resource belongs to */
+
+    /**
+     * the package name this resource belongs to
+     */
     private String packageName;
-    
-    /** Creates a new instance of StringBundle */
+
+    /**
+     * Creates a new instance of StringBundle
+     */
     public StringBundle(ResourceBundle bundle) {
         this(bundle, null);
     }
 
-    /** Creates a new instance of StringBundle */
+    /**
+     * Creates a new instance of StringBundle
+     */
     public StringBundle(ResourceBundle bundle, String packageName) {
         this.bundle = bundle;
         this.packageName = packageName;
     }
-    
+
     /**
      * Returns the string from the bundle referenced by the
      * specified key value.
@@ -72,13 +80,13 @@ public class StringBundle {
      * @param key the string value's key
      * @param arg the param argument for position 1
      * @return the string value
-     */    
+     */
     public String getString(String key, Object arg) {
         Object[] args;
         if (arg == null) {
             args = new Object[0];
         } else {
-            args = new Object[] {arg};
+            args = new Object[]{arg};
         }
         return getString(key, args);
     }
@@ -91,7 +99,7 @@ public class StringBundle {
      * @param key the string value's key
      * @param arg the param arguments
      * @return the string value
-     */    
+     */
     public String getString(String key, Object[] args) {
         if (args == null) {
             args = new Object[0];
@@ -100,14 +108,13 @@ public class StringBundle {
         String value = getString(key);
         try {
             return MessageFormat.format(value, args);
-        }
-        catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException ex) {
             String msg = "Error formatting i18n string for key '" + key + "'";
             Log.error(msg, ex);
             return msg + ": " + ex.toString();
         }
     }
-    
+
     /**
      * Returns the resource bundle wrapped by this object.
      */
@@ -121,6 +128,6 @@ public class StringBundle {
     public String getPackageName() {
         return packageName;
     }
-    
+
 }
 

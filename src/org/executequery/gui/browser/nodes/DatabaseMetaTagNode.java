@@ -20,20 +20,21 @@
 
 package org.executequery.gui.browser.nodes;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
 import org.underworldlabs.jdbc.DataSourceException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DatabaseMetaTagNode extends DatabaseObjectNode {
-    
-    /** Creates a new instance of DatabaseMetaTagNode */
+
+    /**
+     * Creates a new instance of DatabaseMetaTagNode
+     */
     public DatabaseMetaTagNode(DatabaseMetaTag metaTag) {
         super(metaTag);
     }
@@ -48,18 +49,18 @@ public class DatabaseMetaTagNode extends DatabaseObjectNode {
 
                 List<DatabaseObjectNode> nodes = new ArrayList<DatabaseObjectNode>();
                 for (NamedObject namedObject : values) {
-                
+
                     nodes.add(new DatabaseTableNode(namedObject));
                 }
-                
+
                 return nodes;
             }
-            
+
         }
 
         return super.getChildObjects();
     }
-    
+
 }
 
 

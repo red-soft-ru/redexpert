@@ -23,20 +23,20 @@ package org.underworldlabs.swing.util;
 /**
  * Defines an interruptible (usually threaded) process.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface Interruptible {
-  
+
     /**
      * Sets the process cancel flag as specified.
      */
     public void setCancelled(boolean cancelled);
-    
+
     /**
      * Indicates thatthis process should be interrupted.
      */
     public void interrupt();
-    
+
 }
 
 

@@ -20,9 +20,8 @@
 
 package org.executequery.gui.importexport;
 
-/** 
- *
- * @author   Takis Diakoumis
+/**
+ * @author Takis Diakoumis
  */
 public interface ImportExportMonitor {
 
@@ -43,34 +42,34 @@ public interface ImportExportMonitor {
      */
     String getText();
 
-    /** 
+    /**
      * Sets the progress bar's position during the process.
      *
      * @param the new process status
      */
     void setProgressStatus(int status);
 
-    /** 
+    /**
      * Retrieves the progress bar's maximum value.
      *
      * @param the progress bar's maximum value
      */
     int getMaximum();
 
-    /** 
+    /**
      * Sets the progress bar to track indeterminate values - action of
      * unknown length is taking place.
      */
     void setIndeterminate(boolean indeterminate);
 
-    /** 
+    /**
      * Sets the text to be appended within the progress info text area.
      *
      * @param the text to append
      */
     void appendProgressText(final String t);
 
-    /** 
+    /**
      * Sets the text to be appended within the
      * progress info text area as an error message.
      *
@@ -78,22 +77,22 @@ public interface ImportExportMonitor {
      */
     void appendProgressErrorText(final String t);
 
-    /** 
-     * Sets the text to be appended within the progress info 
+    /**
+     * Sets the text to be appended within the progress info
      * text area as a warning message.
      *
      * @param the text to append
      */
     void appendProgressWarningText(final String t);
 
-    /** 
+    /**
      * Sets the progress bar's minimum value to the specified value.
      *
      * @param the minimum value
      */
     void setMinimum(int min);
 
-    /** 
+    /**
      * Sets the progress bar's maximum value to the specified value.
      *
      * @param the maximum value

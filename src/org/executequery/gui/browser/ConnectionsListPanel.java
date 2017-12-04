@@ -20,39 +20,10 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.print.Printable;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumnModel;
-
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.event.ApplicationEvent;
-import org.executequery.event.ConnectionEvent;
-import org.executequery.event.ConnectionListener;
-import org.executequery.event.ConnectionRepositoryEvent;
-import org.executequery.event.ConnectionRepositoryListener;
+import org.executequery.event.*;
 import org.executequery.gui.SortableColumnsTable;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
@@ -63,28 +34,47 @@ import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 import org.underworldlabs.swing.table.AbstractSortableTableModel;
 
+import javax.swing.*;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.print.Printable;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ConnectionsListPanel extends AbstractFormObjectViewPanel
-                                  implements MouseListener,
-                                             ActionListener,
-                                             ConnectionListener,
-                                             ConnectionRepositoryListener {
+        implements MouseListener,
+        ActionListener,
+        ConnectionListener,
+        ConnectionRepositoryListener {
 
     public static final String NAME = "ConnectionsListPanel";
 
-    /** the table display */
+    /**
+     * the table display
+     */
     private JTable table;
 
-    /** the table model */
+    /**
+     * the table model
+     */
     private ConnectionsTableModel model;
 
-    /** the browser's control object */
+    /**
+     * the browser's control object
+     */
     private BrowserController controller;
 
-    /** the pop-up menu */
+    /**
+     * the pop-up menu
+     */
     private PopMenu popupMenu;
 
     public ConnectionsListPanel(BrowserController controller) {
@@ -125,7 +115,7 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy++;
         gbc.weightx = 1.0;
-        gbc.insets = new Insets(10,10,5,10);
+        gbc.insets = new Insets(10, 10, 5, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.anchor = GridBagConstraints.NORTHWEST;
@@ -159,48 +149,48 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
     public void connectionAdded(ConnectionRepositoryEvent connectionRepositoryEvent) {
         connectionsChanged();
     }
-    
+
     public void connectionImported(ConnectionRepositoryEvent connectionRepositoryEvent) {
         connectionsChanged();
     }
-    
+
     public void connectionModified(ConnectionRepositoryEvent connectionRepositoryEvent) {
         connectionsChanged();
     }
-    
+
     public void connectionRemoved(ConnectionRepositoryEvent connectionRepositoryEvent) {
         connectionsChanged();
     }
-    
+
     public void selected(ConnectionsFolder folder) {
-        
+
         if (folder == null) {
-            
+
             connectionsChanged();
-        
+
         } else {
-            
+
             connectionsChanged(folder.getConnections());
         }
     }
-    
+
     private void connectionsChanged() {
         connectionsChanged(connections());
     }
-    
+
     private void connectionsChanged(List<DatabaseConnection> connections) {
         model.reload(connections);
         table.repaint();
     }
-    
-    public  List<DatabaseConnection> connections() {
+
+    public List<DatabaseConnection> connections() {
 
         return connectionsRepository().findAll();
     }
 
     private DatabaseConnectionRepository connectionsRepository() {
 
-        return (DatabaseConnectionRepository)RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
+        return (DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -349,8 +339,11 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
 
     }
 
-    public void mouseEntered(MouseEvent e) {}
-    public void mouseExited(MouseEvent e) {}
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
+    }
 
 
     /**
@@ -387,14 +380,19 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         return NAME;
     }
 
-    public void refresh() {}
-    public void cleanup() {}
+    public void refresh() {
+    }
+
+    public void cleanup() {
+    }
 
     public Printable getPrintable() {
         return new TablePrinter(table, Bundles.getCommon("database-connections"), false);
     }
 
-    /** The table's popup menu function */
+    /**
+     * The table's popup menu function
+     */
     private class PopMenu extends JPopupMenu implements ActionListener {
 
         private JMenuItem connect;
@@ -474,8 +472,8 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
     private class ConnectionsTableModel extends AbstractSortableTableModel {
 
         private List<DatabaseConnection> values;
-        private String[] header = Bundles.get(ConnectionsListPanel.class,new String[]{"", "ConnectionName", "Host",
-                                   "DataSource", "User", "Driver"});
+        private String[] header = Bundles.get(ConnectionsListPanel.class, new String[]{"", "ConnectionName", "Host",
+                "DataSource", "User", "Driver"});
 
         public ConnectionsTableModel(List<DatabaseConnection> values) {
             this.values = values;
@@ -485,7 +483,7 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
             this.values = values;
             fireTableDataChanged();
         }
-        
+
         public DatabaseConnection getConnectionAt(int row) {
             return values.get(row);
         }
@@ -527,16 +525,16 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
                         return databaseConnection.getCharset();
                 }
             } else {
-                
+
                 // check the rest - failure reported when conns file is corrupted
                 for (int i = 0, n = values.size(); i < n; i++) {
 
                     if (values.size() > 0 && values.get(i) == null) {
-                        
+
                         values.remove(i);
                         i--;
                     }
-                    
+
                 }
                 fireTableDataChanged();
             }
@@ -547,7 +545,7 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
 
 
     private class ConnectCellRenderer extends JLabel
-                                      implements TableCellRenderer {
+            implements TableCellRenderer {
 
         // connection icons
         private ImageIcon connectedImage;
@@ -559,8 +557,8 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         }
 
         public Component getTableCellRendererComponent(JTable table,
-                                    Object value, boolean isSelected, boolean hasFocus,
-                                    int row, int column) {
+                                                       Object value, boolean isSelected, boolean hasFocus,
+                                                       int row, int column) {
 
             Boolean connected = (Boolean) value;
 

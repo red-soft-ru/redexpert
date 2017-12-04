@@ -26,7 +26,7 @@ public interface ResultSetTableContainer {
 
     boolean isTransposeAvailable();
 
-    void transposeRow(TableModel tableModel,  int row);
+    void transposeRow(TableModel tableModel, int row);
 
 }
 

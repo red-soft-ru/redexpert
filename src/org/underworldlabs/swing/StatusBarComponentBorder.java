@@ -20,22 +20,21 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Insets;
-
 import javax.swing.border.Border;
+import java.awt.*;
 
 /**
  * Simple border for status bar panels.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class StatusBarComponentBorder implements Border {
-    
-    /** the border insets */
-    private static final Insets insets = new Insets(1,1,1,0);
-    
+
+    /**
+     * the border insets
+     */
+    private static final Insets insets = new Insets(1, 1, 1, 0);
+
     public Insets getBorderInsets(Component c) {
         return insets;
     }
@@ -45,15 +44,15 @@ public class StatusBarComponentBorder implements Border {
         // top edge
         g.drawLine(x, y, width, y);
         // bottom edge
-        g.drawLine(x, height-1, width, height-1);
+        g.drawLine(x, height - 1, width, height - 1);
         // left edge
-        g.drawLine(x, 0, x, height-1);
+        g.drawLine(x, 0, x, height - 1);
     }
 
     public boolean isBorderOpaque() {
         return false;
     }
-    
+
 }
 
 

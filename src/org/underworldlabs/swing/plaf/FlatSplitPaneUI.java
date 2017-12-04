@@ -27,17 +27,15 @@ package org.underworldlabs.swing.plaf;
  * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  */
 
-import javax.swing.JComponent;
-
+import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
-
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
@@ -45,26 +43,26 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 /**
  * Modified metal split pane UI.
  */
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class FlatSplitPaneUI extends BasicSplitPaneUI {
-    
+
     /**
      * Creates a new FlatSplitPaneUI instance
      */
     public static ComponentUI createUI(JComponent x) {
         return new FlatSplitPaneUI();
     }
-    
+
     /**
      * Creates the default divider.
      */
     public BasicSplitPaneDivider createDefaultDivider() {
         return new FlatSplitPaneDivider(this);
     }
-    
+
     /**
      * Installs the UI defaults.
      */
@@ -74,7 +72,7 @@ public class FlatSplitPaneUI extends BasicSplitPaneUI {
             getDivider().setBorder(null);
         }
     }
-    
+
 }
 
 

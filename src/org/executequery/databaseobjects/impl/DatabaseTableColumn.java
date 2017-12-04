@@ -20,15 +20,15 @@
 
 package org.executequery.databaseobjects.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.sql.StatementGenerator;
 import org.executequery.sql.spi.LiquibaseStatementGenerator;
 import org.underworldlabs.util.MiscUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author takisd

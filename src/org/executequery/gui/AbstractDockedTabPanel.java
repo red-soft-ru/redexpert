@@ -20,20 +20,23 @@
 
 package org.executequery.gui;
 
-import java.awt.LayoutManager;
-import javax.swing.JPanel;
 import org.executequery.GUIUtilities;
 import org.executequery.base.DockedTabView;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Abstract tab panel view object.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public abstract class AbstractDockedTabPanel extends JPanel
-                                             implements DockedTabView {
-    
-    /** Creates a new instance of AbstractDockedTabPanel */
+        implements DockedTabView {
+
+    /**
+     * Creates a new instance of AbstractDockedTabPanel
+     */
     public AbstractDockedTabPanel() {
         super();
     }
@@ -41,11 +44,11 @@ public abstract class AbstractDockedTabPanel extends JPanel
     public AbstractDockedTabPanel(boolean isDoubleBuffered) {
         super(isDoubleBuffered);
     }
-    
+
     public AbstractDockedTabPanel(LayoutManager layout) {
         super(layout);
     }
-    
+
     public AbstractDockedTabPanel(LayoutManager layout, boolean isDoubleBuffered) {
         super(layout, isDoubleBuffered);
     }
@@ -54,13 +57,13 @@ public abstract class AbstractDockedTabPanel extends JPanel
     // DockedTabView Implementation
     // ----------------------------------------
 
-    
+
     public int getUserPreferencePosition() {
         return GUIUtilities.getDockedComponentPosition(getPropertyKey());
     }
 
     public abstract String getPropertyKey();
-    
+
     public abstract String getMenuItemKey();
 
     /**

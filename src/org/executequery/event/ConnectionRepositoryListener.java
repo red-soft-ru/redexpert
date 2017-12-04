@@ -21,38 +21,37 @@
 package org.executequery.event;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface ConnectionRepositoryListener extends ApplicationEventListener {
 
     /**
      * Indicates that connections have been imported to the repository.
-     * 
+     *
      * @param the encapsulating event
      */
     public void connectionImported(ConnectionRepositoryEvent connectionRepositoryEvent);
 
     /**
      * Indicates a connection has been added to the repository.
-     * 
+     *
      * @param the encapsulating event
      */
     public void connectionAdded(ConnectionRepositoryEvent connectionRepositoryEvent);
-    
+
     /**
      * Indicates a connection has been modified to the repository.
-     * 
+     *
      * @param the encapsulating event
      */
     public void connectionModified(ConnectionRepositoryEvent connectionRepositoryEvent);
 
     /**
      * Indicates a connection has removed from the repository.
-     * 
+     *
      * @param the encapsulating event
      */
     public void connectionRemoved(ConnectionRepositoryEvent connectionRepositoryEvent);
 
-    
+
 }

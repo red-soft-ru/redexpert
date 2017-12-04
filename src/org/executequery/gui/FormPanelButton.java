@@ -20,12 +20,12 @@
 
 package org.executequery.gui;
 
-import java.awt.Dimension;
+import java.awt.*;
 
 public class FormPanelButton extends DefaultPanelButton {
 
     private static final int DEFAULT_WIDTH = 100;
-    
+
     public FormPanelButton(String text) {
 
         this(text, null);

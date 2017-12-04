@@ -20,22 +20,19 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.LayoutManager;
-
-import javax.swing.JPanel;
-import javax.swing.JTable;
+import javax.swing.*;
+import java.awt.*;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 abstract class ConnectionPropertiesPanel extends JPanel {
-    
+
     ConnectionPropertiesPanel(LayoutManager layout) {
 
         super(layout);
     }
-    
+
     protected final void setTableProperties(JTable table) {
 
         table.setCellSelectionEnabled(true);

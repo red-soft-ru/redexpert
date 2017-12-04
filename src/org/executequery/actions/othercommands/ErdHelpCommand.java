@@ -22,18 +22,20 @@ package org.executequery.actions.othercommands;
 
 import org.executequery.actions.helpcommands.HelpCommand;
 
-/** 
+/**
  * Contextual help for the ERD panel.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ErdHelpCommand extends HelpCommand {
-    
-    /** Creates a new instance of ErdHelpCommand */
+
+    /**
+     * Creates a new instance of ErdHelpCommand
+     */
     public ErdHelpCommand() {
         super("erd");
     }
-    
+
 }
 
 

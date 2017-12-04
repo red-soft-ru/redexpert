@@ -20,13 +20,11 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.event.ActionListener;
-
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.menu.MenuItemFactory;
+
+import javax.swing.*;
+import java.awt.event.ActionListener;
 
 public class BrowserTreeFolderPopupMenu extends JPopupMenu {
 
@@ -52,10 +50,10 @@ public class BrowserTreeFolderPopupMenu extends JPopupMenu {
         menuItem.addActionListener(listener);
         return menuItem;
     }
-    
+
     private String bundleString(String key) {
-        
-        return Bundles.get(getClass(),key);
+
+        return Bundles.get(getClass(), key);
     }
 
 }

@@ -21,18 +21,19 @@
 package org.executequery.gui.databaseobjects;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DefaultColumnConstraintTable extends AbstractColumnConstraintTable {
-    
-    /** Creates a new instance of DefaultColumnConstraintTable */
+
+    /**
+     * Creates a new instance of DefaultColumnConstraintTable
+     */
     public DefaultColumnConstraintTable() {
         initTableDisplayDefaults();
         initDefaultTableModel();
         initDefaultCellRenderer();
     }
-    
+
 }
 
 

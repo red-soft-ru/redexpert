@@ -24,8 +24,7 @@ import java.awt.event.FocusListener;
 
 
 /**
- *
- * @author      Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface FieldFocusLostListener extends FocusListener {
 

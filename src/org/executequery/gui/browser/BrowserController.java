@@ -20,27 +20,13 @@
 
 package org.executequery.gui.browser;
 
-import java.sql.SQLException;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.Vector;
-
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
-import org.executequery.databaseobjects.DatabaseCatalog;
-import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseExecutable;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseSchema;
-import org.executequery.databaseobjects.DatabaseTable;
-import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
@@ -48,32 +34,46 @@ import org.executequery.gui.forms.FormObjectView;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
-import org.omg.CORBA.SystemException;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
+
+import javax.swing.*;
+import java.sql.SQLException;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 /**
  * Performs SQL execution tasks from browser components.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class BrowserController {
 
     public static final int UPDATE_CANCELLED = 99;
 
-    /** the meta data retrieval object */
+    /**
+     * the meta data retrieval object
+     */
     private final MetaDataValues metaData;
 
-    /** query sender object */
+    /**
+     * query sender object
+     */
     private StatementExecutor querySender;
 
-    /** the connections tree panel */
+    /**
+     * the connections tree panel
+     */
     private ConnectionsTreePanel treePanel;
 
-    /** the databse viewer panel */
+    /**
+     * the databse viewer panel
+     */
     private BrowserViewPanel viewPanel;
 
-    /** Creates a new instance of BorwserQueryExecuter */
+    /**
+     * Creates a new instance of BorwserQueryExecuter
+     */
     public BrowserController(ConnectionsTreePanel treePanel) {
         this.treePanel = treePanel;
         viewPanel = new BrowserViewPanel(this);
@@ -88,7 +88,7 @@ public class BrowserController {
     protected void connect(DatabaseConnection dc) {
         try {
 
-            ((DatabaseHost)treePanel.getHostNode(dc).getDatabaseObject()).connect();
+            ((DatabaseHost) treePanel.getHostNode(dc).getDatabaseObject()).connect();
 
         } catch (DataSourceException e) {
 
@@ -103,10 +103,9 @@ public class BrowserController {
      */
     protected void disconnect(DatabaseConnection dc) {
         try {
-            ((DatabaseHost)treePanel.
+            ((DatabaseHost) treePanel.
                     getHostNode(dc).getDatabaseObject()).disconnect();
-        }
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             Log.warning("Error on disconnection: " + e.getMessage());
             if (Log.isDebugEnabled()) {
                 Log.error("Disconnection error: " + e);
@@ -119,12 +118,12 @@ public class BrowserController {
      */
     protected void dropSelectedObject() {
         //try {
-            // make sure we are not on a type parent object
-            if (treePanel.isTypeParentSelected()) {
-                return;
-            }
+        // make sure we are not on a type parent object
+        if (treePanel.isTypeParentSelected()) {
+            return;
+        }
 
-            treePanel.removeTreeNode();
+        treePanel.removeTreeNode();
             /*
             NamedObject object = treePanel.getSelectedNamedObject();
             if (object == null) {
@@ -169,10 +168,10 @@ public class BrowserController {
         if (_viewPanel == null) {
 
             GUIUtilities.addCentralPane(BrowserViewPanel.TITLE,
-                                        BrowserViewPanel.FRAME_ICON,
-                                        viewPanel,
-                                        BrowserViewPanel.TITLE,
-                                        true);
+                    BrowserViewPanel.FRAME_ICON,
+                    viewPanel,
+                    BrowserViewPanel.TITLE,
+                    true);
 
         } else {
 
@@ -212,7 +211,7 @@ public class BrowserController {
         FormObjectView view = viewPanel.getFormObjectView(HostPanel.NAME);
         if (view != null) {
 
-            HostPanel panel = (HostPanel)view;
+            HostPanel panel = (HostPanel) view;
             panel.updateDatabaseProperties();
         }
 
@@ -240,7 +239,7 @@ public class BrowserController {
      * This will determine and builds the object view panel to be
      * displayed based on the specified host node connection object
      * and the selected node as specified.
-     *
+     * <p>
      * //@param the connection host parent object
      * //@param the selected node
      */
@@ -270,15 +269,15 @@ public class BrowserController {
      * displayed based on the specified host node connection object
      * and the selected node as specified.
      *
-     * @param// the connection host parent object
      * @param //the selected node
+     * @param// the connection host parent object
      */
     private FormObjectView buildPanelView(DatabaseObjectNode node) {
         try {
 
-            NamedObject databaseObject   = node.getDatabaseObject();
+            NamedObject databaseObject = node.getDatabaseObject();
             if (databaseObject == null) {
-                
+
                 return null;
             }
 
@@ -287,10 +286,10 @@ public class BrowserController {
             int type = node.getType();
             switch (type) {
                 case NamedObject.HOST:
-                    
+
                     HostPanel hostPanel = hostPanel();
-                    hostPanel.setValues((DatabaseHost)databaseObject);
-                    
+                    hostPanel.setValues((DatabaseHost) databaseObject);
+
                     return hostPanel;
 
                 // catalog node:
@@ -300,13 +299,12 @@ public class BrowserController {
                     if (!viewPanel.containsPanel(CatalogPanel.NAME)) {
                         catalogPanel = new CatalogPanel(this);
                         viewPanel.addToLayout(catalogPanel);
-                    }
-                    else {
-                        catalogPanel = (CatalogPanel)viewPanel.
+                    } else {
+                        catalogPanel = (CatalogPanel) viewPanel.
                                 getFormObjectView(CatalogPanel.NAME);
                     }
 
-                    catalogPanel.setValues((DatabaseCatalog)databaseObject);
+                    catalogPanel.setValues((DatabaseCatalog) databaseObject);
                     return catalogPanel;
 
                 case NamedObject.SCHEMA:
@@ -314,13 +312,12 @@ public class BrowserController {
                     if (!viewPanel.containsPanel(SchemaPanel.NAME)) {
                         schemaPanel = new SchemaPanel(this);
                         viewPanel.addToLayout(schemaPanel);
-                    }
-                    else {
-                        schemaPanel = (SchemaPanel)viewPanel.
+                    } else {
+                        schemaPanel = (SchemaPanel) viewPanel.
                                 getFormObjectView(SchemaPanel.NAME);
                     }
 
-                    schemaPanel.setValues((DatabaseSchema)databaseObject);
+                    schemaPanel.setValues((DatabaseSchema) databaseObject);
                     return schemaPanel;
 
                 case NamedObject.META_TAG:
@@ -331,13 +328,12 @@ public class BrowserController {
                     if (!viewPanel.containsPanel(MetaKeyPanel.NAME)) {
                         metaKeyPanel = new MetaKeyPanel(this);
                         viewPanel.addToLayout(metaKeyPanel);
-                    }
-                    else {
-                        metaKeyPanel = (MetaKeyPanel)viewPanel.
+                    } else {
+                        metaKeyPanel = (MetaKeyPanel) viewPanel.
                                 getFormObjectView(MetaKeyPanel.NAME);
                     }
 
-                    metaKeyPanel.setValues((NamedObject)databaseObject);
+                    metaKeyPanel.setValues((NamedObject) databaseObject);
                     return metaKeyPanel;
 
                 case NamedObject.FUNCTION:
@@ -347,13 +343,12 @@ public class BrowserController {
                     if (!viewPanel.containsPanel(BrowserProcedurePanel.NAME)) {
                         procsPanel = new BrowserProcedurePanel(this);
                         viewPanel.addToLayout(procsPanel);
-                    }
-                    else {
-                        procsPanel = (BrowserProcedurePanel)viewPanel.
+                    } else {
+                        procsPanel = (BrowserProcedurePanel) viewPanel.
                                 getFormObjectView(BrowserProcedurePanel.NAME);
                     }
 
-                    procsPanel.setValues((DatabaseExecutable)databaseObject);
+                    procsPanel.setValues((DatabaseExecutable) databaseObject);
                     return procsPanel;
 
                 case NamedObject.TRIGGER:
@@ -362,9 +357,8 @@ public class BrowserController {
                     if (!viewPanel.containsPanel(BrowserTriggerPanel.NAME)) {
                         triggerPanel = new BrowserTriggerPanel(this);
                         viewPanel.addToLayout(triggerPanel);
-                    }
-                    else {
-                        triggerPanel = (BrowserTriggerPanel)viewPanel.
+                    } else {
+                        triggerPanel = (BrowserTriggerPanel) viewPanel.
                                 getFormObjectView(BrowserTriggerPanel.NAME);
                     }
 
@@ -376,9 +370,8 @@ public class BrowserController {
                     if (!viewPanel.containsPanel(BrowserPackagePanel.NAME)) {
                         packagePanel = new BrowserPackagePanel(this);
                         viewPanel.addToLayout(packagePanel);
-                    }
-                    else {
-                        packagePanel = (BrowserPackagePanel)viewPanel.
+                    } else {
+                        packagePanel = (BrowserPackagePanel) viewPanel.
                                 getFormObjectView(BrowserPackagePanel.NAME);
                     }
 
@@ -390,9 +383,8 @@ public class BrowserController {
                     if (!viewPanel.containsPanel(BrowserSequencePanel.NAME)) {
                         sequencePanel = new BrowserSequencePanel(this);
                         viewPanel.addToLayout(sequencePanel);
-                    }
-                    else {
-                        sequencePanel = (BrowserSequencePanel)viewPanel.
+                    } else {
+                        sequencePanel = (BrowserSequencePanel) viewPanel.
                                 getFormObjectView(BrowserSequencePanel.NAME);
                     }
 
@@ -405,9 +397,8 @@ public class BrowserController {
                     if (!viewPanel.containsPanel(BrowserDomainPanel.NAME)) {
                         domainPanel = new BrowserDomainPanel(this);
                         viewPanel.addToLayout(domainPanel);
-                    }
-                    else {
-                        domainPanel = (BrowserDomainPanel)viewPanel.
+                    } else {
+                        domainPanel = (BrowserDomainPanel) viewPanel.
                                 getFormObjectView(BrowserDomainPanel.NAME);
                     }
 
@@ -418,21 +409,19 @@ public class BrowserController {
                     if (!viewPanel.containsPanel(BrowserRolePanel.NAME)) {
                         rolePanel = new BrowserRolePanel(this);
                         viewPanel.addToLayout(rolePanel);
-                    }
-                    else {
-                        rolePanel = (BrowserRolePanel)viewPanel.
+                    } else {
+                        rolePanel = (BrowserRolePanel) viewPanel.
                                 getFormObjectView(BrowserRolePanel.NAME);
                     }
-                    rolePanel.setValues((DefaultDatabaseRole) databaseObject,this);
+                    rolePanel.setValues((DefaultDatabaseRole) databaseObject, this);
                     return rolePanel;
                 case NamedObject.EXCEPTION:
                     BrowserExceptionPanel exceptionPanel = null;
                     if (!viewPanel.containsPanel(BrowserExceptionPanel.NAME)) {
                         exceptionPanel = new BrowserExceptionPanel(this);
                         viewPanel.addToLayout(exceptionPanel);
-                    }
-                    else {
-                        exceptionPanel = (BrowserExceptionPanel)viewPanel.
+                    } else {
+                        exceptionPanel = (BrowserExceptionPanel) viewPanel.
                                 getFormObjectView(BrowserExceptionPanel.NAME);
                     }
 
@@ -444,9 +433,8 @@ public class BrowserController {
                     if (!viewPanel.containsPanel(BrowserUDFPanel.NAME)) {
                         browserUDFPanel = new BrowserUDFPanel(this);
                         viewPanel.addToLayout(browserUDFPanel);
-                    }
-                    else {
-                        browserUDFPanel = (BrowserUDFPanel)viewPanel.
+                    } else {
+                        browserUDFPanel = (BrowserUDFPanel) viewPanel.
                                 getFormObjectView(BrowserUDFPanel.NAME);
                     }
 
@@ -459,9 +447,8 @@ public class BrowserController {
                     if (!viewPanel.containsPanel(BrowserIndexPanel.NAME)) {
                         browserIndexPanel = new BrowserIndexPanel(this);
                         viewPanel.addToLayout(browserIndexPanel);
-                    }
-                    else {
-                        browserIndexPanel = (BrowserIndexPanel)viewPanel.
+                    } else {
+                        browserIndexPanel = (BrowserIndexPanel) viewPanel.
                                 getFormObjectView(BrowserIndexPanel.NAME);
                     }
 
@@ -470,7 +457,7 @@ public class BrowserController {
 
                 case NamedObject.TABLE:
                     BrowserTableEditingPanel editingPanel = viewPanel.getEditingPanel();
-                    editingPanel.setValues((DatabaseTable)databaseObject);
+                    editingPanel.setValues((DatabaseTable) databaseObject);
                     return editingPanel;
 
                 case NamedObject.TABLE_COLUMN:
@@ -478,12 +465,11 @@ public class BrowserController {
                     if (!viewPanel.containsPanel(TableColumnPanel.NAME)) {
                         columnPanel = new TableColumnPanel(this);
                         viewPanel.addToLayout(columnPanel);
-                    }
-                    else {
+                    } else {
                         columnPanel =
-                            (TableColumnPanel)viewPanel.getFormObjectView(TableColumnPanel.NAME);
+                                (TableColumnPanel) viewPanel.getFormObjectView(TableColumnPanel.NAME);
                     }
-                    columnPanel.setValues((DatabaseColumn)databaseObject);
+                    columnPanel.setValues((DatabaseColumn) databaseObject);
                     return columnPanel;
 
                 case NamedObject.TABLE_INDEX:
@@ -494,8 +480,7 @@ public class BrowserController {
                     if (!viewPanel.containsPanel(SimpleMetaDataPanel.NAME)) {
                         panel = new SimpleMetaDataPanel(this);
                         viewPanel.addToLayout(panel);
-                    }
-                    else {
+                    } else {
                         panel = (SimpleMetaDataPanel) viewPanel.getFormObjectView(SimpleMetaDataPanel.NAME);
                     }
                     panel.setValues((NamedObject) databaseObject);
@@ -516,8 +501,7 @@ public class BrowserController {
 
             }
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             handleException(e);
             return null;
         }
@@ -532,8 +516,8 @@ public class BrowserController {
             viewPanel.addToLayout(hostPanel);
 
         } else {
-        
-            hostPanel = (HostPanel)viewPanel.getFormObjectView(HostPanel.NAME);
+
+            hostPanel = (HostPanel) viewPanel.getFormObjectView(HostPanel.NAME);
         }
         return hostPanel;
     }
@@ -563,7 +547,7 @@ public class BrowserController {
         checkBrowserPanel();
         viewPanel.displayConnectionList();
     }
-    
+
     /**
      * Displays the root main view panel.
      */
@@ -571,7 +555,7 @@ public class BrowserController {
         checkBrowserPanel();
         viewPanel.displayConnectionList();
     }
-    
+
     /**
      * Applies the table alteration changes.
      */
@@ -600,14 +584,13 @@ public class BrowserController {
             // if specified, ask the user again
             if (valueChange) {
                 int yesNo = GUIUtilities.displayConfirmCancelDialog(
-                                            Bundles.get("common.message.apply-changes"));
+                        Bundles.get("common.message.apply-changes"));
                 if (yesNo == JOptionPane.NO_OPTION) {
                     node = treePanel.getSelectedBrowserNode();
                     editingPanel.selectionChanged(node.getDatabaseUserObject(), true);
                     editingPanel.resetSQLText();
                     return;
-                }
-                else if (yesNo == JOptionPane.CANCEL_OPTION) {
+                } else if (yesNo == JOptionPane.CANCEL_OPTION) {
                     treePanel.setNodeSelected(node);
                     return;
                 }
@@ -621,7 +604,7 @@ public class BrowserController {
 
             SqlStatementResult result = null;
             StringTokenizer st = new StringTokenizer(
-                                        editingPanel.getSQLText().trim(), ";\n");
+                    editingPanel.getSQLText().trim(), ";\n");
 
             try {
                 while (st.hasMoreTokens()) {
@@ -632,8 +615,7 @@ public class BrowserController {
                         if (e != null) {
 
                             GUIUtilities.displayExceptionErrorDialog(Bundles.get("common.error.apply-changes") + MiscUtils.formatSQLError(e), e);
-                        }
-                        else {
+                        } else {
                             GUIUtilities.displayErrorMessage(result.getErrorMessage());
                         }
                         treePanel.setNodeSelected(node);
@@ -641,8 +623,7 @@ public class BrowserController {
                     }
                 }
                 querySender.execute(QueryTypes.COMMIT, null);
-            }
-            catch (SQLException e) {
+            } catch (SQLException e) {
                 GUIUtilities.displayExceptionErrorDialog(Bundles.get("common.error.apply-changes") + MiscUtils.formatSQLError(e), e);
                 treePanel.setNodeSelected(node);
                 return;
@@ -652,8 +633,7 @@ public class BrowserController {
             editingPanel.selectionChanged(node.getDatabaseUserObject(), true);
             editingPanel.resetSQLText();
             treePanel.setNodeSelected(node);
-        }
-        finally {
+        } finally {
             treePanel.addTreeSelectionListener();
         }
     }
@@ -668,7 +648,7 @@ public class BrowserController {
         if (viewPanel == null) {
             return false;
         }
-        return viewPanel.getEditingPanel().hasSQLText() 
+        return viewPanel.getEditingPanel().hasSQLText()
                 || viewPanel.getEditingPanel().getTableDataPanel().hasChanges();
     }
 
@@ -688,13 +668,13 @@ public class BrowserController {
         boolean isDataSourceException = (e instanceof DataSourceException);
         GUIUtilities.displayExceptionErrorDialog(
                 bundleString("error.handle.exception") +
-                (isDataSourceException ? ((DataSourceException)e).getExtendedMessage() : e.getMessage()), e);
+                        (isDataSourceException ? ((DataSourceException) e).getExtendedMessage() : e.getMessage()), e);
 
 
         if (isDataSourceException) {
 
-            if (((DataSourceException)e).wasConnectionClosed()) {
-        
+            if (((DataSourceException) e).wasConnectionClosed()) {
+
 //                connect(treePanel.getSelectedDatabaseConnection());
                 disconnect(treePanel.getSelectedDatabaseConnection());
             }
@@ -710,8 +690,7 @@ public class BrowserController {
         try {
             metaData.setDatabaseConnection(dc);
             return metaData.getHostedSchemasVector();
-        }
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             handleException(e);
             return new Vector<String>(0);
         }
@@ -725,8 +704,7 @@ public class BrowserController {
         try {
             metaData.setDatabaseConnection(dc);
             return metaData.getColumnNamesVector(table, schema);
-        }
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             handleException(e);
             return new Vector<String>(0);
         }
@@ -760,8 +738,7 @@ public class BrowserController {
         try {
             metaData.setDatabaseConnection(dc);
             return metaData.getSchemaTables(schema);
-        }
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             handleException(e);
             return new Vector<String>(0);
         }
@@ -772,8 +749,7 @@ public class BrowserController {
             metaData.setDatabaseConnection(getDatabaseConnection());
             return metaData.getColumnMetaData(
                     isUsingCatalogs() ? catalog : null, schema, name);
-        }
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             handleException(e);
             return new ColumnData[0];
         }
@@ -787,8 +763,7 @@ public class BrowserController {
     protected void recycleConnection(DatabaseConnection dc) {
         try {
             metaData.recycleConnection(dc);
-        }
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             handleException(e);
         }
     }
@@ -895,7 +870,7 @@ public class BrowserController {
 
         hostPanel().connectionNameChanged(name);
     }
-   
+
     private String bundleString(String key) {
 
         return Bundles.get(BrowserController.class, key);

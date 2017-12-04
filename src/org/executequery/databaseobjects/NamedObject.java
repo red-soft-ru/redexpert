@@ -20,14 +20,14 @@
 
 package org.executequery.databaseobjects;
 
-import java.util.List;
-
 import org.underworldlabs.jdbc.DataSourceException;
+
+import java.util.List;
 
 /**
  * Defines a database named object.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface NamedObject extends java.io.Serializable {
 
@@ -74,40 +74,40 @@ public interface NamedObject extends java.io.Serializable {
     int FOREIGN_KEY = 998;
     int UNIQUE_KEY = 997;
     int TABLE_INDEX = 996;
-    int CHECK_KEY=995;
+    int CHECK_KEY = 995;
 
     String[] META_TYPES = {"FUNCTION",
-                            "INDEX",
-                            "PROCEDURE",
-                            "SEQUENCE",
-                            "SYNONYM",
-                            "TABLE",
-                            "TRIGGER",
-                            "VIEW",
-                            "GLOBAL TEMPORARY",
-                            "DOMAIN",
-                            "EXCEPTION",
-                            "UDF",
-                            "SYSTEM FUNCTIONS",
-                            "SYSTEM_STRING_FUNCTIONS",
-                            "SYSTEM_NUMERIC_FUNCTIONS",
-                            "SYSTEM_DATE_TIME_FUNCTIONS",
-                            "SYSTEM VIEW",
-                            "SYSTEM TABLE",
-                            "SYSTEM DOMAIN",
-                            "SYSTEM INDEX",
-                            "SYSTEM TRIGGER",
-                            "SYSTEM DATABASE TRIGGER",
-                            "PACKAGE",
-                            "ROLE"};
+            "INDEX",
+            "PROCEDURE",
+            "SEQUENCE",
+            "SYNONYM",
+            "TABLE",
+            "TRIGGER",
+            "VIEW",
+            "GLOBAL TEMPORARY",
+            "DOMAIN",
+            "EXCEPTION",
+            "UDF",
+            "SYSTEM FUNCTIONS",
+            "SYSTEM_STRING_FUNCTIONS",
+            "SYSTEM_NUMERIC_FUNCTIONS",
+            "SYSTEM_DATE_TIME_FUNCTIONS",
+            "SYSTEM VIEW",
+            "SYSTEM TABLE",
+            "SYSTEM DOMAIN",
+            "SYSTEM INDEX",
+            "SYSTEM TRIGGER",
+            "SYSTEM DATABASE TRIGGER",
+            "PACKAGE",
+            "ROLE"};
 
     /**
      * Marks this object as being 'reset', where for any loaded object
-     * these are cleared and a fresh database call would be made where 
+     * these are cleared and a fresh database call would be made where
      * appropriate.
      */
     void reset();
-    
+
     /**
      * Returns the database object type.
      *
@@ -128,21 +128,21 @@ public interface NamedObject extends java.io.Serializable {
      * @param name the name of this database object
      */
     void setName(String name);
-    
+
     /**
      * Returns the display name of this object.
      *
      * @return the display name
      */
     String getShortName();
-    
+
     /**
      * Returns the meta data key name of this object.
      *
      * @return the meta data key name.
      */
     String getMetaDataKey();
-    
+
     /**
      * Retrieves child database objects of this named object.
      * Depending on the type of named object - this may return null.
@@ -150,14 +150,14 @@ public interface NamedObject extends java.io.Serializable {
      * @return this meta tag's child database objects.
      */
     List<NamedObject> getObjects() throws DataSourceException;
-    
+
     /**
      * Returns the parent named object of this object.
      *
      * @return the parent object or null if we are at the top of the hierarchy
      */
     NamedObject getParent();
-    
+
     /**
      * Sets the parent object to that specified.
      *
@@ -171,8 +171,8 @@ public interface NamedObject extends java.io.Serializable {
      * @return drop statement result
      */
     int drop() throws DataSourceException;
-    
-    
+
+
     String getDescription();
 
 }

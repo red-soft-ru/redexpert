@@ -20,23 +20,21 @@
 
 package org.executequery.gui.importexport;
 
-import java.awt.LayoutManager;
-import java.util.Vector;
-
-import javax.swing.ComboBoxModel;
-import javax.swing.JComboBox;
-
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.WidgetFactory;
 import org.underworldlabs.swing.DynamicComboBoxModel;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.Vector;
 
 public abstract class AbstractImportExportPanelOne extends AbstractImportExportPanel {
 
     private JComboBox connectionsCombo;
 
     public AbstractImportExportPanelOne(LayoutManager layout) {
-        
+
         super(layout, null);
     }
 
@@ -45,9 +43,9 @@ public abstract class AbstractImportExportPanelOne extends AbstractImportExportP
         if (connectionsCombo == null) {
             Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
             ComboBoxModel connectionsModel = new DynamicComboBoxModel(connections);
-            connectionsCombo = WidgetFactory.createComboBox(connectionsModel);            
+            connectionsCombo = WidgetFactory.createComboBox(connectionsModel);
         }
-        
+
         return connectionsCombo;
     }
 
@@ -66,9 +64,9 @@ public abstract class AbstractImportExportPanelOne extends AbstractImportExportP
      * @return the connection properties object
      */
     public DatabaseConnection getDatabaseConnection() {
-        return (DatabaseConnection)connectionsCombo.getSelectedItem();
+        return (DatabaseConnection) connectionsCombo.getSelectedItem();
     }
-    
+
 }
 
 

@@ -20,13 +20,6 @@
 
 package org.executequery.gui;
 
-import java.awt.Component;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.JDialog;
-import javax.swing.SwingConstants;
-
 import org.executequery.Constants;
 import org.executequery.EventMediator;
 import org.executequery.base.DockedTabEvent;
@@ -39,31 +32,42 @@ import org.executequery.util.ThreadUtils;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Maintains a register of open central tab panels 
+ * Maintains a register of open central tab panels
  * and dialogs for quick determination of what is/isn't open,
  * how many etc...
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class OpenComponentRegister implements DockedTabListener {
-    
-    /** open dialog cache */
+
+    /**
+     * open dialog cache
+     */
     private List<JDialog> openDialogs;
-    
-    /** open main panel cache */
+
+    /**
+     * open main panel cache
+     */
     private List<ComponentPanel> componentPanels;
 
-    /** the currently selected main component */
+    /**
+     * the currently selected main component
+     */
     private Component selectedComponent;
-    
+
     /**
      * Ensures the dialog cache is created.
      */
     private List<JDialog> openDialogs() {
-        
+
         if (openDialogs == null) {
-        
+
             openDialogs = new ArrayList<JDialog>();
         }
         return openDialogs;
@@ -73,9 +77,9 @@ public class OpenComponentRegister implements DockedTabListener {
      * Ensures the panel cache is created.
      */
     private List<ComponentPanel> componentPanels() {
-        
+
         if (componentPanels == null) {
-        
+
             componentPanels = new ArrayList<ComponentPanel>();
         }
         return componentPanels;
@@ -100,7 +104,7 @@ public class OpenComponentRegister implements DockedTabListener {
     /**
      * Returns the open panels registered with this object
      * as a list of <code>PanelCacheObject</code>s.
-     * 
+     *
      * @return the list of <code>PanelCacheObject</code>s
      */
     public List<ComponentPanel> getOpenPanels() {
@@ -117,7 +121,7 @@ public class OpenComponentRegister implements DockedTabListener {
     /**
      * Returns the open dialogs registered with this object
      * as a list of <code>JDialog</code>s.
-     * 
+     *
      * @return the list of <code>JDialog</code>s
      */
     public List<JDialog> getOpenDialogs() {
@@ -132,7 +136,7 @@ public class OpenComponentRegister implements DockedTabListener {
      * @return true | false
      */
     public boolean isPanelOpen(String name) {
-        
+
         if (componentPanels == null || componentPanels.isEmpty()) {
 
             return false;
@@ -141,12 +145,12 @@ public class OpenComponentRegister implements DockedTabListener {
         for (ComponentPanel object : componentPanels) {
 
             if (object.getName().startsWith(name)) {
- 
+
                 return true;
             }
 
         }
-        
+
         return false;
     }
 
@@ -159,21 +163,21 @@ public class OpenComponentRegister implements DockedTabListener {
     public Component getOpenPanel(String name) {
 
         if (componentPanels == null || componentPanels.isEmpty()) {
-        
+
             return null;
         }
 
         for (ComponentPanel object : componentPanels) {
 
             if (object.getName().startsWith(name)) {
-            
+
                 return object.getComponent();
             }
 
         }
         return null;
     }
-    
+
     /**
      * Returns whether the dialog with the specified
      * name is open - within the open dialog cache.
@@ -191,7 +195,7 @@ public class OpenComponentRegister implements DockedTabListener {
         for (int i = 0, k = openDialogs.size(); i < k; i++) {
 
             JDialog dialog = openDialogs.get(i);
-            
+
             if (dialog.getTitle().startsWith(name)) {
 
                 return true;
@@ -219,9 +223,9 @@ public class OpenComponentRegister implements DockedTabListener {
         for (int i = 0, k = openDialogs.size(); i < k; i++) {
 
             JDialog dialog = openDialogs.get(i);
-            
+
             if (dialog.getTitle().startsWith(name)) {
-            
+
                 return dialog;
             }
 
@@ -253,26 +257,28 @@ public class OpenComponentRegister implements DockedTabListener {
     /**
      * Indicates a tab minimised event.
      *
-     * @param the event 
+     * @param the event
      */
-    public void tabMinimised(DockedTabEvent e) {}
+    public void tabMinimised(DockedTabEvent e) {
+    }
 
     /**
      * Indicates a tab restored from minimised event.
      *
-     * @param the event 
+     * @param the event
      */
-    public void tabRestored(DockedTabEvent e) {}
+    public void tabRestored(DockedTabEvent e) {
+    }
 
     /**
      * Indicates a tab selected event.
      *
-     * @param the event 
+     * @param the event
      */
     public void tabSelected(DockedTabEvent e) {
-        
-        TabComponent tabComponent = (TabComponent)e.getSource();
-        
+
+        TabComponent tabComponent = (TabComponent) e.getSource();
+
         int position = tabComponent.getPosition();
 
         if (position == SwingConstants.CENTER) {
@@ -291,9 +297,9 @@ public class OpenComponentRegister implements DockedTabListener {
                 case SwingConstants.SOUTH_EAST:
 
                     if (component instanceof DockedTabView) {
-                        
+
                         String key = keyFromComponent(component);
-                        
+
                         markDockedComponentVisible(key, true);
 
                         fireComponentViewOpened(key);
@@ -309,12 +315,12 @@ public class OpenComponentRegister implements DockedTabListener {
     /**
      * Indicates a tab deselected event.
      *
-     * @param the event 
+     * @param the event
      */
     public void tabDeselected(DockedTabEvent e) {
 
-        TabComponent tabComponent = (TabComponent)e.getSource();
-        
+        TabComponent tabComponent = (TabComponent) e.getSource();
+
         int position = tabComponent.getPosition();
 
         if (position == SwingConstants.CENTER) {
@@ -323,26 +329,26 @@ public class OpenComponentRegister implements DockedTabListener {
         }
 
     }
-    
-    /** 
+
+    /**
      * Returns the selected component as registered within
      * this object cache.
      *
      * @return the selected main component or null if there is
-     *         no selected component
+     * no selected component
      */
     public Component getSelectedComponent() {
         return selectedComponent;
     }
-    
+
     /**
      * Indicates a tab closed event.
      *
-     * @param the event 
+     * @param the event
      */
     public void tabClosed(DockedTabEvent e) {
 
-        TabComponent tabComponent = (TabComponent)e.getSource();
+        TabComponent tabComponent = (TabComponent) e.getSource();
 
         // retrieve the position and component
         int position = tabComponent.getPosition();
@@ -360,7 +366,7 @@ public class OpenComponentRegister implements DockedTabListener {
             }
 
         } else { // check if its docked view and reset associated items
-            
+
             switch (position) {
                 case SwingConstants.NORTH_WEST:
                 case SwingConstants.SOUTH_WEST:
@@ -388,45 +394,45 @@ public class OpenComponentRegister implements DockedTabListener {
     }
 
     private void markDockedComponentVisible(String key, boolean visible) {
-        
+
         SystemProperties.setBooleanProperty(
                 Constants.USER_PROPERTIES_KEY, key, visible);
     }
 
     private String keyFromComponent(Component component) {
 
-        return ((DockedTabView)component).getPropertyKey();
+        return ((DockedTabView) component).getPropertyKey();
     }
 
     private void fireComponentViewOpened(final String key) {
 
         ThreadUtils.invokeLater(new Runnable() {
-            
+
             public void run() {
 
                 EventMediator.fireEvent(new DefaultUserPreferenceEvent(
                         this, key, UserPreferenceEvent.DOCKED_COMPONENT_OPENED));
             }
-           
+
         });
-        
+
     }
 
     private void fireComponentViewClosed(final String key) {
 
         ThreadUtils.invokeLater(new Runnable() {
-            
+
             public void run() {
 
                 EventMediator.fireEvent(new DefaultUserPreferenceEvent(
                         this, key, UserPreferenceEvent.DOCKED_COMPONENT_CLOSED));
             }
-           
+
         });
-        
+
     }
 
-    /** 
+    /**
      * Returns the cache object containing the specified
      * component or null if not found.
      *
@@ -445,8 +451,8 @@ public class OpenComponentRegister implements DockedTabListener {
         }
         return null;
     }
-    
-    /** 
+
+    /**
      * Returns the cache object containing the specified
      * name or null if not found.
      *
@@ -467,7 +473,7 @@ public class OpenComponentRegister implements DockedTabListener {
 //        return null;
 //    }
 
-    /** 
+    /**
      * Extracts and returns the component of the specified
      * docked tab event.
      *
@@ -478,7 +484,7 @@ public class OpenComponentRegister implements DockedTabListener {
 //        TabComponent source = (TabComponent)e.getSource();
 //        return source.getComponent();
 //    }
-    
+
 }
 
 

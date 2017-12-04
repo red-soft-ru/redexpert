@@ -20,63 +20,54 @@
 
 package org.underworldlabs.swing.plaf.bumpygradient;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.Image;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;
-
 import java.util.Enumeration;
 import java.util.Vector;
 
-import javax.swing.Icon;
-
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 final class BumpyGradientBumps implements Icon {
-    
+
     protected int xBumps;
     protected int yBumps;
     protected Color topColor;
     protected Color shadowColor;
     protected Color backColor;
-    
+
     protected static Vector buffers = new Vector();
     protected BumpBuffer buffer;
-    
+
     public BumpyGradientBumps(Dimension bumpArea) {
         this(bumpArea.width, bumpArea.height);
     }
-    
+
     public BumpyGradientBumps(int width, int height) {
         this(width, height,
                 BumpyGradientLookAndFeel.getPrimaryControlHighlight(),
                 BumpyGradientLookAndFeel.getPrimaryControlDarkShadow(),
                 BumpyGradientLookAndFeel.getPrimaryControlShadow());
     }
-    
+
     public BumpyGradientBumps(int width, int height,
-            Color newTopColor, Color newShadowColor, Color newBackColor) {
+                              Color newTopColor, Color newShadowColor, Color newBackColor) {
         setBumpArea(width, height);
         setBumpColors(newTopColor, newShadowColor, newBackColor);
     }
-    
+
     private BumpBuffer getBuffer(GraphicsConfiguration gc,
-            Color aTopColor, Color aShadowColor, Color aBackColor) {
+                                 Color aTopColor, Color aShadowColor, Color aBackColor) {
         if (buffer != null
                 && buffer.hasSameConfiguration(gc, aTopColor, aShadowColor, aBackColor)) {
             return buffer;
@@ -96,29 +87,29 @@ final class BumpyGradientBumps implements Icon {
         }
         return result;
     }
-    
+
     public void setBumpArea(Dimension bumpArea) {
         setBumpArea(bumpArea.width, bumpArea.height);
     }
-    
+
     public void setBumpArea(int width, int height) {
         xBumps = width / 2;
         yBumps = height / 2;
     }
-    
+
     public void setBumpColors(Color newTopColor, Color newShadowColor, Color newBackColor) {
         topColor = newTopColor;
         shadowColor = newShadowColor;
         backColor = newBackColor;
     }
-    
+
     public void paintIcon(Component c, Graphics g, int x, int y) {
         GraphicsConfiguration gc = (g instanceof Graphics2D)
-        ? (GraphicsConfiguration) ((Graphics2D) g).getDeviceConfiguration()
-        : null;
-        
+                ? (GraphicsConfiguration) ((Graphics2D) g).getDeviceConfiguration()
+                : null;
+
         buffer = getBuffer(gc, topColor, shadowColor, backColor);
-        
+
         int bufferWidth = buffer.getImageSize().width;
         int bufferHeight = buffer.getImageSize().height;
         int iconWidth = getIconWidth();
@@ -126,7 +117,7 @@ final class BumpyGradientBumps implements Icon {
         int x2 = x + iconWidth;
         int y2 = y + iconHeight;
         int savex = x;
-        
+
         while (y < y2) {
             int h = Math.min(y2 - y, bufferHeight);
             for (x = savex; x < x2; x += bufferWidth) {
@@ -136,22 +127,27 @@ final class BumpyGradientBumps implements Icon {
             y += bufferHeight;
         }
     }
-    
-    public int getIconWidth()  { return xBumps * 2; }
-    public int getIconHeight() { return yBumps * 2; }
+
+    public int getIconWidth() {
+        return xBumps * 2;
+    }
+
+    public int getIconHeight() {
+        return yBumps * 2;
+    }
 }
 
 final class BumpBuffer {
-    
+
     static final int IMAGE_SIZE = 64;
     static Dimension imageSize = new Dimension(IMAGE_SIZE, IMAGE_SIZE);
-    
+
     transient Image image;
     Color topColor;
     Color shadowColor;
     Color backColor;
     private GraphicsConfiguration gc;
-    
+
     public BumpBuffer(
             GraphicsConfiguration gc,
             Color aTopColor,
@@ -164,7 +160,7 @@ final class BumpBuffer {
         createImage();
         fillBumpBuffer();
     }
-    
+
     public boolean hasSameConfiguration(
             GraphicsConfiguration aGC,
             Color aTopColor,
@@ -178,27 +174,31 @@ final class BumpBuffer {
             return false;
         }
         return topColor.equals(aTopColor)
-        && shadowColor.equals(aShadowColor)
-        && backColor.equals(aBackColor);
+                && shadowColor.equals(aShadowColor)
+                && backColor.equals(aBackColor);
     }
-    
+
     /**
      * Returns the Image containing the bumps appropriate for the passed in
      * <code>GraphicsConfiguration</code>.
      */
-    public Image getImage() { return image; }
-    
-    public Dimension getImageSize() { return imageSize; }
-    
+    public Image getImage() {
+        return image;
+    }
+
+    public Dimension getImageSize() {
+        return imageSize;
+    }
+
     /**
      * Paints the bumps into the current image.
      */
     private void fillBumpBuffer() {
         Graphics g = image.getGraphics();
-        
+
         g.setColor(backColor);
         g.fillRect(0, 0, IMAGE_SIZE, IMAGE_SIZE);
-        
+
         g.setColor(topColor);
         for (int x = 0; x < IMAGE_SIZE; x += 4) {
             for (int y = 0; y < IMAGE_SIZE; y += 4) {
@@ -206,7 +206,7 @@ final class BumpBuffer {
                 g.drawLine(x + 2, y + 2, x + 2, y + 2);
             }
         }
-        
+
         g.setColor(shadowColor);
         for (int x = 0; x < IMAGE_SIZE; x += 4) {
             for (int y = 0; y < IMAGE_SIZE; y += 4) {
@@ -216,7 +216,7 @@ final class BumpBuffer {
         }
         g.dispose();
     }
-    
+
     /**
      * Creates the image appropriate for the passed in
      * <code>GraphicsConfiguration</code>, which may be null.
@@ -225,7 +225,7 @@ final class BumpBuffer {
         if (gc != null) {
             image = gc.createCompatibleImage(IMAGE_SIZE, IMAGE_SIZE);
         } else {
-            int cmap[] = { backColor.getRGB(), topColor.getRGB(), shadowColor.getRGB()};
+            int cmap[] = {backColor.getRGB(), topColor.getRGB(), shadowColor.getRGB()};
             IndexColorModel icm =
                     new IndexColorModel(8, 3, cmap, 0, false, -1, DataBuffer.TYPE_BYTE);
             image = new BufferedImage(IMAGE_SIZE, IMAGE_SIZE, BufferedImage.TYPE_BYTE_INDEXED, icm);

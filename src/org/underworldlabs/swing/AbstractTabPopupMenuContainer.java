@@ -20,19 +20,14 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.Icon;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JTabbedPane;
-import javax.swing.plaf.TabbedPaneUI;
-
 import org.underworldlabs.swing.plaf.CloseTabbedPaneUI;
 import org.underworldlabs.swing.plaf.TabMenuItem;
+
+import javax.swing.*;
+import javax.swing.plaf.TabbedPaneUI;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class AbstractTabPopupMenuContainer extends JTabbedPane implements TabPopupMenuContainer {
 
@@ -49,13 +44,13 @@ public class AbstractTabPopupMenuContainer extends JTabbedPane implements TabPop
     }
 
     private boolean tabPopupEnabled;
-    
+
     private TabPopupMenu popup;
 
     public void addTab(String title, Component component) {
         addTab(title, null, component, null);
     }
-    
+
     public void addTab(String title, Icon icon, Component component) {
         addTab(title, icon, component, null);
     }
@@ -81,9 +76,9 @@ public class AbstractTabPopupMenuContainer extends JTabbedPane implements TabPop
 
         return component;
     }
-    
+
     public void addTab(String title, Icon icon, Component component, String tip) {
-        
+
         // make sure the pane is visible - may have been empty
         if (!isVisible()) {
 
@@ -99,7 +94,7 @@ public class AbstractTabPopupMenuContainer extends JTabbedPane implements TabPop
         popup.addTabSelectionMenuItem(menuItem);
         return menuItem;
     }
-    
+
     public void removeAll() {
         popup.removeAllTabSelectionMenuItems();
         super.removeAll();
@@ -116,7 +111,7 @@ public class AbstractTabPopupMenuContainer extends JTabbedPane implements TabPop
 
     }
 
-    public boolean isTabPopupEnabled() { 
+    public boolean isTabPopupEnabled() {
         return tabPopupEnabled;
     }
 
@@ -138,18 +133,18 @@ public class AbstractTabPopupMenuContainer extends JTabbedPane implements TabPop
         private JMenuItem close;
         private JMenuItem closeAll;
         private JMenuItem closeOther;
-        
+
         private JTabbedPane tabPane;
-        
+
         private int hoverTabIndex;
-        
+
         public TabPopupMenu(JTabbedPane tabPane) {
             this.tabPane = tabPane;
 
             close = new JMenuItem("Close");
             closeAll = new JMenuItem("Close All");
             closeOther = new JMenuItem("Close Others");
-            
+
             close.addActionListener(this);
             closeAll.addActionListener(this);
             closeOther.addActionListener(this);
@@ -157,7 +152,7 @@ public class AbstractTabPopupMenuContainer extends JTabbedPane implements TabPop
             add(close);
             add(closeAll);
             add(closeOther);
-            
+
             hoverTabIndex = -1;
         }
 
@@ -172,12 +167,12 @@ public class AbstractTabPopupMenuContainer extends JTabbedPane implements TabPop
             menuItem.addActionListener(this);
             openTabs.add(menuItem);
         }
-        
+
         public void removeAllTabSelectionMenuItems() {
             if (openTabs == null) {
                 return;
             }
-            openTabs.removeAll();            
+            openTabs.removeAll();
         }
 
         public void removeTabSelectionMenuItem(TabMenuItem menuItem) {
@@ -186,24 +181,22 @@ public class AbstractTabPopupMenuContainer extends JTabbedPane implements TabPop
             }
             openTabs.remove(menuItem);
         }
-        
+
         public void actionPerformed(ActionEvent e) {
 
             if (hoverTabIndex == -1) {
                 return;
             }
-            
+
             Object source = e.getSource();
             if (source == close) {
                 tabPane.remove(hoverTabIndex);
-            }
-            else if (source == closeAll) {
+            } else if (source == closeAll) {
                 tabPane.removeAll();
-            }
-            else if (source == closeOther) {
+            } else if (source == closeOther) {
                 int count = 0;
                 int tabCount = tabPane.getTabCount();
-                Component[] tabs = new Component[tabCount -1];
+                Component[] tabs = new Component[tabCount - 1];
                 for (int i = 0; i < tabCount; i++) {
                     if (i != hoverTabIndex) {
                         tabs[count++] = tabPane.getComponentAt(i);
@@ -212,9 +205,8 @@ public class AbstractTabPopupMenuContainer extends JTabbedPane implements TabPop
                 for (int i = 0; i < tabs.length; i++) {
                     tabPane.remove(tabs[i]);
                 }
-            }
-            else if (source instanceof TabMenuItem) {
-                TabMenuItem item = (TabMenuItem)source;
+            } else if (source instanceof TabMenuItem) {
+                TabMenuItem item = (TabMenuItem) source;
                 tabPane.setSelectedComponent(item.getTabComponent());
             }
 
@@ -227,15 +219,15 @@ public class AbstractTabPopupMenuContainer extends JTabbedPane implements TabPop
         public void setHoverTabIndex(int hoverTabIndex) {
             this.hoverTabIndex = hoverTabIndex;
         }
-        
+
     } // class TabPopupMenu
 
     protected CloseTabbedPaneUI tabUI;
-    
+
     public TabbedPaneUI getUI() {
         return tabUI;
     }
-    
+
     public void updateUI() {
         tabUI = new CloseTabbedPaneUI();
         setUI(tabUI);

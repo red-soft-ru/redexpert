@@ -20,16 +20,15 @@
 
 package org.executequery.actions.queryeditor;
 
-import java.awt.event.ActionEvent;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.log.Log;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
 
-/** 
- *
- * @author   Takis Diakoumis
+import java.awt.event.ActionEvent;
+
+/**
+ * @author Takis Diakoumis
  */
 public class AddToUserDefinedKeywordsCommand extends AbstractQueryEditorCommand {
 
@@ -45,23 +44,23 @@ public class AddToUserDefinedKeywordsCommand extends AbstractQueryEditorCommand 
                     wordAtCursor = wordAtCursor.toUpperCase();
 
                     KeywordRepository keywordRepository =
-                        (KeywordRepository)RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
+                            (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
 
                     if (!keywordRepository.contains(wordAtCursor)) {
 
                         keywordRepository.addUserDefinedKeyword(wordAtCursor);
                         Log.info(bundledString("log.addKeyword1") + wordAtCursor +
                                 bundledString("log.addKeyword2"));
-                        
+
                     } else {
-                        
+
                         Log.info(bundledString("log.errorAddKeyword"));
                     }
-                    
+
                 }
-                
+
             }
-            
+
         }
 
     }

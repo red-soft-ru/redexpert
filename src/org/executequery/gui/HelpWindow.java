@@ -20,53 +20,51 @@
 
 package org.executequery.gui;
 
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Point;
-import java.awt.Toolkit;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Enumeration;
-
-import javax.help.BadIDException;
-import javax.help.HelpSet;
-import javax.help.HelpSetException;
-import javax.help.JHelp;
-import javax.help.JHelpSearchNavigator;
-import javax.help.JHelpTOCNavigator;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.underworldlabs.swing.util.IconUtilities;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
-/** 
+import javax.help.*;
+import javax.swing.*;
+import java.awt.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Enumeration;
+
+/**
  * The system Help window.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class HelpWindow {
 
     private static final String HELP_SET = "eq.hs";
 
-    /** the target page to display */
+    /**
+     * the target page to display
+     */
     private String target;
-    
-    /** Indicates whether a help search has been requested */
+
+    /**
+     * Indicates whether a help search has been requested
+     */
     private boolean isSearch;
 
-    /** IDs to be expanded */
+    /**
+     * IDs to be expanded
+     */
     private static final String[] EXPAND_IDS = {"release-info",
-                                                "database-explorer",
-                                                "query-editor",
-                                                "erd",
-                                                "import-export"};
+            "database-explorer",
+            "query-editor",
+            "erd",
+            "import-export"};
 
-    /** Opens a new help window */
+    /**
+     * Opens a new help window
+     */
     public HelpWindow() {
 
         this(null);
@@ -134,8 +132,9 @@ public class HelpWindow {
                     help.setCurrentID(target);
                 }
 
-            } catch (BadIDException badIdExc) {}
-            
+            } catch (BadIDException badIdExc) {
+            }
+
             expandHelpSetNodes(help);
 
             frame.setContentPane(help);
@@ -152,20 +151,20 @@ public class HelpWindow {
 
             GUIUtilities.displayExceptionErrorDialog(
                     "The system could not\nfind the help files specified.\n\n" +
-                             "System Error: " + e.getMessage(), e);
+                            "System Error: " + e.getMessage(), e);
         }
 
     }
 
     private void expandHelpSetNodes(JHelp help) {
 
-        for (Enumeration<?> i = help.getHelpNavigators(); i.hasMoreElements();) {
+        for (Enumeration<?> i = help.getHelpNavigators(); i.hasMoreElements(); ) {
 
             Object object = i.nextElement();
-            
+
             if (object instanceof JHelpTOCNavigator) {
 
-                JHelpTOCNavigator toc = (JHelpTOCNavigator)object;
+                JHelpTOCNavigator toc = (JHelpTOCNavigator) object;
 
                 // make sure the toc is the current navigator
                 // if we haven't launched in search mode
@@ -180,15 +179,15 @@ public class HelpWindow {
                 }
 
                 if (!isSearch) {
-                    
+
                     break;
                 }
 
             }
 
             if (isSearch && object instanceof JHelpSearchNavigator) {
-                
-                help.setCurrentNavigator((JHelpSearchNavigator)object);
+
+                help.setCurrentNavigator((JHelpSearchNavigator) object);
             }
         }
     }
@@ -203,14 +202,14 @@ public class HelpWindow {
         JFrame frame = new JFrame("Red Expert Help");
 
         ImageIcon frameIcon = IconUtilities.loadIcon(
-                        "/org/executequery/icons/Help16.png");
+                "/org/executequery/icons/Help16.png");
 
         frame.setIconImage(frameIcon.getImage());
 
         frame.setSize(900, 700);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension frameSize = frame.getSize();
-        
+
         if (frameSize.height > screenSize.height) {
             frameSize.height = screenSize.height;
         }
@@ -220,32 +219,32 @@ public class HelpWindow {
 
         Frame parentFrame = GUIUtilities.getParentFrame();
         if (parentFrame != null) {
-            
+
             Point parentLocation = parentFrame.getLocation();
             frame.setLocation(new Point(parentLocation.x + 40, parentLocation.y + 40));
-            
+
         } else {
 
-          frame.setLocation((screenSize.width - frameSize.width) / 2,
-                            (screenSize.height - frameSize.height) / 2);
+            frame.setLocation((screenSize.width - frameSize.width) / 2,
+                    (screenSize.height - frameSize.height) / 2);
         }
-        
+
         return frame;
     }
-    
+
     /**
      * Allows for displaying the help viewer outside of eq itself.
      */
     public static void main(String[] args) {
-       
+
         // make sure system properties are loaded
-        SystemProperties.loadPropertiesResource(Constants.SYSTEM_PROPERTIES_KEY, 
+        SystemProperties.loadPropertiesResource(Constants.SYSTEM_PROPERTIES_KEY,
                 "org/executequery/eq.system.properties");
-        
+
         // new default window
         new HelpWindow();
     }
-    
+
 }
 
 

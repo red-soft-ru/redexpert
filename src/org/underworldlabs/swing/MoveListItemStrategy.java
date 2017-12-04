@@ -23,17 +23,16 @@ package org.underworldlabs.swing;
 import java.util.List;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class MoveListItemStrategy<T> {
 
     private List<T> list;
-    
+
     private static final int MOVE_DOWN = 1;
-    
+
     private static final int MOVE_UP = -1;
-    
+
     public void setList(List<T> list) {
 
         this.list = list;
@@ -42,16 +41,16 @@ public class MoveListItemStrategy<T> {
     public int moveDown(int index) {
 
         if (canMoveDown(index)) {
-        
+
             return moveIndex(MOVE_DOWN, index);
         }
-        
+
         return index;
     }
 
     private boolean canMoveDown(int index) {
 
-        return (index != -1 && index < list.size() - 1) ;
+        return (index != -1 && index < list.size() - 1);
     }
 
     public int moveUp(int index) {
@@ -60,7 +59,7 @@ public class MoveListItemStrategy<T> {
 
             return moveIndex(MOVE_UP, index);
         }
-        
+
         return index;
     }
 
@@ -77,7 +76,7 @@ public class MoveListItemStrategy<T> {
 
         int newIndex = index + increment;
         list.add(newIndex, element);
-        
+
         return newIndex;
     }
 

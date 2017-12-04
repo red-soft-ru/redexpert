@@ -20,25 +20,19 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import org.executequery.Constants;
 import org.executequery.gui.DefaultNumberTextField;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.util.SystemProperties;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
 public class TableDataTabToolBar extends JPanel implements FocusListener {
 
@@ -94,9 +88,9 @@ public class TableDataTabToolBar extends JPanel implements FocusListener {
         maxRowCountPanel.add(maxRowCountField, gbc);
 
         add(maxRowCountPanel);
-        
+
     }
-    
+
     private void maxRowCountCheckBoxSelected() {
 
         maxRowCountField.setEnabled(maxRowCountCheckBox.isSelected());
@@ -104,12 +98,13 @@ public class TableDataTabToolBar extends JPanel implements FocusListener {
     }
 
     public void focusGained(FocusEvent e) {
-        
+
         maxRowCountField.selectAll();
     }
 
-    public void focusLost(FocusEvent e) {}
-    
+    public void focusLost(FocusEvent e) {
+    }
+
     private JLabel createLabel(String text, char mnemonic) {
 
         final JLabel label = new JLabel(text);
@@ -130,7 +125,7 @@ public class TableDataTabToolBar extends JPanel implements FocusListener {
     public int getHeight() {
         return 35;
     }
-    
+
 }
 
 

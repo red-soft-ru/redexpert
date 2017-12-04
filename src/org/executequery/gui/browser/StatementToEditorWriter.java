@@ -25,39 +25,38 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.editor.QueryEditor;
 
 /**
- *
- * @author      Takis Diakoumis
+ * @author Takis Diakoumis
  */
 class StatementToEditorWriter {
-    
+
     public void writeToOpenEditor(DatabaseConnection databaseConnection, String statement) {
-        
+
         QueryEditor editor = null;
         Object panel = GUIUtilities.getSelectedCentralPane();
 
         if (panel instanceof QueryEditor) {
 
-            editor = ((QueryEditor)panel);
+            editor = ((QueryEditor) panel);
 
         } else {
-        
+
             editor = new QueryEditor();
             addEditorToPane(editor);
         }
-        
+
         editor.insertTextAtEnd(statement);
         editor.setSelectedConnection(databaseConnection);
     }
 
     private void addEditorToPane(QueryEditor editor) {
-        
+
         GUIUtilities.addCentralPane(QueryEditor.TITLE,
-                                    QueryEditor.FRAME_ICON, 
-                                    editor,
-                                    null,
-                                    true);
+                QueryEditor.FRAME_ICON,
+                editor,
+                null,
+                true);
     }
-    
+
 }
 
 

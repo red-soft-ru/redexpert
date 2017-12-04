@@ -26,7 +26,7 @@ import java.io.File;
 public class PngImageWriterInfo extends AbstractImageWriterInfo {
 
     public PngImageWriterInfo(BufferedImage buferredImage, File writeToFile) {
-        
+
         super(buferredImage, writeToFile);
     }
 

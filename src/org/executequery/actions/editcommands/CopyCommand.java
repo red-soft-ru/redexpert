@@ -20,33 +20,33 @@
 
 package org.executequery.actions.editcommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
 import org.executequery.gui.text.TextEditor;
 import org.underworldlabs.swing.actions.BaseCommand;
 
+import java.awt.event.ActionEvent;
+
 /**
  * <p>Performs the 'COPY' command and those objects
- *  implementing <code>TextEditor</code>.
- * 
- * @author   Takis Diakoumis
+ * implementing <code>TextEditor</code>.
+ *
+ * @author Takis Diakoumis
  */
 public class CopyCommand implements BaseCommand {
-    
+
     /**
      * Executes the copy command on the <code>TextEditor</code>.
-     * 
+     *
      * @param the originating event
      */
     public void execute(ActionEvent e) {
-        TextEditor textEditor = GUIUtilities.getTextEditorInFocus();        
+        TextEditor textEditor = GUIUtilities.getTextEditorInFocus();
         if (textEditor != null) {
             textEditor.copy();
         }
-        textEditor = null;        
+        textEditor = null;
     }
-    
+
 }
 
 

@@ -36,16 +36,15 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.Driver;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
-import java.util.jar.JarFile;
+import java.util.Properties;
 
 /**
  * Created by vasiliy.yashkov on 10.07.2015.
@@ -738,7 +737,7 @@ public class CreateDatabasePanel extends ActionPanel
             ClassLoader clD = new URLClassLoader(urlDriver);
             clazzDriver = clD.loadClass(databaseDriver.getClassName());
             Object o = clazzDriver.newInstance();
-            Driver driver = (Driver)o;
+            Driver driver = (Driver) o;
 
             Log.info("Database creation via jaybird");
             Log.info("Driver version: " + driver.getMajorVersion() + "." + driver.getMinorVersion());
@@ -847,7 +846,7 @@ public class CreateDatabasePanel extends ActionPanel
 
         EventMediator.fireEvent(
                 new DefaultConnectionRepositoryEvent(
-                        this, ConnectionRepositoryEvent.CONNECTION_MODIFIED,(DatabaseConnection) null));
+                        this, ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) null));
 
         return true;
     }

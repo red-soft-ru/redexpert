@@ -22,15 +22,14 @@ package org.executequery.gui;
 
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface FocusablePanel extends FocusComponentPanel {
 
@@ -38,7 +37,7 @@ public interface FocusablePanel extends FocusComponentPanel {
      * Called when the component defined by this interface gains focus.
      */
     public void focusGained();
-    
+
     /**
      * Called when the component defined by this interface loses focus.
      */

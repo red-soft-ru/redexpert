@@ -20,41 +20,40 @@
 
 package org.executequery.sql;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.executequery.Constants;
 import org.executequery.gui.text.syntax.Token;
 import org.executequery.gui.text.syntax.TokenTypes;
 import org.underworldlabs.util.InterruptedException;
 
-/** 
- *
- * @author   Takis Diakoumis
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * @author Takis Diakoumis
  */
 public class QueryTokenizer {
 
     private /*static final*/ String QUERY_DELIMITER = ";";
 
     private List<Token> stringTokens;
-    
+
     private List<Token> singleLineCommentTokens;
-    
+
     private List<Token> multiLineCommentTokens;
 
     private Matcher stringMatcher;
-    
+
     private Matcher singleLineCommentMatcher;
-    
+
     private Matcher multiLineCommentMatcher;
-    
+
     private static final String QUOTE_REGEX = "'((\\?>[^']*\\+)(\\?>'{2}[^']*\\+)*\\+)'|'.*'";//"'((?>[^']*+)(?>'{2}[^']*+)*+)'|'.*";
-    
-    private static final String MULTILINE_COMMENT_REGEX = "/\\*(?:.|[\\n\\r])*?\\*/|/\\*.*"; 
+
+    private static final String MULTILINE_COMMENT_REGEX = "/\\*(?:.|[\\n\\r])*?\\*/|/\\*.*";
 //                                                        "/\\*((?>[^\\*/]*+)*+)\\*/|/\\*.*";
-    
+
     public QueryTokenizer() {
 
         stringTokens = new ArrayList<Token>();
@@ -72,29 +71,29 @@ public class QueryTokenizer {
     }
 
     public String removeComments(String query) {
-        
+
         return removeAllCommentsFromQuery(query);
     }
-    
+
     public List<DerivedQuery> tokenize(String query) {
 
         extractQuotedStringTokens(query);
         extractSingleLineCommentTokens(query);
         extractMultiLineCommentTokens(query);
-        
+
         List<DerivedQuery> derivedQueries = deriveQueries(query);
 
         for (DerivedQuery derivedQuery : derivedQueries) {
-            
+
             if (Thread.interrupted()) {
-                
+
                 throw new InterruptedException();
             }
 
             String noCommentsQuery = removeAllCommentsFromQuery(derivedQuery.getOriginalQuery());
             derivedQuery.setDerivedQuery(noCommentsQuery.trim());
         }
-        
+
         return derivedQueries;
     }
 
@@ -104,15 +103,15 @@ public class QueryTokenizer {
 
         return removeSingleLineComments(newQuery);
     }
-    
+
     private String removeMultiLineComments(String query) {
 
-        return removeTokensForMatcherWhenNotInString(multiLineCommentMatcher, query);       
+        return removeTokensForMatcherWhenNotInString(multiLineCommentMatcher, query);
     }
 
     private String removeSingleLineComments(String query) {
 
-        return removeTokensForMatcherWhenNotInString(singleLineCommentMatcher, query);      
+        return removeTokensForMatcherWhenNotInString(singleLineCommentMatcher, query);
     }
 
     private List<DerivedQuery> deriveQueries(String query) {
@@ -130,10 +129,10 @@ public class QueryTokenizer {
         while ((index = query.indexOf(QUERY_DELIMITER, index + 1)) != -1) {
 
             if (Thread.interrupted()) {
-                
+
                 throw new InterruptedException();
             }
-            
+
             if (notInAnyToken(index)) {
 
                 String substring = query.substring(lastIndex, index);
@@ -156,18 +155,18 @@ public class QueryTokenizer {
         }
 
         if (queries.isEmpty()) {
-            
+
             queries.add(new DerivedQuery(query));
         }
-        
+
         return queries;
     }
 
     private boolean notInAnyToken(int index) {
 
-        return !(withinMultiLineComment(index, index)) 
-            && !(withinSingleLineComment(index, index))
-            && !(withinQuotedString(index, index));
+        return !(withinMultiLineComment(index, index))
+                && !(withinSingleLineComment(index, index))
+                && !(withinQuotedString(index, index));
     }
 
     private void extractSingleLineCommentTokens(String query) {
@@ -181,7 +180,7 @@ public class QueryTokenizer {
     }
 
     private void addTokensForMatcherWhenNotInString(Matcher matcher, String query, List<Token> tokens) {
-        
+
         tokens.clear();
         matcher.reset(query);
 
@@ -190,10 +189,10 @@ public class QueryTokenizer {
             int start = matcher.start();
             int end = matcher.end();
 
-            int endOffset = end; 
-            
+            int endOffset = end;
+
             if (isSingleLineMatcher(matcher)) {
-                
+
                 endOffset = start + 2;
             }
 
@@ -203,7 +202,7 @@ public class QueryTokenizer {
             }
 
         }
-        
+
     }
 
     private String removeTokensForMatcherWhenNotInString(Matcher matcher, String query) {
@@ -219,11 +218,11 @@ public class QueryTokenizer {
             end = matcher.end();
 
             extractQuotedStringTokens(sb.toString());
-            
-            endOffset = end; 
-            
+
+            endOffset = end;
+
             if (isSingleLineMatcher(matcher)) {
-                
+
                 endOffset = start + 2;
             }
 
@@ -233,7 +232,7 @@ public class QueryTokenizer {
                 matcher.reset(sb);
 
             } else {
-                
+
                 start = end;
             }
 
@@ -263,19 +262,19 @@ public class QueryTokenizer {
     }
 
     private boolean contains(List<Token> tokens, int start, int end) {
-        
+
         for (Token token : tokens) {
-            
-            if (token.contains(start, end)) { 
-            
+
+            if (token.contains(start, end)) {
+
                 return true;
             }
         }
-        
+
         return false;
 
     }
-    
+
     private void extractQuotedStringTokens(String query) {
 
         stringTokens.clear();
@@ -283,10 +282,10 @@ public class QueryTokenizer {
 
         while (stringMatcher.find()) {
 
-            stringTokens.add(new Token(TokenTypes.STRING, 
+            stringTokens.add(new Token(TokenTypes.STRING,
                     stringMatcher.start(), stringMatcher.end()));
         }
-        
+
     }
 
 }

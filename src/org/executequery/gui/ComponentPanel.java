@@ -20,29 +20,34 @@
 
 package org.executequery.gui;
 
-import java.awt.Component;
+import java.awt.*;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public final class ComponentPanel {
 
-    /** the panels name */
+    /**
+     * the panels name
+     */
     private String name;
 
-    /** the panel component */
+    /**
+     * the panel component
+     */
     private Component component;
 
-    /** Creates a new instance of PanelCacheObject */
+    /**
+     * Creates a new instance of PanelCacheObject
+     */
     public ComponentPanel(String name, Component component) {
-        
+
         this.name = name;
         this.component = component;
     }
 
     public String getName() {
-        
+
         return name;
     }
 
@@ -56,7 +61,7 @@ public final class ComponentPanel {
         name = null;
         component = null;
     }
-    
+
 }
 
 

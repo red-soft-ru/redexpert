@@ -20,32 +20,30 @@
 
 package org.executequery.gui.editor;
 
-import java.awt.event.KeyEvent;
-import java.util.Vector;
-
-import javax.swing.JComboBox;
-
 import org.executequery.databasemediators.DatabaseConnection;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 
+import javax.swing.*;
+import java.awt.event.KeyEvent;
+import java.util.Vector;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-final class OpenConnectionsComboBox extends JComboBox { 
- 
+final class OpenConnectionsComboBox extends JComboBox {
+
     private QueryEditor queryEditor;
-    
+
     private DynamicComboBoxModel connectionsModel;
-    
-    OpenConnectionsComboBox(QueryEditor queryEditor, 
-            Vector<DatabaseConnection> connections) {
-        
+
+    OpenConnectionsComboBox(QueryEditor queryEditor,
+                            Vector<DatabaseConnection> connections) {
+
         this.queryEditor = queryEditor;
-        
+
         connectionsModel = new DynamicComboBoxModel(connections);
         setModel(connectionsModel);
-        
+
         if (connectionsModel.getSize() == 0) {
             setEnabled(false);
         }
@@ -53,10 +51,10 @@ final class OpenConnectionsComboBox extends JComboBox {
     }
 
     public boolean contains(DatabaseConnection databaseConnection) {
-        
+
         return connectionsModel.contains(databaseConnection);
     }
-    
+
     public void processKeyEvent(KeyEvent e) {
 
         super.processKeyEvent(e);
@@ -66,16 +64,16 @@ final class OpenConnectionsComboBox extends JComboBox {
             queryEditor.resetCaretPositionToLast();
         }
     }
-    
+
     private boolean isKeyForCaretReset(int keyCode) {
         return keyCode == KeyEvent.VK_ENTER || keyCode == KeyEvent.VK_ESCAPE;
     }
-    
+
     protected void attemptToFocus() {
         requestFocus();
         setPopupVisible(true);
     }
-    
+
     protected void removeElement(DatabaseConnection databaseConnection) {
         connectionsModel.removeElement(databaseConnection);
         if (connectionsModel.getSize() == 0) {
@@ -87,7 +85,7 @@ final class OpenConnectionsComboBox extends JComboBox {
         connectionsModel.addElement(databaseConnection);
         setEnabled(true);
     }
-    
+
 }
 
 

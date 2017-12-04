@@ -20,11 +20,10 @@
 
 package org.underworldlabs.swing;
 
+import javax.swing.*;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
-
-import javax.swing.DefaultSingleSelectionModel;
 
 public class VetoableSingleSelectionModel extends DefaultSingleSelectionModel {
 
@@ -34,16 +33,16 @@ public class VetoableSingleSelectionModel extends DefaultSingleSelectionModel {
     public void setSelectedIndex(int index) {
 
         if (getSelectedIndex() == index) {
-         
+
             return;
         }
-        
+
         try {
-        
+
             fireVetoableChange(getSelectedIndex(), index);
 
         } catch (PropertyVetoException e) {
-        
+
             return;
         }
         super.setSelectedIndex(index);
@@ -52,7 +51,7 @@ public class VetoableSingleSelectionModel extends DefaultSingleSelectionModel {
     private void fireVetoableChange(int oldSelectionIndex, int newSelectionIndex) throws PropertyVetoException {
 
         if (!isVetoable()) {
-         
+
             return;
         }
 
@@ -60,9 +59,9 @@ public class VetoableSingleSelectionModel extends DefaultSingleSelectionModel {
     }
 
     private boolean isVetoable() {
-        
+
         if (vetoableChangeSupport == null) {
-         
+
             return false;
         }
         return vetoableChangeSupport.hasListeners(null);
@@ -80,7 +79,7 @@ public class VetoableSingleSelectionModel extends DefaultSingleSelectionModel {
     public void removeVetoableChangeListener(VetoableChangeListener l) {
 
         if (vetoableChangeSupport == null) {
-         
+
             return;
         }
         vetoableChangeSupport.removeVetoableChangeListener(l);

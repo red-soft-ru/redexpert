@@ -28,7 +28,7 @@ public interface ToolBarListener extends ApplicationEventListener {
      * Notification of a tool bar change.
      */
     void toolBarChanged(ToolBarEvent e);
-    
+
 }
 
 

@@ -20,22 +20,22 @@
 
 package org.executequery.actions.helpcommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.InformationDialog;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-/** 
+import java.awt.event.ActionEvent;
+
+/**
  * The Help | License command execution.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class LicenseCommand extends OpenFrameCommand
-                            implements BaseCommand {
-    
+        implements BaseCommand {
+
     public void execute(ActionEvent e) {
-        
+
         new InformationDialog(bundledString("license"),
                 "org/executequery/gpl.license", InformationDialog.RESOURCE_PATH_VALUE);
     }

@@ -27,11 +27,8 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.executequery.gui.table.CreateTableSQLSyntax.EMPTY;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class NewTablePanel extends TableDefinitionPanel
         implements CreateTableSQLSyntax {

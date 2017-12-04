@@ -20,22 +20,21 @@
 
 package org.executequery.gui.drivers;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import org.executequery.databasemediators.DatabaseDriver;
 
+import javax.swing.tree.DefaultMutableTreeNode;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DatabaseDriverNode extends DefaultMutableTreeNode {
 
     private DatabaseDriver driver;
 
     public DatabaseDriverNode(DatabaseDriver driver) {
-        
+
         super(driver, false);
-        
+
         this.driver = driver;
     }
 

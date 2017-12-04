@@ -20,23 +20,24 @@
 
 package org.executequery.actions.editcommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.gui.UndoableComponent;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-/** <p>Query Editor's Undo command execution.
+import java.awt.event.ActionEvent;
+
+/**
+ * <p>Query Editor's Undo command execution.
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class UndoCommand implements BaseCommand {
-    
+
     private UndoableComponent undoable;
 
     public void execute(ActionEvent e) {
         if (undoable != null) {
             undoable.undo();
-        }        
+        }
     }
 
     public void setUndoableComponent(UndoableComponent undoable) {

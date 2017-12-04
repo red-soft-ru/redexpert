@@ -27,24 +27,33 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.util.SwingWorker;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DefaultConnectionBuilder implements ConnectionBuilder {
 
-    /** The worker thread to establish the connection */
+    /**
+     * The worker thread to establish the connection
+     */
     private SwingWorker worker;
 
-    /** The connection progress dialog */
+    /**
+     * The connection progress dialog
+     */
     private ConnectionProgressDialog progressDialog;
 
-    /** Indicates whether the process was cancelled */
+    /**
+     * Indicates whether the process was cancelled
+     */
     private boolean cancelled;
 
-    /** The database connection object */
+    /**
+     * The database connection object
+     */
     private DatabaseConnection databaseConnection;
 
-    /** The exception on error */
+    /**
+     * The exception on error
+     */
     private DataSourceException dataSourceException;
 
     public DefaultConnectionBuilder(DatabaseConnection databaseConnection) {
@@ -98,6 +107,7 @@ public class DefaultConnectionBuilder implements ConnectionBuilder {
                 createDataSource();
                 return null;
             }
+
             public void finished() {
 
                 if (!cancelled && progressDialog != null) {

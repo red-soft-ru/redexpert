@@ -25,7 +25,7 @@ import java.awt.event.ActionEvent;
 /**
  * Command to remove the comment from the current or selected line(s).
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class RemoveCommentLineCommand extends AbstractQueryEditorCommand {
 
@@ -37,7 +37,7 @@ public class RemoveCommentLineCommand extends AbstractQueryEditorCommand {
         }
 
     }
-    
+
 }
 
 

@@ -22,8 +22,8 @@ package org.executequery.toolbars;
 
 import org.executequery.event.AbstractApplicationEvent;
 
-public class DefaultToolBarEvent extends AbstractApplicationEvent 
-                                 implements ToolBarEvent {
+public class DefaultToolBarEvent extends AbstractApplicationEvent
+        implements ToolBarEvent {
 
     private String key;
 

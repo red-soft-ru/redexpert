@@ -20,27 +20,28 @@
 
 package org.executequery.actions.othercommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.gui.prefs.UserPreferenceFunction;
 import org.executequery.localization.Bundles;
 
-/** <p>Restore system defaults command for respective preferences panels.
+import java.awt.event.ActionEvent;
+
+/**
+ * <p>Restore system defaults command for respective preferences panels.
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class RestoreDefaultsCommand extends AbstractBaseCommand {
-    
+
     private UserPreferenceFunction frame;
-    
+
     public RestoreDefaultsCommand(UserPreferenceFunction frame) {
         super(Bundles.get(RestoreDefaultsCommand.class, "restoreDefaults"));
         this.frame = frame;
     }
-    
+
     public void execute(ActionEvent e) {
         frame.restoreDefaults();
     }
-    
+
 }
 

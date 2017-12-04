@@ -20,40 +20,40 @@
 
 package org.executequery.gui.scriptgenerators;
 
-import java.util.Vector;
-
 import org.executequery.gui.browser.ColumnData;
 
+import java.util.Vector;
+
 /**
+ * @author Takis Diakoumis
  * @deprecated
- * @author   Takis Diakoumis
  */
 public interface ScriptGenerator {
-    
+
     public String getScriptFilePath();
-    
+
     public ColumnData[] getColumnDataArray(String tableName);
-    
+
     public Vector getSelectedTables();
-    
+
     public boolean hasSelectedTables();
-    
+
     public boolean includeConstraints();
-    
+
     public boolean includeConstraintsInCreate();
-    
+
     public void setResult(int result);
-    
+
     public void dispose();
-    
+
     public boolean includeConstraintsAsAlter();
-    
+
     public void enableButtons(boolean enable);
-    
+
     public String getDatabaseProductName();
-    
+
     public String getSchemaName();
-    
+
 }
 
 

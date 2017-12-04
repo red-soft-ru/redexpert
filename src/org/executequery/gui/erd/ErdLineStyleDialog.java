@@ -20,31 +20,6 @@
 
 package org.executequery.gui.erd;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
-import javax.swing.UIManager;
-
 import org.executequery.GUIUtilities;
 import org.executequery.components.ColourChooserButton;
 import org.executequery.gui.DefaultPanelButton;
@@ -53,48 +28,63 @@ import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.plaf.UIUtils;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ErdLineStyleDialog extends AbstractBaseDialog {
-    
-    /** The line weight combo box */
+
+    /**
+     * The line weight combo box
+     */
     private JComboBox weightCombo;
-    
-    /** The line style combo box */
+
+    /**
+     * The line style combo box
+     */
     private JComboBox styleCombo;
-    
-    /** The arrow style combo box */
+
+    /**
+     * The arrow style combo box
+     */
     private JComboBox arrowCombo;
-    
-    /** The colour selection button */
+
+    /**
+     * The colour selection button
+     */
     private ColourChooserButton colourButton;
-    
-    /** The dependency panel where changes will occur */
+
+    /**
+     * The dependency panel where changes will occur
+     */
     private ErdDependanciesPanel dependsPanel;
-    
-    /** <p>Creates a new instance with the specified values
-     *  pre-selected within respective combo boxes.
+
+    /**
+     * <p>Creates a new instance with the specified values
+     * pre-selected within respective combo boxes.
      *
-     *  @param the <code>ErdDependanciesPanel</code> where
-     *         changes will occur
-     *  @param the line weight
-     *  @param the line style index to be selected:<br>
-     *         0 - solid line
-     *         1 - dotted line
-     *         2 - dashed line
-     *  @param the arrow index to be selected:<br>
-     *         0 - filled arrow
-     *         1 - outline arrow
-     *  @param the line colour
+     * @param the <code>ErdDependanciesPanel</code> where
+     *            changes will occur
+     * @param the line weight
+     * @param the line style index to be selected:<br>
+     *            0 - solid line
+     *            1 - dotted line
+     *            2 - dashed line
+     * @param the arrow index to be selected:<br>
+     *            0 - filled arrow
+     *            1 - outline arrow
+     * @param the line colour
      */
     public ErdLineStyleDialog(ErdDependanciesPanel dependsPanel) {
-        
+
         super(GUIUtilities.getParentFrame(), "Line Style", true);
-        
+
         this.dependsPanel = dependsPanel;
-        
+
         try {
             jbInit();
         } catch (Exception e) {
@@ -102,76 +92,77 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
         }
 
         determineWeightComboSelection(dependsPanel);
-        
+
         styleCombo.setSelectedIndex(dependsPanel.getLineStyleIndex());
         arrowCombo.setSelectedIndex(dependsPanel.getArrowStyleIndex());
-        
+
         pack();
         this.setLocation(GUIUtilities.getLocationForDialog(this.getSize()));
         setVisible(true);
-        
+
     }
 
     private void determineWeightComboSelection(ErdDependanciesPanel dependsPanel) {
-        
+
         float lineWeight = dependsPanel.getLineWeight();
-        
+
         if (isFloatEqual(lineWeight, 0.5f)) {
-           
+
             weightCombo.setSelectedIndex(0);
-            
+
         } else if (isFloatEqual(lineWeight, 1.0f)) {
-            
+
             weightCombo.setSelectedIndex(1);
-            
+
         } else if (isFloatEqual(lineWeight, 1.5f)) {
-            
+
             weightCombo.setSelectedIndex(2);
-            
+
         } else if (isFloatEqual(lineWeight, 2.0f)) {
-         
+
             weightCombo.setSelectedIndex(3);
         }
     }
-    
+
     private void jbInit() throws Exception {
         LineStyleRenderer renderer = new LineStyleRenderer();
-        
+
         LineWeightIcon[] weightIcons = {new LineWeightIcon(0),
-        new LineWeightIcon(1),
-        new LineWeightIcon(2),
-        new LineWeightIcon(3)};
+                new LineWeightIcon(1),
+                new LineWeightIcon(2),
+                new LineWeightIcon(3)};
         weightCombo = WidgetFactory.createComboBox(weightIcons);
         weightCombo.setRenderer(renderer);
-        
+
         LineStyleIcon[] styleIcons = {new LineStyleIcon(0),
-        new LineStyleIcon(1),
-        new LineStyleIcon(2)};
+                new LineStyleIcon(1),
+                new LineStyleIcon(2)};
         styleCombo = WidgetFactory.createComboBox(styleIcons);
         styleCombo.setRenderer(renderer);
-        
+
         ArrowStyleIcon[] arrowIcons = {new ArrowStyleIcon(0),
-        new ArrowStyleIcon(1)};
+                new ArrowStyleIcon(1)};
         arrowCombo = WidgetFactory.createComboBox(arrowIcons);
         arrowCombo.setRenderer(renderer);
-        
+
         JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
         JButton okButton = new DefaultPanelButton(Bundles.get("common.ok.button"));
-        
+
         ActionListener btnListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                buttons_actionPerformed(e); }
+                buttons_actionPerformed(e);
+            }
         };
-        
+
         cancelButton.addActionListener(btnListener);
         okButton.addActionListener(btnListener);
-        
+
         colourButton = new ColourChooserButton(dependsPanel.getLineColour());
-        
+
         JPanel panel = new JPanel(new GridBagLayout());
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(14,10,5,10);
+        gbc.insets = new Insets(14, 10, 5, 10);
         gbc.anchor = GridBagConstraints.NORTHWEST;
         panel.add(new JLabel("Line Style:"), gbc);
         gbc.gridwidth = 2;
@@ -207,8 +198,8 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
         gbc.gridx = 0;
         gbc.gridwidth = 1;
         panel.add(new JLabel("Line Colour:"), gbc);
-        
-        
+
+
         gbc.gridx = 1;
         gbc.insets.right = 5;
         gbc.ipadx = 25;
@@ -228,36 +219,37 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
         gbc.gridx = 2;
         gbc.weightx = 0;
         panel.add(cancelButton, gbc);
-        
+
         panel.setBorder(BorderFactory.createEtchedBorder());
         panel.setPreferredSize(new Dimension(450, 200));
-        
+
         Container c = this.getContentPane();
         c.setLayout(new GridBagLayout());
         c.add(panel, new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                                GridBagConstraints.SOUTHEAST, GridBagConstraints.BOTH,
-                                new Insets(7, 7, 7, 7), 0, 0));
-        
+                GridBagConstraints.SOUTHEAST, GridBagConstraints.BOTH,
+                new Insets(7, 7, 7, 7), 0, 0));
+
         setResizable(false);
         this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        
+
     }
-    
-    /** <p>Performs the respective action upon selection
-     *  of a button within this dialog.
+
+    /**
+     * <p>Performs the respective action upon selection
+     * of a button within this dialog.
      *
-     *  @param the <code>ActionEvent</code>
+     * @param the <code>ActionEvent</code>
      */
     private void buttons_actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
-        
+
         if (command.equals("Cancel"))
             dispose();
-        
+
         else if (command.equals("OK")) {
             int index = weightCombo.getSelectedIndex();
             float lineWeight = 0f;
-            
+
             switch (index) {
                 case 0:
                     lineWeight = 0.5f;
@@ -272,7 +264,7 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
                     lineWeight = 2.0f;
                     break;
             }
-            
+
             dependsPanel.setLineWeight(lineWeight);
             dependsPanel.setArrowStyle(arrowCombo.getSelectedIndex() == 0 ? true : false);
             dependsPanel.setLineColour(colourButton.getColour());
@@ -280,50 +272,51 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
             dependsPanel.repaint();
             dispose();
         }
-        
+
     }
-    
+
     private boolean isFloatEqual(float value1, float value2) {
-        
+
         return (Math.abs(value1 - value2) < .0000001);
     }
-    
-    
+
+
 } // class
 
-/** <p>Draws the available arrow styles as an
- *  <code>ImageIcon</code> to be added to the combo
- *  box through the renderer.
+/**
+ * <p>Draws the available arrow styles as an
+ * <code>ImageIcon</code> to be added to the combo
+ * box through the renderer.
  */
 class ArrowStyleIcon extends ImageIcon {
-    
+
     private int type;
-    
+
     public ArrowStyleIcon(int type) {
         super();
         this.type = type;
     }
-    
+
     public int getIconWidth() {
         return 250;
     }
-    
+
     public int getIconHeight() {
         return 20;
     }
-    
+
     public void paintIcon(Component c, Graphics g, int x, int y) {
-        
+
         // fill the background
         g.setColor(UIUtils.getColour("executequery.Erd.background", Color.WHITE));
         g.fillRect(0, 0, 290, 20);
         // draw the line
         g.setColor(Color.BLACK);
         g.drawLine(5, 10, 250, 10);
-        
+
         int[] polyXs = {240, 250, 240};
         int[] polyYs = {16, 10, 4};
-        
+
         switch (type) {
             case 0:
                 g.fillPolygon(polyXs, polyYs, 3);
@@ -332,76 +325,77 @@ class ArrowStyleIcon extends ImageIcon {
                 g.drawPolyline(polyXs, polyYs, 3);
                 break;
         }
-        
+
     }
-    
+
 } // ArrowStyleIcon
 
 class LineStyleRenderer extends JLabel
-                        implements ListCellRenderer {
-    
+        implements ListCellRenderer {
+
     private static final Color focusColour =
-    UIManager.getColor("ComboBox.selectionBackground");
-    
+            UIManager.getColor("ComboBox.selectionBackground");
+
     public LineStyleRenderer() {
         super();
     }
-    
+
     public Component getListCellRendererComponent(JList list, Object obj, int row,
-    boolean sel, boolean hasFocus) {
+                                                  boolean sel, boolean hasFocus) {
         if (obj instanceof ImageIcon) {
-            setIcon((ImageIcon)obj);
-            
+            setIcon((ImageIcon) obj);
+
             if (sel)
                 setBorder(BorderFactory.createLineBorder(focusColour, 2));
             else
                 setBorder(null);
-            
+
         } else
             setText("ERROR");
-        
+
         return this;
-        
+
     }
-    
+
 } // LineStyleRenderer
 
 
-/** <p>Draws the available line weights as an
- *  <code>ImageIcon</code> to be added to the combo
- *  box through the renderer.
+/**
+ * <p>Draws the available line weights as an
+ * <code>ImageIcon</code> to be added to the combo
+ * box through the renderer.
  */
 class LineWeightIcon extends ImageIcon {
-    
+
     private static final BasicStroke solidStroke_1 = new BasicStroke(0.5f);
     private static final BasicStroke solidStroke_2 = new BasicStroke(1.0f);
     private static final BasicStroke solidStroke_3 = new BasicStroke(1.5f);
     private static final BasicStroke solidStroke_4 = new BasicStroke(2.0f);
-    
+
     private static final String HALF = "0.5";
     private static final String ONE = "1.0";
     private static final String ONE_FIVE = "1.5";
     private static final String TWO = "2.0";
-    
+
     private int type;
-    
+
     public LineWeightIcon(int type) {
         super();
         this.type = type;
     }
-    
+
     public int getIconWidth() {
         return 250;
     }
-    
+
     public int getIconHeight() {
         return 20;
     }
-    
+
     public void paintIcon(Component c, Graphics g, int x, int y) {
-        Graphics2D g2d = (Graphics2D)g;
+        Graphics2D g2d = (Graphics2D) g;
         String text = null;
-        
+
         switch (type) {
             case 0:
                 g2d.setStroke(solidStroke_1);
@@ -420,56 +414,57 @@ class LineWeightIcon extends ImageIcon {
                 text = TWO;
                 break;
         }
-        
+
         // fill the background
         g2d.setColor(UIUtils.getColour("executequery.Erd.background", Color.WHITE));
         g2d.fillRect(0, 0, 290, 20);
-        
+
         FontMetrics fm = g2d.getFontMetrics();
-        
+
         // draw the line style
         g2d.setColor(Color.BLACK);
         g2d.drawString(text, 5, fm.getHeight());
         g2d.drawLine(30, 10, 250, 10);
     }
-    
+
 } // LineWeightIcon
 
 
-/** <p>Draws the available line styles as an
- *  <code>ImageIcon</code> to be added to the combo
- *  box through the renderer.
+/**
+ * <p>Draws the available line styles as an
+ * <code>ImageIcon</code> to be added to the combo
+ * box through the renderer.
  */
 class LineStyleIcon extends ImageIcon {
-    
+
     private static final BasicStroke solidStroke = new BasicStroke(1.0f);
-    
+
     private static final float dash1[] = {2.0f};
     private static final BasicStroke dashedStroke_1 =
-    new BasicStroke(1.0f, 0, 0, 10f, dash1, 0.0f);
-    
+            new BasicStroke(1.0f, 0, 0, 10f, dash1, 0.0f);
+
     private static final float dash2[] = {5f, 2.0f};
     private static final BasicStroke dashedStroke_2 =
-    new BasicStroke(1.0f, 0, 0, 10f, dash2, 0.0f);
-    
+            new BasicStroke(1.0f, 0, 0, 10f, dash2, 0.0f);
+
     private int type;
-    
+
     public LineStyleIcon(int type) {
         super();
         this.type = type;
     }
-    
+
     public int getIconWidth() {
         return 250;
     }
-    
+
     public int getIconHeight() {
         return 20;
     }
-    
+
     public void paintIcon(Component c, Graphics g, int x, int y) {
-        Graphics2D g2d = (Graphics2D)g;
-        
+        Graphics2D g2d = (Graphics2D) g;
+
         switch (type) {
             case 0:
                 g2d.setStroke(solidStroke);
@@ -481,16 +476,16 @@ class LineStyleIcon extends ImageIcon {
                 g2d.setStroke(dashedStroke_2);
                 break;
         }
-        
+
         // fill the background
         g2d.setColor(UIUtils.getColour("executequery.Erd.background", Color.WHITE));
         g2d.fillRect(0, 0, 290, 20);
-        
+
         // draw the line style
         g2d.setColor(Color.BLACK);
         g2d.drawLine(5, 10, 250, 10);
     }
-    
+
 } // LineStyleIcon
 
 

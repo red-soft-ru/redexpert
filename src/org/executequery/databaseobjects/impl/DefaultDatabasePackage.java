@@ -18,7 +18,8 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     private boolean sqlSecurity;
     private String description;
 
-    public DefaultDatabasePackage() {}
+    public DefaultDatabasePackage() {
+    }
 
     public DefaultDatabasePackage(DatabaseMetaTag metaTagParent, String name) {
         super(metaTagParent, name);

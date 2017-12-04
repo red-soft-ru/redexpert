@@ -20,13 +20,6 @@
 
 package org.executequery.gui.scriptgenerators;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.executequery.ApplicationException;
 import org.executequery.databaseobjects.DatabaseSource;
 import org.executequery.databaseobjects.DatabaseTable;
@@ -34,10 +27,17 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.log.Log;
 import org.underworldlabs.util.DateUtils;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 public class SchemaTablesScriptGenerator {
 
     private final int scriptType;
-    
+
     private final String outputFile;
 
     private final List<DatabaseTable> tables;
@@ -55,21 +55,21 @@ public class SchemaTablesScriptGenerator {
     private boolean cascadeConstraints;
 
     private boolean includeScriptBanner;
-    
-    public SchemaTablesScriptGenerator(int scriptType, 
-            String outputFile, DatabaseSource source, List<NamedObject> tables) {
-        
+
+    public SchemaTablesScriptGenerator(int scriptType,
+                                       String outputFile, DatabaseSource source, List<NamedObject> tables) {
+
         this.scriptType = scriptType;
         this.outputFile = outputFile;
         this.source = source;
         this.tables = copyAndSortTables(tables);
     }
-    
+
     public void writeDropTablesScript(boolean includeScriptBanner, boolean cascadeConstraints) {
-        
+
         this.includeScriptBanner = includeScriptBanner;
         this.cascadeConstraints = cascadeConstraints;
-        
+
         writeScript();
     }
 
@@ -88,18 +88,18 @@ public class SchemaTablesScriptGenerator {
         uniqueKeys = new StringBuilder();
 
         PrintWriter writer = null;
-        
+
         try {
 
             int _constraintStyle = constraintStyle();
-            
+
             writer = createPrintWriter();
 
             if (includeScriptBanner) {
-            
+
                 writer.println(createHeader());
             }
-            
+
             for (NamedObject namedObject : tables) {
 
                 if (Thread.interrupted()) {
@@ -107,28 +107,28 @@ public class SchemaTablesScriptGenerator {
                     throw new InterruptedException();
                 }
 
-                DatabaseTable table = (DatabaseTable)namedObject;
+                DatabaseTable table = (DatabaseTable) namedObject;
 
                 fireStartedNamedObjectScript(table);
-                
+
                 writer.println(sqlTextForTable(table));
-                
+
                 if (scriptType == GenerateScriptsWizard.CREATE_TABLES) {
-                 
+
                     writer.println();
                 }
-                
+
                 if (_constraintStyle == DatabaseTable.STYLE_CONSTRAINTS_ALTER) {
-                    
+
                     primaryKeys.append(table.getAlterSQLTextForPrimaryKeys());
                     foreignKeys.append(table.getAlterSQLTextForForeignKeys());
                     uniqueKeys.append(table.getAlterSQLTextForUniqueKeys());
                 }
-                
+
                 fireFinishedNamedObjectScript(table);
             }
 
-            if (scriptType == GenerateScriptsWizard.CREATE_TABLES 
+            if (scriptType == GenerateScriptsWizard.CREATE_TABLES
                     && _constraintStyle == DatabaseTable.STYLE_CONSTRAINTS_ALTER) {
 
                 writer.println(primaryKeys);
@@ -141,53 +141,53 @@ public class SchemaTablesScriptGenerator {
             }
 
         } catch (IOException e) {
-            
+
             handleException(e);
-            
+
         } catch (InterruptedException e) {
 
             handleException(e);
 
         } finally {
-            
+
             if (writer != null) {
 
                 writer.flush();
                 writer.close();
             }
-            
+
         }
-        
+
     }
 
     private String sqlTextForTable(DatabaseTable table) {
-        
+
         if (scriptType == GenerateScriptsWizard.CREATE_TABLES) {
 
             int _constraintStyle = constraintStyle();
-            
+
             if (_constraintStyle == DatabaseTable.STYLE_CONSTRAINTS_DEFAULT) {
-            
+
                 return table.getCreateSQLText(DatabaseTable.STYLE_CONSTRAINTS_DEFAULT);
-                
+
             } else if (_constraintStyle != DatabaseTable.STYLE_NO_CONSTRAINTS) {
-                
+
                 return table.getCreateSQLText(DatabaseTable.STYLE_NO_CONSTRAINTS);
             }
-            
+
             return table.getCreateSQLText(_constraintStyle);
 
         } else {
 
             return table.getDropSQLText(cascadeConstraints);
         }
-        
+
     }
 
     private void handleException(Throwable e) {
 
         if (Log.isDebugEnabled() && !(e instanceof InterruptedException)) {
-            
+
             Log.error("Error on script generation: ", e);
         }
 
@@ -200,77 +200,77 @@ public class SchemaTablesScriptGenerator {
     }
 
     protected void fireFinishedNamedObjectScript(NamedObject namedObject) {
-        
+
         if (observers != null) {
-            
+
             for (ScriptGenerationObserver observer : observers) {
-                
+
                 observer.finishedNamedObjectScript(namedObject);
             }
 
         }
-        
+
     }
-    
+
     protected void fireStartedNamedObjectScript(NamedObject namedObject) {
-        
+
         if (observers != null) {
-            
+
             for (ScriptGenerationObserver observer : observers) {
 
                 observer.startedNamedObjectScript(namedObject);
             }
 
         }
-        
+
     }
-    
+
     private int constraintStyle() {
 
         if (constraintStyle == GenerateScriptsWizard.CREATE_TABLE_CONSTRAINTS) {
-            
+
             return DatabaseTable.STYLE_CONSTRAINTS_DEFAULT;
-            
+
         } else if (constraintStyle == -1) {
-            
+
             return DatabaseTable.STYLE_NO_CONSTRAINTS;
         }
-        
+
         return DatabaseTable.STYLE_CONSTRAINTS_ALTER;
     }
 
     public void addScriptGenerationObserver(ScriptGenerationObserver observer) {
-        
+
         if (observers == null) {
-            
+
             observers = new ArrayList<ScriptGenerationObserver>();
         }
 
         observers.add(observer);
     }
-        
+
     private String createHeader() {
 
         StringBuilder sb = new StringBuilder(500);
 
         String line_1 = "-- ---------------------------------------------------\n";
         sb.append(line_1).
-           append("--\n-- SQL script ").
-           append("generated by Red Expert.\n-- Generated ").
-           append(formattedTimeNow()).
-           append("\n--\n").
-           append(line_1).
-           append("--\n-- Program:      ").
-           append(outputFile).
-           append("\n-- Description:  SQL ").
-           append(scriptType == GenerateScriptsWizard.CREATE_TABLES ?
-                      "create " : "drop ").
-           append("tables script.\n-- Schema:       ").
-           append(source.getName()).
-           append("\n-- Database:     ").
-           append(databaseName()).
-           append("\n--\n").append(line_1).
-           append("\n");
+                append("--\n-- SQL script ").
+                append("generated by Red Expert.\n-- Generated ").
+                append(formattedTimeNow()).
+                append("\n--\n").
+                append(line_1).
+                append("--\n-- Program:      ").
+                append(outputFile).
+                append("\n-- Description:  SQL ").
+                append(scriptType == GenerateScriptsWizard.CREATE_TABLES ?
+                        "create " : "drop ").
+                append("tables script.\n-- Schema:       ").
+                append(source.getName()).
+                append("\n-- Database:     ").
+                append(databaseName()).
+                append("\n--\n").append(line_1).
+                append("\n");
         return sb.toString();
     }
 
@@ -278,24 +278,24 @@ public class SchemaTablesScriptGenerator {
 
         return new DateUtils().getLongDateTime();
     }
-    
+
     private String databaseName() {
-        
+
         return source.getHost().getDatabaseProductName();
     }
-    
+
     private List<DatabaseTable> copyAndSortTables(List<NamedObject> tables) {
 
-        List<DatabaseTable> destinationList = 
-            new ArrayList<DatabaseTable>(tables.size());
+        List<DatabaseTable> destinationList =
+                new ArrayList<DatabaseTable>(tables.size());
 
-        for (Iterator<NamedObject> iter = tables.iterator(); iter.hasNext();) {
-            
+        for (Iterator<NamedObject> iter = tables.iterator(); iter.hasNext(); ) {
+
             destinationList.add((DatabaseTable) iter.next());
         }
 
 //        Collections.sort(destinationList, new TableDependencySorter());
-        
+
         return destinationList;
     }
 

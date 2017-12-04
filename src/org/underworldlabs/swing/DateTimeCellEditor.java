@@ -1,10 +1,7 @@
 package org.underworldlabs.swing;
 
 import com.github.lgooddatepicker.components.DatePickerSettings;
-import com.github.lgooddatepicker.components.DateTimePicker;
-import com.github.lgooddatepicker.components.TimePickerSettings;
 import com.github.lgooddatepicker.zinternaltools.InternalUtilities;
-import com.privatejgoodies.forms.layout.ConstantSize;
 import org.executequery.gui.resultset.RecordDataItem;
 
 import javax.swing.*;

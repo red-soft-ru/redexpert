@@ -24,26 +24,26 @@ import org.executequery.actions.othercommands.CancelCommand;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.localization.Bundles;
 
-/** 
+/**
  * <p>Simple button and action for closing an
  * internal frame typically implemented as a
  * 'Cancel' button within the frame.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CancelButton extends DefaultPanelButton {
-    
+
     public CancelButton() {
 
         this(Bundles.get("common.cancel.button"));
     }
-    
+
     public CancelButton(String text) {
-        
-        super(text);        
+
+        super(text);
         setAction(new CancelCommand());
     }
-    
+
 }
 
 

@@ -20,8 +20,6 @@
 
 package org.executequery.databaseobjects.impl;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.NamedObject;
@@ -30,21 +28,29 @@ import org.executequery.sql.StatementGeneratorFactory;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DefaultDatabaseObject extends AbstractDatabaseObject {
 
-    /** the meta data key name for this object */
+    /**
+     * the meta data key name for this object
+     */
     private String metaDataKey;
 
-    /** Creates a new instance of DefaultDatabaseObject */
+    /**
+     * Creates a new instance of DefaultDatabaseObject
+     */
     public DefaultDatabaseObject(DatabaseHost host) {
         setHost(host);
     }
 
-    /** Creates a new instance of DefaultDatabaseObject */
+    /**
+     * Creates a new instance of DefaultDatabaseObject
+     */
     public DefaultDatabaseObject(DatabaseHost host, String metaDataKey) {
         setHost(host);
         this.metaDataKey = metaDataKey;
@@ -157,7 +163,7 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
 
         return StatementGeneratorFactory.create();
     }
-    
+
 }
 
 

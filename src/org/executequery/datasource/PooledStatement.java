@@ -52,7 +52,7 @@ public class PooledStatement implements CallableStatement {
     public void close() throws SQLException {
         if (!closed) {
             statement.close();
-            connection.setFree(true);
+            connection.lock(false);
             closed = true;
         } else {
             Log.info("2 close");

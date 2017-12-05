@@ -867,4 +867,7 @@ public class PooledResultSet implements ResultSet {
         return _res.getObject(columnLabel, type);
     }
 
+    public ResultSet getResultSet() {
+        return _res;
+    }
 }

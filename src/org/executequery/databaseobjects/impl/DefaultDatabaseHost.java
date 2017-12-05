@@ -1080,8 +1080,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
                 case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
                 case NamedObject.SYSTEM_STRING_FUNCTIONS:
-                case NamedObject.SYSTEM_VIEW:
-                case NamedObject.SYSTEM_DATABASE_TRIGGER:
                     return false;
             }
         }

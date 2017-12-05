@@ -22,13 +22,11 @@ package org.executequery.databaseobjects.impl;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databaseobjects.*;
+import org.executequery.datasource.PooledConnection;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -175,9 +173,17 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
             } else {
 
-                children = getHost().getTables(getCatalogName(),
-                        getSchemaName(),
-                        getMetaDataKey());
+                String className = getHost().getDatabaseConnection().getJDBCDriver().getClassName();
+                if (className.contains("FBDriver")) {
+                    // Red Database
+                    children = loadTables(getMetaDataKey());
+
+                } else {
+                    // Another database
+                    children = getHost().getTables(getCatalogName(),
+                            getSchemaName(),
+                            getMetaDataKey());
+                }
 
                 if (children != null && type == TABLE) {
 
@@ -350,6 +356,46 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         return getPackages();
 
+    }
+
+    private List<NamedObject> loadTables(String metaDataKey)
+            throws DataSourceException {
+
+        return getTables(metaDataKey);
+
+    }
+
+    private List<NamedObject> getTables(String metaDataKey) {
+        ResultSet rs = null;
+        try {
+
+            List<NamedObject> tables = new ArrayList<NamedObject>();
+            String tableName;
+
+            rs = getTablesResultSet(metaDataKey);
+
+            while (rs.next()) {
+
+                tableName = rs.getString(1);
+                DefaultDatabaseObject object = new DefaultDatabaseObject(this.getHost(), metaDataKey);
+                object.setCatalogName("");
+                object.setSchemaName("");
+                object.setName(tableName);
+                object.setRemarks(rs.getString(2));
+                tables.add(object);
+
+            }
+            return tables;
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return new ArrayList<NamedObject>(0);
+
+        } finally {
+
+            releaseResources(rs);
+        }
     }
 
     public boolean hasChildObjects() throws DataSourceException {
@@ -1523,6 +1569,54 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "\n" +
                 "from rdb$packages p\n" +
                 "order by p.rdb$package_name");
+
+        return resultSet;
+    }
+
+    private ResultSet getTablesResultSet(String metaDataKey) throws SQLException {
+
+        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+        Statement statement = dmd.getConnection().createStatement();
+
+        ResultSet resultSet = null;
+        if (metaDataKey.equals("TABLE")) {
+            resultSet = statement.executeQuery("select rdb$relation_name, \n" +
+                    "rdb$description\n" +
+                    "from rdb$relations\n" +
+                    "where rdb$view_blr is null \n" +
+                    "and (rdb$system_flag is null or rdb$system_flag = 0) \n" +
+                    "order by rdb$relation_name");
+        } else if (metaDataKey.equals("SYSTEM TABLE")) {
+            resultSet = statement.executeQuery("select rdb$relation_name, \n" +
+                    "rdb$description\n" +
+                    "from rdb$relations\n" +
+                    "where rdb$view_blr is null \n" +
+                    "and (rdb$system_flag is not null and rdb$system_flag = 1) \n" +
+                    "order by rdb$relation_name");
+        } else if (metaDataKey.equals("VIEW")) {
+            resultSet = statement.executeQuery("select rdb$relation_name, \n" +
+                    "rdb$description\n" +
+                    "from rdb$relations\n" +
+                    "where rdb$view_blr is not null \n" +
+                    "and (rdb$system_flag is not null and rdb$system_flag = 1) \n" +
+                    "order by rdb$relation_name");
+        } else if (metaDataKey.equals("SYSTEM VIEW")) {
+            resultSet = statement.executeQuery("select rdb$relation_name, \n" +
+                    "rdb$description\n" +
+                    "from rdb$relations\n" +
+                    "where rdb$view_blr is not null \n" +
+                    "and (rdb$system_flag is not null and rdb$system_flag = 1) \n" +
+                    "order by rdb$relation_name");
+        } else if (metaDataKey.equals("GLOBAL TEMPORARY")) {
+            resultSet = statement.executeQuery("select r.rdb$relation_name, \n" +
+                    "r.rdb$description\n" +
+                    "from rdb$relations r\n" +
+                    "join rdb$types t on r.rdb$relation_type = t.rdb$type \n" +
+                    "where\n" +
+                    "(t.rdb$field_name = 'RDB$RELATION_TYPE') \n" +
+                    "and (t.rdb$type = 4 or t.rdb$type = 5) \n" +
+                    "order by r.rdb$relation_name");
+        }
 
         return resultSet;
     }

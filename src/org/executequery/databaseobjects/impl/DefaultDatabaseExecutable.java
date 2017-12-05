@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.DatabaseExecutable;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.datasource.PooledDatabaseMetaData;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
@@ -283,6 +284,8 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         try {
 
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
+            PooledDatabaseMetaData poolMetaData = (PooledDatabaseMetaData)dmd;
+            DatabaseMetaData dMetaData = poolMetaData.getInner();
             if (this.getHost().getDatabaseConnection().getJDBCDriver().getClassName().contains("FBDriver")) {
 
                 URL[] urls = new URL[0];
@@ -290,12 +293,12 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 Object odb = null;
                 try {
                     urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-                    ClassLoader cl = new URLClassLoader(urls, dmd.getClass().getClassLoader());
+                    ClassLoader cl = new URLClassLoader(urls, dMetaData.getClass().getClassLoader());
                     clazzdb = cl.loadClass("biz.redsoft.FBDatabaseMetadataImpl");
                     odb = clazzdb.newInstance();
                     IFBDatabaseMetadata db = (IFBDatabaseMetadata) odb;
 
-                    procedureSourceCode = db.getProcedureSourceCode(dmd, getName());
+                    procedureSourceCode = db.getProcedureSourceCode(dMetaData, getName());
 
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();

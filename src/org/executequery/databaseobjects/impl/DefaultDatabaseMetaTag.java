@@ -264,6 +264,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     return getProcedures();
                 }
 
+            } else if (type == FUNCTION) { // Red Database 3.0
+                return getFunctions();
             }
 
         } catch (SQLException e) {
@@ -594,7 +596,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     private String procedureTerm() throws SQLException {
-
         return getHost().getDatabaseMetaData().getProcedureTerm();
     }
 
@@ -1634,12 +1635,23 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private ResultSet getFunctionsResultSet() throws SQLException {
 
         try {
-
             String catalogName = catalogNameForQuery();
             String schemaName = schemaNameForQuery();
 
             DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-            return dmd.getFunctions(catalogName, schemaName, null);
+
+            Connection realConnection = ((PooledConnection) dmd.getConnection()).getRealConnection();
+            if (realConnection.unwrap(Connection.class).getClass().getName().contains("FBConnection")) {
+                Statement statement = realConnection.createStatement();
+                ResultSet rs = statement.executeQuery("select rdb$function_type,\n" +
+                        "rdb$system_flag,\n" +
+                        "cast(rdb$function_name as varchar(63)) as function_name,\n" +
+                        "rdb$description as remarks\n" +
+                        "from rdb$functions");
+                return rs;
+            } else {
+                return dmd.getFunctions(catalogName, schemaName, null);
+            }
 
         } catch (Throwable e) {
 

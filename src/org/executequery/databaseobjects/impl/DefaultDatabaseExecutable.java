@@ -286,7 +286,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
             PooledDatabaseMetaData poolMetaData = (PooledDatabaseMetaData)dmd;
             DatabaseMetaData dMetaData = poolMetaData.getInner();
-            if (this.getHost().getDatabaseConnection().getJDBCDriver().getClassName().contains("FBDriver")) {
+            if (this.getHost() != null && this.getHost().getDatabaseConnection().getJDBCDriver().getClassName().contains("FBDriver")) {
 
                 URL[] urls = new URL[0];
                 Class clazzdb = null;

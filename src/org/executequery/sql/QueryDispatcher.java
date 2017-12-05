@@ -30,6 +30,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
+import org.executequery.datasource.PooledResultSet;
 import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.executequery.util.ThreadWorker;
@@ -774,10 +775,11 @@ public class QueryDispatcher {
             Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
             if (driver.getClass().getName().contains("FBDriver")) {
+                ResultSet realRS = ((PooledResultSet)rs).getResultSet();
 
                 ResultSet resultSet = null;
                 try {
-                    resultSet = rs.unwrap(ResultSet.class);
+                    resultSet = realRS.unwrap(ResultSet.class);
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }

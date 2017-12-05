@@ -65,6 +65,7 @@ import java.beans.VetoableChangeListener;
 import java.util.*;
 import java.util.List;
 import java.util.Timer;
+import java.util.concurrent.Semaphore;
 
 /**
  * @author Takis Diakoumis
@@ -176,6 +177,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     private TextEditor lastFocusEditor;
 
     private JPanel buttonsEditingPanel;
+
+    Semaphore lock;
 
     public BrowserTableEditingPanel(BrowserController controller) {
         this.controller = controller;
@@ -409,6 +412,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         // register for keyword changes
         EventMediator.registerListener(this);
+
+        lock = new Semaphore(1);
     }
 
     /**
@@ -1103,13 +1108,16 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     private void updateRowCount(final String text) {
-        GUIUtils.invokeLater(new Runnable() {
-            public void run() {
-                synchronized (rowCountField) {
-                    rowCountField.setText(text);
+        if(lock.tryAcquire()) {
+            GUIUtils.invokeLater(new Runnable() {
+                public void run() {
+                    synchronized (rowCountField) {
+                        rowCountField.setText(text);
+                        lock.release();
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     private void createButtonsEditingPanel() {

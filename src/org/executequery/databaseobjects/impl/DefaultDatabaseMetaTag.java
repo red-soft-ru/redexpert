@@ -1599,7 +1599,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     "rdb$description\n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is not null \n" +
-                    "and (rdb$system_flag is not null and rdb$system_flag = 1) \n" +
+                    "and (rdb$system_flag is null or rdb$system_flag = 0) \n" +
                     "order by rdb$relation_name");
         } else if (metaDataKey.equals("SYSTEM VIEW")) {
             resultSet = statement.executeQuery("select rdb$relation_name, \n" +

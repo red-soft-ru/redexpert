@@ -908,12 +908,22 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
             rs = getProceduresResultSet();
             List<NamedObject> list = new ArrayList<NamedObject>();
-            while (rs.next()) {
+            if (rs.unwrap(ResultSet.class).getClass().getName().contains("FBResultSet")) {
+                while (rs.next()) {
 
-                DefaultDatabaseProcedure procedure = new DefaultDatabaseProcedure(this, rs.getString(3));
-                procedure.setHost(getHost());
-                procedure.setRemarks(rs.getString(7));
-                list.add(procedure);
+                    DefaultDatabaseProcedure procedure = new DefaultDatabaseProcedure(this, rs.getString(1));
+                    procedure.setHost(getHost());
+                    procedure.setRemarks(rs.getString(2));
+                    list.add(procedure);
+                }
+            } else {
+                while (rs.next()) {
+
+                    DefaultDatabaseProcedure procedure = new DefaultDatabaseProcedure(this, rs.getString(3));
+                    procedure.setHost(getHost());
+                    procedure.setRemarks(rs.getString(7));
+                    list.add(procedure);
+                }
             }
 
             return list;
@@ -1315,7 +1325,19 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         String schemaName = schemaNameForQuery();
 
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        return dmd.getProcedures(catalogName, schemaName, null);
+        Connection realConnection = ((PooledConnection) dmd.getConnection()).getRealConnection();
+        if (realConnection.unwrap(Connection.class).getClass().getName().contains("FBConnection")) { // Red Database or FB
+            String sql = "select cast(rdb$procedure_name as varchar(63)) as procedure_name, \n" +
+                    "rdb$description as remarks, \n" +
+                    "rdb$procedure_outputs as procedure_type \n" +
+                    "from rdb$procedures \n" +
+                    "order by procedure_name";
+            Statement statement = realConnection.createStatement();
+            ResultSet rs = statement.executeQuery(sql);
+            return rs;
+        } else { // Another database
+            return dmd.getProcedures(catalogName, schemaName, null);
+        }
     }
 
     private ResultSet getIndicesResultSet() throws SQLException {

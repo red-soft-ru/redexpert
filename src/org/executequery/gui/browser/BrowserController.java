@@ -336,7 +336,18 @@ public class BrowserController {
                     metaKeyPanel.setValues((NamedObject) databaseObject);
                     return metaKeyPanel;
 
-                case NamedObject.FUNCTION:
+                case NamedObject.FUNCTION: // Internal function of Red Database 3+
+                    BrowserFunctionPanel functionPanel = null;
+                    if (!viewPanel.containsPanel(BrowserFunctionPanel.NAME)) {
+                        functionPanel = new BrowserFunctionPanel(this);
+                        viewPanel.addToLayout(functionPanel);
+                    } else {
+                        functionPanel = (BrowserFunctionPanel) viewPanel.
+                                getFormObjectView(BrowserFunctionPanel.NAME);
+                    }
+
+                    functionPanel.setValues((DefaultDatabaseFunction) databaseObject);
+                    return functionPanel;
                 case NamedObject.PROCEDURE:
                 case NamedObject.SYSTEM_FUNCTION:
                     BrowserProcedurePanel procsPanel = null;

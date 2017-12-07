@@ -472,9 +472,9 @@ public class MetaDataValues implements ConnectionListener {
     /**
      * Returns the table column meta data as a result set.
      *
-     * @param the table name
-     * @param the schema name
-     * @param the table name
+     * @param catalog name
+     * @param schema name
+     * @param name table name
      */
     public ResultSet getTableMetaData(String catalog,
                                       String schema,
@@ -507,8 +507,8 @@ public class MetaDataValues implements ConnectionListener {
      * Browser feature for each selected table from the browser's
      * tree structure.
      *
-     * @param the table name
-     * @param the schema name
+     * @param tableName table name
+     * @param schemaName schema name
      * @return the column meta data as a <code>ColumnData</code> array
      */
     public ColumnData[] getColumnMetaData(String tableName,

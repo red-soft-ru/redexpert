@@ -21,10 +21,8 @@
 package org.executequery.databaseobjects.impl;
 
 import biz.redsoft.IFBDatabaseMetadata;
-import org.executequery.databaseobjects.DatabaseExecutable;
-import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.*;
+import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledDatabaseMetaData;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
@@ -32,9 +30,7 @@ import org.underworldlabs.util.MiscUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,7 +48,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
     /**
      * proc parameters
      */
-    private List<ProcedureParameter> parameters;
+    private ArrayList<ProcedureParameter> parameters;
 
     /**
      * the proc type
@@ -197,6 +193,8 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
             }
 
             rs = dmd.getProcedureColumns(_catalog, _schema, getName(), null);
+
+
             while (rs.next()) {
 
                 parameters.add(new ProcedureParameter(rs.getString(4),
@@ -218,6 +216,8 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
             setMarkedForReload(false);
         }
     }
+
+
 
     /**
      * Returns the database object type.

@@ -126,6 +126,8 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                         rs.getInt(9),
                         rs.getInt(14)
                         ));
+                if (functionSourceCode == null || functionSourceCode.isEmpty())
+                    functionSourceCode = rs.getString(2);
             }
 
             return parameters;

@@ -84,7 +84,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     /**
      * interface of FB database
      */
-    IFBDatabaseConnection db;
+    static IFBDatabaseConnection db;
 
     /**
      * Creates a new instance of DefaultDatabaseHost with the

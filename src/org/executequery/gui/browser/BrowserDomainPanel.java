@@ -1,7 +1,6 @@
 package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
-import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
@@ -9,13 +8,11 @@ import org.executequery.gui.BaseDialog;
 import org.executequery.gui.databaseobjects.CreateDomainPanel;
 import org.executequery.gui.databaseobjects.DefaultDatabaseObjectTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
-import org.executequery.gui.table.InsertColumnPanel;
 import org.executequery.gui.text.SQLTextPane;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.StyledLogPane;
-import org.underworldlabs.swing.table.TableSorter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,13 +33,19 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
 
     private JLabel objectNameLabel;
 
-    /** the current database object in view */
+    /**
+     * the current database object in view
+     */
     private DatabaseObject currentObjectView;
 
-    /** The tabbed description pane */
+    /**
+     * The tabbed description pane
+     */
     private JTabbedPane tabPane;
 
-    /** the table description table */
+    /**
+     * the table description table
+     */
     private DefaultDatabaseObjectTable tableDescriptionTable;
 
     private JTextPane descriptionPane;
@@ -106,12 +109,11 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
         tableDescriptionTable.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if(e.getClickCount()>1)
-                {
+                if (e.getClickCount() > 1) {
                     int row = tableDescriptionTable.getSelectedRow();
-                    if(row>=0) {
-                        BaseDialog dialog = new BaseDialog(CreateDomainPanel.EDIT_TITLE,true);
-                        CreateDomainPanel panel = new CreateDomainPanel(currentObjectView.getHost().getDatabaseConnection(),dialog,currentObjectView.getName().trim());
+                    if (row >= 0) {
+                        BaseDialog dialog = new BaseDialog(CreateDomainPanel.EDIT_TITLE, true);
+                        CreateDomainPanel panel = new CreateDomainPanel(currentObjectView.getHost().getDatabaseConnection(), dialog, currentObjectView.getName().trim());
                         dialog.addDisplayComponent(panel);
                         dialog.display();
                     }
@@ -202,7 +204,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
     public void setValues(DefaultDatabaseDomain domain) {
 
         currentObjectView = domain;
-        currentObjectView.setHost(((DatabaseMetaTag)domain.getParent()).getHost());
+        currentObjectView.setHost(((DatabaseMetaTag) domain.getParent()).getHost());
 
         objectNameLabel.setText("Domain Name:");
         setHeaderText("Database Domain");

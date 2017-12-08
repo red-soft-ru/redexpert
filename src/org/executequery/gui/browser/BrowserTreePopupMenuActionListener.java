@@ -40,6 +40,7 @@ import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.CreateDomainPanel;
 import org.executequery.gui.databaseobjects.CreateGeneratorPanel;
+import org.executequery.gui.databaseobjects.CreateProcedurePanel;
 import org.executequery.gui.databaseobjects.CreateViewPanel;
 import org.executequery.gui.importexport.ImportExportDelimitedPanel;
 import org.executequery.gui.importexport.ImportExportExcelPanel;
@@ -180,6 +181,25 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             BaseDialog dialog =
                                     new BaseDialog(CreateDomainPanel.CREATE_TITLE, false);
                             CreateDomainPanel panel = new CreateDomainPanel(currentSelection, dialog);
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
+                case NamedObject.PROCEDURE:
+                    if (GUIUtilities.isDialogOpen(CreateProcedurePanel.TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateProcedurePanel.TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateProcedurePanel.TITLE, false);
+                            CreateProcedurePanel panel = new CreateProcedurePanel(currentSelection, dialog);
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());

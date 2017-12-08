@@ -212,6 +212,90 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     public String getFunctionSourceCode() {
         return functionSourceCode;
     }
+
+    public String getCreateSQLText() {
+
+        StringBuilder sb = new StringBuilder();
+        StringBuilder sbInput = new StringBuilder();
+        StringBuilder sbOutput = new StringBuilder();
+
+        sb.append("set term ^ ;");
+        sb.append("\n\n");
+        sb.append("create or alter function \n");
+        sb.append(getName());
+        sb.append("\n");
+
+        sbInput.append("( \n");
+        
+        List<FunctionParameter> parameters = getFunctionParameters();
+
+        for (FunctionParameter parameter : parameters) {
+            if (parameter.getType() == DatabaseMetaData.procedureColumnIn) {
+                sbInput.append("\t");
+                sbInput.append(parameter.getName());
+                sbInput.append(" ");
+                sbInput.append(parameter.getSqlType());
+                if (parameter.getDataType() == Types.CHAR
+                        || parameter.getDataType() == Types.VARCHAR
+                        || parameter.getDataType() == Types.NVARCHAR
+                        || parameter.getDataType() == Types.VARBINARY) {
+                    sbInput.append("(");
+                    sbInput.append(parameter.getSize());
+                    sbInput.append("),\n");
+                } else {
+                    sbInput.append(",\n");
+                }
+            } else if (parameter.getType() == DatabaseMetaData.procedureColumnReturn) {
+                sbOutput.append("\t");
+                sbOutput.append(" ");
+                sbOutput.append(parameter.getSqlType());
+                if (parameter.getDataType() == Types.CHAR
+                        || parameter.getDataType() == Types.VARCHAR
+                        || parameter.getDataType() == Types.NVARCHAR
+                        || parameter.getDataType() == Types.VARBINARY) {
+
+                    sbOutput.append(parameter.getSize());
+                    sbOutput.append("\n");
+                } else {
+                    sbOutput.append(",\n");
+                }
+            }
+        }
+
+        String input = null;
+        if (sbInput.length() > 3) {
+            input = sbInput.substring(0, sbInput.length() - 2);
+            input += "\n) \n";
+        }
+
+        if (input != null) {
+            sb.append(input);
+            sb.append("\n");
+        }
+
+        String output = null;
+        if (sbOutput.length() > 3) {
+            output = sbOutput.substring(0, sbOutput.length() - 2);
+        }
+
+        if (output != null) {
+            sb.append("returns ");
+            sb.append(output);
+            sb.append("\n");
+        }
+
+
+        sb.append("as");
+        sb.append("\n");
+
+        sb.append(getFunctionSourceCode());
+
+        sb.append("\n\n");
+        sb.append("set term ; ^");
+
+
+        return sb.toString();
+    }
 }
 
 

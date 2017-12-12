@@ -168,7 +168,7 @@ public class PerfLoggerController {
 
         }
 
-        void doRefreshData() {
+        synchronized void doRefreshData() {
             List<String> tempColumnNames = new ArrayList<>();
             List<Class<?>> tempColumnTypes = new ArrayList<>();
             final List<Object[]> tempRows = new ArrayList<>();
@@ -187,10 +187,10 @@ public class PerfLoggerController {
                     LinkedHashMap<UUID, FullStatementLog> fullStatementLogs = logProcessor.getFullStatementLogs();
                     HashMap<UUID, ConnectionInfo> connections = logProcessor.getConnections();
                     if (fullStatementLogs.size() > 0) {
-                        for (Map.Entry<UUID, FullStatementLog> entry : fullStatementLogs.entrySet()) {
+                        for (Iterator<FullStatementLog> iterator = fullStatementLogs.values().iterator(); iterator.hasNext();) {
 
                             StatementRow row = new StatementRow();
-                            FullStatementLog statement = entry.getValue();
+                            FullStatementLog statement = iterator.next();
 
                             if (filterType.equals(Filter.FilterType.FILTER) && txtFilter != null)
                                 if (!statement.getRawSql().toLowerCase().contains(txtFilter.toLowerCase()))

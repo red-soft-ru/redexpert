@@ -32,7 +32,7 @@ class UserSettingsDirectoryBuildNumberComparator implements Comparator<File> {
 
         return name1.compareTo(name2);
     }
-    
+
 }
 
 

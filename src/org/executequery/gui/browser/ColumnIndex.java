@@ -20,57 +20,68 @@
 
 package org.executequery.gui.browser;
 
-/** 
+/**
  * This object maintains table index data
  * as retrieved from the <code>DatabaseMetaData</code>
- * method <code>getIndexInfo(...)</code> for a particular table 
+ * method <code>getIndexInfo(...)</code> for a particular table
  * as selected within the Database Browser.<br>
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class ColumnIndex  {
-    
-    /** Whether the index is non-unique */
+public class ColumnIndex {
+
+    /**
+     * Whether the index is non-unique
+     */
     private boolean non_unique;
-    
-    /** The index name */
+
+    /**
+     * The index name
+     */
     private String name;
-    
-    /** The indexed column */
+
+    /**
+     * The indexed column
+     */
     private String column;
-    
-    /** Whether this a new index value */
+
+    /**
+     * Whether this a new index value
+     */
     private boolean markedNew;
-    
-    /** Whether this column is marked as to be deleted */
+
+    /**
+     * Whether this column is marked as to be deleted
+     */
     private boolean markedDeleted;
 
-    public ColumnIndex() {}
-    
+    public ColumnIndex() {
+    }
+
     public void setIndexedColumn(String column) {
         this.column = column;
     }
-    
+
     public String getIndexedColumn() {
         return column;
     }
-    
+
     public String getIndexName() {
         return name;
     }
-    
+
     public void setIndexName(String name) {
         this.name = name;
     }
-    
+
     public void setNonUnique(boolean non_unique) {
         this.non_unique = non_unique;
     }
-    
+
     public boolean isNonUnique() {
         return non_unique;
     }
-    
+
     public String toString() {
         return name;
     }
@@ -90,7 +101,7 @@ public class ColumnIndex  {
     public void setMarkedDeleted(boolean markedDeleted) {
         this.markedDeleted = markedDeleted;
     }
-    
+
 }
 
 

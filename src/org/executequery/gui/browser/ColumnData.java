@@ -20,31 +20,28 @@
 
 package org.executequery.gui.browser;
 
+import org.apache.commons.lang.StringUtils;
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.QueryTypes;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.gui.table.Autoincrement;
+import org.executequery.gui.table.CreateTableSQLSyntax;
+import org.executequery.log.Log;
+import org.underworldlabs.util.MiscUtils;
+
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Vector;
 
-import org.apache.commons.lang.StringUtils;
-import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.QueryTypes;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
-import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
-import org.executequery.gui.table.Autoincrement;
-import org.executequery.gui.table.CreateTableSQLSyntax;
-import org.executequery.log.Log;
-import org.underworldlabs.util.MiscUtils;
-
 /**
  * This class represents a single table
  * column definition. This includes data types
  * sizes, scales and key referencing meta data.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ColumnData implements Serializable {
 
@@ -179,6 +176,7 @@ public class ColumnData implements Serializable {
         ai = new Autoincrement();
         setCharset(CreateTableSQLSyntax.NONE);
     }
+
     public ColumnData(DatabaseConnection databaseConnection, DatabaseColumn databaseColumn) {
         this(databaseConnection);
         setValues(databaseColumn);
@@ -282,7 +280,7 @@ public class ColumnData implements Serializable {
     }
 
     public void setValues(DatabaseColumn cd) {
-        setTableName( cd.getParentsName());
+        setTableName(cd.getParentsName());
         setColumnName(cd.getName());
         setColumnType(cd.getTypeName());
         setPrimaryKey(cd.isPrimaryKey());
@@ -465,7 +463,7 @@ public class ColumnData implements Serializable {
             if (rs.next()) {
                 domainType = rs.getInt(1);
                 domainSize = rs.getInt(2);
-                if(rs.getInt(10)!=0)
+                if (rs.getInt(10) != 0)
                     domainSize = rs.getInt(10);
                 domainScale = Math.abs(rs.getInt(3));
                 domainSubType = rs.getInt(4);
@@ -502,15 +500,11 @@ public class ColumnData implements Serializable {
 
         } catch (SQLException e) {
             Log.debug("Error get ColumnData get Domain:", e);
-        }
-        catch (NullPointerException e)
-        {
+        } catch (NullPointerException e) {
             Log.debug("Error get ColumnData get Domain:", e);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Log.error("Error get ColumnData get Domain:", e);
-        }
-        finally {
+        } finally {
             executor.releaseResources();
         }
 

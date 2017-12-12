@@ -20,73 +20,71 @@
 
 package org.executequery.gui.prefs;
 
+import org.underworldlabs.util.SystemProperties;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.underworldlabs.util.SystemProperties;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PropertiesBrowserGeneral extends AbstractPropertiesBasePanel {
-    
+
     private SimplePreferencesPanel preferencesPanel;
-    
+
     public PropertiesBrowserGeneral() {
-        try  {
+        try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     private void init() {
 
         List<UserPreference> list = new ArrayList<UserPreference>();
 
         list.add(new UserPreference(
-                    UserPreference.CATEGORY_TYPE,
-                    null,
-                    "General",
-                    null));
+                UserPreference.CATEGORY_TYPE,
+                null,
+                "General",
+                null));
 
         String key = "browser.catalog.schema.defaults.only";
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "Show only default catalog or schema",
-                    SystemProperties.getBooleanProperty("user", key)));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Show only default catalog or schema",
+                SystemProperties.getBooleanProperty("user", key)));
 
         key = "browser.double-click.to.connect";
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "Connect on double-click",
-                    SystemProperties.getBooleanProperty("user", key)));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Connect on double-click",
+                SystemProperties.getBooleanProperty("user", key)));
 
         key = "browser.query.row.count";
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "Query for the data row count",
-                    SystemProperties.getBooleanProperty("user", key)));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Query for the data row count",
+                SystemProperties.getBooleanProperty("user", key)));
 
-        UserPreference[] preferences = 
-                (UserPreference[])list.toArray(new UserPreference[list.size()]);
+        UserPreference[] preferences =
+                (UserPreference[]) list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
     }
-    
+
     public void restoreDefaults() {
         preferencesPanel.restoreDefaults();
     }
-    
+
     public void save() {
         preferencesPanel.savePreferences();
     }
-   
+
 }
 
 

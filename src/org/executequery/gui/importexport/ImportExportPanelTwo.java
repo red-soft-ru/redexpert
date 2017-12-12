@@ -20,52 +20,43 @@
 
 package org.executequery.gui.importexport;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import org.executequery.databaseobjects.*;
+import org.underworldlabs.swing.ListSelectionPanel;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-
-import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.DatabaseSource;
-import org.executequery.databaseobjects.DatabaseTable;
-import org.executequery.databaseobjects.NamedObject;
-import org.underworldlabs.swing.ListSelectionPanel;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ImportExportPanelTwo extends AbstractImportExportPanel {
-    
+
     private JLabel tableLabel;
-    
+
     private ListSelectionPanel list;
-    
+
     public ImportExportPanelTwo(ImportExportWizard importExportWizard) {
 
         super(new GridBagLayout(), importExportWizard);
 
         try {
             jbInit();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     private void jbInit() throws Exception {
 
         tableLabel = new JLabel("Table:");
         list = new ListSelectionPanel();
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5,5,5,5);
+        gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.NORTHWEST;
         add(new JLabel("Schema:"), gbc);
         gbc.gridy = 1;
@@ -97,7 +88,7 @@ public class ImportExportPanelTwo extends AbstractImportExportPanel {
             public void itemStateChanged(ItemEvent e) {
 
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                
+
                     if (!exportDataModel().isMultipleTableImportExport()) {
                         setColumnsAvailable();
                     }
@@ -111,9 +102,9 @@ public class ImportExportPanelTwo extends AbstractImportExportPanel {
             public void itemStateChanged(ItemEvent e) {
 
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                
+
                     if (exportDataModel().isMultipleTableImportExport()) {
-                        
+
                         setTablesAvailable();
 
                     } else {
@@ -135,18 +126,18 @@ public class ImportExportPanelTwo extends AbstractImportExportPanel {
     public boolean hasSelections() {
         return list.hasSelections();
     }
-    
+
     protected void panelSelected() {
-        
+
         if (exportDataModel().isHostSelectionChanged() ||
                 exportDataModel().isImportExportTypeChanged()) {
 
             setListData();
         }
     }
-    
+
     protected void panelDeselected() {
-        
+
     }
 
     private ImportExportDataModel exportDataModel() {
@@ -154,14 +145,14 @@ public class ImportExportPanelTwo extends AbstractImportExportPanel {
     }
 
     private void setListData() {
-        
+
         if (exportDataModel().isMultipleTableImportExport()) {
 
             multipleTableImportExport();
             setTablesAvailable();
-            
+
         } else {
-            
+
             singleTableImportExport();
             setColumnsAvailable();
         }
@@ -177,10 +168,10 @@ public class ImportExportPanelTwo extends AbstractImportExportPanel {
     }
 
     private List<DatabaseColumn> columnsFromTable() {
-        
+
         JComboBox tableCombo = tableCombo();
         if (tableCombo.getSelectedItem() != null) {
-        
+
             return ((DatabaseTable) tableCombo().getSelectedItem()).getColumns();
         }
 
@@ -188,15 +179,15 @@ public class ImportExportPanelTwo extends AbstractImportExportPanel {
     }
 
     private List<NamedObject> tablesFromSchema() {
-        
+
         DatabaseSource databaseSource = (DatabaseSource) schemaCombo().getSelectedItem();
 
         if (databaseSource != null) {
-        
+
             DatabaseMetaTag databaseMetaTag = databaseSource.getDatabaseMetaTag("TABLE");
-    
+
             if (databaseMetaTag != null) {
-                
+
                 return databaseMetaTag.getObjects();
             }
 
@@ -209,16 +200,16 @@ public class ImportExportPanelTwo extends AbstractImportExportPanel {
         list.setLabelText("Available Tables:", "Selected Tables:");
         enableTableComponents(false);
     }
-    
+
     private void singleTableImportExport() {
         list.setLabelText("Available Columns:", "Selected Columns:");
         enableTableComponents(true);
     }
-    
+
     private JComboBox tableCombo() {
         return importExportWizard().getTablesCombo();
     }
-    
+
     private void enableTableComponents(boolean enable) {
         tableLabel.setEnabled(enable);
     }

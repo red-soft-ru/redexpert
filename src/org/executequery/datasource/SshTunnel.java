@@ -23,17 +23,16 @@ package org.executequery.datasource;
 import org.executequery.databasemediators.DatabaseConnection;
 
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+ * @author Takis Diakoumis
+ * @version $Revision$
+ * @date $Date$
  */
 public interface SshTunnel {
 
     int getTunnelPort();
-    
+
     void connect(DatabaseConnection databaseConnection);
-    
+
     void disconnect(DatabaseConnection databaseConnection);
 
 }

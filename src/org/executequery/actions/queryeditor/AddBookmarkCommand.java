@@ -20,16 +20,16 @@
 
 package org.executequery.actions.queryeditor;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.editor.AddQueryBookmarkPanel;
 
-/** 
+import java.awt.event.ActionEvent;
+
+/**
  * <p>The Query Editor's add bookmark command.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class AddBookmarkCommand extends AbstractQueryEditorCommand {
 
@@ -39,21 +39,21 @@ public class AddBookmarkCommand extends AbstractQueryEditorCommand {
 
             if (queryEditor().hasText()) {
 
-                BaseDialog dialog = 
-                    new BaseDialog(AddQueryBookmarkPanel.TITLE, true);
-        
+                BaseDialog dialog =
+                        new BaseDialog(AddQueryBookmarkPanel.TITLE, true);
+
                 dialog.addDisplayComponent(
                         new AddQueryBookmarkPanel(dialog, queryEditor().getEditorText()));
                 dialog.display();
 
             } else {
-                
+
                 GUIUtilities.displayErrorMessage(bundledString("errorMessage"));
             }
-            
+
         }
 
     }
-    
+
 }
 

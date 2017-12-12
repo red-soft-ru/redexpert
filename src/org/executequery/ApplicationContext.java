@@ -24,8 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public final class ApplicationContext {
 
@@ -40,32 +39,33 @@ public final class ApplicationContext {
     private static final String REPO = "-repo";
 
     private static final String[] PROPERTY_OVERRIDES = {SETTINGS_DIR, USER_HOME_DIR, REPO};
-    
+
     private static ApplicationContext applicationContext;
-    
+
     private Map<String, String> settings = new HashMap<String, String>();
 
-    private ApplicationContext() {}
+    private ApplicationContext() {
+    }
 
     public static synchronized ApplicationContext getInstance() {
-        
+
         if (applicationContext == null) {
-            
+
             applicationContext = new ApplicationContext();
         }
-        
+
         return applicationContext;
     }
 
     private String getUserHome() {
-        
+
         return System.getProperty(USER_HOME);
     }
-    
+
     private String getUserSettingsDirectoryName() {
 
         // .executequery
-        
+
         return settings.get(SETTINGS_DIR);
     }
 
@@ -77,17 +77,17 @@ public final class ApplicationContext {
     public String getUserSettingsHome() {
 
         // ie. /home/user_name/.executequery/
-        
+
         if (!settings.containsKey(USER_HOME_DIR)) { // ie. /home/user_name
-        
+
             settings.put(USER_HOME_DIR, getUserHome());
         }
-        
+
         StringBuilder sb = new StringBuilder();
         sb.append(settings.get(USER_HOME_DIR)).
-            append(fileSeparator()).
-            append(getUserSettingsDirectoryName()).
-            append(fileSeparator());
+                append(fileSeparator()).
+                append(getUserSettingsDirectoryName()).
+                append(fileSeparator());
 
         return sb.toString();
     }
@@ -100,15 +100,15 @@ public final class ApplicationContext {
     }
 
     private String fileSeparator() {
-        
+
         return System.getProperty("file.separator");
     }
 
     public String getBuild() {
-        
+
         return settings.get(EXECUTEQUERY_BUILD);
     }
-    
+
     public void setBuild(String build) {
 
         settings.put(EXECUTEQUERY_BUILD, build);
@@ -117,12 +117,12 @@ public final class ApplicationContext {
     public void startup(String[] args) {
 
         if (args != null && args.length > 0) {
-            
+
             for (String arg : args) {
-                
+
                 if (isValidStartupArg(arg)) {
-                    
-                    int index = arg.indexOf("="); 
+
+                    int index = arg.indexOf("=");
 
                     String key = arg.substring(0, index);
                     String value = arg.substring(index + 1);
@@ -130,24 +130,24 @@ public final class ApplicationContext {
                 }
 
             }
-            
+
         }
-        
+
     }
 
     private boolean isValidStartupArg(String arg) {
 
         for (String key : PROPERTY_OVERRIDES) {
-            
+
             if (arg.contains(key)) {
-                
+
                 return true;
             }
         }
-            
+
         return false;
     }
-    
+
 }
 
 

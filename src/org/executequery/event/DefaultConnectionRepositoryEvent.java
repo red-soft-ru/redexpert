@@ -20,17 +20,16 @@
 
 package org.executequery.event;
 
+import org.executequery.databasemediators.DatabaseConnection;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.executequery.databasemediators.DatabaseConnection;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class DefaultConnectionRepositoryEvent extends AbstractApplicationEvent 
-                                              implements ConnectionRepositoryEvent {
+public class DefaultConnectionRepositoryEvent extends AbstractApplicationEvent
+        implements ConnectionRepositoryEvent {
 
     private final List<DatabaseConnection> databaseConnections;
 
@@ -44,17 +43,17 @@ public class DefaultConnectionRepositoryEvent extends AbstractApplicationEvent
 
     public DefaultConnectionRepositoryEvent(
             Object source, String method, List<DatabaseConnection> databaseConnections) {
-        
+
         super(source, method);
         this.databaseConnections = databaseConnections;
     }
-    
+
     public List<DatabaseConnection> getDatabaseConnections() {
 
         return databaseConnections;
     }
 
     static final long serialVersionUID = -589504120102249710L;
-    
+
 }
 

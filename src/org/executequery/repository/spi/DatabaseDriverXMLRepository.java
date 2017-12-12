@@ -20,11 +20,6 @@
 
 package org.executequery.repository.spi;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databasemediators.DatabaseDriverFactory;
 import org.executequery.databasemediators.spi.DatabaseDriverFactoryImpl;
@@ -37,15 +32,20 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter<DatabaseDriver> 
-                                         implements DatabaseDriverRepository {
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter<DatabaseDriver>
+        implements DatabaseDriverRepository {
 
     private static final String DEFAULT_XML_RESOURCE = "org/executequery/jdbcdrivers-default.xml";
 
     private static final String FILE_PATH = "jdbcdrivers.xml";
-        
+
     private List<DatabaseDriver> drivers;
-    
+
     public List<DatabaseDriver> findAll() {
 
         return drivers();
@@ -54,12 +54,12 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
     public DatabaseDriver findById(long id) {
 
         for (DatabaseDriver driver : drivers()) {
-            
+
             if (driver.getId() == id) {
-                
+
                 return driver;
             }
-            
+
         }
 
         return null;
@@ -68,23 +68,23 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
     public DatabaseDriver findByName(String name) {
 
         for (DatabaseDriver driver : drivers()) {
-            
+
             if (driver.getName().equals(name)) {
-                
+
                 return driver;
             }
-            
-        }        
-        
+
+        }
+
         return null;
     }
 
     public boolean nameExists(DatabaseDriver exclude, String name) {
 
         DatabaseDriver driver = findByName(name);
-        
+
         if (driver != null && driver != exclude) {
-            
+
             return true;
         }
 
@@ -108,7 +108,7 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
     private List<DatabaseDriver> drivers() {
 
         if (drivers == null) {
-            
+
             drivers = open();
             sanatise(drivers);
         }
@@ -119,15 +119,15 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
     private String filePath() {
 
         UserSettingsProperties settings = new UserSettingsProperties();
-        
+
         return settings.getUserSettingsDirectory() + FILE_PATH;
     }
 
     private List<DatabaseDriver> open() {
 
         ensureFileExists();
-        
-        return (List<DatabaseDriver>)read(filePath(), new DatabaseDriverHandler());
+
+        return (List<DatabaseDriver>) read(filePath(), new DatabaseDriverHandler());
     }
 
     private boolean namesValid() {
@@ -137,10 +137,10 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
             if (nameExists(driver, driver.getName())) {
 
                 throw new RepositoryException(
-                        String.format("The driver name %s already exists.", 
+                        String.format("The driver name %s already exists.",
                                 driver.getName()));
             }
-            
+
         }
 
         return true;
@@ -149,9 +149,9 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
     private void ensureFileExists() {
 
         File file = new File(filePath());
-        
+
         if (!file.exists()) {
-            
+
             try {
 
                 FileUtils.copyResource(DEFAULT_XML_RESOURCE, filePath());
@@ -162,23 +162,23 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
             }
 
         }
-        
+
     }
 
     private static final String SERVER = "[server]";
-    
+
     private void sanatise(List<DatabaseDriver> drivers) {
 
         boolean doSave = false;
-        
+
         int count = 0;
-        
+
         for (DatabaseDriver driver : drivers) {
-        
+
             // check the default id is set against the ODBC driver
             if (!driver.isDefaultSunOdbc() &&
                     DatabaseDriver.SUN_ODBC_DRIVER.equals(driver.getClassName())) {
-    
+
                 driver.setId(DatabaseDriver.SUN_ODBC_ID);
                 doSave = true;
             }
@@ -192,23 +192,23 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
 
             // replace the old format of [server] etc with the new
             if (driver.getURL().contains(SERVER)) {
-                
+
                 String url = driver.getURL();
-                
+
                 driver.setURL(url.replaceAll(
                         "\\[server\\]", ConnectionDataSource.HOST));
                 doSave = true;
             }
-            
+
         }
 
         if (doSave) {
-            
+
             save();
         }
-        
+
     }
-    
+
     private static final String JDBC_DRIVERS = "jdbcdrivers";
     private static final String DRIVER = "databasedrivers";
     private static final String ID = "id";
@@ -222,9 +222,9 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
     class DatabaseDriverHandler extends AbstractXMLRepositoryHandler<DatabaseDriver> {
 
         private List<DatabaseDriver> drivers;
-        
+
         private DatabaseDriver driver;
-        
+
         DatabaseDriverHandler() {
 
             drivers = new ArrayList<DatabaseDriver>();
@@ -233,9 +233,9 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
         public void startElement(String nameSpaceURI, String localName,
                                  String qName, Attributes attrs) {
 
-            contents().reset();            
+            contents().reset();
         }
-        
+
         public void endElement(String nameSpaceURI, String localName,
                                String qName) {
 
@@ -246,9 +246,9 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
             } else if (localNameIsKey(localName, NAME)) {
 
                 driver().setName(contentsAsString());
-                
+
             } else if (localNameIsKey(localName, DESCRIPTION)) {
-                
+
                 driver().setDescription(contentsAsString());
 
             } else if (localNameIsKey(localName, TYPE)) {
@@ -262,13 +262,13 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
             } else if (localNameIsKey(localName, CLASS_NAME)) {
 
                 driver().setClassName(contentsAsString());
-                
+
             } else if (localNameIsKey(localName, URL)) {
 
                 driver().setURL(contentsAsString());
 
             } else if (localNameIsKey(localName, DRIVER)) {
-                
+
                 if (driver != null) {
 
                     drivers.add(driver);
@@ -281,14 +281,14 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
         }
 
         public List<DatabaseDriver> getRepositoryItemsList() {
-            
+
             return drivers;
         }
-        
+
         private DatabaseDriver driver() {
-            
+
             if (driver != null) {
-                
+
                 return driver;
             }
 
@@ -298,21 +298,21 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
         }
 
         private DatabaseDriver createDriver() {
-            
+
             if (driverFactory == null) {
-                
+
                 driverFactory = new DatabaseDriverFactoryImpl();
             }
-            
+
             return driverFactory.create();
         }
-        
+
         private DatabaseDriverFactory driverFactory;
-        
+
     } // class DatabaseDriverHandler
 
     class DatabaseDriverInputSource extends InputSource {
-        
+
         private List<DatabaseDriver> drivers;
 
         public DatabaseDriverInputSource(List<DatabaseDriver> drivers) {
@@ -320,17 +320,18 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
             super();
             this.drivers = drivers;
         }
-        
+
         public List<DatabaseDriver> getDrivers() {
 
             return drivers;
         }
-        
+
     } // class DatabaseDriverInputSource
 
     class DatabaseDriverParser extends AbstractXMLRepositoryParser {
 
-        public DatabaseDriverParser() {}
+        public DatabaseDriverParser() {
+        }
 
         public void parse(InputSource input) throws SAXException, IOException {
 
@@ -339,17 +340,17 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
                 throw new SAXException(
                         "Parser can only accept a DatabaseDriverInputSource");
             }
-            
-            parse((DatabaseDriverInputSource)input);
+
+            parse((DatabaseDriverInputSource) input);
         }
-        
-        public void parse(DatabaseDriverInputSource input) 
-            throws IOException, SAXException {
+
+        public void parse(DatabaseDriverInputSource input)
+                throws IOException, SAXException {
 
             validateHandler();
-            
+
             List<DatabaseDriver> drivers = input.getDrivers();
-            
+
             handler().startDocument();
             newLine();
             handler().startElement(NSU, JDBC_DRIVERS, JDBC_DRIVERS, attributes());
@@ -359,7 +360,7 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
 
                 writeXMLRows(drivers);
             }
-            
+
             newLine();
             handler().endElement(NSU, JDBC_DRIVERS, JDBC_DRIVERS);
             handler().endDocument();
@@ -367,14 +368,14 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
         }
 
         private void writeXMLRows(List<DatabaseDriver> drivers)
-            throws SAXException {
+                throws SAXException {
 
             int count = 0;
-            
+
             for (DatabaseDriver driver : drivers) {
 
                 if (!driver.isIdValid()) {
-                    
+
                     driver.setId(System.currentTimeMillis() + (++count));
                 }
 
@@ -388,7 +389,7 @@ public class DatabaseDriverXMLRepository extends AbstractXMLResourceReaderWriter
                 writeXML(PATH, driver.getPath(), INDENT_TWO);
                 writeXML(CLASS_NAME, driver.getClassName(), INDENT_TWO);
                 writeXML(URL, driver.getURL(), INDENT_TWO);
-                
+
                 newLineIndentOne();
                 handler().endElement(NSU, DRIVER, DRIVER);
 

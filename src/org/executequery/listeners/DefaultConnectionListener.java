@@ -30,7 +30,7 @@ import org.executequery.event.ConnectionListener;
 public class DefaultConnectionListener implements ConnectionListener {
 
     public void connected(ConnectionEvent connectionEvent) {
-        
+
         updateStatusBarDataSourceCounter();
     }
 
@@ -47,8 +47,8 @@ public class DefaultConnectionListener implements ConnectionListener {
     private void updateStatusBarDataSourceCounter() {
 
         statusBar().setFirstLabelText(
-                " Active Data Sources: " + 
-                ConnectionManager.getActiveConnectionPoolCount());
+                " Active Data Sources: " +
+                        ConnectionManager.getActiveConnectionPoolCount());
     }
 
     private StatusBarPanel statusBar() {

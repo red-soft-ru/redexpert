@@ -735,7 +735,7 @@ public class GrantManagerPanel extends JPanel {
         try {
             connection = con.unwrap(Connection.class);
         } catch (SQLException e) {
-            Log.error("error get connection for getting users in grant manager:",e);
+            Log.error("error get connection for getting users in grant manager:", e);
         }
 
         URL[] urls = new URL[0];
@@ -747,13 +747,13 @@ public class GrantManagerPanel extends JPanel {
             clazzdb = cl.loadClass("biz.redsoft.FBUserManagerImpl");
             odb = clazzdb.newInstance();
         } catch (ClassNotFoundException e) {
-            Log.error("Error get users in Grant Manager:",e);
+            Log.error("Error get users in Grant Manager:", e);
         } catch (IllegalAccessException e) {
-            Log.error("Error get users in Grant Manager:",e);
+            Log.error("Error get users in Grant Manager:", e);
         } catch (InstantiationException e) {
-            Log.error("Error get users in Grant Manager:",e);
+            Log.error("Error get users in Grant Manager:", e);
         } catch (MalformedURLException e) {
-            Log.error("Error get users in Grant Manager:",e);
+            Log.error("Error get users in Grant Manager:", e);
         }
         IFBUserManager userManager = (IFBUserManager) odb;
         userManager = getUserManager(userManager, listConnections.get(databaseBox.getSelectedIndex()));
@@ -1334,7 +1334,7 @@ public class GrantManagerPanel extends JPanel {
         for (Component component : components) {
             component.setEnabled(enable);
             if (component instanceof Container) {
-                enableComponents((Container)component, enable);
+                enableComponents((Container) component, enable);
             }
         }
     }

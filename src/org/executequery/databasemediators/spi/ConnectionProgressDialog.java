@@ -20,22 +20,6 @@
 
 package org.executequery.databasemediators.spi;
 
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.ConnectionBuilder;
@@ -44,21 +28,31 @@ import org.executequery.log.Log;
 import org.underworldlabs.swing.ProgressBar;
 import org.underworldlabs.swing.ProgressBarFactory;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ConnectionProgressDialog extends JDialog
-                                      implements Runnable,
-                                                 ActionListener {
+        implements Runnable,
+        ActionListener {
 
-    /** The connection event parent to this object */
+    /**
+     * The connection event parent to this object
+     */
     private ConnectionBuilder connectonBuilder;
 
-    /** The progress bar widget */
+    /**
+     * The progress bar widget
+     */
     private ProgressBar progressBar;
 
-    /** connection name label */
+    /**
+     * connection name label
+     */
     private JLabel connectionNameLabel;
 
     public ConnectionProgressDialog(ConnectionBuilder connectonBuilder) {
@@ -69,7 +63,7 @@ public class ConnectionProgressDialog extends JDialog
     }
 
     public void run() {
-        
+
         progressBar.start();
         setVisible(true);
     }
@@ -104,9 +98,9 @@ public class ConnectionProgressDialog extends JDialog
         Container c = this.getContentPane();
         c.setLayout(new GridBagLayout());
         c.add(base, new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                                           GridBagConstraints.SOUTHEAST,
-                                           GridBagConstraints.BOTH,
-                                           new Insets(5, 5, 5, 5), 0, 0));
+                GridBagConstraints.SOUTHEAST,
+                GridBagConstraints.BOTH,
+                new Insets(5, 5, 5, 5), 0, 0));
         setResizable(false);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 

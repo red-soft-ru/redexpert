@@ -114,10 +114,10 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         private String fieldStringType;
         private String stringMechanism;
 
-        UDFParameter (int argPosition, int mechanism,
-                              int fieldType, int fieldScale,
-                              int fieldLength, int fieldSubType,
-                              int fieldPrecision) {
+        UDFParameter(int argPosition, int mechanism,
+                     int fieldType, int fieldScale,
+                     int fieldLength, int fieldSubType,
+                     int fieldPrecision) {
             this.argPosition = argPosition;
             this.mechanism = mechanism;
             this.fieldStringType = getTypeWithSize(fieldType, fieldSubType, fieldLength, fieldScale);
@@ -126,7 +126,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         }
 
         private String getMechanism(int mechanism) {
-            switch (mechanism){
+            switch (mechanism) {
                 case 0:
                     return "BY VALUE";
                 case 1:
@@ -182,7 +182,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
     /**
      * Creates a new instance.
      */
-    public DefaultDatabaseUDF() {}
+    public DefaultDatabaseUDF() {
+    }
 
     /**
      * Creates a new instance.
@@ -311,16 +312,16 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         sb.append("\n");
         String args = "";
         for (int i = 0; i < parameters.size(); i++) {
-            if (returnArg == 0 && i ==0)
+            if (returnArg == 0 && i == 0)
                 continue;
             args += "\t" + parameters.get(i).getFieldStringType() + " " +
                     parameters.get(i).getStringMechanism() + ",\n";
         }
-        args = args.substring(0, args.length()-2);
+        args = args.substring(0, args.length() - 2);
         sb.append(args);
         sb.append("\n");
         sb.append("RETURNS\n");
-        if(returnArg == 0)
+        if (returnArg == 0)
             sb.append(parameters.get(0).getFieldStringType() + " " + parameters.get(0).getStringMechanism());
         else
             sb.append("PARAMETER " + returnArg);
@@ -339,14 +340,14 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
                     return "NUMERIC(" + sqlsize + ",0)";
                 else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL("+ sqlsize + "," + sqlscale + ")";
+                    return "DECIMAL(" + sqlsize + "," + sqlscale + ")";
                 else
                     return "SMALLINT";
             case integer_type:
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
                     return "NUMERIC(" + sqlsize + ",0)";
                 else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL("+ sqlsize + "," + sqlscale + ")";
+                    return "DECIMAL(" + sqlsize + "," + sqlscale + ")";
                 else
                     return "INTEGER";
             case double_type:
@@ -354,7 +355,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
                     return "NUMERIC(" + sqlsize + ",0)";
                 else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL("+ sqlsize + "," + sqlscale + ")";
+                    return "DECIMAL(" + sqlsize + "," + sqlscale + ")";
                 else
                     return "DOUBLE PRECISION";
             case float_type:
@@ -373,7 +374,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
                     return "NUMERIC(" + sqlsize + ",0)";
                 else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL("+ sqlsize + "," + sqlscale + ")";
+                    return "DECIMAL(" + sqlsize + "," + sqlscale + ")";
                 else
                     return "BIGINT";
             case blob_type:

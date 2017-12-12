@@ -20,9 +20,8 @@
 
 package org.executequery.datasource;
 
-/** 
- *
- * @author   Takis Diakoumis
+/**
+ * @author Takis Diakoumis
  */
 public interface DatabaseDataSource {
 

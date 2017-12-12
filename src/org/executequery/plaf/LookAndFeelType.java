@@ -36,16 +36,16 @@ public enum LookAndFeelType {
     GTK("GTK+"),
     PLUGIN("Plugin"),
     NATIVE("Native");
- 
+
     private String description;
-    
+
     private LookAndFeelType(String description) {
 
         this.description = description;
     }
 
     public String getDescription() {
-     
+
         return description;
     }
 
@@ -54,21 +54,21 @@ public enum LookAndFeelType {
 
         return getDescription();
     }
-    
+
     public boolean isDarkTheme() {
-        
+
         return (this == LookAndFeelType.EXECUTE_QUERY_DARK);
     }
-    
+
     public boolean isExecuteQueryLookCompatible() {
-        
+
         return (this == SMOOTH_GRADIENT ||
                 this == EXECUTE_QUERY_THEME ||
                 this == EXECUTE_QUERY ||
                 this == EXECUTE_QUERY_DARK ||
                 this == EXECUTE_QUERY_GRADIENT);
     }
-    
+
 }
 
 

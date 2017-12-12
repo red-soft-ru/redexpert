@@ -23,7 +23,7 @@ package org.executequery.crypto;
 public interface PasswordEncoderDecoderFactory {
 
     PasswordEncoderDecoder create();
-    
+
 }
 
 

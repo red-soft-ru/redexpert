@@ -20,26 +20,6 @@
 
 package org.executequery.gui.editor;
 
-import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.io.File;
-import java.io.IOException;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.border.Border;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import org.apache.commons.lang.CharUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
@@ -55,12 +35,18 @@ import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.io.ByteArrayFileWriter;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.underworldlabs.swing.hexeditor.*;
+import org.underworldlabs.swing.hexeditor.AKDockLayout;
+import org.underworldlabs.swing.hexeditor.HexEditor;
 import org.underworldlabs.swing.hexeditor.bdoc.AnnotatedBinaryDocument;
-import org.underworldlabs.swing.hexeditor.bdoc.BinaryDocument;
-import org.underworldlabs.swing.hexeditor.bdoc.Location;
 import org.underworldlabs.util.MiscUtils;
 
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 

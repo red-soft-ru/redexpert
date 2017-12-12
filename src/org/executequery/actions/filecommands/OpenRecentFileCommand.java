@@ -20,27 +20,28 @@
 
 package org.executequery.actions.filecommands;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import org.executequery.util.FileLoader;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 /**
- * Executes the command to open the selected file from the 
+ * Executes the command to open the selected file from the
  * recent files menu.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class OpenRecentFileCommand implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
 
         String file = e.getActionCommand();
-        
+
         FileLoader loader = new FileLoader();
-        
+
         loader.openFile(file, -1);
     }
-    
+
 }
 
 

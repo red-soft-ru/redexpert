@@ -20,13 +20,6 @@
 
 package org.executequery.gui.drivers;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
-
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.components.SimpleButtonsPanel;
@@ -40,16 +33,20 @@ import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.repository.RepositoryException;
 
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+
 public class DialogDriverPanel extends ActionDialog {
 
     private static final int MIN_WIDTH = 600;
-    
+
     private static final int MIN_HEIGHT = 375;
 
     private DriverFieldsPanel panel;
 
     public DialogDriverPanel() {
-        
+
         super("Add New Driver", true);
 
         panel = new DriverFieldsPanel();
@@ -58,13 +55,13 @@ public class DialogDriverPanel extends ActionDialog {
         JPanel base = new JPanel(new BorderLayout());
         base.add(panel, BorderLayout.CENTER);
         base.add(createButtonsPanel(), BorderLayout.SOUTH);
-        
+
         addDisplayComponentWithEmptyBorder(base);
 
         setPreferredSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
         display();
     }
-    
+
     private JPanel createButtonsPanel() {
 
         return new SimpleButtonsPanel(this, Bundles.get("common.save.button"), "populateAndSave", Bundles.get("common.cancel.button"), "dispose");
@@ -82,7 +79,7 @@ public class DialogDriverPanel extends ActionDialog {
 
                 String message = String.format("The driver name %s already exists.", driver.getName());
                 GUIUtilities.displayErrorMessage(message);
-                
+
                 return;
             }
 
@@ -94,13 +91,13 @@ public class DialogDriverPanel extends ActionDialog {
             }
 
             // TODO: if the save fails - driver should be removed ????
-            
+
         }
 
     }
 
     private boolean save(DatabaseDriver driver) {
-        
+
         try {
 
             databaseDriverRepository().save();
@@ -118,10 +115,10 @@ public class DialogDriverPanel extends ActionDialog {
         }
 
     }
-    
+
     private void addDriver(DatabaseDriver driver) {
 
-        List<DatabaseDriver> drivers = databaseDriverRepository().findAll();        
+        List<DatabaseDriver> drivers = databaseDriverRepository().findAll();
 
         drivers.add(driver);
     }
@@ -143,21 +140,21 @@ public class DialogDriverPanel extends ActionDialog {
         private DriverFieldsPanel() {
 
             setDriver(new DatabaseDriverFactoryImpl().create(
-                    System.currentTimeMillis(), "New Driver"));            
+                    System.currentTimeMillis(), "New Driver"));
         }
-        
+
         public void driverNameChanged() {
-            
+
             // not interested
         }
 
         public boolean saveDrivers() {
 
             populateDriverObject();
-            
+
             return save(getDriver());
         }
-        
+
     }
 
 }

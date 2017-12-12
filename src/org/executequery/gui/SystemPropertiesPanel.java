@@ -20,43 +20,38 @@
 
 package org.executequery.gui;
 
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;
-
 import org.underworldlabs.swing.table.PropertyWrapperModel;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.*;
 
 /**
  * Simple system properties panel displaying a table
  * with the values from <code>System.getProperties()</code>.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SystemPropertiesPanel extends JPanel {
-    
+
     private SortableColumnsTable table;
 
     public SystemPropertiesPanel() {
 
         super(new GridBagLayout());
         PropertyWrapperModel model = new PropertyWrapperModel(
-                                            System.getProperties(), 
-                                            PropertyWrapperModel.SORT_BY_KEY);
-        
+                System.getProperties(),
+                PropertyWrapperModel.SORT_BY_KEY);
+
         table = new SortableColumnsTable(model);
         table.getTableHeader().setReorderingAllowed(false);
         table.getColumnModel().getColumn(0).setCellRenderer(new PropertiesTableCellRenderer());
         table.getColumnModel().getColumn(1).setCellRenderer(new PropertiesTableCellRenderer());
-        
+
         JScrollPane scroller = new JScrollPane(table);
         scroller.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scroller.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 1;
         gbc.gridx = 1;
@@ -71,27 +66,28 @@ public class SystemPropertiesPanel extends JPanel {
         gbc.anchor = GridBagConstraints.SOUTHEAST;
         add(scroller, gbc);
     }
- 
+
     public void reload() {
-        
+
         table.setModel(new PropertyWrapperModel(
-                                            System.getProperties(), 
-                                            PropertyWrapperModel.SORT_BY_KEY));
+                System.getProperties(),
+                PropertyWrapperModel.SORT_BY_KEY));
         table.resetSorter();
     }
-    
-    
+
+
     private class PropertiesTableCellRenderer extends DefaultTableCellRenderer {
 
-        public PropertiesTableCellRenderer() {}
-        
-        public Component getTableCellRendererComponent(JTable table, 
-                                                       Object value, 
-                                                       boolean isSelected, 
-                                                       boolean hasFocus, 
-                                                       int row, 
+        public PropertiesTableCellRenderer() {
+        }
+
+        public Component getTableCellRendererComponent(JTable table,
+                                                       Object value,
+                                                       boolean isSelected,
+                                                       boolean hasFocus,
+                                                       int row,
                                                        int column) {
-            
+
             if (value != null) {
 
                 setToolTipText(value.toString());
@@ -99,7 +95,7 @@ public class SystemPropertiesPanel extends JPanel {
             return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
     }
-    
+
 }
 
 

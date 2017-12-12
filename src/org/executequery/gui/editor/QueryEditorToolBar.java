@@ -20,16 +20,6 @@
 
 package org.executequery.gui.editor;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JButton;
-import javax.swing.JMenuItem;
-import javax.swing.KeyStroke;
-
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.repository.QueryBookmark;
@@ -40,10 +30,15 @@ import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
 
+import javax.swing.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * The Query Editor's tool bar.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 class QueryEditorToolBar extends PanelToolBar {
 
@@ -68,9 +63,9 @@ class QueryEditorToolBar extends PanelToolBar {
     private static final String EDITOR_EXPORT_COMMAND = "editor-export-command";
 
     private static final String EDITOR_SHOW_HIDE_RS_COLUMNS_COMMAND = "editor-show-hide-rs-columns-command";
-    
+
     private static final String EDITOR_REFRESH_AUTOCOMPLETE_COMMAND = "editor-refresh-autocomplete-command";
-    
+
     private static final String EDITOR_RS_METADATA_COMMAND = "editor-rs-metadata-command";
 
     private static final String EDITOR_CONN_CHANGE_COMMAND = "editor-conn-change-command";
@@ -99,7 +94,9 @@ class QueryEditorToolBar extends PanelToolBar {
 
     public static final String NAME = "Query Editor Tool Bar";
 
-    /** button access map */
+    /**
+     * button access map
+     */
     private Map<String, RolloverButton> buttons;
 
     private final ActionMap queryEditorActionMap;
@@ -126,24 +123,24 @@ class QueryEditorToolBar extends PanelToolBar {
      * Initializes the state of this instance.
      */
     private void init() throws Exception {
-        buttons = new HashMap<String,RolloverButton>();
+        buttons = new HashMap<String, RolloverButton>();
 
         addButton(createButton(EXECUTE_COMMAND,
-                     "Execute the contents of the query editor"));
+                "Execute the contents of the query editor"));
 
         addButton(createButton(EXECUTE_AT_CURSOR_COMMAND,
-                     "Execute query at cursor"));
+                "Execute query at cursor"));
 
         addButton(createButton(EXECUTE_SELECTION_COMMAND,
-                     "Execute the current text selection"));
+                "Execute the current text selection"));
 
         addButton(createButton(EDITOR_STOP_COMMAND,
-                     "Cancel Current Statement"));
+                "Cancel Current Statement"));
 
         addSeparator();
 
         addButton(createButton(CLEAR_EDITOR_OUTPUT_COMMAND,
-                     "Clear the editor's output log panel"));
+                "Clear the editor's output log panel"));
 
         addButton(createButton(SQL_HISTORY_COMMAND, "SQL command history"));
 
@@ -158,43 +155,43 @@ class QueryEditorToolBar extends PanelToolBar {
         addSeparator();
 
         addButton(createButton(COMMIT_COMMAND,
-                     "Commit all changes since last commit/rollback"));
+                "Commit all changes since last commit/rollback"));
 
         addButton(createButton(ROLLBACK_COMMAND,
-                     "Rollback all changes since last commit/rollback"));
+                "Rollback all changes since last commit/rollback"));
 
         addButton(createButton(TOGGLE_AUTOCOMMIT_COMMAND,
-                     "Toggle auto-commit on/off"));
+                "Toggle auto-commit on/off"));
 
         addButton(createButton(EDITOR_CONN_CHANGE_COMMAND,
-                     "Closes the editor's connection and retrieves another from the pool"));
+                "Closes the editor's connection and retrieves another from the pool"));
 
         addButton(createButton(EDITOR_REFRESH_AUTOCOMPLETE_COMMAND,
                 "Refresh editor's schema autocomplete list"));
-        
+
         addSeparator();
 
         addButton(createButton(EDITOR_RS_METADATA_COMMAND,
-                     "Display this result set's meta data"));
+                "Display this result set's meta data"));
 
         addButton(createButton(EDITOR_SHOW_HIDE_RS_COLUMNS_COMMAND,
                 "Show/hide result set columns"));
-        
+
         addButton(createButton(EDITOR_EXPORT_COMMAND,
-                     "Export the selected result set to file"));
+                "Export the selected result set to file"));
 
         addSeparator();
 
         addButton(createButton(TOGGLE_EDITOR_OUTPUT_COMMAND,
-                     "Show/hide the output pane"));
+                "Show/hide the output pane"));
 
         addSeparator();
 
         addButton(createButton(SHIFT_TEXT_LEFT_COMMAND,
-                     "Shift line/selection left"));
+                "Shift line/selection left"));
 
         addButton(createButton(SHIFT_TEXT_RIGHT_COMMAND,
-                     "Shift line/selection right"));
+                "Shift line/selection right"));
 
         addSeparator();
 
@@ -258,7 +255,7 @@ class QueryEditorToolBar extends PanelToolBar {
      * Enables/disables the button with the specified action ID.
      *
      * @param actionId - the action ID string
-     * @param enable true | false
+     * @param enable   true | false
      */
     public void setButtonEnabled(String actionId, boolean enable) {
         RolloverButton button = buttons.get(actionId);
@@ -302,7 +299,7 @@ class QueryEditorToolBar extends PanelToolBar {
 
     protected void reloadBookmarkItems() {
 
-        PopupMenuButton button = (PopupMenuButton)buttons.get(QUERY_BOOKMARKS);
+        PopupMenuButton button = (PopupMenuButton) buttons.get(QUERY_BOOKMARKS);
         button.removeMenuItems();
 
         createQueryBookmarkMenuItems(button);
@@ -318,7 +315,7 @@ class QueryEditorToolBar extends PanelToolBar {
             button.addSeparator();
 
             List<QueryBookmark> bookmarks =
-                QueryBookmarks.getInstance().getQueryBookmarks();
+                    QueryBookmarks.getInstance().getQueryBookmarks();
 
             for (QueryBookmark bookmark : bookmarks) {
 

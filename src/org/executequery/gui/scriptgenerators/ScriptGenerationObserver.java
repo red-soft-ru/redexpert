@@ -25,9 +25,9 @@ import org.executequery.databaseobjects.NamedObject;
 public interface ScriptGenerationObserver {
 
     void startedNamedObjectScript(NamedObject namedObject);
-    
+
     void finishedNamedObjectScript(NamedObject namedObject);
-    
+
 }
 
 

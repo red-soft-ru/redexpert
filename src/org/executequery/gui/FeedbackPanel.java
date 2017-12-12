@@ -20,24 +20,6 @@
 
 package org.executequery.gui;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
@@ -51,47 +33,74 @@ import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 /**
  * Base feedback panel for comments, requests and bugs.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class FeedbackPanel extends DefaultActionButtonsPanel
-                           implements ActionListener,
-                                      FocusComponentPanel,
-                                      Interruptible {
+        implements ActionListener,
+        FocusComponentPanel,
+        Interruptible {
 
-    /** user comments feedback indicator */
+    /**
+     * user comments feedback indicator
+     */
     public static final int USER_COMMENTS = 2;
 
-    /** feature request feedback indicator */
+    /**
+     * feature request feedback indicator
+     */
     public static final int FEATURE_REQUEST = 1;
 
-    /** bug report feedback indicator */
+    /**
+     * bug report feedback indicator
+     */
     public static final int BUG_REPORT = 0;
 
-    /** the feedback type for the instance */
+    /**
+     * the feedback type for the instance
+     */
     private int feedbackType;
 
-    /** user's name field */
+    /**
+     * user's name field
+     */
     private JTextField nameField;
 
-    /** user's comments field */
+    /**
+     * user's comments field
+     */
     private JTextArea commentsField;
 
-    /** user's email field */
+    /**
+     * user's email field
+     */
     private JTextField emailField;
 
-    /** the parent container */
+    /**
+     * the parent container
+     */
     private ActionContainer parent;
 
-    /** Thread worker object */
+    /**
+     * Thread worker object
+     */
     private SwingWorker worker;
 
-    /** The progress dialog */
+    /**
+     * The progress dialog
+     */
     private InterruptibleProgressDialog progressDialog;
 
-    /** Creates a new instance of FeedbackPanel */
+    /**
+     * Creates a new instance of FeedbackPanel
+     */
     public FeedbackPanel(ActionContainer parent, int feedbackType) {
 
         this.parent = parent;
@@ -105,7 +114,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         String labelText = generateLabelText();
 
         commentsField = new JTextArea(createHeader());
-        commentsField.setMargin(new Insets(2,2,2,2));
+        commentsField.setMargin(new Insets(2, 2, 2, 2));
 
         nameField = WidgetFactory.createTextField();
         emailField = WidgetFactory.createTextField();
@@ -292,7 +301,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
 
                     parent.unblock();
 
-                    JDialog dialog = (JDialog)parent;
+                    JDialog dialog = (JDialog) parent;
                     dialog.setVisible(true);
                     return;
                 }
@@ -309,7 +318,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
 
                     GUIUtilities.displayInformationMessage(
                             "Your remarks were successfully posted to " +
-                            "rdb.support@red-soft.biz.\nThank you for your feedback.");
+                                    "rdb.support@red-soft.biz.\nThank you for your feedback.");
 
                 } else if (cancelled || result == Constants.WORKER_FAIL ||
                         result == Constants.WORKER_CANCEL) {
@@ -318,7 +327,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
 
                         parent.unblock();
 
-                        JDialog dialog = (JDialog)parent;
+                        JDialog dialog = (JDialog) parent;
                         dialog.setVisible(true);
                         return;
                     }
@@ -331,10 +340,10 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         };
 
         progressDialog = new InterruptibleProgressDialog(
-                            GUIUtilities.getParentFrame(),
-                            "Posting Feedback",
-                            "Posting feedback report to rdb.support@red-soft.biz",
-                            this);
+                GUIUtilities.getParentFrame(),
+                "Posting Feedback",
+                "Posting feedback report to rdb.support@red-soft.biz",
+                this);
 
         worker.start();
         progressDialog.run();
@@ -375,10 +384,10 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
 
     private String noEmailAddressWarningMessage() {
         return "You have not entered your email address.\n" +
-            "An email address is required in order for the " +
-            "developers to reply to your feedback.\n" +
-            "Are you sure you want to submit this report " +
-            "without an email address?";
+                "An email address is required in order for the " +
+                "developers to reply to your feedback.\n" +
+                "Are you sure you want to submit this report " +
+                "without an email address?";
     }
 
     private Object doWork() {
@@ -469,7 +478,9 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         });
     }
 
-    /** process cancelled flag */
+    /**
+     * process cancelled flag
+     */
     private boolean cancelled;
 
     private UserFeedbackRepository repository;

@@ -10,7 +10,7 @@ import java.sql.*;
 import java.util.Calendar;
 import java.util.Map;
 
-public class PooledStatement implements  CallableStatement{
+public class PooledStatement implements CallableStatement {
 
     private PooledConnection connection;
 
@@ -40,7 +40,7 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public ResultSet executeQuery(String sql) throws SQLException {
-        return new PooledResultSet(this,statement.executeQuery(sql));
+        return new PooledResultSet(this, statement.executeQuery(sql));
     }
 
     @Override
@@ -50,12 +50,11 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public void close() throws SQLException {
-        if(!closed) {
+        if (!closed) {
             statement.close();
-            connection.setFree(true);
+            connection.lock(false);
             closed = true;
-        }
-        else {
+        } else {
             Log.info("2 close");
         }
     }
@@ -122,7 +121,7 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public ResultSet getResultSet() throws SQLException {
-        return new PooledResultSet(this,statement.getResultSet());
+        return new PooledResultSet(this, statement.getResultSet());
     }
 
     @Override
@@ -192,7 +191,7 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public ResultSet getGeneratedKeys() throws SQLException {
-        return new PooledResultSet(this,statement.getGeneratedKeys());
+        return new PooledResultSet(this, statement.getGeneratedKeys());
     }
 
     @Override
@@ -267,7 +266,7 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public ResultSet executeQuery() throws SQLException {
-        return new PooledResultSet(this,preparedStatement.executeQuery());
+        return new PooledResultSet(this, preparedStatement.executeQuery());
     }
 
     @Override
@@ -287,77 +286,77 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public void setByte(int i, byte b) throws SQLException {
-        preparedStatement.setByte(i,b);
+        preparedStatement.setByte(i, b);
     }
 
     @Override
     public void setShort(int i, short i1) throws SQLException {
-        preparedStatement.setShort(i,i1);
+        preparedStatement.setShort(i, i1);
     }
 
     @Override
     public void setInt(int i, int i1) throws SQLException {
-        preparedStatement.setInt(i,i1);
+        preparedStatement.setInt(i, i1);
     }
 
     @Override
     public void setLong(int i, long l) throws SQLException {
-        preparedStatement.setLong(i,l);
+        preparedStatement.setLong(i, l);
     }
 
     @Override
     public void setFloat(int i, float v) throws SQLException {
-        preparedStatement.setFloat(i,v);
+        preparedStatement.setFloat(i, v);
     }
 
     @Override
     public void setDouble(int i, double v) throws SQLException {
-        preparedStatement.setDouble(i,v);
+        preparedStatement.setDouble(i, v);
     }
 
     @Override
     public void setBigDecimal(int i, BigDecimal bigDecimal) throws SQLException {
-        preparedStatement.setBigDecimal(i,bigDecimal);
+        preparedStatement.setBigDecimal(i, bigDecimal);
     }
 
     @Override
     public void setString(int i, String s) throws SQLException {
-        preparedStatement.setString(i,s);
+        preparedStatement.setString(i, s);
     }
 
     @Override
     public void setBytes(int i, byte[] bytes) throws SQLException {
-        preparedStatement.setBytes(i,bytes);
+        preparedStatement.setBytes(i, bytes);
     }
 
     @Override
     public void setDate(int i, Date date) throws SQLException {
-        preparedStatement.setDate(i,date);
+        preparedStatement.setDate(i, date);
     }
 
     @Override
     public void setTime(int i, Time time) throws SQLException {
-        preparedStatement.setTime(i,time);
+        preparedStatement.setTime(i, time);
     }
 
     @Override
     public void setTimestamp(int i, Timestamp timestamp) throws SQLException {
-        preparedStatement.setTimestamp(i,timestamp);
+        preparedStatement.setTimestamp(i, timestamp);
     }
 
     @Override
     public void setAsciiStream(int i, InputStream inputStream, int i1) throws SQLException {
-        preparedStatement.setAsciiStream(i,inputStream,i1);
+        preparedStatement.setAsciiStream(i, inputStream, i1);
     }
 
     @Override
     public void setUnicodeStream(int i, InputStream inputStream, int i1) throws SQLException {
-        preparedStatement.setUnicodeStream(i,inputStream,i1);
+        preparedStatement.setUnicodeStream(i, inputStream, i1);
     }
 
     @Override
     public void setBinaryStream(int i, InputStream inputStream, int i1) throws SQLException {
-        preparedStatement.setBinaryStream(i,inputStream,i1);
+        preparedStatement.setBinaryStream(i, inputStream, i1);
     }
 
     @Override
@@ -367,12 +366,12 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public void setObject(int i, Object o, int i1) throws SQLException {
-        preparedStatement.setObject(i,o,i1);
+        preparedStatement.setObject(i, o, i1);
     }
 
     @Override
     public void setObject(int i, Object o) throws SQLException {
-        preparedStatement.setObject(i,o);
+        preparedStatement.setObject(i, o);
     }
 
     @Override
@@ -387,27 +386,27 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public void setCharacterStream(int i, Reader reader, int i1) throws SQLException {
-        preparedStatement.setCharacterStream(i,reader,i1);
+        preparedStatement.setCharacterStream(i, reader, i1);
     }
 
     @Override
     public void setRef(int i, Ref ref) throws SQLException {
-        preparedStatement.setRef(i,ref);
+        preparedStatement.setRef(i, ref);
     }
 
     @Override
     public void setBlob(int i, Blob blob) throws SQLException {
-        preparedStatement.setBlob(i,blob);
+        preparedStatement.setBlob(i, blob);
     }
 
     @Override
     public void setClob(int i, Clob clob) throws SQLException {
-        preparedStatement.setClob(i,clob);
+        preparedStatement.setClob(i, clob);
     }
 
     @Override
     public void setArray(int i, Array array) throws SQLException {
-        preparedStatement.setArray(i,array);
+        preparedStatement.setArray(i, array);
     }
 
     @Override
@@ -417,27 +416,27 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public void setDate(int i, Date date, Calendar calendar) throws SQLException {
-        preparedStatement.setDate(i,date,calendar);
+        preparedStatement.setDate(i, date, calendar);
     }
 
     @Override
     public void setTime(int i, Time time, Calendar calendar) throws SQLException {
-        preparedStatement.setTime(i,time,calendar);
+        preparedStatement.setTime(i, time, calendar);
     }
 
     @Override
     public void setTimestamp(int i, Timestamp timestamp, Calendar calendar) throws SQLException {
-        preparedStatement.setTimestamp(i,timestamp,calendar);
+        preparedStatement.setTimestamp(i, timestamp, calendar);
     }
 
     @Override
     public void setNull(int i, int i1, String s) throws SQLException {
-        preparedStatement.setNull(i,i1,s);
+        preparedStatement.setNull(i, i1, s);
     }
 
     @Override
     public void setURL(int i, URL url) throws SQLException {
-        preparedStatement.setURL(i,url);
+        preparedStatement.setURL(i, url);
     }
 
     @Override
@@ -447,107 +446,107 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public void setRowId(int i, RowId rowId) throws SQLException {
-        preparedStatement.setRowId(i,rowId);
+        preparedStatement.setRowId(i, rowId);
     }
 
     @Override
     public void setNString(int i, String s) throws SQLException {
-        preparedStatement.setNString(i,s);
+        preparedStatement.setNString(i, s);
     }
 
     @Override
     public void setNCharacterStream(int i, Reader reader, long l) throws SQLException {
-        preparedStatement.setNCharacterStream(i,reader,l);
+        preparedStatement.setNCharacterStream(i, reader, l);
     }
 
     @Override
     public void setNClob(int i, NClob nClob) throws SQLException {
-        preparedStatement.setNClob(i,nClob);
+        preparedStatement.setNClob(i, nClob);
     }
 
     @Override
     public void setClob(int i, Reader reader, long l) throws SQLException {
-        preparedStatement.setClob(i,reader,l);
+        preparedStatement.setClob(i, reader, l);
     }
 
     @Override
     public void setBlob(int i, InputStream inputStream, long l) throws SQLException {
-        preparedStatement.setBlob(i,inputStream,l);
+        preparedStatement.setBlob(i, inputStream, l);
     }
 
     @Override
     public void setNClob(int i, Reader reader, long l) throws SQLException {
-        preparedStatement.setNClob(i,reader,l);
+        preparedStatement.setNClob(i, reader, l);
     }
 
     @Override
     public void setSQLXML(int i, SQLXML sqlxml) throws SQLException {
-        preparedStatement.setSQLXML(i,sqlxml);
+        preparedStatement.setSQLXML(i, sqlxml);
     }
 
     @Override
     public void setObject(int i, Object o, int i1, int i2) throws SQLException {
-        preparedStatement.setObject(i,o,i1,i2);
+        preparedStatement.setObject(i, o, i1, i2);
     }
 
     @Override
     public void setAsciiStream(int i, InputStream inputStream, long l) throws SQLException {
-        preparedStatement.setAsciiStream(i,inputStream,l);
+        preparedStatement.setAsciiStream(i, inputStream, l);
     }
 
     @Override
     public void setBinaryStream(int i, InputStream inputStream, long l) throws SQLException {
-        preparedStatement.setBinaryStream(i,inputStream,l);
+        preparedStatement.setBinaryStream(i, inputStream, l);
     }
 
     @Override
     public void setCharacterStream(int i, Reader reader, long l) throws SQLException {
-        preparedStatement.setCharacterStream(i,reader,l);
+        preparedStatement.setCharacterStream(i, reader, l);
     }
 
     @Override
     public void setAsciiStream(int i, InputStream inputStream) throws SQLException {
-        preparedStatement.setAsciiStream(i,inputStream);
+        preparedStatement.setAsciiStream(i, inputStream);
     }
 
     @Override
     public void setBinaryStream(int i, InputStream inputStream) throws SQLException {
-        preparedStatement.setBinaryStream(i,inputStream);
+        preparedStatement.setBinaryStream(i, inputStream);
     }
 
     @Override
     public void setCharacterStream(int i, Reader reader) throws SQLException {
-        preparedStatement.setCharacterStream(i,reader);
+        preparedStatement.setCharacterStream(i, reader);
     }
 
     @Override
     public void setNCharacterStream(int i, Reader reader) throws SQLException {
-        preparedStatement.setNCharacterStream(i,reader);
+        preparedStatement.setNCharacterStream(i, reader);
     }
 
     @Override
     public void setClob(int i, Reader reader) throws SQLException {
-        preparedStatement.setClob(i,reader);
+        preparedStatement.setClob(i, reader);
     }
 
     @Override
     public void setBlob(int i, InputStream inputStream) throws SQLException {
-        preparedStatement.setBlob(i,inputStream);
+        preparedStatement.setBlob(i, inputStream);
     }
 
     @Override
     public void setNClob(int i, Reader reader) throws SQLException {
-        preparedStatement.setNClob(i,reader);
+        preparedStatement.setNClob(i, reader);
     }
 
     @Override
     public void registerOutParameter(int i, int i1) throws SQLException {
-        callableStatement.registerOutParameter(i,i1);
+        callableStatement.registerOutParameter(i, i1);
     }
 
     @Override
     public void registerOutParameter(int i, int i1, int i2) throws SQLException {
-        callableStatement.registerOutParameter(i,i1,i2);
+        callableStatement.registerOutParameter(i, i1, i2);
     }
 
     @Override
@@ -597,7 +596,7 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public BigDecimal getBigDecimal(int i, int i1) throws SQLException {
-        return callableStatement.getBigDecimal(i,i1);
+        return callableStatement.getBigDecimal(i, i1);
     }
 
     @Override
@@ -632,7 +631,7 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public Object getObject(int i, Map<String, Class<?>> map) throws SQLException {
-        return callableStatement.getObject(i,map);
+        return callableStatement.getObject(i, map);
     }
 
     @Override
@@ -657,37 +656,37 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public Date getDate(int i, Calendar calendar) throws SQLException {
-        return callableStatement.getDate(i,calendar);
+        return callableStatement.getDate(i, calendar);
     }
 
     @Override
     public Time getTime(int i, Calendar calendar) throws SQLException {
-        return callableStatement.getTime(i,calendar);
+        return callableStatement.getTime(i, calendar);
     }
 
     @Override
     public Timestamp getTimestamp(int i, Calendar calendar) throws SQLException {
-        return callableStatement.getTimestamp(i,calendar);
+        return callableStatement.getTimestamp(i, calendar);
     }
 
     @Override
     public void registerOutParameter(int i, int i1, String s) throws SQLException {
-        callableStatement.registerOutParameter(i,i1,s);
+        callableStatement.registerOutParameter(i, i1, s);
     }
 
     @Override
     public void registerOutParameter(String s, int i) throws SQLException {
-        callableStatement.registerOutParameter(s,i);
+        callableStatement.registerOutParameter(s, i);
     }
 
     @Override
     public void registerOutParameter(String s, int i, int i1) throws SQLException {
-        callableStatement.registerOutParameter(s,i,i1);
+        callableStatement.registerOutParameter(s, i, i1);
     }
 
     @Override
     public void registerOutParameter(String s, int i, String s1) throws SQLException {
-        callableStatement.registerOutParameter(s,i,s1);
+        callableStatement.registerOutParameter(s, i, s1);
     }
 
     @Override
@@ -697,127 +696,127 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public void setURL(String s, URL url) throws SQLException {
-        callableStatement.setURL(s,url);
+        callableStatement.setURL(s, url);
     }
 
     @Override
     public void setNull(String s, int i) throws SQLException {
-        callableStatement.setNull(s,i);
+        callableStatement.setNull(s, i);
     }
 
     @Override
     public void setBoolean(String s, boolean b) throws SQLException {
-        callableStatement.setBoolean(s,b);
+        callableStatement.setBoolean(s, b);
     }
 
     @Override
     public void setByte(String s, byte b) throws SQLException {
-        callableStatement.setByte(s,b);
+        callableStatement.setByte(s, b);
     }
 
     @Override
     public void setShort(String s, short i) throws SQLException {
-        callableStatement.setShort(s,i);
+        callableStatement.setShort(s, i);
     }
 
     @Override
     public void setInt(String s, int i) throws SQLException {
-        callableStatement.setInt(s,i);
+        callableStatement.setInt(s, i);
     }
 
     @Override
     public void setLong(String s, long l) throws SQLException {
-        callableStatement.setLong(s,l);
+        callableStatement.setLong(s, l);
     }
 
     @Override
     public void setFloat(String s, float v) throws SQLException {
-        callableStatement.setFloat(s,v);
+        callableStatement.setFloat(s, v);
     }
 
     @Override
     public void setDouble(String s, double v) throws SQLException {
-        callableStatement.setDouble(s,v);
+        callableStatement.setDouble(s, v);
     }
 
     @Override
     public void setBigDecimal(String s, BigDecimal bigDecimal) throws SQLException {
-        callableStatement.setBigDecimal(s,bigDecimal);
+        callableStatement.setBigDecimal(s, bigDecimal);
     }
 
     @Override
     public void setString(String s, String s1) throws SQLException {
-        callableStatement.setString(s,s1);
+        callableStatement.setString(s, s1);
     }
 
     @Override
     public void setBytes(String s, byte[] bytes) throws SQLException {
-        callableStatement.setBytes(s,bytes);
+        callableStatement.setBytes(s, bytes);
     }
 
     @Override
     public void setDate(String s, Date date) throws SQLException {
-        callableStatement.setDate(s,date);
+        callableStatement.setDate(s, date);
     }
 
     @Override
     public void setTime(String s, Time time) throws SQLException {
-        callableStatement.setTime(s,time);
+        callableStatement.setTime(s, time);
     }
 
     @Override
     public void setTimestamp(String s, Timestamp timestamp) throws SQLException {
-        callableStatement.setTimestamp(s,timestamp);
+        callableStatement.setTimestamp(s, timestamp);
     }
 
     @Override
     public void setAsciiStream(String s, InputStream inputStream, int i) throws SQLException {
-        callableStatement.setAsciiStream(s,inputStream,i);
+        callableStatement.setAsciiStream(s, inputStream, i);
     }
 
     @Override
     public void setBinaryStream(String s, InputStream inputStream, int i) throws SQLException {
-        callableStatement.setBinaryStream(s,inputStream,i);
+        callableStatement.setBinaryStream(s, inputStream, i);
     }
 
     @Override
     public void setObject(String s, Object o, int i, int i1) throws SQLException {
-        callableStatement.setObject(s,o,i,i1);
+        callableStatement.setObject(s, o, i, i1);
     }
 
     @Override
     public void setObject(String s, Object o, int i) throws SQLException {
-        callableStatement.setObject(s,o,i);
+        callableStatement.setObject(s, o, i);
     }
 
     @Override
     public void setObject(String s, Object o) throws SQLException {
-        callableStatement.setObject(s,o);
+        callableStatement.setObject(s, o);
     }
 
     @Override
     public void setCharacterStream(String s, Reader reader, int i) throws SQLException {
-        callableStatement.setCharacterStream(s,reader,i);
+        callableStatement.setCharacterStream(s, reader, i);
     }
 
     @Override
     public void setDate(String s, Date date, Calendar calendar) throws SQLException {
-        callableStatement.setDate(s,date,calendar);
+        callableStatement.setDate(s, date, calendar);
     }
 
     @Override
     public void setTime(String s, Time time, Calendar calendar) throws SQLException {
-        callableStatement.setTime(s,time,calendar);
+        callableStatement.setTime(s, time, calendar);
     }
 
     @Override
     public void setTimestamp(String s, Timestamp timestamp, Calendar calendar) throws SQLException {
-        callableStatement.setTimestamp(s,timestamp,calendar);
+        callableStatement.setTimestamp(s, timestamp, calendar);
     }
 
     @Override
     public void setNull(String s, int i, String s1) throws SQLException {
-        callableStatement.setNull(s,i,s1);
+        callableStatement.setNull(s, i, s1);
     }
 
     @Override
@@ -892,7 +891,7 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public Object getObject(String s, Map<String, Class<?>> map) throws SQLException {
-        return callableStatement.getObject(s,map);
+        return callableStatement.getObject(s, map);
     }
 
     @Override
@@ -917,17 +916,17 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public Date getDate(String s, Calendar calendar) throws SQLException {
-        return callableStatement.getDate(s,calendar);
+        return callableStatement.getDate(s, calendar);
     }
 
     @Override
     public Time getTime(String s, Calendar calendar) throws SQLException {
-        return callableStatement.getTime(s,calendar);
+        return callableStatement.getTime(s, calendar);
     }
 
     @Override
     public Timestamp getTimestamp(String s, Calendar calendar) throws SQLException {
-        return callableStatement.getTimestamp(s,calendar);
+        return callableStatement.getTimestamp(s, calendar);
     }
 
     @Override
@@ -947,37 +946,37 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public void setRowId(String s, RowId rowId) throws SQLException {
-        callableStatement.setRowId(s,rowId);
+        callableStatement.setRowId(s, rowId);
     }
 
     @Override
     public void setNString(String s, String s1) throws SQLException {
-        callableStatement.setNString(s,s1);
+        callableStatement.setNString(s, s1);
     }
 
     @Override
     public void setNCharacterStream(String s, Reader reader, long l) throws SQLException {
-        callableStatement.setNCharacterStream(s,reader,l);
+        callableStatement.setNCharacterStream(s, reader, l);
     }
 
     @Override
     public void setNClob(String s, NClob nClob) throws SQLException {
-        callableStatement.setNClob(s,nClob);
+        callableStatement.setNClob(s, nClob);
     }
 
     @Override
     public void setClob(String s, Reader reader, long l) throws SQLException {
-        callableStatement.setClob(s,reader,l);
+        callableStatement.setClob(s, reader, l);
     }
 
     @Override
     public void setBlob(String s, InputStream inputStream, long l) throws SQLException {
-        callableStatement.setBlob(s,inputStream,l);
+        callableStatement.setBlob(s, inputStream, l);
     }
 
     @Override
     public void setNClob(String s, Reader reader, long l) throws SQLException {
-        callableStatement.setNClob(s,reader,l);
+        callableStatement.setNClob(s, reader, l);
     }
 
     @Override
@@ -992,7 +991,7 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public void setSQLXML(String s, SQLXML sqlxml) throws SQLException {
-        callableStatement.setSQLXML(s,sqlxml);
+        callableStatement.setSQLXML(s, sqlxml);
     }
 
     @Override
@@ -1037,71 +1036,71 @@ public class PooledStatement implements  CallableStatement{
 
     @Override
     public void setBlob(String s, Blob blob) throws SQLException {
-        callableStatement.setBlob(s,blob);
+        callableStatement.setBlob(s, blob);
     }
 
     @Override
     public void setClob(String s, Clob clob) throws SQLException {
-        callableStatement.setClob(s,clob);
+        callableStatement.setClob(s, clob);
     }
 
     @Override
     public void setAsciiStream(String s, InputStream inputStream, long l) throws SQLException {
-        callableStatement.setAsciiStream(s,inputStream,l);
+        callableStatement.setAsciiStream(s, inputStream, l);
     }
 
     @Override
     public void setBinaryStream(String s, InputStream inputStream, long l) throws SQLException {
-        callableStatement.setBinaryStream(s,inputStream,l);
+        callableStatement.setBinaryStream(s, inputStream, l);
     }
 
     @Override
     public void setCharacterStream(String s, Reader reader, long l) throws SQLException {
-        callableStatement.setCharacterStream(s,reader,l);
+        callableStatement.setCharacterStream(s, reader, l);
     }
 
     @Override
     public void setAsciiStream(String s, InputStream inputStream) throws SQLException {
-        callableStatement.setAsciiStream(s,inputStream);
+        callableStatement.setAsciiStream(s, inputStream);
     }
 
     @Override
     public void setBinaryStream(String s, InputStream inputStream) throws SQLException {
-        callableStatement.setBinaryStream(s,inputStream);
+        callableStatement.setBinaryStream(s, inputStream);
     }
 
     @Override
     public void setCharacterStream(String s, Reader reader) throws SQLException {
-        callableStatement.setCharacterStream(s,reader);
+        callableStatement.setCharacterStream(s, reader);
     }
 
     @Override
     public void setNCharacterStream(String s, Reader reader) throws SQLException {
-        callableStatement.setNCharacterStream(s,reader);
+        callableStatement.setNCharacterStream(s, reader);
     }
 
     @Override
     public void setClob(String s, Reader reader) throws SQLException {
-        callableStatement.setClob(s,reader);
+        callableStatement.setClob(s, reader);
     }
 
     @Override
     public void setBlob(String s, InputStream inputStream) throws SQLException {
-        callableStatement.setBlob(s,inputStream);
+        callableStatement.setBlob(s, inputStream);
     }
 
     @Override
     public void setNClob(String s, Reader reader) throws SQLException {
-        callableStatement.setNClob(s,reader);
+        callableStatement.setNClob(s, reader);
     }
 
     @Override
     public <T> T getObject(int i, Class<T> aClass) throws SQLException {
-        return callableStatement.getObject(i,aClass);
+        return callableStatement.getObject(i, aClass);
     }
 
     @Override
     public <T> T getObject(String s, Class<T> aClass) throws SQLException {
-        return callableStatement.getObject(s,aClass);
+        return callableStatement.getObject(s, aClass);
     }
 }

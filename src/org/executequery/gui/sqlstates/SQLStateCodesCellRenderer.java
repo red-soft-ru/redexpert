@@ -20,53 +20,49 @@
 
 package org.executequery.gui.sqlstates;
 
-import java.awt.Component;
-import java.awt.Font;
-
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.table.TableCellRenderer;
-
 import org.executequery.Constants;
-import org.underworldlabs.swing.plaf.UIUtils;
+
+import javax.swing.*;
+import javax.swing.table.TableCellRenderer;
+import java.awt.*;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class SQLStateCodesCellRenderer extends JLabel 
-                                       implements TableCellRenderer {
+public class SQLStateCodesCellRenderer extends JLabel
+        implements TableCellRenderer {
 
     private static Font classHeaderFont;
-    
-    /** Creates a new instance of KeywordCellRenderer */
+
+    /**
+     * Creates a new instance of KeywordCellRenderer
+     */
     public SQLStateCodesCellRenderer() {
         sb = new StringBuilder();
     }
-    
+
     public Component getTableCellRendererComponent(JTable table,
                                                    Object value,
                                                    boolean isSelected,
                                                    boolean cellHasFocus,
-                                                   int row, 
+                                                   int row,
                                                    int col) {
 
         if (classHeaderFont == null) {
             Font font = table.getFont();
             classHeaderFont = font.deriveFont(Font.BOLD);
         }
-        
-        SQLStateCode code = (SQLStateCode)value;
+
+        SQLStateCode code = (SQLStateCode) value;
         setToolTipText(buildToolTip(code));
-        
+
         String subClass = code.getSqlStateSubClass();
         if (subClass.equals("000")) {
             setFont(classHeaderFont);
         } else {
             setFont(table.getFont());
         }
-        
+
         switch (col) {
             case 0:
                 setText(code.getSqlStateClass());
@@ -91,14 +87,16 @@ public class SQLStateCodesCellRenderer extends JLabel
 
         return this;
     }
-    
-    /** tool tip concat buffer */
+
+    /**
+     * tool tip concat buffer
+     */
     private StringBuilder sb;
-    
+
     private String buildToolTip(SQLStateCode code) {
         // reset
         sb.setLength(0);
-        
+
         // build the html display
         sb.append("<html>");
         sb.append(Constants.TABLE_TAG_START);
@@ -116,7 +114,7 @@ public class SQLStateCodesCellRenderer extends JLabel
         sb.append("</html>");
         return sb.toString();
     }
-    
+
     public boolean isOpaque() {
         return true;
     }

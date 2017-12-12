@@ -25,22 +25,24 @@ import javax.swing.tree.DefaultMutableTreeNode;
 /**
  * Simple root node object for tree displays.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DefaultTreeRootNode extends DefaultMutableTreeNode {
-    
+
     private String label;
-    
-    /** Creates a new instance of DefaultTreeRootNode */
+
+    /**
+     * Creates a new instance of DefaultTreeRootNode
+     */
     public DefaultTreeRootNode(String label) {
         super(label, true);
         this.label = label;
     }
-    
+
     public String toString() {
         return label;
     }
-    
+
 }
 
 

@@ -20,40 +20,40 @@
 
 package org.executequery.gui.menu;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.underworldlabs.util.MiscUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MenuItem {
 
     private static final String NULL_VALUE = "{-NULL-}";
-    
+
     private static final String SEPARATOR_ID = "separator";
 
     private String id;
-    
+
     private String mnemonic;
-    
+
     private String name;
-    
+
     private String implementingClass;
-    
+
     private String actionCommand;
-    
+
     private String acceleratorKey;
-    
+
     private String toolTip;
-    
+
     private String propertyKey;
 
     private MenuItem parent;
-    
+
     private List<MenuItem> children;
 
     private int index = -1;
-    
+
     public String getId() {
         return id;
     }
@@ -77,7 +77,7 @@ public class MenuItem {
     public boolean hasMnemonic() {
         return !MiscUtils.isNull(getMnemonic());
     }
-    
+
     public String getImplementingClass() {
         return implementingClass;
     }
@@ -97,19 +97,19 @@ public class MenuItem {
     public boolean hasActionCommand() {
         return !MiscUtils.isNull(getActionCommand());
     }
-    
+
     public String getAcceleratorKey() {
         return acceleratorKey;
     }
 
-    public void setAcceleratorKey(String acceleratorKey) {        
+    public void setAcceleratorKey(String acceleratorKey) {
         this.acceleratorKey = acceleratorKey;
     }
 
     public boolean isAcceleratorKeyNull() {
         return getAcceleratorKey() == null || NULL_VALUE.equals(getAcceleratorKey());
     }
-    
+
     public String getToolTip() {
         return toolTip;
     }
@@ -133,24 +133,24 @@ public class MenuItem {
     public boolean isSeparator() {
         return SEPARATOR_ID.equals(getId());
     }
-    
+
     public void add(MenuItem child) {
-        
+
         if (children == null) {
-            
+
             children = new ArrayList<MenuItem>();
         }
-        
+
         children.add(child);
     }
-    
+
     public boolean hasChildren() {
-        
+
         return (getChildren() != null && getChildren().size() > 0);
     }
-    
+
     public List<MenuItem> getChildren() {
-        
+
         return children;
     }
 
@@ -169,7 +169,7 @@ public class MenuItem {
     public boolean hasParent() {
         return (getParent() != null);
     }
-    
+
     public MenuItem getParent() {
         return parent;
     }
@@ -181,10 +181,10 @@ public class MenuItem {
     public int getMnemonicChar() {
 
         if (getMnemonic() == null) {
-            
+
             return 0;
         }
-        
+
         return getMnemonic().charAt(0);
     }
 
@@ -203,7 +203,7 @@ public class MenuItem {
     public boolean hasPropertyKey() {
         return StringUtils.isNotBlank(propertyKey);
     }
-    
+
 }
 
 

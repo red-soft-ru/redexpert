@@ -20,24 +20,27 @@
 
 package org.executequery.gui.browser.nodes;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.executequery.databaseobjects.DatabaseCatalog;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseSchema;
 import org.underworldlabs.jdbc.DataSourceException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DatabaseCatalogNode extends DatabaseObjectNode {
-    
-    /** the direct descendants of this object */
+
+    /**
+     * the direct descendants of this object
+     */
     private List<DatabaseObjectNode> children;
-    
-    /** Creates a new instance of DatabaseCatalogNode */
+
+    /**
+     * Creates a new instance of DatabaseCatalogNode
+     */
     public DatabaseCatalogNode(DatabaseCatalog catalog) {
         super(catalog);
     }
@@ -52,21 +55,20 @@ public class DatabaseCatalogNode extends DatabaseObjectNode {
         if (children != null) {
             return children;
         }
-        
+
         // check for schemas - then meta tags
-        DatabaseCatalog catalog = (DatabaseCatalog)getDatabaseObject();
-        
+        DatabaseCatalog catalog = (DatabaseCatalog) getDatabaseObject();
+
         // check for schemas
         List _children = catalog.getSchemas();
         if (_children == null || _children.isEmpty()) {
             // otherwise get meta tags
             _children = catalog.getMetaObjects();
-        }
-        else {
+        } else {
             int count = _children.size();
             children = new ArrayList<DatabaseObjectNode>(count);
             for (int i = 0; i < count; i++) {
-                DatabaseSchema schema = (DatabaseSchema)_children.get(i);
+                DatabaseSchema schema = (DatabaseSchema) _children.get(i);
                 children.add(new DatabaseSchemaNode(schema));
             }
             return children;
@@ -74,11 +76,11 @@ public class DatabaseCatalogNode extends DatabaseObjectNode {
 
         // check we have meta tags
         if (_children != null && !_children.isEmpty()) {
-            
+
             int count = _children.size();
             children = new ArrayList<DatabaseObjectNode>(count);
             for (int i = 0; i < count; i++) {
-                DatabaseMetaTag metaTag = (DatabaseMetaTag)_children.get(i);
+                DatabaseMetaTag metaTag = (DatabaseMetaTag) _children.get(i);
                 children.add(new DatabaseMetaTagNode(metaTag));
             }
             return children;
@@ -110,7 +112,7 @@ public class DatabaseCatalogNode extends DatabaseObjectNode {
         super.reset();
         children = null;
     }
-    
+
 }
 
 

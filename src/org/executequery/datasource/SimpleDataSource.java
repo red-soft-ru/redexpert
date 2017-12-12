@@ -20,42 +20,32 @@
 
 package org.executequery.datasource;
 
-import java.io.PrintWriter;
-import java.lang.management.ManagementFactory;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.logging.Logger;
-
-import javax.sql.DataSource;
-import javax.swing.*;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.ExecuteQuery;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.log.Log;
-import org.executequery.util.UserProperties;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.sql.DataSource;
+import java.io.PrintWriter;
+import java.lang.management.ManagementFactory;
+import java.net.URISyntaxException;
+import java.sql.*;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.logging.Logger;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-@SuppressWarnings({ "rawtypes" })
+@SuppressWarnings({"rawtypes"})
 public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
     private static final DriverLoader DRIVER_LOADER = new DefaultDriverLoader();
-    
+
     static final String PORT = "[port]";
     static final String SOURCE = "[source]";
     static final String HOST = "[host]";
@@ -70,20 +60,20 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
         this.databaseConnection = databaseConnection;
         if (databaseConnection.hasAdvancedProperties()) {
-            
+
             populateAdvancedProperties();
         }
 
         driver = loadDriver(databaseConnection.getJDBCDriver());
         if (driver == null) {
-            
+
             throw new DataSourceException("Error loading specified JDBC driver");
         }
-        
+
         url = generateUrl(databaseConnection);
         Log.info("JDBC Driver class: " + driver.getClass().getName());
     }
-    
+
     public Connection getConnection() throws SQLException {
 
         return getConnection(databaseConnection.getUserName(), databaseConnection.getUnencryptedPassword());
@@ -93,7 +83,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
         Properties advancedProperties = buildAdvancedProperties();
         if (StringUtils.isNotBlank(username)) {
-            
+
             advancedProperties.put("user", username);
         }
 
@@ -117,17 +107,17 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     private Properties buildAdvancedProperties() {
 
         Properties advancedProperties = new Properties();
-        for (Iterator<?> i = properties.keySet().iterator(); i.hasNext();) {
-            
+        for (Iterator<?> i = properties.keySet().iterator(); i.hasNext(); ) {
+
             String key = i.next().toString();
             advancedProperties.put(key, properties.get(key));
         }
-        
+
         if (!advancedProperties.isEmpty()) {
 
             Log.debug("Using advanced properties :: " + advancedProperties);
         }
-        
+
         return advancedProperties;
     }
 
@@ -135,7 +125,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
         return DRIVER_LOADER.load(databaseDriver);
     }
-    
+
     protected final String generateUrl(DatabaseConnection databaseConnection) {
 
         String url = databaseConnection.getURL();
@@ -143,30 +133,30 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         String connectionMethod = databaseConnection.getConnectionMethod();
 
         if (connectionMethod.equalsIgnoreCase("jdbc")) {
-            Log.info("Using user specified JDBC URL: "+url);
+            Log.info("Using user specified JDBC URL: " + url);
 
         } else {
 
-            url = databaseConnection.getJDBCDriver().getURL();            
+            url = databaseConnection.getJDBCDriver().getURL();
             Log.info("JDBC URL pattern: " + url);
 
             url = replacePart(url, databaseConnection.getHost(), HOST);
             url = replacePart(url, databaseConnection.getPort(), PORT);
             url = replacePart(url, databaseConnection.getSourceName(), SOURCE);
-            Log.info("JDBC URL generated: "+url);
+            Log.info("JDBC URL generated: " + url);
             Log.info("JDBC properties: " + properties);
-    
+
         }
 
         return url;
     }
 
     private String replacePart(String url, String value, String propertyName) {
-     
+
         if (url.contains(propertyName)) {
 
             if (MiscUtils.isNull(value)) {
-            
+
                 handleMissingInformationException();
             }
 
@@ -181,19 +171,19 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
         throw new DataSourceException(
                 "Insufficient information was provided to establish the connection.\n" +
-                "Please ensure all required details have been entered.");
+                        "Please ensure all required details have been entered.");
     }
 
     protected final void rethrowAsDataSourceException(Throwable e) {
-        
+
         throw new DataSourceException(e);
     }
 
     private void populateAdvancedProperties() {
 
         Properties advancedProperties = databaseConnection.getJdbcProperties();
-        
-        for (Iterator i = advancedProperties.keySet().iterator(); i.hasNext();) {
+
+        for (Iterator i = advancedProperties.keySet().iterator(); i.hasNext(); ) {
 
             String key = (String) i.next();
             if (key.equalsIgnoreCase("process_id") || key.equalsIgnoreCase("process_name"))
@@ -210,24 +200,24 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
-        
+
     }
 
     public int getLoginTimeout() throws SQLException {
-        
+
         return DriverManager.getLoginTimeout();
     }
-    
+
     public PrintWriter getLogWriter() throws SQLException {
-        
+
         return DriverManager.getLogWriter();
     }
-    
+
     public void setLoginTimeout(int timeout) throws SQLException {
-        
+
         DriverManager.setLoginTimeout(timeout);
     }
-    
+
     public void setLogWriter(PrintWriter writer) throws SQLException {
 
         DriverManager.setLogWriter(writer);
@@ -249,14 +239,14 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     }
 
     public String getDriverName() {
-        
+
         return driver.getClass().getName();
     }
 
-	public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
 
-	    return driver.getParentLogger();
-	}
+        return driver.getParentLogger();
+    }
 
 
 }

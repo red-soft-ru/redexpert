@@ -20,25 +20,18 @@
 
 package org.executequery.gui.connections;
 
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.io.File;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.gui.WidgetFactory;
 import org.underworldlabs.swing.ActionPanel;
 
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+
 public class ExportConnectionsPanelTwo extends ActionPanel {
-    
+
     private JTextField fileNameField;
 
     public ExportConnectionsPanelTwo() {
@@ -46,16 +39,16 @@ public class ExportConnectionsPanelTwo extends ActionPanel {
         super(new GridBagLayout());
         init();
     }
-    
+
     private void init() {
-        
+
         fileNameField = WidgetFactory.createTextField();
 
         JButton button = WidgetFactory.createInlineFieldButton("Browse");
         button.setActionCommand("browse");
         button.addActionListener(this);
         button.setMnemonic('r');
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0;
         gbc.gridx = 0;
@@ -69,7 +62,7 @@ public class ExportConnectionsPanelTwo extends ActionPanel {
         gbc.gridwidth = 3;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        add(new JLabel("Select the file to export the selections below."), gbc);        
+        add(new JLabel("Select the file to export the selections below."), gbc);
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.weightx = 0;
@@ -89,27 +82,27 @@ public class ExportConnectionsPanelTwo extends ActionPanel {
         gbc.weightx = 0;
         gbc.insets.left = 0;
         add(button, gbc);
-        
+
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 
         setPreferredSize(new Dimension(650, 500));
     }
 
     public boolean canProceed() {
-        
+
         if (StringUtils.isBlank(fileNameField.getText())) {
-            
+
             GUIUtilities.displayErrorMessage("You must select a file path to export to");
             return false;
         }
         return true;
     }
-    
+
     public String getExportPath() {
-        
+
         return fileNameField.getText();
     }
-    
+
     public void browse() {
 
         FileChooserDialog fileChooser = new FileChooserDialog();

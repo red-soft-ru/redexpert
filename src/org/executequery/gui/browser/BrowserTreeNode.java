@@ -20,28 +20,28 @@
 
 package org.executequery.gui.browser;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 import org.executequery.databaseobjects.NamedObject;
 
+import javax.swing.tree.DefaultMutableTreeNode;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class BrowserTreeNode extends DefaultMutableTreeNode {
-    
+
     private boolean typeParent;
     private boolean expanded;
 
     private BaseDatabaseObject _userObject;
 
     private NamedObject userObject;
-    
-    public BrowserTreeNode(NamedObject userObject, 
+
+    public BrowserTreeNode(NamedObject userObject,
                            boolean allowsChildren) {
         this(userObject, allowsChildren, true);
     }
 
-    public BrowserTreeNode(NamedObject userObject, 
+    public BrowserTreeNode(NamedObject userObject,
                            boolean allowsChildren,
                            boolean typeParent) {
         super(userObject, allowsChildren);
@@ -51,7 +51,7 @@ public class BrowserTreeNode extends DefaultMutableTreeNode {
 
     }
 
-    
+
     public int getNodeType() {
         return userObject.getType();
     }
@@ -81,7 +81,7 @@ public class BrowserTreeNode extends DefaultMutableTreeNode {
     public NamedObject getDatabaseObject() {
         return userObject;
     }
-    
+
     public BaseDatabaseObject getDatabaseUserObject() {
         return _userObject;
     }
@@ -93,7 +93,7 @@ public class BrowserTreeNode extends DefaultMutableTreeNode {
             return !allowsChildren;
         }
     }
-    
+
 }
 
 

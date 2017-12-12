@@ -22,12 +22,12 @@ package org.executequery.actions.queryeditor;
 
 import java.awt.event.ActionEvent;
 
-/** 
+/**
  * The Query Editor's execute as block command.
  *
- * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+ * @author Takis Diakoumis
+ * @version $Revision$
+ * @date $Date$
  */
 public class ExecuteAsBlockCommand extends AbstractQueryEditorCommand {
 
@@ -39,7 +39,7 @@ public class ExecuteAsBlockCommand extends AbstractQueryEditorCommand {
         }
 
     }
-    
+
 }
 
 

@@ -20,9 +20,7 @@
 
 package org.executequery.imageio;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Iterator;
+import org.executequery.ApplicationException;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -30,8 +28,9 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.stream.FileImageOutputStream;
-
-import org.executequery.ApplicationException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Iterator;
 
 public class DefaultJpegImageWriter extends AbstractImageWriter {
 
@@ -47,19 +46,19 @@ public class DefaultJpegImageWriter extends AbstractImageWriter {
 
         javax.imageio.ImageWriter writer = getImageWriter();
         if (writer == null) {
-            
+
             throw new ApplicationException("No writer found for output image type JPG");
         }
-        
+
         JPEGImageWriteParam param = (JPEGImageWriteParam) writer.getDefaultWriteParam();
-        
-        float quality = (jpegImageWriterInfo.getImageQuality() *10) / 100.0f;
-        
+
+        float quality = (jpegImageWriterInfo.getImageQuality() * 10) / 100.0f;
+
         param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
         param.setCompressionQuality(quality);
-        
+
         FileImageOutputStream output = null;
-        
+
         try {
 
             output = new FileImageOutputStream(jpegImageWriterInfo.getWriteToFile());
@@ -71,35 +70,36 @@ public class DefaultJpegImageWriter extends AbstractImageWriter {
         } catch (FileNotFoundException e) {
 
             handleException(e);
-            
+
         } catch (IOException e) {
 
             handleException(e);
-            
+
         } finally {
-            
+
             if (output != null) {
-                
+
                 try {
                     output.close();
-                } catch (IOException e) {}
+                } catch (IOException e) {
+                }
 
             }
-            
+
         }
 
     }
 
     private javax.imageio.ImageWriter getImageWriter() {
-        
-        for (Iterator<ImageWriter> i = ImageIO.getImageWritersByFormatName("JPG"); i.hasNext();) {
-            
+
+        for (Iterator<ImageWriter> i = ImageIO.getImageWritersByFormatName("JPG"); i.hasNext(); ) {
+
             return i.next();
         }
 
         return null;
     }
-    
+
 }
 
 /*

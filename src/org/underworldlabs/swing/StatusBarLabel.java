@@ -20,30 +20,39 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Graphics;
-
-import javax.swing.JLabel;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Status bar panel label.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class StatusBarLabel extends JLabel {
 
-    /** Indicates to paint the left border */
+    /**
+     * Indicates to paint the left border
+     */
     private boolean paintLeft;
 
-    /** Indicates to paint the right border */
+    /**
+     * Indicates to paint the right border
+     */
     private boolean paintRight;
 
-    /** Indicates to paint the top border */
+    /**
+     * Indicates to paint the top border
+     */
     private boolean paintTop;
 
-    /** Indicates to paint the bottom border */
+    /**
+     * Indicates to paint the bottom border
+     */
     private boolean paintBottom;
 
-    /** the label height */
+    /**
+     * the label height
+     */
     private int height;
 
     public StatusBarLabel(boolean paintTop, boolean paintLeft,
@@ -79,7 +88,7 @@ public class StatusBarLabel extends JLabel {
             g.drawLine(0, 0, 0, height);
         }
         if (paintRight) {
-            g.drawLine(width-1, 0, width-1, height);
+            g.drawLine(width - 1, 0, width - 1, height);
         }
 
     }

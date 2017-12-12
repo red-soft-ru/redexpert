@@ -20,44 +20,39 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Component;
-
-import javax.swing.DefaultCellEditor;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JList;
-import javax.swing.JTextField;
+import javax.swing.*;
+import java.awt.*;
 
 // from http://www.jroller.com/santhosh/date/20050607
-public class DefaultListCellEditor extends DefaultCellEditor implements ListCellEditor { 
+public class DefaultListCellEditor extends DefaultCellEditor implements ListCellEditor {
 
-    public DefaultListCellEditor(final JCheckBox checkBox){ 
-        
-        super(checkBox); 
-    } 
- 
-    public DefaultListCellEditor(final JComboBox comboBox){ 
-        
-        super(comboBox); 
-    } 
- 
-    public DefaultListCellEditor(final JTextField textField){ 
-        
-        super(textField); 
-    } 
- 
-    public Component getListCellEditorComponent(JList list, Object value, boolean isSelected, int index){ 
-        
+    public DefaultListCellEditor(final JCheckBox checkBox) {
+
+        super(checkBox);
+    }
+
+    public DefaultListCellEditor(final JComboBox comboBox) {
+
+        super(comboBox);
+    }
+
+    public DefaultListCellEditor(final JTextField textField) {
+
+        super(textField);
+    }
+
+    public Component getListCellEditorComponent(JList list, Object value, boolean isSelected, int index) {
+
         delegate.setValue(value);
 
         if (getComponent() instanceof JTextField) {
-            
-            ((JTextField)getComponent()).selectAll();
+
+            ((JTextField) getComponent()).selectAll();
         }
-        
-        return editorComponent; 
+
+        return editorComponent;
     }
-    
+
 }
 
 

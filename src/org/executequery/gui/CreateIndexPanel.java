@@ -20,32 +20,6 @@
 
 package org.executequery.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ItemEvent;
-import java.awt.event.KeyEvent;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableColumnModel;
-
 import org.executequery.ActiveComponent;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
@@ -75,24 +49,36 @@ import org.underworldlabs.swing.MoveListItemStrategy;
 import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.util.MiscUtils;
 
-/** 
+import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumnModel;
+import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
  * The Create Index panel.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CreateIndexPanel extends ActionPanel
-                              implements FocusComponentPanel,
-                                         ActiveComponent,
-                                         TableModelListener,
-                                         KeywordListener,
-                                         TextEditorContainer,
-                                         ItemSelectionListener {
-    
+        implements FocusComponentPanel,
+        ActiveComponent,
+        TableModelListener,
+        KeywordListener,
+        TextEditorContainer,
+        ItemSelectionListener {
+
     public static final String TITLE = "Create Index";
     public static final String FRAME_ICON = "NewIndex16.png";
-    
+
     private JComboBox schemaCombo;
-    private JComboBox connectionsCombo; 
+    private JComboBox connectionsCombo;
     private JComboBox tableCombo;
 
     private JTextField nameField;
@@ -105,13 +91,15 @@ public class CreateIndexPanel extends ActionPanel
     private SimpleSqlTextPanel sqlText;
 
     private JTable selectedTable;
-    
+
     private CreateIndexModel model;
-    
+
     private JButton moveUpButton;
     private JButton moveDownButton;
-    
-    /** the parent container */
+
+    /**
+     * the parent container
+     */
     private ActionContainer parent;
 
     private TableIndex tableIndex;
@@ -126,35 +114,35 @@ public class CreateIndexPanel extends ActionPanel
 
         this.parent = parent;
 
-        try  {
+        try {
 
             init();
 
         } catch (Exception e) {
-          
+
             e.printStackTrace();
         }
 
     }
-    
+
     private void init() throws Exception {
-        
+
         nameField = WidgetFactory.createTextField();
 
         connectionsCombo = WidgetFactory.createComboBox();
         schemaCombo = WidgetFactory.createComboBox();
         tableCombo = WidgetFactory.createComboBox();
-        
+
         combosGroup = new TableSelectionCombosGroup(
                 connectionsCombo, schemaCombo, tableCombo);
         combosGroup.addItemSelectionListener(this);
-        
+
         sqlText = new SimpleSqlTextPanel();
-        
+
         // build the table panel
         JPanel tablePanel = new JPanel(new GridBagLayout());
         tablePanel.setPreferredSize(new Dimension(480, 175));
-        
+
         createTableAndModel();
 
         TableColumnModel tcm = selectedTable.getColumnModel();
@@ -163,18 +151,18 @@ public class CreateIndexPanel extends ActionPanel
         tcm.getColumn(2).setMaxWidth(70);
 
         JScrollPane tableScroller = new JScrollPane(selectedTable);
-        
+
         // build the table's tools panel
         moveUpButton = ActionUtilities.createToolbarButton(
                 this,
                 "Up16.png",
-                "Move the selection up", 
+                "Move the selection up",
                 "moveColumnUp");
 
         moveDownButton = ActionUtilities.createToolbarButton(
                 this,
                 "Down16.png",
-                "Move the selection down", 
+                "Move the selection down",
                 "moveColumnDown");
 
         // add table panel components
@@ -195,16 +183,16 @@ public class CreateIndexPanel extends ActionPanel
         gbc.weighty = 1.0;
         gbc.weightx = 1.0;
         tablePanel.add(tableScroller, gbc);
-        
+
         // add all components
         gbc = new GridBagConstraints();
         JPanel mainPanel = new JPanel(new GridBagLayout());
-        
+
         WidgetFactory.addLabelFieldPair(mainPanel, "Connection:", connectionsCombo, gbc);
         WidgetFactory.addLabelFieldPair(mainPanel, "Schema:", schemaCombo, gbc);
         WidgetFactory.addLabelFieldPair(mainPanel, "Table:", tableCombo, gbc);
         WidgetFactory.addLabelFieldPair(mainPanel, "Index Name:", nameField, gbc);
-        
+
         gbc.insets.left = 0;
         gbc.insets.right = 0;
         gbc.insets.top = 0;
@@ -223,20 +211,20 @@ public class CreateIndexPanel extends ActionPanel
         gbc.weighty = 0.6;
         gbc.insets.bottom = 5;
         mainPanel.add(sqlText, gbc);
-        
+
         mainPanel.setBorder(BorderFactory.createEtchedBorder());
-        
+
         JPanel base = new JPanel(new BorderLayout());
 
         base.add(mainPanel, BorderLayout.CENTER);
 
         BottomButtonPanel buttonPanel = new BottomButtonPanel(this, "Create", "create-index", true);
         buttonPanel.setOkButtonActionCommand("doCreateIndex");
-        
+
         base.add(buttonPanel, BorderLayout.SOUTH);
-        
+
         // add the base to the panel
-        setBorder(BorderFactory.createEmptyBorder(4,4,4,4));
+        setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         add(base, BorderLayout.CENTER);
 
         nameField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -252,8 +240,8 @@ public class CreateIndexPanel extends ActionPanel
             }
 
         });
-        
-        setPreferredSize(new Dimension(750,480));
+
+        setPreferredSize(new Dimension(750, 480));
 
         // register as a keyword listener
         EventMediator.registerListener(this);
@@ -278,7 +266,7 @@ public class CreateIndexPanel extends ActionPanel
         uniqueCheck = new JCheckBox("Unique");
         bitmapCheck = new JCheckBox("Bitmap");
         unsortedCheck = new JCheckBox("Unsorted");
-        
+
         List<JCheckBox> checkBoxes = new ArrayList<JCheckBox>();
         checkBoxes.add(normalCheck);
         checkBoxes.add(uniqueCheck);
@@ -289,11 +277,11 @@ public class CreateIndexPanel extends ActionPanel
         ButtonGroup bg = new ButtonGroup();
 
         String actionCommand = "indexTypeSelected";
-        
+
         for (JCheckBox checkBox : checkBoxes) {
 
             bg.add(checkBox);
-            
+
             checkPanel.add(checkBox);
 
             checkBox.setActionCommand(actionCommand);
@@ -302,7 +290,7 @@ public class CreateIndexPanel extends ActionPanel
 
         return checkPanel;
     }
-    
+
     public void cleanup() {
 
         combosGroup.close();
@@ -315,13 +303,17 @@ public class CreateIndexPanel extends ActionPanel
         return (event instanceof DefaultKeywordEvent);
     }
 
-    /** Notification of a new keyword added to the list. */
+    /**
+     * Notification of a new keyword added to the list.
+     */
     public void keywordsAdded(KeywordEvent e) {
 
         sqlText.setSQLKeywords(true);
     }
 
-    /** Notification of a keyword removed from the list. */
+    /**
+     * Notification of a keyword removed from the list.
+     */
     public void keywordsRemoved(KeywordEvent e) {
 
         sqlText.setSQLKeywords(true);
@@ -340,22 +332,22 @@ public class CreateIndexPanel extends ActionPanel
         if (hasTableIndex()) {
 
             int indexType = TableIndex.NORMAL_INDEX;
-    
+
             if (uniqueCheck.isSelected()) {
-    
+
                 indexType = TableIndex.UNIQUE_INDEX;
-    
+
             } else if (bitmapCheck.isSelected()) {
-                
+
                 indexType = TableIndex.BITMAP_INDEX;
-    
+
             } else if (unsortedCheck.isSelected()) {
-                
+
                 indexType = TableIndex.UNSORTED_INDEX;
             }
-            
+
             tableIndex.setIndexType(indexType);
-            
+
             updateSqlText();
         }
 
@@ -367,7 +359,7 @@ public class CreateIndexPanel extends ActionPanel
     }
 
     public void doCreateIndex() {
-        
+
         GUIUtils.startWorker(new Runnable() {
             public void run() {
                 try {
@@ -383,7 +375,7 @@ public class CreateIndexPanel extends ActionPanel
         });
 
     }
-    
+
     private void createIndex() {
 
         DatabaseConnection dc = combosGroup.getSelectedHost().getDatabaseConnection();
@@ -409,8 +401,8 @@ public class CreateIndexPanel extends ActionPanel
 
                     StringBuilder sb = new StringBuilder();
                     sb.append("An error occurred applying the specified changes.").
-                       append("\n\nThe system returned:\n").
-                       append(MiscUtils.formatSQLError(e));
+                            append("\n\nThe system returned:\n").
+                            append(MiscUtils.formatSQLError(e));
 
                     GUIUtilities.displayExceptionErrorDialog(sb.toString(), e);
 
@@ -420,44 +412,44 @@ public class CreateIndexPanel extends ActionPanel
                 }
 
             }
-            
+
         } catch (Exception e) {
-          
+
             GUIUtilities.displayExceptionErrorDialog(
                     "Error:\n" + e.getMessage(), e);
         }
-        
+
     }
 
     private String createIndexStatement() {
 
         return sqlText.getSQLText();
     }
-    
+
     public void tableChanged(TableModelEvent event) {
 
         if (hasTableIndex()) {
-        
+
             if (event.getType() == TableModelEvent.UPDATE) {
-                
+
                 tableIndex.clearColumns();
-    
+
                 List<IndexedTableColumn> columns = model.getIndexedTableColumns();
-    
+
                 for (IndexedTableColumn tableColumn : columns) {
-                    
+
                     if (tableColumn.indexed) {
-                        
+
                         tableIndex.addColumn(tableColumn.column);
                     }
                 }
-                
+
             }
-            
+
             updateSqlText();
 
         } else {
-            
+
             sqlText.setSQLText("");
         }
 
@@ -466,49 +458,49 @@ public class CreateIndexPanel extends ActionPanel
     private void updateSqlText() {
 
         if (hasTableIndex()) {
-            
+
             GUIUtils.invokeLater(new Runnable() {
-       
+
                 public void run() {
-       
+
                     sqlText.setSQLText(tableIndex.getCreateSQLText());
                 }
-       
+
             });
-            
+
         }
     }
-    
+
     public void moveColumnUp() {
 
         moveStrategy().setList(model.getIndexedTableColumns());
-        
+
         int selectedIndex = getSelectedRow();
-        
+
         int newIndex = moveStrategy().moveUp(selectedIndex);
-        
+
         model.fireTableRowsUpdated(newIndex, selectedIndex);
-        
+
         setSelectedRow(newIndex);
     }
 
     public void moveColumnDown() {
 
         moveStrategy().setList(model.getIndexedTableColumns());
-        
+
         int selectedIndex = getSelectedRow();
-        
+
         int newIndex = moveStrategy().moveDown(selectedIndex);
-        
+
         model.fireTableRowsUpdated(selectedIndex, newIndex);
 
         setSelectedRow(newIndex);
     }
-    
-    private MoveListItemStrategy<IndexedTableColumn> moveStrategy() { 
-     
+
+    private MoveListItemStrategy<IndexedTableColumn> moveStrategy() {
+
         if (moveStrategy == null) {
-            
+
             moveStrategy = new MoveListItemStrategy<IndexedTableColumn>();
         }
 
@@ -516,50 +508,50 @@ public class CreateIndexPanel extends ActionPanel
     }
 
     private void setSelectedRow(int row) {
-     
+
         selectedTable.getSelectionModel().setSelectionInterval(row, row);
     }
-    
+
     private int getSelectedRow() {
 
         return selectedTable.getSelectedRow();
     }
-    
+
     // ------------------------------------------------
     // ----- TextEditorContainer implementations ------
     // ------------------------------------------------
-    
+
     /**
-     * Returns the SQL text pane as the TextEditor component 
+     * Returns the SQL text pane as the TextEditor component
      * that this container holds.
      */
     public TextEditor getTextEditor() {
 
         return sqlText;
     }
-    
-    
+
+
     private class CreateIndexModel extends AbstractTableModel {
-        
+
         private TableIndex tableIndex;
-        
+
         private List<IndexedTableColumn> columns;
-        
+
         private String[] header = {"Column Name", "Datatype", "Select"};
-        
+
         public List<IndexedTableColumn> getIndexedTableColumns() {
-            
+
             return columns;
         }
-        
+
         public void setTableIndex(TableIndex tableIndex) throws DataSourceException {
-            
+
             this.tableIndex = tableIndex;
-            
+
             if (columns != null) {
-                
+
                 columns.clear();
-                
+
             } else {
 
                 columns = new ArrayList<IndexedTableColumn>();
@@ -572,44 +564,44 @@ public class CreateIndexPanel extends ActionPanel
 
             fireTableDataChanged();
         }
-        
+
         public void clear() {
-            
+
             tableIndex = null;
 
             if (columns != null) {
 
                 columns.clear();
             }
-            
+
             fireTableDataChanged();
         }
-        
+
         public TableIndex getTableIndex() {
-            
+
             return tableIndex;
         }
-        
+
         public int getColumnCount() {
 
             return header.length;
         }
-        
+
         public int getRowCount() {
 
             if (columns != null) {
-            
+
                 return columns.size();
             }
 
             return 0;
         }
-        
+
         public Object getValueAt(int row, int col) {
 
             IndexedTableColumn indexedColumn = columns.get(row);
-            
-            switch(col) {
+
+            switch (col) {
                 case 0:
                     return indexedColumn.column.getName();
                 case 1:
@@ -617,23 +609,23 @@ public class CreateIndexPanel extends ActionPanel
                 case 2:
                     return indexedColumn.indexed;
             }
-            
+
             return indexedColumn;
         }
-        
+
         public void setValueAt(Object value, int row, int col) {
 
             if (col < 2) {
-                
+
                 return;
             }
 
             IndexedTableColumn indexedColumn = columns.get(row);
-            indexedColumn.indexed = ((Boolean)value).booleanValue();
-            
+            indexedColumn.indexed = ((Boolean) value).booleanValue();
+
             fireTableRowsUpdated(row, row);
         }
-        
+
         public boolean isCellEditable(int row, int col) {
 
             return (col == 2);
@@ -655,8 +647,8 @@ public class CreateIndexPanel extends ActionPanel
         }
 
     } // CreateIndexModel
-    
-    
+
+
     private static class IndexedTableColumn {
 
         String columnName;
@@ -671,20 +663,20 @@ public class CreateIndexPanel extends ActionPanel
         }
 
     } // IndexTableColumn
-    
-    
+
+
     public String getDisplayName() {
 
         return "";
     }
 
     public String toString() {
-        
+
         return TITLE;
     }
 
     public void itemStateChanging(ItemEvent e) {
-        
+
         parent.block();
     }
 
@@ -700,31 +692,31 @@ public class CreateIndexPanel extends ActionPanel
                 tableIndex.setName(nameField.getText());
 
                 model.setTableIndex(tableIndex);
-    
+
                 indexTypeSelected();
-                
+
                 updateSqlText();
-                
+
             } else {
 
                 if (model != null) {
-                
+
                     model.clear();
                 }
 
             }
 
         } catch (DataSourceException e) {
-            
+
             Log.error("Error on table selection for index", e);
 
         } finally {
-        
+
             parent.unblock();
         }
-        
+
     }
-    
+
 }
 
 

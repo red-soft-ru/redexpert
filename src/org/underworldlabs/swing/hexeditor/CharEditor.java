@@ -1,17 +1,25 @@
 package org.underworldlabs.swing.hexeditor;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.datatransfer.*;
-import java.awt.event.*;
-import java.io.UnsupportedEncodingException;
-import java.util.*;
-
 import org.executequery.gui.table.CreateTableSQLSyntax;
-import org.underworldlabs.swing.hexeditor.bdoc.*;
+import org.underworldlabs.swing.hexeditor.bdoc.BinaryDocument;
+import org.underworldlabs.swing.hexeditor.bdoc.ByteSpan;
+import org.underworldlabs.swing.hexeditor.bdoc.ContentChangedEvent;
+import org.underworldlabs.swing.hexeditor.bdoc.Location;
 import org.underworldlabs.swing.hexeditor.textgrid.*;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.KeyEvent;
+import java.io.UnsupportedEncodingException;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Observable;
+import java.util.Observer;
 
 public class CharEditor extends TextGrid implements BinaryEditor {
 
@@ -381,7 +389,7 @@ public class CharEditor extends TextGrid implements BinaryEditor {
                     byteValue = Character.toString(keyChar).getBytes()[0];
                 else try {
                     byte[] mas = Character.toString(keyChar).getBytes(charset);
-                    byteValue = mas[0]&0xFF;
+                    byteValue = mas[0] & 0xFF;
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                     byteValue = Character.toString(keyChar).getBytes()[0];

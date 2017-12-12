@@ -20,82 +20,89 @@
 
 package org.executequery.gui.importexport;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import org.underworldlabs.swing.MultiLineLabel;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.ButtonGroup;
-import javax.swing.JLabel;
-import javax.swing.JRadioButton;
-
-import org.underworldlabs.swing.MultiLineLabel;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class ImportExportXMLPanel_1 extends AbstractImportExportPanelOne  {
-    
-    /** single table transfer radio button */
+public class ImportExportXMLPanel_1 extends AbstractImportExportPanelOne {
+
+    /**
+     * single table transfer radio button
+     */
     private JRadioButton singleRadio;
-    
-    /** multiple table transfer radio button */
+
+    /**
+     * multiple table transfer radio button
+     */
     private JRadioButton multipleRadio;
-    
-    /** multiple table single file transfer radio button */
+
+    /**
+     * multiple table single file transfer radio button
+     */
     private JRadioButton singleFileRadio;
-    
-    /** multiple table multiple file transfer radio button */
+
+    /**
+     * multiple table multiple file transfer radio button
+     */
     private JRadioButton multipleFileRadio;
-    
-    /** The parent controller for this process */
+
+    /**
+     * The parent controller for this process
+     */
     private ImportExportDataProcess parent;
-    
-    /** <p>Creates a new instance with the specified parent
-     *  object as the controller
+
+    /**
+     * <p>Creates a new instance with the specified parent
+     * object as the controller
      *
-     *  @param the parent object
+     * @param the parent object
      */
     public ImportExportXMLPanel_1(ImportExportDataProcess parent) {
         super(new GridBagLayout());
         this.parent = parent;
-        
+
         try {
             jbInit();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
-    /** <p>Initialises the state of this instance. */
+
+    /**
+     * <p>Initialises the state of this instance.
+     */
     private void jbInit() throws Exception {
         singleRadio = new JRadioButton("Single Table");
         multipleRadio = new JRadioButton("Multiple Tables");
-        
+
         singleRadio.setMnemonic('S');
         multipleRadio.setMnemonic('M');
-        
+
         ButtonGroup bg1 = new ButtonGroup();
         bg1.add(singleRadio);
         bg1.add(multipleRadio);
         singleRadio.setSelected(true);
-        
+
         singleFileRadio = new JRadioButton("One file for all tables");
         multipleFileRadio = new JRadioButton("One file per table");
-        
+
         ButtonGroup bg2 = new ButtonGroup();
         bg2.add(singleFileRadio);
         bg2.add(multipleFileRadio);
         singleFileRadio.setSelected(true);
-        
+
         singleFileRadio.setEnabled(false);
         multipleFileRadio.setEnabled(false);
-        
+
         final JLabel typeLabel = new JLabel("Select multiple table transfer type.");
         typeLabel.setEnabled(false);
-        
+
         ActionListener radioListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 singleFileRadio.setEnabled(multipleRadio.isSelected());
@@ -105,22 +112,22 @@ public class ImportExportXMLPanel_1 extends AbstractImportExportPanelOne  {
         };
         singleRadio.addActionListener(radioListener);
         multipleRadio.addActionListener(radioListener);
-        
+
         String importExportTip = null;
         int type = parent.getTransferType();
         if (type == ImportExportDataProcess.EXPORT) {
-          
+
             importExportTip = bundledString("ImportExportXMLPanel.exportTip");
 
         } else if (type == ImportExportDataProcess.IMPORT) {
-            
+
             importExportTip = bundledString("ImportExportXMLPanel.importTip");
         }
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy++;
         gbc.gridx = 0;
-        gbc.insets = new Insets(7,5,5,5);
+        gbc.insets = new Insets(7, 5, 5, 5);
         gbc.anchor = GridBagConstraints.NORTHWEST;
         add(new JLabel("Connection:"), gbc);
         gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -151,14 +158,15 @@ public class ImportExportXMLPanel_1 extends AbstractImportExportPanelOne  {
         gbc.weighty = 1.0;
         gbc.gridy++;
         add(multipleFileRadio, gbc);
-        
+
         setPreferredSize(parent.getChildDimension());
     }
-    
-    /** <p>Returns the type of transfer - single or
-     *  multiple table.
+
+    /**
+     * <p>Returns the type of transfer - single or
+     * multiple table.
      *
-     *  @return the type of transfer
+     * @return the type of transfer
      */
     public int getTableTransferType() {
         if (singleRadio.isSelected())
@@ -166,11 +174,12 @@ public class ImportExportXMLPanel_1 extends AbstractImportExportPanelOne  {
         else
             return ImportExportDataProcess.MULTIPLE_TABLE;
     }
-    
-    /** <p>Returns the type of multiple table
-     *  transfer - single or multiple file.
+
+    /**
+     * <p>Returns the type of multiple table
+     * transfer - single or multiple file.
      *
-     *  @return the type of multiple table transfer
+     * @return the type of multiple table transfer
      */
     public int getMutlipleTableTransferType() {
         if (singleFileRadio.isSelected())
@@ -178,7 +187,7 @@ public class ImportExportXMLPanel_1 extends AbstractImportExportPanelOne  {
         else
             return ImportExportDataProcess.MULTIPLE_FILE;
     }
-    
+
 }
 
 

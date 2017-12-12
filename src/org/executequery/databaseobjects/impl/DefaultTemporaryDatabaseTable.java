@@ -42,7 +42,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseObject {
         Statement statement = null;
         int type = -1;
         try {
-             statement = defaultDatabaseTable.getHost().getConnection().createStatement();
+            statement = defaultDatabaseTable.getHost().getConnection().createStatement();
 
             ResultSet resultSet = statement.executeQuery("Select RDB$RELATION_TYPE FROM RDB$RELATIONS R \n" +
                     "WHERE R.RDB$RELATION_NAME = '" + defaultDatabaseTable.getName() + "'");

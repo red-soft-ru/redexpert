@@ -25,7 +25,7 @@ import java.awt.event.ActionEvent;
 /**
  * Command to execute the editor's selected text.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ExecuteSelectionCommand extends AbstractQueryEditorCommand {
 
@@ -35,9 +35,9 @@ public class ExecuteSelectionCommand extends AbstractQueryEditorCommand {
 
             queryEditor().executeSelection();
         }
-        
+
     }
-    
+
 }
 
 

@@ -20,9 +20,9 @@
 
 package org.executequery.repository;
 
-import java.util.List;
-
 import org.executequery.databasemediators.DatabaseConnection;
+
+import java.util.List;
 
 public interface DatabaseConnectionRepository extends Repository {
 

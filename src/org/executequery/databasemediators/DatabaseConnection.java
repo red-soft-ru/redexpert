@@ -20,22 +20,22 @@
 
 package org.executequery.databasemediators;
 
+import org.executequery.gui.browser.ConnectionsFolder;
+
 import java.io.Serializable;
 import java.util.Properties;
 
-import org.executequery.gui.browser.ConnectionsFolder;
-
 /**
- *  <p>This class maintains the necessary information for each
- *  saved database connection.<br>
- *  Each saved connection appears by name within the
- *  saved connections drop-down box displayed on respective
- *  windows.
+ * <p>This class maintains the necessary information for each
+ * saved database connection.<br>
+ * Each saved connection appears by name within the
+ * saved connections drop-down box displayed on respective
+ * windows.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface DatabaseConnection extends Serializable {
-    
+
     boolean isPasswordStored();
 
     void setPasswordStored(boolean storePwd);

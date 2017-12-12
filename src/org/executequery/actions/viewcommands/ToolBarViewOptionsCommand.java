@@ -20,27 +20,26 @@
 
 package org.executequery.actions.viewcommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.EventMediator;
 import org.executequery.event.DefaultUserPreferenceEvent;
 import org.executequery.event.UserPreferenceEvent;
 import org.executequery.toolbars.ToolBarManager;
 import org.underworldlabs.swing.toolbar.ToolBarProperties;
 
+import java.awt.event.ActionEvent;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ToolBarViewOptionsCommand extends AbstractViewOptionsCommand {
-    
+
     public void viewBrowserTools(ActionEvent e) {
 
         setToolBarVisible(ToolBarManager.BROWSER_TOOLS, selectionFromEvent(e));
     }
 
     public void viewFileTools(ActionEvent e) {
-        
+
         setToolBarVisible(ToolBarManager.FILE_TOOLS, selectionFromEvent(e));
     }
 
@@ -50,7 +49,7 @@ public class ToolBarViewOptionsCommand extends AbstractViewOptionsCommand {
     }
 
     public void viewSearchTools(ActionEvent e) {
-        
+
         setToolBarVisible(ToolBarManager.SEARCH_TOOLS, selectionFromEvent(e));
     }
 
@@ -60,7 +59,7 @@ public class ToolBarViewOptionsCommand extends AbstractViewOptionsCommand {
     }
 
     public void viewImportExportTools(ActionEvent e) {
-        
+
         setToolBarVisible(ToolBarManager.IMPORT_EXPORT_TOOLS, selectionFromEvent(e));
     }
 
@@ -72,7 +71,7 @@ public class ToolBarViewOptionsCommand extends AbstractViewOptionsCommand {
     private void setToolBarVisible(String name, boolean visible) {
 
         ToolBarProperties.setToolBarVisible(name, visible);
-        
+
         EventMediator.fireEvent(
                 new DefaultUserPreferenceEvent(
                         this, name, UserPreferenceEvent.TOOL_BAR));

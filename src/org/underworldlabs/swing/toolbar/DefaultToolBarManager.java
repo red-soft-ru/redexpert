@@ -20,55 +20,61 @@
 
 package org.underworldlabs.swing.toolbar;
 
+import org.underworldlabs.Constants;
+import org.underworldlabs.swing.RolloverButton;
+import org.underworldlabs.swing.actions.ActionBuilder;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import org.underworldlabs.Constants;
-import org.underworldlabs.swing.RolloverButton;
-import org.underworldlabs.swing.actions.ActionBuilder;
-
 /**
  * Tool bar manager class for managing and creating
  * tool bars and associated components.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DefaultToolBarManager {
-    
-    /** All tool bars added */
+
+    /**
+     * All tool bars added
+     */
     private Map<String, ToolBar> toolBars;
 
-    /** The tool bar base panel */
+    /**
+     * The tool bar base panel
+     */
     private ToolBarBase toolBarBase;
 
-    /** The button comparator */
+    /**
+     * The button comparator
+     */
     private ButtonComparator buttonComparator;
 
     /**
      * Creates a new instance of DefaultToolBarManager.
      * The toolsConfigPath variable may be null and is usually
-     * a user defined/modified file system path differing from the 
+     * a user defined/modified file system path differing from the
      * defaults specified as a package resource XML path.
      *
-     * @param toolsConfigPath - the user XML conf file path
+     * @param toolsConfigPath          - the user XML conf file path
      * @param defaultToolsResourcePath - the default XML conf resource file
      */
-    public DefaultToolBarManager(String toolsConfigPath, 
+    public DefaultToolBarManager(String toolsConfigPath,
                                  String defaultToolsResourcePath) {
         ToolBarProperties.init(toolsConfigPath, defaultToolsResourcePath);
-        
+
         // initialise the tool bar cache
         toolBars = new HashMap<String, ToolBar>();
-        
+
         // initialise the tools base panel
         toolBarBase = new ToolBarBase(ToolBarProperties.getNextToolbarRow());
-        
+
         // button comparator for sorting
         buttonComparator = new ButtonComparator();
     }
-    
+
     /**
      * Returns the tool bar base panel.
      */
@@ -92,55 +98,53 @@ public class DefaultToolBarManager {
         toolBarBase.repaint();
         toolBarBase.revalidate();
     }
-    
+
     /**
      * Builds (or rebuilds) the tool bar with the specified name
      * and adds it to the tool bar base panel and local cache.
      *
-     * @param name - the name of the tool bar as it appears in the
-     *               XML tool bar conf file
+     * @param name    - the name of the tool bar as it appears in the
+     *                XML tool bar conf file
      * @param rebuild - whether this is a rebuild of an existing tool bar
      */
     protected void buildToolBar(String name, boolean rebuild) {
         ToolBarWrapper eqtb = ToolBarProperties.getToolBar(name);
-        
+
         if (!eqtb.isVisible() || !eqtb.hasButtons()) {
             return;
         }
-        
+
         ToolBar toolBar = null;
         if (rebuild) {
-            toolBar = (ToolBar)toolBars.get(name);
+            toolBar = (ToolBar) toolBars.get(name);
 
             if (toolBar != null) {
                 toolBar.removeAllButtons();
                 toolBar.invalidate();
-            }
-            else {
+            } else {
                 toolBar = new ToolBar(toolBarBase, name);
                 toolBars.put(name, toolBar);
             }
-            
-        }
-        else {
+
+        } else {
             toolBar = new ToolBar(toolBarBase, name);
             toolBars.put(name, toolBar);
         }
-        
+
         Vector buttons = eqtb.getButtonsVector();
         Collections.sort(buttons, buttonComparator);
-        
+
         RolloverButton button;
-        
+
         for (int i = 0, k = buttons.size(); i < k; i++) {
 
-            ToolBarButton tb = (ToolBarButton)buttons.get(i);
-            
+            ToolBarButton tb = (ToolBarButton) buttons.get(i);
+
             if (!tb.isVisible()) {
-            
+
                 continue;
             }
-            
+
             if (tb.isSeparator()) {
 
                 toolBar.addSeparator();
@@ -148,13 +152,13 @@ public class DefaultToolBarManager {
             } else {
 
                 button = new RolloverButton(ActionBuilder.get(tb.getActionId()),
-                                           tb.getName());
+                        tb.getName());
                 button.setText(Constants.EMPTY);
                 toolBar.addButton(button);
             }
 
         }
-        
+
         toolBar.buildToolBar();
         toolBarBase.addToolBar(toolBar, eqtb.getConstraints());
     }

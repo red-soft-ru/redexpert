@@ -20,15 +20,15 @@
 
 package org.executequery.databaseobjects;
 
-import java.util.List;
-
 import org.executequery.databaseobjects.impl.ColumnConstraint;
+
+import java.util.List;
 
 /**
  * Defines a database column. This may be a column as defined by
  * the meta data and not limited to table columns.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface DatabaseColumn extends DatabaseObjectElement {
 

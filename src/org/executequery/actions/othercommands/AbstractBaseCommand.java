@@ -20,13 +20,11 @@
 
 package org.executequery.actions.othercommands;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
-
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.BaseCommand;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
 
 /**
  * This is the base class for the action library. All
@@ -40,61 +38,63 @@ import org.underworldlabs.swing.actions.BaseCommand;
  * string and icon. The developer simply needs to provide
  * the proper command.<br>
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public abstract class AbstractBaseCommand extends AbstractAction implements BaseCommand {
-    
+
     public AbstractBaseCommand() {
         super();
     }
-    
+
     /**
-     *  This constructor creates an action without an icon.
+     * This constructor creates an action without an icon.
      *
-     *  @param name the action's name
+     * @param name the action's name
      */
     public AbstractBaseCommand(String name) {
         super(name);
     }
-    
+
     /**
-     *  This constructor creates an action with an icon but no name.
-     *  (for buttons that require only an icon)
+     * This constructor creates an action with an icon but no name.
+     * (for buttons that require only an icon)
      *
-     *  @param icon the action's icon
+     * @param icon the action's icon
      */
     public AbstractBaseCommand(Icon icon) {
         super(null, icon);
     }
-    
+
     /**
-     *  This constructor creates an action with an icon.
+     * This constructor creates an action with an icon.
      *
-     *  @param name the action's name
-     *  @param icon the action's icon
+     * @param name the action's name
+     * @param icon the action's icon
      */
     public AbstractBaseCommand(String name, Icon icon) {
         super(name, icon);
     }
-    
+
     /**
-     *  <p>ActionPerformed is what executed the command.<br>
-     *  ActionPerformed is called whenever the action is acted upon.
-     *  @param e the action event
+     * <p>ActionPerformed is what executed the command.<br>
+     * ActionPerformed is called whenever the action is acted upon.
+     *
+     * @param e the action event
      */
     public void actionPerformed(ActionEvent e) {
         execute(e);
     }
-    
-    /** <p>Performs the execution for this action.
+
+    /**
+     * <p>Performs the execution for this action.
      *
-     *  @param the action event
+     * @param the action event
      */
     public abstract void execute(ActionEvent e);
-    
+
     protected String bundledString(String key) {
         return Bundles.get(getClass(), key);
     }
-    
+
 }
 

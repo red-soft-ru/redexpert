@@ -20,20 +20,14 @@
 
 package org.executequery.base;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import org.underworldlabs.swing.menu.MenuItemFactory;
+import org.underworldlabs.swing.plaf.UIUtils;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.MouseInputListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -41,51 +35,45 @@ import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JViewport;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.MouseInputListener;
-
-import org.underworldlabs.swing.menu.MenuItemFactory;
-import org.underworldlabs.swing.plaf.UIUtils;
-
 /**
  * Central tab pane with scroll and menu buttons.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class ScrollingTabPane extends AbstractTabPane 
-                              implements SwingConstants {
-    
-    /** the tab panel */
+public class ScrollingTabPane extends AbstractTabPane
+        implements SwingConstants {
+
+    /**
+     * the tab panel
+     */
     private TabPanel tabPanel;
-    
-    /** the viewport for tab scrolling */
+
+    /**
+     * the viewport for tab scrolling
+     */
     private ScrollableTabViewport viewport;
-    
-    /** the tab scrolling panel */
+
+    /**
+     * the tab scrolling panel
+     */
     private JPanel scrollingPanel;
-    
-    /** the scroll button panel */
+
+    /**
+     * the scroll button panel
+     */
     private ScrollButtonPanel scrollButtonPanel;
-    
-    /** the tab popup menu */
+
+    /**
+     * the tab popup menu
+     */
     private TabPopupMenu tabPopupMenu;
-    
-    /** the tab selection popup menu */
+
+    /**
+     * the tab selection popup menu
+     */
     private TabSelectionPopupMenu tabSelectionPopupMenu;
-    
-    /** 
+
+    /**
      * Creates a new instance of DockedTabPane with
      * the specified parent container
      *
@@ -100,7 +88,9 @@ public class ScrollingTabPane extends AbstractTabPane
         parent.tabPaneFocusChange(this);
     }
 
-    /** Initialises the state of this object */
+    /**
+     * Initialises the state of this object
+     */
     private void init() {
         super.initComponents();
         // panel where actual tabs are drawn
@@ -110,16 +100,16 @@ public class ScrollingTabPane extends AbstractTabPane
         viewport.setView(tabPanel);
 
         scrollButtonPanel = new ScrollButtonPanel();
-        
+
         scrollingPanel = new JPanel(new BorderLayout());
         scrollingPanel.add(viewport, BorderLayout.CENTER);
         scrollingPanel.add(scrollButtonPanel, BorderLayout.EAST);
 
         setTabPanel(scrollingPanel);
-        
+
         componentPanel.setBorder(null);
         add(componentPanel, BorderLayout.CENTER);
-        
+
         setBorder(BorderFactory.createLineBorder(tabPanel.controlShadow));
 
         viewport.movePanel(0);
@@ -134,7 +124,7 @@ public class ScrollingTabPane extends AbstractTabPane
     }
 
     /**
-     * Sets the title at index to title which can be null. 
+     * Sets the title at index to title which can be null.
      * An internal exception is raised if there is no tab at that index.
      *
      * @param the tab index where the title should be set
@@ -150,25 +140,25 @@ public class ScrollingTabPane extends AbstractTabPane
         tabPanel.repaint();
     }
 
-    /** 
+    /**
      * Adds the specified tab component to the pane.
      *
      * @param the component to be added
      */
-    public void addTab(TabComponent tabComponent) {        
+    public void addTab(TabComponent tabComponent) {
         if (components.size() == 0) {
             tabPanel.setVisible(true);
             componentPanel.setVisible(true);
         }
 
         components.add(tabComponent);
-        
+
         // make sure the title is unique
         String suffix = getTitleSuffix(tabComponent);
         if (suffix != null) {
             tabComponent.setTitleSuffix(suffix);
         }
-        
+
         Component component = tabComponent.getComponent();
 
         String layoutName = tabComponent.getLayoutName();
@@ -188,9 +178,9 @@ public class ScrollingTabPane extends AbstractTabPane
     }
 
     /**
-     * Returns whether the specified x-y coordinates 
+     * Returns whether the specified x-y coordinates
      * intersect the tab area (tab panel).
-     * 
+     *
      * @param the x coordinate
      * @param the x coordinate
      * @return true if the point intersects, false otherwise
@@ -198,7 +188,7 @@ public class ScrollingTabPane extends AbstractTabPane
     protected boolean intersectsTabArea(int x, int y) {
         return tabPanel.getBounds().contains(x, y);
     }
-    
+
     /**
      * Calculates the close icon rectangle for the specified
      * tab bounds.
@@ -229,12 +219,12 @@ public class ScrollingTabPane extends AbstractTabPane
 
     /**
      * Returns the index in the tab pane of the specified
-     * tab rectangle. if the specified tab rectangle is 
+     * tab rectangle. if the specified tab rectangle is
      * not in the tab pane, -1 is returned.
      *
      * @param the tab rectangle
      * @return the index of the tab rectangle or -1 if its
-     *         not present
+     * not present
      */
     protected int getTabRectangleIndex(Rectangle tabRect) {
         for (int i = 0; i < tabRects.length; i++) {
@@ -246,7 +236,7 @@ public class ScrollingTabPane extends AbstractTabPane
     }
 
     /**
-     * Returns the tab component object at the 
+     * Returns the tab component object at the
      * specified x and y coordinate.
      *
      * @param x coordinate
@@ -261,7 +251,7 @@ public class ScrollingTabPane extends AbstractTabPane
         }
         return -1;
     }
-    
+
     /**
      * Returns the tab count for this component.
      *
@@ -273,7 +263,7 @@ public class ScrollingTabPane extends AbstractTabPane
         }
         return 0;
     }
-    
+
     /**
      * Sets the selected index to that specified.
      *
@@ -286,27 +276,26 @@ public class ScrollingTabPane extends AbstractTabPane
             // ------------
             // the selected index may however be invalid 
             // after a close others command - so check
-            
+
             if (selectedIndex < components.size()) {
 
                 TabComponent tabComponent = components.get(selectedIndex);
                 if (tabComponent.getComponent() instanceof TabView) {
-                    TabView dockedView = (TabView)tabComponent.getComponent();
+                    TabView dockedView = (TabView) tabComponent.getComponent();
                     if (dockedView.tabViewDeselected()) {
                         fireTabDeselected(new DockedTabEvent(tabComponent));
-                    }
-                    else {
+                    } else {
                         return;
                     }
                 }
 
             }
         }
-        
+
         selectedIndex = index;
         TabComponent tabComponent = components.get(index);
         cardLayout.show(componentPanel, tabComponent.getLayoutName());
-        
+
         // make sure we can see the selected tab in full
         ensureIndexVisible(index);
 
@@ -331,9 +320,9 @@ public class ScrollingTabPane extends AbstractTabPane
         focusGained();
         fireTabSelected(new DockedTabEvent(components.get(index)));
     }
-    
+
     /**
-     * Ensures the visibility of the tab at the specified 
+     * Ensures the visibility of the tab at the specified
      * index within the scrolling viewport.
      *
      * @param the tab index
@@ -341,13 +330,13 @@ public class ScrollingTabPane extends AbstractTabPane
     protected void ensureIndexVisible(int index) {
         // make sure we can see the selected tab in full
         tabPanel.calculateTabRects(components.size());
-        
+
         Rectangle tabRect = tabRects[index];
         Rectangle viewRect = new Rectangle(
-                                    viewport.getViewPosition().x, 
-                                    0, 
-                                    viewport.getWidth(),
-                                    viewport.getHeight());
+                viewport.getViewPosition().x,
+                0,
+                viewport.getWidth(),
+                viewport.getHeight());
 
         // check if all the tabs fit in the view
         if (tabPanel.getWidth() <= viewRect.width) {
@@ -357,9 +346,9 @@ public class ScrollingTabPane extends AbstractTabPane
         else if (!viewRect.contains(tabRect)) {
             int x = ((tabRect.x - 5) < 0) ? 0 : (tabRect.x - 5);
             viewport.setViewPosition(new Point(x, 0));
-        }        
+        }
     }
-    
+
     /**
      * Removes all tab components except that at the
      * specified index.
@@ -386,15 +375,17 @@ public class ScrollingTabPane extends AbstractTabPane
         viewport.setViewPosition(new Point(0, 0));
     }
 
-    /** 
+    /**
      * Overide to do nothing.
      */
-    protected void fireTabMinimised(DockedTabEvent e) {}
+    protected void fireTabMinimised(DockedTabEvent e) {
+    }
 
-    /** 
+    /**
      * Overide to do nothing.
      */
-    protected void fireTabRestored(DockedTabEvent e) {}
+    protected void fireTabRestored(DockedTabEvent e) {
+    }
 
     /**
      * Removes all tab components from this panel
@@ -412,14 +403,14 @@ public class ScrollingTabPane extends AbstractTabPane
             closeTabComponent(names[i]);
         }
         names = null;
-        
+
         if (components.size() == 0) {
             viewport.setViewPosition(new Point(0, 0));
             viewport.validate();
             viewport.repaint();
         }
     }
-    
+
     /**
      * Cleanup method following removal of all tabs.
      */
@@ -434,7 +425,7 @@ public class ScrollingTabPane extends AbstractTabPane
 
         scrollButtonPanel.setVisible(false);
     }
-    
+
     /**
      * Removes the tab from the panel at the specified index.
      *
@@ -452,23 +443,23 @@ public class ScrollingTabPane extends AbstractTabPane
 
         // remove from the component cache
         components.remove(index);
-       
+
         // remove from the layout
         cardLayout.removeLayoutComponent(removed.getComponent());
-        
+
         // remove from the base panel
         componentPanel.remove(removed.getComponent());
-        
+
         // remove from the popup menu
         tabSelectionPopupMenu.removeTabMenuItem(index);
-        
+
         int tabCount = components.size();
         if (tabCount == 0) {
             allTabsRemoved();
             fireTabClosed(new DockedTabEvent(removed));
             return;
         }
-        
+
         // fire the close event
         fireTabClosed(new DockedTabEvent(removed));
 
@@ -497,14 +488,14 @@ public class ScrollingTabPane extends AbstractTabPane
         fireTabSelected(new DockedTabEvent(tabComponent));
         removed = null;
     }
-    
+
     // -------------------------------------------------
     // scrolling panel controls
     // -------------------------------------------------
 
     private class ScrollableTabViewport extends JViewport
-                                        implements ChangeListener {
-        
+            implements ChangeListener {
+
         protected int pgHorz = 1;
 
         public ScrollableTabViewport() {
@@ -516,15 +507,15 @@ public class ScrollingTabPane extends AbstractTabPane
         public void stateChanged(ChangeEvent e) {
             enableButtons(getViewPosition());
         }
-        
+
         protected void movePanel(int x) {
             // moving in x direction only
             Point pt = getViewPosition();
             pt.x += pgHorz * x;
-            
+
             pt.x = Math.max(0, pt.x);
             pt.x = Math.min(getMaxXExtent(), pt.x);
-            
+
             setViewPosition(pt);
             tabPanel.repaint();
         }
@@ -533,10 +524,10 @@ public class ScrollingTabPane extends AbstractTabPane
             super.setViewPosition(p);
             enableButtons(p);
         }
-        
+
         protected void enableButtons(Point pt) {
             scrollButtonPanel.enableButton(WEST, pt.x > 0);
-            scrollButtonPanel.enableButton(EAST, pt.x < getMaxXExtent());            
+            scrollButtonPanel.enableButton(EAST, pt.x < getMaxXExtent());
         }
 
         protected int getMaxXExtent() {
@@ -554,7 +545,7 @@ public class ScrollingTabPane extends AbstractTabPane
     private class ScrollButtonPanel extends JPanel {
 
         protected static final int SCROLL_EXTENT = 50;
-        
+
         // scroll and menu buttons
         protected ScrollButton scrollLeft;
         protected ScrollButton scrollRight;
@@ -562,7 +553,7 @@ public class ScrollingTabPane extends AbstractTabPane
 
         public ScrollButtonPanel() {
             super(new GridBagLayout());
-            
+
             scrollLeft = new ScrollButton(WEST);
             scrollRight = new ScrollButton(EAST);
             tabMenuButton = new ScrollButton(SOUTH);
@@ -583,7 +574,7 @@ public class ScrollingTabPane extends AbstractTabPane
             gbc.gridx++;
             add(tabMenuButton, gbc);
         }
-        
+
         protected void enableButton(int direction, boolean enable) {
             switch (direction) {
                 case EAST:
@@ -597,34 +588,38 @@ public class ScrollingTabPane extends AbstractTabPane
                     break;
             }
         }
-        
+
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
             // evil hack to continue the tab selection border
             if (selectedIndex != -1) {
                 g.setColor(tabPanel.controlShadow);
                 g.drawLine(0, getHeight() - TabPanel.TAB_BOTTOM_BORDER_HEIGHT - 1,
-                           getWidth(), getHeight() - TabPanel.TAB_BOTTOM_BORDER_HEIGHT - 1);
+                        getWidth(), getHeight() - TabPanel.TAB_BOTTOM_BORDER_HEIGHT - 1);
                 if (isFocusedTabPane) {
                     g.setColor(tabPanel.activeColor);
                 } else {
                     g.setColor(tabPanel.activeNoFocusColor);
                 }
                 g.fillRect(0, getHeight() - TabPanel.TAB_BOTTOM_BORDER_HEIGHT,
-                           getWidth() , TabPanel.TAB_BOTTOM_BORDER_HEIGHT);
+                        getWidth(), TabPanel.TAB_BOTTOM_BORDER_HEIGHT);
             }
         }
-        
+
     }
-    
+
 
     private class ScrollButton extends JButton
-                               implements ActionListener {
+            implements ActionListener {
 
-        /** the disabled button colour */
+        /**
+         * the disabled button colour
+         */
         protected Color disabledColour;
-        
-        /** the direction this button faces */
+
+        /**
+         * the direction this button faces
+         */
         protected int direction;
 
         public ScrollButton(int direction) {
@@ -652,9 +647,9 @@ public class ScrollingTabPane extends AbstractTabPane
             int iconWidth = 10;
             int iconHeight = 6;
 
-            Graphics2D g2 = (Graphics2D)g;
+            Graphics2D g2 = (Graphics2D) g;
             AffineTransform oldTransform = g2.getTransform();
-            
+
             // rotate as required
             if (direction != NORTH) {
                 double theta = 0;
@@ -674,12 +669,12 @@ public class ScrollingTabPane extends AbstractTabPane
                 }
                 g2.rotate(theta, xOrigin, yOrigin);
             }
-            
+
             int x = (getWidth() - iconWidth) / 2;
             int y = getHeight() - ((getHeight() - iconHeight) / 2) - 1;
 
             int width = iconWidth;
-            
+
             for (int i = 0; i < iconHeight; i++) {
                 g.drawLine(x, y, x + width, y);
                 x++;
@@ -688,7 +683,7 @@ public class ScrollingTabPane extends AbstractTabPane
             }
 
             g2.setTransform(oldTransform);
-            
+
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -700,45 +695,49 @@ public class ScrollingTabPane extends AbstractTabPane
                     viewport.movePanel(-ScrollButtonPanel.SCROLL_EXTENT);
                     break;
                 case SOUTH:
-                     tabSelectionPopupMenu.showPopup();
+                    tabSelectionPopupMenu.showPopup();
                     break;
             }
         }
-        
+
         public Dimension getPreferredSize() {
             return new Dimension(getWidth(), getHeight());
         }
-        
+
         public int getWidth() {
             return 18;
         }
-        
+
         public int getHeight() {
             return 18;
         }
 
     }
-    
+
     // -------------------------------------------------
     // tab popup menus
     // -------------------------------------------------
-    
-    /** font for the popup menus */
+
+    /**
+     * font for the popup menus
+     */
     private Font popupMenuFont;
-    
-    /** Inits the popup menu font */
+
+    /**
+     * Inits the popup menu font
+     */
     private void initPopupMenuFont() {
         popupMenuFont = UIManager.getFont("PopupMenu.font");
         popupMenuFont = popupMenuFont.deriveFont(Font.PLAIN, 10);
     }
-    
+
     /**
      * Popup menu for tab components accessible through
      * mouse right-click action.
      */
-    private class TabPopupMenu extends JPopupMenu 
-                               implements ActionListener {
-        
+    private class TabPopupMenu extends JPopupMenu
+            implements ActionListener {
+
         private int popupTabIndex;
         private JMenuItem close;
         private JMenuItem closeAll;
@@ -749,11 +748,11 @@ public class ScrollingTabPane extends AbstractTabPane
                 initPopupMenuFont();
             }
             setFont(popupMenuFont);
-            
+
             close = MenuItemFactory.createMenuItem(bundledString("menuItem.close"));
             closeAll = MenuItemFactory.createMenuItem(bundledString("menuItem.closeAll"));
             closeOther = MenuItemFactory.createMenuItem(bundledString("menuItem.closeOther"));
-            
+
             close.addActionListener(this);
             closeAll.addActionListener(this);
             closeOther.addActionListener(this);
@@ -761,15 +760,15 @@ public class ScrollingTabPane extends AbstractTabPane
             add(close);
             add(closeAll);
             add(closeOther);
-            
+
             popupTabIndex = -1;
         }
-        
+
         public void showPopup(int index, int x, int y) {
             popupTabIndex = index;
             show(tabPanel, x, y);
         }
-        
+
         public void actionPerformed(ActionEvent e) {
             if (popupTabIndex == -1) {
                 return;
@@ -779,15 +778,12 @@ public class ScrollingTabPane extends AbstractTabPane
                 Object source = e.getSource();
                 if (source == close) {
                     removeIndex(popupTabIndex);
-                }
-                else if (source == closeAll) {
+                } else if (source == closeAll) {
                     removeAllTabs();
-                }
-                else if (source == closeOther) {
+                } else if (source == closeOther) {
                     removeOthers(popupTabIndex);
                 }
-            }
-            finally {
+            } finally {
                 popupTabIndex = -1;
             }
 
@@ -798,13 +794,13 @@ public class ScrollingTabPane extends AbstractTabPane
     /**
      * Popup menu for the tab selection button
      */
-    private class TabSelectionPopupMenu extends JPopupMenu 
-                                        implements ActionListener {
+    private class TabSelectionPopupMenu extends JPopupMenu
+            implements ActionListener {
 //                                                   PopupMenuListener {
 
         protected boolean menuVisible;
         protected List<JMenuItem> menuItems;
-        
+
         public TabSelectionPopupMenu() {
             if (popupMenuFont == null) {
                 initPopupMenuFont();
@@ -812,18 +808,18 @@ public class ScrollingTabPane extends AbstractTabPane
             setFont(popupMenuFont);
             //addPopupMenuListener(this);
         }
-        
+
         public void addTabMenuItem(TabComponent tabComponent) {
             if (menuItems == null) {
                 menuItems = new ArrayList<JMenuItem>();
             }
             JMenuItem menuItem = MenuItemFactory.createMenuItem(tabComponent.getDisplayName(),
-                                               tabComponent.getIcon());
+                    tabComponent.getIcon());
             menuItem.addActionListener(this);
             menuItems.add(menuItem);
             add(menuItem);
         }
-        
+
         public void removeTabMenuItem(int index) {
             JMenuItem menuItem = menuItems.get(index);
             menuItems.remove(index);
@@ -839,31 +835,34 @@ public class ScrollingTabPane extends AbstractTabPane
             super.removeAll();
             menuItems.clear();
         }
-        
+
         public void showPopup() {
 
             if (menuVisible) {
                 menuVisible = false;
                 return;
             }
-            
+
             menuVisible = true;
-            
+
             Rectangle bounds = scrollButtonPanel.tabMenuButton.getBounds();
-            int x = (int)(bounds.getX() + bounds.getWidth());
-            int y = (int)(bounds.getY() + bounds.getHeight());
+            int x = (int) (bounds.getX() + bounds.getWidth());
+            int y = (int) (bounds.getY() + bounds.getHeight());
 
             pack();
             setVisible(true);
             show(scrollButtonPanel, x - getWidth(), y + 1);
         }
 
-        protected void firePopupMenuCanceled() {}
-        protected void firePopupMenuWillBecomeInvisible() {}
-        
+        protected void firePopupMenuCanceled() {
+        }
+
+        protected void firePopupMenuWillBecomeInvisible() {
+        }
+
         public void actionPerformed(ActionEvent e) {
             menuVisible = false;
-            JMenuItem menuItem = (JMenuItem)e.getSource();
+            JMenuItem menuItem = (JMenuItem) e.getSource();
             int index = menuItems.indexOf(menuItem);
             setSelectedIndex(index);
         }
@@ -888,15 +887,17 @@ public class ScrollingTabPane extends AbstractTabPane
     // tab display panel and controls
     // -------------------------------------------------
 
-    /** The tab rectangles */
+    /**
+     * The tab rectangles
+     */
     private Rectangle[] tabRects;
-    
+
     private class TabPanel extends JPanel {
 
         protected Font font;
 
         protected Color foreground;
-        protected Color background;        
+        protected Color background;
         protected Color activeColor;
         protected Color controlShadow;
         protected Color activeNoFocusColor;
@@ -907,9 +908,9 @@ public class ScrollingTabPane extends AbstractTabPane
         private int height;
 
         protected static final int TOP_INSET = 5;
-        
+
         protected static final int TAB_BOTTOM_BORDER_HEIGHT = 3;
-        
+
         protected TabPanel() {
             initDefaults();
             tabRects = new Rectangle[0];
@@ -921,7 +922,7 @@ public class ScrollingTabPane extends AbstractTabPane
         /**
          * Returns the tool tip text of the current
          * mouse rollover tab.
-         * 
+         *
          * @param the mouse event
          * @return the tool tip of the rolled over tab - or null
          */
@@ -954,10 +955,10 @@ public class ScrollingTabPane extends AbstractTabPane
             return height + TOP_INSET;
         }
 
-        /** 
+        /**
          * Returns the width based on the position of the last
          * tab rectangle.
-         * 
+         *
          * @return the tab panel width
          */
         public int getWidth() {
@@ -973,7 +974,7 @@ public class ScrollingTabPane extends AbstractTabPane
             int width = lastRect.x + lastRect.width + 2;
             return Math.max(width, viewport.getWidth());
         }
-        
+
         public Dimension getPreferredSize() {
             return new Dimension(getWidth(), getHeight());
         }
@@ -984,14 +985,14 @@ public class ScrollingTabPane extends AbstractTabPane
 
         protected void calculateTabHeight() {
             FontMetrics metrics = getFontMetrics(font);
-            height = metrics.getHeight() + tabInsets.top + 
+            height = metrics.getHeight() + tabInsets.top +
                     tabInsets.bottom + TAB_BOTTOM_BORDER_HEIGHT + 7;
         }
 
         private int getTabHeight() {
             return height - TAB_BOTTOM_BORDER_HEIGHT;
         }
-        
+
         protected void calculateTabRects(int tabCount) {
 
             // check that we still have the right count
@@ -1011,7 +1012,7 @@ public class ScrollingTabPane extends AbstractTabPane
                 }
 
                 if (i > 0) {
-                    rect.x = tabRects[i-1].x + tabRects[i-1].width;
+                    rect.x = tabRects[i - 1].x + tabRects[i - 1].width;
                 } else {
                     rect.x = 0;
                 }
@@ -1021,16 +1022,16 @@ public class ScrollingTabPane extends AbstractTabPane
                 rect.width = 0;
                 rect.width += tabInsets.left + tabInsets.right;
                 TabComponent tabComponent = components.get(i);
-                
+
                 // add the icon width
                 if (tabComponent.hasIcon()) {
                     Icon icon = tabComponent.getIcon();
                     rect.width += icon.getIconWidth() + textIconGap;
                 }
-                
+
                 // compute and add the text width
                 rect.width += SwingUtilities.computeStringWidth(
-                                           metrics, tabComponent.getDisplayName());
+                        metrics, tabComponent.getDisplayName());
 
                 // add the close icon width
                 rect.width += TabControlIcon.ICON_WIDTH + 6;
@@ -1049,7 +1050,7 @@ public class ScrollingTabPane extends AbstractTabPane
                 return;
             }
 
-            Graphics2D g2d = (Graphics2D)g;
+            Graphics2D g2d = (Graphics2D) g;
             Object antialiasHint = g2d.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
             UIUtils.antialias(g2d);
 
@@ -1060,9 +1061,9 @@ public class ScrollingTabPane extends AbstractTabPane
             int y = getY();
 
             int viewX = viewport.getViewPosition().x;
-            
+
             g.setClip(viewX, 0, viewport.getWidth(), getHeight());
-            
+
             int w = getWidth();
             int h = getHeight();
 
@@ -1078,18 +1079,18 @@ public class ScrollingTabPane extends AbstractTabPane
                     g.setColor(activeNoFocusColor);
                 }
                 Rectangle selected = tabRects[selectedIndex];
-                g.fillRect(selected.x + 1, selected.y + 1, 
-                           selected.width - 2, selected.height - 1);
+                g.fillRect(selected.x + 1, selected.y + 1,
+                        selected.width - 2, selected.height - 1);
             }
 
             // -----------------------------------
             // draw the borders
 
             g.setColor(controlShadow);
-            
+
             // left far side
             g.drawLine(x, y + h - 3, x - 1, y + h + 3);
-            
+
             // right far side
             g.drawLine(viewX + w, y + h - 5, x + w, y + h);
 
@@ -1100,19 +1101,19 @@ public class ScrollingTabPane extends AbstractTabPane
                 w = rect.width;
                 h = rect.height;
 
-                g.drawLine(x, y+2, x, y+h-1); // left side
-                g.drawLine(x+1, y+1, x+1, y+1); // top-left side
+                g.drawLine(x, y + 2, x, y + h - 1); // left side
+                g.drawLine(x + 1, y + 1, x + 1, y + 1); // top-left side
 
-                g.drawLine(x+2, y, x+w-3, y); // top side
-                
-                g.drawLine(x+w-2, y+1, x+w-2, y+1); // top-right side
-                g.drawLine(x+w-1, y+2, x+w-1, y+h-1); // right side
+                g.drawLine(x + 2, y, x + w - 3, y); // top side
+
+                g.drawLine(x + w - 2, y + 1, x + w - 2, y + 1); // top-right side
+                g.drawLine(x + w - 1, y + 2, x + w - 1, y + h - 1); // right side
 
                 // bottom side
                 if (i != selectedIndex) {
                     g.drawLine(x - 1, y + h - 1, x + w, y + h - 1);
-                } 
-                
+                }
+
             }
 
             // fill the bottom border with the active colour 
@@ -1124,10 +1125,10 @@ public class ScrollingTabPane extends AbstractTabPane
                 } else {
                     g.setColor(activeNoFocusColor);
                 }
-                g.fillRect(viewX, 
-                           getHeight() - TAB_BOTTOM_BORDER_HEIGHT,
-                           getWidth(), 
-                           TAB_BOTTOM_BORDER_HEIGHT);
+                g.fillRect(viewX,
+                        getHeight() - TAB_BOTTOM_BORDER_HEIGHT,
+                        getWidth(),
+                        TAB_BOTTOM_BORDER_HEIGHT);
                 g.setColor(controlShadow);
             }
 
@@ -1137,7 +1138,7 @@ public class ScrollingTabPane extends AbstractTabPane
 
             // -------------------------------
             // draw the text and any icons
-            
+
             g.setFont(font);
             FontMetrics metrics = getFontMetrics(font);
 
@@ -1152,22 +1153,22 @@ public class ScrollingTabPane extends AbstractTabPane
                 if (i == currentCloseRolloverIndex) {
                     g.setColor(TabControlIcon.ICON_COLOR);
                     g.drawRect(buttonRect.x - 2,
-                               buttonRect.y - 2,
-                               buttonRect.width + 3,
-                               buttonRect.height + 3);
+                            buttonRect.y - 2,
+                            buttonRect.width + 3,
+                            buttonRect.height + 3);
                 }
-                
+
                 // add the text
                 g.setColor(foreground);
                 if (i != selectedIndex || !isFocusedTabPane) {
-                	g.setColor(UIManager.getColor("TabbedPane.foreground"));
+                    g.setColor(UIManager.getColor("TabbedPane.foreground"));
                 }
                 x = tabRect.x + tabInsets.left;
 
                 if (tabComponent.hasIcon()) {
                     // draw the icon
                     y = tabRect.y + tabInsets.top + 4;
-                    tabComponent.getIcon().paintIcon(this, g, x, y);                    
+                    tabComponent.getIcon().paintIcon(this, g, x, y);
                     // increment x position
                     x += tabComponent.getIcon().getIconWidth() + textIconGap;
                 }
@@ -1177,8 +1178,10 @@ public class ScrollingTabPane extends AbstractTabPane
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antialiasHint);
             }
         }
-        
-        /** the close icon for each tab */
+
+        /**
+         * the close icon for each tab
+         */
         private transient Icon closeIcon = new DockedTabCloseIcon();
 
         private void initDefaults() {
@@ -1188,7 +1191,7 @@ public class ScrollingTabPane extends AbstractTabPane
             } else {
                 font = UIManager.getFont("TabbedPane.font").deriveFont(Font.PLAIN);
             }
-            
+
             background = getTabBackground();
             activeNoFocusColor = getNofocusTabBackground();
 
@@ -1197,42 +1200,46 @@ public class ScrollingTabPane extends AbstractTabPane
 
             Color color = UIManager.getColor("executequery.TabbedPane.border");
             if (color != null) {
-                
+
                 controlShadow = color;
 
             } else {
-                
-                controlShadow = UIManager.getColor("controlShadow");                
+
+                controlShadow = UIManager.getColor("controlShadow");
             }
 
             textIconGap = UIManager.getInt("TabbedPane.textIconGap");
             if (textIconGap == 0) {
-                
+
                 textIconGap = 4;
             }
             tabInsets = tabInsets();
             tabInsets.left = 5;
-            
+
             tabInsets.top += 1;
             tabInsets.bottom += 1;
             tabInsets.left += 1;
             tabInsets.right += 1;
-            
+
         }
-        
+
     } // class TabPanel
-    
-    /** The tab's tool tip */
+
+    /**
+     * The tab's tool tip
+     */
     protected DockedTabToolTip toolTip;
-    
-    /** Indicates the current rollover index for the close button */
+
+    /**
+     * Indicates the current rollover index for the close button
+     */
     protected int currentCloseRolloverIndex = -1;
-    
+
     private class MouseHandler implements MouseInputListener {
-        
+
         public void mouseMoved(MouseEvent e) {
             boolean doRepaint = false;
-            
+
             try {
                 if (currentCloseRolloverIndex != -1) {
                     doRepaint = true;
@@ -1244,7 +1251,7 @@ public class ScrollingTabPane extends AbstractTabPane
                 int index = -1;
 
                 //Log.debug("mouse x: " + x);
-                
+
                 for (int i = 0, k = components.size(); i < k; i++) {
                     Rectangle tabRect = tabRects[i];
                     if (tabRect.contains(x, y)) {
@@ -1286,17 +1293,17 @@ public class ScrollingTabPane extends AbstractTabPane
                 }
 
                 // --------------------------------------------
-            }
-            finally {
+            } finally {
                 if (doRepaint) {
                     tabPanel.repaint();
                 }
             }
-            
+
         }
+
         private boolean toolTipRegistered;
-        
-        
+
+
         public void mouseClicked(MouseEvent e) {
             maybeShowPopup(e);
         }
@@ -1305,8 +1312,11 @@ public class ScrollingTabPane extends AbstractTabPane
             maybeShowPopup(e);
         }
 
-        public void mouseDragged(MouseEvent e) {}
-        public void mouseEntered(MouseEvent e) {}
+        public void mouseDragged(MouseEvent e) {
+        }
+
+        public void mouseEntered(MouseEvent e) {
+        }
 
         public void mouseExited(MouseEvent e) {
             if (currentCloseRolloverIndex != -1) {
@@ -1345,24 +1355,24 @@ public class ScrollingTabPane extends AbstractTabPane
             currentCloseRolloverIndex = -1;
             tabPanel.repaint();
         }
-        
+
         public void mouseReleased(MouseEvent e) {
-            if (maybeShowPopup(e) || 
+            if (maybeShowPopup(e) ||
                     (tabPopupMenu != null && tabPopupMenu.isVisible())) {
                 return;
             }
-            
+
             try {
                 int x = e.getX();
                 int y = e.getY();
-                
+
                 int index = getTabAtLocation(x, y);
                 if (index == -1) {
                     return;
                 }
-                
+
                 resetRepaint();
-                
+
                 // check if a close button was pushed
                 Rectangle iconRect = getCloseIconRectangle(tabRects[index]);
                 if (iconRect.contains(x, y)) {
@@ -1376,13 +1386,12 @@ public class ScrollingTabPane extends AbstractTabPane
                     return;
                 }
 
-            }
-            finally {
+            } finally {
                 currentCloseRolloverIndex = -1;
             }
         }
 
     }
-    
+
 }
 

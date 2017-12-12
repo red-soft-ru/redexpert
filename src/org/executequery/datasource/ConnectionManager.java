@@ -20,17 +20,6 @@
 
 package org.executequery.datasource;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Vector;
-
-import javax.sql.DataSource;
-
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.log.Log;
@@ -39,11 +28,17 @@ import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.util.*;
+
 /**
  * Manages all data source connections across multiple
  * sources and associated connection pools.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public final class ConnectionManager {
 
@@ -92,7 +87,7 @@ public final class ConnectionManager {
         connectionPools.put(databaseConnection, pool);
         databaseConnection.setConnected(true);
 
-        Log.info("Data source " + databaseConnection.getName() +" initialised.");
+        Log.info("Data source " + databaseConnection.getName() + " initialised.");
     }
 
     /**
@@ -124,8 +119,8 @@ public final class ConnectionManager {
     }
 
     public static Connection realConnection(DatabaseMetaData dmd) throws SQLException {
-        if(dmd instanceof PooledDatabaseMetaData)
-            return ((PooledDatabaseMetaData)dmd).getRealConnection();
+        if (dmd instanceof PooledDatabaseMetaData)
+            return ((PooledDatabaseMetaData) dmd).getRealConnection();
         else return dmd.getConnection();
     }
 
@@ -138,16 +133,16 @@ public final class ConnectionManager {
 
 //        synchronized (databaseConnection) {
 
-            if (connectionPools.containsKey(databaseConnection)) {
+        if (connectionPools.containsKey(databaseConnection)) {
 
-                Log.info("Disconnecting from data source " + databaseConnection.getName());
+            Log.info("Disconnecting from data source " + databaseConnection.getName());
 
-                ConnectionPool pool = connectionPools.get(databaseConnection);
-                pool.close();
+            ConnectionPool pool = connectionPools.get(databaseConnection);
+            pool.close();
 
-                connectionPools.remove(databaseConnection);
-                databaseConnection.setConnected(false);
-            }
+            connectionPools.remove(databaseConnection);
+            databaseConnection.setConnected(false);
+        }
 
 //        }
 
@@ -166,7 +161,7 @@ public final class ConnectionManager {
         }
 
         // iterate and close all the pools
-        for (Iterator<DatabaseConnection> i = connectionPools.keySet().iterator(); i.hasNext();) {
+        for (Iterator<DatabaseConnection> i = connectionPools.keySet().iterator(); i.hasNext(); ) {
 
             ConnectionPool pool = connectionPools.get(i.next());
             pool.close();
@@ -181,7 +176,7 @@ public final class ConnectionManager {
      */
     public static DataSource getDataSource(DatabaseConnection databaseConnection) {
         if (connectionPools == null || !connectionPools.containsKey(databaseConnection)) {
-        
+
             return null;
         }
         return connectionPools.get(databaseConnection).getDataSource();
@@ -197,7 +192,7 @@ public final class ConnectionManager {
     public static void setTransactionIsolationLevel(DatabaseConnection databaseConnection, int isolationLevel) {
 
         if (connectionPools == null || connectionPools.containsKey(databaseConnection)) {
-        
+
             ConnectionPool pool = connectionPools.get(databaseConnection);
             pool.setTransactionIsolationLevel(isolationLevel);
         }
@@ -217,7 +212,7 @@ public final class ConnectionManager {
         Vector<DatabaseConnection> connections =
                 new Vector<DatabaseConnection>(connectionPools.size());
         for (Iterator<DatabaseConnection> i =
-        		connectionPools.keySet().iterator(); i.hasNext();) {
+             connectionPools.keySet().iterator(); i.hasNext(); ) {
             connections.add(i.next());
         }
         return connections;
@@ -308,7 +303,8 @@ public final class ConnectionManager {
                 DatabaseDriverRepository.REPOSITORY_ID)).findById(driverId);
     }
 
-    private ConnectionManager() {}
+    private ConnectionManager() {
+    }
 }
 
 

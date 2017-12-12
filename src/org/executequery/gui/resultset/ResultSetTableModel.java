@@ -20,20 +20,8 @@
 
 package org.executequery.gui.resultset;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.sql.*;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-
 import biz.redsoft.IFBBlob;
 import biz.redsoft.IFBClob;
-import biz.redsoft.IFBDatabasePerformance;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
@@ -49,9 +37,16 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.table.AbstractSortableTableModel;
 import org.underworldlabs.util.MiscUtils;
 
-import javax.swing.*;
-import javax.swing.event.TableModelEvent;
-import javax.swing.table.TableColumn;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.sql.*;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The sql result set table model.
@@ -161,9 +156,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         return query;
     }
 
-    public synchronized void createTable(ResultSet resultSet)
-    {
-        createTable(resultSet,null);
+    public synchronized void createTable(ResultSet resultSet) {
+        createTable(resultSet, null);
     }
 
     public synchronized void createTable(ResultSet resultSet, List<ColumnData> columnDataList) {
@@ -201,7 +195,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
                 setMetaDataVectors(rsmd);
             }
-            getDataForTable(resultSet,count,columnDataList);
+            getDataForTable(resultSet, count, columnDataList);
 
         } catch (SQLException e) {
 
@@ -243,7 +237,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                     resultSet.close();
 
                     if (statement != null) {
-                        if(!statement.isClosed())
+                        if (!statement.isClosed())
                             statement.close();
                     }
 
@@ -255,7 +249,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     }
 
-    public synchronized void getDataForTable(ResultSet resultSet,int count,List<ColumnData> columnDataList) throws SQLException, InterruptedException {
+    public synchronized void getDataForTable(ResultSet resultSet, int count, List<ColumnData> columnDataList) throws SQLException, InterruptedException {
         int recordCount = 0;
         this.columnDataList = columnDataList;
         int zeroBaseIndex;
@@ -330,11 +324,9 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                             } else {
                                 value.setValue(clob);
                             }
-                            if(columnDataList!=null)
-                            {
-                                ((ClobRecordDataItem)value).setCharset(columnDataList.get(i-1).getCharset());
-                            }
-                            else ((ClobRecordDataItem)value).setCharset(CreateTableSQLSyntax.NONE);
+                            if (columnDataList != null) {
+                                ((ClobRecordDataItem) value).setCharset(columnDataList.get(i - 1).getCharset());
+                            } else ((ClobRecordDataItem) value).setCharset(CreateTableSQLSyntax.NONE);
                             break;
                         case Types.LONGVARBINARY:
                         case Types.VARBINARY:
@@ -453,7 +445,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     }
 
-    public synchronized void createTableFromMetaData(ResultSet resultSet, DatabaseConnection dc,List<ColumnData> columnDataList) {
+    public synchronized void createTableFromMetaData(ResultSet resultSet, DatabaseConnection dc, List<ColumnData> columnDataList) {
 
         if (!isOpenAndValid(resultSet)) {
 
@@ -516,7 +508,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                     }
 
                 } catch (Exception e) {
-                    Log.error("Error get result set from metadata"+e.getMessage());
+                    Log.error("Error get result set from metadata" + e.getMessage());
 
                 }
                 if (i < count - 1)
@@ -526,7 +518,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             }
             sql += " FROM " + tableName;
             resultSet = executor.execute(QueryTypes.SELECT, sql).getResultSet();
-           getDataForTable(resultSet,count,columnDataList);
+            getDataForTable(resultSet, count, columnDataList);
 
         } catch (SQLException e) {
 
@@ -949,8 +941,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             RecordDataItem rdi = recordDataItemFactory.create(rsch);
             rdi.setValue(null);
             rdi.setNew(true);
-            if(rdi instanceof ClobRecordDataItem)
-                ((ClobRecordDataItem)rdi).setCharset(columnDataList.get(i).getCharset());
+            if (rdi instanceof ClobRecordDataItem)
+                ((ClobRecordDataItem) rdi).setCharset(columnDataList.get(i).getCharset());
             row.add(rdi);
         }
         AddRow(row);

@@ -20,38 +20,24 @@
 
 package org.executequery.databaseobjects.impl;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseObject;
-import org.executequery.databaseobjects.DatabaseSource;
-import org.executequery.databaseobjects.DatabaseTable;
-import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.TableDataChange;
-import org.executequery.databaseobjects.TableDataChangeWorker;
+import org.executequery.databaseobjects.*;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.log.Log;
 import org.executequery.sql.SQLFormatter;
 import org.executequery.sql.SqlStatementResult;
 import org.executequery.sql.StatementGenerator;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.FileUtils;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DefaultDatabaseTable extends AbstractTableObject implements DatabaseTable {
 
@@ -325,7 +311,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                         }
 
                     } catch (SQLException e) {
-                        Log.error("Error get imported keys for "+getName()+": "+e.getMessage());
+                        Log.error("Error get imported keys for " + getName() + ": " + e.getMessage());
                     }
                 }
 
@@ -409,15 +395,16 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                             "where T.RDB$RELATION_NAME='" + getName() + "'";
                     result = executor.execute(QueryTypes.SELECT, query);
                     ResultSet rs = result.getResultSet();
-                    while (rs.next()) {
-                        ColumnConstraint constraint = new TableColumnConstraint(rs.getString(2));
-                        constraint.setName(rs.getString(1).trim());
-                        constraints.add(constraint);
+                    if (rs != null) {
+                        while (rs.next()) {
+                            ColumnConstraint constraint = new TableColumnConstraint(rs.getString(2));
+                            constraint.setName(rs.getString(1).trim());
+                            constraints.add(constraint);
+                        }
                     }
                 } catch (Exception e) {
                     Log.error("Error loading check-constraints:" + result.getErrorMessage(), e);
-                }
-                finally {
+                } finally {
                     executor.releaseResources();
                 }
                 constraints.removeAll(Collections.singleton(null));
@@ -531,8 +518,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         clearDataChanges();
     }
 
-    public void clearDefinitionChanges()
-    {
+    public void clearDefinitionChanges() {
         modifiedSQLText = null;
         clearColumns();
         clearIndexes();

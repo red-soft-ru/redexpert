@@ -21,14 +21,15 @@
 package org.executequery.event;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface DatabaseDriverEvent extends ApplicationEvent {
 
-    /** Method name for driversUpdated */
+    /**
+     * Method name for driversUpdated
+     */
     String DRIVERS_UPDATED = "driversUpdated";
-    
+
 }
 
 

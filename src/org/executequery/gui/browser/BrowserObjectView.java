@@ -25,28 +25,40 @@ import java.awt.print.Printable;
 /**
  * Defines those components with a browser view.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface BrowserObjectView {
-    
-    /** Performs some cleanup and releases resources before being closed. */
+
+    /**
+     * Performs some cleanup and releases resources before being closed.
+     */
     public void cleanup();
-    
-    /** Refreshes the data and clears the cache */
+
+    /**
+     * Refreshes the data and clears the cache
+     */
     public void refresh();
-    
-    /** Returns the print object - if any */
+
+    /**
+     * Returns the print object - if any
+     */
     public Printable getPrintable();
-    
-    /** Returns the name of this panel */
+
+    /**
+     * Returns the name of this panel
+     */
     public String getLayoutName();
-    
-    /** Propagates the call to the relevant component. */
+
+    /**
+     * Propagates the call to the relevant component.
+     */
     public void validate();
 
-    /** Propagates the call to the relevant component. */
+    /**
+     * Propagates the call to the relevant component.
+     */
     public void repaint();
-    
+
 }
 
 

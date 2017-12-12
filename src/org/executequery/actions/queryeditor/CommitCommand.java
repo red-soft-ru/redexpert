@@ -22,12 +22,13 @@ package org.executequery.actions.queryeditor;
 
 import java.awt.event.ActionEvent;
 
-/** <p>Execution for the Query Editor's commit command.
+/**
+ * <p>Execution for the Query Editor's commit command.
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CommitCommand extends AbstractQueryEditorCommand {
-    
+
     public void execute(ActionEvent e) {
 
         if (isQueryEditorTheCentralPanel()) {
@@ -36,7 +37,7 @@ public class CommitCommand extends AbstractQueryEditorCommand {
         }
 
     }
-    
+
 }
 
 

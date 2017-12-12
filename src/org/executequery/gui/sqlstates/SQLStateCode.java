@@ -23,17 +23,19 @@ package org.executequery.gui.sqlstates;
 /**
  * SQL State Code definition.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SQLStateCode {
-    
+
     private String sqlStateClass;
     private String sqlStateSubClass;
     private String description;
-    
-    /** Creates a new instance of SQLStateCode */
-    public SQLStateCode(String sqlStateClass, 
-                        String sqlStateSubClass, 
+
+    /**
+     * Creates a new instance of SQLStateCode
+     */
+    public SQLStateCode(String sqlStateClass,
+                        String sqlStateSubClass,
                         String description) {
         this.sqlStateClass = sqlStateClass;
         this.sqlStateSubClass = sqlStateSubClass;
@@ -51,7 +53,7 @@ public class SQLStateCode {
     public String getDescription() {
         return description;
     }
-    
+
 }
 
 

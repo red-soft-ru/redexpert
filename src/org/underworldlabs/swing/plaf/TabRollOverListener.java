@@ -23,16 +23,16 @@ package org.underworldlabs.swing.plaf;
 /**
  * Tab listener for rollover events.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface TabRollOverListener {
 
     void tabRollOver(TabRolloverEvent e);
-    
+
     void tabRollOverFinished(TabRolloverEvent e);
 
     void tabRollOverCancelled(TabRolloverEvent e);
-    
+
 }
 
 

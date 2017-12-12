@@ -20,21 +20,15 @@
 
 package org.executequery.gui.prefs;
 
-import java.awt.Color;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import javax.swing.ImageIcon;
-import javax.swing.JPanel;
+import javax.swing.*;
+import java.awt.*;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class PropertiesRootPanel extends JPanel 
-                                 implements UserPreferenceFunction {
-    
+public class PropertiesRootPanel extends JPanel
+        implements UserPreferenceFunction {
+
     private Color darkColour;
     private Color lightColour;
     private Image preferencesImage;
@@ -42,21 +36,21 @@ public class PropertiesRootPanel extends JPanel
 
     public PropertiesRootPanel() {
 
-        darkColour = new Color(107,165,237);
-        lightColour = new Color(187,209,236);
-        
+        darkColour = new Color(107, 165, 237);
+        lightColour = new Color(187, 209, 236);
+
         ImageIcon icon = new ImageIcon(getClass().getResource(
-                        "/org/executequery/images/AboutText.png"));
+                "/org/executequery/images/AboutText.png"));
         preferencesImage = icon.getImage();
 
         icon = new ImageIcon(getClass().getResource(
-                        "/org/executequery/images/PreferencesText.png"));
+                "/org/executequery/images/PreferencesText.png"));
         textImage = icon.getImage();
     }
 
     public void paintComponent(Graphics g) {
-        
-        Graphics2D g2d = (Graphics2D)g;
+
+        Graphics2D g2d = (Graphics2D) g;
 
         int width = getWidth();
         int height = getHeight();
@@ -72,11 +66,18 @@ public class PropertiesRootPanel extends JPanel
         yOffset = height - textImage.getHeight(this) - 20;
         g2d.drawImage(textImage, xOffset, yOffset, this);
     }
-    
-    public void save() {}
-    public void restoreDefaults() {}
-    public void preferenceChange(PreferenceChangeEvent e) {}
-    public void addPreferenceChangeListener(PreferenceChangeListener preferenceChangeListener) {}
+
+    public void save() {
+    }
+
+    public void restoreDefaults() {
+    }
+
+    public void preferenceChange(PreferenceChangeEvent e) {
+    }
+
+    public void addPreferenceChangeListener(PreferenceChangeListener preferenceChangeListener) {
+    }
 
 }
 

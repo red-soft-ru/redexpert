@@ -23,8 +23,8 @@ package org.executequery.gui.console.commands;
 import org.executequery.gui.console.Console;
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
@@ -32,23 +32,29 @@ import org.executequery.gui.console.Console;
 /**
  * The <code>Command</code> class is an empty implementation of a console
  * command. The commands list is a linked list.
+ *
  * @author Romain Guy
  */
 public abstract class Command {
-    
+
     public Command next;
-    
-    /** Return the command name. Displayed in console help summary. */
+
+    /**
+     * Return the command name. Displayed in console help summary.
+     */
     public abstract String getCommandName();
-    
-    /** Return the command summary. Displayed in console help summary. */
+
+    /**
+     * Return the command summary. Displayed in console help summary.
+     */
     public abstract String getCommandSummary();
-    
-    /** Handles a command given by the console. If the command can be
-     *  handled, return true, false otherwise.
+
+    /**
+     * Handles a command given by the console. If the command can be
+     * handled, return true, false otherwise.
      */
     public abstract boolean handleCommand(Console console, String command);
-    
+
 }
 
 

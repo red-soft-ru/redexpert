@@ -20,23 +20,20 @@
 
 package org.executequery.plaf;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Insets;
-import java.util.Arrays;
-import javax.swing.UIDefaults;
-
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.plaf.metal.DefaultMetalTheme;
+import java.awt.*;
+import java.util.Arrays;
 
-/** <p>Simple theme applied to the Java Metal look and feel.
+/**
+ * <p>Simple theme applied to the Java Metal look and feel.
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ExecuteQueryTheme extends DefaultMetalTheme {
-    
+
     // ---------------------------------
     // --------- System Fonts ----------
     // ---------------------------------
@@ -45,7 +42,7 @@ public class ExecuteQueryTheme extends DefaultMetalTheme {
     private FontUIResource systemFont;
     private FontUIResource userFont;
     private FontUIResource smallFont;
-    
+
     // --------------------------------------------
     // ------ Primary and Secondary Colours -------
     // --------------------------------------------
@@ -64,31 +61,31 @@ public class ExecuteQueryTheme extends DefaultMetalTheme {
     // --------------------------------------------
     // ------------ Execute Query Theme -----------
     // --------------------------------------------
-    
+
     // --- active internal frame borders ---
     private final ColorUIResource primary1 = new ColorUIResource(102, 102, 153);
-    
+
     // --- scroll bars, highlights, menu selection etc ---
 //    private final ColorUIResource primary2 = new ColorUIResource(145, 145, 207);
     private final ColorUIResource primary2 = new ColorUIResource(107, 148, 200);
-    
+
     // --- active internal frame headers ---
     private final ColorUIResource primary3 = new ColorUIResource(139, 175, 220);
-    
+
     // --- dark border for 3D for eg buttons ---
     private final ColorUIResource secondary1 = new ColorUIResource(102, 102, 102);
-    
+
     // --- inactive internal frame borders, dimmed button borders ---
     private final ColorUIResource secondary2 = new ColorUIResource(153, 153, 153);
 
     // --- panel/frame, normal background ---
     private final ColorUIResource secondary3 = new ColorUIResource(240, 240, 240);
-    
+
     public ExecuteQueryTheme() {
         // ------------------------------
         // add some further l&f settings
         // ------------------------------
-        
+
         // black text for labels
         UIManager.put("Label.foreground", new ColorUIResource(0, 0, 0));
         // black text for title border
@@ -110,170 +107,164 @@ public class ExecuteQueryTheme extends DefaultMetalTheme {
         Color dadada = new ColorUIResource(0xDADADA);
         Color cccccc = new ColorUIResource(0xCCCCCC);
 
-        Object[] defaults = new Object[] {
-            
-            "TabbedPane.borderHightlightColor", secondary1,
-            "TabbedPane.contentAreaColor", secondary3,
-            "TabbedPane.contentBorderInsets", new Insets(2, 2, 3, 3),
-            "TabbedPane.selected", secondary3,
-            "TabbedPane.tabAreaBackground", secondary3,
-            "TabbedPane.tabAreaInsets", new Insets(4, 2, 0, 6),
-            "TabbedPane.unselectedBackground", cccccc,
-            
-            "Menu.opaque", Boolean.FALSE,
-            "MenuBar.gradient", Arrays.asList(new Object[] {
-                     new Float(1f), new Float(0f),
-                     getWhite(), dadada, 
-                     new ColorUIResource(dadada) }),
-            "MenuBar.borderColor", cccccc,
-            "MenuBarUI", "javax.swing.plaf.metal.MetalMenuBarUI"
+        Object[] defaults = new Object[]{
+
+                "TabbedPane.borderHightlightColor", secondary1,
+                "TabbedPane.contentAreaColor", secondary3,
+                "TabbedPane.contentBorderInsets", new Insets(2, 2, 3, 3),
+                "TabbedPane.selected", secondary3,
+                "TabbedPane.tabAreaBackground", secondary3,
+                "TabbedPane.tabAreaInsets", new Insets(4, 2, 0, 6),
+                "TabbedPane.unselectedBackground", cccccc,
+
+                "Menu.opaque", Boolean.FALSE,
+                "MenuBar.gradient", Arrays.asList(new Object[]{
+                new Float(1f), new Float(0f),
+                getWhite(), dadada,
+                new ColorUIResource(dadada)}),
+                "MenuBar.borderColor", cccccc,
+                "MenuBarUI", "javax.swing.plaf.metal.MetalMenuBarUI"
 
         };
         table.putDefaults(defaults);
     }
-    
+
     public String getName() {
         return "Red Expert";
     }
-    
+
     private static final int DEFAULT_FONT_SIZE = 11;
 
     public FontUIResource getControlTextFont() {
-        
+
         if (controlFont == null) {
-            
+
             try {
                 controlFont = new FontUIResource(
-                                    Font.getFont("swing.plaf.metal.controlFont",
-                                    new Font("Dialog", Font.PLAIN, DEFAULT_FONT_SIZE)));
-            }
-            catch (Exception e) {
+                        Font.getFont("swing.plaf.metal.controlFont",
+                                new Font("Dialog", Font.PLAIN, DEFAULT_FONT_SIZE)));
+            } catch (Exception e) {
                 controlFont = new FontUIResource("Dialog", Font.BOLD, DEFAULT_FONT_SIZE);
-            } 
-            
-        } 
-        
+            }
+
+        }
+
         return controlFont;
-        
+
     }
-    
+
     public FontUIResource getSystemTextFont() {
-        
+
         if (systemFont == null) {
-            
+
             try {
                 systemFont = new FontUIResource(
-                                    Font.getFont("swing.plaf.metal.systemFont",
-                                    new Font("Dialog", Font.PLAIN, DEFAULT_FONT_SIZE)));
+                        Font.getFont("swing.plaf.metal.systemFont",
+                                new Font("Dialog", Font.PLAIN, DEFAULT_FONT_SIZE)));
+            } catch (Exception e) {
+                systemFont = new FontUIResource("Dialog", Font.PLAIN, DEFAULT_FONT_SIZE);
             }
-            catch (Exception e) {
-                systemFont =  new FontUIResource("Dialog", Font.PLAIN, DEFAULT_FONT_SIZE);
-            } 
-            
-        } 
+
+        }
 
         return systemFont;
-        
+
     }
-    
+
     public FontUIResource getUserTextFont() {
-        
+
         if (userFont == null) {
-            
+
             try {
                 userFont = new FontUIResource(
-                                    Font.getFont("swing.plaf.metal.userFont",
-                                    new Font("Dialog", Font.PLAIN, DEFAULT_FONT_SIZE)));
-            }             
-            catch (Exception e) {
-                userFont =  new FontUIResource("Dialog", Font.PLAIN, DEFAULT_FONT_SIZE);
-            } 
-            
-        } 
-        
+                        Font.getFont("swing.plaf.metal.userFont",
+                                new Font("Dialog", Font.PLAIN, DEFAULT_FONT_SIZE)));
+            } catch (Exception e) {
+                userFont = new FontUIResource("Dialog", Font.PLAIN, DEFAULT_FONT_SIZE);
+            }
+
+        }
+
         return userFont;
     }
-    
+
     public FontUIResource getMenuTextFont() {
-        
+
         if (menuFont == null) {
-            
+
             try {
                 menuFont = new FontUIResource(
-                                    Font.getFont("swing.plaf.metal.menuFont",
-                                    new Font("Dialog", Font.PLAIN, DEFAULT_FONT_SIZE)));
-            }             
-            catch (Exception e) {
+                        Font.getFont("swing.plaf.metal.menuFont",
+                                new Font("Dialog", Font.PLAIN, DEFAULT_FONT_SIZE)));
+            } catch (Exception e) {
                 menuFont = new FontUIResource("Dialog", Font.PLAIN, DEFAULT_FONT_SIZE);
-            } 
-            
-        } 
-        
+            }
+
+        }
+
         return menuFont;
-        
+
     }
-    
+
     public FontUIResource getWindowTitleFont() {
-        
+
         if (controlFont == null) {
-            
+
             try {
                 controlFont = new FontUIResource(
-                                        Font.getFont("swing.plaf.metal.controlFont",
-                                        new Font("Dialog", Font.PLAIN, DEFAULT_FONT_SIZE)));
-            } 
-            catch (Exception e) {
+                        Font.getFont("swing.plaf.metal.controlFont",
+                                new Font("Dialog", Font.PLAIN, DEFAULT_FONT_SIZE)));
+            } catch (Exception e) {
                 controlFont = new FontUIResource("Dialog", Font.BOLD, DEFAULT_FONT_SIZE);
-            } 
-            
-        } 
-        
+            }
+
+        }
+
         return controlFont;
-        
+
     }
-    
+
     public FontUIResource getSubTextFont() {
-        
+
         if (smallFont == null) {
-            
+
             try {
                 smallFont = new FontUIResource(Font.getFont("swing.plaf.metal.smallFont",
-                                               new Font("Dialog", Font.PLAIN, 10)));
-            }
-            catch (Exception e) {
+                        new Font("Dialog", Font.PLAIN, 10)));
+            } catch (Exception e) {
                 smallFont = new FontUIResource("Dialog", Font.PLAIN, 10);
-            } 
-            
-        } 
-        
+            }
+
+        }
+
         return smallFont;
-        
+
     }
-    
+
     protected ColorUIResource getPrimary1() {
         return primary1;
     }
-    
+
     protected ColorUIResource getPrimary2() {
         return primary2;
     }
-    
+
     protected ColorUIResource getPrimary3() {
         return primary3;
     }
-    
+
     protected ColorUIResource getSecondary1() {
         return secondary1;
     }
-    
+
     protected ColorUIResource getSecondary2() {
         return secondary2;
     }
-    
+
     protected ColorUIResource getSecondary3() {
         return secondary3;
     }
-   
+
 }
 
 

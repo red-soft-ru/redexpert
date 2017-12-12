@@ -31,9 +31,9 @@ public interface DerivedTableStrategy {
     String SET = "SET";
     String ALTER_TABLE = "ALTER TABLE";
     String DROP_TABLE = "DROP TABLE";
-    
+
     List<QueryTable> deriveTables(String query);
-    
+
 }
 
 

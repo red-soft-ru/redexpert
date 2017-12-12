@@ -1,6 +1,5 @@
 package org.executequery.gui.browser.managment;
 
-import org.executequery.gui.browser.managment.FrameListener;
 import org.executequery.gui.browser.UserManagerPanel;
 import org.executequery.localization.Bundles;
 

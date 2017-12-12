@@ -20,16 +20,13 @@
 
 package org.underworldlabs.swing.menu;
 
-import java.awt.Dimension;
-
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JMenuItem;
-
 import org.executequery.gui.GUIConstants;
 
+import javax.swing.*;
+import java.awt.*;
+
 public class MainMenuItem extends JMenuItem {
-    
+
     public MainMenuItem() {
         super();
     }
@@ -53,6 +50,6 @@ public class MainMenuItem extends JMenuItem {
 
         return preferredSize;
     }
-    
+
 }
 

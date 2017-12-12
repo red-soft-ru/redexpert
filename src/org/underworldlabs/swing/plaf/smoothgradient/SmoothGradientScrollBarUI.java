@@ -20,77 +20,70 @@
 
 package org.underworldlabs.swing.plaf.smoothgradient;
 
-import java.awt.Adjustable;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.metal.MetalScrollBarUI;
+import java.awt.*;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public final class SmoothGradientScrollBarUI extends MetalScrollBarUI {
-    
-    private static final String PROPERTY_PREFIX	  = "ScrollBar.";
-    public  static final String MAX_BUMPS_WIDTH_KEY = PROPERTY_PREFIX + "maxBumpsWidth";
-    
+
+    private static final String PROPERTY_PREFIX = "ScrollBar.";
+    public static final String MAX_BUMPS_WIDTH_KEY = PROPERTY_PREFIX + "maxBumpsWidth";
+
     private static Color shadowColor;
     private static Color highlightColor;
     private static Color darkShadowColor;
     private static Color thumbColor;
     private static Color thumbShadow;
     private static Color thumbHighlightColor;
-    
+
     private static Color centerLineHighlight;
     private static Color centerLineShadow;
-    
+
     // private SmoothGradientBumps bumps;
-    
+
     public static ComponentUI createUI(JComponent b) {
         return new SmoothGradientScrollBarUI();
     }
-    
+
     protected void installDefaults() {
         super.installDefaults();
         //bumps = new SmoothGradientBumps(10, 10, thumbHighlightColor, thumbShadow, thumbColor);
     }
-    
+
     protected JButton createDecreaseButton(int orientation) {
         decreaseButton = new SmoothGradientArrowButton(orientation, scrollBarWidth, isFreeStanding);
         return decreaseButton;
     }
-    
-    
+
+
     protected JButton createIncreaseButton(int orientation) {
         increaseButton = new SmoothGradientArrowButton(orientation, scrollBarWidth, isFreeStanding);
         return increaseButton;
     }
-    
+
     protected void configureScrollBarColors() {
         super.configureScrollBarColors();
-        shadowColor         = UIManager.getColor(PROPERTY_PREFIX + "shadow");
-        highlightColor      = UIManager.getColor(PROPERTY_PREFIX + "highlight");
-        darkShadowColor     = UIManager.getColor(PROPERTY_PREFIX + "darkShadow");
-        thumbColor          = UIManager.getColor(PROPERTY_PREFIX + "thumb");
-        thumbShadow         = UIManager.getColor(PROPERTY_PREFIX + "thumbShadow");
+        shadowColor = UIManager.getColor(PROPERTY_PREFIX + "shadow");
+        highlightColor = UIManager.getColor(PROPERTY_PREFIX + "highlight");
+        darkShadowColor = UIManager.getColor(PROPERTY_PREFIX + "darkShadow");
+        thumbColor = UIManager.getColor(PROPERTY_PREFIX + "thumb");
+        thumbShadow = UIManager.getColor(PROPERTY_PREFIX + "thumbShadow");
         thumbHighlightColor = UIManager.getColor(PROPERTY_PREFIX + "thumbHighlight");
-        
-        centerLineHighlight = new Color(198,198,229);
-        centerLineShadow = new Color(109,109,177);
-        
+
+        centerLineHighlight = new Color(198, 198, 229);
+        centerLineShadow = new Color(109, 109, 177);
+
     }
-    
+
     protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
         g.translate(trackBounds.x, trackBounds.y);
-        
+
         boolean leftToRight = SmoothGradientUtils.isLeftToRight(c);
-        
+
         if (scrollbar.getOrientation() == Adjustable.VERTICAL) {
             if (!isFreeStanding) {
                 if (!leftToRight) {
@@ -100,14 +93,14 @@ public final class SmoothGradientScrollBarUI extends MetalScrollBarUI {
                     trackBounds.width += 2;
                 }
             }
-            
+
             if (c.isEnabled()) {
                 g.setColor(darkShadowColor);
                 g.drawLine(0, 0, 0, trackBounds.height - 1);
                 g.drawLine(trackBounds.width - 2, 0, trackBounds.width - 2, trackBounds.height - 1);
                 g.drawLine(1, trackBounds.height - 1, trackBounds.width - 1, trackBounds.height - 1);
                 g.drawLine(1, 0, trackBounds.width - 2, 0);
-                
+
                 g.setColor(shadowColor);
 //                	g.setColor( Color.red);
                 g.drawLine(1, 1, 1, trackBounds.height - 2);
@@ -121,7 +114,7 @@ public final class SmoothGradientScrollBarUI extends MetalScrollBarUI {
             } else {
                 SmoothGradientUtils.drawDisabledBorder(g, 0, 0, trackBounds.width, trackBounds.height);
             }
-            
+
             if (!isFreeStanding) {
                 if (!leftToRight) {
                     trackBounds.width -= 1;
@@ -134,7 +127,7 @@ public final class SmoothGradientScrollBarUI extends MetalScrollBarUI {
             if (!isFreeStanding) {
                 trackBounds.height += 2;
             }
-            
+
             if (c.isEnabled()) {
                 g.setColor(darkShadowColor);
                 g.drawLine(0, 0, trackBounds.width - 1, 0); // top
@@ -142,7 +135,7 @@ public final class SmoothGradientScrollBarUI extends MetalScrollBarUI {
                 g.drawLine(0, trackBounds.height - 2, trackBounds.width - 1, trackBounds.height - 2);
                 // bottom
                 g.drawLine(trackBounds.width - 1, 1, trackBounds.width - 1, trackBounds.height - 1);
-                
+
                 // right
                 g.setColor(shadowColor);
                 //	g.setColor( Color.red);
@@ -157,27 +150,27 @@ public final class SmoothGradientScrollBarUI extends MetalScrollBarUI {
             } else {
                 SmoothGradientUtils.drawDisabledBorder(g, 0, 0, trackBounds.width, trackBounds.height);
             }
-            
+
             if (!isFreeStanding) {
                 trackBounds.height -= 2;
             }
         }
         g.translate(-trackBounds.x, -trackBounds.y);
     }
-    
-    
+
+
     protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
-        
+
         if (!c.isEnabled()) {
             return;
         }
-        
+
         boolean leftToRight = SmoothGradientUtils.isLeftToRight(c);
-        
+
         g.translate(thumbBounds.x, thumbBounds.y);
-        
+
         if (scrollbar.getOrientation() == Adjustable.VERTICAL) {
-            
+
             if (!isFreeStanding) {
                 if (!leftToRight) {
                     thumbBounds.width += 1;
@@ -185,33 +178,33 @@ public final class SmoothGradientScrollBarUI extends MetalScrollBarUI {
                 } else {
                     thumbBounds.width += 2;
                 }
-                
+
             }
-            
+
             g.setColor(thumbColor);
             g.fillRect(0, 0, thumbBounds.width - 2, thumbBounds.height - 1);
-            
+
             g.setColor(thumbShadow);
             g.drawRect(0, 0, thumbBounds.width - 2, thumbBounds.height - 1);
-            
+
             g.setColor(thumbHighlightColor);
             g.drawLine(1, 1, thumbBounds.width - 3, 1);
             g.drawLine(1, 1, 1, thumbBounds.height - 2);
-            
+
             //			paintBumps(g, c, 3, 4, thumbBounds.width - 6, thumbBounds.height - 7);
 
             if (is3D()) {
-            
+
                 // draw the center lines
                 int lineY = 4 + (thumbBounds.height - 13) / 2;
                 g.setColor(centerLineHighlight);
                 g.drawLine(4, lineY, 11, lineY);
-                g.drawLine(4, lineY+3, 11, lineY+3);
-                g.drawLine(4, lineY+6, 11, lineY+6);
+                g.drawLine(4, lineY + 3, 11, lineY + 3);
+                g.drawLine(4, lineY + 6, 11, lineY + 6);
                 g.setColor(centerLineShadow);
-                g.drawLine(5, lineY+1, 12, lineY+1);
-                g.drawLine(5, lineY+4, 12, lineY+4);
-                g.drawLine(5, lineY+7, 12, lineY+7);
+                g.drawLine(5, lineY + 1, 12, lineY + 1);
+                g.drawLine(5, lineY + 4, 12, lineY + 4);
+                g.drawLine(5, lineY + 7, 12, lineY + 7);
             }
 
             if (!isFreeStanding) {
@@ -223,56 +216,56 @@ public final class SmoothGradientScrollBarUI extends MetalScrollBarUI {
                 }
             }
         } else { // HORIZONTAL
-            
+
             if (!isFreeStanding) {
                 thumbBounds.height += 2;
             }
-            
+
             g.setColor(thumbColor);
             g.fillRect(0, 0, thumbBounds.width - 1, thumbBounds.height - 2);
-            
+
             g.setColor(thumbShadow);
             g.drawRect(0, 0, thumbBounds.width - 1, thumbBounds.height - 2);
-            
+
             g.setColor(thumbHighlightColor);
             g.drawLine(1, 1, thumbBounds.width - 2, 1);
             g.drawLine(1, 1, 1, thumbBounds.height - 3);
-            
+
             //			paintBumps(g, c, 4, 3, thumbBounds.width - 7, thumbBounds.height - 6);
-            
+
             // draw the center lines
 
             if (is3D()) {
-            
+
                 int lineX = (thumbBounds.width - 7) / 2;
-                
+
                 g.setColor(centerLineShadow);
                 g.drawLine(lineX, 4, lineX, 11);
-                g.drawLine(lineX+3, 4, lineX+3, 11);
-                g.drawLine(lineX+6, 4, lineX+6, 11);
+                g.drawLine(lineX + 3, 4, lineX + 3, 11);
+                g.drawLine(lineX + 6, 4, lineX + 6, 11);
                 g.setColor(centerLineHighlight);
-                g.drawLine(lineX+1, 5, lineX+1, 12);
-                g.drawLine(lineX+4, 5, lineX+4, 12);
-                g.drawLine(lineX+7, 5, lineX+7, 12);
+                g.drawLine(lineX + 1, 5, lineX + 1, 12);
+                g.drawLine(lineX + 4, 5, lineX + 4, 12);
+                g.drawLine(lineX + 7, 5, lineX + 7, 12);
             }
 
             if (!isFreeStanding) {
                 thumbBounds.height -= 2;
             }
-            
+
         }
-        
+
         g.translate(-thumbBounds.x, -thumbBounds.y);
-        
+
         if (is3D())
             paintThumb3D(g, thumbBounds);
-        
+
     }
 
     private boolean is3D() {
         return SmoothGradientUtils.is3D(PROPERTY_PREFIX);
     }
-    
+
     /*
     private void paintBumps(Graphics g, JComponent c, int x, int y, int width, int height) {
 //		if (!useNarrowBumps()) {
@@ -292,13 +285,13 @@ public final class SmoothGradientScrollBarUI extends MetalScrollBarUI {
      */
     private void paintThumb3D(Graphics g, Rectangle thumbBounds) {
         boolean isHorizontal = scrollbar.getOrientation() == Adjustable.HORIZONTAL;
-        int width   = thumbBounds.width  - (isHorizontal ? 3 : 1);
-        int height  = thumbBounds.height - (isHorizontal ? 1 : 3);
+        int width = thumbBounds.width - (isHorizontal ? 3 : 1);
+        int height = thumbBounds.height - (isHorizontal ? 1 : 3);
         Rectangle r = new Rectangle(thumbBounds.x + 2, thumbBounds.y + 2, width, height);
         SmoothGradientUtils.addLight3DEffekt(g, r, isHorizontal);
     }
-    
-    
+
+
     // Accessing Special Client Properties **********************************************
     
     /*

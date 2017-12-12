@@ -20,59 +20,59 @@
 
 package org.executequery.gui.browser;
 
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.table.AbstractTableModel;
-
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseCatalog;
 import org.executequery.databaseobjects.DatabaseSchema;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CatalogPanel extends BrowserNodeBasePanel {
-    
+
     public static final String NAME = "CatalogPanel";
-    
+
     private CatalogModel model;
-    
-    /** the browser's control object */
+
+    /**
+     * the browser's control object
+     */
     private BrowserController controller;
 
     public CatalogPanel(BrowserController controller) {
 
-        super(Bundles.get(CatalogPanel.class,"catalogName"));
+        super(Bundles.get(CatalogPanel.class, "catalogName"));
 
         this.controller = controller;
-        
+
         try {
 
             init();
 
         } catch (Exception e) {
-          
+
             e.printStackTrace();
         }
     }
-    
+
     private void init() throws Exception {
 
         model = new CatalogModel();
         table().setModel(model);
-        
+
         tablePanel().setBorder(BorderFactory.createTitledBorder("Available Schemas"));
-        
+
         setHeaderText(bundleString("DatabaseCatalog"));
-        setHeaderIcon(GUIUtilities.loadIcon("DBImage24.png"));        
+        setHeaderIcon(GUIUtilities.loadIcon("DBImage24.png"));
     }
-    
+
     public String getLayoutName() {
-        
+
         return NAME;
     }
 
@@ -81,37 +81,39 @@ public class CatalogPanel extends BrowserNodeBasePanel {
         return bundleString("DatabaseCatalog") + ": ";
     }
 
-    public void refresh() {}
-    
-    public void cleanup() {}
+    public void refresh() {
+    }
+
+    public void cleanup() {
+    }
 
     public void setValues(DatabaseCatalog catalog) {
-    
+
         typeField().setText(catalog.getName());
-        
+
         try {
 
             model.setValues(catalog.getSchemas());
 
         } catch (DataSourceException e) {
-           
+
             controller.handleException(e);
         }
     }
-    
+
     private class CatalogModel extends AbstractTableModel {
-        
+
         private List<DatabaseSchema> values;
         private String header = bundleString("SchemaName");
-        
+
         public void setValues(List<DatabaseSchema> values) {
 
             this.values = values;
             fireTableDataChanged();
         }
-        
+
         public int getRowCount() {
-            
+
             if (hasValues()) {
 
                 return values.size();
@@ -119,37 +121,37 @@ public class CatalogPanel extends BrowserNodeBasePanel {
 
             return 0;
         }
-        
+
         public int getColumnCount() {
-            
+
             return 1;
         }
-        
+
         public String getColumnName(int col) {
 
             return header;
         }
-        
+
         public Object getValueAt(int row, int col) {
-            
+
             if (hasValues()) {
 
                 return values.get(row);
             }
-            
-            return null; 
+
+            return null;
         }
 
         public boolean isCellEditable(int rowIndex, int columnIndex) {
 
             return false;
         }
-        
+
         private boolean hasValues() {
 
             return values != null && !values.isEmpty();
         }
 
     }
-    
+
 }

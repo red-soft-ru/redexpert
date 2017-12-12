@@ -2,14 +2,12 @@ package org.executequery.components.table;
 
 import sun.swing.DefaultLookup;
 
-import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.*;
-public class RowHeaderRenderer extends JLabel implements ListCellRenderer
-{
+import java.awt.*;
+
+public class RowHeaderRenderer extends JLabel implements ListCellRenderer {
     private static final Border SAFE_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
     private static final Border DEFAULT_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
     protected static Border noFocusBorder = DEFAULT_NO_FOCUS_BORDER;
@@ -82,8 +80,8 @@ public class RowHeaderRenderer extends JLabel implements ListCellRenderer
     }
 
     // implements javax.swing.table.TableCellRenderer
+
     /**
-     *
      * Returns the default table cell renderer.
      * <p>
      * During a printing operation, this method will be called with
@@ -93,17 +91,17 @@ public class RowHeaderRenderer extends JLabel implements ListCellRenderer
      * or not the table is being printed, check the return value from
      * {@link javax.swing.JComponent#isPaintingForPrint()}.
      *
-     * @param table  the <code>JTable</code>
-     * @param value  the value to assign to the cell at
-     *                  <code>[row, column]</code>
+     * @param table      the <code>JTable</code>
+     * @param value      the value to assign to the cell at
+     *                   <code>[row, column]</code>
      * @param isSelected true if cell is selected
-     * @param hasFocus true if cell has focus
-     * @param index  the row of the cell to render
+     * @param hasFocus   true if cell has focus
+     * @param index      the row of the cell to render
      * @return the default table cell renderer
      * @see javax.swing.JComponent#isPaintingForPrint()
      */
-    public Component getListCellRendererComponent(JList table, Object value,int index,
-                                                   boolean isSelected, boolean hasFocus) {
+    public Component getListCellRendererComponent(JList table, Object value, int index,
+                                                  boolean isSelected, boolean hasFocus) {
         if (table == null) {
             return this;
         }
@@ -161,7 +159,7 @@ public class RowHeaderRenderer extends JLabel implements ListCellRenderer
             }
             setBorder(border);
 
-            if (!isSelected ) {
+            if (!isSelected) {
                 Color col;
                 col = DefaultLookup.getColor(this, ui, "Table.focusCellForeground");
                 if (col != null) {
@@ -229,35 +227,40 @@ public class RowHeaderRenderer extends JLabel implements ListCellRenderer
      *
      * @since 1.5
      */
-    public void invalidate() {}
+    public void invalidate() {
+    }
 
     /**
      * Overridden for performance reasons.
      * See the <a href="#override">Implementation Note</a>
      * for more information.
      */
-    public void validate() {}
+    public void validate() {
+    }
 
     /**
      * Overridden for performance reasons.
      * See the <a href="#override">Implementation Note</a>
      * for more information.
      */
-    public void revalidate() {}
+    public void revalidate() {
+    }
 
     /**
      * Overridden for performance reasons.
      * See the <a href="#override">Implementation Note</a>
      * for more information.
      */
-    public void repaint(long tm, int x, int y, int width, int height) {}
+    public void repaint(long tm, int x, int y, int width, int height) {
+    }
 
     /**
      * Overridden for performance reasons.
      * See the <a href="#override">Implementation Note</a>
      * for more information.
      */
-    public void repaint(Rectangle r) { }
+    public void repaint(Rectangle r) {
+    }
 
     /**
      * Overridden for performance reasons.
@@ -276,7 +279,7 @@ public class RowHeaderRenderer extends JLabel implements ListCellRenderer
      */
     protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
         // Strings get interned...
-        if (propertyName=="text"
+        if (propertyName == "text"
                 || propertyName == "labelFor"
                 || propertyName == "displayedMnemonic"
                 || ((propertyName == "font" || propertyName == "foreground")
@@ -292,25 +295,24 @@ public class RowHeaderRenderer extends JLabel implements ListCellRenderer
      * See the <a href="#override">Implementation Note</a>
      * for more information.
      */
-    public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) { }
+    public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
+    }
 
 
     /**
      * Sets the <code>String</code> object for the cell being rendered to
      * <code>value</code>.
      *
-     * @param value  the string value for this cell; if value is
-     *          <code>null</code> it sets the text value to an empty string
+     * @param value the string value for this cell; if value is
+     *              <code>null</code> it sets the text value to an empty string
      * @see JLabel#setText
-     *
      */
     protected void setValue(Object value) {
 
         if (!value.getClass().equals(String.class)) {
             setText("");
-            setIcon((Icon)value);
-        }
-        else {
+            setIcon((Icon) value);
+        } else {
             setIcon(null);
             setText((String) value);
         }
@@ -336,8 +338,7 @@ public class RowHeaderRenderer extends JLabel implements ListCellRenderer
      * Please see {@link java.beans.XMLEncoder}.
      */
     public static class UIResource extends javax.swing.table.DefaultTableCellRenderer
-            implements javax.swing.plaf.UIResource
-    {
+            implements javax.swing.plaf.UIResource {
     }
 
 }

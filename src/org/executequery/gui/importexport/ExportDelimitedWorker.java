@@ -20,6 +20,13 @@
 
 package org.executequery.gui.importexport;
 
+import org.apache.commons.lang.StringUtils;
+import org.executequery.Constants;
+import org.executequery.gui.browser.ColumnData;
+import org.executequery.log.Log;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.swing.util.SwingWorker;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -36,27 +43,21 @@ import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
-import org.executequery.Constants;
-import org.executequery.gui.browser.ColumnData;
-import org.executequery.log.Log;
-import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.util.SwingWorker;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ExportDelimitedWorker extends AbstractImportExportWorker {
-    
-    /** The thread worker object for this process */
+
+    /**
+     * The thread worker object for this process
+     */
     private SwingWorker worker;
-    
-    /** 
-     * Constructs a new instance with the specified parent object 
+
+    /**
+     * Constructs a new instance with the specified parent object
      * and progress output panel.
      *
-     * @param parent - the parent for this process
+     * @param parent   - the parent for this process
      * @param progress - the progress panel
      */
     public ExportDelimitedWorker(ImportExportDataProcess parent,
@@ -64,21 +65,23 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
         super(parent, progress);
         transferData();
     }
-    
-    /** <p>Begins the transfer process setting up the
-     *  <code>SwingWorker</code> and creating the progress
-     *  dialog.
+
+    /**
+     * <p>Begins the transfer process setting up the
+     * <code>SwingWorker</code> and creating the progress
+     * dialog.
      */
     private void transferData() {
         reset();
-        
+
         // create the worker
         worker = new SwingWorker() {
             public Object construct() {
                 return doWork();
             }
+
             public void finished() {
-                String result = (String)get();
+                String result = (String) get();
                 setResult(result);
 
                 releaseResources(getParent().getDatabaseConnection());
@@ -90,17 +93,19 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
         };
         worker.start();
     }
-    
-    /** <p>Performs the actual processing for the worker. */
+
+    /**
+     * <p>Performs the actual processing for the worker.
+     */
     private Object doWork() {
-        
+
         // counter variables
         int tableCount = 0;
         int totalRecordCount = 0;
         int errorCount = 0;
-        
+
         appendProgressText("Beginning export to delimited file process...");
-        appendProgressText("Using connection: " + 
+        appendProgressText("Using connection: " +
                 getParent().getDatabaseConnection().getName());
 
         // record the start time
@@ -112,7 +117,7 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
 
         ResultSet rset = null;
 //        PrintWriter writer = null;
-        
+
         BufferedWriter writer = null;
         try {
 
@@ -126,7 +131,7 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
             boolean includeColumnNames = getParent().includeColumnNames();
 
             boolean quoteCharacterValues = getParent().quoteCharacterValues();
-            
+
             // row data output buffer
             StringBuilder rowData = new StringBuilder(5000);
 
@@ -141,32 +146,32 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
             int columnCount = -1;
             int recordCount = 0;
             int totalRecords = 0;
-            
+
             DateFormat dateFormat = null;
-            
+
             boolean parseDateValues = parseDateValues();
             if (parseDateValues) {
-                
+
                 dateFormat = createDateFormatter();
             }
 
             // ----------------------------------------
             // --- begin looping through the tables ---
             // ----------------------------------------
-            
+
             for (int i = 0; i < fileCount; i++) {
-                
+
                 tableCount++;
                 setProgressStatus(0);
 
-                DataTransferObject dto = (DataTransferObject)files.elementAt(i);
-                
+                DataTransferObject dto = (DataTransferObject) files.elementAt(i);
+
                 totalRecords = getTableRecordCount(dto.getTableName());
                 setProgressBarMaximum(totalRecords);
 
                 // initialise the file object
                 File exportFile = new File(dto.getFileName());
-                
+
                 // append some output
                 outputBuffer.append("---------------------------\nTable: ");
                 outputBuffer.append(dto.getTableName());
@@ -183,7 +188,7 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
                 // initialise the writer
                 Path path = Paths.get(exportFile.getAbsolutePath());
                 writer = Files.newBufferedWriter(path, Charset.forName("UTF-8"));
-                
+
                 // print the column names if specified to do so
                 if (includeColumnNames) {
                     for (int k = 0, n = columnCount - 1; k < columnCount; k++) {
@@ -194,18 +199,18 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
                     }
                     writer.write(rowData.toString());
                     writer.newLine();
-                    
+
                     rowData.setLength(0);
                 }
 
                 appendProgressText("Exporting data...");
-                
+
                 // retrieve the result set
                 rset = getResultSet(dto.getTableName(), columns);
-                
+
                 // start the loop over results
                 while (rset.next()) {
-                    
+
                     if (Thread.interrupted()) {
                         rset.close();
                         rset = null;
@@ -213,9 +218,9 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
                         setProgressStatus(totalRecords);
                         throw new InterruptedException();
                     }
-                    
+
                     setProgressStatus(recordCount);
-                    
+
                     for (int j = 1; j <= columnCount; j++) {
 
                         String value = rset.getString(j);
@@ -225,17 +230,17 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
 
                             value = Constants.EMPTY;
 
-                        } else { 
-                            
+                        } else {
+
                             if ((parseDateValues && dateFormat != null) &&
                                     column.isDateDataType()) {
-    
+
                                 value = dateFormat.format(rset.getDate(j));
-                            
+
                             } else {
 
                                 if (trimWhitespace) {
-                                    
+
                                     value = value.trim();
                                 }
 
@@ -243,18 +248,18 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
                             }
 
                         }
-                        
+
                         boolean isCharType = column.isCharacterType();
                         if (isCharType && quoteCharacterValues) {
-                            
-                            rowData.append("\"");                            
+
+                            rowData.append("\"");
                         }
-                        
+
                         rowData.append(value);
 
                         if (isCharType && quoteCharacterValues) {
-                            
-                            rowData.append("\"");                            
+
+                            rowData.append("\"");
                         }
 
                         if (j != columnCount) {
@@ -263,7 +268,7 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
                         }
 
                     }
-                    
+
                     writer.write(rowData.toString());
                     writer.newLine();
 
@@ -275,14 +280,14 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
                 rset.close();
                 stmnt.close();
                 writer.close();
-                
+
                 setProgressStatus(totalRecords);
-                
+
                 recordCount = 0;
                 outputBuffer.append("Export successful for table: ");
                 outputBuffer.append(dto.getTableName());
                 appendProgressText(outputBuffer);
-                
+
                 appendFileInfo(exportFile);
                 
                 /*
@@ -291,39 +296,33 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
                 }
                 */
             }
-            
+
             return SUCCESS;
-        }
-        
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             cancelStatement();
             return CANCELLED;
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             logException(e);
             outputExceptionError("SQL error exporting table data to file", e);
             return FAILED;
-        }
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             logException(e);
             outputExceptionError("Error exporting table data to file", e);
             return FAILED;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logException(e);
             outputExceptionError("I/O error exporting table data to file", e);
             return FAILED;
-        }
-        catch (OutOfMemoryError e) {
+        } catch (OutOfMemoryError e) {
             outputExceptionError("Error exporting table data to file", e);
             return FAILED;
-        }
-        finally {
+        } finally {
 
             if (rset != null) {
                 try {
                     rset.close();
-                } catch (SQLException e) {}
+                } catch (SQLException e) {
+                }
             }
 
             finish();
@@ -333,18 +332,18 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
             setRecordCountProcessed(totalRecordCount);
         }
     }
-    
+
     private static final String NEW_LINE_REPLACEMENT = "\\\\n";
     private static final String CARRIAGE_RETURN_REPLACEMENT = "\\\\r";
 
     private Matcher newLineMatcher = Pattern.compile("\n").matcher(StringUtils.EMPTY);
     private Matcher carriageReturnMatcher = Pattern.compile("\r").matcher(StringUtils.EMPTY);
-    
+
     private String formatString(String value) {
 
         String formattedValue = newLineMatcher.reset(value).replaceAll(NEW_LINE_REPLACEMENT);
         formattedValue = carriageReturnMatcher.reset(formattedValue).replaceAll(CARRIAGE_RETURN_REPLACEMENT);
-        
+
         return formattedValue;
     }
 
@@ -354,8 +353,8 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
         }
     }
 
-    /** 
-     * Cancels an in progress SQL statement. 
+    /**
+     * Cancels an in progress SQL statement.
      */
     private void cancelStatement() {
         if (stmnt == null) {
@@ -365,23 +364,25 @@ public class ExportDelimitedWorker extends AbstractImportExportWorker {
             stmnt.cancel();
             stmnt.close();
             stmnt = null;
-        } catch (SQLException e) {}
+        } catch (SQLException e) {
+        }
     }
-    
+
     /**
-     * Cancels the current in-process transfer. 
+     * Cancels the current in-process transfer.
      */
     public void cancelTransfer() {
         worker.interrupt();
         getParent().cancelTransfer();
     }
-    
-    /** 
-     * Indicates that the process has completed. 
+
+    /**
+     * Indicates that the process has completed.
      */
-    public void finished() {}
-    
-    
+    public void finished() {
+    }
+
+
 }
 
 

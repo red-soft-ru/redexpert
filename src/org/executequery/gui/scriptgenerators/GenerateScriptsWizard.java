@@ -48,64 +48,88 @@ import java.util.List;
 /**
  * Base panel for the generate scripts process.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class GenerateScriptsWizard extends WizardProcessPanel
-                                   implements ActiveComponent,
-                                              ItemSelectionListener {
-    
+        implements ActiveComponent,
+        ItemSelectionListener {
+
     public static final String TITLE = "Generate SQL Scripts";
     public static final String FRAME_ICON = "CreateScripts16.png";
 
-    /** script type identifier for DROP TABLE */
+    /**
+     * script type identifier for DROP TABLE
+     */
     public static final int DROP_TABLES = 0;
 
-    /** script type identifier for CREATE TABLE */
+    /**
+     * script type identifier for CREATE TABLE
+     */
     public static final int CREATE_TABLES = 1;
 
-    /** indicator to include constraints as ALTER TABLE statements */
+    /**
+     * indicator to include constraints as ALTER TABLE statements
+     */
     public static final int ALTER_TABLE_CONSTRAINTS = 0;
-    
-    /** indicator to include constraints with CREATE TABLE statements */
+
+    /**
+     * indicator to include constraints with CREATE TABLE statements
+     */
     public static final int CREATE_TABLE_CONSTRAINTS = 1;
-    
-    /** the first panel */
+
+    /**
+     * the first panel
+     */
     private GenerateScriptsPanelOne firstPanel;
-    
-    /** the second panel */
+
+    /**
+     * the second panel
+     */
     private GenerateScriptsPanelTwo secondPanel;
-    
-    /** the third panel */
+
+    /**
+     * the third panel
+     */
     private GenerateScriptsPanelThree thirdPanel;
-    
-    /** the fourth and final panel */
+
+    /**
+     * the fourth and final panel
+     */
     private GenerateScriptsPanelFour fourthPanel;
-    
-    /** the wizard model */
+
+    /**
+     * the wizard model
+     */
     private GenerateScriptsWizardModel model;
-    
-    /** the parent container */
+
+    /**
+     * the parent container
+     */
     private ActionContainer parent;
 
     private TableSelectionCombosGroup combosGroup;
-    
-    /** the panel dimension */
+
+    /**
+     * the panel dimension
+     */
     protected static final Dimension CHILD_DIMENSION = new Dimension(525, 320);
-    
-    /** Creates a new instance of GenerateScriptsWizard */
+
+    /**
+     * Creates a new instance of GenerateScriptsWizard
+     */
     public GenerateScriptsWizard(ActionContainer parent) {
 
         this.parent = parent;
 
         model = new GenerateScriptsWizardModel();
-        
+
         setModel(model);
 
         setHelpAction(ActionBuilder.get("help-command"), "generate-scripts");
 
         firstPanel = new GenerateScriptsPanelOne(this);
         secondPanel = new GenerateScriptsPanelTwo(this);
-        
+
         combosGroup = new TableSelectionCombosGroup(
                 firstPanel.getConnectionsCombo(), secondPanel.getSchemasCombo());
 
@@ -135,12 +159,12 @@ public class GenerateScriptsWizard extends WizardProcessPanel
         combosGroup.addItemSelectionListener(this);
 
         model.addPanel(firstPanel);
-        
+
         prepare();
     }
-    
+
     public void itemStateChanging(ItemEvent e) {
-        
+
         parent.block();
     }
 
@@ -150,40 +174,40 @@ public class GenerateScriptsWizard extends WizardProcessPanel
 
             DatabaseSource source = getSelectedSource();
 
-            if (source != null) { 
+            if (source != null) {
 
                 List<NamedObject> tables = combosGroup.tablesForSchema(source);
                 secondPanel.schemaSelectionChanged(tables);
             }
-            
+
         } catch (DataSourceException e) {
-            
+
             Log.error("Error on table selection for index", e);
 
         } finally {
-        
+
             parent.unblock();
         }
 
     }
 
     public DatabaseSource getSelectedSource() {
-        
+
         return combosGroup.getSelectedSource();
     }
-    
+
     public int getSelectedItemCount() {
-        
+
         List<NamedObject> tables = getSelectedTables();
-        
+
         if (tables != null) {
-            
+
             return tables.size();
         }
-        
+
         return 0;
     }
-    
+
     public List<NamedObject> getSelectedTables() {
 
         return secondPanel.getSelectedTables();
@@ -197,15 +221,15 @@ public class GenerateScriptsWizard extends WizardProcessPanel
     protected boolean cascadeWithDrop() {
         return thirdPanel.cascadeWithDrop();
     }
-    
+
     /**
-     * Returns the constraints definition format - 
+     * Returns the constraints definition format -
      * as ALTER TABLE statements or within the CREATE TABLE statements.
      */
     protected int getConstraintsStyle() {
         return thirdPanel.getConstraintsStyle();
     }
-    
+
     /**
      * Returns the output file path.
      *
@@ -214,11 +238,11 @@ public class GenerateScriptsWizard extends WizardProcessPanel
     protected String getOutputFilePath() {
         return thirdPanel.getOutputFilePath();
     }
-    
+
     protected boolean isWritingToFile() {
         return thirdPanel.isWritingToFile();
     }
-    
+
     /**
      * Returns the type of script to be generated.
      *
@@ -227,7 +251,7 @@ public class GenerateScriptsWizard extends WizardProcessPanel
     protected int getScriptType() {
         return firstPanel.getScriptType();
     }
-    
+
     /**
      * Starts the script generation process.
      */
@@ -239,7 +263,7 @@ public class GenerateScriptsWizard extends WizardProcessPanel
 
         fourthPanel.start();
     }
-    
+
     /**
      * Defines the action for the NEXT button.
      */
@@ -247,34 +271,34 @@ public class GenerateScriptsWizard extends WizardProcessPanel
         JPanel nextPanel = null;
         int index = model.getSelectedIndex();
         switch (index) {
-            
+
             case 0:
                 if (secondPanel == null) {
                     secondPanel = new GenerateScriptsPanelTwo(this);
                 }
                 nextPanel = secondPanel;
                 break;
-                
+
             case 1:
-                
+
                 if (!secondPanel.hasSelections()) {
                     GUIUtilities.displayErrorMessage(
                             "You must select at least one table.");
                     return false;
                 }
-                
+
                 if (thirdPanel == null) {
                     thirdPanel = new GenerateScriptsPanelThree(this);
                 }
                 nextPanel = thirdPanel;
                 break;
-                
+
             case 2:
-                
+
                 if (!thirdPanel.hasOutputStrategy()) {
                     GUIUtilities.displayErrorMessage(
                             "You must select either an output file to write to\n" +
-                            "or select to view within a Query Editor.");
+                                    "or select to view within a Query Editor.");
                     return false;
                 }
 
@@ -301,10 +325,12 @@ public class GenerateScriptsWizard extends WizardProcessPanel
         setCancelButtonText(Bundles.get("common.cancel.button"));
         return true;
     }
-    
-    /** whether the process was successful */
+
+    /**
+     * whether the process was successful
+     */
     private boolean processSuccessful;
-    
+
     protected void finished(boolean success) {
         setButtonsEnabled(true);
         setNextButtonEnabled(false);
@@ -315,10 +341,10 @@ public class GenerateScriptsWizard extends WizardProcessPanel
         if (success) {
             setCancelButtonText("Finish");
         }
-        
+
     }
 
-    /** 
+    /**
      * Defines the action for the CANCEL button.
      */
     public void cancel() {
@@ -331,7 +357,7 @@ public class GenerateScriptsWizard extends WizardProcessPanel
     public void cleanup() {
 
         combosGroup.close();
-        
+
         // check if we're viewing the script
         if (processSuccessful) {
             if (thirdPanel.openInQueryEditor()) {
@@ -345,11 +371,11 @@ public class GenerateScriptsWizard extends WizardProcessPanel
                                     new QueryEditor(getScriptText()),
                                     null,
                                     true);
-                        }
-                        finally {
+                        } finally {
                             GUIUtilities.showNormalCursor();
                         }
                     }
+
                     private String getScriptText() {
                         try {
                             return FileUtils.loadFile(fourthPanel.getGeneratedFilePath());
@@ -360,23 +386,23 @@ public class GenerateScriptsWizard extends WizardProcessPanel
                 });
             }
         }
-        
+
     }
 
-    
+
     private class GenerateScriptsWizardModel extends DefaultWizardProcessModel {
-        
+
         public GenerateScriptsWizardModel() {
             String[] titles = {"Connection and Script Type",
-                               "Schema and Table Selection",
-                               "Output File Selection",
-                               "Generating..."};
+                    "Schema and Table Selection",
+                    "Output File Selection",
+                    "Generating..."};
             setTitles(titles);
 
             String[] steps = {"Select the database connection and script type",
-                              "Select the schema and tables",
-                              "Select the output SQL file and further options",
-                              "Generate the script"};
+                    "Select the schema and tables",
+                    "Select the output SQL file and further options",
+                    "Generate the script"};
             setSteps(steps);
         }
 
@@ -386,7 +412,7 @@ public class GenerateScriptsWizard extends WizardProcessPanel
             }
             return false;
         }
-        
+
         public boolean next() {
             if (doNext()) {
                 return super.next();

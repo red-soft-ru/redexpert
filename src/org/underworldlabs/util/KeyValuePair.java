@@ -23,14 +23,15 @@ package org.underworldlabs.util;
 /**
  * Simple key/value pair POJO object.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class KeyValuePair implements java.io.Serializable {
-    
+
     private Object key;
     private Object value;
-    
-    public KeyValuePair() {}
+
+    public KeyValuePair() {
+    }
 
     public KeyValuePair(Object key, Object value) {
         this.key = key;
@@ -40,11 +41,11 @@ public class KeyValuePair implements java.io.Serializable {
     public Object getValue() {
         return value;
     }
-    
+
     public Object getKey() {
         return key;
     }
-    
+
 }
 
 

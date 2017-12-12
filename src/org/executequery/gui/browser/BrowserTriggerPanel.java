@@ -40,7 +40,9 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
     JTextPane textPane;
 
-    /** the browser's control object */
+    /**
+     * the browser's control object
+     */
     private BrowserController controller;
 
     public BrowserTriggerPanel(BrowserController controller) {
@@ -49,8 +51,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
         try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -123,7 +124,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
         JPanel base = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        Insets insets = new Insets(10,10,5,5);
+        Insets insets = new Insets(10, 10, 5, 5);
         gbc.anchor = GridBagConstraints.NORTHEAST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridx++;
@@ -174,7 +175,8 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         cache.clear();
     }
 
-    public void cleanup() {}
+    public void cleanup() {
+    }
 
     public JTable getTable() {
 //        return table;
@@ -202,7 +204,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
             textPane.setText(trigger.getTriggerSourceCode());
             activeCheckbox.setSelected(trigger.isTriggerActive());
             if (!trigger.getStringTriggerType().toLowerCase().contains("before") &&
-                !trigger.getStringTriggerType().toLowerCase().contains("after"))
+                    !trigger.getStringTriggerType().toLowerCase().contains("after"))
                 beforeAfterLabel.setText("Event:");
             else if (trigger.getStringTriggerType().toLowerCase().contains("before"))
                 beforeAfterLabel.setText("Before:");
@@ -223,15 +225,14 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
             triggerPositionField.setText(String.valueOf(trigger.getTriggerSequence()));
             descriptionPane.setText(trigger.getTriggerDescription());
             sqlPane.setText(trigger.getCreateSQLText());
-        }
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             controller.handleException(e);
         }
 
     }
 
     public void setValues(BaseDatabaseObject metaObject) {
-        DefaultDatabaseTrigger trigger = (DefaultDatabaseTrigger)cache.get(metaObject);
+        DefaultDatabaseTrigger trigger = (DefaultDatabaseTrigger) cache.get(metaObject);
         setValues(metaObject, trigger);
     }
 

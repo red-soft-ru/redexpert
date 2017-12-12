@@ -20,57 +20,49 @@
 
 package org.executequery.components;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Rectangle;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-
 import org.executequery.GUIUtilities;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.plaf.UIUtils;
 
+import javax.swing.*;
+import java.awt.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class LineNumber extends JComponent {
 
     private static final int HEIGHT = Integer.MAX_VALUE - 1000000;
-    
+
     private static final int MARGIN = 5;
-    
+
     private FontMetrics fontMetrics;
 
     private int lineHeight;
     private int currentRowWidth;
-    
+
     private int executingLine;
-    
+
     private JComponent component;
 
     private int componentFontHeight;
     private int componentFontAscent;
 
     private int totalRows;
-    
+
     private Image executingIcon;
 
     private int iconHeight;
     private int iconWidth;
 
-    /** Convenience constructor for Text Components. */
+    /**
+     * Convenience constructor for Text Components.
+     */
     public LineNumber(JComponent component) {
 
         setForeground(foregroundColour());
         setBackground(backgroundColour());
-        
+
         if (component == null) {
 
             this.component = this;
@@ -86,9 +78,9 @@ public class LineNumber extends JComponent {
         if (font != null) {
 
             componentFontHeight = component.getFontMetrics(
-                                          component.getFont()).getHeight();
+                    component.getFont()).getHeight();
             componentFontAscent = component.getFontMetrics(
-                                          component.getFont()).getAscent();
+                    component.getFont()).getAscent();
         }
 
         ImageIcon icon = GUIUtilities.loadIcon("ExecutingPointer.png", true);
@@ -97,24 +89,24 @@ public class LineNumber extends JComponent {
         executingIcon = icon.getImage();
 
         setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, GUIUtilities.getDefaultBorderColour().darker()));
-        
+
         setPreferredWidth(9999);
         totalRows = 1;
     }
-    
+
     /**
-     *  Using FontMetrics, calculate the width of the given integer and then
-     *  set the preferred size of the component.
+     * Using FontMetrics, calculate the width of the given integer and then
+     * set the preferred size of the component.
      */
     public void setPreferredWidth(int row) {
-        
+
         if (fontMetrics == null) {
-         
+
             return;
         }
-        
+
         int width = fontMetrics.stringWidth(String.valueOf(row));
-        
+
         if (currentRowWidth < width) {
 
             currentRowWidth = width;
@@ -122,20 +114,22 @@ public class LineNumber extends JComponent {
         }
 
     }
-    
+
     public void updatePreferences(Font font) {
-        
+
         setFont(font);
 
         setForeground(foregroundColour());
-        setBackground(backgroundColour());        
+        setBackground(backgroundColour());
     }
-    
-    /** Reset variables that are dependent on the font. */
+
+    /**
+     * Reset variables that are dependent on the font.
+     */
     public void setFont(Font font) {
-        
+
         super.setFont(font);
-        
+
         fontMetrics = getFontMetrics(getFont());
 
         if (fontMetrics != null) {
@@ -145,33 +139,35 @@ public class LineNumber extends JComponent {
         }
 
     }
-    
-    /** The line height defaults to the line height of the font for this component. */
+
+    /**
+     * The line height defaults to the line height of the font for this component.
+     */
     public int getLineHeight() {
-        
+
         if (lineHeight == 0) {
 
             return componentFontHeight;
 
         } else {
-        
+
             return lineHeight;
         }
     }
-    
+
     /**
-     *  Override the default line height with a positive value.
-     *  For example, when you want line numbers for a JTable you could
-     *  use the JTable row height.
+     * Override the default line height with a positive value.
+     * For example, when you want line numbers for a JTable you could
+     * use the JTable row height.
      */
     public void setLineHeight(int lineHeight) {
         if (lineHeight > 0) {
             this.lineHeight = lineHeight;
         }
     }
-    
+
     /**
-     * Sets the total row count on the border and 
+     * Sets the total row count on the border and
      * calls a repaint if required.
      */
     public void setRowCount(int rows) {
@@ -184,11 +180,11 @@ public class LineNumber extends JComponent {
     public int getStartOffset() {
         return component.getInsets().top + componentFontAscent;
     }
-    
+
     public void paintComponent(Graphics g) {
-    	
-    	UIUtils.antialias(g);
-    	
+
+        UIUtils.antialias(g);
+
         int lineHeight = getLineHeight();
         int startOffset = getStartOffset();
         Rectangle drawHere = g.getClipBounds();
@@ -196,13 +192,13 @@ public class LineNumber extends JComponent {
         // Paint the background
         g.setColor(getBackground());
         g.fillRect(drawHere.x, drawHere.y, drawHere.width, drawHere.height);
-        
+
         // Determine the number of lines to draw in the foreground.
         g.setColor(getForeground());
         int startLineNumber = (drawHere.y / lineHeight) + 1;
         int tempEndLineNumber = startLineNumber + (drawHere.height / lineHeight);
         int endLineNumber;
-        
+
         if (totalRows > tempEndLineNumber) {
 
             endLineNumber = tempEndLineNumber;
@@ -221,19 +217,18 @@ public class LineNumber extends JComponent {
             int width = fontMetrics.stringWidth(lineNumber);
 
             if (executingLine == i) {
-                
-                g.drawImage(executingIcon(), 
-                            MARGIN + currentRowWidth - width - 2,
-                            start - iconHeight + 2,
-                            iconWidth,
-                            iconHeight,
-                            this);
 
-            }
-            else {
-                g.drawString(lineNumber, 
-                             MARGIN + currentRowWidth - width, 
-                             start);
+                g.drawImage(executingIcon(),
+                        MARGIN + currentRowWidth - width - 2,
+                        start - iconHeight + 2,
+                        iconWidth,
+                        iconHeight,
+                        this);
+
+            } else {
+                g.drawString(lineNumber,
+                        MARGIN + currentRowWidth - width,
+                        start);
             }
 
             start += lineHeight;
@@ -251,29 +246,29 @@ public class LineNumber extends JComponent {
         }
 
     }
-    
+
     public void setExecutingLine(int lineNumber) {
 
         executingLine = lineNumber + 1;
     }
-    
+
     private Color backgroundColour() {
-        
+
         return UserProperties.getInstance().
-            getColourProperty("editor.linenumber.background");
+                getColourProperty("editor.linenumber.background");
     }
 
     private Color foregroundColour() {
-        
+
         return UserProperties.getInstance().
-            getColourProperty("editor.linenumber.foreground");
+                getColourProperty("editor.linenumber.foreground");
     }
-    
+
     private Image executingIcon() {
-        
+
         return executingIcon;
     }
-    
+
 }
 
 

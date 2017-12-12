@@ -22,10 +22,10 @@ package org.executequery.actions.queryeditor;
 
 import org.executequery.actions.helpcommands.HelpCommand;
 
-/** 
+/**
  * Contextual help for the Query Editor.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class EditorHelpCommand extends HelpCommand {
 

@@ -26,7 +26,7 @@ enum ImportExportFileType {
     MULTIPLE_FILES;
 
     public static boolean isSingleFile(ImportExportFileType importExportFileType) {
-        
+
         return importExportFileType == SINGLE_FILE;
     }
 
@@ -34,7 +34,7 @@ enum ImportExportFileType {
 
         return importExportFileType == MULTIPLE_FILES;
     }
-    
+
 }
 
 

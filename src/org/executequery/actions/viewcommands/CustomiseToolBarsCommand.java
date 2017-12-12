@@ -20,19 +20,17 @@
 
 package org.executequery.actions.viewcommands;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.SwingUtilities;
-
 import org.executequery.GUIUtilities;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.prefs.PropertiesPanel;
 import org.executequery.gui.prefs.PropertyTypes;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-/** 
- * 
- * @author   Takis Diakoumis
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+
+/**
+ * @author Takis Diakoumis
  */
 public class CustomiseToolBarsCommand implements BaseCommand {
 
@@ -40,9 +38,9 @@ public class CustomiseToolBarsCommand implements BaseCommand {
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-            
+
                 try {
-                
+
                     GUIUtilities.showWaitCursor();
 
                     BaseDialog dialog = new BaseDialog(PropertiesPanel.TITLE, true);
@@ -52,17 +50,17 @@ public class CustomiseToolBarsCommand implements BaseCommand {
 
                     dialog.addDisplayComponentWithEmptyBorder(panel);
                     dialog.display();
-                    
+
                 } finally {
-                    
+
                     GUIUtilities.showNormalCursor();
                 }
 
             }
         });
-        
+
     }
-    
+
 }
 
 

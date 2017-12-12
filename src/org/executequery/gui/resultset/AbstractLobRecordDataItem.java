@@ -72,10 +72,10 @@ public abstract class AbstractLobRecordDataItem extends AbstractRecordDataItem
 
     @Override
     public boolean isNewValueNull() {
-        if(isNew())
+        if (isNew())
             return data == null;
         else
-            return data == null&& super.isNewValueNull();
+            return data == null && super.isNewValueNull();
     }
 
     @Override

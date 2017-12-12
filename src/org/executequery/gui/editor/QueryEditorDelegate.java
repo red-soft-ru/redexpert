@@ -20,10 +20,6 @@
 
 package org.executequery.gui.editor;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Vector;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.repository.RepositoryCache;
@@ -31,6 +27,10 @@ import org.executequery.repository.SqlCommandHistoryRepository;
 import org.executequery.sql.QueryDelegate;
 import org.executequery.sql.QueryDispatcher;
 import org.executequery.util.ThreadUtils;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Vector;
 
 public class QueryEditorDelegate implements QueryDelegate {
 
@@ -45,7 +45,7 @@ public class QueryEditorDelegate implements QueryDelegate {
         super();
         this.queryEditor = queryEditor;
 
-            dispatcher = new QueryDispatcher(this);
+        dispatcher = new QueryDispatcher(this);
 
     }
 
@@ -139,7 +139,7 @@ public class QueryEditorDelegate implements QueryDelegate {
     }
 
     public void executeQuery(DatabaseConnection selectedConnection,
-            String query, boolean executeAsBlock) {
+                             String query, boolean executeAsBlock) {
 
         if (dispatcher.isExecuting()) {
 
@@ -327,12 +327,14 @@ public class QueryEditorDelegate implements QueryDelegate {
         return currentStatementHistoryIndex;
     }
 
-    /** ignored statements for the history list */
+    /**
+     * ignored statements for the history list
+     */
     private final String[] HISTORY_IGNORE = {"COMMIT", "ROLLBACK"};
 
     private SqlCommandHistoryRepository sqlCommandHistoryRepository() {
 
-        return (SqlCommandHistoryRepository)RepositoryCache.load(
+        return (SqlCommandHistoryRepository) RepositoryCache.load(
                 SqlCommandHistoryRepository.REPOSITORY_ID);
     }
 

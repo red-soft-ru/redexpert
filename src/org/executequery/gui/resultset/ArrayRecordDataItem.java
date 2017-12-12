@@ -22,23 +22,23 @@ package org.executequery.gui.resultset;
 
 public class ArrayRecordDataItem extends SimpleRecordDataItem {
 
-	public ArrayRecordDataItem(String name, int dataType, String dataTypeName) {
+    public ArrayRecordDataItem(String name, int dataType, String dataTypeName) {
 
-		super(name, dataType, dataTypeName);
-	}
+        super(name, dataType, dataTypeName);
+    }
 
-	@Override
-	public void setValue(Object value) {
+    @Override
+    public void setValue(Object value) {
 
-	    Object arrayValue = value;
-	    if (value != null) {
-	        
-	        arrayValue = valueAsType(value);
-	    }
-	    
-	    super.setValue(arrayValue);
-	}
-	
+        Object arrayValue = value;
+        if (value != null) {
+
+            arrayValue = valueAsType(value);
+        }
+
+        super.setValue(arrayValue);
+    }
+
 }
 
 

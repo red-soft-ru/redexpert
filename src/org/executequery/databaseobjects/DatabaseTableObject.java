@@ -1,11 +1,7 @@
 package org.executequery.databaseobjects;
 
-import org.executequery.databaseobjects.impl.ColumnConstraint;
-import org.executequery.databaseobjects.impl.TableColumnIndex;
 import org.executequery.gui.resultset.RecordDataItem;
-import org.underworldlabs.jdbc.DataSourceException;
 
-import java.sql.ResultSet;
 import java.util.List;
 
 public interface DatabaseTableObject extends DatabaseObject {

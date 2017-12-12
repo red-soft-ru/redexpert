@@ -23,10 +23,10 @@ package org.executequery.gui.text.syntax;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
- * A token represents a smallest meaningful fragment 
+ * A token represents a smallest meaningful fragment
  * of text, such as a word, that is recognised.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class Token {
 
@@ -39,7 +39,9 @@ public class Token {
         this.endIndex = endIndex;
     }
 
-    /** Creates a new instance of BraceToken */
+    /**
+     * Creates a new instance of BraceToken
+     */
     public Token(int style, int startIndex, int endIndex) {
         this.style = style;
         this.startIndex = startIndex;
@@ -68,17 +70,17 @@ public class Token {
 
     public boolean intersects(int startOffset, int endOffset) {
         return ((startIndex <= startOffset) && (endIndex >= endOffset)) ||
-               ((startIndex <= startOffset) && (endIndex <= endOffset)) ||
-               ((startIndex >= startOffset) && (endIndex <= endOffset));
+                ((startIndex <= startOffset) && (endIndex <= endOffset)) ||
+                ((startIndex >= startOffset) && (endIndex <= endOffset));
     }
 
     public boolean contains(int startOffset, int endOffset) {
 
         if (startOffset != endOffset) {
-            
+
             return (startIndex <= startOffset) && (endIndex >= endOffset);
         }
-        
+
         return (startIndex <= startOffset) && (endIndex > endOffset);
     }
 
@@ -112,30 +114,30 @@ public class Token {
 
     public boolean equals(Object object) {
         if (object instanceof Token) {
-            Token _token = (Token)object;
+            Token _token = (Token) object;
             return _token.getStartIndex() == startIndex &&
-                   _token.getEndIndex() == endIndex &&
-                   _token.getStyle() == style;
+                    _token.getEndIndex() == endIndex &&
+                    _token.getStyle() == style;
         }
         return false;
     }
-    
+
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
-    
+
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("Token - style: ").
-           append(style).
-           append(" startIndex: ").
-           append(startIndex).
-           append(" endIndex: ").
-           append(endIndex);
+                append(style).
+                append(" startIndex: ").
+                append(startIndex).
+                append(" endIndex: ").
+                append(endIndex);
         return sb.toString();
     }
-    
+
 }
 
 

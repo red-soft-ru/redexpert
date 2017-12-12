@@ -20,26 +20,26 @@
 
 package org.executequery.gui.importexport;
 
-import java.io.File;
-import java.util.List;
-
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 
+import java.io.File;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ImportExportFile {
 
     private File file;
-    
+
     private DatabaseTable databaseTable;
 
     private List<DatabaseColumn> databaseTableColumns;
-    
-    public ImportExportFile() {}
-    
+
+    public ImportExportFile() {
+    }
+
     public ImportExportFile(DatabaseTable databaseTable) {
         this.databaseTable = databaseTable;
     }
@@ -58,15 +58,15 @@ public class ImportExportFile {
     }
 
     public boolean fileExists() {
-        
+
         if (file != null) {
-            
+
             return file.exists();
         }
-        
+
         return false;
     }
-    
+
     public File getFile() {
         return file;
     }
@@ -86,11 +86,11 @@ public class ImportExportFile {
     public List<DatabaseColumn> getDatabaseTableColumns() {
         return databaseTableColumns;
     }
-    
+
     public boolean hasColumnSelections() {
         return databaseTableColumns != null && !databaseTableColumns.isEmpty();
     }
-    
+
 }
 
 

@@ -20,29 +20,12 @@
 
 package org.executequery.gui.editor;
 
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.print.Printable;
-
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JTable;
-import javax.swing.table.TableModel;
-
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.UserPreferencesManager;
 import org.executequery.databaseobjects.DatabaseTableObject;
 import org.executequery.gui.BaseDialog;
-import org.executequery.gui.resultset.LobRecordDataItem;
-import org.executequery.gui.resultset.RecordDataItem;
-import org.executequery.gui.resultset.ResultSetTable;
-import org.executequery.gui.resultset.ResultSetTableModel;
-import org.executequery.gui.resultset.SimpleRecordDataItem;
+import org.executequery.gui.resultset.*;
 import org.executequery.print.PrintingSupport;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.swing.actions.ActionBuilder;
@@ -50,6 +33,14 @@ import org.underworldlabs.swing.actions.ReflectiveAction;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.util.SystemProperties;
+
+import javax.swing.*;
+import javax.swing.table.TableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.print.Printable;
 
 public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener {
 

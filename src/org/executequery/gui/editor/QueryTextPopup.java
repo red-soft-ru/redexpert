@@ -20,29 +20,6 @@
 
 package org.executequery.gui.editor;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.EventQueue;
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
-
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.text.SQLTextPane;
@@ -52,60 +29,96 @@ import org.underworldlabs.swing.LinkButton;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.plaf.UIUtils;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
  * Popup panel for the results panel tab rollovers.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 class QueryTextPopup extends JPanel
-                     implements MouseListener,
-                                ActionListener {
-    
-    /** the text pane area */
+        implements MouseListener,
+        ActionListener {
+
+    /**
+     * the text pane area
+     */
     private SQLTextPane textPane;
-    
-    /** the tabe panel owner */
+
+    /**
+     * the tabe panel owner
+     */
     private QueryEditorResultsPanel parent;
-    
-    /** the toolbar header */
+
+    /**
+     * the toolbar header
+     */
     private QueryTextPopupToolbar header;
-    
-    /** the hide timer */
+
+    /**
+     * the hide timer
+     */
     private Timer timer;
-    
-    /** Indicates the timer has begun */
+
+    /**
+     * Indicates the timer has begun
+     */
     private boolean timerStarted;
-    
-    /** Indicates the mouse is currently over the panel */
+
+    /**
+     * Indicates the mouse is currently over the panel
+     */
     private boolean mouseOverPanel;
-    
-    /** the timeout in millis */
+
+    /**
+     * the timeout in millis
+     */
     private int timeout;
-    
-    /** the last x-coord */
+
+    /**
+     * the last x-coord
+     */
     private int mouseX;
-    
-    /** the last y-coord */
+
+    /**
+     * the last y-coord
+     */
     private int mouseY;
-    
-    /** the tab index */
+
+    /**
+     * the tab index
+     */
     private int index;
-    
-    /** the last shown query */
+
+    /**
+     * the last shown query
+     */
     private String displayQuery;
-    
-    /** the query as displayed (no regex stuff) */
+
+    /**
+     * the query as displayed (no regex stuff)
+     */
     private String query;
-    
-    /** The result set number label */
+
+    /**
+     * The result set number label
+     */
     private JLabel popupLabel;
-    
+
     // ----------------------------------
     // fixed dimensions
-    
+
     private static int HEIGHT = 240;
     private static int WIDTH = 450;
-    
+
     public QueryTextPopup(QueryEditorResultsPanel parent) {
 
         super(new BorderLayout());
@@ -113,44 +126,44 @@ class QueryTextPopup extends JPanel
 
         header = new QueryTextPopupToolbar();
         Color shadow = UIUtils.getColour("controlDkShadow", Color.DARK_GRAY);
-        header.setBorder(BorderFactory.createMatteBorder(0,0,1,0,shadow));
-        
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, shadow));
+
         textPane = new SQLTextPane();
-        textPane.setBackground(UIUtils.getColour("executequery.QueryEditor.queryTooltipBackground", new Color(255,255,235)));
+        textPane.setBackground(UIUtils.getColour("executequery.QueryEditor.queryTooltipBackground", new Color(255, 255, 235)));
         textPane.setEditable(false);
-        
+
         header.addMouseListener(this);
         textPane.addMouseListener(this);
 
         JScrollPane scroller = new JScrollPane(textPane,
-                                        JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                                        JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scroller.setBorder(null);
 
         JPanel labelPanel = new JPanel(new BorderLayout());
-        labelPanel.setBorder(BorderFactory.createMatteBorder(1,0,0,0,shadow));
+        labelPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, shadow));
 
         popupLabel = new JLabel();
-        popupLabel.setBorder(BorderFactory.createEmptyBorder(2,3,2,2));
+        popupLabel.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 2));
         labelPanel.add(popupLabel, BorderLayout.WEST);
 
         popupLabel.addMouseListener(this);
         labelPanel.addMouseListener(this);
-        
+
         add(header, BorderLayout.NORTH);
         add(scroller, BorderLayout.CENTER);
         add(labelPanel, BorderLayout.SOUTH);
-        
+
         setBorder(BorderFactory.createLineBorder(shadow));
         setVisible(false);
     }
-    
+
     /**
      * Sets the specified query text at position x,y for the tab
      * index specified.
      *
-     * @param x - the x-coord
-     * @param y - the y-coord
+     * @param x     - the x-coord
+     * @param y     - the y-coord
      * @param query - the query to be shown
      * @param index - the index of the tab selected
      */
@@ -160,7 +173,7 @@ class QueryTextPopup extends JPanel
 
         // reset panel mouse flag
         mouseOverPanel = false;
-        
+
         // no whitespace
         this.query = query.trim();
         this.displayQuery = query.replaceAll(
@@ -169,7 +182,7 @@ class QueryTextPopup extends JPanel
         this.index = index;
         setLabelForIndex(label);
         header.enableScrollButtons();
-        
+
         // if we are already visible, just change the content
         if (isVisible()) {
             // set the new query text
@@ -182,7 +195,7 @@ class QueryTextPopup extends JPanel
             }
             return;
         }
-        
+
         mouseX = x;
         mouseY = y;
 
@@ -202,7 +215,7 @@ class QueryTextPopup extends JPanel
         */
         popupLabel.setText(label);
     }
-    
+
     private void showPanel() {
         // set the new query text
         textPane.setText(displayQuery);
@@ -213,7 +226,7 @@ class QueryTextPopup extends JPanel
 
         // determine the parent components position
         Point p2 = SwingUtilities.convertPoint(
-                        parent, parent.getX(), parent.getY(), frame);
+                parent, parent.getX(), parent.getY(), frame);
 
         int xPos = Math.min(p1.x - 10, p2.x + parent.getWidth() - WIDTH - 5);
         int yPos = (p2.y + parent.getHeight() - 60) - HEIGHT;
@@ -227,9 +240,9 @@ class QueryTextPopup extends JPanel
         timeout = 2500;
         startHideTimer();
     }
-    
+
     /**
-     * Starts the timer to dispose of this panel from the 
+     * Starts the timer to dispose of this panel from the
      * frame's layered pane.
      */
     public void dispose() {
@@ -242,7 +255,7 @@ class QueryTextPopup extends JPanel
     }
 
     /**
-     * Starts the timer to dispose of this panel from the 
+     * Starts the timer to dispose of this panel from the
      * frame's layered pane.
      */
     public void disposeNow() {
@@ -262,7 +275,7 @@ class QueryTextPopup extends JPanel
                 showPanel();
             }
         };
-        
+
         TimerTask showPanel = new TimerTask() {
             public void run() {
                 EventQueue.invokeLater(runner);
@@ -283,7 +296,7 @@ class QueryTextPopup extends JPanel
                 hidePanel();
             }
         };
-        
+
         TimerTask hidePanel = new TimerTask() {
             public void run() {
                 EventQueue.invokeLater(runner);
@@ -294,7 +307,7 @@ class QueryTextPopup extends JPanel
         timerStarted = true;
         timer.schedule(hidePanel, timeout);
     }
-    
+
     /**
      * Cancels a running timer task.
      */
@@ -316,12 +329,12 @@ class QueryTextPopup extends JPanel
         mouseOverPanel = false;
         header.resetButtons();
     }
-    
+
     public void actionPerformed(ActionEvent e) {
         hidePanel();
         parent.caretToQuery(query);
     }
-    
+
     // -------------------------------------------------------------
     // MouseListener implementation for text pane entry/exit events
     // -------------------------------------------------------------
@@ -336,16 +349,23 @@ class QueryTextPopup extends JPanel
         startHideTimer();
     }
 
-    public void mouseClicked(MouseEvent e) {}
-    public void mousePressed(MouseEvent e) {}
-    public void mouseReleased(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    public void mousePressed(MouseEvent e) {
+    }
+
+    public void mouseReleased(MouseEvent e) {
+    }
 
     // -------------------------------------------------------------
-    
-    
+
+
     protected class QueryTextPopupToolbar extends ActionPanel {
-        
-        /** the link button to hide the popup */
+
+        /**
+         * the link button to hide the popup
+         */
         private LinkButton linkButton;
 
         // nav and selection buttons
@@ -353,28 +373,28 @@ class QueryTextPopup extends JPanel
         private RolloverButton nextButton;
         private RolloverButton copyButton;
         private RolloverButton goToButton;
-        
+
         public QueryTextPopupToolbar() {
             super(new GridBagLayout());
-            
+
             linkButton = new LinkButton("Hide");
             linkButton.setActionCommand("hidePopup");
             linkButton.setAlignmentX(LinkButton.RIGHT);
             linkButton.addActionListener(this);
             linkButton.addMouseListener(QueryTextPopup.this);
-            
-            previousButton = createButton("PreviousResultSetQuery16.png", 
-                                "previous", "Previous executed result set");
 
-            nextButton = createButton("NextResultSetQuery16.png", 
-                                "next", "Next executed result set");
+            previousButton = createButton("PreviousResultSetQuery16.png",
+                    "previous", "Previous executed result set");
 
-            copyButton = createButton("Copy16.png", 
-                                "copy", "Copy this query to the system clipboard");
-            
-            goToButton = createButton("GoToResultSetQuery16.png", 
-                                "goToQuery", "Go to this query in the editor");
-            
+            nextButton = createButton("NextResultSetQuery16.png",
+                    "next", "Next executed result set");
+
+            copyButton = createButton("Copy16.png",
+                    "copy", "Copy this query to the system clipboard");
+
+            goToButton = createButton("GoToResultSetQuery16.png",
+                    "goToQuery", "Go to this query in the editor");
+
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.anchor = GridBagConstraints.WEST;
             gbc.fill = GridBagConstraints.NONE;
@@ -403,44 +423,43 @@ class QueryTextPopup extends JPanel
             copyButton.reset();
             goToButton.reset();
         }
-        
+
         public void next() {
             int nextIndex = index + 1;
-            showPopup(-1, -1, parent.getQueryTextAt(nextIndex), 
+            showPopup(-1, -1, parent.getQueryTextAt(nextIndex),
                     parent.getTitleAt(nextIndex), nextIndex);
         }
-        
+
         public void previous() {
             int previousIndex = index - 1;
-            showPopup(-1, -1, parent.getQueryTextAt(previousIndex), 
+            showPopup(-1, -1, parent.getQueryTextAt(previousIndex),
                     parent.getTitleAt(previousIndex), previousIndex);
         }
 
         protected void enableScrollButtons() {
-            
+
             if (parent.hasOutputPane()) {
                 previousButton.setEnabled(index > 1);
                 nextButton.setEnabled(index < parent.getResultSetTabCount());
-            }
-            else {
+            } else {
                 previousButton.setEnabled(index > 0);
                 nextButton.setEnabled(index < parent.getResultSetTabCount() - 1);
             }
         }
-        
+
         public void hidePopup() {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     hidePanel();
                 }
             });
-        }        
-        
+        }
+
         public void copy() {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     Toolkit.getDefaultToolkit().getSystemClipboard().
-                                setContents(new StringSelection(query), null);
+                            setContents(new StringSelection(query), null);
                     hidePanel();
                 }
             });
@@ -456,10 +475,10 @@ class QueryTextPopup extends JPanel
             });
         }
 
-        private RolloverButton createButton(String icon, 
-                                            String actionCommand, 
+        private RolloverButton createButton(String icon,
+                                            String actionCommand,
                                             String toolTipText) {
-            RolloverButton button = 
+            RolloverButton button =
                     new RolloverButton(GUIUtilities.loadIcon(icon), toolTipText);
             button.setText(Constants.EMPTY);
             button.setActionCommand(actionCommand);
@@ -468,9 +487,9 @@ class QueryTextPopup extends JPanel
             return button;
         }
 
-        
+
     }
-    
+
 }
 
 

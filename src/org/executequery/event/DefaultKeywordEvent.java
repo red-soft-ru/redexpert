@@ -23,12 +23,14 @@ package org.executequery.event;
 /**
  * Defines a stored keyword event.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class DefaultKeywordEvent extends AbstractApplicationEvent 
-                                 implements KeywordEvent {
+public class DefaultKeywordEvent extends AbstractApplicationEvent
+        implements KeywordEvent {
 
-    /** Creates a new instance of KeywordEvent */
+    /**
+     * Creates a new instance of KeywordEvent
+     */
     public DefaultKeywordEvent(Object source, String method) {
 
         super(source, method);

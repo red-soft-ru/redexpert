@@ -23,18 +23,17 @@ package org.executequery.repository.spi;
 import org.executequery.util.UserSettingsProperties;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 abstract class AbstractUserSettingsRepository {
 
     private static final UserSettingsProperties SETTINGS = new UserSettingsProperties();
-    
+
     protected final String getUserSettingsHomePath() {
 
         return SETTINGS.getUserSettingsBaseHome();
     }
-    
+
 }
 
 

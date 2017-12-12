@@ -20,21 +20,21 @@
 
 package org.executequery.actions.toolscommands;
 
-import java.awt.event.ActionEvent;
 import org.executequery.GUIUtilities;
-
-import org.underworldlabs.swing.actions.BaseCommand;
 import org.underworldlabs.swing.HeapMemoryDialog;
+import org.underworldlabs.swing.actions.BaseCommand;
+
+import java.awt.event.ActionEvent;
 
 /**
- *  Heap Memory Status execution
+ * Heap Memory Status execution
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class HeapStatusCommand implements BaseCommand {
-    
+
     public void execute(ActionEvent e) {
-    
+
         new HeapMemoryDialog(GUIUtilities.getParentFrame());
     }
 

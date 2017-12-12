@@ -23,8 +23,8 @@ package org.executequery.base;
 import java.util.EventObject;
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
@@ -33,11 +33,11 @@ import java.util.EventObject;
  * Event object for docked tab event notification to
  * registered listeners.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DockedTabEvent extends EventObject {
-    
-    /** 
+
+    /**
      * Creates a new instance of DockedTabEvent with the
      * specified object as the source of this event.
      *

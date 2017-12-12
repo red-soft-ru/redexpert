@@ -30,18 +30,18 @@ public class DeleteDerivedTableStrategy extends AbstractDerivedTableStrategy {
         int whereIndex = query.indexOf(WHERE);
 
         if (whereIndex != -1 && fromIndex != -1) {
-            
+
             if (whereIndex != -1) {
-            
+
                 tables = query.substring(fromIndex + FROM.length(), whereIndex);
-                
+
             } else {
-            
+
                 tables = query.substring(fromIndex + FROM.length());
             }
-        
+
         }
-        
+
         return tables;
     }
 

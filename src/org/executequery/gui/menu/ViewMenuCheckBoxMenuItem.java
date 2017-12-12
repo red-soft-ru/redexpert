@@ -31,12 +31,12 @@ public class ViewMenuCheckBoxMenuItem extends MainCheckBoxMenuItem {
 
         return propertyKey;
     }
-    
+
     public void setPropertyKey(String propertyKey) {
 
         this.propertyKey = propertyKey;
     }
-    
+
 }
 
 

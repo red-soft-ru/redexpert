@@ -20,22 +20,20 @@
 
 package org.underworldlabs.swing.menu;
 
-import java.awt.Dimension;
-
-import javax.swing.Action;
-import javax.swing.JCheckBoxMenuItem;
-
 import org.executequery.gui.GUIConstants;
 
+import javax.swing.*;
+import java.awt.*;
+
 public class MainCheckBoxMenuItem extends JCheckBoxMenuItem {
-    
+
     public MainCheckBoxMenuItem() {
 
         super();
     }
-    
+
     public MainCheckBoxMenuItem(String text) {
-        
+
         super(text);
     }
 

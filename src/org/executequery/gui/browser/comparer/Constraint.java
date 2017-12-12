@@ -17,28 +17,28 @@ class ForeignKey {
 }
 
 public class Constraint {
-    
-    public Constraint(Comparer comp)
-    {
-        comparer=comp;
+
+    public Constraint(Comparer comp) {
+        comparer = comp;
         init();
     }
-    public void init()
-    {
-        firstConnection=comparer.firstConnection;
-        secondConnection=comparer.secondConnection;
+
+    public void init() {
+        firstConnection = comparer.firstConnection;
+        secondConnection = comparer.secondConnection;
         dependencies = comparer.dependencies;
     }
+
     Comparer comparer;
     StatementExecutor firstConnection;
     StatementExecutor secondConnection;
     Dependencies dependencies;
 
-    private  String query = "";
+    private String query = "";
 
-    public  ArrayList<String> checkstoRecreate = new ArrayList<String>();
+    public ArrayList<String> checkstoRecreate = new ArrayList<String>();
 
-    public  ArrayList<String> getCheckInfo(StatementExecutor con, String constraint) {
+    public ArrayList<String> getCheckInfo(StatementExecutor con, String constraint) {
         ArrayList<String> info = new ArrayList<String>();
 
         query = "select first 1 rdb$triggers.rdb$trigger_source,\n"
@@ -48,8 +48,8 @@ public class Constraint {
                 + "where rdb$check_constraints.rdb$constraint_name = '" + constraint + "'";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
-            
+            ResultSet rs = con.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
 
@@ -67,7 +67,7 @@ public class Constraint {
         return info;
     }
 
-    public  ArrayList<String> getUniqueInfo(StatementExecutor con, String unique) {
+    public ArrayList<String> getUniqueInfo(StatementExecutor con, String unique) {
         ArrayList<String> info = new ArrayList<String>();
         info.add("");
 
@@ -81,8 +81,8 @@ public class Constraint {
                 + "order by rdb$index_segments.rdb$field_position";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
-            
+            ResultSet rs = con.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
 
@@ -100,7 +100,7 @@ public class Constraint {
         return info;
     }
 
-    public  ArrayList<String> getPKInfo(StatementExecutor con, String pk) {
+    public ArrayList<String> getPKInfo(StatementExecutor con, String pk) {
         ArrayList<String> info = new ArrayList<String>(); // первый элемент всегда - таблица
         info.add("");
 
@@ -113,8 +113,8 @@ public class Constraint {
                 + "order by rdb$index_segments.rdb$field_position";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
-            
+            ResultSet rs = con.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
 
@@ -132,7 +132,7 @@ public class Constraint {
         return info;
     }
 
-    public  ForeignKey getFKInfo(StatementExecutor con, String fk) {
+    public ForeignKey getFKInfo(StatementExecutor con, String fk) {
         ForeignKey info = new ForeignKey();
 
         info.mainTableFielfd = new ArrayList<String>();
@@ -152,8 +152,8 @@ public class Constraint {
                 + "where rdb$ref_constraints.rdb$constraint_name = '" + fk + "'";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
-            
+            ResultSet rs = con.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
                 String line = (rs.getString(1).trim().equals("RESTRICT")) || (rs.getString(1).trim().equals("NO ACTION"))
@@ -188,8 +188,8 @@ public class Constraint {
                 + "order by rdb$index_segments.rdb$field_position";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
-            
+            ResultSet rs = con.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
                 if (rs.getString(2).trim().equals(info.mainTable)) {
@@ -210,23 +210,23 @@ public class Constraint {
         return info;
     }
 
-    public   String collect_check = "select distinct rdb$relation_constraints.rdb$constraint_name\n"
+    public String collect_check = "select distinct rdb$relation_constraints.rdb$constraint_name\n"
             + "from rdb$relation_constraints\n"
             + "where rdb$relation_constraints.rdb$constraint_type = 'CHECK'";
 
-    public   String collect_unique = "select distinct rdb$relation_constraints.rdb$constraint_name\n"
+    public String collect_unique = "select distinct rdb$relation_constraints.rdb$constraint_name\n"
             + "from rdb$relation_constraints\n"
             + "where rdb$relation_constraints.rdb$constraint_type = 'UNIQUE'";
 
-    public   String collect_pk = "select distinct rdb$relation_constraints.rdb$constraint_name\n"
+    public String collect_pk = "select distinct rdb$relation_constraints.rdb$constraint_name\n"
             + "from rdb$relation_constraints\n"
             + "where rdb$relation_constraints.rdb$constraint_type = 'PRIMARY KEY'";
 
-    public   String collect_fk = "select distinct rdb$relation_constraints.rdb$constraint_name\n"
+    public String collect_fk = "select distinct rdb$relation_constraints.rdb$constraint_name\n"
             + "from rdb$relation_constraints\n"
             + "where rdb$relation_constraints.rdb$constraint_type = 'FOREIGN KEY'";
 
-    public  String createCheck(String check) {
+    public String createCheck(String check) {
         String scriptPart = "";
 
         ArrayList<String> info = getCheckInfo(firstConnection, check);
@@ -242,17 +242,17 @@ public class Constraint {
                 + "and (rdb$dependencies.rdb$depended_on_type = 0)";
 
         try {
-            ResultSet rs = firstConnection.execute(query,true).getResultSet();
-            
+            ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
                 ArrayList<String> line = new ArrayList<String>();
-                String obj1=rs.getString(1);
-                String obj2=rs.getString(2);
-                if (obj1!=null)
-                    obj1=obj1.trim();
-                if (obj2!=null)
-                    obj2=obj2.trim();
+                String obj1 = rs.getString(1);
+                String obj2 = rs.getString(2);
+                if (obj1 != null)
+                    obj1 = obj1.trim();
+                if (obj2 != null)
+                    obj2 = obj2.trim();
                 line.add(obj1); // имя поля
                 line.add(obj2); // имя таблицы
 
@@ -274,8 +274,8 @@ public class Constraint {
                     + "and rdb$relation_fields.rdb$field_name = '" + dF.get(0) + "'";
 
             try {
-                ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                
+                ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                 boolean c = false;
                 String nullF = "";
@@ -321,7 +321,7 @@ public class Constraint {
         return scriptPart;
     }
 
-    public  String alterCheck(String check) {
+    public String alterCheck(String check) {
         String scriptPart = "";
 
         ArrayList<String> info1 = getCheckInfo(firstConnection, check);
@@ -336,7 +336,7 @@ public class Constraint {
         return scriptPart;
     }
 
-    public  String dropCheck(String check) {
+    public String dropCheck(String check) {
         String scriptPart = "";
 
         if (!comparer.droppedObjects.contains("check " + check)) {
@@ -349,7 +349,7 @@ public class Constraint {
         return scriptPart;
     }
 
-    public  String createUnique(String unique) {
+    public String createUnique(String unique) {
         String scriptPart = "";
 
         if (!comparer.createdObjects.contains("unique " + unique)) {
@@ -367,8 +367,8 @@ public class Constraint {
                     + "order by rdb$index_segments.rdb$field_position";
 
             try {
-                ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                
+                ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                 while (rs.next()) {
                     ArrayList<String> line = new ArrayList<String>();
@@ -394,7 +394,7 @@ public class Constraint {
                         + "and rdb$relation_fields.rdb$field_name = '" + dF.get(0) + "'";
 
                 try {
-                    ResultSet rs = secondConnection.execute(query,true).getResultSet();
+                    ResultSet rs = secondConnection.execute(query, true).getResultSet();
                     boolean c = false;
                     //String nullF = "";
 
@@ -439,9 +439,9 @@ public class Constraint {
             for (int i = 1; i < info.size(); i++) {
                 scriptPart = scriptPart + "\"" + info.get(i) + "\", ";
             }
-            if(scriptPart.contains(", "))
+            if (scriptPart.contains(", "))
                 scriptPart = scriptPart.substring(0, scriptPart.lastIndexOf(", "));
-            scriptPart  += ");\n\n";
+            scriptPart += ");\n\n";
 
             comparer.createdObjects.add("unique " + unique);
         }
@@ -449,7 +449,7 @@ public class Constraint {
         return scriptPart;
     }
 
-    public  String alterUnique(String unique) {
+    public String alterUnique(String unique) {
         String scriptPart = "";
 
         ArrayList<String> info1 = getUniqueInfo(firstConnection, unique);
@@ -463,7 +463,7 @@ public class Constraint {
         return scriptPart;
     }
 
-    public  String dropUnique(String unique) {
+    public String dropUnique(String unique) {
         String scriptPart = "";
 
         if (!comparer.droppedObjects.contains("unique " + unique)) {
@@ -475,8 +475,8 @@ public class Constraint {
                     + "where rdb$ref_constraints.rdb$const_name_uq = '" + unique + "'";
 
             try {
-                ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                
+                ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                 while (rs.next()) {
                     dep.add(rs.getString(1).trim());
@@ -506,7 +506,7 @@ public class Constraint {
         return scriptPart;
     }
 
-    public  String createPK(String pk) {
+    public String createPK(String pk) {
         String scriptPart = "";
 
         if (!comparer.createdObjects.contains("pk " + pk)) {
@@ -524,8 +524,8 @@ public class Constraint {
                     + "order by rdb$index_segments.rdb$field_position";
 
             try {
-                ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                
+                ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                 while (rs.next()) {
                     ArrayList<String> line = new ArrayList<String>();
@@ -551,8 +551,8 @@ public class Constraint {
                         + "and rdb$relation_fields.rdb$field_name = '" + dF.get(0) + "'";
 
                 try {
-                    ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                    
+                    ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                     boolean c = false;
                     String nullF = "";
@@ -599,7 +599,7 @@ public class Constraint {
                 scriptPart = scriptPart + "\"" + info.get(i) + "\", ";
             }
 
-            if(scriptPart.contains(", "))
+            if (scriptPart.contains(", "))
                 scriptPart = scriptPart.substring(0, scriptPart.lastIndexOf(", "));
 
             scriptPart = scriptPart + ");\n\n";
@@ -610,7 +610,7 @@ public class Constraint {
         return scriptPart;
     }
 
-    public  String alterPK(String pk) {
+    public String alterPK(String pk) {
         String scriptPart = "";
 
         ArrayList<String> info1 = getPKInfo(firstConnection, pk);
@@ -624,7 +624,7 @@ public class Constraint {
         return scriptPart;
     }
 
-    public  String dropPK(String pk) {
+    public String dropPK(String pk) {
         String scriptPart = "";
 
         if (!comparer.droppedObjects.contains("pk " + pk)) {
@@ -635,8 +635,8 @@ public class Constraint {
                     + "where rdb$ref_constraints.rdb$const_name_uq = '" + pk + "'";
 
             try {
-                ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                
+                ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                 while (rs.next()) {
                     dep.add(rs.getString(1).trim());
@@ -666,7 +666,7 @@ public class Constraint {
         return scriptPart;
     }
 
-    public  String createFK(String fk) {
+    public String createFK(String fk) {
         String scriptPart = "";
 
         if (!comparer.createdObjects.contains("fk " + fk)) {
@@ -684,8 +684,8 @@ public class Constraint {
                     + "order by rdb$index_segments.rdb$field_position";
 
             try {
-                ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                
+                ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                 while (rs.next()) {
                     ArrayList<String> line = new ArrayList<String>();
@@ -711,8 +711,8 @@ public class Constraint {
                         + "and rdb$relation_fields.rdb$field_name = '" + dF.get(0) + "'";
 
                 try {
-                    ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                    
+                    ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                     boolean c = false;
                     String nullF = "";
@@ -762,8 +762,8 @@ public class Constraint {
                     + "where rdb$ref_constraints.rdb$constraint_name = '" + fk + "'";
 
             try {
-                ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                
+                ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                 while (rs.next()) {
                     ArrayList<String> line = new ArrayList<String>();
@@ -789,8 +789,8 @@ public class Constraint {
                         + "where rdb$indices.rdb$index_name = '" + dk.get(0) + "'";
 
                 try {
-                    ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                    
+                    ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                     boolean c = false;
 
@@ -834,7 +834,7 @@ public class Constraint {
             for (int i = 0; i < info.mainTableFielfd.size(); i++) {
                 scriptPart = scriptPart + "\"" + info.mainTableFielfd.get(i) + "\", ";
             }
-            if(scriptPart.contains(", "))
+            if (scriptPart.contains(", "))
                 scriptPart = scriptPart.substring(0, scriptPart.lastIndexOf(", "));
 
             scriptPart = scriptPart + ");\n";
@@ -855,13 +855,13 @@ public class Constraint {
         return scriptPart;
     }
 
-    public  String alterFK(String fk) {
+    public String alterFK(String fk) {
         String scriptPart = "";
 
         ForeignKey info1 = getFKInfo(firstConnection, fk);
         ForeignKey info2 = getFKInfo(secondConnection, fk);
 
-        if (info1.mainTable!=null&&info2.mainTable!=null) {
+        if (info1.mainTable != null && info2.mainTable != null) {
             if (!info1.mainTable.equals(info2.mainTable)
                     || !info1.refTable.equals(info2.refTable)
                     || !info1.mainTableFielfd.equals(info2.mainTableFielfd)
@@ -870,9 +870,7 @@ public class Constraint {
                 scriptPart = scriptPart + dropFK(fk);
                 scriptPart = scriptPart + createFK(fk);
             }
-        }
-        else if (info1.mainTable!=null||info2.mainTable!=null)
-        {
+        } else if (info1.mainTable != null || info2.mainTable != null) {
             scriptPart = scriptPart + dropFK(fk);
             scriptPart = scriptPart + createFK(fk);
         }
@@ -880,7 +878,7 @@ public class Constraint {
         return scriptPart;
     }
 
-    public  String dropFK(String fk) {
+    public String dropFK(String fk) {
         String scriptPart = "";
 
         if (!comparer.droppedObjects.contains("fk " + fk)) {

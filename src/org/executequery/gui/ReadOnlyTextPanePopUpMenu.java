@@ -20,17 +20,6 @@
 
 package org.executequery.gui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.io.File;
-import java.io.IOException;
-
-import javax.swing.JFileChooser;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
@@ -40,9 +29,15 @@ import org.underworldlabs.swing.actions.ReflectiveAction;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 import org.underworldlabs.util.FileUtils;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.File;
+import java.io.IOException;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ReadOnlyTextPanePopUpMenu extends JPopupMenu {
 
@@ -63,21 +58,25 @@ public class ReadOnlyTextPanePopUpMenu extends JPopupMenu {
 
             add(createMenuItem(menuLabels[i], actionCommands[i], toolTips[i]));
         }
-        
+
         readOnlyTextPane.getTextComponent().addKeyListener(new KeyListener() {
-            
+
             public void keyReleased(KeyEvent e) {
 
                 if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
-                    
+
                     clear(null);
                 }
             }
-            public void keyTyped(KeyEvent e) {}
-            public void keyPressed(KeyEvent e) {}
-            
+
+            public void keyTyped(KeyEvent e) {
+            }
+
+            public void keyPressed(KeyEvent e) {
+            }
+
         });
-        
+
     }
 
     public void saveToFile(ActionEvent e) {

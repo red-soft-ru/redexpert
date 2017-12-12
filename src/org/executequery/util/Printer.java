@@ -20,18 +20,18 @@
 
 package org.executequery.util;
 
-import java.awt.print.Printable;
-
 import org.executequery.GUIUtilities;
 import org.executequery.print.PrintFunction;
 import org.executequery.print.PrintingSupport;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.util.SwingWorker;
 
+import java.awt.print.Printable;
+
 public final class Printer {
 
     public void print(final PrintFunction printFunction) {
-        
+
         SwingWorker worker = new SwingWorker() {
             public Object construct() {
 
@@ -44,7 +44,7 @@ public final class Printer {
             }
         };
 
-        worker.start();        
+        worker.start();
     }
 
     private Object doPrint(PrintFunction printFunction) {
@@ -52,11 +52,11 @@ public final class Printer {
         printFunction = GUIUtilities.getPrintableInFocus();
 
         Printable printable = printFunction.getPrintable();
-    
+
         return new PrintingSupport().print(
                 printable, printFunction.getPrintJobName());
     }
-    
+
 }
 
 

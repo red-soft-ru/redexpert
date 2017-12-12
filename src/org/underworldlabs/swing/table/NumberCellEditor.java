@@ -20,25 +20,23 @@
 
 package org.underworldlabs.swing.table;
 
-import java.awt.Toolkit;
-
-import java.text.NumberFormat;
-import java.text.ParseException;
-
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+import java.awt.*;
+import java.text.NumberFormat;
+import java.text.ParseException;
 
 /**
  * Simple numeric value table column cell editor.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class NumberCellEditor extends JTextField
-                              implements TableCellEditorValue {
-    
+        implements TableCellEditorValue {
+
     private int maxLength;
     private Toolkit toolkit;
     private NumberFormat integerFormatter;
@@ -88,19 +86,19 @@ public class NumberCellEditor extends JTextField
     public String getStringValue() {
         return Integer.toString(getValue());
     }
-    
+
     public int getCharsLength() {
         return getText().length();
     }
-    
+
     public boolean isZero() {
         return getValue() == 0;
     }
-    
+
     public void setValue(int value) {
         setText(integerFormatter.format(value));
     }
-    
+
     public int getMaxLength() {
         return maxLength;
     }
@@ -112,11 +110,11 @@ public class NumberCellEditor extends JTextField
     protected Document createDefaultModel() {
         return new WholeNumberDocument();
     }
-    
+
     protected class WholeNumberDocument extends PlainDocument {
         public void insertString(int offs, String str, AttributeSet a)
-        throws BadLocationException {
-            
+                throws BadLocationException {
+
             if (maxLength != -1) {
 
                 if (getLength() >= maxLength) {
@@ -125,25 +123,24 @@ public class NumberCellEditor extends JTextField
                 }
 
             }
-            
+
             char[] source = str.toCharArray();
             char[] result = new char[source.length];
             int j = 0;
-            
+
             for (int i = 0; i < result.length; i++) {
                 if (Character.isDigit(source[i]) ||
                         (offs == 0 && i == 0 && source[i] == '-')) {
                     result[j++] = source[i];
-                }
-                else {
+                } else {
                     toolkit.beep();
                 }
             }
             super.insertString(offs, new String(result, 0, j), a);
         }
     } // class WholeNumberDocument
-    
-    
+
+
 }
 
 

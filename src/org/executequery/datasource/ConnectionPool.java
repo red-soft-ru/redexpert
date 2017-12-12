@@ -24,29 +24,28 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 interface ConnectionPool {
 
     int MAX_POOL_SIZE = 50;
     int MIN_POOL_SIZE = 1;
     int INITIAL_POOL_SIZE = 1;
-    
+
     int getMaximumConnections();
-    
+
     void setMaximumConnections(int maximumConnections);
 
-    int getMinimumConnections();    
-    
+    int getMinimumConnections();
+
     void setMinimumConnections(int minimumConnections);
 
     DataSource getDataSource();
-    
+
     void setDataSource(DataSource dataSource);
 
     int getMaximumUseCount();
-    
+
     void setMaximumUseCount(int maximumUseCount);
 
     boolean isTransactionSupported();
@@ -56,15 +55,15 @@ interface ConnectionPool {
     Connection getConnection();
 
     void close();
-    
+
     void close(Connection connection);
 
     int getSize();
 
     int getPoolActiveSize();
-    
+
     int getInitialConnections();
-    
+
     void setInitialConnections(int initialConnections);
 
 }

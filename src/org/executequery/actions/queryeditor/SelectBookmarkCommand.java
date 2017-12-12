@@ -20,14 +20,14 @@
 
 package org.executequery.actions.queryeditor;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.repository.QueryBookmarks;
 
-/** 
+import java.awt.event.ActionEvent;
+
+/**
  * <p>The Query Editor's select bookmark command.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SelectBookmarkCommand extends AbstractQueryEditorCommand {
 

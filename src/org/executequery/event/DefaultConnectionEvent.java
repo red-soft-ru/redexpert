@@ -25,20 +25,22 @@ import org.executequery.databasemediators.DatabaseConnection;
 /**
  * Defines a connection connect/disconnect event.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class DefaultConnectionEvent extends AbstractApplicationEvent 
-                                    implements ConnectionEvent {
-    
-    /** Creates a new instance of ConnectionEvent */
+public class DefaultConnectionEvent extends AbstractApplicationEvent
+        implements ConnectionEvent {
+
+    /**
+     * Creates a new instance of ConnectionEvent
+     */
     public DefaultConnectionEvent(DatabaseConnection databaseConnection, String method) {
-        
+
         super(databaseConnection, method);
     }
 
     public DatabaseConnection getDatabaseConnection() {
 
-        return (DatabaseConnection)super.getSource();
+        return (DatabaseConnection) super.getSource();
     }
 
 }

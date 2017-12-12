@@ -20,30 +20,26 @@
 
 package org.executequery.gui.editor;
 
-import java.awt.BorderLayout;
-
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.resultset.ResultSetMetaDataTableModel;
 import org.executequery.util.UserProperties;
 
+import javax.swing.*;
+import java.awt.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ResultSetMetaDataPanel extends JPanel {
-    
+
     public static final String TITLE = "Result Set Meta Data";
-    
+
     private JTable table;
-    
+
     public ResultSetMetaDataPanel() {
 
         super(new BorderLayout());
-        
+
         try {
 
             init();
@@ -72,9 +68,9 @@ public class ResultSetMetaDataPanel extends JPanel {
         return UserProperties.getInstance().getIntProperty(
                 "results.table.column.height");
     }
-    
+
     public void setMetaData(ResultSetMetaDataTableModel model) {
-        
+
         table.setModel(model);
     }
 

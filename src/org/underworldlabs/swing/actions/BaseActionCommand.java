@@ -22,78 +22,88 @@ package org.underworldlabs.swing.actions;
 
 import org.executequery.log.Log;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
-import javax.swing.SwingUtilities;
-
-/** <p>This is the base class for the action library. All
- *  actions will inherit from this class. The CommandAction
- *  defines a generic implementation of actionPerformed.
- *  Here actionPerformed simply calls the execute method
- *  on its command object.<br>
+/**
+ * <p>This is the base class for the action library. All
+ * actions will inherit from this class. The CommandAction
+ * defines a generic implementation of actionPerformed.
+ * Here actionPerformed simply calls the execute method
+ * on its command object.<br>
+ * <p>
+ * A developer can use this type directly by passing in
+ * the command, string, and action. However, convenience
+ * implementations are available that already provide the
+ * string and icon. The developer simply needs to provide
+ * the proper command.<br>
  *
- *  A developer can use this type directly by passing in
- *  the command, string, and action. However, convenience
- *  implementations are available that already provide the
- *  string and icon. The developer simply needs to provide
- *  the proper command.<br>
- *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class BaseActionCommand extends AbstractAction {
-    
-    /** The action ID */
+
+    /**
+     * The action ID
+     */
     private String actionId;
 
-    /** The associated command for execution */
+    /**
+     * The associated command for execution
+     */
     protected BaseCommand command;
 
-    /** Whether the accelerator is editable */
+    /**
+     * Whether the accelerator is editable
+     */
     private boolean acceleratorEditable;
 
-    /** <p>Constructs a new command */
+    /**
+     * <p>Constructs a new command
+     */
     public BaseActionCommand() {
         super();
     }
-    
-    /** <p>This constructor creates an action without an icon.
+
+    /**
+     * <p>This constructor creates an action without an icon.
      *
-     *  @param command the command for this action to act upon
-     *  @param name the action's name
+     * @param command the command for this action to act upon
+     * @param name    the action's name
      */
     public BaseActionCommand(BaseCommand command, String name) {
         super(name);
         setCommand(command);
     }
-    
-    /** <p>This constructor creates an action with an icon but no name.
-     *  (for buttons that require only an icon)
+
+    /**
+     * <p>This constructor creates an action with an icon but no name.
+     * (for buttons that require only an icon)
      *
-     *  @param command the command for this action to act upon
-     *  @param icon the action's icon
+     * @param command the command for this action to act upon
+     * @param icon    the action's icon
      */
     public BaseActionCommand(BaseCommand command, Icon icon) {
         super(null, icon);
         setCommand(command);
     }
-    
-    /** <p>This constructor creates an action with an icon.
+
+    /**
+     * <p>This constructor creates an action with an icon.
      *
-     *  @param command the command for this action to act upon
-     *  @param name the action's name
-     *  @param icon the action's icon
+     * @param command the command for this action to act upon
+     * @param name    the action's name
+     * @param icon    the action's icon
      */
     public BaseActionCommand(BaseCommand command, String name, Icon icon) {
         super(name, icon);
         setCommand(command);
     }
-    
-    /** <p>ActionPerformed is what executed the command.<br>
-     *  ActionPerformed is called whenever the action is acted upon.
+
+    /**
+     * <p>ActionPerformed is what executed the command.<br>
+     * ActionPerformed is called whenever the action is acted upon.
      *
-     *  @param e the action event
+     * @param e the action event
      */
     public void actionPerformed(final ActionEvent e) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -102,68 +112,72 @@ public class BaseActionCommand extends AbstractAction {
             }
         });
     }
-    
-    /** <p>This method retrieves the encapsulated command.
+
+    /**
+     * <p>This method retrieves the encapsulated command.
      *
      * @return the command
      */
     public final BaseCommand getCommand() {
         return command;
     }
-    
-    /** <p>Sets the action's command object to the specified value.
+
+    /**
+     * <p>Sets the action's command object to the specified value.
      *
      * @param newValue the command for this action to act upon
      */
     protected final void setCommand(BaseCommand newValue) {
         this.command = newValue;
     }
-    
-    /** <p>Sets the action's command object using the
-     *  class name specified which is loaded using
-     *  <code>Class.forName(...)</code>.
+
+    /**
+     * <p>Sets the action's command object using the
+     * class name specified which is loaded using
+     * <code>Class.forName(...)</code>.
      *
-     *  @param the command's fully qualified class name
+     * @param the command's fully qualified class name
      */
     public void setCommand(String className) {
-        
+
         try {
             Class<?> _class = Class.forName(className, true,
-                                         ClassLoader.getSystemClassLoader());
+                    ClassLoader.getSystemClassLoader());
             Object object = _class.newInstance();
-            command = (BaseCommand)object;
-        } 
-        catch (ClassNotFoundException e) {
-            Log.error("Error method setCommand in class BaseActionCommand:",e);
+            command = (BaseCommand) object;
+        } catch (ClassNotFoundException e) {
+            Log.error("Error method setCommand in class BaseActionCommand:", e);
             throw new InternalError();
-        }         
-        catch (Exception e) {
-            Log.error("Error method setCommand in class BaseActionCommand:",e);
-        } 
-        
+        } catch (Exception e) {
+            Log.error("Error method setCommand in class BaseActionCommand:", e);
+        }
+
     }
-    
-    /** <p>Returns whether this action has an associated
-     *  accelerator key combination.
+
+    /**
+     * <p>Returns whether this action has an associated
+     * accelerator key combination.
      *
-     *  @return true | false
+     * @return true | false
      */
     public boolean hasAccelerator() {
         return getValue(ACCELERATOR_KEY) != null;
     }
-    
-    /** <p>Returns this command's action ID.
+
+    /**
+     * <p>Returns this command's action ID.
      *
-     *  @return the action id
+     * @return the action id
      */
     public String getActionId() {
         return actionId;
     }
-    
-    /** <p>Sets this command's action ID to the
-     *  specified value.
+
+    /**
+     * <p>Sets this command's action ID to the
+     * specified value.
      *
-     *  @param the action ID
+     * @param the action ID
      */
     public void setActionId(String actionId) {
         this.actionId = actionId;
@@ -176,7 +190,7 @@ public class BaseActionCommand extends AbstractAction {
     public void setAcceleratorEditable(boolean acceleratorEditable) {
         this.acceleratorEditable = acceleratorEditable;
     }
-    
+
 }
 
 

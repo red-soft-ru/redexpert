@@ -20,31 +20,6 @@
 
 package org.executequery.gui.editor;
 
-import java.awt.AWTException;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Insets;
-import java.awt.Robot;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseListener;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
-import javax.swing.KeyStroke;
-import javax.swing.border.Border;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.editor.autocomplete.AutoCompletePopupProvider;
@@ -52,13 +27,25 @@ import org.executequery.gui.text.TextUtilities;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.GUIUtils;
 
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseListener;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * This object is the primary mediator between the parent
  * <code>QueryEditor</code> object and the actual Query Editor's
  * text pane - the <code>QueryEditorTextPane</code>. All text commands for the
  * text pane are propagated through here.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class QueryEditorTextPanel extends JPanel {
 
@@ -66,24 +53,30 @@ public class QueryEditorTextPanel extends JPanel {
 
     private static final String SQL_COMMENT = "--";
 
-    /** The SQL text pane */
+    /**
+     * The SQL text pane
+     */
     private QueryEditorTextPane queryPane;
 
-    /** The editor's controller */
+    /**
+     * The editor's controller
+     */
     private QueryEditor queryEditor;
 
     private static final String AUTO_COMPLETE_POPUP_ACTION_KEY = "autoCompletePopupActionKey";
 
     private AutoCompletePopupProvider autoCompletePopup;
 
-    /** Constructs a new instance. */
+    /**
+     * Constructs a new instance.
+     */
     public QueryEditorTextPanel(QueryEditor queryEditor) {
 
         super(new BorderLayout());
 
         this.queryEditor = queryEditor;
 
-        try  {
+        try {
 
             init();
 
@@ -94,7 +87,9 @@ public class QueryEditorTextPanel extends JPanel {
 
     }
 
-    /** Initializes the state of this instance. */
+    /**
+     * Initializes the state of this instance.
+     */
     private void init() throws Exception {
 
         // setup the query text panel and associated scroller
@@ -132,7 +127,7 @@ public class QueryEditorTextPanel extends JPanel {
 
         queryPane.getActionMap().put(AUTO_COMPLETE_POPUP_ACTION_KEY, autoCompletePopupAction);
         queryPane.getInputMap().put((KeyStroke)
-                autoCompletePopupAction.getValue(Action.ACCELERATOR_KEY),
+                        autoCompletePopupAction.getValue(Action.ACCELERATOR_KEY),
                 AUTO_COMPLETE_POPUP_ACTION_KEY);
     }
 
@@ -323,12 +318,12 @@ public class QueryEditorTextPanel extends JPanel {
     // -----------------------------------
 
     private static final String[] REGEX_CHARS = {
-        "\\*", "\\^", "\\.", "\\[", "\\]", "\\(", "\\)",
-        "\\?", "\\&", "\\{", "\\}", "\\+"};
+            "\\*", "\\^", "\\.", "\\[", "\\]", "\\(", "\\)",
+            "\\?", "\\&", "\\{", "\\}", "\\+"};
 
     private static final String[] REGEX_SUBS = {
-        "\\\\*", "\\\\^", "\\\\.", "\\\\[", "\\\\]", "\\\\(", "\\\\)",
-        "\\\\?", "\\\\&", "\\\\{", "\\\\}", "\\\\+"};
+            "\\\\*", "\\\\^", "\\\\.", "\\\\[", "\\\\]", "\\\\(", "\\\\)",
+            "\\\\?", "\\\\&", "\\\\{", "\\\\}", "\\\\+"};
 
     /**
      * Moves the caret to the beginning of the specified query.
@@ -344,7 +339,7 @@ public class QueryEditorTextPanel extends JPanel {
         }
 
         Matcher matcher = Pattern.compile(query, Pattern.DOTALL).
-                                            matcher(queryPane.getText());
+                matcher(queryPane.getText());
 
         if (matcher.find()) {
 
@@ -379,21 +374,21 @@ public class QueryEditorTextPanel extends JPanel {
     }
 
     public void replaceRegion(int start, int end, String replacement) {
-        
+
         queryPane.select(start, end);
         queryPane.replaceSelection(replacement);
     }
-    
+
     public int getSelectionStart() {
-        
+
         return queryPane.getSelectionStart();
     }
-    
+
     public int getSelectionEnd() {
-        
+
         return queryPane.getSelectionEnd();
     }
-    
+
     public String getCompleteWordEndingAtCursor() {
 
         return queryPane.getCompleteWordEndingAtCursor();
@@ -484,7 +479,7 @@ public class QueryEditorTextPanel extends JPanel {
                 int index = text.indexOf(SQL_COMMENT);
                 int startOffset = queryPane.getRowPosition(i);
 
-                document.remove(startOffset  + index, 2);
+                document.remove(startOffset + index, 2);
             }
 
         }
@@ -551,7 +546,9 @@ public class QueryEditorTextPanel extends JPanel {
 
     }
 
-    /** pattern matcher to check for comments to be removed */
+    /**
+     * pattern matcher to check for comments to be removed
+     */
     private Matcher sqlCommentMatcher;
 
     private Matcher sqlCommentMatcher() {
@@ -565,7 +562,7 @@ public class QueryEditorTextPanel extends JPanel {
     }
 
     private boolean rowsHaveComments(int startRow, int endRow, boolean allRows)
-        throws BadLocationException {
+            throws BadLocationException {
 
         Matcher matcher = sqlCommentMatcher();
 
@@ -621,15 +618,15 @@ public class QueryEditorTextPanel extends JPanel {
     }
 
     public void moveSelectionUp() {
-        
+
         queryPane.moveSelectionUp();
     }
-    
+
     public void moveSelectionDown() {
-        
+
         queryPane.moveSelectionDown();
     }
-    
+
     public void duplicateRowUp() {
 
         queryPane.duplicateTextUp();
@@ -696,10 +693,10 @@ public class QueryEditorTextPanel extends JPanel {
     }
 
     public void changeSelectionToUnderscore() {
-        
+
         TextUtilities.changeSelectionToUnderscore(queryPane);
     }
-    
+
     public void changeSelectionCase(boolean upper) {
 
         TextUtilities.changeSelectionCase(queryPane, upper);
@@ -711,27 +708,27 @@ public class QueryEditorTextPanel extends JPanel {
     }
 
     public void deleteWord() {
-        
+
         TextUtilities.deleteWord(queryPane);
     }
 
     public void deleteSelection() {
-        
+
         TextUtilities.deleteSelection(queryPane);
     }
 
     public void insertFromFile() {
-        
+
         TextUtilities.insertFromFile(queryPane);
     }
 
     public void insertLineAfter() {
-        
+
         TextUtilities.insertLineAfter(queryPane);
     }
 
     public void insertLineBefore() {
-        
+
         TextUtilities.insertLineBefore(queryPane);
     }
 
@@ -768,7 +765,7 @@ public class QueryEditorTextPanel extends JPanel {
 
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             g.setColor(borderColour);
-            g.drawLine(x, height-1, width, height-1);
+            g.drawLine(x, height - 1, width, height - 1);
         }
 
         public boolean isBorderOpaque() {

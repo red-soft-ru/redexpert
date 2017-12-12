@@ -20,54 +20,57 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import org.underworldlabs.swing.actions.ActionUtilities;
+import org.underworldlabs.swing.util.IconUtilities;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Vector;
 
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.UIManager;
-
-import org.underworldlabs.swing.actions.ActionUtilities;
-import org.underworldlabs.swing.util.IconUtilities;
-
 /**
  * List selection panel base.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class ListSelectionPanel extends ActionPanel
-                                implements ListSelection {
+        implements ListSelection {
 
-    /** the available object list */
+    /**
+     * the available object list
+     */
     private JList availableList;
-    
-    /** the selected object list */
+
+    /**
+     * the selected object list
+     */
     private JList selectedList;
-    
-    /** the selections made collection */
+
+    /**
+     * the selections made collection
+     */
     private Vector selections;
-    
-    /** the available objects collection */
+
+    /**
+     * the available objects collection
+     */
     private Vector available;
-    
-    /** label above the available object list */
+
+    /**
+     * label above the available object list
+     */
     private JLabel availableLabel;
-    
-    /** label above the selected object list */
+
+    /**
+     * label above the selected object list
+     */
     private JLabel selectedLabel;
 
     private static final int DEFAULT_ROW_HEIGHT = 20;
-    
+
     public ListSelectionPanel() {
         this(null);
     }
@@ -75,24 +78,23 @@ public class ListSelectionPanel extends ActionPanel
     public ListSelectionPanel(Vector v) {
         this("Available Columns:", "Selected Columns:", v);
     }
-    
+
     public ListSelectionPanel(String availLabel, String selectLabel) {
         this(availLabel, selectLabel, null);
     }
-    
+
     public ListSelectionPanel(String availLabel, String selectLabel, Vector v) {
-        super(new GridBagLayout());        
-        try  {
+        super(new GridBagLayout());
+        try {
             init();
             selections = new Vector();
             createAvailableList(v);
             setLabelText(availLabel, selectLabel);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     private void init() throws Exception {
         // create the labels
         availableLabel = new JLabel();
@@ -100,30 +102,30 @@ public class ListSelectionPanel extends ActionPanel
 
         // initialise the buttons
         JButton selectOneButton = ActionUtilities.createButton(
-                    this, 
-                    "selectOneAction",
+                this,
+                "selectOneAction",
 //                    IconUtilities.loadDefaultIconResource("SelectOne16.png", true),
-                    IconUtilities.loadDefaultIconResource("Forward16.png", true),
-                    "Select one");
+                IconUtilities.loadDefaultIconResource("Forward16.png", true),
+                "Select one");
 
         JButton selectAllButton = ActionUtilities.createButton(
-                    this, 
-                    "selectAllAction",
-                    IconUtilities.loadDefaultIconResource("SelectAll16.png", true),
-                    "Select all");
+                this,
+                "selectAllAction",
+                IconUtilities.loadDefaultIconResource("SelectAll16.png", true),
+                "Select all");
 
         JButton removeOneButton = ActionUtilities.createButton(
-                    this, 
-                    "removeOneAction",
+                this,
+                "removeOneAction",
 //                    IconUtilities.loadDefaultIconResource("RemoveOne16.png", true),
-                    IconUtilities.loadDefaultIconResource("Previous16.png", true),
-                    "Remove one");
+                IconUtilities.loadDefaultIconResource("Previous16.png", true),
+                "Remove one");
 
         JButton removeAllButton = ActionUtilities.createButton(
-                    this, 
-                    "removeAllAction", 
-                    IconUtilities.loadDefaultIconResource("RemoveAll16.png", true),
-                    "Remove all");
+                this,
+                "removeAllAction",
+                IconUtilities.loadDefaultIconResource("RemoveAll16.png", true),
+                "Remove all");
 
         // reset the button insets
         Insets buttonInsets = UIManager.getInsets("Button.margin");
@@ -135,16 +137,16 @@ public class ListSelectionPanel extends ActionPanel
         }
 
         JButton moveUpButton = ActionUtilities.createButton(
-                                                    this, 
-                                                    "Up16.png", 
-                                                    "Move selection up", 
-                                                    "moveSelectionUp");
+                this,
+                "Up16.png",
+                "Move selection up",
+                "moveSelectionUp");
 
         JButton moveDownButton = ActionUtilities.createButton(
-                                                    this, 
-                                                    "Down16.png", 
-                                                    "Move selection down", 
-                                                    "moveSelectionDown");
+                this,
+                "Down16.png",
+                "Move selection down",
+                "moveSelectionDown");
 
         // initialise the lists
         availableList = new JList();
@@ -152,17 +154,17 @@ public class ListSelectionPanel extends ActionPanel
 
         availableList.setFixedCellHeight(DEFAULT_ROW_HEIGHT);
         selectedList.setFixedCellHeight(DEFAULT_ROW_HEIGHT);
-        
+
         // create the list scroll panes
         JScrollPane availableScrollPane = new JScrollPane(availableList);
         JScrollPane selectedScrollPane = new JScrollPane(selectedList);
-        
+
         Dimension listDim = new Dimension(180, 185);
         availableScrollPane.setPreferredSize(listDim);
         selectedScrollPane.setPreferredSize(listDim);
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
-        
+
         // first column - available list
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -175,7 +177,7 @@ public class ListSelectionPanel extends ActionPanel
         gbc.gridy++;
         gbc.insets.top = 2;
         add(availableScrollPane, gbc);
-        
+
         // second column - selection buttons
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         gbc.gridy = 0;
@@ -201,7 +203,7 @@ public class ListSelectionPanel extends ActionPanel
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridheight = GridBagConstraints.REMAINDER;
         add(buttonPanel, gbc);
-        
+
         // third column - selected list
         gbc.gridx = 2;
         gbc.gridy = 0;
@@ -246,12 +248,12 @@ public class ListSelectionPanel extends ActionPanel
         availableList.addMouseListener(mouseSelectionListener);
         selectedList.addMouseListener(mouseSelectionListener);
     }
-    
+
     public void setLabelText(String avail, String select) {
         availableLabel.setText(avail);
         selectedLabel.setText(select);
     }
-    
+
     public void clear() {
         if (available != null) {
             available.clear();
@@ -266,29 +268,29 @@ public class ListSelectionPanel extends ActionPanel
     public void createAvailableList(List values) {
         createAvailableList(values.toArray(new Object[values.size()]));
     }
-    
+
     public void createAvailableList(Object[] values) {
         available = new Vector(values.length);
         for (int i = 0; i < values.length; i++) {
             available.add(values[i]);
         }
-        
+
         availableList.setListData(available);
         selections.clear();
         selectedList.setListData(selections);
     }
-    
+
     public void createAvailableList(Vector v) {
         if (v == null) {
             return;
         }
-        
+
         available = v;
         availableList.setListData(available);
         selections.clear();
         selectedList.setListData(selections);
     }
-    
+
     public void removeAllAction() {
         if (selections == null || selections.size() == 0) {
             return;
@@ -296,12 +298,12 @@ public class ListSelectionPanel extends ActionPanel
         for (int i = 0, n = selections.size(); i < n; i++) {
             available.add(selections.elementAt(i));
         }
-        
+
         availableList.setListData(available);
         selections.clear();
         selectedList.setListData(selections);
     }
-    
+
     public void removeOneAction() {
         if (selectedList.isSelectionEmpty()) {
             return;
@@ -318,7 +320,7 @@ public class ListSelectionPanel extends ActionPanel
         availableList.setListData(available);
         selectedList.setSelectedIndex(index);
     }
-    
+
     public void selectAllAction() {
         if (available == null) {
             return;
@@ -330,35 +332,35 @@ public class ListSelectionPanel extends ActionPanel
         available.clear();
         availableList.setListData(available);
     }
-    
+
     public void selectOneAction() {
         if (availableList.isSelectionEmpty()) {
             return;
         }
-        
+
         int index = availableList.getSelectedIndex();
         List selectedObjects = availableList.getSelectedValuesList();
         for (Object selection : selectedObjects) {
             selections.add(selection);
             available.remove(selection);
         }
-        
+
         availableList.setListData(available);
         selectedList.setListData(selections);
         availableList.setSelectedIndex(index);
     }
-    
+
     public Vector getSelectedValues() {
         return selections;
     }
-    
+
     public boolean hasSelections() {
         return selections.size() > 0;
     }
-    
+
     public void moveSelectionDown() {
         if (selectedList.isSelectionEmpty() ||
-            selectedList.getSelectedIndex() == selections.size() - 1) {
+                selectedList.getSelectedIndex() == selections.size() - 1) {
             return;
         }
 
@@ -369,10 +371,10 @@ public class ListSelectionPanel extends ActionPanel
         selectedList.setListData(selections);
         selectedList.setSelectedIndex(index + 1);
     }
-    
+
     public void moveSelectionUp() {
         if (selectedList.isSelectionEmpty() ||
-                    selectedList.getSelectedIndex() == 0) {
+                selectedList.getSelectedIndex() == 0) {
             return;
         }
 
@@ -384,28 +386,28 @@ public class ListSelectionPanel extends ActionPanel
         selectedList.setSelectedIndex(index - 1);
     }
 
-    
+
     class ListMouseSelectionListener extends MouseAdapter {
-        
+
         public void mouseClicked(MouseEvent e) {
-            
+
             if (e.getClickCount() == 2) {
-                
+
                 Object source = e.getSource();
                 if (source == availableList) {
-                    
+
                     selectOneAction();
-                
+
                 } else if (source == selectedList) {
-                    
+
                     removeOneAction();
                 }
-                
+
             }
 
         }
-        
+
     }
-    
+
 }
 

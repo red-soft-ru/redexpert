@@ -20,20 +20,15 @@
 
 package org.executequery.imageio;
 
-import java.awt.geom.AffineTransform;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGeneratorContext;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.batik.svggen.SVGGraphics2DIOException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
+
+import java.awt.geom.AffineTransform;
+import java.io.*;
 
 public class BatikSvgImageWriter extends AbstractImageWriter {
 
@@ -46,9 +41,9 @@ public class BatikSvgImageWriter extends AbstractImageWriter {
         }
 
         SvgImageWriterInfo svgImageWriterInfo = (SvgImageWriterInfo) imageWriterInfo;
-        
+
         DOMImplementation domImpl =
-            GenericDOMImplementation.getDOMImplementation();
+                GenericDOMImplementation.getDOMImplementation();
 
         Document document = domImpl.createDocument(null, "svg", null);
 
@@ -57,19 +52,19 @@ public class BatikSvgImageWriter extends AbstractImageWriter {
 
         SVGGraphics2D svgGraphics = new SVGGraphics2D(
                 ctx, svgImageWriterInfo.isRenderFontsAsImages());
-        svgGraphics.drawImage(svgImageWriterInfo.getBufferedImage(), 
-                new AffineTransform(1f,0f,0f,1f,0,0), null);
+        svgGraphics.drawImage(svgImageWriterInfo.getBufferedImage(),
+                new AffineTransform(1f, 0f, 0f, 1f, 0, 0), null);
 
         Writer out = null;
         FileOutputStream fos = null;
 
         try {
-            
+
             fos = new FileOutputStream(svgImageWriterInfo.getWriteToFile());
-        
+
             out = new OutputStreamWriter(fos, "UTF-8");
             svgGraphics.stream(out, true);
-            
+
             fos.flush();
 
         } catch (FileNotFoundException e) {
@@ -93,14 +88,16 @@ public class BatikSvgImageWriter extends AbstractImageWriter {
             if (out != null) {
                 try {
                     out.close();
-                } catch (IOException e) {}
+                } catch (IOException e) {
+                }
             }
 
             if (fos != null) {
-                
+
                 try {
                     fos.close();
-                } catch (IOException e) {}
+                } catch (IOException e) {
+                }
 
             }
 

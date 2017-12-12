@@ -23,11 +23,11 @@ package org.executequery.base;
 import java.util.EventListener;
 
 /**
- * Defines a listener implementation for a docked tab 
- * pane. The aim here is to provide event notification on 
+ * Defines a listener implementation for a docked tab
+ * pane. The aim here is to provide event notification on
  * tab dragging events.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface DockedTabDragListener extends EventListener {
 
@@ -37,14 +37,14 @@ public interface DockedTabDragListener extends EventListener {
      * @param the encapsulating event object
      */
     public void dockedTabDragged(DockedDragEvent e);
- 
+
     /**
-     *  Invoked when a mouse button has been released on a tab.
+     * Invoked when a mouse button has been released on a tab.
      *
      * @param the encapsulating event object
      */
     public void dockedTabReleased(DockedDragEvent e);
-    
+
 }
 
 

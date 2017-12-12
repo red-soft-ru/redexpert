@@ -23,41 +23,41 @@ package org.executequery.gui.forms;
 import java.awt.print.Printable;
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface FormObjectView {
-    
-    /** 
+
+    /**
      * Performs some cleanup and releases resources before being closed.
      */
     public void cleanup();
-    
-    /** 
-     * Refreshes the data and clears the cache 
+
+    /**
+     * Refreshes the data and clears the cache
      */
     public void refresh();
-    
-    /** 
-     * Returns the print object - if any 
+
+    /**
+     * Returns the print object - if any
      */
     public Printable getPrintable();
-    
-    /** 
-     * Returns the name of this panel 
+
+    /**
+     * Returns the name of this panel
      */
     public String getLayoutName();
-    
+
     public void validate();
+
     public void repaint();
-    
+
 }
 
 

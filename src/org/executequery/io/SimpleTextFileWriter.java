@@ -20,27 +20,27 @@
 
 package org.executequery.io;
 
+import org.executequery.gui.text.LineSeparator;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import org.executequery.gui.text.LineSeparator;
-
 public class SimpleTextFileWriter {
 
     public void write(String path, String text, LineSeparator lineSeparator) throws IOException {
-        
+
         PrintWriter writer = null;
-        
+
         try {
 
-            writer = new PrintWriter(new FileWriter(path, false), true);            
+            writer = new PrintWriter(new FileWriter(path, false), true);
 
             String _text = text.replaceAll("\n", lineSeparator.value);
             writer.println(_text);
 
         } finally {
-            
+
             if (writer != null) {
 
                 writer.close();
@@ -48,9 +48,9 @@ public class SimpleTextFileWriter {
             }
 
         }
-        
+
     }
-    
+
 }
 
 

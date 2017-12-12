@@ -24,9 +24,9 @@ import javax.swing.plaf.BorderUIResource;
 import javax.swing.plaf.ColorUIResource;
 
 public class SimpleMenuBorder extends BorderUIResource.LineBorderUIResource {
-    
+
     public SimpleMenuBorder(ColorUIResource borderColour) {
-    
+
         super(borderColour);
     }
 

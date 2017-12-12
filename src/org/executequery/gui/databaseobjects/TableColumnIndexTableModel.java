@@ -20,26 +20,30 @@
 
 package org.executequery.gui.databaseobjects;
 
-import java.util.List;
-
 import org.executequery.databaseobjects.impl.TableColumnIndex;
 import org.executequery.gui.browser.AbstractDatabaseTableViewModel;
 
+import java.util.List;
+
 /**
- *
  * @author takisd
  */
 public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
-    
-    /** the table indexed columns */
+
+    /**
+     * the table indexed columns
+     */
     private List<TableColumnIndex> indexes;
 
-    private static final String[] header = {"", "Index Name", 
-                                            "Indexed Column", "Non-Unique"};
+    private static final String[] header = {"", "Index Name",
+            "Indexed Column", "Non-Unique"};
 
-    /** Creates a new instance of DatabaseTableColumnIndexTableModel */
-    public TableColumnIndexTableModel() {}
-    
+    /**
+     * Creates a new instance of DatabaseTableColumnIndexTableModel
+     */
+    public TableColumnIndexTableModel() {
+    }
+
     public void setIndexData(List<TableColumnIndex> indexes) {
         if (this.indexes == indexes) {
             return;
@@ -54,22 +58,22 @@ public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
         }
         return indexes.size();
     }
-    
+
     public int getColumnCount() {
         return header.length;
     }
-    
+
     public String getColumnName(int col) {
         return header[col];
     }
-    
+
     public boolean isCellEditable(int row, int col) {
         return false;
     }
-    
+
     public Object getValueAt(int row, int col) {
         TableColumnIndex index = indexes.get(row);
-        switch(col) {
+        switch (col) {
             case 1:
                 return index.getName();
             case 2:
@@ -80,7 +84,7 @@ public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
                 return null;
         }
     }
-    
+
     public void setValueAt(Object value, int row, int col) {
         TableColumnIndex index = indexes.get(row);
         switch (col) {
@@ -96,7 +100,7 @@ public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
         }
         fireTableRowsUpdated(row, row);
     }
-    
+
     public Class<?> getColumnClass(int col) {
         if (col == 3) {
             return Boolean.class;

@@ -20,14 +20,11 @@
 
 package org.underworldlabs.swing.plaf;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Insets;
-
-import javax.swing.UIDefaults;
+import javax.swing.*;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.plaf.metal.DefaultMetalTheme;
+import java.awt.*;
 
 public class PlainMetalTheme extends DefaultMetalTheme {
 
@@ -51,16 +48,16 @@ public class PlainMetalTheme extends DefaultMetalTheme {
 
         Color cccccc = new ColorUIResource(0xCCCCCC);
 
-        Object[] defaults = new Object[] {
-            
-            "TabbedPane.borderHightlightColor", getSecondary1(),
-            "TabbedPane.contentAreaColor", getSecondary3(),
-            "TabbedPane.contentBorderInsets", new Insets(2, 2, 3, 3),
-            "TabbedPane.selected", getSecondary3(),
-            "TabbedPane.tabAreaBackground", getSecondary3(),
-            "TabbedPane.tabAreaInsets", new Insets(4, 2, 0, 6),
-            "TabbedPane.unselectedBackground", cccccc,
-            "MenuBarUI", "javax.swing.plaf.metal.MetalMenuBarUI"
+        Object[] defaults = new Object[]{
+
+                "TabbedPane.borderHightlightColor", getSecondary1(),
+                "TabbedPane.contentAreaColor", getSecondary3(),
+                "TabbedPane.contentBorderInsets", new Insets(2, 2, 3, 3),
+                "TabbedPane.selected", getSecondary3(),
+                "TabbedPane.tabAreaBackground", getSecondary3(),
+                "TabbedPane.tabAreaInsets", new Insets(4, 2, 0, 6),
+                "TabbedPane.unselectedBackground", cccccc,
+                "MenuBarUI", "javax.swing.plaf.metal.MetalMenuBarUI"
 
         };
         table.putDefaults(defaults);
@@ -71,117 +68,111 @@ public class PlainMetalTheme extends DefaultMetalTheme {
     public int getDefaultFontSize() {
         return DEFAULT_FONT_SIZE;
     }
-    
+
     public FontUIResource getControlTextFont() {
-        
+
         if (controlFont == null) {
-            
+
             try {
                 controlFont = new FontUIResource(
-                                    Font.getFont("swing.plaf.metal.controlFont",
-                                    new Font("Dialog", Font.PLAIN, getDefaultFontSize())));
-            }
-            catch (Exception e) {
+                        Font.getFont("swing.plaf.metal.controlFont",
+                                new Font("Dialog", Font.PLAIN, getDefaultFontSize())));
+            } catch (Exception e) {
                 controlFont = new FontUIResource("Dialog", Font.BOLD, getDefaultFontSize());
-            } 
-            
-        } 
-        
+            }
+
+        }
+
         return controlFont;
-        
+
     }
-    
+
     public FontUIResource getSystemTextFont() {
-        
+
         if (systemFont == null) {
-            
+
             try {
                 systemFont = new FontUIResource(
-                                    Font.getFont("swing.plaf.metal.systemFont",
-                                    new Font("Dialog", Font.PLAIN, getDefaultFontSize())));
+                        Font.getFont("swing.plaf.metal.systemFont",
+                                new Font("Dialog", Font.PLAIN, getDefaultFontSize())));
+            } catch (Exception e) {
+                systemFont = new FontUIResource("Dialog", Font.PLAIN, getDefaultFontSize());
             }
-            catch (Exception e) {
-                systemFont =  new FontUIResource("Dialog", Font.PLAIN, getDefaultFontSize());
-            } 
-            
-        } 
+
+        }
 
         return systemFont;
-        
+
     }
-    
+
     public FontUIResource getUserTextFont() {
-        
+
         if (userFont == null) {
-            
+
             try {
                 userFont = new FontUIResource(
-                                    Font.getFont("swing.plaf.metal.userFont",
-                                    new Font("Dialog", Font.PLAIN, getDefaultFontSize())));
-            }             
-            catch (Exception e) {
-                userFont =  new FontUIResource("Dialog", Font.PLAIN, getDefaultFontSize());
-            } 
-            
-        } 
-        
+                        Font.getFont("swing.plaf.metal.userFont",
+                                new Font("Dialog", Font.PLAIN, getDefaultFontSize())));
+            } catch (Exception e) {
+                userFont = new FontUIResource("Dialog", Font.PLAIN, getDefaultFontSize());
+            }
+
+        }
+
         return userFont;
     }
-    
+
     public FontUIResource getMenuTextFont() {
-        
+
         if (menuFont == null) {
-            
+
             try {
                 menuFont = new FontUIResource(
-                                    Font.getFont("swing.plaf.metal.menuFont",
-                                    new Font("Dialog", Font.PLAIN, getDefaultFontSize())));
-            }             
-            catch (Exception e) {
+                        Font.getFont("swing.plaf.metal.menuFont",
+                                new Font("Dialog", Font.PLAIN, getDefaultFontSize())));
+            } catch (Exception e) {
                 menuFont = new FontUIResource("Dialog", Font.PLAIN, getDefaultFontSize());
-            } 
-            
-        } 
-        
+            }
+
+        }
+
         return menuFont;
-        
+
     }
-    
+
     public FontUIResource getWindowTitleFont() {
-        
+
         if (controlFont == null) {
-            
+
             try {
                 controlFont = new FontUIResource(
-                                        Font.getFont("swing.plaf.metal.controlFont",
-                                        new Font("Dialog", Font.PLAIN, getDefaultFontSize())));
-            } 
-            catch (Exception e) {
+                        Font.getFont("swing.plaf.metal.controlFont",
+                                new Font("Dialog", Font.PLAIN, getDefaultFontSize())));
+            } catch (Exception e) {
                 controlFont = new FontUIResource("Dialog", Font.BOLD, getDefaultFontSize());
-            } 
-            
-        } 
-        
+            }
+
+        }
+
         return controlFont;
-        
+
     }
-    
+
     public FontUIResource getSubTextFont() {
-        
+
         if (smallFont == null) {
-            
+
             try {
                 smallFont = new FontUIResource(Font.getFont("swing.plaf.metal.smallFont",
-                                               new Font("Dialog", Font.PLAIN, 10)));
-            }
-            catch (Exception e) {
+                        new Font("Dialog", Font.PLAIN, 10)));
+            } catch (Exception e) {
                 smallFont = new FontUIResource("Dialog", Font.PLAIN, 10);
-            } 
-            
-        } 
-        
+            }
+
+        }
+
         return smallFont;
-        
+
     }
 
 }

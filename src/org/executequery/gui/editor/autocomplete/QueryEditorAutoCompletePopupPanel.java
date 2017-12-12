@@ -20,23 +20,17 @@
 
 package org.executequery.gui.editor.autocomplete;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.Timer;
-
 import org.executequery.Constants;
 import org.executequery.gui.editor.TypeAheadList;
 import org.executequery.gui.editor.TypeAheadListProvider;
 import org.underworldlabs.swing.plaf.UIUtils;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class QueryEditorAutoCompletePopupPanel extends JPopupMenu implements TypeAheadListProvider {
 
@@ -51,7 +45,7 @@ public class QueryEditorAutoCompletePopupPanel extends JPopupMenu implements Typ
     private List<AutoCompleteListItem> values;
 
     private Timer timer;
-    
+
     public QueryEditorAutoCompletePopupPanel() {
 
         init();
@@ -72,13 +66,13 @@ public class QueryEditorAutoCompletePopupPanel extends JPopupMenu implements Typ
 
         add(scrollPane, BorderLayout.CENTER);
         setPreferredSize(PREFERRED_SIZE);
-        
+
         timer = new Timer(0, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 reset();
             }
         });
-        
+
         listeners = new ArrayList<AutoCompletePopupListener>();
     }
 
@@ -104,66 +98,66 @@ public class QueryEditorAutoCompletePopupPanel extends JPopupMenu implements Typ
     }
 
     protected void done() {
-        
+
         timer.stop();
     }
-    
+
     protected void reset(List<AutoCompleteListItem> values) {
-        
+
         this.values = values;
         reset();
     }
-    
+
     protected void scheduleReset(List<AutoCompleteListItem> values) {
 
         this.values = values;
         if (!timer.isRunning()) {
- 
+
             timer.start();
-        
+
         } else if (timer.getDelay() != TIMER_DELAY) {
 
             timer.stop();
             timer.setDelay(TIMER_DELAY);
             timer.restart();
         }
-        
+
     }
-    
+
     private void reset() {
 
         if (values == null || values.isEmpty()) {
-            
+
             return;
         }
-        
+
         Object selectedValue = list.getSelectedValue();
-        
+
         list.resetValues(values);
         if (values != null && !values.isEmpty()) {
 
             if (selectedValue != null) {
-                
+
                 list.setSelectedValue(selectedValue, true);
 
             } else {
-                
+
                 selectListIndex(0);
             }
-            
+
         }
-            
+
     }
-    
+
     protected void scrollSelectedIndexUp() {
 
         int selectedIndex = list.getSelectedIndex();
         if (selectedIndex > 0) {
 
             selectListIndex(selectedIndex - 1);
-        
+
         } else if (selectedIndex == 0) {
-            
+
             selectListIndex(list.getModel().getSize() - 1);
         }
 
@@ -175,9 +169,9 @@ public class QueryEditorAutoCompletePopupPanel extends JPopupMenu implements Typ
         if (selectedIndex < list.getModel().getSize() - 1) {
 
             selectListIndex(selectedIndex + 1);
-        
+
         } else {
-            
+
             selectListIndex(0);
         }
 
@@ -241,7 +235,8 @@ public class QueryEditorAutoCompletePopupPanel extends JPopupMenu implements Typ
         hidePopup();
     }
 
-    public void refocus() {}
+    public void refocus() {
+    }
 
     protected void hidePopup() {
 

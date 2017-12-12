@@ -20,38 +20,21 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.IOException;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.components.TextFieldPanel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.WidgetFactory;
-import org.underworldlabs.swing.ComponentTitledPanel;
-import org.underworldlabs.swing.DefaultFieldLabel;
-import org.underworldlabs.swing.DisabledField;
-import org.underworldlabs.swing.LinkButton;
-import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
 
 public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
 
@@ -89,11 +72,11 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
         gbc.gridx = 0;
 
         gbc.insets.bottom = 5;
-        
+
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         mainPanel.add(new DefaultFieldLabel(
                 FileUtils.loadResource("org/executequery/gui/browser/resource/ssh-tunnel.html")), gbc);
-        
+
         addLabelFieldPair(mainPanel, "SSH Host:", hostField,
                 "The SSH host server for the tunnel", gbc);
 
@@ -111,10 +94,10 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
         JButton showPassword = new LinkButton("Show Password");
         showPassword.setActionCommand("showPassword");
         showPassword.addActionListener(this);
-        
+
         JPanel passwordOptionsPanel = new JPanel(new GridBagLayout());
         addComponents(passwordOptionsPanel,
-                      new ComponentToolTipPair[]{
+                new ComponentToolTipPair[]{
                         new ComponentToolTipPair(savePwdCheck, "Store the password with the connection information"),
                         new ComponentToolTipPair(showPassword, "Show the password in plain text")});
 
@@ -129,58 +112,58 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
 
         useSshCheckbox = ActionUtilities.createCheckBox(this, "Connect Using an SSH Tunnel", "useSshSelected");
         ComponentTitledPanel titledPanel = new ComponentTitledPanel(useSshCheckbox);
-        
+
         JPanel panel = titledPanel.getContentPane();
         panel.setLayout(new BorderLayout());
         panel.add(scrollPane, BorderLayout.CENTER);
-        
-        setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+
+        setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         add(titledPanel, BorderLayout.NORTH);
     }
 
     public void useSshSelected() {
-        
+
         if (useSshCheckbox.isSelected()) {
-            
+
             enableFields(true);
-        
+
         } else {
-            
+
             enableFields(false);
         }
-        
+
     }
-    
+
     private void enableFields(boolean enable) {
 
         enableComponents(mainPanel.getComponents(), enable);
     }
 
     private void enableComponents(Component[] components, boolean enable) {
-        
+
         for (Component component : components) {
-            
+
             component.setEnabled(enable);
             if (component instanceof JPanel) {
-                
-                enableComponents(((JPanel) component).getComponents(), enable);                
+
+                enableComponents(((JPanel) component).getComponents(), enable);
             }
         }
-        
+
     }
-    
+
     public void setValues(DatabaseConnection databaseConnection) {
 
         hostField.setText(databaseConnection.getHost());
         userNameField.setText(databaseConnection.getSshUserName());
         passwordField.setText(databaseConnection.getUnencryptedSshPassword());
-        
+
         if (databaseConnection.getSshPort() <= 0) {
-            
+
             portField.setText("22");
-            
+
         } else {
-            
+
             portField.setText(String.valueOf(databaseConnection.getSshPort()));
         }
 
@@ -190,8 +173,8 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
     }
 
     public void showPassword() {
-        
-        new ShowPasswordDialog(hostField.getText(), 
+
+        new ShowPasswordDialog(hostField.getText(),
                 MiscUtils.charsToString(passwordField.getPassword()));
     }
 
@@ -207,33 +190,33 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
     public boolean canConnect() {
 
         if (useSshCheckbox.isSelected()) {
-            
+
             if (!hasValue(userNameField)) {
-                
+
                 GUIUtilities.displayErrorMessage("You have selected SSH Tunnel but have not provided an SSH user name");
                 return false;
             }
-            
+
             if (!hasValue(portField)) {
-                
+
                 GUIUtilities.displayErrorMessage("You have selected SSH Tunnel but have not provided an SSH port");
                 return false;
-            }            
-            
+            }
+
             if (!hasValue(passwordField)) {
-                
+
                 final JPasswordField field = WidgetFactory.createPasswordField();
-                
+
                 JOptionPane optionPane = new JOptionPane(field, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
                 JDialog dialog = optionPane.createDialog("Enter SSH password");
-                
+
                 dialog.addWindowFocusListener(new WindowAdapter() {
-                  @Override
-                  public void windowGainedFocus(WindowEvent e) {
-                      field.requestFocusInWindow();
-                  }
+                    @Override
+                    public void windowGainedFocus(WindowEvent e) {
+                        field.requestFocusInWindow();
+                    }
                 });
-                
+
                 dialog.pack();
                 dialog.setLocation(GUIUtilities.getLocationForDialog(dialog.getSize()));
                 dialog.setVisible(true);
@@ -244,23 +227,23 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
 
                     String password = MiscUtils.charsToString(field.getPassword());
                     if (StringUtils.isNotBlank(password)) {
-                        
+
                         passwordField.setText(password);
                         return true;
 
                     } else {
-                    
+
                         GUIUtilities.displayErrorMessage("You have selected SSH Tunnel but have not provided an SSH password");
-                        
+
                         // send back here and force them to select cancel if they want to bail
-                        
+
                         return canConnect();
                     }
 
-                } 
+                }
                 return false;
             }
-            
+
         }
 
         return true;

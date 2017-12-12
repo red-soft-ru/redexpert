@@ -20,11 +20,6 @@
 
 package org.executequery.util;
 
-import java.io.File;
-import java.io.IOException;
-
-import javax.swing.JPanel;
-
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.components.OpenFileDialog;
@@ -37,9 +32,12 @@ import org.executequery.gui.erd.ErdViewerPanel;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.FileUtils;
 
+import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class FileLoader {
 
@@ -109,14 +107,14 @@ public class FileLoader {
                     return;
                 }
 
-                ErdSaveFileFormat erd = (ErdSaveFileFormat)object;
+                ErdSaveFileFormat erd = (ErdSaveFileFormat) object;
 
                 ErdViewerPanel erdPanel = new ErdViewerPanel(erd, file.getAbsolutePath());
                 GUIUtilities.addCentralPane(ErdViewerPanel.TITLE,
-                                            ErdViewerPanel.FRAME_ICON,
-                                            erdPanel,
-                                            null,
-                                            true);
+                        ErdViewerPanel.FRAME_ICON,
+                        erdPanel,
+                        null,
+                        true);
                 erdPanel.setSavedErd(erd, file.getAbsolutePath());
 
                 /*
@@ -155,7 +153,7 @@ public class FileLoader {
 
                 if (panel != null && panel instanceof QueryEditor) {
 
-                    QueryEditor editor = ((QueryEditor)panel);
+                    QueryEditor editor = ((QueryEditor) panel);
 
                     //editor.setEditorText(contents, true);
 
@@ -163,7 +161,7 @@ public class FileLoader {
                     editor.setOpenFilePath(file.getAbsolutePath());
 
                     GUIUtilities.setTabTitleForComponent(
-                                    panel, editor.getDisplayName());
+                            panel, editor.getDisplayName());
 
                 } else {
 
@@ -176,7 +174,7 @@ public class FileLoader {
 
                 if (panel != null && panel instanceof ScratchPadPanel) {
 
-                    ((ScratchPadPanel)panel).setEditorText(contents);
+                    ((ScratchPadPanel) panel).setEditorText(contents);
 
                 } else {
 
@@ -206,20 +204,20 @@ public class FileLoader {
     private void openNewScratchPad(File file, String contents) {
 
         GUIUtilities.addCentralPane(ScratchPadPanel.TITLE,
-                                    ScratchPadPanel.FRAME_ICON,
-                                    new ScratchPadPanel(contents),
-                                    null,
-                                    true);
+                ScratchPadPanel.FRAME_ICON,
+                new ScratchPadPanel(contents),
+                null,
+                true);
     }
 
     private void openNewEditor(File file, String contents) {
 
         QueryEditor editor = new QueryEditor(contents, file.getAbsolutePath());
         GUIUtilities.addCentralPane(QueryEditor.TITLE,
-                                    QueryEditor.FRAME_ICON,
-                                    editor,
-                                    null,
-                                    true);
+                QueryEditor.FRAME_ICON,
+                editor,
+                null,
+                true);
     }
 
 }

@@ -26,7 +26,7 @@ import java.io.File;
 public abstract class AbstractImageWriterInfo implements ImageWriterInfo {
 
     private File writeToFile;
-    
+
     private BufferedImage bufferedImage;
 
     public AbstractImageWriterInfo(BufferedImage bufferedImage, File writeToFile) {
@@ -42,7 +42,7 @@ public abstract class AbstractImageWriterInfo implements ImageWriterInfo {
     public BufferedImage getBufferedImage() {
         return bufferedImage;
     }
-    
+
 }
 
 

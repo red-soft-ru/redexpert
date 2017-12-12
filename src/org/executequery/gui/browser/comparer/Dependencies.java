@@ -8,16 +8,15 @@ import java.util.ArrayList;
 
 public class Dependencies {
 
-    public Dependencies(Comparer comp)
-    {
-        comparer=comp;
+    public Dependencies(Comparer comp) {
+        comparer = comp;
         init();
 
     }
-    public void init()
-    {
-        firstConnection=comparer.firstConnection;
-        secondConnection=comparer.secondConnection;
+
+    public void init() {
+        firstConnection = comparer.firstConnection;
+        secondConnection = comparer.secondConnection;
         view = comparer.view;
         constraint = comparer.constraint;
         index = comparer.index;
@@ -28,6 +27,7 @@ public class Dependencies {
         generator = comparer.generator;
         udf = comparer.udf;
     }
+
     Udf udf;
     Generator generator;
     Exception exception;
@@ -40,10 +40,10 @@ public class Dependencies {
     Comparer comparer;
     StatementExecutor firstConnection;
     StatementExecutor secondConnection;
-    private  String query = "";
+    private String query = "";
 
     // удалить поле по его источнику (второе соединение)
-    public  String dropField(String fs) {
+    public String dropField(String fs) {
         String scriptPart = "";
 
         ArrayList<String> tableName = new ArrayList<String>();
@@ -59,7 +59,7 @@ public class Dependencies {
                 + "where rdb$fields.rdb$field_name = '" + fs + "'";
 
         try {
-            ResultSet rs = secondConnection.execute(query,true).getResultSet();
+            ResultSet rs = secondConnection.execute(query, true).getResultSet();
 
             while (rs.next()) {
                 if (rs.getString(3).trim().equals("0")) {
@@ -90,8 +90,8 @@ public class Dependencies {
                             + "where rdb$relations.rdb$relation_name = '" + viewName.get(i) + "'";
 
                     try {
-                        ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                        
+                        ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                         while (rs.next()) {
 
@@ -128,8 +128,8 @@ public class Dependencies {
                             + "order by rdb$relation_constraints.rdb$constraint_type desc";
 
                     try {
-                        ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                        
+                        ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                         while (rs.next()) {
                             ArrayList<String> line = new ArrayList<String>();
@@ -168,8 +168,8 @@ public class Dependencies {
                             + "and rdb$dependencies.rdb$field_name = '" + fieldName.get(i) + "'";
 
                     try {
-                        ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                        
+                        ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                         while (rs.next()) {
 
@@ -203,8 +203,8 @@ public class Dependencies {
                             + "and rdb$relation_constraints.rdb$index_name is null";
 
                     try {
-                        ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                        
+                        ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                         while (rs.next()) {
 
@@ -226,8 +226,8 @@ public class Dependencies {
                                 + "where rdb$indices.rdb$index_name = '" + ii + "'";
 
                         try {
-                            ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                            
+                            ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                             while (rs.next()) {
 
@@ -256,7 +256,7 @@ public class Dependencies {
     }
 
     // создать недостающие поля и таблицы
-    public  String addFields(String rel, String field) {
+    public String addFields(String rel, String field) {
         String scriptPart = "";
         boolean v = false;
 
@@ -265,8 +265,8 @@ public class Dependencies {
                 + "where rdb$relations.rdb$relation_name = '" + rel + "'";
 
         try {
-            ResultSet rs = firstConnection.execute(query,true).getResultSet();
-            
+            ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
                 if (rs.getString(1).trim().equals("1")) {
@@ -288,7 +288,7 @@ public class Dependencies {
                 + "where rdb$relations.rdb$relation_name = '" + rel + "'";
 
         try {
-            ResultSet rs = secondConnection.execute(query,true).getResultSet();
+            ResultSet rs = secondConnection.execute(query, true).getResultSet();
 
             while (rs.next()) {
                 c = true; // искомая таблица найдена
@@ -323,7 +323,7 @@ public class Dependencies {
                 + "and rdb$relation_fields.rdb$field_name = '" + field + "'";
 
         try {
-            ResultSet rs = secondConnection.execute(query,true).getResultSet();
+            ResultSet rs = secondConnection.execute(query, true).getResultSet();
 
             c = false;
 
@@ -351,8 +351,8 @@ public class Dependencies {
                             + "or rdb$dependencies.rdb$depended_on_type = 0)";
 
                     try {
-                        rs = firstConnection.execute(query,true).getResultSet();
-                        
+                        rs = firstConnection.execute(query, true).getResultSet();
+
 
                         while (rs.next()) {
 
@@ -405,7 +405,7 @@ public class Dependencies {
     }
 
     // удалить зависимые объекты
-    public  String clearDependencies(String object, String name) {
+    public String clearDependencies(String object, String name) {
         String scriptPart = "";
 
         switch (object) {
@@ -422,8 +422,8 @@ public class Dependencies {
                             + "where rdb$relations.rdb$relation_name = '" + name + "'";
 
                     try {
-                        ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                        
+                        ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                         while (rs.next()) {
 
@@ -492,8 +492,8 @@ public class Dependencies {
                                         + "where rdb$triggers.rdb$trigger_name = '" + name + "'";
 
                                 try {
-                                    ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                                    
+                                    ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                                     while (rs.next()) {
 
@@ -521,8 +521,8 @@ public class Dependencies {
                                         + "where rdb$relation_constraints.rdb$constraint_type = 'CHECK'\n"
                                         + "and rdb$relation_constraints.rdb$constraint_name = '" + info.get(1) + "'\n";
                                 try {
-                                    ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                                    
+                                    ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                                     while (rs.next()) {
 
@@ -552,8 +552,8 @@ public class Dependencies {
                         + "and rdb$relations.rdb$relation_type = 1";
 
                 try {
-                    ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                    
+                    ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                     while (rs.next()) {
                         views.add(rs.getString(1).trim());
@@ -574,8 +574,8 @@ public class Dependencies {
                             + "where rdb$relations.rdb$relation_name = '" + name + "'";
 
                     try {
-                        ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                        
+                        ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                         while (rs.next()) {
 
@@ -603,8 +603,8 @@ public class Dependencies {
                             + "and rdb$relations.rdb$relation_type = 0";
 
                     try {
-                        ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                        
+                        ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                         while (rs.next()) {
                             rel = rs.getString(1).trim();
@@ -626,8 +626,8 @@ public class Dependencies {
                     boolean c = false;
 
                     try {
-                        ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                        
+                        ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                         while (rs.next()) {
                             c = true;
@@ -697,8 +697,8 @@ public class Dependencies {
                             + "where rdb$procedures.rdb$procedure_name = '" + name + "'";
 
                     try {
-                        ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                        
+                        ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                         while (rs.next()) {
 
@@ -722,8 +722,8 @@ public class Dependencies {
                         + "where rdb$indices.rdb$index_name = '" + name + "'";
 
                 try {
-                    ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                    
+                    ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                     while (rs.next()) {
 
@@ -762,8 +762,8 @@ public class Dependencies {
                         + "where rdb$indices.rdb$index_name = '" + name + "'";
 
                 try {
-                    ResultSet rs = firstConnection.execute(query,true).getResultSet();
-                    
+                    ResultSet rs = firstConnection.execute(query, true).getResultSet();
+
 
                     while (rs.next()) {
 
@@ -784,7 +784,7 @@ public class Dependencies {
     }
 
     // создать зависимые объекты
-    public  String addDependencies(String object, String name) {
+    public String addDependencies(String object, String name) {
         String scriptPart = "";
 
         switch (object) {
@@ -795,8 +795,8 @@ public class Dependencies {
                             + "where rdb$exceptions.rdb$exception_name = '" + name + "'";
 
                     try {
-                        ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                        
+                        ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                         boolean c = false;
 
@@ -828,8 +828,8 @@ public class Dependencies {
                             + "where rdb$generators.rdb$generator_name = '" + name + "'";
 
                     try {
-                        ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                        
+                        ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                         boolean c = false;
 
@@ -856,8 +856,8 @@ public class Dependencies {
                             + "where rdb$functions.rdb$function_name = '" + name + "'";
 
                     try {
-                        ResultSet rs = secondConnection.execute(query,true).getResultSet();
-                        
+                        ResultSet rs = secondConnection.execute(query, true).getResultSet();
+
 
                         boolean c = false;
 

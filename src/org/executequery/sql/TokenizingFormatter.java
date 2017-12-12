@@ -24,17 +24,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/** 
+/**
  * Formats tokenized queries so they look 'pretty'.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class TokenizingFormatter {
 
     private static final String DELIMITER = ";";
 
     private QueryTokenizer queryTokenizer;
-    
+
     public String format(String text) {
 
         List<DerivedQuery> queries = queryTokenizer().tokenize(text);
@@ -44,13 +44,13 @@ public class TokenizingFormatter {
     }
 
     private String rebuildQueryString(List<String> formattedQueries) {
-        
+
         StringBuilder sb = new StringBuilder();
 
         for (String query : formattedQueries) {
 
             sb.append(query.trim());
-            
+
             if (!query.endsWith(DELIMITER)) {
 
                 sb.append(DELIMITER);
@@ -58,7 +58,7 @@ public class TokenizingFormatter {
 
             sb.append("\n\n");
         }
-        
+
         return sb.toString();
     }
 
@@ -67,18 +67,18 @@ public class TokenizingFormatter {
         List<String> formattedQueries = new ArrayList<String>(queries.size());
 
         for (DerivedQuery query : queries) {
-            
+
             String formatted = new SQLFormatter(
-                    query.getOriginalQuery()).format();  
+                    query.getOriginalQuery()).format();
 
             formattedQueries.add(formatted);
         }
 
         return formattedQueries;
     }
-    
+
     private QueryTokenizer queryTokenizer() {
-        
+
         if (queryTokenizer == null) {
 
             queryTokenizer = new QueryTokenizer();

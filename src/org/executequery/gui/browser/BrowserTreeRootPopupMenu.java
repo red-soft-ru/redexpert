@@ -20,14 +20,12 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.event.ActionListener;
-
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.menu.MenuItemFactory;
+
+import javax.swing.*;
+import java.awt.event.ActionListener;
 
 public class BrowserTreeRootPopupMenu extends JPopupMenu {
 
@@ -48,7 +46,7 @@ public class BrowserTreeRootPopupMenu extends JPopupMenu {
         add(createMenuItem("export-connections-command"));
         add(createMenuItem("import-connections-command"));
     }
-    
+
     private JMenuItem createMenuItem(String actionId) {
 
         JMenuItem menuItem = MenuItemFactory.createMenuItem(ActionBuilder.get(actionId));
@@ -58,9 +56,9 @@ public class BrowserTreeRootPopupMenu extends JPopupMenu {
     }
 
     private JMenuItem createMenuItem(String text,
-            String actionCommand,
-            ActionListener listener) {
-        
+                                     String actionCommand,
+                                     ActionListener listener) {
+
         JMenuItem menuItem = MenuItemFactory.createMenuItem(text);
         menuItem.setActionCommand(actionCommand);
         menuItem.addActionListener(listener);
@@ -71,6 +69,6 @@ public class BrowserTreeRootPopupMenu extends JPopupMenu {
 
         return Bundles.get(getClass(), key);
     }
-    
+
 }
 

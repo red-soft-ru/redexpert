@@ -21,47 +21,47 @@
 package org.executequery.gui.prefs;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.executequery.log.Log;
 import org.underworldlabs.util.SystemProperties;
 
-/** <p>The Query Editor properties panel.
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * <p>The Query Editor properties panel.
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PropertiesEditorDisplay extends AbstractPropertiesBasePanel {
-    
+
     private SimplePreferencesPanel preferencesPanel;
-    
-    public PropertiesEditorDisplay() {       
+
+    public PropertiesEditorDisplay() {
         try {
             init();
-        }
-        catch (Exception e) {
-            Log.error("Error init Class PropertiesEditorDisplay:",e);
+        } catch (Exception e) {
+            Log.error("Error init Class PropertiesEditorDisplay:", e);
         }
     }
-    
+
     private void init() throws Exception {
-        
-    	List<UserPreference> list = new ArrayList<UserPreference>();
-    	
+
+        List<UserPreference> list = new ArrayList<UserPreference>();
+
         String key = "editor.display.statusbar";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 "Status bar",
                 Boolean.valueOf(SystemProperties.getProperty("user", key))));
-        
+
         key = "editor.display.linenums";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 "Line numbers",
                 Boolean.valueOf(SystemProperties.getProperty("user", key))));
-        
+
         key = "editor.display.results";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
@@ -98,22 +98,22 @@ public class PropertiesEditorDisplay extends AbstractPropertiesBasePanel {
                 "Right margin colour",
                 SystemProperties.getColourProperty("user", key)));
 
-        UserPreference[] preferences = 
-            (UserPreference[])list.toArray(new UserPreference[list.size()]);
+        UserPreference[] preferences =
+                (UserPreference[]) list.toArray(new UserPreference[list.size()]);
 
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
-        
+
     }
 
     public void restoreDefaults() {
         preferencesPanel.restoreDefaults();
     }
-    
+
     public void save() {
         preferencesPanel.savePreferences();
     }
-    
+
 }
 
 

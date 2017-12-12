@@ -20,27 +20,6 @@
 
 package org.executequery.gui.prefs;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
-
 import org.executequery.ActiveComponent;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
@@ -53,40 +32,63 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.swing.tree.DynamicTree;
 
+import javax.swing.*;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.*;
+import java.util.List;
+
 /**
  * Main system preferences panel.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PropertiesPanel extends JPanel
-                             implements ActiveComponent,
-                                        ActionListener,
-                                        PreferenceChangeListener,
-                                        TreeSelectionListener {
+        implements ActiveComponent,
+        ActionListener,
+        PreferenceChangeListener,
+        TreeSelectionListener {
 
     public static final String TITLE = "Preferences";
     public static final String FRAME_ICON = "Preferences16.png";
 
-    /** the property selection tree */
+    /**
+     * the property selection tree
+     */
     private JTree tree;
 
-    /** the right-hand property display panel */
+    /**
+     * the right-hand property display panel
+     */
     private JPanel rightPanel;
 
-    /** the base panel layout */
+    /**
+     * the base panel layout
+     */
     private CardLayout cardLayout;
 
-    /** map of panels within the layout */
+    /**
+     * map of panels within the layout
+     */
     private Map<Integer, UserPreferenceFunction> panelMap;
 
-    /** the parent container */
+    /**
+     * the parent container
+     */
     private ActionContainer parent;
-    
-    private Map<String, PreferenceChangeEvent> preferenceChangeEvents; 
 
-    /** Constructs a new instance. */
+    private Map<String, PreferenceChangeEvent> preferenceChangeEvents;
+
+    /**
+     * Constructs a new instance.
+     */
     public PropertiesPanel(ActionContainer parent) {
-        
+
         this(parent, -1);
     }
 
@@ -96,15 +98,14 @@ public class PropertiesPanel extends JPanel
      * @param the node to select
      */
     public PropertiesPanel(ActionContainer parent, int openRow) {
-        
+
         super(new BorderLayout());
         this.parent = parent;
         this.preferenceChangeEvents = new HashMap<>();
-        
-        try  {
+
+        try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -202,7 +203,7 @@ public class PropertiesPanel extends JPanel
         tree.putClientProperty("JTree.lineStyle", "Angled");
         tree.setCellRenderer(new PropertiesTreeCellRenderer());
         tree.setRootVisible(false);
-        
+
         // expand all rows
         for (int i = 0; i < tree.getRowCount(); i++) {
 
@@ -222,7 +223,7 @@ public class PropertiesPanel extends JPanel
 
         mainPanel.add(splitPane, BorderLayout.CENTER);
         mainPanel.add(new BottomButtonPanel(
-                            this, null, "prefs", parent.isDialog()), BorderLayout.SOUTH);
+                this, null, "prefs", parent.isDialog()), BorderLayout.SOUTH);
 
         add(mainPanel, BorderLayout.CENTER);
         panelMap = new HashMap<Integer, UserPreferenceFunction>();
@@ -247,7 +248,7 @@ public class PropertiesPanel extends JPanel
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) tree.getModel().getRoot();
 
         Enumeration enumeration = root.depthFirstEnumeration();
-        while(enumeration.hasMoreElements()) {
+        while (enumeration.hasMoreElements()) {
 
             node = (DefaultMutableTreeNode) enumeration.nextElement();
             PropertyNode propertyNode = (PropertyNode) node.getUserObject();
@@ -271,9 +272,9 @@ public class PropertiesPanel extends JPanel
     }
 
     private void getProperties(Object[] selection) {
-        
-        DefaultMutableTreeNode n = (DefaultMutableTreeNode)selection[selection.length - 1];
-        PropertyNode node = (PropertyNode)n.getUserObject();
+
+        DefaultMutableTreeNode n = (DefaultMutableTreeNode) selection[selection.length - 1];
+        PropertyNode node = (PropertyNode) n.getUserObject();
 
         JPanel panel = null;
         Integer id = node.getNodeId();
@@ -355,13 +356,13 @@ public class PropertiesPanel extends JPanel
         UserPreferenceFunction userPreferenceFunction = (UserPreferenceFunction) panel;
         userPreferenceFunction.addPreferenceChangeListener(this);
         panelMap.put(id, userPreferenceFunction);
-        
+
         // apply all previosuly applied prefs that the new panel might be interested in
         for (Map.Entry<String, PreferenceChangeEvent> event : preferenceChangeEvents.entrySet()) {
 
             userPreferenceFunction.preferenceChange(event.getValue());
         }
-        
+
         rightPanel.add(panel, String.valueOf(id));
         cardLayout.show(rightPanel, String.valueOf(id));
     }
@@ -370,12 +371,12 @@ public class PropertiesPanel extends JPanel
     public void preferenceChange(PreferenceChangeEvent e) {
 
         for (Map.Entry<Integer, UserPreferenceFunction> entry : panelMap.entrySet()) {
-            
+
             entry.getValue().preferenceChange(e);
         }
-        preferenceChangeEvents.put(e.getKey(), e);        
+        preferenceChangeEvents.put(e.getKey(), e);
     }
-    
+
     public void actionPerformed(ActionEvent e) {
 
         try {

@@ -26,7 +26,7 @@ import java.awt.event.ItemListener;
 public interface ItemSelectionListener extends ItemListener {
 
     void itemStateChanging(ItemEvent e);
-    
+
 }
 
 

@@ -21,8 +21,8 @@
 package org.executequery.listeners;
 
 import org.executequery.event.ApplicationEvent;
-import org.executequery.event.ConnectionsFolderRepositoryEvent;
 import org.executequery.event.ConnectionFoldersRepositoryListener;
+import org.executequery.event.ConnectionsFolderRepositoryEvent;
 import org.executequery.repository.ConnectionFoldersRepository;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.util.ThreadUtils;
@@ -30,12 +30,12 @@ import org.executequery.util.ThreadUtils;
 public final class ConnectionFoldersRepositoryChangeListener implements ConnectionFoldersRepositoryListener {
 
     public void folderAdded(ConnectionsFolderRepositoryEvent connectionsFolderRepositoryEvent) {
-        
+
         saveFolders();
     }
 
     public void folderModified(ConnectionsFolderRepositoryEvent connectionsFolderRepositoryEvent) {
-        
+
         saveFolders();
     }
 
@@ -64,7 +64,7 @@ public final class ConnectionFoldersRepositoryChangeListener implements Connecti
 
     private ConnectionFoldersRepository connectionFoldersRepository() {
 
-        return (ConnectionFoldersRepository)RepositoryCache.load(ConnectionFoldersRepository.REPOSITORY_ID);
+        return (ConnectionFoldersRepository) RepositoryCache.load(ConnectionFoldersRepository.REPOSITORY_ID);
     }
 
 }

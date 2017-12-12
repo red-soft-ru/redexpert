@@ -20,22 +20,20 @@
 
 package org.underworldlabs.swing.menu;
 
-import java.awt.Dimension;
-import java.awt.Insets;
-
-import javax.swing.JMenu;
-
 import org.executequery.gui.GUIConstants;
+
+import javax.swing.*;
+import java.awt.*;
 
 public class MainMenu extends JMenu {
 
     public MainMenu() {
-    
+
         super();
     }
-    
+
     public MainMenu(String text) {
-        
+
         super(text);
     }
 
@@ -44,7 +42,7 @@ public class MainMenu extends JMenu {
 
         return new Insets(0, 0, 0, 10);
     }
-    
+
     public Dimension getPreferredSize() {
 
         Dimension preferredSize = super.getPreferredSize();
@@ -52,6 +50,6 @@ public class MainMenu extends JMenu {
 
         return preferredSize;
     }
-    
+
 }
 

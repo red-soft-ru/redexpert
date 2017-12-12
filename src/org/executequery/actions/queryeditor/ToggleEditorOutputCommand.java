@@ -22,10 +22,10 @@ package org.executequery.actions.queryeditor;
 
 import java.awt.event.ActionEvent;
 
-/** 
+/**
  * The Query Editor's hide/show the output pane.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ToggleEditorOutputCommand extends AbstractQueryEditorCommand {
 
@@ -35,9 +35,9 @@ public class ToggleEditorOutputCommand extends AbstractQueryEditorCommand {
 
             queryEditor().toggleOutputPaneVisible();
         }
-        
+
     }
-    
+
 }
 
 

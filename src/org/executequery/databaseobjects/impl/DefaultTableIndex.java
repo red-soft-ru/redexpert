@@ -20,10 +20,6 @@
 
 package org.executequery.databaseobjects.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
@@ -31,55 +27,60 @@ import org.executequery.databaseobjects.TableIndex;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /**
- *
  * @author takisd
  */
-public class DefaultTableIndex extends AbstractDatabaseObjectElement 
-                               implements TableIndex {
-    
+public class DefaultTableIndex extends AbstractDatabaseObjectElement
+        implements TableIndex {
+
     public int indexType;
-    
+
     private List<DatabaseColumn> columns;
-    
+
     private final DatabaseTable table;
-    
-    /** Creates a new instance of DatabaseTableColumnIndex */
+
+    /**
+     * Creates a new instance of DatabaseTableColumnIndex
+     */
     public DefaultTableIndex(DatabaseTable table) {
 
         this.table = table;
     }
 
     public List<DatabaseColumn> getColumns() {
-        
+
         return columns;
     }
-    
+
     public void setColumns(List<DatabaseColumn> columns) {
-        
+
         this.columns = columns;
     }
 
     public void clearColumns() {
-        
+
         if (columns != null) {
 
             columns.clear();
         }
     }
-    
+
     public void addColumn(DatabaseColumn column) {
-        
+
         columns().add(column);
     }
-    
+
     /**
      * Returns the meta data key name of this object.
      *
      * @return the meta data key name.
      */
     public String getMetaDataKey() {
-        
+
         return "INDEX";
     }
 
@@ -93,16 +94,18 @@ public class DefaultTableIndex extends AbstractDatabaseObjectElement
         return null;
     }
 
-    /** Does nothing. */
+    /**
+     * Does nothing.
+     */
     public int drop() throws DataSourceException {
 
         return 0;
     }
 
     private List<DatabaseColumn> columns() {
-        
+
         if (columns == null) {
-            
+
             columns = new ArrayList<DatabaseColumn>();
         }
 
@@ -117,25 +120,25 @@ public class DefaultTableIndex extends AbstractDatabaseObjectElement
     public String getCreateSQLText() {
 
         StringBuilder sb = new StringBuilder();
-        
+
         sb.append("CREATE ");
         sb.append(indexTypeSqlString());
         sb.append("INDEX ");
         sb.append(formatName());
         sb.append("\n    ON ");
-        
+
         String namePrefix = getTable().getNamePrefix();
         if (namePrefix != null) {
-        
-        	sb.append(namePrefix);
+
+            sb.append(namePrefix);
             sb.append(".");
         }
 
         sb.append(getTable().getName());
         sb.append(" (");
-        
+
         if (columns != null) {
-        
+
             for (int i = 0, n = columns.size(); i < n; i++) {
 
                 sb.append(columns.get(i).getName());
@@ -151,7 +154,7 @@ public class DefaultTableIndex extends AbstractDatabaseObjectElement
         sb.append(")");
 
         if (indexType == UNSORTED_INDEX) {
-            
+
             sb.append(" NOSORT");
         }
 
@@ -161,10 +164,10 @@ public class DefaultTableIndex extends AbstractDatabaseObjectElement
     private String formatName() {
 
         if (!MiscUtils.isNull(getName())) {
-            
+
             return getName();
         }
-        
+
         return "";
     }
 

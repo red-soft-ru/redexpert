@@ -10,189 +10,189 @@
 
 <databases-systems>
 
-   <database>
-      <id>1</id>
-      <name>Oracle</name>
-      <url-patterns>
-          <url>jdbc:oracle:thin:@[host]:[source]</url>
-          <url>jdbc:oracle:thin:@[host]:[port]:[source]</url>
-          <url>jdbc:oracle:oci:@[host]:[source]</url>
-          <url>jdbc:oracle:oci:@[host]:[port]:[source]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>1</id>
+        <name>Oracle</name>
+        <url-patterns>
+            <url>jdbc:oracle:thin:@[host]:[source]</url>
+            <url>jdbc:oracle:thin:@[host]:[port]:[source]</url>
+            <url>jdbc:oracle:oci:@[host]:[source]</url>
+            <url>jdbc:oracle:oci:@[host]:[port]:[source]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>2</id>
-      <name>SyBase</name>
-      <url-patterns>
-          <url>jdbc:sybase:Tds:[host]:[port]</url>
-          <url>jdbc:sybase:Tds:[host]:[port]/[source]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>2</id>
+        <name>SyBase</name>
+        <url-patterns>
+            <url>jdbc:sybase:Tds:[host]:[port]</url>
+            <url>jdbc:sybase:Tds:[host]:[port]/[source]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>3</id>
-      <name>DB2</name>
-      <url-patterns>
-          <url>jdbc:db2://[host]:[port]/[source]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>3</id>
+        <name>DB2</name>
+        <url-patterns>
+            <url>jdbc:db2://[host]:[port]/[source]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>4</id>
-      <name>MS SQL Server</name>
-      <url-patterns>
-          <url>jdbc:sqlserver://[host];databaseName=[source];</url>
-          <url>jdbc:sqlserver://[host]:[port];databaseName=[source];</url>
-          <url>jdbc:sqlserver://[host]:[port];instanceName=[source]</url>
-          <url>jdbc:microsoft:sqlserver://[host]:[port]</url>
-          <url>jdbc:microsoft:sqlserver://[host]:[port];DatabaseName=[source]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>4</id>
+        <name>MS SQL Server</name>
+        <url-patterns>
+            <url>jdbc:sqlserver://[host];databaseName=[source];</url>
+            <url>jdbc:sqlserver://[host]:[port];databaseName=[source];</url>
+            <url>jdbc:sqlserver://[host]:[port];instanceName=[source]</url>
+            <url>jdbc:microsoft:sqlserver://[host]:[port]</url>
+            <url>jdbc:microsoft:sqlserver://[host]:[port];DatabaseName=[source]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>5</id>
-      <name>MySQL</name>
-      <url-patterns>
-          <url>jdbc:mysql://[host]/[source]</url>
-          <url>jdbc:mysql://[host]:[port]/[source]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>5</id>
+        <name>MySQL</name>
+        <url-patterns>
+            <url>jdbc:mysql://[host]/[source]</url>
+            <url>jdbc:mysql://[host]:[port]/[source]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>6</id>
-      <name>PostgreSQL</name>
-      <url-patterns>
-          <url>jdbc:postgresql://[host]/[source]</url>
-          <url>jdbc:postgresql://[host]:[port]/[source]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>6</id>
+        <name>PostgreSQL</name>
+        <url-patterns>
+            <url>jdbc:postgresql://[host]/[source]</url>
+            <url>jdbc:postgresql://[host]:[port]/[source]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>7</id>
-      <name>Informix</name>
-      <url-patterns>
-          <url>jdbc:informix-sqli://[host]:[port]:informixserver=[source]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>7</id>
+        <name>Informix</name>
+        <url-patterns>
+            <url>jdbc:informix-sqli://[host]:[port]:informixserver=[source]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>10</id>
-      <name>HSQL DB</name>
-      <url-patterns>
-          <url>jdbc:hsqldb:.</url>
-          <url>jdbc:hsqldb:[source]</url>
-          <url>jdbc:hsqldb:hsql://[host]:[port]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>10</id>
+        <name>HSQL DB</name>
+        <url-patterns>
+            <url>jdbc:hsqldb:.</url>
+            <url>jdbc:hsqldb:[source]</url>
+            <url>jdbc:hsqldb:hsql://[host]:[port]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>15</id>
-      <name>MaxDB</name>
-      <url-patterns>
-          <url>jdbc:sapdb://[host]:[port]/[source]</url>
-          <url>jdbc:sapdb://[host]/[source]</url>
-          <url>jdbc:sapdb:[source]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>15</id>
+        <name>MaxDB</name>
+        <url-patterns>
+            <url>jdbc:sapdb://[host]:[port]/[source]</url>
+            <url>jdbc:sapdb://[host]/[source]</url>
+            <url>jdbc:sapdb:[source]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>16</id>
-      <name>Firebird</name>
-      <url-patterns>
-          <url>jdbc:firebirdsql://[host]:[port]/[source]</url>
-          <url>jdbc:firebirdsql:[source]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>16</id>
+        <name>Firebird</name>
+        <url-patterns>
+            <url>jdbc:firebirdsql://[host]:[port]/[source]</url>
+            <url>jdbc:firebirdsql:[source]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>11</id>
-      <name>MS Access</name>
-      <url-patterns/>
-   </database>
+    <database>
+        <id>11</id>
+        <name>MS Access</name>
+        <url-patterns/>
+    </database>
 
-   <database>
-      <id>12</id>
-      <name>Pointbase</name>
-      <url-patterns>
-          <url>jdbc:pointbase:server://[host]:[port]/[source]</url>
-          <url>jdbc:pointbase:embedded:[source]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>12</id>
+        <name>Pointbase</name>
+        <url-patterns>
+            <url>jdbc:pointbase:server://[host]:[port]/[source]</url>
+            <url>jdbc:pointbase:embedded:[source]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>13</id>
-      <name>H2 Database Engine</name>
-      <url-patterns>
-          <url>jdbc:h2:[source]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>13</id>
+        <name>H2 Database Engine</name>
+        <url-patterns>
+            <url>jdbc:h2:[source]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>14</id>
-      <name>Apache Derby</name>
-      <url-patterns>
-          <url>jdbc:derby://[host]/[source]</url>
-          <url>jdbc:derby://[host]:[port]/[source]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>14</id>
+        <name>Apache Derby</name>
+        <url-patterns>
+            <url>jdbc:derby://[host]/[source]</url>
+            <url>jdbc:derby://[host]:[port]/[source]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>17</id>
-      <name>FrontBase</name>
-      <url-patterns>
-          <url>jdbc:FrontBase://[host]/[source]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>17</id>
+        <name>FrontBase</name>
+        <url-patterns>
+            <url>jdbc:FrontBase://[host]/[source]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>18</id>
-      <name>jTDS</name>
-      <url-patterns>
-          <url>jdbc:jtds:sqlserver://[host]/[source]</url>
-          <url>jdbc:jtds:sqlserver://[host]:[port]/[source]</url>
-          <url>jdbc:jtds:sybase://[host]/[source]</url>
-          <url>jdbc:jtds:sybase://[host]:[port]/[source]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>18</id>
+        <name>jTDS</name>
+        <url-patterns>
+            <url>jdbc:jtds:sqlserver://[host]/[source]</url>
+            <url>jdbc:jtds:sqlserver://[host]:[port]/[source]</url>
+            <url>jdbc:jtds:sybase://[host]/[source]</url>
+            <url>jdbc:jtds:sybase://[host]:[port]/[source]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>19</id>
-      <name>MckoiDDB</name>
-      <url-patterns>
-          <url>jdbc:mckoi://[host]/[source]/</url>
-          <url>jdbc:mckoi://[host]:[port][/[source]/</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>19</id>
+        <name>MckoiDDB</name>
+        <url-patterns>
+            <url>jdbc:mckoi://[host]/[source]/</url>
+            <url>jdbc:mckoi://[host]:[port][/[source]/</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>20</id>
-      <name>ThinkSQL</name>
-      <url-patterns>
-          <url>jdbc:thinksql://[host]:[port]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>20</id>
+        <name>ThinkSQL</name>
+        <url-patterns>
+            <url>jdbc:thinksql://[host]:[port]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>21</id>
-      <name>SQLite</name>
-      <url-patterns>
-          <url>jdbc:sqlite:[source]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>21</id>
+        <name>SQLite</name>
+        <url-patterns>
+            <url>jdbc:sqlite:[source]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>8</id>
-      <name>ODBC</name>
-      <url-patterns>
-          <url>jdbc:odbc:[source]</url>
-      </url-patterns>
-   </database>
+    <database>
+        <id>8</id>
+        <name>ODBC</name>
+        <url-patterns>
+            <url>jdbc:odbc:[source]</url>
+        </url-patterns>
+    </database>
 
-   <database>
-      <id>9</id>
-      <name>Other</name>
-      <url-patterns/>
-   </database>
+    <database>
+        <id>9</id>
+        <name>Other</name>
+        <url-patterns/>
+    </database>
 
 </databases-systems>

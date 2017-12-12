@@ -20,13 +20,13 @@
 
 package org.underworldlabs.swing.wizard;
 
+import javax.swing.*;
 import java.util.List;
-import javax.swing.JPanel;
 
 /**
  * Defines the model for a wizard process.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface WizardProcessModel {
 
@@ -41,12 +41,12 @@ public interface WizardProcessModel {
      * Increments the current index.
      */
     public boolean next();
-    
+
     /**
      * Decrements the current index.
      */
     public boolean previous();
-    
+
     /**
      * Returns the step text at the specified index.
      *
@@ -67,9 +67,9 @@ public interface WizardProcessModel {
      * @return the panel titles
      */
     public String[] getTitles();
-    
+
     /**
-     * Returns the next panel in the wizard and increments the 
+     * Returns the next panel in the wizard and increments the
      * selected index.
      *
      * @return the next panel
@@ -77,7 +77,7 @@ public interface WizardProcessModel {
     public JPanel getNextPanel();
 
     /**
-     * Returns the previous panel in the wizard and decrements the 
+     * Returns the previous panel in the wizard and decrements the
      * selected index.
      *
      * @return the previous panel
@@ -104,7 +104,7 @@ public interface WizardProcessModel {
      * @return the currently selected index
      */
     public int getSelectedIndex();
-    
+
     /**
      * Returns the index of the specified panel in this model.
      *
@@ -112,21 +112,21 @@ public interface WizardProcessModel {
      * @return the panel index
      */
     public int getIndexOf(JPanel panel);
-    
+
     /**
      * Returns the panel at the specified index.
      *
      * @param index - the panel to be retrieved
      */
     public JPanel getPanelAt(int index);
-    
+
     /**
      * Adds the specified panel to the end of the model.
      *
      * @param panel - the panel to be added
      */
     public void addPanel(JPanel panel);
-    
+
     /**
      * Returns the number of panel components in this model.
      *
@@ -148,7 +148,7 @@ public interface WizardProcessModel {
      */
     public void setPanels(List<JPanel> panels);
 
-    
+
 }
 
 

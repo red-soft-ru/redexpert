@@ -20,36 +20,34 @@
 
 package org.executequery.datasource;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.util.Properties;
-
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.Session;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.util.Properties;
 
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+ * @author Takis Diakoumis
+ * @version $Revision$
+ * @date $Date$
  */
 public class JschSshTunnel implements SshTunnel {
 
     private Session session;
     private int tunnelPort;
-    
+
     @Override
     public void connect(DatabaseConnection databaseConnection) {
 
         if (!databaseConnection.isSshTunnel()) {
-            
+
             return;
         }
-        
+
         session = createSession(databaseConnection);
     }
 
@@ -57,38 +55,38 @@ public class JschSshTunnel implements SshTunnel {
     public void disconnect(DatabaseConnection databaseConnection) {
 
         if (!databaseConnection.isSshTunnel()) {
-            
+
             return;
         }
 
         if (session != null) {
-            
-            Log.info("Disconnecting SSH tunnel to host [ " + databaseConnection.getHost() + 
+
+            Log.info("Disconnecting SSH tunnel to host [ " + databaseConnection.getHost() +
                     " ] through port [ " + databaseConnection.getSshPort() + " ] ... ");
-            
+
             session.disconnect();
             session = null;
 
-            Log.info("SSH tunnel to host [ " + databaseConnection.getHost() + 
+            Log.info("SSH tunnel to host [ " + databaseConnection.getHost() +
                     " ] through port [ " + databaseConnection.getSshPort() + " ] closed");
         }
-        
+
     }
-    
+
     public int getTunnelPort() {
-        
+
         return tunnelPort;
     }
-    
+
     private Session createSession(DatabaseConnection databaseConnection) {
-        
-        Log.info("Creating SSH tunnel to host [ " + databaseConnection.getHost() + 
+
+        Log.info("Creating SSH tunnel to host [ " + databaseConnection.getHost() +
                 " ] through port [ " + databaseConnection.getSshPort() + " ]");
-        
+
         try {
 
             tunnelPort = findUnusedPort();
-            
+
             JSch jsch = new JSch();
             session = jsch.getSession(databaseConnection.getSshUserName(), databaseConnection.getHost(), databaseConnection.getSshPort());
             Properties config = new Properties();
@@ -100,11 +98,11 @@ public class JschSshTunnel implements SshTunnel {
             session.connect();
 
             int assignedPort = session.setPortForwardingL(tunnelPort, databaseConnection.getHost(), databaseConnection.getPortInt());
-            
-            Log.info("Created SSH tunnel :: localhost:" + assignedPort + " --> " + databaseConnection.getHost() + ":" + databaseConnection.getPort());            
+
+            Log.info("Created SSH tunnel :: localhost:" + assignedPort + " --> " + databaseConnection.getHost() + ":" + databaseConnection.getPort());
 
             return session;
-            
+
         } catch (Exception e) {
 
             throw new DataSourceException("Error opening SSH tunnel: " + e.getMessage(), e);
@@ -122,7 +120,7 @@ public class JschSshTunnel implements SshTunnel {
         for (int i = start; i <= end; i++) {
 
             Log.info("Scanning for unused port at [ " + i + " ]");
-            
+
             ServerSocket serverSocket = null;
 
             try {
@@ -138,12 +136,13 @@ public class JschSshTunnel implements SshTunnel {
             } finally {
 
                 if (serverSocket != null) {
-                 
+
                     try {
-                    
+
                         serverSocket.close();
 
-                    } catch (IOException e) {}
+                    } catch (IOException e) {
+                    }
 
                     serverSocket = null;
                 }
@@ -152,8 +151,8 @@ public class JschSshTunnel implements SshTunnel {
 
         throw new DataSourceException("Unable to find open port between " + start + " and " + end);
     }
-    
-    
+
+
 }
 
 

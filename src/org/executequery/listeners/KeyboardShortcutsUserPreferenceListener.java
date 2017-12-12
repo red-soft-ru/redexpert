@@ -20,16 +20,16 @@
 
 package org.executequery.listeners;
 
-import javax.swing.JComponent;
-
 import org.executequery.GUIUtilities;
 import org.executequery.event.UserPreferenceEvent;
 import org.executequery.event.UserPreferenceListener;
 import org.executequery.util.SystemResources;
 import org.underworldlabs.swing.actions.ActionBuilder;
 
+import javax.swing.*;
+
 public class KeyboardShortcutsUserPreferenceListener extends AbstractUserPreferenceListener
-                                       implements UserPreferenceListener {
+        implements UserPreferenceListener {
 
     public void preferencesChanged(UserPreferenceEvent event) {
 
@@ -41,9 +41,9 @@ public class KeyboardShortcutsUserPreferenceListener extends AbstractUserPrefere
                     SystemResources.getUserActionShortcuts());
 
         }
-        
+
     }
-    
+
 }
 
 

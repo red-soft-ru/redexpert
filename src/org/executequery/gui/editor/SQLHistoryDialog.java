@@ -20,29 +20,6 @@
 
 package org.executequery.gui.editor;
 
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextField;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.DefaultList;
@@ -56,7 +33,19 @@ import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.FlatSplitPane;
 import org.underworldlabs.util.MiscUtils;
 
-/** 
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
  * The History Dialog displays the executed SQL statement history
  * from within the Query Editor. The data represented as a
  * <code>Vector</code> object, is displayed within a <code>JLIst</code>.
@@ -67,40 +56,40 @@ import org.underworldlabs.util.MiscUtils;
  * initiated the frame.<br>
  * Selecting the CANCEL button closes the dialog.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SQLHistoryDialog extends AbstractBaseDialog
-                              implements ActionListener, 
-                                         ListSelectionListener {
-    
+        implements ActionListener,
+        ListSelectionListener {
+
     private JList historyList;
 
     private Vector<String> data;
 
     private QueryEditor queryEditor;
 
-    private JTextField searchField; 
-    
+    private JTextField searchField;
+
     private JCheckBox newEditorCheck;
-    
+
     private SQLTextPane textPane;
-    
-    /** 
-     * Creates a new object with history data 
+
+    /**
+     * Creates a new object with history data
      * to be set within the specified editor.
      *
      * @param - the statement history <code>Vector</code>
      * @param - the editor
      */
     public SQLHistoryDialog(Vector<String> data, QueryEditor queryEditor) {
-       
+
         super(GUIUtilities.getParentFrame(), "SQL Command History", true);
-        
+
         try {
-        
+
             this.data = data;
             this.queryEditor = queryEditor;
-            
+
             initHistoryList(data);
 
             init();
@@ -109,43 +98,44 @@ public class SQLHistoryDialog extends AbstractBaseDialog
             setLocation(GUIUtilities.getLocationForDialog(getSize()));
             setVisible(true);
 
-        } catch(Exception e) {
-          
+        } catch (Exception e) {
+
             e.printStackTrace();
         }
-        
+
     }
-    
-    /** <p>Initialises the state of this instance
+
+    /**
+     * <p>Initialises the state of this instance
      * and positions all components.
      *
      * @throws Exception
      */
     private void init() throws Exception {
 
-        JButton cancelButton = createButton(Bundles.get("common.cancel.button"), null);       
-        JButton selectButton = createButton(Bundles.get("common.select.button"), 
+        JButton cancelButton = createButton(Bundles.get("common.cancel.button"), null);
+        JButton selectButton = createButton(Bundles.get("common.select.button"),
                 "Pastes the selected queries into the Query Editor");
-        JButton copyButton = createButton(Bundles.get("common.copy.button"), 
+        JButton copyButton = createButton(Bundles.get("common.copy.button"),
                 "Copies the selected queries to the system clipboard");
-        JButton insertAtCursorButton = createButton("Insert at Cursor", 
+        JButton insertAtCursorButton = createButton("Insert at Cursor",
                 "Inserts the selected queries at the cursor position within the Query Editor");
-        JButton clearButton = createButton(Bundles.get("common.clear.button"), 
+        JButton clearButton = createButton(Bundles.get("common.clear.button"),
                 "Clears and resets ALL SQL history");
 
         newEditorCheck = new JCheckBox("Open in new Query Editor");
         newEditorCheck.setToolTipText("Select to paste the query in a new Query Editor panel");
-        
+
         textPane = new SQLTextPane();
         textPane.setEditable(false);
-        
+
         JSplitPane splitPane = createSplitPane();
         splitPane.setLeftComponent(new JScrollPane(historyList));
         splitPane.setRightComponent(new JScrollPane(textPane));
-        
+
         Container c = getContentPane();
         c.setLayout(new GridBagLayout());
-        
+
         searchField = WidgetFactory.createTextField();
         searchField.addActionListener(this);
         JButton searchButton = createButton("Search", null);
@@ -163,7 +153,7 @@ public class SQLHistoryDialog extends AbstractBaseDialog
         gbc.weightx = 0;
         gbc.insets.right = 0;
         searchPanel.add(searchButton, gbc);
-        
+
         // layout the components
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -206,31 +196,33 @@ public class SQLHistoryDialog extends AbstractBaseDialog
         gbc.weightx = 0;
         gbc.anchor = GridBagConstraints.WEST;
         c.add(newEditorCheck, gbc);
-        
+
         historyList.addListSelectionListener(this);
 
         historyList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                historyListMouseClicked(e); }
+                historyListMouseClicked(e);
+            }
         });
 
         historyList.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(KeyEvent e) {
-                historyListKeyPressed(e); }
+                historyListKeyPressed(e);
+            }
         });
-    
+
         c.setPreferredSize(new Dimension(800, 490));
     }
-    
+
     private void initHistoryList(Vector<String> data) {
 
         historyList = new DefaultList(data);
     }
 
     private JSplitPane createSplitPane() {
-        
+
         JSplitPane splitPane = new FlatSplitPane(JSplitPane.VERTICAL_SPLIT);
-        
+
         splitPane.setDividerSize(4);
         splitPane.setResizeWeight(0.5);
         splitPane.setDividerLocation(0.7);
@@ -239,19 +231,19 @@ public class SQLHistoryDialog extends AbstractBaseDialog
     }
 
     private JButton createButton(String text, String toolTip) {
-        
-        JButton button = new DefaultPanelButton(text);       
+
+        JButton button = new DefaultPanelButton(text);
         if (toolTip != null) {
 
             button.setToolTipText(toolTip);
         }
-        
+
         button.addActionListener(this);
-        
+
         return button;
     }
-    
-    /** 
+
+    /**
      * Sets the statement history data to the <code>JList</code>.
      *
      * @param - the statement history <code>Vector</code>
@@ -260,8 +252,9 @@ public class SQLHistoryDialog extends AbstractBaseDialog
         this.data = data;
         historyList.setListData(data);
     }
-    
-    /** <p>Initiates the action of the "Select" button adding
+
+    /**
+     * <p>Initiates the action of the "Select" button adding
      * the selected statement to the open Query Editor.
      *
      * @param - the action event
@@ -271,21 +264,21 @@ public class SQLHistoryDialog extends AbstractBaseDialog
         String command = e.getActionCommand();
 
         if (command.equals("Select")) {
-            
+
             selectSQLCommand();
-            
+
         } else if (command.equals("Copy")) {
-            
+
             copySQLCommand();
-                
+
         } else if (command.equals("Insert at Cursor")) {
-            
+
             insertAtCursorButton();
-            
+
         } else if (command.equals("Search") || e.getSource() == searchField) {
 
             String text = searchField.getText();
-            
+
             if (MiscUtils.isNull(text)) {
 
                 return;
@@ -293,11 +286,11 @@ public class SQLHistoryDialog extends AbstractBaseDialog
 
             int start = historyList.getSelectedIndex();
             if (start == -1 || start == data.size() - 1) {
-                
+
                 start = 0;
-                
+
             } else {
-              
+
                 start++;
             }
 
@@ -314,22 +307,22 @@ public class SQLHistoryDialog extends AbstractBaseDialog
         }
 
     }
-    
+
     private SqlCommandHistoryRepository sqlCommandHistoryRepository() {
 
-        return (SqlCommandHistoryRepository)RepositoryCache.load(
-                SqlCommandHistoryRepository.REPOSITORY_ID);        
+        return (SqlCommandHistoryRepository) RepositoryCache.load(
+                SqlCommandHistoryRepository.REPOSITORY_ID);
     }
 
     private void search(String text, int start) {
-        Pattern pattern = Pattern.compile("\\b" + text, 
-                                          Pattern.CASE_INSENSITIVE);
+        Pattern pattern = Pattern.compile("\\b" + text,
+                Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(Constants.EMPTY);
 
         for (int i = start, k = data.size(); i < k; i++) {
 
             matcher.reset(data.get(i));
-            
+
             if (matcher.find()) {
                 historyList.setSelectedIndex(i);
                 scrollToSelection(i);
@@ -339,16 +332,16 @@ public class SQLHistoryDialog extends AbstractBaseDialog
 
         GUIUtilities.displayInformationMessage("Search string not found");
     }
-    
+
     private void scrollToSelection(int i) {
 
         historyList.ensureIndexIsVisible(i);
     }
 
     private boolean validSelection() {
-        
+
         if (data.isEmpty()) {
-            
+
             return false;
         }
 
@@ -360,50 +353,50 @@ public class SQLHistoryDialog extends AbstractBaseDialog
 
         return true;
     }
-    
+
     private void copySQLCommand() {
 
         if (validSelection()) {
-        
+
             String query = queryForIndices(historyList.getSelectedIndices());
             GUIUtilities.copyToClipBoard(query);
-         
+
             dispose();
         }
-        
+
     }
-    
+
     private void insertAtCursorButton() {
-        
+
         if (newEditorCheck.isSelected()) {
-            
+
             selectSQLCommand();
-        
+
         } else if (queryEditor != null) {
-            
+
             String query = queryForIndices(historyList.getSelectedIndices());
             queryEditor.insertTextAtCaret(query);
             dispose();
         }
     }
-   
-    
+
+
     private void selectSQLCommand() {
 
         if (validSelection()) {
-        
+
             String query = queryForIndices(historyList.getSelectedIndices());
             if (newEditorCheck.isSelected()) {
 
                 QueryEditor editor = new QueryEditor(query);
                 GUIUtilities.addCentralPane(QueryEditor.TITLE,
-                                            QueryEditor.FRAME_ICON, 
-                                            editor,
-                                            null,
-                                            true);
+                        QueryEditor.FRAME_ICON,
+                        editor,
+                        null,
+                        true);
 
             } else if (queryEditor != null) {
-              
+
                 queryEditor.setEditorText(query);
             }
 
@@ -414,10 +407,10 @@ public class SQLHistoryDialog extends AbstractBaseDialog
     private String queryForIndices(int[] indices) {
 
         if (indices.length > 0) {
-        
+
             StringBuilder sb = new StringBuilder();
-            for (int index :indices) {
-                
+            for (int index : indices) {
+
                 sb.append(queryForIndex(index).trim());
                 sb.append("\n\n");
             }
@@ -429,15 +422,16 @@ public class SQLHistoryDialog extends AbstractBaseDialog
     }
 
     private String queryForIndex(int index) {
-        
+
         if (index != -1) {
-            
+
             return data.get(index);
         }
         return "";
     }
-    
-    /** <p>Initiates the action on the history list after
+
+    /**
+     * <p>Initiates the action on the history list after
      * double clicking a selected statement and propagates
      * the action to the method <code>selectButton_actionPerformed</code>.
      *
@@ -445,28 +439,29 @@ public class SQLHistoryDialog extends AbstractBaseDialog
      */
     private void historyListMouseClicked(MouseEvent e) {
         if (e.getClickCount() >= 2) {
-            
+
             selectSQLCommand();
         }
     }
-    
+
     public void valueChanged(ListSelectionEvent e) {
 
         textPane.setText(queryForIndex(historyList.getSelectedIndex()));
     }
-    
-    /** <p>Initiates the action on the history list after
+
+    /**
+     * <p>Initiates the action on the history list after
      * pressing the ENTER key on a selected statement and propagates
      * the action to the method <code>selectButton_actionPerformed</code>.
      *
      * @param - the key event
      */
     private void historyListKeyPressed(KeyEvent e) {
-        if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
             selectSQLCommand();
         }
     }
-    
+
 }
 
 

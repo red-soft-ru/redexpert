@@ -20,20 +20,19 @@
 
 package org.executequery.event;
 
-/** 
- *
- * @author   Takis Diakoumis
+/**
+ * @author Takis Diakoumis
  */
 public interface UserPreferenceEvent extends ApplicationEvent {
 
     int ALL = 0;
-    
+
     int QUERY_EDITOR = 1;
-    
+
     int TOOL_BAR = 2;
-    
+
     int LOG = 3;
- 
+
     int PROXY = 4;
 
     int KEYBOARD_SHORTCUTS = 5;
@@ -41,16 +40,18 @@ public interface UserPreferenceEvent extends ApplicationEvent {
     int LAYOUT_VIEW = 7;
 
     int DOCKED_COMPONENT_CLOSED = 8;
-    
+
     int DOCKED_COMPONENT_OPENED = 9;
-    
-    /** Method name for preferences changed event */
+
+    /**
+     * Method name for preferences changed event
+     */
     String PREFERENCES_CHANGED = "preferencesChanged";
 
     int getEventType();
-    
+
     String getKey();
-    
+
 }
 
 

@@ -20,7 +20,7 @@
 
 package org.executequery.gui.editor.autocomplete;
 
-import javax.swing.Action;
+import javax.swing.*;
 import java.util.List;
 
 public interface AutoCompletePopupProvider {

@@ -20,16 +20,15 @@
 
 package org.executequery.util;
 
-import java.lang.reflect.InvocationTargetException;
-
-import javax.swing.SwingUtilities;
-
 import org.underworldlabs.swing.GUIUtils;
+
+import javax.swing.*;
+import java.lang.reflect.InvocationTargetException;
 
 public final class ThreadUtils {
 
     /**
-     * Runs the specified runnable in the EDT using 
+     * Runs the specified runnable in the EDT using
      * <code>SwingUtilities.invokeLater(...)</code>.
      *
      * @param runnable - the runnable to be executed
@@ -48,28 +47,28 @@ public final class ThreadUtils {
     }
 
     /**
-     * Runs the specified runnable in the EDT using 
+     * Runs the specified runnable in the EDT using
      * <code>SwingUtilities.invokeAndWait(...)</code>.
-     * Note: This method 'supresses' the method's thrown exceptions 
+     * Note: This method 'supresses' the method's thrown exceptions
      * - InvocationTargetException and InterruptedException.
      *
      * @param runnable - the runnable to be executed
      */
     public static void invokeAndWait(Runnable runnable) {
-       
+
         if (!SwingUtilities.isEventDispatchThread()) {
-        
+
             try {
-            
+
                 //System.err.println("Not EDT");
                 SwingUtilities.invokeAndWait(runnable);
 
             } catch (InterruptedException e) {
-                
+
                 // nothing to do here
 
             } catch (InvocationTargetException e) {
-                
+
                 // nothing to do here
             }
 
@@ -79,18 +78,19 @@ public final class ThreadUtils {
         }
 
     }
-    
+
     /**
      * Executes the specified runnable using a worker thread.
      *
      * @param runnable - the runnable to be executed
      */
-     public static void startWorker(final Runnable runnable) {
+    public static void startWorker(final Runnable runnable) {
 
-         GUIUtils.startWorker(runnable);
-     }
-    
-    private ThreadUtils() {}
+        GUIUtils.startWorker(runnable);
+    }
+
+    private ThreadUtils() {
+    }
 
 }
 

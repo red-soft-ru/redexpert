@@ -1,5 +1,7 @@
 package org.executequery.databaseobjects.impl;
 
+import org.executequery.log.Log;
+
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.sql.ResultSet;
@@ -21,7 +23,7 @@ public class DefaultDatabaseIndex extends DefaultDatabaseExecutable {
         private String fieldName;
         private int fieldPosition;
 
-        DatabaseIndexColumn () {
+        DatabaseIndexColumn() {
 
         }
 
@@ -122,7 +124,7 @@ public class DefaultDatabaseIndex extends DefaultDatabaseExecutable {
     private boolean isActive;
     private boolean isUnique;
 
-    public DefaultDatabaseIndex (String name) {
+    public DefaultDatabaseIndex(String name) {
         setName(name);
     }
 
@@ -200,6 +202,15 @@ public class DefaultDatabaseIndex extends DefaultDatabaseExecutable {
             this.setIndexColumns(columns);
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            if (statement != null)
+                try {
+                    if (!statement.isClosed())
+                        statement.close();
+                } catch (SQLException e) {
+                    Log.error("Error closing statement in method loadColumns of DefaultDatabaseIndex class", e);
+                }
+            setMarkedForReload(false);
         }
     }
 

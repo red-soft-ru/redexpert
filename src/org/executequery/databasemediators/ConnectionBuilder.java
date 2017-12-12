@@ -23,7 +23,6 @@ package org.executequery.databasemediators;
 import org.underworldlabs.jdbc.DataSourceException;
 
 /**
- * 
  * @author Takis Diakoumis
  */
 public interface ConnectionBuilder {
@@ -33,14 +32,14 @@ public interface ConnectionBuilder {
     void cancel();
 
     boolean isCancelled();
-    
+
     boolean isConnected();
-    
+
     String getConnectionName();
 
     DataSourceException getException();
-    
+
     String getErrorMessage();
-    
+
 }
 

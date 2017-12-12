@@ -6,18 +6,14 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
-import org.executequery.gui.FocusablePanel;
 import org.executequery.gui.WidgetFactory;
-import org.executequery.gui.editor.autocomplete.AutoCompletePopupProvider;
 import org.executequery.gui.editor.autocomplete.DefaultAutoCompletePopupProvider;
 import org.executequery.gui.text.SQLTextPane;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.GUIUtils;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.*;
-import java.security.acl.Group;
 import java.util.Vector;
 
 public class CreateViewPanel extends JPanel implements FocusListener {
@@ -35,16 +31,15 @@ public class CreateViewPanel extends JPanel implements FocusListener {
     boolean editing;
     DefaultDatabaseView view;
 
-    public CreateViewPanel(DatabaseConnection dc,ActionContainer dialog)
-    {
-        this(dc,dialog,null);
+    public CreateViewPanel(DatabaseConnection dc, ActionContainer dialog) {
+        this(dc, dialog, null);
     }
 
-    public CreateViewPanel(DatabaseConnection dc, ActionContainer dialog,DefaultDatabaseView view) {
+    public CreateViewPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseView view) {
         connection = dc;
         parent = dialog;
         this.view = view;
-        editing = view!=null;
+        editing = view != null;
         init();
     }
 
@@ -61,11 +56,9 @@ public class CreateViewPanel extends JPanel implements FocusListener {
         cancelButton = new JButton("Cancel");
 
         String sql;
-        if(editing)
-        {
+        if (editing) {
             sql = view.getCreateSQLText();
-        }
-        else {
+        } else {
             sql = "create view new_view ( _fields_ )\n" +
                     "as\n" +
                     "select _fields_ from _table_name_\n" +
@@ -128,7 +121,7 @@ public class CreateViewPanel extends JPanel implements FocusListener {
         );
         layout.setVerticalGroup(layout.createSequentialGroup()
                 .addGap(10)
-                .addComponent(connectionsCombo,GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addComponent(connectionsCombo, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addGap(10)
                 .addComponent(sqlTextScroll, 0, 200, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)

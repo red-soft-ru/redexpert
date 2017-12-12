@@ -20,98 +20,110 @@
 
 package org.underworldlabs.swing.wizard;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.LayoutManager;
-import java.awt.Paint;
+import org.executequery.log.Log;
+import org.underworldlabs.swing.plaf.UIUtils;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-
-import org.executequery.log.Log;
-import org.underworldlabs.swing.plaf.UIUtils;
-
 /**
  * Base wizard process panel.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public abstract class WizardProcessPanel extends JPanel 
-                                         implements ActionListener {
-    
-    /** the selection model */
+public abstract class WizardProcessPanel extends JPanel
+        implements ActionListener {
+
+    /**
+     * the selection model
+     */
     private WizardProcessModel model;
-    
-    /** the left panel */
+
+    /**
+     * the left panel
+     */
     private JPanel leftPanel;
-    
-    /** the right panel */
+
+    /**
+     * the right panel
+     */
     private JPanel rightPanel;
-    
-    /** the right panel layout */
+
+    /**
+     * the right panel layout
+     */
     private CardLayout cardLayout;
-    
-    /** the next button */
+
+    /**
+     * the next button
+     */
     private JButton nextButton;
 
-    /** the previous button */
+    /**
+     * the previous button
+     */
     private JButton backButton;
 
-    /** the cancel button */
+    /**
+     * the cancel button
+     */
     private JButton cancelButton;
 
-    /** the help button */
+    /**
+     * the help button
+     */
     protected JButton helpButton;
 
-    /** the title label */
+    /**
+     * the title label
+     */
     private JLabel titleLabel;
-    
-    /** the step label list */
+
+    /**
+     * the step label list
+     */
     private List<JLabel> stepLabels;
-    
-    /** the normal label font */
+
+    /**
+     * the normal label font
+     */
     private Font labelFont;
 
-    /** the selected label font */
+    /**
+     * the selected label font
+     */
     private Font selectedLabelFont;
 
-    /** whether buttons are enabled */
+    /**
+     * whether buttons are enabled
+     */
     private boolean buttonsEnabled;
-    
-    /** Creates a new instance of WizardProcessPanel */
+
+    /**
+     * Creates a new instance of WizardProcessPanel
+     */
     public WizardProcessPanel() {
         this(null);
     }
-    
-    /** Creates a new instance of WizardProcessPanel */
+
+    /**
+     * Creates a new instance of WizardProcessPanel
+     */
     public WizardProcessPanel(WizardProcessModel model) {
         super(new BorderLayout());
         this.model = model;
         try {
             init();
         } catch (Exception e) {
-            Log.error("Error init class WizardProcessPanel:",e);
+            Log.error("Error init class WizardProcessPanel:", e);
         }
     }
-    
+
     private void init() throws Exception {
 
         buttonsEnabled = true;
@@ -119,21 +131,21 @@ public abstract class WizardProcessPanel extends JPanel
         Border labelBorder = BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0, UIUtils.getDefaultBorderColour()),
                 BorderFactory.createEmptyBorder(0, 0, 4, 0));
-        
+
         // setup the title label and right panel
         cardLayout = new CardLayout();
         rightPanel = new JPanel(cardLayout);
 
         titleLabel = new JLabel("", JLabel.LEFT);
         titleLabel.setBorder(labelBorder);
-        
+
         // store the fonts
         Font font = titleLabel.getFont();
         selectedLabelFont = font.deriveFont(Font.BOLD);
         labelFont = font.deriveFont(Font.PLAIN);
 
         titleLabel.setFont(selectedLabelFont);
-        
+
         JPanel rightContentPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy++;
@@ -151,13 +163,13 @@ public abstract class WizardProcessPanel extends JPanel
         gbc.insets.bottom = 5;
         gbc.fill = GridBagConstraints.BOTH;
         rightContentPanel.add(rightPanel, gbc);
-        
+
         // setup the left panel
         JLabel stepsLabel = new JLabel("Steps", JLabel.LEFT);
         stepsLabel.setOpaque(false);
         stepsLabel.setBorder(labelBorder);
         stepsLabel.setFont(selectedLabelFont);
-        
+
         leftPanel = new JPanel();
         leftPanel.setOpaque(false);
         leftPanel.setPreferredSize(new Dimension(170, getHeight()));
@@ -174,7 +186,7 @@ public abstract class WizardProcessPanel extends JPanel
         gbc.insets.bottom = 5;
         gbc.fill = GridBagConstraints.BOTH;
         leftContentPanel.add(leftPanel, gbc);
-        
+
         // add the panels to the base
         JPanel base = new JPanel(new BorderLayout());
         base.add(leftContentPanel, BorderLayout.WEST);
@@ -194,7 +206,7 @@ public abstract class WizardProcessPanel extends JPanel
         nextButton.addActionListener(this);
         backButton.addActionListener(this);
         cancelButton.addActionListener(this);
-        
+
         helpButton = new WizardPanelButton("Help");
         helpButton.setMnemonic('H');
 
@@ -208,9 +220,9 @@ public abstract class WizardProcessPanel extends JPanel
 //        nextButton.setMargin(buttonInsets);
 //        backButton.setMargin(buttonInsets);
 //        cancelButton.setMargin(buttonInsets);
-        
+
         backButton.setEnabled(false);
-        
+
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         gbc.gridy = 0;
         gbc.gridx = 0;
@@ -236,14 +248,14 @@ public abstract class WizardProcessPanel extends JPanel
 
         // add a border to the button panel
         buttonPanel.setBorder(
-                BorderFactory.createMatteBorder(1, 0, 0, 0, 
+                BorderFactory.createMatteBorder(1, 0, 0, 0,
                         UIManager.getColor("controlDkShadow")));
         add(buttonPanel, BorderLayout.SOUTH);
-        
+
     }
 
     protected void prepare() {
-        
+
         // setup the step labels
         String[] steps = model.getSteps();
         stepLabels = new ArrayList<JLabel>(steps.length);
@@ -260,7 +272,7 @@ public abstract class WizardProcessPanel extends JPanel
         cardLayout.first(rightPanel);
         setSelectedStep(0);
     }
-    
+
     /**
      * Reformats the label display at the specified index.
      *
@@ -276,7 +288,7 @@ public abstract class WizardProcessPanel extends JPanel
             }
         }
     }
-    
+
     /**
      * Sets the action for the help button to that specified.
      *
@@ -294,7 +306,7 @@ public abstract class WizardProcessPanel extends JPanel
      * This will also set a null icon value and set the button
      * text to 'Help'.
      *
-     * @param a - the help action to be applied
+     * @param a             - the help action to be applied
      * @param actionCommand - the action command string
      */
     protected void setHelpAction(Action a, String actionCommand) {
@@ -403,11 +415,11 @@ public abstract class WizardProcessPanel extends JPanel
     public int getSelectedIndex() {
         return model.getSelectedIndex();
     }
-    
+
 
     /**
      * Adds the specified panel to the layout with the specified name.
-     *
+     * <p>
      * The name must be the string value of the index of the specified panel.
      *
      * @param panel - the panel
@@ -424,7 +436,7 @@ public abstract class WizardProcessPanel extends JPanel
         setNextButtonEnabled(model.hasNext());
         setBackButtonEnabled(model.hasPrevious());
     }
-    
+
     /**
      * Performs the cancel action.
      */
@@ -468,15 +480,13 @@ public abstract class WizardProcessPanel extends JPanel
         Object source = e.getSource();
         if (source == nextButton) {
             next();
-        }
-        else if (source == backButton) {
+        } else if (source == backButton) {
             back();
-        } 
-        else if (source == cancelButton) {
+        } else if (source == cancelButton) {
             cancel();
         }
     }
-    
+
     /**
      * Returns the wizard model for this instance.
      *
@@ -494,21 +504,21 @@ public abstract class WizardProcessPanel extends JPanel
     public void setModel(WizardProcessModel model) {
         this.model = model;
     }
-    
+
     // the steps left hand panel
     private class StepListPanel extends JPanel {
-        
+
         private Color darkColor;
         private Color lightColor;
-        
+
         public StepListPanel(LayoutManager layout) {
             super(layout);
             darkColor = UIUtils.getDefaultActiveBackgroundColour();
             lightColor = getBackground();
         }
-        
+
         public void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D)g;
+            Graphics2D g2 = (Graphics2D) g;
             /*
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                                  RenderingHints.VALUE_ANTIALIAS_ON);
@@ -521,10 +531,10 @@ public abstract class WizardProcessPanel extends JPanel
 
             Paint originalPaint = g2.getPaint();
             GradientPaint fade = new GradientPaint(0, height, darkColor,
-                    0, (int)(height * 0.2), lightColor);
+                    0, (int) (height * 0.2), lightColor);
 
             g2.setPaint(fade);
-            g2.fillRect(0,0, width, height);
+            g2.fillRect(0, 0, width, height);
 
             g2.setPaint(originalPaint);
         }
@@ -534,9 +544,9 @@ public abstract class WizardProcessPanel extends JPanel
         }
 
     }
-    
+
     private class WizardStepLabel extends JLabel {
-        
+
         public WizardStepLabel(int index, String text) {
             StringBuffer sb = new StringBuffer();
             sb.append("<html><table border=\"0\" cellpadding=\"2\"><tr><td valign=\"top\" nowrap>");
@@ -550,9 +560,9 @@ public abstract class WizardProcessPanel extends JPanel
         public boolean isOpaque() {
             return false;
         }
-        
+
     }
-    
+
 }
 
 

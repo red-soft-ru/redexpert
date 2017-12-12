@@ -20,10 +20,9 @@
 
 package org.executequery.components;
 
+import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
-import javax.swing.JPopupMenu;
 
 public class BasicPopupMenuListener extends MouseAdapter {
 

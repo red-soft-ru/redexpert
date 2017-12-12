@@ -1,6 +1,5 @@
 package org.executequery.gui.browser.managment;
 
-import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -14,7 +13,7 @@ import javax.swing.*;
  */
 public class WindowAddRole extends JPanel {
 
-    public static final String TITLE="Create role";
+    public static final String TITLE = "Create role";
     DatabaseConnection dc;
     ActionContainer parent;
     JTextField nameTextField;
@@ -23,8 +22,8 @@ public class WindowAddRole extends JPanel {
     JLabel jLabel1;
 
     public WindowAddRole(ActionContainer parent, DatabaseConnection dc) {
-        this.parent=parent;
-        this.dc=dc;
+        this.parent = parent;
+        this.dc = dc;
         initComponents();
 
     }
@@ -32,9 +31,9 @@ public class WindowAddRole extends JPanel {
     private void initComponents() {
         nameTextField = new JTextField();
         okButton = new JButton();
-        cancelButton=new JButton();
+        cancelButton = new JButton();
         jLabel1 = new JLabel();
-        jLabel1.setText(Bundles.get(UserManagerPanel.class,"RoleName"));
+        jLabel1.setText(Bundles.get(UserManagerPanel.class, "RoleName"));
         okButton.setText("OK");
         cancelButton.setText(Bundles.getCommon("cancel.button"));
         okButton.addActionListener(new java.awt.event.ActionListener() {
@@ -80,10 +79,10 @@ public class WindowAddRole extends JPanel {
     }
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        String query="CREATE ROLE " + nameTextField.getText();
-        ExecuteQueryDialog eqd=new ExecuteQueryDialog("Create Role",query,dc,true);
+        String query = "CREATE ROLE " + nameTextField.getText();
+        ExecuteQueryDialog eqd = new ExecuteQueryDialog("Create Role", query, dc, true);
         eqd.display();
-        if(eqd.getCommit())
+        if (eqd.getCommit())
             parent.finished();
     }
 }

@@ -20,27 +20,27 @@
 
 package org.executequery.gui.drivers;
 
-import java.awt.event.FocusEvent;
 import org.executequery.gui.AbstractFieldFocusLostListener;
 
+import java.awt.event.FocusEvent;
+
 /**
- *
- * @author      Takis Diakoumis
+ * @author Takis Diakoumis
  */
 class DriverNameFieldListener extends AbstractFieldFocusLostListener {
 
     private final DriverPanel driverPanel;
-    
+
     DriverNameFieldListener(DriverPanel driverPanel) {
-    
+
         this.driverPanel = driverPanel;
     }
 
     public void focusLost(FocusEvent e) {
-        
+
         driverPanel.driverNameChanged();
     }
-    
+
 }
 
 

@@ -20,53 +20,58 @@
 
 package org.executequery.gui.importexport;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import org.underworldlabs.swing.MultiLineLabel;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.ButtonGroup;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JRadioButton;
-
-import org.underworldlabs.swing.MultiLineLabel;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-class ExportAsSQLPanelOne extends AbstractImportExportPanel  {
-    
-    /** single table transfer radio button */
+class ExportAsSQLPanelOne extends AbstractImportExportPanel {
+
+    /**
+     * single table transfer radio button
+     */
     private JRadioButton singleRadio;
-    
-    /** multiple table transfer radio button */
+
+    /**
+     * multiple table transfer radio button
+     */
     private JRadioButton multipleRadio;
-    
-    /** multiple table single file transfer radio button */
+
+    /**
+     * multiple table single file transfer radio button
+     */
     private JRadioButton singleFileRadio;
-    
-    /** multiple table multiple file transfer radio button */
+
+    /**
+     * multiple table multiple file transfer radio button
+     */
     private JRadioButton multipleFileRadio;
-    
-    /** The connection combo selection */
-    private JComboBox connectionsCombo; 
+
+    /**
+     * The connection combo selection
+     */
+    private JComboBox connectionsCombo;
 
     public ExportAsSQLPanelOne(ImportExportWizard parent) {
-        
+
         super(new GridBagLayout(), parent);
-        
+
         try {
             jbInit();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
-    
-    /** <p>Initialises the state of this instance. */
+
+    /**
+     * <p>Initialises the state of this instance.
+     */
     private void jbInit() throws Exception {
 
         singleRadio = new JRadioButton("Single Table");
@@ -74,7 +79,7 @@ class ExportAsSQLPanelOne extends AbstractImportExportPanel  {
 
         multipleRadio = new JRadioButton("Multiple Tables");
         multipleRadio.setMnemonic('M');
-        
+
         ButtonGroup buttonGroup1 = new ButtonGroup();
         buttonGroup1.add(singleRadio);
         buttonGroup1.add(multipleRadio);
@@ -82,15 +87,15 @@ class ExportAsSQLPanelOne extends AbstractImportExportPanel  {
 
         singleFileRadio = new JRadioButton("One file for all tables");
         multipleFileRadio = new JRadioButton("One file per table");
-        
+
         ButtonGroup buttonGroup2 = new ButtonGroup();
         buttonGroup2.add(singleFileRadio);
         buttonGroup2.add(multipleFileRadio);
         singleFileRadio.setSelected(true);
-        
+
         singleFileRadio.setEnabled(false);
         multipleFileRadio.setEnabled(false);
-        
+
         final JLabel typeLabel = new JLabel("Select multiple table transfer type.");
         typeLabel.setEnabled(false);
 
@@ -103,14 +108,14 @@ class ExportAsSQLPanelOne extends AbstractImportExportPanel  {
         };
         singleRadio.addActionListener(radioListener);
         multipleRadio.addActionListener(radioListener);
-        
+
         // combo boxes
         connectionsCombo = importExportWizard().getConnectionsCombo();
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy++;
         gbc.gridx = 0;
-        gbc.insets = new Insets(7,10,5,10);
+        gbc.insets = new Insets(7, 10, 5, 10);
         gbc.anchor = GridBagConstraints.NORTHWEST;
         add(new JLabel("Connection:"), gbc);
         gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -140,25 +145,25 @@ class ExportAsSQLPanelOne extends AbstractImportExportPanel  {
         gbc.weighty = 1.0;
         gbc.gridy++;
         add(multipleFileRadio, gbc);
-        
+
     }
-    
+
     public ImportExportType getExportType() {
-        
+
         if (singleRadio.isSelected()) {
-            
+
             return ImportExportType.EXPORT_SQL_ONE_TABLE;
-            
+
         } else {
 
             return ImportExportType.EXPORT_SQL_ALL_TABLES;
         }
     }
-    
+
     public ImportExportFileType getExportFileType() {
 
         if (singleFileRadio.isSelected()) {
-            
+
             return ImportExportFileType.SINGLE_FILE;
 
         } else {
@@ -166,7 +171,7 @@ class ExportAsSQLPanelOne extends AbstractImportExportPanel  {
             return ImportExportFileType.MULTIPLE_FILES;
         }
     }
-    
+
 }
 
 

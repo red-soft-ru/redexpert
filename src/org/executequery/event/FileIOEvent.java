@@ -21,19 +21,22 @@
 package org.executequery.event;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface FileIOEvent extends ApplicationEvent {
 
-    /** Method name for input complete */
+    /**
+     * Method name for input complete
+     */
     String INPUT_COMPLETE = "inputComplete";
 
-    /** Method name for output complete */
+    /**
+     * Method name for output complete
+     */
     String OUTPUT_COMPLETE = "outputComplete";
 
     String getAbsoluteFilePath();
-    
+
 }
 
 

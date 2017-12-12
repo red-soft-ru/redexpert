@@ -23,8 +23,7 @@ package org.executequery.repository;
 import org.executequery.AbstractBaseRuntimeException;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public final class RepositoryException extends AbstractBaseRuntimeException {
 
@@ -36,12 +35,12 @@ public final class RepositoryException extends AbstractBaseRuntimeException {
     }
 
     public RepositoryException(Throwable cause) {
-        
+
         super(cause);
     }
 
     public RepositoryException(String message, Throwable cause) {
-        
+
         super(message, cause);
     }
 

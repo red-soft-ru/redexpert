@@ -32,7 +32,9 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
     JTextPane headerTextPane;
     JTextPane bodyTextPane;
 
-    /** the browser's control object */
+    /**
+     * the browser's control object
+     */
     private BrowserController controller;
 
     public BrowserPackagePanel(BrowserController controller) {
@@ -41,8 +43,7 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
 
         try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -96,7 +97,7 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
 
         JPanel base = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        Insets insets = new Insets(10,10,5,5);
+        Insets insets = new Insets(10, 10, 5, 5);
         gbc.anchor = GridBagConstraints.NORTHEAST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridx++;
@@ -144,7 +145,8 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
         cache.clear();
     }
 
-    public void cleanup() {}
+    public void cleanup() {
+    }
 
     public void setValues(DefaultDatabasePackage databasePackage) {
 
@@ -159,15 +161,14 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
 
             descriptionPane.setText(databasePackage.getDescription());
             sqlPane.setText(databasePackage.getCreateSQLText());
-        }
-        catch (DataSourceException e) {
+        } catch (DataSourceException e) {
             controller.handleException(e);
         }
 
     }
 
     public void setValues(BaseDatabaseObject metaObject) {
-        DefaultDatabasePackage databasePackage = (DefaultDatabasePackage)cache.get(metaObject);
+        DefaultDatabasePackage databasePackage = (DefaultDatabasePackage) cache.get(metaObject);
         setValues(metaObject, databasePackage);
     }
 

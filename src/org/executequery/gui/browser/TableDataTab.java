@@ -20,30 +20,7 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.sql.ResultSet;
-import java.sql.Time;
-import java.sql.Types;
-import java.text.Collator;
-import java.time.*;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.List;
-import java.util.Timer;
-
-import javax.swing.*;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-
 import com.github.lgooddatepicker.components.DatePicker;
-import com.github.lgooddatepicker.components.DateTimePicker;
-import com.github.lgooddatepicker.components.TimePicker;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.EventMediator;
@@ -61,7 +38,10 @@ import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.editor.ResultSetTableContainer;
 import org.executequery.gui.editor.ResultSetTablePopupMenu;
-import org.executequery.gui.resultset.*;
+import org.executequery.gui.resultset.RecordDataItem;
+import org.executequery.gui.resultset.ResultSetColumnHeader;
+import org.executequery.gui.resultset.ResultSetTable;
+import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -74,9 +54,23 @@ import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.sql.ResultSet;
+import java.sql.Types;
+import java.util.*;
+import java.util.List;
+import java.util.Timer;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class TableDataTab extends JPanel
         implements ResultSetTableContainer, TableModelListener, UserPreferenceListener {
@@ -392,8 +386,7 @@ public class TableDataTab extends JPanel
                 databaseObject.releaseResources();
                 ResultSet resultSet = databaseObject.getMetaData();
                 tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection(), columnDataList);
-            }
-            finally {
+            } finally {
                 databaseObject.releaseResources();
             }
             createResultSetTable();
@@ -529,9 +522,8 @@ public class TableDataTab extends JPanel
                 items.add(rs.getObject(1));
             }
         } catch (Exception e) {
-            Log.error("Error get Foreign keys:"+e.getMessage());
-        }
-        finally {
+            Log.error("Error get Foreign keys:" + e.getMessage());
+        } finally {
             querySender.releaseResources();
         }
         items.add(null);
@@ -553,8 +545,7 @@ public class TableDataTab extends JPanel
         return this.databaseObject instanceof DatabaseTable;
     }
 
-    private boolean isDatabaseView()
-    {
+    private boolean isDatabaseView() {
         return this.databaseObject instanceof DatabaseView;
     }
 
@@ -599,7 +590,7 @@ public class TableDataTab extends JPanel
     private void createResultSetTable() {
 
         table = new ResultSetTable();
-        table.addMouseListener(new ResultSetTablePopupMenu(table, this,asDatabaseTableObject()));
+        table.addMouseListener(new ResultSetTablePopupMenu(table, this, asDatabaseTableObject()));
         setTableProperties();
     }
 
@@ -1052,17 +1043,15 @@ public class TableDataTab extends JPanel
         return null;
     }
 
-    private boolean isDatabaseTableObject()
-    {
+    private boolean isDatabaseTableObject() {
         return this.databaseObject instanceof DatabaseTableObject;
     }
 
-    private DatabaseTableObject asDatabaseTableObject()
-    {
+    private DatabaseTableObject asDatabaseTableObject() {
         if (isDatabaseTableObject()) {
 
-        return (DatabaseTableObject) this.databaseObject;
-    }
+            return (DatabaseTableObject) this.databaseObject;
+        }
         return null;
     }
 

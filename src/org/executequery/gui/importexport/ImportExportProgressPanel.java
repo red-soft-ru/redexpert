@@ -20,59 +20,54 @@
 
 package org.executequery.gui.importexport;
 
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.BorderFactory;
-
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
 import org.executequery.GUIUtilities;
-
 import org.executequery.components.LoggingOutputPane;
-import org.executequery.gui.GUIConstants;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.sql.SqlMessages;
-import org.underworldlabs.swing.ProgressBar;
-import org.underworldlabs.swing.ProgressBarFactory;
 
-/** 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+/**
  * The progress display during an import/export
  * process. This is standard across all import/export
  * types - XML or delimited.
  *
+ * @author Takis Diakoumis
  * @deprecated use NewImportExportProgressPanel
- * @author   Takis Diakoumis
  */
 public class ImportExportProgressPanel extends JPanel
-                                       implements ActionListener {
-    
-    /** The stop button */
+        implements ActionListener {
+
+    /**
+     * The stop button
+     */
     private JButton stopButton;
-    
-    /** The progress bar tracking the process */
+
+    /**
+     * The progress bar tracking the process
+     */
     private JProgressBar progressBar;
-    
-    /** The text area displaying process info */
+
+    /**
+     * The text area displaying process info
+     */
     private LoggingOutputPane output;
-    
-    /** the parent process object */
+
+    /**
+     * the parent process object
+     */
     private ImportExportDataProcess parent;
-    
-    /** Constructs a new instance with the specified
-     *  worker as the initiator and controller, and the
-     *  whether the process is an export process.
+
+    /**
+     * Constructs a new instance with the specified
+     * worker as the initiator and controller, and the
+     * whether the process is an export process.
      *
-     *  @param The worker for this process
-     *  @param Whether this is a export process
+     * @param The     worker for this process
+     * @param Whether this is a export process
      */
     public ImportExportProgressPanel(ImportExportDataProcess parent) {
 
@@ -80,29 +75,31 @@ public class ImportExportProgressPanel extends JPanel
         this.parent = parent;
         init();
     }
-    
-    /** Initializes the state of this instance. */
+
+    /**
+     * Initializes the state of this instance.
+     */
     private void init() {
-        
-        JLabel transferLabel = new JLabel("Importing Data...");        
+
+        JLabel transferLabel = new JLabel("Importing Data...");
         if (parent.getTransferType() == ImportExportDataProcess.EXPORT) {
             transferLabel.setText("Exporting Data...");
         }
 
         output = new LoggingOutputPane();
         output.setBackground(getBackground());
-        
+
         progressBar = new JProgressBar(0, 100);
         progressBar.setBorder(BorderFactory.createLineBorder(GUIUtilities.getDefaultBorderColour()));
-        
+
         stopButton = WidgetFactory.createButton("Stop");
         stopButton.addActionListener(this);
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.weightx = 1.0;
         gbc.gridy++;
         gbc.gridx = 0;
-        gbc.insets = new Insets(5,5,5,5);
+        gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         add(transferLabel, gbc);
@@ -139,7 +136,7 @@ public class ImportExportProgressPanel extends JPanel
         };
         SwingUtilities.invokeLater(updateStop);
     }
-    
+
     /**
      * Resets the progress bar to zero and clears the output text area.
      */
@@ -156,15 +153,15 @@ public class ImportExportProgressPanel extends JPanel
         parent.stopTransfer();
         stopButton.setEnabled(false);
     }
-    
+
     /**
      * Returns the text currently displayed in the output pane.
      */
     public String getText() {
         return output.getText();
     }
-    
-    /** 
+
+    /**
      * Sets the progress bar's position during the process.
      *
      * @param the new process status
@@ -178,8 +175,8 @@ public class ImportExportProgressPanel extends JPanel
         };
         SwingUtilities.invokeLater(setProgressBar);
     }
-    
-    /** 
+
+    /**
      * Retrieves the progress bar's maximum value.
      *
      * @param the progress bar's maximum value
@@ -187,16 +184,16 @@ public class ImportExportProgressPanel extends JPanel
     public int getMaximum() {
         return progressBar.getMaximum();
     }
-    
-    /** 
+
+    /**
      * Sets the progress bar to track indeterminate values - action of
      * unknown length is taking place.
      */
     public void setIndeterminate(boolean indeterminate) {
         progressBar.setIndeterminate(indeterminate);
     }
-    
-    /** 
+
+    /**
      * Sets the text to be appended within the progress info text area.
      *
      * @param the text to append
@@ -210,7 +207,7 @@ public class ImportExportProgressPanel extends JPanel
         SwingUtilities.invokeLater(setProgressText);
     }
 
-    /** 
+    /**
      * Sets the text to be appended within the
      * progress info text area as an error message.
      *
@@ -225,8 +222,8 @@ public class ImportExportProgressPanel extends JPanel
         SwingUtilities.invokeLater(setProgressText);
     }
 
-    /** 
-     * Sets the text to be appended within the progress info 
+    /**
+     * Sets the text to be appended within the progress info
      * text area as a warning message.
      *
      * @param the text to append
@@ -240,7 +237,7 @@ public class ImportExportProgressPanel extends JPanel
         SwingUtilities.invokeLater(setProgressText);
     }
 
-    /** 
+    /**
      * Sets the progress bar's minimum value to the specified value.
      *
      * @param the minimum value
@@ -248,8 +245,8 @@ public class ImportExportProgressPanel extends JPanel
     public void setMinimum(int min) {
         progressBar.setMaximum(min);
     }
-    
-    /** 
+
+    /**
      * Sets the progress bar's maximum value to the specified value.
      *
      * @param the maximum value
@@ -257,7 +254,7 @@ public class ImportExportProgressPanel extends JPanel
     public void setMaximum(int max) {
         progressBar.setMaximum(max);
     }
-    
+
 }
 
 

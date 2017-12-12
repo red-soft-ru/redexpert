@@ -20,32 +20,30 @@
 
 package org.executequery.actions.filecommands;
 
+import org.executequery.GUIUtilities;
+import org.executequery.components.OpenFileDialog;
+import org.executequery.util.FileLoader;
+import org.underworldlabs.swing.actions.BaseCommand;
+
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 
-import javax.swing.JFileChooser;
-
-import org.executequery.GUIUtilities;
-import org.executequery.components.OpenFileDialog;
-import org.underworldlabs.swing.actions.BaseCommand;
-
-import org.executequery.util.FileLoader;
-
-/** 
+/**
  * The File | Open command.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class OpenCommand implements BaseCommand {
-    
+
     public void execute(ActionEvent e) {
-    
+
         OpenFileDialog fileChooser = new OpenFileDialog();
 
         int result = fileChooser.showOpenDialog(GUIUtilities.getInFocusDialogOrWindow());
 
         if (result == JFileChooser.CANCEL_OPTION) {
-        
+
             return;
         }
 

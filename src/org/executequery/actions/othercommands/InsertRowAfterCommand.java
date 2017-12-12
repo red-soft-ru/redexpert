@@ -20,18 +20,19 @@
 
 package org.executequery.actions.othercommands;
 
-import java.awt.event.ActionEvent;
-import javax.swing.JPanel;
-
 import org.executequery.GUIUtilities;
 import org.executequery.gui.browser.BrowserViewPanel;
 import org.executequery.gui.table.TableFunction;
 
-/** <p>Inserts a table row within relevant table type
- *  functions (ie. browser, create table, etc) after the
- *  currently selected row.
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+
+/**
+ * <p>Inserts a table row within relevant table type
+ * functions (ie. browser, create table, etc) after the
+ * currently selected row.
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class InsertRowAfterCommand extends AbstractBaseCommand {
 
@@ -42,16 +43,16 @@ public class InsertRowAfterCommand extends AbstractBaseCommand {
 
             // check if the current panel is a TableFunction
             if (panel instanceof TableFunction) {
-                tableFunction = (TableFunction)panel;
+                tableFunction = (TableFunction) panel;
             }
 
             // otherwise, check if we are on the browser
             // then check if the current browser view is a 
             // TableFunction implementation
             else if (panel instanceof BrowserViewPanel) {
-                BrowserViewPanel viewPanel = (BrowserViewPanel)panel;
+                BrowserViewPanel viewPanel = (BrowserViewPanel) panel;
                 if (viewPanel.getCurrentView() instanceof TableFunction) {
-                    tableFunction = (TableFunction)viewPanel.getCurrentView();
+                    tableFunction = (TableFunction) viewPanel.getCurrentView();
                 }
             }
             // do the action
@@ -59,9 +60,9 @@ public class InsertRowAfterCommand extends AbstractBaseCommand {
                 tableFunction.insertAfter();
             }
         }
-        
+
     }
-    
+
 }
 
 

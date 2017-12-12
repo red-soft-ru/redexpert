@@ -20,87 +20,77 @@
 
 package org.executequery.gui.prefs;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import org.executequery.Constants;
+import org.executequery.GUIUtilities;
+import org.underworldlabs.util.SystemProperties;
+
+import javax.swing.*;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-
-import org.underworldlabs.util.SystemProperties;
-
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import org.executequery.Constants;
-import org.executequery.GUIUtilities;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class PropertiesEditorBackground extends AbstractPropertiesBasePanel 
-                                        implements PropertyChangeListener {
+public class PropertiesEditorBackground extends AbstractPropertiesBasePanel
+        implements PropertyChangeListener {
 
     private SimplePreferencesPanel preferencesPanel;
-    
+
     private SamplePanel samplePanel;
-    
-    public PropertiesEditorBackground() {       
+
+    public PropertiesEditorBackground() {
         try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
-    /** <p>Initializes the state of this instance. */
+
+    /**
+     * <p>Initializes the state of this instance.
+     */
     private void init() throws Exception {
-    
-    	List<UserPreference> list = new ArrayList<UserPreference>();
+
+        List<UserPreference> list = new ArrayList<UserPreference>();
 
         list.add(new UserPreference(
-                    UserPreference.CATEGORY_TYPE,
-                    null,
-                    "Query Editor Colours",
-                    null));
+                UserPreference.CATEGORY_TYPE,
+                null,
+                "Query Editor Colours",
+                null));
 
         String key = "editor.caret.colour";
         list.add(new UserPreference(
-                    UserPreference.COLOUR_TYPE,
-                    key,
-                    "Caret colour",
-                    SystemProperties.getColourProperty("user", key)));
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Caret colour",
+                SystemProperties.getColourProperty("user", key)));
 
         key = "editor.linenumber.background";
         list.add(new UserPreference(
-                    UserPreference.COLOUR_TYPE,
-                    key,
-                    "Gutter background",
-                    SystemProperties.getColourProperty("user", key)));
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Gutter background",
+                SystemProperties.getColourProperty("user", key)));
 
         key = "editor.linenumber.foreground";
         list.add(new UserPreference(
-                    UserPreference.COLOUR_TYPE,
-                    key,
-                    "Gutter foreground",
-                    SystemProperties.getColourProperty("user", key)));
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Gutter foreground",
+                SystemProperties.getColourProperty("user", key)));
 
         key = "editor.text.background.colour";
         list.add(new UserPreference(
-                    UserPreference.COLOUR_TYPE,
-                    key,
-                    "Editor background",
-                    SystemProperties.getColourProperty("user", key)));
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Editor background",
+                SystemProperties.getColourProperty("user", key)));
         key = "editor.text.background.alternate.color";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
@@ -117,24 +107,24 @@ public class PropertiesEditorBackground extends AbstractPropertiesBasePanel
 
         key = "editor.results.background.colour";
         list.add(new UserPreference(
-                    UserPreference.COLOUR_TYPE,
-                    key,
-                    "Results panel background",
-                    SystemProperties.getColourProperty("user", key)));
-        
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Results panel background",
+                SystemProperties.getColourProperty("user", key)));
+
         key = "editor.text.selection.foreground";
         list.add(new UserPreference(
-                    UserPreference.COLOUR_TYPE,
-                    key,
-                    "Text selection foreground",
-                    SystemProperties.getColourProperty("user", key)));
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Text selection foreground",
+                SystemProperties.getColourProperty("user", key)));
 
         key = "editor.text.selection.background";
         list.add(new UserPreference(
-                    UserPreference.COLOUR_TYPE,
-                    key,
-                    "Text selection background",
-                    SystemProperties.getColourProperty("user", key)));
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Text selection background",
+                SystemProperties.getColourProperty("user", key)));
 
         key = "editor.text.selection.background.alternative";
         list.add(new UserPreference(
@@ -146,13 +136,13 @@ public class PropertiesEditorBackground extends AbstractPropertiesBasePanel
 
         key = "editor.display.linehighlight.colour";
         list.add(new UserPreference(
-                    UserPreference.COLOUR_TYPE,
-                    key,
-                    "Current Line Highlight",
-                    SystemProperties.getColourProperty("user", key)));
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Current Line Highlight",
+                SystemProperties.getColourProperty("user", key)));
 
-        UserPreference[] preferences = 
-                (UserPreference[])list.toArray(new UserPreference[list.size()]);
+        UserPreference[] preferences =
+                (UserPreference[]) list.toArray(new UserPreference[list.size()]);
 
         preferencesPanel = new SimplePreferencesPanel(preferences);
         preferencesPanel.addPropertyChangeListener(this);
@@ -179,21 +169,21 @@ public class PropertiesEditorBackground extends AbstractPropertiesBasePanel
         gbc.weighty = 0.5;
         gbc.fill = GridBagConstraints.BOTH;
         panel.add(samplePanel, gbc);
-        addContent(panel);        
+        addContent(panel);
     }
-    
+
     public void stopCaretDisplayTimer() {
-        
+
         if (samplePanel != null) {
             samplePanel.stopTimer();
         }
-        
+
     }
 
     public void restoreDefaults() {
         preferencesPanel.restoreDefaults();
     }
-    
+
     public void save() {
         preferencesPanel.savePreferences();
         stopCaretDisplayTimer();
@@ -216,11 +206,11 @@ public class PropertiesEditorBackground extends AbstractPropertiesBasePanel
     class SamplePanel extends JPanel {
 
         private Timer timer;
-        
+
         private boolean showCaret;
 
         private UserPreference[] preferences;
-        
+
         public SamplePanel(UserPreference[] preferences) {
             this.preferences = preferences;
             showCaret = false;
@@ -231,18 +221,18 @@ public class PropertiesEditorBackground extends AbstractPropertiesBasePanel
                     repaint();
                 }
             };
-            
+
             TimerTask caretTimer = new TimerTask() {
                 public void run() {
                     EventQueue.invokeLater(caret);
                 }
             };
-            
+
             timer = new Timer();
             timer.schedule(caretTimer, 0, 500);
-            
+
         }
-        
+
         public void stopTimer() {
 
             if (timer != null) {
@@ -250,75 +240,75 @@ public class PropertiesEditorBackground extends AbstractPropertiesBasePanel
                 timer.cancel();
             }
         }
-        
+
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
-            
+
             int width = getWidth();
             int height = getHeight();
             int lineGutter = 35;
-            
+
             g.setFont(FONT);
-            
+
             FontMetrics fm = g.getFontMetrics(FONT);
             int lineHeight = fm.getHeight() + 5;
-            
+
             g.setColor(Color.DARK_GRAY);
             g.drawRect(0, 0, width - 1, height - 1);
 
-            Color color = (Color)preferences[2].getValue();
+            Color color = (Color) preferences[2].getValue();
             g.setColor(color);
             g.fillRect(1, 1, lineGutter, height - 2);
-            
+
             g.setColor(GUIUtilities.getDefaultBorderColour());
             g.drawLine(lineGutter + 1, 1, lineGutter + 1, height - 2);
-            
-            color = (Color)preferences[3].getValue();
+
+            color = (Color) preferences[3].getValue();
             g.setColor(color);
 
             g.drawString(ONE, lineGutter - 10, 15);
             g.drawString(TWO, lineGutter - 10, lineHeight + 15);
             g.drawString(THREE, lineGutter - 10, (lineHeight * 2) + 15);
 
-            color = (Color)preferences[4].getValue();
+            color = (Color) preferences[4].getValue();
             g.setColor(color);
             g.fillRect(lineGutter + 1, 1, width - lineGutter - 1, height - 2);
-            
+
             g.setColor(Color.BLACK);
             g.drawString(TEXT_PLAIN, lineGutter + 5, 15);
-            
-            color = (Color)preferences[7].getValue();
+
+            color = (Color) preferences[7].getValue();
             g.setColor(color);
             g.fillRect(lineGutter, lineHeight, width - lineGutter - 1, lineHeight);
-            
-            color = (Color)preferences[6].getValue();
+
+            color = (Color) preferences[6].getValue();
             g.setColor(color);
             g.drawString(TEXT_NO_HIGHLIGHT, lineGutter + 5, lineHeight + 15);
-            
-            color = (Color)preferences[8].getValue();
+
+            color = (Color) preferences[8].getValue();
             g.setColor(color);
             g.fillRect(lineGutter, lineHeight * 2, width - lineGutter - 1, lineHeight);
-            
+
             g.setColor(Color.BLACK);
             g.drawString(TEXT_HIGHLIGHT, lineGutter + 5, (lineHeight * 2) + 15);
-            
+
             if (showCaret) {
-                color = (Color)preferences[1].getValue();
+                color = (Color) preferences[1].getValue();
                 g.setColor(color);
-                
+
                 int length_1 = fm.stringWidth(TEXT_PLAIN) + lineGutter + 4;
                 int length_2 = fm.stringWidth(TEXT_NO_HIGHLIGHT) + lineGutter + 4;
                 int length_3 = fm.stringWidth(TEXT_HIGHLIGHT) + lineGutter + 4;
-                
+
                 g.drawLine(length_1, 2, length_1, lineHeight - 2);
                 g.drawLine(length_2, lineHeight + 2, length_2, (lineHeight * 2) - 2);
                 g.drawLine(length_3, (lineHeight * 2) + 1, length_3, (lineHeight * 3) - 2);
             }
-            
+
         }
-        
+
     } // SamplePanel
-    
+
 }
 
 

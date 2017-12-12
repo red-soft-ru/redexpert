@@ -20,25 +20,29 @@
 
 package org.underworldlabs.swing.plaf;
 
-import java.awt.Component;
-import javax.swing.Icon;
-import javax.swing.JMenuItem;
+import javax.swing.*;
+import java.awt.*;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class TabMenuItem extends JMenuItem {
 
-    /** the tab component for this menu item */
+    /**
+     * the tab component for this menu item
+     */
     private Component tabComponent;
 
-    /** Creates a new instance of TabMenuItem */
+    /**
+     * Creates a new instance of TabMenuItem
+     */
     public TabMenuItem(String title, Component component) {
         this(title, null, component);
     }
 
-    /** Creates a new instance of TabMenuItem */
+    /**
+     * Creates a new instance of TabMenuItem
+     */
     public TabMenuItem(String title, Icon icon, Component component) {
         super(title, icon);
         this.tabComponent = component;
@@ -51,7 +55,7 @@ public class TabMenuItem extends JMenuItem {
     public void setTabComponent(Component component) {
         this.tabComponent = component;
     }
-    
+
 }
 
 

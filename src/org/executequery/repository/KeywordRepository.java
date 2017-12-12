@@ -23,19 +23,18 @@ package org.executequery.repository;
 import java.util.List;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface KeywordRepository extends Repository {
 
     String REPOSITORY_ID = "keywords";
-    
+
     List<String> getSQL92();
 
     List<String> getUserDefinedSQL();
-    
+
     List<String> getSQLKeywords();
-    
+
     void setUserDefinedKeywords(List<String> keywords);
 
     boolean contains(String word);

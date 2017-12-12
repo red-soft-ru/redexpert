@@ -20,101 +20,90 @@
 
 package org.executequery.gui.importexport;
 
-import java.awt.Dimension;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.ButtonGroup;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import org.underworldlabs.swing.MultiLineLabel;
 
-import org.executequery.gui.importexport.ImportExportXMLPanel;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class ExportXMLPanel_4 extends JPanel  {
-    
+public class ExportXMLPanel_4 extends JPanel {
+
     private ImportExportXMLPanel parent;
-    
+
     private JTextArea sampleArea;
-    
+
     private JRadioButton schemaRadio;
     private JRadioButton tableRadio;
-    
+
     private String schemaSample;
     private String tableSample;
-    
+
     public ExportXMLPanel_4(ImportExportXMLPanel parent) {
         super(new GridBagLayout());
         this.parent = parent;
         try {
             jbInit();
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     private void jbInit() throws Exception {
         sampleArea = new JTextArea();
         JScrollPane scroller = new JScrollPane(sampleArea);
         scroller.setPreferredSize(new Dimension(475, 120));
         sampleArea.setSelectionColor(Color.WHITE);
-        
+
         sampleArea.setEditable(false);
         sampleArea.setFont(new Font("monospaced", 0, 12));
-        
+
         schemaRadio = new JRadioButton("Schema details (includes connection information" +
-        " as attributes)");
+                " as attributes)");
         tableRadio = new JRadioButton("Table name only");
-        
+
         ButtonGroup bg = new ButtonGroup();
         bg.add(schemaRadio);
         bg.add(tableRadio);
-        
+
         schemaRadio.setSelected(true);
-        
+
         ActionListener radioListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                setSampleArea(); }
+                setSampleArea();
+            }
         };
-        
+
         schemaRadio.addActionListener(radioListener);
         tableRadio.addActionListener(radioListener);
-        
+
         String line_1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
         String line_2 = "\n<schema name=\"schema_name\" jdbcurl=\"jdbc:oracle:thin:@" +
-                        "[server]:[port]:[source]\" user=\"username\">";
+                "[server]:[port]:[source]\" user=\"username\">";
         String line_3 = "\n   <table name=\"table_name\">\n";
         String line_4 = "      <row rownum=\"1\">\n         <column_name>3000</column_name>" +
-                        "\n          ...";
-        
+                "\n          ...";
+
         schemaSample = line_1 + line_2 + line_3 + line_4;
         tableSample = line_1 + line_3 + line_4;
-        
+
         StringBuffer sb = new StringBuffer();
         sb.append("Selecting schema includes table nodes and is the only ");
         sb.append("available option for a multiple table export using a single XML file.");
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy++;
-        gbc.insets = new Insets(5,5,5,5);
+        gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(new JLabel("Select the XML root element."), gbc);
@@ -140,26 +129,26 @@ public class ExportXMLPanel_4 extends JPanel  {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         add(scroller, gbc);
-        
+
         setPreferredSize(parent.getChildDimension());
-        
+
         setSelectedRadios();
         setSampleArea();
     }
-    
+
     public void setSelectedRadios() {
         if (parent.getTableTransferType() == ImportExportDataProcess.MULTIPLE_TABLE) {
             schemaRadio.setSelected(true);
-            
+
             if (parent.getMutlipleTableTransferType() == ImportExportDataProcess.SINGLE_FILE)
                 tableRadio.setEnabled(false);
             else
                 tableRadio.setEnabled(true);
-            
+
         } else
             tableRadio.setEnabled(true);
     }
-    
+
     public void setSampleArea() {
         if (schemaRadio.isSelected()) {
             sampleArea.setText(schemaSample);
@@ -167,7 +156,7 @@ public class ExportXMLPanel_4 extends JPanel  {
             sampleArea.setText(tableSample);
         }
     }
-    
+
     public int getSelection() {
         if (schemaRadio.isSelected()) {
             return ImportExportDataProcess.SCHEMA_ELEMENT;
@@ -175,7 +164,7 @@ public class ExportXMLPanel_4 extends JPanel  {
             return ImportExportDataProcess.TABLE_ELEMENT;
         }
     }
-    
+
 }
 
 

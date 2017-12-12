@@ -20,38 +20,45 @@
 
 package org.underworldlabs.util;
 
+import org.apache.log4j.*;
+
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.apache.log4j.Appender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.RollingFileAppender;
-
 /**
- *  <p>Logger wrapper class.<br>
- *  Provides static methods to the Log4J logging methods.
- *  This is a convenience class only and can not be instantiated.
+ * <p>Logger wrapper class.<br>
+ * Provides static methods to the Log4J logging methods.
+ * This is a convenience class only and can not be instantiated.
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class Log implements Serializable {
 
-    /** The Log4J Logger object */
+    /**
+     * The Log4J Logger object
+     */
     private static Logger logger;
 
-    /** the logger name */
+    /**
+     * the logger name
+     */
     public static final String LOGGER_NAME = "system-logger";
-    
-    /** the log pattern string */
+
+    /**
+     * the log pattern string
+     */
     public static final String PATTERN = "[%d{HH:mm:ss}] %m%n";
-    
-    /** the max number of log files rolled over */
+
+    /**
+     * the max number of log files rolled over
+     */
     public static final int MAX_BACKUP_INDEX = 5;
-    
-    /** <p><code>private<code> constructor to prevent instantiation. */
-    private Log() {}
+
+    /**
+     * <p><code>private<code> constructor to prevent instantiation.
+     */
+    private Log() {
+    }
 
     /**
      * Initialises the logger instance with the specified level.
@@ -63,7 +70,7 @@ public class Log implements Serializable {
         if (isLogEnabled()) {
             return;
         }
-        
+
         logger = Logger.getLogger(LOGGER_NAME);
         try {
             if (level != null) {
@@ -75,15 +82,14 @@ public class Log implements Serializable {
             // init the patter layout
             PatternLayout patternLayout = new PatternLayout(PATTERN);
             RollingFileAppender appender = new RollingFileAppender(
-                                                            patternLayout, 
-                                                            path,
-                                                            true);
+                    patternLayout,
+                    path,
+                    true);
             appender.setMaxBackupIndex(MAX_BACKUP_INDEX);
             appender.setMaxFileSize("1MB");
             logger.addAppender(appender);
 
-        }
-        catch (IOException ioExc) {
+        } catch (IOException ioExc) {
             ioExc.printStackTrace();
         }
     }
@@ -99,7 +105,7 @@ public class Log implements Serializable {
         }
         logger.addAppender(appender);
     }
-    
+
     /**
      * Returns whether the log level is set to DEBUG.
      */
@@ -109,12 +115,12 @@ public class Log implements Serializable {
         }
         return false;
     }
-    
+
     /**
      * Sets the logger level to that specified.
      *
      * @param level - the logger level to be set.<br>
-     *        Valid values are: ERROR, DEBUG, INFO, WARN, ALL, FATAL, TRACE
+     *              Valid values are: ERROR, DEBUG, INFO, WARN, ALL, FATAL, TRACE
      */
     public static void setLevel(String level) {
         if (level == null) {
@@ -123,25 +129,19 @@ public class Log implements Serializable {
 
         level = level.toUpperCase();
         if (level.equals("INFO")) {
-            logger.setLevel((Level)Level.INFO);
-        }
-        else if (level.equals("WARN")) {
-            logger.setLevel((Level)Level.WARN);
-        }
-        else if (level.equals("DEBUG")) {
-            logger.setLevel((Level)Level.DEBUG);
-        }
-        else if (level.equals("ERROR")) {
-            logger.setLevel((Level)Level.ERROR);
-        }
-        else if (level.equals("FATAL")) {
-            logger.setLevel((Level)Level.FATAL);
-        }
-        else if (level.equals("TRACE")) {
-            logger.setLevel((Level)Level.TRACE);
-        }
-        else if (level.equals("ALL")) {
-            logger.setLevel((Level)Level.ALL);
+            logger.setLevel((Level) Level.INFO);
+        } else if (level.equals("WARN")) {
+            logger.setLevel((Level) Level.WARN);
+        } else if (level.equals("DEBUG")) {
+            logger.setLevel((Level) Level.DEBUG);
+        } else if (level.equals("ERROR")) {
+            logger.setLevel((Level) Level.ERROR);
+        } else if (level.equals("FATAL")) {
+            logger.setLevel((Level) Level.FATAL);
+        } else if (level.equals("TRACE")) {
+            logger.setLevel((Level) Level.TRACE);
+        } else if (level.equals("ALL")) {
+            logger.setLevel((Level) Level.ALL);
         }
 
     }
@@ -149,7 +149,7 @@ public class Log implements Serializable {
     /**
      * Logs a message at log level INFO.
      *
-     * @param message  the log message.
+     * @param message   the log message.
      * @param throwable the throwable.
      */
     public static void info(Object message, Throwable throwable) {
@@ -162,7 +162,7 @@ public class Log implements Serializable {
     /**
      * Logs a message at log level WARN.
      *
-     * @param message  the log message.
+     * @param message   the log message.
      * @param throwable the throwable.
      */
     public static void warning(Object message, Throwable throwable) {
@@ -175,7 +175,7 @@ public class Log implements Serializable {
     /**
      * Logs a message at log level DEBUG.
      *
-     * @param message  the log message.
+     * @param message the log message.
      */
     public static void debug(Object message) {
         if (logger == null || !logger.isDebugEnabled()) {
@@ -187,7 +187,7 @@ public class Log implements Serializable {
     /**
      * Logs a message at log level DEBUG.
      *
-     * @param message  the log message.
+     * @param message   the log message.
      * @param throwable the throwable.
      */
     public static void debug(Object message, Throwable throwable) {
@@ -200,7 +200,7 @@ public class Log implements Serializable {
     /**
      * Logs a message at log level ERROR.
      *
-     * @param message  the log message.
+     * @param message   the log message.
      * @param throwable the throwable.
      */
     public static void error(Object message, Throwable throwable) {
@@ -215,7 +215,7 @@ public class Log implements Serializable {
     /**
      * Logs a message at log level INFO.
      *
-     * @param message  the log message.
+     * @param message the log message.
      */
     public static void info(Object message) {
         if (logger == null) {
@@ -227,7 +227,7 @@ public class Log implements Serializable {
     /**
      * Logs a message at log level WARN.
      *
-     * @param message  the log message.
+     * @param message the log message.
      */
     public static void warning(Object message) {
         if (logger == null) {
@@ -239,7 +239,7 @@ public class Log implements Serializable {
     /**
      * Logs a message at log level ERROR.
      *
-     * @param message  the log message.
+     * @param message the log message.
      */
     public static void error(Object message) {
         if (logger == null) {
@@ -254,7 +254,7 @@ public class Log implements Serializable {
      * has been initialised.
      *
      * @return <code>true</code> if initialised |
-     *         <code>false</code> otherwise
+     * <code>false</code> otherwise
      */
     public static boolean isLogEnabled() {
         return logger != null;

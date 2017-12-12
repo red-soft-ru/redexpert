@@ -20,51 +20,60 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Insets;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.underworldlabs.swing.table.ArrowIcon;
 
-/** 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+/**
  * Panel container with a titled border that may be 'collapsed'
  * and 'expanded' to show/hide the panels contents.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class CollapsibleTitledPanel extends JPanel 
-                                    implements ActionListener  {
-    
-    /** the panel border title */
+public class CollapsibleTitledPanel extends JPanel
+        implements ActionListener {
+
+    /**
+     * the panel border title
+     */
     private String title;
-    
-    /** selection button */
+
+    /**
+     * selection button
+     */
     private JButton button;
-    
-    /** indicates the collapsed state */
+
+    /**
+     * indicates the collapsed state
+     */
     private boolean collapsed;
-    
-    /** the collapsed border */
+
+    /**
+     * the collapsed border
+     */
     private CollapsedTitleBorder border;
-    
-    /** the content panel */
+
+    /**
+     * the content panel
+     */
     private JPanel panel;
 
-    /** the normal expanded icon */
+    /**
+     * the normal expanded icon
+     */
     private Icon normalIcon;
-    
-    /** collapsed icon */
+
+    /**
+     * collapsed icon
+     */
     private Icon collapsedIcon;
-    
-    /** Creates a new instance of CollapsibleTitledPanel */
+
+    /**
+     * Creates a new instance of CollapsibleTitledPanel
+     */
     public CollapsibleTitledPanel(String title) {
         super(new BorderLayout());
 
@@ -93,21 +102,21 @@ public class CollapsibleTitledPanel extends JPanel
     public JPanel getContentPane() {
         return panel;
     }
-    
+
     public void doLayout() {
         Insets insets = getInsets();
         Rectangle rect = getBounds();
-        
+
         rect.x = 0;
         rect.y = 0;
 
-        Rectangle compR = border.getComponentRect(rect,insets);
+        Rectangle compR = border.getComponentRect(rect, insets);
         button.setBounds(compR);
 
         rect.x += insets.left;
         rect.y += insets.top;
-        rect.width  -= insets.left + insets.right;
-        rect.height -= insets.top  + insets.bottom;
+        rect.width -= insets.left + insets.right;
+        rect.height -= insets.top + insets.bottom;
         panel.setBounds(rect);
     }
 
@@ -133,7 +142,7 @@ public class CollapsibleTitledPanel extends JPanel
     public void actionPerformed(ActionEvent e) {
         setCollapsed(!isCollapsed());
     }
-    
+
     protected Icon getNormalIcon() {
         if (normalIcon == null) {
             normalIcon = new ArrowIcon(getForeground(), ArrowIcon.DOWN, 12);
@@ -150,11 +159,11 @@ public class CollapsibleTitledPanel extends JPanel
 
     // border drawing just the top line when collapsed
     class CollapsedTitleBorder extends ComponentTitledBorder {
-        
+
         public CollapsedTitleBorder(JComponent component) {
             super(component);
         }
-        
+
         public void paintBorder(Component c, Graphics g,
                                 int x, int y, int width, int height) {
 
@@ -162,11 +171,11 @@ public class CollapsibleTitledPanel extends JPanel
                 super.paintBorder(c, g, x, y, width, height);
                 return;
             }
-            
-            Rectangle borderR = new Rectangle(x +  EDGE_SPACING,
-                                              y +  EDGE_SPACING,
-                                              width - (EDGE_SPACING * 2),
-                                              height - (EDGE_SPACING * 2));
+
+            Rectangle borderR = new Rectangle(x + EDGE_SPACING,
+                    y + EDGE_SPACING,
+                    width - (EDGE_SPACING * 2),
+                    height - (EDGE_SPACING * 2));
             Insets borderInsets;
             if (border != null) {
                 borderInsets = border.getBorderInsets(c);
@@ -178,12 +187,12 @@ public class CollapsibleTitledPanel extends JPanel
             Insets insets = getBorderInsets(c);
             Rectangle compR = getComponentRect(rect, insets);
 
-            int diff = insets.top/2 - borderInsets.top - EDGE_SPACING;
+            int diff = insets.top / 2 - borderInsets.top - EDGE_SPACING;
             borderR.y += diff;
             borderR.height -= diff;
 
             border.paintBorder(c, g, borderR.x, borderR.y,
-                               borderR.width, 1);
+                    borderR.width, 1);
 
             Color col = g.getColor();
             g.setColor(c.getBackground());
@@ -195,25 +204,26 @@ public class CollapsibleTitledPanel extends JPanel
             }
         }
 
-        
+
     } // class CollapsedTitleBorder
 
-    
+
     // Simple borderless blank button
     class BlankButton extends JButton {
         public BlankButton(String text) {
             super(text);
-            setMargin(new Insets(0,0,0,0));
+            setMargin(new Insets(0, 0, 0, 0));
             setFocusPainted(false);
             setBorderPainted(false);
             setOpaque(true);
             try {
                 setUI(new javax.swing.plaf.basic.BasicButtonUI());
-            } catch (NullPointerException nullExc) {}
+            } catch (NullPointerException nullExc) {
+            }
         }
     } // class BlankButton
 
-    
+
 }
 
 

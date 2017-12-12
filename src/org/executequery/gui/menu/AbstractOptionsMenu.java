@@ -20,22 +20,19 @@
 
 package org.executequery.gui.menu;
 
-import java.awt.Component;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenuItem;
-
 import org.executequery.Constants;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.UserPreferenceEvent;
 import org.underworldlabs.swing.menu.MainMenu;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
+import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public abstract class AbstractOptionsMenu extends MainMenu {
 
@@ -43,7 +40,7 @@ public abstract class AbstractOptionsMenu extends MainMenu {
 
     public AbstractOptionsMenu() {
 
-        menuItems = new HashMap<String, JMenuItem>();        
+        menuItems = new HashMap<String, JMenuItem>();
     }
 
     public final Component add(Component c) {
@@ -56,7 +53,7 @@ public abstract class AbstractOptionsMenu extends MainMenu {
     public final JMenuItem add(JMenuItem menuItem) {
 
         initialiseComponent(menuItem);
-        
+
         return super.add(menuItem);
     }
 
@@ -64,12 +61,12 @@ public abstract class AbstractOptionsMenu extends MainMenu {
 
         if (component instanceof JCheckBoxMenuItem) {
 
-            JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)component;
-            
+            JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) component;
+
             addActionForMenuItem(menuItem);
-            
-            setMenuItemValue((JCheckBoxMenuItem)menuItem);
-            
+
+            setMenuItemValue((JCheckBoxMenuItem) menuItem);
+
             menuItems.put(menuItem.getActionCommand(), menuItem);
         }
     }
@@ -82,19 +79,19 @@ public abstract class AbstractOptionsMenu extends MainMenu {
     public void preferencesChanged(UserPreferenceEvent event) {
 
         if (listeningForEvent(event)) {
-            
+
             for (JMenuItem menuItem : menuItems.values()) {
-                
+
                 if (menuItem instanceof JCheckBoxMenuItem) {
-                    
-                    setMenuItemValue((JCheckBoxMenuItem)menuItem);
-                    
+
+                    setMenuItemValue((JCheckBoxMenuItem) menuItem);
+
                 }
-                
+
             }
-            
+
         }
-        
+
     }
 
     protected final boolean booleanValueForKey(String key) {
@@ -103,21 +100,21 @@ public abstract class AbstractOptionsMenu extends MainMenu {
     }
 
     protected final JMenuItem getMenuItem(String key) {
-        
+
         return menuItems.get(key);
     }
-    
+
     protected final boolean hasMenuItem(String key) {
-        
+
         return menuItems.containsKey(key);
     }
-    
+
     protected abstract void setMenuItemValue(JCheckBoxMenuItem menuItem);
 
     protected abstract void addActionForMenuItem(JCheckBoxMenuItem menuItem);
 
     protected abstract boolean listeningForEvent(UserPreferenceEvent event);
-    
+
 }
 
 

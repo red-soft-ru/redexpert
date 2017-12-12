@@ -20,31 +20,27 @@
 
 package org.executequery.gui.databaseobjects;
 
-import java.awt.Point;
+import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.impl.DatabaseTableColumn;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
+
+import javax.swing.*;
+import javax.swing.table.TableCellEditor;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JTextField;
-import javax.swing.table.TableCellEditor;
-
-import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseTable;
-import org.executequery.databaseobjects.impl.DatabaseTableColumn;
-import org.executequery.gui.BaseDialog;
-import org.executequery.gui.table.InsertColumnPanel;
-import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.MiscUtils;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class EditableDatabaseTable extends DefaultDatabaseObjectTable
-                                   implements KeyListener {
+        implements KeyListener {
 
-    /** Creates a new instance of EditableDatabaseTable */
+    /**
+     * Creates a new instance of EditableDatabaseTable
+     */
     public EditableDatabaseTable() {
         super();
         getDatabaseTableModel().setEditable(false);
@@ -52,7 +48,9 @@ public class EditableDatabaseTable extends DefaultDatabaseObjectTable
         //addMouseListener(new MouseHandler());
     }
 
-    /** Sets listeners on respective column cell editors. */
+    /**
+     * Sets listeners on respective column cell editors.
+     */
     protected void setCellEditorListeners() {
 
         // interested in string and int editors
@@ -66,7 +64,7 @@ public class EditableDatabaseTable extends DefaultDatabaseObjectTable
                 DefaultCellEditor defaultCellEditor = (DefaultCellEditor) cellEditor;
                 if (defaultCellEditor.getComponent() instanceof JTextField) {
 
-                    ((JTextField)defaultCellEditor.getComponent()).addKeyListener(this);
+                    ((JTextField) defaultCellEditor.getComponent()).addKeyListener(this);
                 }
 
             }
@@ -130,7 +128,7 @@ public class EditableDatabaseTable extends DefaultDatabaseObjectTable
         }
 
         DatabaseObjectTableModel _model = getDatabaseTableModel();
-        DatabaseTableColumn column = (DatabaseTableColumn)_model.getValueAt(selectedRow, 0);
+        DatabaseTableColumn column = (DatabaseTableColumn) _model.getValueAt(selectedRow, 0);
 
         // if its a new column - just remove it
         if (column.isNewColumn()) {
@@ -152,7 +150,8 @@ public class EditableDatabaseTable extends DefaultDatabaseObjectTable
     public void resetDatabaseTable() {
         try {
             setDatabaseTable(null);
-        } catch (DataSourceException e) {}
+        } catch (DataSourceException e) {
+        }
     }
 
     /**
@@ -191,8 +190,8 @@ public class EditableDatabaseTable extends DefaultDatabaseObjectTable
      * column has changed to the specified value and notifies the
      * table model.
      *
-     * @param row the table row edited
-     * @param col the table column edited
+     * @param row   the table row edited
+     * @param col   the table column edited
      * @param value the value to be set
      */
     public void tableChanged(int row, int col, Object value) {
@@ -203,12 +202,14 @@ public class EditableDatabaseTable extends DefaultDatabaseObjectTable
      * Invoked when a key has been typed.
      * This event occurs when a key press is followed by a key release.
      */
-    public void keyTyped(KeyEvent e) {}
+    public void keyTyped(KeyEvent e) {
+    }
 
     /**
      * Invoked when a key has been pressed.
      */
-    public void keyPressed(KeyEvent e) {}
+    public void keyPressed(KeyEvent e) {
+    }
 
     /**
      * Mouse adapter class to handle click events within

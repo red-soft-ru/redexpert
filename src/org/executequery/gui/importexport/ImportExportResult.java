@@ -29,15 +29,15 @@ enum ImportExportResult {
     public static boolean isSuccess(ImportExportResult importExportResult) {
         return importExportResult == SUCCESS;
     }
-    
+
     public static boolean isCancelled(ImportExportResult importExportResult) {
         return importExportResult == CANCELLED;
     }
-    
+
     public static boolean isFailed(ImportExportResult importExportResult) {
         return importExportResult == FAILED;
     }
-    
+
 }
 
 

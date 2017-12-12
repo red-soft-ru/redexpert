@@ -20,87 +20,88 @@
 
 package org.underworldlabs.swing.plaf.bumpygradient;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Insets;
-import java.awt.LayoutManager;
-import java.awt.LayoutManager2;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.Window;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseEvent;
-
-import java.beans.PropertyChangeEvent;
-
-import javax.swing.JComponent;
-import javax.swing.JLayeredPane;
-import javax.swing.JRootPane;
-import javax.swing.LookAndFeel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicRootPaneUI;
+import java.awt.*;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
 
 // Modified to inlcude the PolishedTitlePane instead of MetalTitlePane.
 // Except for those references, all other code is the same as for MetalRootPaneUI
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
-    
-    /** Keys to lookup borders in defaults table. */
-    private static final String[] borderKeys = new String[] {
-        null, "RootPane.frameBorder", "RootPane.plainDialogBorder",
-                "RootPane.informationDialogBorder",
-                "RootPane.errorDialogBorder", "RootPane.colorChooserDialogBorder",
-                "RootPane.fileChooserDialogBorder", "RootPane.questionDialogBorder",
-                "RootPane.warningDialogBorder"
+
+    /**
+     * Keys to lookup borders in defaults table.
+     */
+    private static final String[] borderKeys = new String[]{
+            null, "RootPane.frameBorder", "RootPane.plainDialogBorder",
+            "RootPane.informationDialogBorder",
+            "RootPane.errorDialogBorder", "RootPane.colorChooserDialogBorder",
+            "RootPane.fileChooserDialogBorder", "RootPane.questionDialogBorder",
+            "RootPane.warningDialogBorder"
     };
-    
-    /** The amount of space (in pixels) that the cursor is changed on. */
+
+    /**
+     * The amount of space (in pixels) that the cursor is changed on.
+     */
     private static final int CORNER_DRAG_WIDTH = 16;
-    
-    /** Region from edges that dragging is active from. */
+
+    /**
+     * Region from edges that dragging is active from.
+     */
     private static final int BORDER_DRAG_THICKNESS = 5;
-    
-    /** Window the <code>JRootPane</code> is in. */
+
+    /**
+     * Window the <code>JRootPane</code> is in.
+     */
     private Window window;
-    
-    /** <code>JComponent</code> providing window decorations. This will be
-     *  null if not providing window decorations. */
+
+    /**
+     * <code>JComponent</code> providing window decorations. This will be
+     * null if not providing window decorations.
+     */
     private JComponent titlePane;
-    
-    /** <code>MouseInputListener</code> that is added to the parent
-     *  <code>Window</code> the <code>JRootPane</code> is contained in. */
+
+    /**
+     * <code>MouseInputListener</code> that is added to the parent
+     * <code>Window</code> the <code>JRootPane</code> is contained in.
+     */
     private MouseInputListener mouseInputListener;
-    
-    /** The <code>LayoutManager</code> that is set on the <code>JRootPane</code>. */
+
+    /**
+     * The <code>LayoutManager</code> that is set on the <code>JRootPane</code>.
+     */
     private LayoutManager layoutManager;
-    
-    /** <code>LayoutManager</code> of the <code>JRootPane</code> before we replaced it. */
+
+    /**
+     * <code>LayoutManager</code> of the <code>JRootPane</code> before we replaced it.
+     */
     private LayoutManager savedOldLayout;
-    
-    /** <code>JRootPane</code> providing the look and feel for. */
+
+    /**
+     * <code>JRootPane</code> providing the look and feel for.
+     */
     private JRootPane root;
-    
-    /** <code>Cursor</code> used to track the cursor set by the user.
-     *  This is initially <code>Cursor.DEFAULT_CURSOR</code>. */
+
+    /**
+     * <code>Cursor</code> used to track the cursor set by the user.
+     * This is initially <code>Cursor.DEFAULT_CURSOR</code>.
+     */
     private Cursor lastCursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
-    
+
     /**
      * Creates a UI for a <code>JRootPane</code>.
      *
@@ -110,7 +111,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
     public static ComponentUI createUI(JComponent c) {
         return new BumpyGradientRootPaneUI();
     }
-    
+
     /**
      * Invokes supers implementation of <code>installUI</code> to install
      * the necessary state onto the passed in <code>JRootPane</code>
@@ -127,14 +128,14 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
      */
     public void installUI(JComponent c) {
         super.installUI(c);
-        root = (JRootPane)c;
+        root = (JRootPane) c;
         int style = root.getWindowDecorationStyle();
         if (style != JRootPane.NONE) {
             installClientDecorations(root);
         }
     }
-    
-    
+
+
     /**
      * Invokes supers implementation to uninstall any of its state. This will
      * also reset the <code>LayoutManager</code> of the <code>JRootPane</code>.
@@ -149,33 +150,33 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
     public void uninstallUI(JComponent c) {
         super.uninstallUI(c);
         uninstallClientDecorations(root);
-        
+
         layoutManager = null;
         mouseInputListener = null;
         root = null;
     }
-    
+
     /**
      * Installs the appropriate <code>Border</code> onto the
      * <code>JRootPane</code>.
      */
     void installBorder(JRootPane root) {
         int style = root.getWindowDecorationStyle();
-        
+
         if (style == JRootPane.NONE) {
             LookAndFeel.uninstallBorder(root);
         } else {
             LookAndFeel.installBorder(root, borderKeys[style]);
         }
     }
-    
+
     /**
      * Removes any border that may have been installed.
      */
     private void uninstallBorder(JRootPane root) {
         LookAndFeel.uninstallBorder(root);
     }
-    
+
     /**
      * Installs the necessary Listeners on the parent <code>Window</code>,
      * if there is one.
@@ -188,7 +189,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
      */
     private void installWindowListeners(JRootPane root, Component parent) {
         if (parent instanceof Window) {
-            window = (Window)parent;
+            window = (Window) parent;
         } else {
             window = SwingUtilities.getWindowAncestor(parent);
         }
@@ -200,7 +201,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
             window.addMouseMotionListener(mouseInputListener);
         }
     }
-    
+
     /**
      * Uninstalls the necessary Listeners on the <code>Window</code> the
      * Listeners were last installed on.
@@ -211,7 +212,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
             window.removeMouseMotionListener(mouseInputListener);
         }
     }
-    
+
     /**
      * Installs the appropriate LayoutManager on the <code>JRootPane</code>
      * to render the window decorations.
@@ -223,7 +224,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
         savedOldLayout = root.getLayout();
         root.setLayout(layoutManager);
     }
-    
+
     /**
      * Uninstalls the previously installed <code>LayoutManager</code>.
      */
@@ -233,7 +234,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
             savedOldLayout = null;
         }
     }
-    
+
     /**
      * Installs the necessary state onto the JRootPane to render client
      * decorations. This is ONLY invoked if the <code>JRootPane</code>
@@ -241,9 +242,9 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
      */
     private void installClientDecorations(JRootPane root) {
         installBorder(root);
-        
+
         JComponent titlePane = createTitlePane(root);
-        
+
         setTitlePane(root, titlePane);
         installWindowListeners(root, root.getParent());
         installLayout(root);
@@ -252,7 +253,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
             root.repaint();
         }
     }
-    
+
     /**
      * Uninstalls any state that <code>installClientDecorations</code> has
      * installed.
@@ -282,7 +283,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
         }
         window = null;
     }
-    
+
     /**
      * Returns the <code>JComponent</code> to render the window decoration
      * style.
@@ -290,7 +291,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
     private JComponent createTitlePane(JRootPane root) {
         return new BumpyGradientTitlePane(root, this);
     }
-    
+
     /**
      * Returns a <code>MouseListener</code> that will be added to the
      * <code>Window</code> containing the <code>JRootPane</code>.
@@ -298,7 +299,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
     private MouseInputListener createWindowMouseInputListener(JRootPane root) {
         return new MouseInputHandler();
     }
-    
+
     /**
      * Returns a <code>LayoutManager</code> that will be set on the
      * <code>JRootPane</code>.
@@ -306,7 +307,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
     private LayoutManager createLayoutManager() {
         return new MetalRootLayout();
     }
-    
+
     /**
      * Sets the window title pane -- the JComponent used to provide a plaf a
      * way to override the native operating system's window title pane with
@@ -319,7 +320,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
     private void setTitlePane(JRootPane root, JComponent titlePane) {
         JLayeredPane layeredPane = root.getLayeredPane();
         JComponent oldTitlePane = getTitlePane();
-        
+
         if (oldTitlePane != null) {
             oldTitlePane.setVisible(false);
             layeredPane.remove(oldTitlePane);
@@ -330,7 +331,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
         }
         this.titlePane = titlePane;
     }
-    
+
     /**
      * Returns the <code>JComponent</code> rendering the title pane. If this
      * returns null, it implies there is no need to render window decorations.
@@ -341,7 +342,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
     private JComponent getTitlePane() {
         return titlePane;
     }
-    
+
     /**
      * Returns the <code>JRootPane</code> we're providing the look and
      * feel for.
@@ -349,7 +350,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
     private JRootPane getRootPane() {
         return root;
     }
-    
+
     /**
      * Invoked when a property changes. <code>PolishedRootPaneUI</code> is
      * primarily interested in events originating from the
@@ -370,16 +371,16 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
      */
     public void propertyChange(PropertyChangeEvent e) {
         super.propertyChange(e);
-        
+
         String propertyName = e.getPropertyName();
-        if(propertyName == null) {
+        if (propertyName == null) {
             return;
         }
-        
-        if(propertyName.equals("windowDecorationStyle")) {
+
+        if (propertyName.equals("windowDecorationStyle")) {
             JRootPane root = (JRootPane) e.getSource();
             int style = root.getWindowDecorationStyle();
-            
+
             // This is potentially more than needs to be done,
             // but it rarely happens and makes the install/uninstall process
             // simpler. MetalTitlePane also assumes it will be recreated if
@@ -390,14 +391,14 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
             }
         } else if (propertyName.equals("ancestor")) {
             uninstallWindowListeners(root);
-            if (((JRootPane)e.getSource()).getWindowDecorationStyle() !=
+            if (((JRootPane) e.getSource()).getWindowDecorationStyle() !=
                     JRootPane.NONE) {
                 installWindowListeners(root, root.getParent());
             }
         }
         return;
     }
-    
+
     /**
      * A custom layout manager that is responsible for the layout of
      * layeredPane, glassPane, menuBar and titlePane, if one has been
@@ -422,8 +423,8 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
             int tpHeight = 0;
             Insets i = parent.getInsets();
             JRootPane root = (JRootPane) parent;
-            
-            if(root.getContentPane() != null) {
+
+            if (root.getContentPane() != null) {
                 cpd = root.getContentPane().getPreferredSize();
             } else {
                 cpd = root.getSize();
@@ -432,18 +433,18 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
                 cpWidth = cpd.width;
                 cpHeight = cpd.height;
             }
-            
-            if(root.getJMenuBar() != null) {
+
+            if (root.getJMenuBar() != null) {
                 mbd = root.getJMenuBar().getPreferredSize();
                 if (mbd != null) {
                     mbWidth = mbd.width;
                     mbHeight = mbd.height;
                 }
             }
-            
+
             if (root.getWindowDecorationStyle() != JRootPane.NONE &&
                     (root.getUI() instanceof BumpyGradientRootPaneUI)) {
-                JComponent titlePane = ((BumpyGradientRootPaneUI)root.getUI()).
+                JComponent titlePane = ((BumpyGradientRootPaneUI) root.getUI()).
                         getTitlePane();
                 if (titlePane != null) {
                     tpd = titlePane.getPreferredSize();
@@ -453,11 +454,11 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
                     }
                 }
             }
-            
+
             return new Dimension(Math.max(Math.max(cpWidth, mbWidth), tpWidth) + i.left + i.right,
                     cpHeight + mbHeight + tpWidth + i.top + i.bottom);
         }
-        
+
         /**
          * Returns the minimum amount of space the layout needs.
          *
@@ -474,8 +475,8 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
             int tpHeight = 0;
             Insets i = parent.getInsets();
             JRootPane root = (JRootPane) parent;
-            
-            if(root.getContentPane() != null) {
+
+            if (root.getContentPane() != null) {
                 cpd = root.getContentPane().getMinimumSize();
             } else {
                 cpd = root.getSize();
@@ -484,8 +485,8 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
                 cpWidth = cpd.width;
                 cpHeight = cpd.height;
             }
-            
-            if(root.getJMenuBar() != null) {
+
+            if (root.getJMenuBar() != null) {
                 mbd = root.getJMenuBar().getMinimumSize();
                 if (mbd != null) {
                     mbWidth = mbd.width;
@@ -494,7 +495,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
             }
             if (root.getWindowDecorationStyle() != JRootPane.NONE &&
                     (root.getUI() instanceof BumpyGradientRootPaneUI)) {
-                JComponent titlePane = ((BumpyGradientRootPaneUI)root.getUI()).
+                JComponent titlePane = ((BumpyGradientRootPaneUI) root.getUI()).
                         getTitlePane();
                 if (titlePane != null) {
                     tpd = titlePane.getMinimumSize();
@@ -504,11 +505,11 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
                     }
                 }
             }
-            
+
             return new Dimension(Math.max(Math.max(cpWidth, mbWidth), tpWidth) + i.left + i.right,
                     cpHeight + mbHeight + tpWidth + i.top + i.bottom);
         }
-        
+
         /**
          * Returns the maximum amount of space the layout can use.
          *
@@ -525,26 +526,26 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
             int tpHeight = Integer.MAX_VALUE;
             Insets i = target.getInsets();
             JRootPane root = (JRootPane) target;
-            
-            if(root.getContentPane() != null) {
+
+            if (root.getContentPane() != null) {
                 cpd = root.getContentPane().getMaximumSize();
                 if (cpd != null) {
                     cpWidth = cpd.width;
                     cpHeight = cpd.height;
                 }
             }
-            
-            if(root.getJMenuBar() != null) {
+
+            if (root.getJMenuBar() != null) {
                 mbd = root.getJMenuBar().getMaximumSize();
                 if (mbd != null) {
                     mbWidth = mbd.width;
                     mbHeight = mbd.height;
                 }
             }
-            
+
             if (root.getWindowDecorationStyle() != JRootPane.NONE &&
                     (root.getUI() instanceof BumpyGradientRootPaneUI)) {
-                JComponent titlePane = ((BumpyGradientRootPaneUI)root.getUI()).
+                JComponent titlePane = ((BumpyGradientRootPaneUI) root.getUI()).
                         getTitlePane();
                 if (titlePane != null) {
                     tpd = titlePane.getMaximumSize();
@@ -554,23 +555,23 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
                     }
                 }
             }
-            
+
             int maxHeight = Math.max(Math.max(cpHeight, mbHeight), tpHeight);
             // Only overflows if 3 real non-MAX_VALUE heights, sum to > MAX_VALUE
             // Only will happen if sums to more than 2 billion units.  Not likely.
             if (maxHeight != Integer.MAX_VALUE) {
                 maxHeight = cpHeight + mbHeight + tpHeight + i.top + i.bottom;
             }
-            
+
             int maxWidth = Math.max(Math.max(cpWidth, mbWidth), tpWidth);
             // Similar overflow comment as above
             if (maxWidth != Integer.MAX_VALUE) {
                 maxWidth += i.left + i.right;
             }
-            
+
             return new Dimension(maxWidth, maxHeight);
         }
-        
+
         /**
          * Instructs the layout manager to perform the layout for the specified
          * container.
@@ -584,18 +585,18 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
             int nextY = 0;
             int w = b.width - i.right - i.left;
             int h = b.height - i.top - i.bottom;
-            
-            if(root.getLayeredPane() != null) {
+
+            if (root.getLayeredPane() != null) {
                 root.getLayeredPane().setBounds(i.left, i.top, w, h);
             }
-            if(root.getGlassPane() != null) {
+            if (root.getGlassPane() != null) {
                 root.getGlassPane().setBounds(i.left, i.top, w, h);
             }
             // Note: This is laying out the children in the layeredPane,
             // technically, these are not our children.
             if (root.getWindowDecorationStyle() != JRootPane.NONE &&
                     (root.getUI() instanceof BumpyGradientRootPaneUI)) {
-                JComponent titlePane = ((BumpyGradientRootPaneUI)root.getUI()).
+                JComponent titlePane = ((BumpyGradientRootPaneUI) root.getUI()).
                         getTitlePane();
                 if (titlePane != null) {
                     Dimension tpd = titlePane.getPreferredSize();
@@ -606,40 +607,53 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
                     }
                 }
             }
-            if(root.getJMenuBar() != null) {
+            if (root.getJMenuBar() != null) {
                 Dimension mbd = root.getJMenuBar().getPreferredSize();
                 root.getJMenuBar().setBounds(0, nextY, w, mbd.height);
                 nextY += mbd.height;
             }
-            if(root.getContentPane() != null) {
+            if (root.getContentPane() != null) {
                 root.getContentPane().setBounds(0, nextY, w,
                         h < nextY ? 0 : h - nextY);
             }
         }
-        
-        public void addLayoutComponent(String name, Component comp) {}
-        public void removeLayoutComponent(Component comp) {}
-        public void addLayoutComponent(Component comp, Object constraints) {}
-        public float getLayoutAlignmentX(Container target) { return 0.0f; }
-        public float getLayoutAlignmentY(Container target) { return 0.0f; }
-        public void invalidateLayout(Container target) {}
+
+        public void addLayoutComponent(String name, Component comp) {
+        }
+
+        public void removeLayoutComponent(Component comp) {
+        }
+
+        public void addLayoutComponent(Component comp, Object constraints) {
+        }
+
+        public float getLayoutAlignmentX(Container target) {
+            return 0.0f;
+        }
+
+        public float getLayoutAlignmentY(Container target) {
+            return 0.0f;
+        }
+
+        public void invalidateLayout(Container target) {
+        }
     }
-    
-    
+
+
     /**
      * Maps from positions to cursor type. Refer to calculateCorner and
      * calculatePosition for details of this.
      */
     private static final int[] cursorMapping = new int[]
-    { Cursor.NW_RESIZE_CURSOR, Cursor.NW_RESIZE_CURSOR, Cursor.N_RESIZE_CURSOR,
-              Cursor.NE_RESIZE_CURSOR, Cursor.NE_RESIZE_CURSOR,
-              Cursor.NW_RESIZE_CURSOR, 0, 0, 0, Cursor.NE_RESIZE_CURSOR,
-              Cursor.W_RESIZE_CURSOR, 0, 0, 0, Cursor.E_RESIZE_CURSOR,
-              Cursor.SW_RESIZE_CURSOR, 0, 0, 0, Cursor.SE_RESIZE_CURSOR,
-              Cursor.SW_RESIZE_CURSOR, Cursor.SW_RESIZE_CURSOR, Cursor.S_RESIZE_CURSOR,
-              Cursor.SE_RESIZE_CURSOR, Cursor.SE_RESIZE_CURSOR
-    };
-    
+            {Cursor.NW_RESIZE_CURSOR, Cursor.NW_RESIZE_CURSOR, Cursor.N_RESIZE_CURSOR,
+                    Cursor.NE_RESIZE_CURSOR, Cursor.NE_RESIZE_CURSOR,
+                    Cursor.NW_RESIZE_CURSOR, 0, 0, 0, Cursor.NE_RESIZE_CURSOR,
+                    Cursor.W_RESIZE_CURSOR, 0, 0, 0, Cursor.E_RESIZE_CURSOR,
+                    Cursor.SW_RESIZE_CURSOR, 0, 0, 0, Cursor.SE_RESIZE_CURSOR,
+                    Cursor.SW_RESIZE_CURSOR, Cursor.SW_RESIZE_CURSOR, Cursor.S_RESIZE_CURSOR,
+                    Cursor.SE_RESIZE_CURSOR, Cursor.SE_RESIZE_CURSOR
+            };
+
     /**
      * MouseInputHandler is responsible for handling resize/moving of
      * the Window. It sets the cursor directly on the Window when then
@@ -650,63 +664,63 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
          * Set to true if the drag operation is moving the window.
          */
         private boolean isMovingWindow;
-        
+
         /**
          * Used to determine the corner the resize is occuring from.
          */
         private int dragCursor;
-        
+
         /**
          * X location the mouse went down on for a drag operation.
          */
         private int dragOffsetX;
-        
+
         /**
          * Y location the mouse went down on for a drag operation.
          */
         private int dragOffsetY;
-        
+
         /**
          * Width of the window when the drag started.
          */
         private int dragWidth;
-        
+
         /**
          * Height of the window when the drag started.
          */
         private int dragHeight;
-        
-        
+
+
         public void mousePressed(MouseEvent ev) {
             JRootPane rootPane = getRootPane();
-            
+
             if (rootPane.getWindowDecorationStyle() == JRootPane.NONE) {
                 return;
             }
             Point dragWindowOffset = ev.getPoint();
-            Window w = (Window)ev.getSource();
+            Window w = (Window) ev.getSource();
             if (w != null) {
                 w.toFront();
             }
             Point convertedDragWindowOffset = SwingUtilities.convertPoint(
                     w, dragWindowOffset, getTitlePane());
-            
+
             Frame f = null;
             Dialog d = null;
-            
+
             if (w instanceof Frame) {
-                f = (Frame)w;
+                f = (Frame) w;
             } else if (w instanceof Dialog) {
-                d = (Dialog)w;
+                d = (Dialog) w;
             }
-            
+
             int frameState = (f != null) ? f.getExtendedState() : 0;
-            
+
             if (getTitlePane() != null &&
                     getTitlePane().contains(convertedDragWindowOffset)) {
                 if ((f != null && ((frameState & Frame.MAXIMIZED_BOTH) == 0)
-                || (d != null))
-                && dragWindowOffset.y >= BORDER_DRAG_THICKNESS
+                        || (d != null))
+                        && dragWindowOffset.y >= BORDER_DRAG_THICKNESS
                         && dragWindowOffset.x >= BORDER_DRAG_THICKNESS
                         && dragWindowOffset.x < w.getWidth()
                         - BORDER_DRAG_THICKNESS) {
@@ -715,8 +729,8 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
                     dragOffsetY = dragWindowOffset.y;
                 }
             } else if (f != null && f.isResizable()
-            && ((frameState & Frame.MAXIMIZED_BOTH) == 0)
-            || (d != null && d.isResizable())) {
+                    && ((frameState & Frame.MAXIMIZED_BOTH) == 0)
+                    || (d != null && d.isResizable())) {
                 dragOffsetX = dragWindowOffset.x;
                 dragOffsetY = dragWindowOffset.y;
                 dragWidth = w.getWidth();
@@ -725,7 +739,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
                         w, dragWindowOffset.x, dragWindowOffset.y));
             }
         }
-        
+
         public void mouseReleased(MouseEvent ev) {
             if (dragCursor != 0 && window != null && !window.isValid()) {
                 // Some Window systems validate as you resize, others won't,
@@ -736,28 +750,28 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
             isMovingWindow = false;
             dragCursor = 0;
         }
-        
+
         public void mouseMoved(MouseEvent ev) {
             JRootPane root = getRootPane();
-            
+
             if (root.getWindowDecorationStyle() == JRootPane.NONE) {
                 return;
             }
-            
-            Window w = (Window)ev.getSource();
-            
+
+            Window w = (Window) ev.getSource();
+
             Frame f = null;
             Dialog d = null;
-            
+
             if (w instanceof Frame) {
-                f = (Frame)w;
+                f = (Frame) w;
             } else if (w instanceof Dialog) {
-                d = (Dialog)w;
+                d = (Dialog) w;
             }
-            
+
             // Update the cursor
             int cursor = getCursor(calculateCorner(w, ev.getX(), ev.getY()));
-            
+
             if (cursor != 0 && ((f != null && (f.isResizable() &&
                     (f.getExtendedState() & Frame.MAXIMIZED_BOTH) == 0))
                     || (d != null && d.isResizable()))) {
@@ -766,9 +780,9 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
                 w.setCursor(lastCursor);
             }
         }
-        
+
         private void adjust(Rectangle bounds, Dimension min, int deltaX,
-                int deltaY, int deltaWidth, int deltaHeight) {
+                            int deltaY, int deltaWidth, int deltaHeight) {
             bounds.x += deltaX;
             bounds.y += deltaY;
             bounds.width += deltaWidth;
@@ -790,14 +804,14 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
                 }
             }
         }
-        
+
         public void mouseDragged(MouseEvent ev) {
-            Window w = (Window)ev.getSource();
+            Window w = (Window) ev.getSource();
             Point pt = ev.getPoint();
-            
+
             if (isMovingWindow) {
                 Point windowPt = w.getLocationOnScreen();
-                
+
                 windowPt.x += pt.x - dragOffsetX;
                 windowPt.y += pt.y - dragOffsetY;
                 w.setLocation(windowPt);
@@ -805,7 +819,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
                 Rectangle r = w.getBounds();
                 Rectangle startBounds = new Rectangle(r);
                 Dimension min = w.getMinimumSize();
-                
+
                 switch (dragCursor) {
                     case Cursor.E_RESIZE_CURSOR:
                         adjust(r, min, 0, 0, pt.x + (dragWidth - dragOffsetX) -
@@ -816,7 +830,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
                                 r.height);
                         break;
                     case Cursor.N_RESIZE_CURSOR:
-                        adjust(r, min, 0, pt.y -dragOffsetY, 0,
+                        adjust(r, min, 0, pt.y - dragOffsetY, 0,
                                 -(pt.y - dragOffsetY));
                         break;
                     case Cursor.W_RESIZE_CURSOR:
@@ -832,7 +846,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
                         adjust(r, min, 0, 0,
                                 pt.x + (dragWidth - dragOffsetX) - r.width,
                                 pt.y + (dragHeight - dragOffsetY) -
-                                r.height);
+                                        r.height);
                         break;
                     case Cursor.NW_RESIZE_CURSOR:
                         adjust(r, min, pt.x - dragOffsetX,
@@ -859,31 +873,31 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
                 }
             }
         }
-        
+
         public void mouseEntered(MouseEvent ev) {
-            Window w = (Window)ev.getSource();
+            Window w = (Window) ev.getSource();
             lastCursor = w.getCursor();
             mouseMoved(ev);
         }
-        
+
         public void mouseExited(MouseEvent ev) {
-            Window w = (Window)ev.getSource();
+            Window w = (Window) ev.getSource();
             w.setCursor(lastCursor);
         }
-        
+
         public void mouseClicked(MouseEvent ev) {
-            Window w = (Window)ev.getSource();
+            Window w = (Window) ev.getSource();
             Frame f = null;
-            
+
             if (w instanceof Frame) {
-                f = (Frame)w;
+                f = (Frame) w;
             } else {
                 return;
             }
-            
+
             Point convertedPoint = SwingUtilities.convertPoint(
                     w, ev.getPoint(), getTitlePane());
-            
+
             int state = f.getExtendedState();
             if (getTitlePane() != null &&
                     getTitlePane().contains(convertedPoint)) {
@@ -900,7 +914,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
                 }
             }
         }
-        
+
         /**
          * Returns the corner that contains the point <code>x</code>,
          * <code>y</code>, or -1 if the position doesn't match a corner.
@@ -908,13 +922,13 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
         private int calculateCorner(Component c, int x, int y) {
             int xPosition = calculatePosition(x, c.getWidth());
             int yPosition = calculatePosition(y, c.getHeight());
-            
+
             if (xPosition == -1 || yPosition == -1) {
                 return -1;
             }
             return yPosition * 5 + xPosition;
         }
-        
+
         /**
          * Returns the Cursor to render for the specified corner. This returns
          * 0 if the corner doesn't map to a valid Cursor
@@ -925,7 +939,7 @@ public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
             }
             return cursorMapping[corner];
         }
-        
+
         /**
          * Returns an integer indicating the position of <code>spot</code>
          * in <code>width</code>. The return value will be:

@@ -20,9 +20,6 @@
 
 package org.executequery.listeners;
 
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-
 import org.executequery.GUIUtilities;
 import org.executequery.event.UserPreferenceEvent;
 import org.executequery.event.UserPreferenceListener;
@@ -34,11 +31,13 @@ import org.executequery.gui.keywords.KeywordsDockedPanel;
 import org.executequery.gui.sqlstates.SQLStateCodesDockedPanel;
 import org.executequery.repository.UserLayoutProperties;
 
+import javax.swing.*;
+
 public class PreferencesChangesListener extends AbstractUserPreferenceListener
-                                       implements UserPreferenceListener {
+        implements UserPreferenceListener {
 
     private final UserLayoutProperties layoutProperties;
-    
+
     public PreferencesChangesListener(UserLayoutProperties layoutProperties) {
 
         super();
@@ -48,28 +47,28 @@ public class PreferencesChangesListener extends AbstractUserPreferenceListener
     public void preferencesChanged(UserPreferenceEvent event) {
 
         if (event.getEventType() == UserPreferenceEvent.ALL) {
-            
+
             for (String key : dockedPanelKeysArray()) {
 
                 layoutProperties.setDockedPaneVisible(
-                       key, 
-                       systemUserBooleanProperty(key), 
-                       false);
+                        key,
+                        systemUserBooleanProperty(key),
+                        false);
             }
 
             applyComponentLookAndFeel();
-            
+
             GUIUtilities.setDockedTabViews(true);
-            
+
             layoutProperties.save();
-            
+
         }
-        
+
     }
 
     private String[] dockedPanelKeysArray() {
 
-        return new String[] {
+        return new String[]{
                 ConnectionsTreePanel.PROPERTY_KEY,
                 DriversTreePanel.PROPERTY_KEY,
                 KeywordsDockedPanel.PROPERTY_KEY,
@@ -85,7 +84,7 @@ public class PreferencesChangesListener extends AbstractUserPreferenceListener
 
         JFrame.setDefaultLookAndFeelDecorated(
                 systemUserBooleanProperty("decorate.frame.look"));
-        
+
     }
 
 }

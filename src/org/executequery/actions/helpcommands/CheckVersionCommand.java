@@ -20,23 +20,23 @@
 
 package org.executequery.actions.helpcommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.CheckForUpdateNotifier;
 import org.underworldlabs.swing.actions.BaseCommand;
 
+import java.awt.event.ActionEvent;
+
 /**
- * Checks to see if a newer version of Execute Query is available. 
- * 
- * @author   Takis Diakoumis
+ * Checks to see if a newer version of Execute Query is available.
+ *
+ * @author Takis Diakoumis
  */
 public class CheckVersionCommand implements BaseCommand {
-    
+
     public void execute(ActionEvent e) {
 
         new CheckForUpdateNotifier().checkForUpdate(true);
     }
-    
+
 }
 
 

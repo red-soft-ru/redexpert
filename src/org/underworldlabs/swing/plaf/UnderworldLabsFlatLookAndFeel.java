@@ -20,22 +20,22 @@
 
 package org.underworldlabs.swing.plaf;
 
-import javax.swing.UIDefaults;
-
 import org.underworldlabs.swing.plaf.smoothgradient.SmoothGradientLookAndFeel;
+
+import javax.swing.*;
 
 /**
  * Themed extension to SmoothGradientLookAndFeel.
  *
- * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+ * @author Takis Diakoumis
+ * @version $Revision$
+ * @date $Date$
  */
 public class UnderworldLabsFlatLookAndFeel extends SmoothGradientLookAndFeel {
-    
+
     public UnderworldLabsFlatLookAndFeel() {
-        
-        setCurrentTheme(bluerpleTheme());        
+
+        setCurrentTheme(bluerpleTheme());
     }
 
     private BluerpleTheme bluerpleTheme() {
@@ -44,8 +44,9 @@ public class UnderworldLabsFlatLookAndFeel extends SmoothGradientLookAndFeel {
             public void addCustomEntriesToTable(UIDefaults table) {
 
                 super.addCustomEntriesToTable(table);
-                table.put("MenuBar.gradient", null); 
+                table.put("MenuBar.gradient", null);
             }
+
             @Override
             public int getDefaultFontSize() {
 
@@ -53,55 +54,55 @@ public class UnderworldLabsFlatLookAndFeel extends SmoothGradientLookAndFeel {
             }
         };
     }
-    
+
     public String getName() {
-        
+
         return "Default UnderworldLabs Flat Look and Feel with the default Bluerple Theme";
     }
-    
+
     public String getDescription() {
-        
+
         return "Themed extension to Smooth Gradient Look and Feel - modified from " +
                 "The JGoodies Plastic Look and Feel";
     }
-    
+
     protected void initClassDefaults(UIDefaults table) {
-        
+
         super.initClassDefaults(table);
-        
+
         Object[] uiDefaults = {
-            "ButtonUI", "javax.swing.plaf.metal.MetalButtonUI",
+                "ButtonUI", "javax.swing.plaf.metal.MetalButtonUI",
         };
-        
+
         table.putDefaults(uiDefaults);
     }
 
     @Override
     protected void initComponentDefaults(UIDefaults table) {
 
-    	if (UIUtils.isMac()) {
-    		
-    		// TODO: !!! apply mac key bindings - delegate to new class and use across all!!!
-    		// fukin' macs!
-    		
-    		// wee average but minor reference here:
-    		// http://lists.apple.com/archives/java-dev/2008/Apr/msg00209.html
-    		
-    	}
-    	
-    	super.initComponentDefaults(table);
+        if (UIUtils.isMac()) {
 
-    	Boolean is3D = Boolean.FALSE;
-    	Object[] defaults = {
-            "Button.is3DEnabled",           is3D,
-            "ComboBox.is3DEnabled",         is3D,
-            "ScrollBar.is3DEnabled",        is3D,
-            "ToggleButton.is3DEnabled",     is3D
-    	};
-    	
-    	table.putDefaults(defaults);
+            // TODO: !!! apply mac key bindings - delegate to new class and use across all!!!
+            // fukin' macs!
+
+            // wee average but minor reference here:
+            // http://lists.apple.com/archives/java-dev/2008/Apr/msg00209.html
+
+        }
+
+        super.initComponentDefaults(table);
+
+        Boolean is3D = Boolean.FALSE;
+        Object[] defaults = {
+                "Button.is3DEnabled", is3D,
+                "ComboBox.is3DEnabled", is3D,
+                "ScrollBar.is3DEnabled", is3D,
+                "ToggleButton.is3DEnabled", is3D
+        };
+
+        table.putDefaults(defaults);
     }
-    
+
 }
 
 

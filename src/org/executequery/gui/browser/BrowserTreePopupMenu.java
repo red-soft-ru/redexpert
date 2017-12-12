@@ -20,16 +20,6 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.Component;
-import java.awt.event.ActionListener;
-
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseCatalog;
@@ -40,9 +30,14 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 
+import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.*;
+import java.awt.event.ActionListener;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 class BrowserTreePopupMenu extends JPopupMenu {
 
@@ -57,19 +52,19 @@ class BrowserTreePopupMenu extends JPopupMenu {
     private JMenuItem delete;
     private JMenuItem recycleConnection;
     private JMenuItem copyName;
-    
-    private JCheckBoxMenuItem showDefaultCatalogsAndSchemas; 
+
+    private JCheckBoxMenuItem showDefaultCatalogsAndSchemas;
 
     private JMenu sql;
     private JMenu exportData;
     private JMenu importData;
 
     private BrowserTreePopupMenuActionListener listener;
-    
+
     BrowserTreePopupMenu(BrowserTreePopupMenuActionListener listener) {
 
         this.listener = listener;
-        
+
         connect = createMenuItem(bundleString("connect"), "connect", listener);
         add(connect);
         disconnect = createMenuItem(bundleString("disconnect"), "disconnect", listener);
@@ -84,9 +79,9 @@ class BrowserTreePopupMenu extends JPopupMenu {
 
         addSeparator();
 
-        createObject=createMenuItem(bundleString("create"),"createObject",listener);
+        createObject = createMenuItem(bundleString("create"), "createObject", listener);
         add(createObject);
-        deleteObject=createMenuItem(bundleString("delete"),"deleteObject",listener);
+        deleteObject = createMenuItem(bundleString("delete"), "deleteObject", listener);
         add(deleteObject);
 
         addSeparator();
@@ -111,7 +106,7 @@ class BrowserTreePopupMenu extends JPopupMenu {
 
         copyName = createMenuItem(bundleString("copyName"), "copyName", listener);
         add(copyName);
-        
+
         createSqlMenu(listener);
         createExportMenu(listener);
         createImportMenu(listener);
@@ -125,9 +120,9 @@ class BrowserTreePopupMenu extends JPopupMenu {
         setToConnect(!getCurrentSelection().isConnected());
         super.show(invoker, x, y);
     }
-    
-    private JMenuItem createMenuItem(String text, 
-                                     String actionCommand, 
+
+    private JMenuItem createMenuItem(String text,
+                                     String actionCommand,
                                      ActionListener listener) {
 
         JMenuItem menuItem = MenuItemFactory.createMenuItem(text);
@@ -136,9 +131,9 @@ class BrowserTreePopupMenu extends JPopupMenu {
         return menuItem;
     }
 
-    private JCheckBoxMenuItem createCheckBoxMenuItem(String text, 
-                                     String actionCommand, 
-                                     ActionListener listener) {
+    private JCheckBoxMenuItem createCheckBoxMenuItem(String text,
+                                                     String actionCommand,
+                                                     ActionListener listener) {
 
         JCheckBoxMenuItem menuItem = MenuItemFactory.createCheckBoxMenuItem(text);
         menuItem.setActionCommand(actionCommand);
@@ -159,54 +154,51 @@ class BrowserTreePopupMenu extends JPopupMenu {
         if (listener.hasCurrentPath()) {
 
             if (currentPathComponent instanceof DatabaseObjectNode) {
-                
+
                 DatabaseObjectNode node = asDatabaseObjectNode(currentPathComponent);
-                
+
                 //if (node.getUserObject() instanceof DatabaseHost) {
-                
+
                 if (node.isHostNode()) {
 
                     //reload.setEnabled(false);
                     sql.setEnabled(false);
                     exportData.setEnabled(false);
                     importData.setEnabled(false);
-                    
+
                     showDefaultCatalogsAndSchemas.setEnabled(true);
                     showDefaultCatalogsAndSchemas.setSelected(
-                            ((DatabaseHostNode)node).isDefaultCatalogsAndSchemasOnly());
-                    
+                            ((DatabaseHostNode) node).isDefaultCatalogsAndSchemasOnly());
+
                     recycleConnection.setEnabled(!canConnect);
                     deleteObject.setEnabled(false);
                     createObject.setEnabled(false);
-                } 
-                else {
+                } else {
 
                     label = node.toString();
 
                     reload.setEnabled(true);
                     recycleConnection.setEnabled(false);
                     showDefaultCatalogsAndSchemas.setEnabled(false);
-                    int type=node.getType();
-                    boolean deleteObjectEnabled=type>=0&&type<NamedObject.META_TYPES.length;
-                    if(deleteObjectEnabled)
-                        deleteObjectEnabled=!NamedObject.META_TYPES[type].contains("SYSTEM");
-                    boolean createObjectEnabled=deleteObjectEnabled||type==NamedObject.META_TAG;
-                    if(type==NamedObject.META_TAG)
-                        createObjectEnabled=!node.getName().contains("SYSTEM");
+                    int type = node.getType();
+                    boolean deleteObjectEnabled = type >= 0 && type < NamedObject.META_TYPES.length;
+                    if (deleteObjectEnabled)
+                        deleteObjectEnabled = !NamedObject.META_TYPES[type].contains("SYSTEM");
+                    boolean createObjectEnabled = deleteObjectEnabled || type == NamedObject.META_TAG;
+                    if (type == NamedObject.META_TAG)
+                        createObjectEnabled = !node.getName().contains("SYSTEM");
                     deleteObject.setEnabled(deleteObjectEnabled);
                     createObject.setEnabled(createObjectEnabled);
-                    if(deleteObjectEnabled)
-                    {
-                        deleteObject.setText(bundleString("delete")+" "+node.toString());
+                    if (deleteObjectEnabled) {
+                        deleteObject.setText(bundleString("delete") + " " + node.toString());
                     }
-                    if(createObjectEnabled)
-                    {
-                        String str="";
-                        if(type==NamedObject.META_TAG)
-                            str=node.getName();
+                    if (createObjectEnabled) {
+                        String str = "";
+                        if (type == NamedObject.META_TAG)
+                            str = node.getName();
                         else
-                            str=NamedObject.META_TYPES[node.getType()];
-                        createObject.setText(bundleString("create")+" "+str);
+                            str = NamedObject.META_TYPES[node.getType()];
+                        createObject.setText(bundleString("create") + " " + str);
                     }
 
 
@@ -226,10 +218,10 @@ class BrowserTreePopupMenu extends JPopupMenu {
             disconnect.setText(bundleString("disconnectText", name));
             delete.setText(bundleString("deleteText", name));
             duplicate.setText(bundleString("duplicateText", name));
-            
+
             // eeekkk...
             if (isCatalog(currentPathComponent) && asDatabaseCatalog(currentPathComponent).getHost().supportsCatalogsInTableDefinitions()) {
-                
+
                 duplicateWithSource.setEnabled(true);
                 duplicateWithSource.setText(bundleString("duplicateWithSourceText1", currentPathComponent.toString()));
 
@@ -260,7 +252,7 @@ class BrowserTreePopupMenu extends JPopupMenu {
     }
 
     private boolean isCatalog(DefaultMutableTreeNode currentPathComponent) {
-        
+
         return currentPathComponent instanceof DatabaseCatalogNode;
     }
 
@@ -309,7 +301,7 @@ class BrowserTreePopupMenu extends JPopupMenu {
         return listener.getCurrentPath();
     }
 
-    private String bundleString(String key, Object...args) {
+    private String bundleString(String key, Object... args) {
         return Bundles.get(getClass(), key, args);
     }
 

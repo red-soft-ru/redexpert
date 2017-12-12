@@ -20,26 +20,27 @@
 
 package org.executequery.actions.othercommands;
 
-import java.awt.event.ActionEvent;
-import javax.swing.JPanel;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.browser.ConnectionsTreePanel;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
 
 /**
  * Action to reload the currently selected node within the
  * connections browser panel.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ReloadBrowserSelectionCommand extends AbstractBaseCommand {
-    
+
     public void execute(ActionEvent e) {
         JPanel panel = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
         if (panel != null) {
-            ((ConnectionsTreePanel)panel).reloadSelection();
+            ((ConnectionsTreePanel) panel).reloadSelection();
         }
     }
 
-    
+
 }
 

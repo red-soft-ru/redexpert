@@ -25,14 +25,14 @@ import java.awt.event.MouseEvent;
 /**
  * Tab listener for selection events.
  *
- * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+ * @author Takis Diakoumis
+ * @version $Revision$
+ * @date $Date$
  */
 public interface TabSelectionListener {
 
     void tabSelected(MouseEvent e);
-    
+
 }
 
 

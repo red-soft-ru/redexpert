@@ -20,7 +20,7 @@
 
 package org.executequery.gui.importexport;
 
-import javax.swing.JComboBox;
+import javax.swing.*;
 
 public interface ImportExportWizard {
 
@@ -33,15 +33,15 @@ public interface ImportExportWizard {
     JComboBox getConnectionsCombo();
 
     ImportExportMonitor getImportExportMonitor();
-    
+
     void stopTransfer();
 
     void processComplete(ImportExportResult importExportResult);
-    
+
     String getFileSuffix();
-    
+
     void enableButtons(boolean enable);
-    
+
 }
 
 

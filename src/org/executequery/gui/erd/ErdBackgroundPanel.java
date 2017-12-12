@@ -20,75 +20,80 @@
 
 package org.executequery.gui.erd;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Rectangle;
-import java.awt.print.PageFormat;
-
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-
 import org.executequery.print.PrintingSupport;
 import org.underworldlabs.swing.plaf.UIUtils;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.print.PageFormat;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ErdBackgroundPanel extends JComponent {
-    
-    /** Whether to display the grid */
+
+    /**
+     * Whether to display the grid
+     */
     private boolean displayGrid;
 
-    /** Whether to display the page margins */
+    /**
+     * Whether to display the page margins
+     */
     private boolean displayMargin;
 
-    /** The grid image to tile */
+    /**
+     * The grid image to tile
+     */
     private Image gridImage;
 
-    /** The background colour */
+    /**
+     * The background colour
+     */
     private Color backgroundColour;
 
-    /** The dashed stroke */
+    /**
+     * The dashed stroke
+     */
     private static BasicStroke dashedStroke;
-    
-    /** the grid colour */
+
+    /**
+     * the grid colour
+     */
     private Color gridColour;
-    
-    /** <p>Constructs a new instance with the specified
-     *  <code>ErdViewerPanel</code> as the parent or controller
-     *  object.
+
+    /**
+     * <p>Constructs a new instance with the specified
+     * <code>ErdViewerPanel</code> as the parent or controller
+     * object.
      *
-     *  @param the parent controller object
+     * @param the parent controller object
      */
     public ErdBackgroundPanel(boolean displayGrid) {
         setDoubleBuffered(true);
         setDisplayGrid(displayGrid);
-        
+
         //setToDisplayGrid(false);
-        
+
         displayMargin = false;
         backgroundColour = UIUtils.getColour("executequery.Erd.background", Color.WHITE);
-        
+
         float dash2[] = {10f, 3.0f};
         dashedStroke = new BasicStroke(1.0f, 0, 0, 10f, dash2, 0.0f);
-        
+
     }
-    
-    /** <p>Overrides this class's <code>paintComponent</code>
-     *  method to draw the grid background if this is a
-     *  selected option.
+
+    /**
+     * <p>Overrides this class's <code>paintComponent</code>
+     * method to draw the grid background if this is a
+     * selected option.
      *
-     *  @param the <code>Graphics</code> object
+     * @param the <code>Graphics</code> object
      */
     protected void paintComponent(Graphics _g) {
-        
-        Graphics2D g = (Graphics2D)_g;
-        
+
+        Graphics2D g = (Graphics2D) _g;
+
         g.setColor(backgroundColour);
         g.fillRect(0, 0, getWidth(), getHeight());
 
@@ -96,7 +101,7 @@ public class ErdBackgroundPanel extends JComponent {
         if (displayGrid) {
             int width = getWidth();
             int height = getHeight();
-            
+
             int xy = 0;
             int gridSize = 25;
 
@@ -135,45 +140,43 @@ public class ErdBackgroundPanel extends JComponent {
             }
              */
 
-        }        
-        else {
+        } else {
             g.setColor(backgroundColour);
             g.fillRect(0, 0, getWidth(), getHeight());
         }
-        
+
         if (displayMargin) {
-            
+
             PrintingSupport printingSupport = new PrintingSupport();
-            
+
             PageFormat pageFormat = printingSupport.getPageFormat();
 //            Paper paper = pageFormat.getPaper();
-            
+
             boolean isPortrait = pageFormat.getOrientation() == PageFormat.PORTRAIT;
-            
+
             int imageWidth = 0;
             int imageHeight = 0;
-            
+
             if (isPortrait) {
-                imageWidth = (int)(pageFormat.getImageableWidth() / ErdPrintable.PRINT_SCALE);
-                imageHeight = (int)(pageFormat.getImageableHeight() / ErdPrintable.PRINT_SCALE);
+                imageWidth = (int) (pageFormat.getImageableWidth() / ErdPrintable.PRINT_SCALE);
+                imageHeight = (int) (pageFormat.getImageableHeight() / ErdPrintable.PRINT_SCALE);
+            } else {
+                imageWidth = (int) (pageFormat.getImageableHeight() / ErdPrintable.PRINT_SCALE);
+                imageHeight = (int) (pageFormat.getImageableWidth() / ErdPrintable.PRINT_SCALE);
             }
-            else {
-                imageWidth = (int)(pageFormat.getImageableHeight() / ErdPrintable.PRINT_SCALE);
-                imageHeight = (int)(pageFormat.getImageableWidth() / ErdPrintable.PRINT_SCALE);
-            }
-            
+
             g.setColor(Color.GRAY);
             g.setStroke(dashedStroke);
-            
+
             g.drawLine(imageWidth, 0, imageWidth, imageHeight);
             g.drawLine(0, imageHeight, imageWidth, imageHeight);
-            
+
         }
-        
+
     }
-    
+
     public void setBackground(Color c) {
-        
+
         if (c != null) {
             backgroundColour = c;
         } else {
@@ -182,70 +185,70 @@ public class ErdBackgroundPanel extends JComponent {
         displayGrid = false;
         gridImage = null;
     }
-    
+
     public Color getBackground() {
         return backgroundColour;
     }
-    
+
     public boolean shouldDisplayGrid() {
         return displayGrid;
     }
-    
+
     public void swapBackground() {
         setDisplayGrid(!displayGrid);
     }
-    
+
     protected void setDisplayGrid(boolean displayGrid) {
         this.displayGrid = displayGrid;
-        
+
         if (displayGrid) {
             ImageIcon icon = new ImageIcon(ErdBackgroundPanel.class.getResource(
-            "/org/executequery/images/ErdGrid.gif"));
+                    "/org/executequery/images/ErdGrid.gif"));
             gridImage = icon.getImage();
         }
-        
+
     }
-    
+
     public void setDisplayMargin(boolean displayMargin) {
         this.displayMargin = displayMargin;
     }
-    
+
     public boolean shouldDisplayMargin() {
         return displayMargin;
     }
-    
+
     public void swapPageMargin() {
         displayMargin = !displayMargin;
     }
-    
+
     public int getHeight() {
         return getPreferredSize().height;
     }
-    
+
     public int getWidth() {
         return getPreferredSize().width;
     }
-    
+
     public Rectangle getBounds() {
         return new Rectangle(0, 0, getWidth(), getHeight());
     }
-    
+
     public Dimension getMaximumSize() {
         return getPreferredSize();
     }
-    
+
     public Dimension getMinimumSize() {
         return getPreferredSize();
     }
-    
+
     public Dimension getSize() {
         return getPreferredSize();
     }
-    
+
     public void clean() {
         gridImage = null;
     }
-    
+
 }
 
 

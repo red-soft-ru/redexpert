@@ -21,17 +21,16 @@
 package org.underworldlabs.util;
 
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+ * @author Takis Diakoumis
+ * @version $Revision$
+ * @date $Date$
  */
 public final class InterruptedException extends RuntimeException {
 
     public InterruptedException() {
         super();
     }
-    
+
     public InterruptedException(String message, Throwable cause) {
 
         super(message, cause);

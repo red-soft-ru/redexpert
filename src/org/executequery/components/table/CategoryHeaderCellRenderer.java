@@ -20,44 +20,41 @@
 
 package org.executequery.components.table;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.Graphics;
-
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.table.TableCellRenderer;
-
 import org.executequery.Constants;
 import org.underworldlabs.swing.plaf.UIUtils;
 
+import javax.swing.*;
+import javax.swing.table.TableCellRenderer;
+import java.awt.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CategoryHeaderCellRenderer extends JLabel
-                                        implements TableCellRenderer {
-    
+        implements TableCellRenderer {
+
     private static Font font;
     private static Color background;
     private static Color foreground;
-    
-    /** Creates a new instance of CategoryHeaderCellRenderer */
-    public CategoryHeaderCellRenderer() {}
-    
+
+    /**
+     * Creates a new instance of CategoryHeaderCellRenderer
+     */
+    public CategoryHeaderCellRenderer() {
+    }
+
     public Component getTableCellRendererComponent(JTable table,
                                                    Object value,
                                                    boolean isSelected,
                                                    boolean cellHasFocus,
-                                                   int row, 
+                                                   int row,
                                                    int col) {
 
         if (background == null) {
             background = table.getGridColor();
             foreground = UIUtils.getColour("executequery.PreferencesHeader.foreground", background.darker().darker());
         }
-        
+
         setBackground(background);
 
         if (col == 0 || col == 2) {
@@ -72,7 +69,7 @@ public class CategoryHeaderCellRenderer extends JLabel
 
         setFont(font);
         setForeground(foreground);
-        setText(value.toString());        
+        setText(value.toString());
         return this;
     }
 
@@ -83,7 +80,7 @@ public class CategoryHeaderCellRenderer extends JLabel
         g.fillRect(0, 0, width, height);
         super.paintComponent(g);
     }
-    
+
 }
 
 

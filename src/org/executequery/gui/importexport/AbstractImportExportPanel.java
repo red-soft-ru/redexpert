@@ -20,16 +20,15 @@
 
 package org.executequery.gui.importexport;
 
-import java.awt.LayoutManager;
-
-import javax.swing.JPanel;
-
 import org.executequery.localization.Bundles;
+
+import javax.swing.*;
+import java.awt.*;
 
 abstract class AbstractImportExportPanel extends JPanel {
 
     private final ImportExportWizard importExportWizard;
-    
+
     public AbstractImportExportPanel(ImportExportWizard importExportWizard) {
         super();
         this.importExportWizard = importExportWizard;
@@ -43,11 +42,11 @@ abstract class AbstractImportExportPanel extends JPanel {
     protected final boolean isExport() {
         return importExportDataModel().isExport();
     }
-    
+
     protected final ImportExportWizard importExportWizard() {
         return importExportWizard;
     }
-    
+
     protected final ImportExportDataModel importExportDataModel() {
         return importExportWizard.getExportDataModel();
     }
@@ -55,6 +54,6 @@ abstract class AbstractImportExportPanel extends JPanel {
     protected final String bundledString(String key) {
         return Bundles.get(key);
     }
-    
+
 }
 

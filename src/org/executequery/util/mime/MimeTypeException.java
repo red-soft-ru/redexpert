@@ -34,9 +34,10 @@ public class MimeTypeException extends Exception {
     public MimeTypeException() {
         super();
     }
-    
+
     /**
      * Constructs a MimeTypeException with the specified detail message.
+     *
      * @param msg the detail message.
      */
     public MimeTypeException(String msg) {

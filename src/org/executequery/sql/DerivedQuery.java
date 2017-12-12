@@ -20,13 +20,13 @@
 
 package org.executequery.sql;
 
+import org.apache.commons.lang.StringUtils;
+import org.executequery.databasemediators.QueryTypes;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-import org.executequery.databasemediators.QueryTypes;
 
 public final class DerivedQuery {
 

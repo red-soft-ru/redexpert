@@ -20,24 +20,6 @@
 
 package org.executequery.databasemediators;
 
-import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.Vector;
-
 import org.executequery.EventMediator;
 import org.executequery.databaseobjects.TablePrivilege;
 import org.executequery.databaseobjects.impl.DefaultDatabaseProcedure;
@@ -54,12 +36,16 @@ import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
-/** 
+import java.lang.reflect.Method;
+import java.sql.*;
+import java.util.*;
+
+/**
  * This class provides access to the current connection's
  * database meta data. Each method performs specific requests
  * as may be required by the calling object to display the
  * relevant data usually within a table or similar widget.
- *
+ * <p>
  * Depending on the calling class and its requirements,
  * the connection to the database may be left open thereby
  * removing the overhead associated with connection retrieval -
@@ -68,38 +54,48 @@ import org.underworldlabs.util.MiscUtils;
  * dedicated connection simply choose not to maintain one and
  * make their requests as required.
  *
+ * @author Takis Diakoumis
  * @deprecated
- * @author   Takis Diakoumis
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class MetaDataValues implements ConnectionListener {
-    
-    /** The open database connection. */
+
+    /**
+     * The open database connection.
+     */
     private Connection connection;
 
-    /** Whether to keep the connection open. */
+    /**
+     * Whether to keep the connection open.
+     */
     private boolean keepAlive;
-    
-    /** the database connection object associated with this instance */
+
+    /**
+     * the database connection object associated with this instance
+     */
     private DatabaseConnection databaseConnection;
-    
-    /** the connection 'container' */
-    private Map<DatabaseConnection,Connection> connections;
-    
-    /** <p>Constructs a new instance where the conection
-     *  is returned following each request.
+
+    /**
+     * the connection 'container'
+     */
+    private Map<DatabaseConnection, Connection> connections;
+
+    /**
+     * <p>Constructs a new instance where the conection
+     * is returned following each request.
      */
     public MetaDataValues() {
         this(false);
     }
-    
-    /** <p>Constructs a new instance where the conection
-     *  is returned following each request only if the
-     *  passed boolean value is 'false'. Otherwise the
-     *  connection is initialised and maintained following
-     *  the first request and reused for any subsequent requests.
+
+    /**
+     * <p>Constructs a new instance where the conection
+     * is returned following each request only if the
+     * passed boolean value is 'false'. Otherwise the
+     * connection is initialised and maintained following
+     * the first request and reused for any subsequent requests.
      *
-     *  @param whether to keep the connection open
+     * @param whether to keep the connection open
      */
     public MetaDataValues(boolean keepAlive) {
         this(null, keepAlive);
@@ -142,7 +138,7 @@ public class MetaDataValues implements ConnectionListener {
 
     private void ensureConnection() throws DataSourceException {
         try {
-            
+
             if (connection == null || connection.isClosed()) {
 
                 if (Log.isDebugEnabled()) {
@@ -154,25 +150,25 @@ public class MetaDataValues implements ConnectionListener {
                 }
 
                 // try the cache first
-                
+
                 if (connections.isEmpty()) {
                     openConnectionAndAddToCache();
                 }
 
                 connection = connections.get(databaseConnection);
                 if (connection == null) {
-                    
+
                     if (Log.isDebugEnabled()) {
                         Log.debug("ensureConnection: Connection is null in cache.");
                         Log.debug("ensureConnection: Retrieving new connection.");
                     }
-                    
+
                     // retrieve and add to the cache
                     openConnectionAndAddToCache();
                 }
 
                 //connection = ConnectionManager.getConnection(databaseConnection);
-                
+
                 // if still null - something bad has happened, or maybe closed
                 if (connection == null || connection.isClosed()) {
 
@@ -180,11 +176,11 @@ public class MetaDataValues implements ConnectionListener {
                 }
 
             }
-            
+
         } catch (SQLException e) {
             throw new DataSourceException(e);
         }
-        
+
     }
 
     private void openConnectionAndAddToCache() {
@@ -192,7 +188,7 @@ public class MetaDataValues implements ConnectionListener {
         connections.put(databaseConnection, connection);
     }
 
-    /** 
+    /**
      * Retrieves the current connection's hosted
      * schema names. The names are stored within a
      * <code>Vector</code> object as single String objects.
@@ -208,105 +204,98 @@ public class MetaDataValues implements ConnectionListener {
             DatabaseMetaData dmd = connection.getMetaData();
             rs = dmd.getCatalogs();
 
-            Vector<String> v = new Vector<String>(); 
+            Vector<String> v = new Vector<String>();
             while (rs.next()) {
                 v.add(rs.getString(1));
             }
-            
-            return v;            
-        } 
-        catch (SQLException e) {
+
+            return v;
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        } 
-        
+        }
+
     }
-    
-    public String[] getExportedKeyTables(String catalog, 
-                                         String schema, 
-                                         String table) 
-        throws DataSourceException {
-        ResultSet rs = null;        
+
+    public String[] getExportedKeyTables(String catalog,
+                                         String schema,
+                                         String table)
+            throws DataSourceException {
+        ResultSet rs = null;
         try {
-            ensureConnection();            
+            ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
             rs = dmd.getExportedKeys(catalog, schema, table);
-            
+
             List list = new ArrayList();
             while (rs.next()) {
                 list.add(rs.getString(7));
             }
-            return (String[])list.toArray(new String[list.size()]);
-        } 
-        catch (SQLException e) {
+            return (String[]) list.toArray(new String[list.size()]);
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        } 
+        }
     }
-    
-    public String[] getImportedKeyTables(String catalog, 
-                                         String schema, 
+
+    public String[] getImportedKeyTables(String catalog,
+                                         String schema,
                                          String table) throws DataSourceException {
 
         ResultSet rs = null;
         try {
-            
-            ensureConnection();            
+
+            ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
             rs = dmd.getImportedKeys(catalog, schema, table);
-            
-            List list = new ArrayList();           
+
+            List list = new ArrayList();
             while (rs.next()) {
                 list.add(rs.getString(3));
             }
-            return (String[])list.toArray(new String[list.size()]);            
-        }        
-        catch (SQLException e) {
+            return (String[]) list.toArray(new String[list.size()]);
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        } 
-        
+        }
+
     }
-    
+
     public List<String> getHostedCatalogSchemas() throws DataSourceException {
         ResultSet rs = null;
         try {
-            
+
             ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
             rs = dmd.getSchemas();
-            
+
             List<String> list = new ArrayList<String>();
             while (rs.next()) {
                 list.add(rs.getString(1));
             }
             return list;
-        }         
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        } 
-        
+        }
+
     }
-    
-    /** <p>Retrieves the current connection's hosted
-     *  schema names. The names are stored within a
-     *  <code>Vector</code> object as single String objects.
+
+    /**
+     * <p>Retrieves the current connection's hosted
+     * schema names. The names are stored within a
+     * <code>Vector</code> object as single String objects.
      *
-     *  @return the schema names within a <code>Vector</code>
+     * @return the schema names within a <code>Vector</code>
      */
     public Vector<String> getHostedSchemasVector() throws DataSourceException {
         ResultSet rs = null;
         try {
-            ensureConnection();            
+            ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
             rs = dmd.getSchemas();
 
@@ -315,9 +304,9 @@ public class MetaDataValues implements ConnectionListener {
                 v.add(rs.getString(1));
             }
 
-            int size = v.size();            
+            int size = v.size();
             if (size == 1) {
-                String value = (String)v.elementAt(0);
+                String value = (String) v.elementAt(0);
                 if (MiscUtils.isNull(value)) {
                     return new Vector<String>(0);
                 }
@@ -329,87 +318,82 @@ public class MetaDataValues implements ConnectionListener {
             */
             return v;
 
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        } 
-        
+        }
+
     }
-    
+
     public String[] getTableTypes() throws DataSourceException {
         ResultSet rs = null;
         try {
-            ensureConnection();            
+            ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
             rs = dmd.getTableTypes();
 
-            List list = new ArrayList();            
+            List list = new ArrayList();
             while (rs.next()) {
                 list.add(rs.getString(1));
             }
-            return (String[])list.toArray(new String[list.size()]);
-        } 
-        catch (SQLException e) {
+            return (String[]) list.toArray(new String[list.size()]);
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        }         
+        }
     }
-    
+
     public TablePrivilege[] getPrivileges(String catalog,
-                                          String schema, 
+                                          String schema,
                                           String table) throws DataSourceException {
 
         ResultSet rs = null;
         try {
-            ensureConnection();            
+            ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
             rs = dmd.getTablePrivileges(catalog, schema, table);
-            
+
             List list = new ArrayList();
             while (rs.next()) {
                 list.add(new TablePrivilege(rs.getString(4),
-                                            rs.getString(5),
-                                            rs.getString(6),
-                                            rs.getString(7)));
-            } 
-            
-            return (TablePrivilege[])list.toArray(new TablePrivilege[list.size()]);
-            
-        } 
-        catch (SQLException e) {
+                        rs.getString(5),
+                        rs.getString(6),
+                        rs.getString(7)));
+            }
+
+            return (TablePrivilege[]) list.toArray(new TablePrivilege[list.size()]);
+
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        } 
-        
+        }
+
     }
 
-    /** <p>Retrieves the column names for the specified
-     *  database table and schema as an array.
+    /**
+     * <p>Retrieves the column names for the specified
+     * database table and schema as an array.
      *
-     *  @param table database table name
-     *  @param schema database schema name
-     *  @return the column name
+     * @param table  database table name
+     * @param schema database schema name
+     * @return the column name
      */
-    public Map<String, String> getColumnProperties(String schema, 
-                                   String table, 
-                                   String column) throws DataSourceException {
+    public Map<String, String> getColumnProperties(String schema,
+                                                   String table,
+                                                   String column) throws DataSourceException {
 
         ResultSet rs = null;
 
         try {
 
-            ensureConnection();            
-            if(schema == null) {
+            ensureConnection();
+            if (schema == null) {
                 schema = getSchemaName().toUpperCase();
             }
-            
+
             DatabaseMetaData dmd = connection.getMetaData();
             rs = dmd.getColumns(null, schema, table, column);
 
@@ -426,41 +410,39 @@ public class MetaDataValues implements ConnectionListener {
             if (rs.next()) {
 
                 for (int i = 1; i < columnCount; i++) {
-                    map.put(metaColumnNames[i - 1], 
+                    map.put(metaColumnNames[i - 1],
                             rs.getString(i));
                 }
 
-            } 
+            }
 
             return map;
-        } 
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        } 
-        
+        }
+
     }
 
-    /** 
-     * Retrieves a <code>Vector</code> of <code>ColumnIndexData</code> 
+    /**
+     * Retrieves a <code>Vector</code> of <code>ColumnIndexData</code>
      * objects containing all relevant information on the table indexes
      * for the specified table.
      *
      * @param table table's name
      * @return a <code>Vector</code> of <code>ColumnIndexData</code> objects
      */
-    public Vector<ColumnIndex> getTableIndexes(String catalog, 
-                                  String schema, String table) throws DataSourceException {
+    public Vector<ColumnIndex> getTableIndexes(String catalog,
+                                               String schema, String table) throws DataSourceException {
 
         ResultSet rs = null;
-        
+
         try {
-            
+
             ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
-            
+
             rs = dmd.getIndexInfo(catalog, schema, table, false, true);
 
             Vector v = new Vector();
@@ -475,32 +457,30 @@ public class MetaDataValues implements ConnectionListener {
                 cid.setNonUnique(rs.getBoolean(4));
                 cid.setIndexName(name);
                 cid.setIndexedColumn(rs.getString(9));
-                v.add(cid);                
-            } 
-            
-            return v;            
-        } 
-        catch (SQLException e) {
+                v.add(cid);
+            }
+
+            return v;
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        } 
-        
+        }
+
     }
 
     /**
      * Returns the table column meta data as a result set.
      *
-     * @param the table name
-     * @param the schema name
-     * @param the table name
+     * @param catalog name
+     * @param schema name
+     * @param name table name
      */
-    public ResultSet getTableMetaData(String catalog, 
-                                      String schema, 
+    public ResultSet getTableMetaData(String catalog,
+                                      String schema,
                                       String name) throws DataSourceException {
         try {
-            ensureConnection();            
+            ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
             if (!dmd.supportsCatalogsInTableDefinitions()) {
                 catalog = null;
@@ -511,41 +491,40 @@ public class MetaDataValues implements ConnectionListener {
             }
 
             return dmd.getColumns(catalog, schema, name, null);
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             // TODO: release ????
         }
     }
-    
-    /** <p>Retrieves complete and detailed meta data for all columns
-     *  within the specified table and schema.
-     *  <p>The meta data will include data type, size and all
-     *  primary and foreign keys for the specified table. The results
-     *  of this method are specifically displayed within the Database
-     *  Browser feature for each selected table from the browser's
-     *  tree structure.
+
+    /**
+     * <p>Retrieves complete and detailed meta data for all columns
+     * within the specified table and schema.
+     * <p>The meta data will include data type, size and all
+     * primary and foreign keys for the specified table. The results
+     * of this method are specifically displayed within the Database
+     * Browser feature for each selected table from the browser's
+     * tree structure.
      *
-     *  @param the table name
-     *  @param the schema name
-     *  @return the column meta data as a <code>ColumnData</code> array
+     * @param tableName table name
+     * @param schemaName schema name
+     * @return the column meta data as a <code>ColumnData</code> array
      */
-    public ColumnData[] getColumnMetaData(String tableName, 
+    public ColumnData[] getColumnMetaData(String tableName,
                                           String schemaName) throws DataSourceException {
         return getColumnMetaData(null, schemaName, tableName);
     }
-    
-    public ColumnData[] getColumnMetaData(String catalog, 
-                                          String schema, 
+
+    public ColumnData[] getColumnMetaData(String catalog,
+                                          String schema,
                                           String name) throws DataSourceException {
 
         ResultSet rs = null;
         try {
-            ensureConnection();            
+            ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
-            
+
             if (!dmd.supportsCatalogsInTableDefinitions()) {
                 catalog = null;
             }
@@ -557,10 +536,10 @@ public class MetaDataValues implements ConnectionListener {
             // -----------------------------------------
             // retrieve the primary keys for this table
             // -----------------------------------------
-            
+
             ResultSet keys = dmd.getPrimaryKeys(catalog, schema, name);
             List _primaryKeys = new ArrayList();
-            
+
             while (keys.next()) {
                 ColumnConstraint cc = new ColumnConstraint();
                 cc.setRefSchema(keys.getString(2));
@@ -568,24 +547,24 @@ public class MetaDataValues implements ConnectionListener {
                 cc.setColumn(keys.getString(4));
                 cc.setName(keys.getString(6));
                 cc.setType(ColumnConstraint.PRIMARY_KEY);
-                _primaryKeys.add(cc);                
-            } 
-            
+                _primaryKeys.add(cc);
+            }
+
             keys.close();
-            
+
             int v_size = _primaryKeys.size();
             ColumnConstraint[] primaryKeys = new ColumnConstraint[v_size];
-            
+
             for (int i = 0; i < v_size; i++) {
-                primaryKeys[i] = (ColumnConstraint)_primaryKeys.get(i);
-            } 
-            
+                primaryKeys[i] = (ColumnConstraint) _primaryKeys.get(i);
+            }
+
             // -----------------------------------------
             // retrieve the foreign keys of this table
             // -----------------------------------------
-            
+
             keys = dmd.getImportedKeys(catalog, schema, name);
-            
+
             // put the foreign key details in a temporary collection
             List _foreignKeys = new ArrayList();
             while (keys.next()) {
@@ -598,17 +577,17 @@ public class MetaDataValues implements ConnectionListener {
                 cc.setName(keys.getString(12));
                 cc.setType(ColumnConstraint.FOREIGN_KEY);
                 _foreignKeys.add(cc);
-            } 
-            
+            }
+
             v_size = _foreignKeys.size();
             ColumnConstraint[] foreignKeys = new ColumnConstraint[v_size];
-            
+
             for (int i = 0; i < v_size; i++) {
-                foreignKeys[i] = (ColumnConstraint)_foreignKeys.get(i);
-            } 
-            
+                foreignKeys[i] = (ColumnConstraint) _foreignKeys.get(i);
+            }
+
             keys.close();
-            
+
             // The primary key count
             int primaryKeyCount = 0;
             // The foreign key count
@@ -619,16 +598,16 @@ public class MetaDataValues implements ConnectionListener {
             String columnNameForKey = null;
             // to store the result set
             List _columns = new ArrayList();
-            
+
             //Log.debug("catalog: " + catalog + " schema: " + schema);
-            
+
             // retrieve the column data
             rs = dmd.getColumns(catalog, schema, name, null);
-            
+
             while (rs.next()) {
-                
+
                 columnName = rs.getString(4);
-                
+
                 ColumnData cd = new ColumnData(databaseConnection);
                 cd.setCatalog(catalog);
                 cd.setSchema(schema);
@@ -640,70 +619,68 @@ public class MetaDataValues implements ConnectionListener {
                 cd.setColumnRequired(rs.getInt(11));
                 cd.setDefaultValue(rs.getString(13));
                 cd.setTableName(name);
-                
+
                 // check if all primary keys have been identified
                 if (primaryKeyCount < primaryKeys.length) {
-                    
+
                     // determine if the current column is a primary key
                     for (int j = 0; j < primaryKeys.length; j++) {
                         columnNameForKey = primaryKeys[j].getColumn();
-                        
+
                         if (columnNameForKey.compareTo(columnName) == 0) {
                             cd.addConstraint(primaryKeys[j]);
                             cd.setPrimaryKey(true);
                             primaryKeyCount++;
                             break;
-                        } 
-                        
-                    } 
-                    
-                } 
-                
+                        }
+
+                    }
+
+                }
+
                 // check if all foreign keys have been identified
                 if (foreignKeyCount < foreignKeys.length) {
-                    
+
                     // determine if the current column is a foreign key
                     for (int j = 0; j < foreignKeys.length; j++) {
                         columnNameForKey = foreignKeys[j].getColumn();
-                        
+
                         if (columnNameForKey.compareTo(columnName) == 0) {
                             cd.addConstraint(foreignKeys[j]);
                             cd.setForeignKey(true);
                             foreignKeyCount++;
                             break;
-                        } 
-                        
-                    } 
-                    
-                } 
-                
+                        }
+
+                    }
+
+                }
+
                 columnName = null;
                 columnNameForKey = null;
 //                cd.setNamesToUpper();
                 _columns.add(cd);
-                
-            } 
-            
+
+            }
+
             v_size = _columns.size();
             ColumnData[] columnDataArray = new ColumnData[v_size];
-            
+
             for (int i = 0; i < v_size; i++) {
-                columnDataArray[i] = (ColumnData)_columns.get(i);
-            } 
-            
+                columnDataArray[i] = (ColumnData) _columns.get(i);
+            }
+
             return columnDataArray;
-   
-        }
-        catch (SQLException e) {
+
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        } 
-        
+        }
+
     }
-    
-    /** 
+
+    /**
      * Retrieves the database product name from
      * the connection's meta data.
      *
@@ -713,17 +690,15 @@ public class MetaDataValues implements ConnectionListener {
         try {
             ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
-            return dmd.getDatabaseProductName();            
-        } 
-        catch (SQLException e) {
+            return dmd.getDatabaseProductName();
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources();
-        } 
+        }
     }
 
-    /** 
+    /**
      * Retrieves the database product version from
      * the connection's meta data.
      *
@@ -734,17 +709,15 @@ public class MetaDataValues implements ConnectionListener {
             ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
             return dmd.getDatabaseProductVersion();
-        } 
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources();
-        } 
-        
+        }
+
     }
 
-    /** 
+    /**
      * Retrieves the database product version from
      * the connection's meta data.
      *
@@ -754,96 +727,91 @@ public class MetaDataValues implements ConnectionListener {
         try {
             ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
-            return dmd.getDatabaseProductName() + " " + 
+            return dmd.getDatabaseProductName() + " " +
                     dmd.getDatabaseProductVersion();
-        } 
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources();
-        } 
-        
+        }
+
     }
 
-    public DefaultDatabaseProcedure[] getProcedures(String schema, 
-                                             String[] names) throws DataSourceException {
+    public DefaultDatabaseProcedure[] getProcedures(String schema,
+                                                    String[] names) throws DataSourceException {
         return getProcedures(null, schema, names);
     }
 
-    public DefaultDatabaseProcedure[] getProcedures(String catalog, 
-                                             String schema, 
-                                             String[] names) throws DataSourceException {
+    public DefaultDatabaseProcedure[] getProcedures(String catalog,
+                                                    String schema,
+                                                    String[] names) throws DataSourceException {
         ResultSet rs = null;
         try {
             ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
-            
+
             List<DefaultDatabaseProcedure> list = new ArrayList<DefaultDatabaseProcedure>(names.length);
-            for (int i = 0; i < names.length; i++) {                
+            for (int i = 0; i < names.length; i++) {
                 rs = dmd.getProcedureColumns(catalog, schema, names[i], null);
 
                 DefaultDatabaseProcedure proc = new DefaultDatabaseProcedure(schema, names[i]);
                 while (rs.next()) {
                     proc.addParameter(rs.getString(4),
-                                      rs.getInt(5),
-                                      rs.getInt(6),
-                                      rs.getString(7),
-                                      rs.getInt(8));
-                } 
+                            rs.getInt(5),
+                            rs.getInt(6),
+                            rs.getString(7),
+                            rs.getInt(8));
+                }
                 list.add(proc);
                 rs.close();
             }
-            
+
             return (DefaultDatabaseProcedure[])
-                        list.toArray(new DefaultDatabaseProcedure[names.length]);
-        }
-        catch (SQLException e) {
+                    list.toArray(new DefaultDatabaseProcedure[names.length]);
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
         }
-        
+
     }
-    
+
     /**
-     * Retrieves the data in its entirety from the specified table 
+     * Retrieves the data in its entirety from the specified table
      * using <code>SELECT * FROM table_name</code>.
      *
      * @param schema - the schema name (may be null)
-     * @param table - the table name
+     * @param table  - the table name
      * @return the table data
      */
-    public ResultSet getTableData(String schema, String table) 
-        throws DataSourceException {
+    public ResultSet getTableData(String schema, String table)
+            throws DataSourceException {
         Statement stmnt = null;
         try {
             ensureConnection();
             StringBuffer sb = new StringBuffer();
             sb.append("SELECT * FROM ");
-            
+
             if (!MiscUtils.isNull(schema)) {
                 sb.append(schema);
                 sb.append(".");
             }
             sb.append(table);
-            
+
             stmnt = connection.createStatement();
             return stmnt.executeQuery(sb.toString());
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
         }
     }
-    
+
     public boolean hasStoredObjects(String schema, String[] types)
-        throws DataSourceException {
+            throws DataSourceException {
         return hasStoredObjects(null, schema, types);
     }
 
-    public boolean hasStoredObjects(String catalog, String schema, String[] types) 
-        throws DataSourceException {
+    public boolean hasStoredObjects(String catalog, String schema, String[] types)
+            throws DataSourceException {
 
         if (schema == null) {
             schema = getSchemaName();
@@ -854,21 +822,19 @@ public class MetaDataValues implements ConnectionListener {
             ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
             rs = dmd.getTables(catalog, schema, null, types);
-            return rs.next();            
-        }
-        catch (SQLException e) {
+            return rs.next();
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
         }
     }
 
     public DefaultDatabaseProcedure[] getStoredObjects(String schema, String[] types)
-        throws DataSourceException {
+            throws DataSourceException {
         return getStoredObjects(null, schema, types);
     }
-    
+
     public DefaultDatabaseProcedure[] getStoredObjects(
             String catalog, String schema, String[] types) throws DataSourceException {
 
@@ -877,60 +843,58 @@ public class MetaDataValues implements ConnectionListener {
         if (schema == null) {
             schema = getSchemaName();
         }
-        
+
         try {
             ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
             rs = dmd.getTables(catalog, schema, null, types);
-            
+
             ArrayList list = new ArrayList();
-            
+
             while (rs.next()) {
                 list.add(rs.getString(3));
             }
-            
+
             rs.close();
-            
-            String[] procedures = (String[])list.toArray(new String[list.size()]);
+
+            String[] procedures = (String[]) list.toArray(new String[list.size()]);
             list.clear();
-            
+
             for (int i = 0; i < procedures.length; i++) {
-                
+
                 rs = dmd.getProcedures(null, schema, procedures[i]);
-                
+
                 while (rs.next()) {
                     String name = rs.getString(3);
                     DefaultDatabaseProcedure dbproc = new DefaultDatabaseProcedure(
                             rs.getString(2),
                             name);
-                    
+
                     ResultSet _rs = dmd.getProcedureColumns(null, schema, name, null);
                     while (_rs.next()) {
                         dbproc.addParameter(_rs.getString(4),
-                                            _rs.getInt(5),
-                                            _rs.getInt(6),
-                                            _rs.getString(7),
-                                            _rs.getInt(8));
+                                _rs.getInt(5),
+                                _rs.getInt(6),
+                                _rs.getString(7),
+                                _rs.getInt(8));
                     }
-                    
+
                     _rs.close();
                     list.add(dbproc);
-                } 
-                
-            } 
-            
-            DefaultDatabaseProcedure[] procs = 
-                    (DefaultDatabaseProcedure[])list.toArray(new DefaultDatabaseProcedure[list.size()]);
+                }
+
+            }
+
+            DefaultDatabaseProcedure[] procs =
+                    (DefaultDatabaseProcedure[]) list.toArray(new DefaultDatabaseProcedure[list.size()]);
             return procs;
-            
-        }
-        catch (SQLException e) {
+
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        } 
-        
+        }
+
     }
 
     /**
@@ -938,8 +902,8 @@ public class MetaDataValues implements ConnectionListener {
      *
      * @param dc - the connection to be recycled
      */
-    public void recycleConnection(DatabaseConnection dc) 
-        throws DataSourceException {
+    public void recycleConnection(DatabaseConnection dc)
+            throws DataSourceException {
         if (connections.containsKey(dc)) {
             //Log.debug("Recycling connection");
             // close the connection held in the local cache
@@ -950,14 +914,14 @@ public class MetaDataValues implements ConnectionListener {
         }
     }
 
-    /** 
+    /**
      * Closes the open connection and releases
      * all resources attached to it.
      */
     public void closeConnection() {
         try {
-            for (Iterator i = connections.keySet().iterator(); i.hasNext();) {
-                DatabaseConnection dc = (DatabaseConnection)i.next();
+            for (Iterator i = connections.keySet().iterator(); i.hasNext(); ) {
+                DatabaseConnection dc = (DatabaseConnection) i.next();
                 connection = connections.get(dc);
                 if (connection != null) {
                     connection.close();
@@ -965,62 +929,62 @@ public class MetaDataValues implements ConnectionListener {
                 connection = null;
             }
             connections.clear();
-        } 
-        catch (SQLException sqlExc) {
+        } catch (SQLException sqlExc) {
             sqlExc.printStackTrace();
         }
     }
-    
-    /** <p>Retrieves key/value type pairs using the
-     *  <code>Reflection</code> API to call and retrieve
-     *  values from the connection's meta data object's methods
-     *  and variables.
-     *  <p>The values are returned within a 2-dimensional
-     *  array of key/value pairs.
+
+    /**
+     * <p>Retrieves key/value type pairs using the
+     * <code>Reflection</code> API to call and retrieve
+     * values from the connection's meta data object's methods
+     * and variables.
+     * <p>The values are returned within a 2-dimensional
+     * array of key/value pairs.
      *
-     *  @return the database properties as key/value pairs
+     * @return the database properties as key/value pairs
      */
     public Hashtable getDatabaseProperties() throws DataSourceException {
         try {
-            
+
             ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
-            
+
             Class metaClass = dmd.getClass();
             Method[] metaMethods = metaClass.getMethods();
-            
-            Object[] p = new Object[] {};
-            
+
+            Object[] p = new Object[]{};
+
             Hashtable h = new Hashtable();
             String STRING = "String";
             String GET = "get";
-            
+
             for (int i = 0; i < metaMethods.length; i++) {
                 try {
                     Class c = metaMethods[i].getReturnType();
                     String s = metaMethods[i].getName();
-                    
+
                     if (s == null || c == null) {
                         continue;
                     }
 
                     if (c.isPrimitive() || c.getName().endsWith(STRING)) {
-                        
+
                         if (s.startsWith(GET)) {
                             s = s.substring(3);
                         }
-                        
+
                         try {
                             Object res = metaMethods[i].invoke(dmd, p);
                             h.put(s, res.toString());
                         } catch (AbstractMethodError abe) {
                             continue;
-                        } 
-                        
-                    } 
+                        }
+
+                    }
                 } catch (Exception e) {
                     continue;
-                } 
+                }
             }
 /*            
             int count = 0;
@@ -1038,50 +1002,48 @@ public class MetaDataValues implements ConnectionListener {
             }
 */
             return h;
-            
-        }
-        catch (SQLException e) {
+
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources();
-        } 
-        
+        }
+
     }
-    
-    /** <p>Retrieves the connected databases SQL keyword
-     *  list via a call to the <code>DatabaseMetaData</code>
-     *  object's <code>getSQLKeywords()</code> method.
-     *  <p>The retrieved keywords are stored within a
-     *  2-dimensional array for display with the relevant
-     *  header within a table.
+
+    /**
+     * <p>Retrieves the connected databases SQL keyword
+     * list via a call to the <code>DatabaseMetaData</code>
+     * object's <code>getSQLKeywords()</code> method.
+     * <p>The retrieved keywords are stored within a
+     * 2-dimensional array for display with the relevant
+     * header within a table.
      *
-     *  @return the schema names array
+     * @return the schema names array
      */
     public String[] getDatabaseKeywords() throws DataSourceException {
         try {
             ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
-            
+
             String sql = dmd.getSQLKeywords();
             releaseResources();
-            
+
             StringTokenizer st = new StringTokenizer(sql, ",");
             List<String> values = new ArrayList<String>();
-            
-            while(st.hasMoreTokens()) {
+
+            while (st.hasMoreTokens()) {
                 values.add(st.nextToken());
-            } 
-            
+            }
+
             int size = values.size();
             String[] words = new String[size];
-            for (int i =0; i < size; i++) {
+            for (int i = 0; i < size; i++) {
                 words[i] = values.get(i);
-            } 
+            }
             return words;
-            
-        } 
-        catch (SQLException e) {
+
+        } catch (SQLException e) {
             throw new DataSourceException(e);
         }
     }
@@ -1090,12 +1052,11 @@ public class MetaDataValues implements ConnectionListener {
     private void releaseResources(Statement stmnt) {
         try {
             if (stmnt != null) {
-                if(!stmnt.isClosed())
+                if (!stmnt.isClosed())
                     stmnt.close();
             }
-        }
-        catch (SQLException sqlExc) {}
-        finally {
+        } catch (SQLException sqlExc) {
+        } finally {
             releaseResources();
         }
     }
@@ -1105,13 +1066,12 @@ public class MetaDataValues implements ConnectionListener {
         try {
             if (rs != null) {
                 rs.close();
-            }            
+            }
             if (stmnt != null) {
                 stmnt.close();
             }
-        }
-        catch (SQLException sqlExc) {}
-        finally {
+        } catch (SQLException sqlExc) {
+        } finally {
             releaseResources();
         }
     }
@@ -1123,47 +1083,49 @@ public class MetaDataValues implements ConnectionListener {
                 rs.close();
             }
             releaseResources(st);
-        }
-        catch (SQLException sqlExc) {}
-        finally {
+        } catch (SQLException sqlExc) {
+        } finally {
             releaseResources();
         }
     }
-   
-    /** <p>Releases this object's connection resources */
+
+    /**
+     * <p>Releases this object's connection resources
+     */
     private void releaseResources() {
         if (keepAlive) {
             return;
         }
         closeConnection();
     }
-    
-    /** <p>Retrieves the database SQL data types as a
-     *  <code>ResultSet</code> object.
-     *  <p>This will be typically used to display the
-     *  complete data types meta data retrieved from the JDBC driver.
+
+    /**
+     * <p>Retrieves the database SQL data types as a
+     * <code>ResultSet</code> object.
+     * <p>This will be typically used to display the
+     * complete data types meta data retrieved from the JDBC driver.
      *
-     *  @return the SQL data types
+     * @return the SQL data types
      */
     public ResultSet getDataTypesResultSet() throws DataSourceException {
         try {
             ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
             return dmd.getTypeInfo();
-        } 
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
         }
     }
 
-    /** <p>Retrieves the database SQL data type names only.
+    /**
+     * <p>Retrieves the database SQL data type names only.
      *
-     *  @return the SQL data type names within an array
+     * @return the SQL data type names within an array
      */
     public String[] getDataTypesArray() throws DataSourceException {
         ResultSet rs = null;
         try {
-            ensureConnection();            
+            ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
             rs = dmd.getTypeInfo();
 
@@ -1173,25 +1135,23 @@ public class MetaDataValues implements ConnectionListener {
                 String type = rs.getString(1);
                 if (!type.startsWith(underscore)) {
                     _dataTypes.add(type);
-                }                
-            } 
+                }
+            }
 
             int size = _dataTypes.size();
-            String[] dataTypes = new String[size];            
+            String[] dataTypes = new String[size];
             for (int i = 0; i < size; i++) {
                 dataTypes[i] = _dataTypes.get(i);
-            } 
-            
+            }
+
             //Arrays.sort(dataTypes);
             return dataTypes;
-        } 
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        } 
-        
+        }
+
     }
 
     public Object[][] getObjectDataTypesArray() throws DataSourceException {
@@ -1203,10 +1163,10 @@ public class MetaDataValues implements ConnectionListener {
 
             String underscore = "_";
             List<String> _dataTypes = new ArrayList<String>();
-            List<Integer>_dataIntTypes=new ArrayList<>();
+            List<Integer> _dataIntTypes = new ArrayList<>();
             while (rs.next()) {
                 String type = rs.getString(1);
-                Integer typeInt=rs.getInt(2);
+                Integer typeInt = rs.getInt(2);
                 if (!type.startsWith(underscore)) {
                     _dataTypes.add(type);
                     _dataIntTypes.add(typeInt);
@@ -1217,17 +1177,15 @@ public class MetaDataValues implements ConnectionListener {
             Object[][] dataTypes = new Object[size][];
             for (int i = 0; i < size; i++) {
                 dataTypes[i] = new Object[2];
-                dataTypes[i][0]=_dataTypes.get(i);
-                dataTypes[i][1]=_dataIntTypes.get(i);
+                dataTypes[i][0] = _dataTypes.get(i);
+                dataTypes[i][1] = _dataIntTypes.get(i);
             }
 
             Arrays.sort(dataTypes);
             return dataTypes;
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
         }
 
@@ -1243,7 +1201,7 @@ public class MetaDataValues implements ConnectionListener {
             String underscore = "_";
             List<Integer> _dataTypes = new ArrayList<Integer>();
             while (rs.next()) {
-                String stype=rs.getString(1);
+                String stype = rs.getString(1);
                 int type = rs.getInt(2);
                 if (!stype.startsWith(underscore)) {
                     _dataTypes.add(type);
@@ -1256,190 +1214,184 @@ public class MetaDataValues implements ConnectionListener {
                 dataTypes[i] = _dataTypes.get(i);
             }
             return dataTypes;
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
         }
 
     }
-    
-    /** <p>Retrieves the currently connected schema's
-     *  database table names within a <code>Vector</code>.
+
+    /**
+     * <p>Retrieves the currently connected schema's
+     * database table names within a <code>Vector</code>.
      *
-     *  @return the table names
+     * @return the table names
      */
     public Vector getDatabaseTablesVector() throws DataSourceException {
         ResultSet rs = null;
         try {
-            ensureConnection();            
+            ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
             String[] type = {"TABLE"};
             rs = dmd.getTables(null,
-                               getSchemaName(),
-                               null, 
-                               type);
-            
+                    getSchemaName(),
+                    null,
+                    type);
+
             Vector v = new Vector();
             while (rs.next()) {
                 v.add(rs.getString(3));
             }
-            
+
             return v;
-        } 
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }        
-        finally {
+        } finally {
             releaseResources(rs);
-        }         
+        }
     }
-    
-    /** <p>Retrieves the column names for the specified
-     *  database table and schema as an array.
+
+    /**
+     * <p>Retrieves the column names for the specified
+     * database table and schema as an array.
      *
-     *  @param table database table name
-     *  @param schema database schema name
-     *  @return the column names array
+     * @param table  database table name
+     * @param schema database schema name
+     * @return the column names array
      */
-    public String[] getColumnNames(String table, String schema) 
-        throws DataSourceException {
+    public String[] getColumnNames(String table, String schema)
+            throws DataSourceException {
         ResultSet rs = null;
         try {
-            ensureConnection();            
-            if(schema == null) {
+            ensureConnection();
+            if (schema == null) {
                 schema = getSchemaName().toUpperCase();
             }
-            
+
             DatabaseMetaData dmd = connection.getMetaData();
             rs = dmd.getColumns(null, schema, table, null);
-            
+
             Vector<String> v = new Vector<String>();
             while (rs.next()) {
                 v.add(rs.getString(4));
-            } 
-            
+            }
+
             int v_size = v.size();
             String[] columns = new String[v_size];
             for (int i = 0; i < v_size; i++) {
                 columns[i] = v.get(i);
-            } 
-            
+            }
+
             return columns;
-        }         
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        } 
-        
+        }
+
     }
-    
-    /** <p>Retrieves the column names for the specified
-     *  database table and schema as a <code>Vector</code>
-     *  object.
+
+    /**
+     * <p>Retrieves the column names for the specified
+     * database table and schema as a <code>Vector</code>
+     * object.
      *
-     *  @param table database table name
-     *  @param schema database schema name
-     *  @return the column names <code>Vector</code>
+     * @param table  database table name
+     * @param schema database schema name
+     * @return the column names <code>Vector</code>
      */
-    public Vector<String> getColumnNamesVector(String table, String schema) 
-        throws DataSourceException {
+    public Vector<String> getColumnNamesVector(String table, String schema)
+            throws DataSourceException {
         ResultSet rs = null;
         try {
-            ensureConnection();            
+            ensureConnection();
             if (schema == null) {
                 schema = getSchemaName().toUpperCase();
             }
-            
+
             DatabaseMetaData dmd = connection.getMetaData();
             rs = dmd.getColumns(null, schema, table, null);
-            
-            Vector<String> v = new Vector<String>();            
+
+            Vector<String> v = new Vector<String>();
             while (rs.next()) {
 //                v.add(rs.getString(4).toUpperCase());
                 v.add(rs.getString(4));
             }
-            return v;            
-        } 
-        catch (SQLException e) {
+            return v;
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }        
-        finally {
+        } finally {
             releaseResources(rs);
-        }         
+        }
     }
-    
-    /** <p>Retrieves the specified schema's
-     *  database table names within a <code>Vector</code>.
+
+    /**
+     * <p>Retrieves the specified schema's
+     * database table names within a <code>Vector</code>.
      *
-     *  @return the table names
+     * @return the table names
      */
     public Vector<String> getSchemaTables(String schema) throws DataSourceException {
         ResultSet rs = null;
         try {
-            ensureConnection();            
+            ensureConnection();
             String _schema = null;
             boolean valueFound = false;
-            
+
             DatabaseMetaData dmd = connection.getMetaData();
             rs = dmd.getSchemas();
-            
+
             while (rs.next()) {
                 _schema = rs.getString(1);
-                
+
                 if (_schema.equalsIgnoreCase(schema)) {
                     valueFound = true;
                     break;
-                } 
-                
-            } 
-            
+                }
+
+            }
+
             rs.close();
-            
+
             if (!valueFound) {
                 _schema = schema;
             }
-            
+
             String[] type = {"TABLE"};
             rs = dmd.getTables(null, _schema, null, type);
-            
+
             Vector<String> v = new Vector<String>();
-            
+
             while (rs.next()) {
                 v.add(rs.getString(3));
             }
-            
-            rs.close();            
+
+            rs.close();
             return v;
-        }         
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        } 
-        
+        }
+
     }
-    
+
     public Vector<ColumnData> getColumnMetaDataVector(
-                    String name, String schema, String catalog) 
-                    throws DataSourceException {
+            String name, String schema, String catalog)
+            throws DataSourceException {
 
         ResultSet rs = null;
 
         try {
-            
-            ensureConnection();            
+
+            ensureConnection();
             if (schema == null) {
                 schema = getSchemaName().toUpperCase();
             }
-            
+
             DatabaseMetaData dmd = connection.getMetaData();
-            
+
             if (!dmd.supportsCatalogsInTableDefinitions()) {
                 catalog = null;
             }
@@ -1449,7 +1401,7 @@ public class MetaDataValues implements ConnectionListener {
             }
 
             rs = dmd.getColumns(catalog, schema, name, null);
-            
+
             Vector v = new Vector();
             while (rs.next()) {
                 ColumnData cd = new ColumnData(databaseConnection);
@@ -1460,49 +1412,48 @@ public class MetaDataValues implements ConnectionListener {
                 cd.setColumnRequired(rs.getInt(11));
                 cd.setTableName(name);
                 v.add(cd);
-            } 
-            
+            }
+
             return v;
-        } 
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        } 
-        
+        }
+
     }
 
-    /** <p>Retrieves the complete column meta data
-     *  for the specified database table and schema.
-     *  <p>Each column and associated data is stored within
-     *  <code>ColumnData</code> objects and added to the
-     *  <code>Vector</code> object to be returned.
+    /**
+     * <p>Retrieves the complete column meta data
+     * for the specified database table and schema.
+     * <p>Each column and associated data is stored within
+     * <code>ColumnData</code> objects and added to the
+     * <code>Vector</code> object to be returned.
      *
-     *  @param name database table name
-     *  @param schema database schema name
-     *  @return the table column meta data
+     * @param name   database table name
+     * @param schema database schema name
+     * @return the table column meta data
      */
-    public Vector<ColumnData> getColumnMetaDataVector(String name, String schema) 
-        throws DataSourceException {
+    public Vector<ColumnData> getColumnMetaDataVector(String name, String schema)
+            throws DataSourceException {
         return getColumnMetaDataVector(name, schema, null);
     }
-    
-    public BaseDatabaseObject[] getTables(String catalog, 
-                                      String schema, 
-                                      String[] types)
-        throws DataSourceException {
+
+    public BaseDatabaseObject[] getTables(String catalog,
+                                          String schema,
+                                          String[] types)
+            throws DataSourceException {
 
         ResultSet rs = null;
         try {
             ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
             rs = dmd.getTables(catalog, schema, null, types);
-            
+
             if (rs == null) {
                 return new BaseDatabaseObject[0];
             }
-            
+
             ArrayList list = new ArrayList();
             while (rs.next()) {
                 BaseDatabaseObject object = new BaseDatabaseObject();
@@ -1512,26 +1463,24 @@ public class MetaDataValues implements ConnectionListener {
                 object.setMetaDataKey(rs.getString(4));
                 object.setRemarks(rs.getString(5));
                 list.add(object);
-            } 
-            
-            return (BaseDatabaseObject[])list.toArray(
-                                     new BaseDatabaseObject[list.size()]);
-            
-        } 
-        catch (SQLException e) {
+            }
+
+            return (BaseDatabaseObject[]) list.toArray(
+                    new BaseDatabaseObject[list.size()]);
+
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        } 
+        }
     }
-    
+
     public static final int STRING_FUNCTIONS = 0;
-    
+
     public static final int TIME_DATE_FUNCTIONS = 1;
-    
+
     public static final int NUMERIC_FUNCTIONS = 2;
-    
+
     public String[] getSystemFunctions(int type) throws DataSourceException {
         try {
             ensureConnection();
@@ -1562,19 +1511,18 @@ public class MetaDataValues implements ConnectionListener {
                     list.add(st.nextToken());
                 }
 
-                return (String[])list.toArray(new String[list.size()]);
+                return (String[]) list.toArray(new String[list.size()]);
             }
 
             return new String[0];
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
         }
 
     }
-    
+
     /**
-     * Returns the procedure term used in the current connected 
+     * Returns the procedure term used in the current connected
      * database.
      *
      * @return the procedure term
@@ -1584,43 +1532,40 @@ public class MetaDataValues implements ConnectionListener {
             ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
             return dmd.getProcedureTerm();
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
         }
     }
 
     public String[] getProcedureNames(String catalog, String schema, String name)
-        throws DataSourceException {
+            throws DataSourceException {
         ResultSet rs = null;
         try {
-            ensureConnection();            
+            ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
             rs = dmd.getProcedures(catalog, schema, name);
 
-            List list = new ArrayList();            
+            List list = new ArrayList();
             while (rs.next()) {
                 list.add(rs.getString(3));
             }
 
-            return (String[])list.toArray(new String[list.size()]);
-        }
-        catch (SQLException e) {
+            return (String[]) list.toArray(new String[list.size()]);
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        } 
+        }
     }
-    
+
     public String[] getTables(String catalog, String schema, String metaType)
-        throws DataSourceException {
+            throws DataSourceException {
 
         ResultSet rs = null;
         try {
             ensureConnection();
             DatabaseMetaData dmd = connection.getMetaData();
-            
+
             if (!dmd.supportsCatalogsInTableDefinitions()) {
                 catalog = null;
             }
@@ -1628,7 +1573,7 @@ public class MetaDataValues implements ConnectionListener {
             if (!dmd.supportsSchemasInTableDefinitions()) {
                 schema = null;
             }
-            
+
             rs = dmd.getTables(catalog, schema, null, new String[]{metaType});
 
             if (rs != null) { // some odd null rs behaviour on some drivers
@@ -1636,22 +1581,19 @@ public class MetaDataValues implements ConnectionListener {
                 while (rs.next()) {
                     list.add(rs.getString(3));
                 }
-                return (String[])list.toArray(new String[list.size()]);
-            }
-            else {
+                return (String[]) list.toArray(new String[list.size()]);
+            } else {
                 return new String[0];
             }
 
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
-        }
-        finally {
+        } finally {
             releaseResources(rs);
-        } 
-        
+        }
+
     }
-    
+
     /** <p>Executes the specified query (SELECT) and returns
      *  a <code>ResultSet</code> object from this query.
      *  <p>This is employed primarily by the Database Browser
@@ -1687,49 +1629,59 @@ public class MetaDataValues implements ConnectionListener {
         } 
         
     }*/
-    
+
     // ----------------------------------------------------------
     // convenience methods for simple values from the connection
     // ----------------------------------------------------------
-    
-    /** <p>Retrieves the connected data source name.
-     *  @return the data source name
+
+    /**
+     * <p>Retrieves the connected data source name.
+     *
+     * @return the data source name
      */
     public String getDataSourceName() {
         String name = databaseConnection.getSourceName();
         return name == null ? "Not Available" : name.toUpperCase();
     }
-    
-    /** <p>Retrieves the connected port number.
-     *  @return the port number
+
+    /**
+     * <p>Retrieves the connected port number.
+     *
+     * @return the port number
      */
     public int getPort() {
         return databaseConnection.getPortInt();
     }
-    
-    /** <p>Retrieves the connected user.
-     *  @return the user name
+
+    /**
+     * <p>Retrieves the connected user.
+     *
+     * @return the user name
      */
     public String getUser() {
         return databaseConnection.getUserName();
     }
-    
-    /** <p>Retrieves the connected JDBC URL.
-     *  @return the JDBC URL
+
+    /**
+     * <p>Retrieves the connected JDBC URL.
+     *
+     * @return the JDBC URL
      */
     public String getURL() {
         return getDataSource().getJdbcUrl();
     }
-    
-    /** <p>Retrieves the connected host name.
-     *  @return the host name
+
+    /**
+     * <p>Retrieves the connected host name.
+     *
+     * @return the host name
      */
     public String getHost() {
         String host = databaseConnection.getHost();
         return host == null ? "Not Available" : host.toUpperCase();
     }
-  
-    /** 
+
+    /**
      * Retrieves the connected schema name.
      *
      * @return the schema name
@@ -1738,51 +1690,51 @@ public class MetaDataValues implements ConnectionListener {
         String schema = databaseConnection.getUserName();
         return schema == null ? "Not Available" : schema.toUpperCase();
     }
-    
+
     public String getCatalogName() {
-        String catalog = null;        
+        String catalog = null;
         try {
             ensureConnection();
             catalog = connection.getCatalog();
             if (MiscUtils.isNull(catalog)) {
                 catalog = getSchemaName();
             }
-        }
-        catch (SQLException e) {}
-        catch (DataSourceException e) {}
-        finally {
+        } catch (SQLException e) {
+        } catch (DataSourceException e) {
+        } finally {
             releaseResources();
-        }        
+        }
         return catalog == null ? "Not Available" : catalog.toUpperCase();
     }
-    
+
     private DatabaseDataSource getDataSource() {
         return (DatabaseDataSource) ConnectionManager.getDataSource(databaseConnection);
     }
 
     /**
      * Indicates a connection has been established.
-     * 
+     *
      * @param connectionEvent encapsulating event
      */
-    public void connected(ConnectionEvent connectionEvent) {}
+    public void connected(ConnectionEvent connectionEvent) {
+    }
 
     /**
      * Indicates a connection has been closed.
-     * 
+     *
      * @param connectionEvent encapsulating event
      */
     public void disconnected(ConnectionEvent connectionEvent) {
 
         DatabaseConnection dc = connectionEvent.getDatabaseConnection();
-        
+
         if (connections.containsKey(dc)) {
-        
+
             connections.remove(dc);
-            
+
             // null out the connection if its the one disconnected
             if (databaseConnection == dc) {
-            
+
                 connection = null;
             }
 
@@ -1792,7 +1744,7 @@ public class MetaDataValues implements ConnectionListener {
     public boolean canHandleEvent(ApplicationEvent event) {
         return (event instanceof ConnectionEvent);
     }
-    
+
 }
 
 

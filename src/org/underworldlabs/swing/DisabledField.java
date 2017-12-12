@@ -20,12 +20,10 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Insets;
+import javax.swing.*;
+import java.awt.*;
 
-import javax.swing.JTextField;
-import javax.swing.UIManager;
-
-/** 
+/**
  * A convenience class providing a simple component
  * to display text within a rectangle achieving the same
  * effect as displayed when disabling a <code>JTextField</code>
@@ -33,21 +31,21 @@ import javax.swing.UIManager;
  * component across all L&Fs that remains lightweight and does
  * not feature or require those methods as would be available
  * using a <code>JTextField</code>.
- *
+ * <p>
  * <p>Some limitations have been deliberately introduced. The
  * component height will always be 24px. The width is determined
  * as specified or by the layout manager. In any case, This
  * component's size should not require any modification given its
  * limited design and purpose.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DisabledField extends JTextField {
-    
+
     private static final int HEIGHT = 28;
-    
-    protected static final Insets INSETS = new Insets(5, 3, 5, 3);   
-    
+
+    protected static final Insets INSETS = new Insets(5, 3, 5, 3);
+
     public DisabledField() {
         this("");
     }
@@ -65,16 +63,16 @@ public class DisabledField extends JTextField {
 
         return INSETS;
     }
-    
+
     @Override
     public boolean isEditable() {
 
         return false;
     }
-    
+
     @Override
     public int getHeight() {
-     
+
         return HEIGHT;
     }
     

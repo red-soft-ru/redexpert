@@ -20,18 +20,6 @@
 
 package org.executequery.util;
 
-import java.awt.event.KeyEvent;
-
-import javax.swing.InputMap;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.KeyStroke;
-import javax.swing.LookAndFeel;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.plaf.metal.MetalLookAndFeel;
-import javax.swing.text.DefaultEditorKit;
-
 import org.apache.commons.lang.math.NumberUtils;
 import org.executequery.ApplicationException;
 import org.executequery.plaf.ExecuteQueryTheme;
@@ -42,19 +30,24 @@ import org.underworldlabs.swing.plaf.base.CustomTextPaneUI;
 import org.underworldlabs.swing.plaf.bumpygradient.BumpyGradientLookAndFeel;
 import org.underworldlabs.swing.plaf.smoothgradient.SmoothGradientLookAndFeel;
 
+import javax.swing.*;
+import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.text.DefaultEditorKit;
+import java.awt.event.KeyEvent;
+
 public final class LookAndFeelLoader {
 
     public LookAndFeelType loadLookAndFeel(String lookAndFeelType) {
 
         if (NumberUtils.isDigits(lookAndFeelType)) {
-            
+
             // legacy numeric setting - default to EQ L&F
-            
+
             return loadLookAndFeel(LookAndFeelType.EXECUTE_QUERY);
-        }        
+        }
         return loadLookAndFeel(LookAndFeelType.valueOf(lookAndFeelType));
     }
-    
+
     public LookAndFeelType loadLookAndFeel(LookAndFeelType lookAndFeelType) {
 
         try {
@@ -66,7 +59,7 @@ public final class LookAndFeelLoader {
                 case EXECUTE_QUERY_DARK:
                     loadDarkEQLookAndFeel();
                     break;
-                case SMOOTH_GRADIENT:                    
+                case SMOOTH_GRADIENT:
                     UIManager.setLookAndFeel(new SmoothGradientLookAndFeel());
                     break;
                 case BUMPY_GRADIENT:
@@ -109,41 +102,41 @@ public final class LookAndFeelLoader {
                     break;
             }
 
-        } catch (UnsupportedLookAndFeelException | IllegalAccessException | InstantiationException | ClassNotFoundException e ) {
+        } catch (UnsupportedLookAndFeelException | IllegalAccessException | InstantiationException | ClassNotFoundException e) {
 
             throw new ApplicationException(e);
-        } 
+        }
 
         if (!UIUtils.isNativeMacLookAndFeel()) {
 
             CustomTextAreaUI.initialize();
-            CustomTextPaneUI.initialize();              
+            CustomTextPaneUI.initialize();
         }
-        
-        applyMacSettings();        
+
+        applyMacSettings();
         return lookAndFeelType;
     }
-    
+
     private void applyMacSettings() {
 
         if (UIUtils.isMac()) {
 
             String[] textComponents = {"TextField", "TextPane", "TextArea", "EditorPane", "PasswordField"};
             for (String textComponent : textComponents) {
-                
+
                 InputMap im = (InputMap) UIManager.get(textComponent + ".focusInputMap");
                 im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK), DefaultEditorKit.copyAction);
                 im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK), DefaultEditorKit.pasteAction);
                 im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK), DefaultEditorKit.cutAction);
             }
-            
+
             if (UIUtils.isNativeMacLookAndFeel()) {
-            	
-            	UIManager.put("Table.gridColor", UIUtils.getDefaultBorderColour());
+
+                UIManager.put("Table.gridColor", UIUtils.getDefaultBorderColour());
             }
 
         }
-        
+
     }
 
     private void loadCustomLookAndFeel() {
@@ -238,7 +231,7 @@ public final class LookAndFeelLoader {
                 System.out.println(value);
             }
             */
-            
+
         } catch (UnsupportedLookAndFeelException e) {
 
             throw new ApplicationException(e);
@@ -247,37 +240,37 @@ public final class LookAndFeelLoader {
     }
 
     private void loadDarkEQLookAndFeel() {
-        
+
         try {
 
             LookAndFeel laf = new org.underworldlabs.swing.plaf.UnderworldLabsDarkFlatLookAndFeel();
             UIManager.setLookAndFeel(laf);
-            
+
         } catch (UnsupportedLookAndFeelException e) {
-            
+
             throw new ApplicationException(e);
         }
-        
+
     }
-    
+
     /**
      * Sets the default OLD 'Execute Query' look and feel.
      */
     public void loadDefault3DLookAndFeel() {
-        
+
         try {
             org.underworldlabs.swing.plaf.UnderworldLabsLookAndFeel metal =
                     new org.underworldlabs.swing.plaf.UnderworldLabsLookAndFeel();
-            
+
             UIManager.setLookAndFeel(metal);
-            
+
         } catch (UnsupportedLookAndFeelException e) {
-            
+
             throw new ApplicationException(e);
         }
-        
+
     }
-    
+
     public void loadNativeLookAndFeel() {
         try {
 

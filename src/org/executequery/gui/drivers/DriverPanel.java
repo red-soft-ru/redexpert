@@ -29,13 +29,13 @@ public interface DriverPanel {
     String FRAME_ICON = "DatabaseDrivers16.png";
 
     boolean saveDrivers();
-    
+
     void driverNameChanged();
-    
+
     void setDriver(DatabaseDriver databaseDriver);
-    
+
     DatabaseDriver getDriver();
-    
+
 }
 
 

@@ -20,51 +20,52 @@
 
 package org.executequery.gui.text.syntax;
 
-import java.awt.Color;
-import java.awt.Font;
+import org.executequery.Constants;
+import org.executequery.gui.editor.QueryEditorSettings;
+import org.executequery.sql.SqlMessages;
+
+import javax.swing.text.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultEditorKit;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.Element;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-
-import org.executequery.Constants;
-import org.executequery.gui.editor.QueryEditorSettings;
-import org.executequery.log.Log;
-import org.executequery.sql.SqlMessages;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class SQLSyntaxDocument extends DefaultStyledDocument 
-                               implements TokenTypes {
+public class SQLSyntaxDocument extends DefaultStyledDocument
+        implements TokenTypes {
 
-    /** The document root element */
+    /**
+     * The document root element
+     */
     private Element rootElement;
 
-    /** The text component owner of this document */
+    /**
+     * The text component owner of this document
+     */
     private JTextComponent textComponent;
 
-    /** Convert tabs to spaces */
+    /**
+     * Convert tabs to spaces
+     */
     private boolean tabsToSpaces;
 
-    /** tracks brace positions */
+    /**
+     * tracks brace positions
+     */
     private Vector<Token> braceTokens;
 
-    /** the current text insert mode */
+    /**
+     * the current text insert mode
+     */
     private int insertMode;
-    
-    /** tracks string literal entries (quotes) */
+
+    /**
+     * tracks string literal entries (quotes)
+     */
     private List<Token> stringTokens;
 
     /* syntax matchers */
@@ -74,7 +75,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         this(null, null);
     }
 
-    public SQLSyntaxDocument(List<String> keys)	{
+    public SQLSyntaxDocument(List<String> keys) {
         this(keys, null);
     }
 
@@ -99,42 +100,42 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
     protected void initMatchers() {
         matchers = new TokenMatcher[MATCHERS.length];
 
-        matchers[NUMBER_MATCH] = 
-            new TokenMatcher(NUMBER,
-                             styles[NUMBER], 
-                             Pattern.compile(NUMBER_REGEX).
-                                                matcher(Constants.EMPTY));
+        matchers[NUMBER_MATCH] =
+                new TokenMatcher(NUMBER,
+                        styles[NUMBER],
+                        Pattern.compile(NUMBER_REGEX).
+                                matcher(Constants.EMPTY));
 
-        matchers[BRACES_MATCH] = 
-            new TokenMatcher(BRACKET,
-                             styles[BRACKET], 
-                             Pattern.compile(BRACES_REGEX).
-                                                matcher(Constants.EMPTY));
+        matchers[BRACES_MATCH] =
+                new TokenMatcher(BRACKET,
+                        styles[BRACKET],
+                        Pattern.compile(BRACES_REGEX).
+                                matcher(Constants.EMPTY));
 
-        matchers[OPERATOR_MATCH] = 
-            new TokenMatcher(OPERATOR,
-                             styles[OPERATOR], 
-                             Pattern.compile(OPERATOR_REGEX).
-                                                matcher(Constants.EMPTY));
+        matchers[OPERATOR_MATCH] =
+                new TokenMatcher(OPERATOR,
+                        styles[OPERATOR],
+                        Pattern.compile(OPERATOR_REGEX).
+                                matcher(Constants.EMPTY));
 
-        matchers[STRING_MATCH] = 
-            new TokenMatcher(STRING,
-                             styles[STRING], 
-                             Pattern.compile(QUOTE_REGEX).
-                                                matcher(Constants.EMPTY));
+        matchers[STRING_MATCH] =
+                new TokenMatcher(STRING,
+                        styles[STRING],
+                        Pattern.compile(QUOTE_REGEX).
+                                matcher(Constants.EMPTY));
 
-        matchers[SINGLE_LINE_COMMENT_MATCH] = 
-            new TokenMatcher(SINGLE_LINE_COMMENT,
-                             styles[SINGLE_LINE_COMMENT], 
-                             Pattern.compile(SINGLE_LINE_COMMENT_REGEX).
-                                                matcher(Constants.EMPTY));
+        matchers[SINGLE_LINE_COMMENT_MATCH] =
+                new TokenMatcher(SINGLE_LINE_COMMENT,
+                        styles[SINGLE_LINE_COMMENT],
+                        Pattern.compile(SINGLE_LINE_COMMENT_REGEX).
+                                matcher(Constants.EMPTY));
 
         char PIPE = '|';
         StringBuilder sb = new StringBuilder("\\b(");
         String[] literals = {Constants.TRUE_LITERAL,
-                             Constants.FALSE_LITERAL,
-                             Constants.NULL_LITERAL};
-        
+                Constants.FALSE_LITERAL,
+                Constants.NULL_LITERAL};
+
         for (int i = 0, n = literals.length - 1; i < literals.length; i++) {
             sb.append(literals[i]);
             if (i < n) {
@@ -143,21 +144,21 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         }
 
         sb.append(")\\b");
-        matchers[LITERALS_MATCH] = 
-            new TokenMatcher(LITERAL,
-                             styles[LITERAL], 
-                             Pattern.compile(
+        matchers[LITERALS_MATCH] =
+                new TokenMatcher(LITERAL,
+                        styles[LITERAL],
+                        Pattern.compile(
                                 sb.toString(), Pattern.CASE_INSENSITIVE).
-                                            matcher(Constants.EMPTY));
+                                matcher(Constants.EMPTY));
 
     }
-    
+
     public void setTextComponent(JTextComponent textComponent) {
         this.textComponent = textComponent;
     }
 
     public void resetAttributeSets() {
-        initStyles(true);        
+        initStyles(true);
         // update the stored tokens
         for (int i = 0; i < matchers.length; i++) {
             TokenMatcher matcher = matchers[i];
@@ -172,7 +173,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
     private Token getAvailableBraceToken() {
         for (int i = 0, k = braceTokens.size(); i < k; i++) {
-            Token token = (Token)braceTokens.get(i);
+            Token token = (Token) braceTokens.get(i);
             if (!token.isValid()) {
                 return token;
             }
@@ -186,10 +187,9 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         int size = braceTokens.size();
         if (size == 0) {
             return false;
-        }
-        else {
+        } else {
             for (int i = 0; i < size; i++) {
-                Token token = (Token)braceTokens.get(i);
+                Token token = (Token) braceTokens.get(i);
                 if (token.isValid()) {
                     return true;
                 }
@@ -197,14 +197,14 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         }
         return false;
     }
-    
+
     public void resetBracePosition() {
         if (!hasValidBraceTokens()) {
             return;
         }
 
         for (int i = 0, k = braceTokens.size(); i < k; i++) {
-            Token token = (Token)braceTokens.get(i);
+            Token token = (Token) braceTokens.get(i);
             applyBraceHiglight(false, token);
             token.reset();
         }
@@ -224,7 +224,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         if (!isOpenBrace(brace)) {
             Token token = getAvailableBraceToken();
             token.reset(BRACKET_HIGHLIGHT_ERR, offset, -1);
-            applyBraceHiglight(true, token);                    
+            applyBraceHiglight(true, token);
         }
     }
 
@@ -234,7 +234,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
             if (length == 0) {
                 return;
             }
-            
+
             String text = getText(0, length);
             char charAtOffset = 0;
             char charBeforeOffset = 0;
@@ -249,25 +249,24 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
             int matchOffset = -1;
             if (isBrace(charAtOffset)) {
-                matchOffset = getMatchingBraceOffset(offset, 
-                                                     charAtOffset, 
-                                                     text);
+                matchOffset = getMatchingBraceOffset(offset,
+                        charAtOffset,
+                        text);
                 if (matchOffset == -1) {
                     applyErrorBrace(offset, charAtOffset);
                     return;
                 }
-            }
-            else if (isBrace(charBeforeOffset)) {
-                    offset--;
-                matchOffset = getMatchingBraceOffset(offset, 
-                                                     charBeforeOffset, 
-                                                     text);
+            } else if (isBrace(charBeforeOffset)) {
+                offset--;
+                matchOffset = getMatchingBraceOffset(offset,
+                        charBeforeOffset,
+                        text);
                 if (matchOffset == -1) {
                     applyErrorBrace(offset, charBeforeOffset);
                     return;
                 }
             }
-            
+
             if (matchOffset == -1) {
                 return;
             }
@@ -275,9 +274,9 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
             Token token = getAvailableBraceToken();
             token.reset(BRACKET_HIGHLIGHT, offset, matchOffset);
             applyBraceHiglight(true, token);
-            
+
         } catch (BadLocationException e) {
-            
+
             throw new Error(e);
         }
 
@@ -292,32 +291,29 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         if (isOpenBrace(brace)) {
 
             for (int i = offset; i < chars.length; i++) {
-                   if (chars[i] == brace) {
-                       thisBraceCount++;
-                   }
-                   else if (chars[i] == braceMatch) {
-                       matchingBraceCount++;
-                   }
+                if (chars[i] == brace) {
+                    thisBraceCount++;
+                } else if (chars[i] == braceMatch) {
+                    matchingBraceCount++;
+                }
 
-                   if (thisBraceCount == matchingBraceCount) {
-                       return i;
-                   }
+                if (thisBraceCount == matchingBraceCount) {
+                    return i;
+                }
             }
 
-        }
-        else {
+        } else {
 
             for (int i = offset; i >= 0; i--) {
-                   if (chars[i] == brace) {
-                       thisBraceCount++;
-                   }
-                   else if (chars[i] == braceMatch) {
-                       matchingBraceCount++;
-                   }
+                if (chars[i] == brace) {
+                    thisBraceCount++;
+                } else if (chars[i] == braceMatch) {
+                    matchingBraceCount++;
+                }
 
-                   if (thisBraceCount == matchingBraceCount) {
-                       return i;
-                   }
+                if (thisBraceCount == matchingBraceCount) {
+                    return i;
+                }
             }
 
         }
@@ -330,18 +326,18 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
             case '(':
                 return ')';
             case ')':
-                 return '(';
+                return '(';
             case '[':
                 return ']';
             case ']':
-                 return '[';
+                return '[';
             case '{':
                 return '}';
             case '}':
-                 return '{';
+                return '{';
             default:
                 return 0;
-        }            
+        }
     }
 
     private boolean isOpenBrace(char brace) {
@@ -363,22 +359,24 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         return false;
     }
 
-    /** temp string buffer for insertion text */
+    /**
+     * temp string buffer for insertion text
+     */
     private StringBuffer buffer = new StringBuffer();
-    
+
     /*
      *  Override to apply syntax highlighting after
      *  the document has been updated
      */
     public void insertString(int offset, String text, AttributeSet attrs)
-      throws BadLocationException	{
+            throws BadLocationException {
 
         //Log.debug("insert");
-          
+
         int length = text.length();
-        
+
         // check overwrite mode
-        if(insertMode == SqlMessages.OVERWRITE_MODE && 
+        if (insertMode == SqlMessages.OVERWRITE_MODE &&
                 length == 1 && offset != getLength()) {
             remove(offset, 1);
         }
@@ -411,7 +409,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
                 for (int i = 0; i < chars.length; i++) {
 
-                    if ((Character.isWhitespace(chars[i])) 
+                    if ((Character.isWhitespace(chars[i]))
                             && (chars[i] != Constants.NEW_LINE_CHAR)) {
                         buffer.append(SPACE);
                     } else {
@@ -426,7 +424,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         }
 
         resetBracePosition();
-        
+
         /* call super method and default to normal style */
         super.insertString(offset, text, styles[WORD]);
 
@@ -455,25 +453,27 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         resetBracePosition();
         super.remove(offset, length);
         processChangedLines(offset, 0);
-        
+
         if (offset > 0) {
-        
+
             updateBraces(offset);
         }
 
     }
-    
-    /** Mulit-line comment tokens from the last scan */
+
+    /**
+     * Mulit-line comment tokens from the last scan
+     */
     private List<Token> multiLineComments = new ArrayList<Token>();
-    
+
     private void processChangedLines(int offset, int length)
-        throws BadLocationException {
+            throws BadLocationException {
 
         int documentLength = getLength();
         if (documentLength == 0) {
             return;
         }
-        
+
         int tokenStart = -1;
         int tokenEnd = 0;
         int endOffset = offset + length;
@@ -486,14 +486,14 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
             tokenEnd = content.indexOf(CLOSE_COMMENT, tokenStart);
 
             if (tokenEnd != -1) {
-            
+
                 tokenEnd += 2;
             }
 
             tokens.add(new Token(tokenStart, tokenEnd));
-            
+
             if (tokenEnd == -1) {
-                
+
                 break;
             }
 
@@ -514,7 +514,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
             tokenEnd = lastToken.getEndIndex();
 
             applyStyle = true;
-            
+
             for (int i = 0; i < tokenCount; i++) {
                 Token token = tokens.get(i);
                 if (token.equals(lastToken)) {
@@ -526,14 +526,14 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
             // reapply the styles to the portion from the last
             // scan that no longer exists
             if (applyStyle) {
-                
+
                 // if end was -1 set to the end of the document
                 if (tokenEnd == -1) {
                     tokenEnd = documentLength - 1;
                 }
-                
-                scanLines(tokenStart, tokenEnd - tokenStart, 
-                          content, documentLength, tokens);
+
+                scanLines(tokenStart, tokenEnd - tokenStart,
+                        content, documentLength, tokens);
             }
         }
 
@@ -547,18 +547,18 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
             // apply to the rest of the document
             if (token.getEndIndex() == -1) {
                 setCharacterAttributes(tokenStart,
-                                       content.length() - tokenStart,
-                                       styles[COMMENT], 
-                                       false);
+                        content.length() - tokenStart,
+                        styles[COMMENT],
+                        false);
                 break;
             }
-            
+
             applyStyle = true;
-            
+
             // check the last multiline comments
             for (int j = 0; j < lastTokenCount; j++) {
                 Token lastToken = multiLineComments.get(j);
-                
+
                 // check if the current token existed in the last scan
                 if (lastToken.equals(token)) {
                     // style not applied if it did
@@ -571,7 +571,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
                     applyStyle = false;
                     // rescan that section that was previously still open
                     scanLines(tokenEnd, documentLength - tokenEnd,
-                              content, documentLength, tokens);
+                            content, documentLength, tokens);
                     break;
                 }
 
@@ -582,27 +582,26 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
             // of the current state of the apply flag
             if (token.intersects(offset, endOffset)) {
                 setCharacterAttributes(tokenStart,
-                                       token.getLength(),
-                                       styles[COMMENT], 
-                                       false);
-            }
-            else {
+                        token.getLength(),
+                        styles[COMMENT],
+                        false);
+            } else {
                 if (applyStyle) {
 
                     // if we have a close tag
                     if (tokenEnd > 0) {
                         setCharacterAttributes(tokenStart,
-                                               token.getLength(),
-                                               styles[COMMENT], 
-                                               false);
+                                token.getLength(),
+                                styles[COMMENT],
+                                false);
                     }
                     // otherwise set style to the 
                     // remainder of the document
                     else {
                         setCharacterAttributes(tokenStart,
-                                               content.length() - tokenStart,
-                                               styles[COMMENT], 
-                                               false);
+                                content.length() - tokenStart,
+                                styles[COMMENT],
+                                false);
                     }
 
                 }
@@ -614,7 +613,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         multiLineComments = tokens;
     }
 
-    private void scanLines(int offset, int length, 
+    private void scanLines(int offset, int length,
                            String content, int documentLength, List<Token> tokens) {
 
         // The lines affected by the latest document update
@@ -627,8 +626,8 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         for (int i = startLine; i <= endLine; i++) {
             Element element = rootElement.getElement(i);
             int startOffset = element.getStartOffset();
-            int endOffset = element.getEndOffset() - 1;            
-            
+            int endOffset = element.getEndOffset() - 1;
+
             if (endOffset < 0) {
                 endOffset = 0;
             }
@@ -644,16 +643,16 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
             if (applyStyle) {
                 String textSnippet = content.substring(startOffset, endOffset);
-                applySyntaxColours(textSnippet, 
-                                   startOffset, 
-                                   endOffset, 
-                                   documentLength);
+                applySyntaxColours(textSnippet,
+                        startOffset,
+                        endOffset,
+                        documentLength);
             }
         }
     }
-    
-    private void applySyntaxColours(String text,  
-                                    int startOffset, 
+
+    private void applySyntaxColours(String text,
+                                    int startOffset,
                                     int endOffset,
                                     int contentLength) {
 
@@ -668,27 +667,27 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         for (int i = 0; i < matchers.length; i++) {
             if (matchers[i] != null) { // check case keywords not initialised
                 applyHighlights(i,
-                                text, 
-                                startOffset,
-                                matchers[i].getMatcher(),
-                                matchers[i].getStyle(),
-                                (i == SINGLE_LINE_COMMENT_MATCH));
+                        text,
+                        startOffset,
+                        matchers[i].getMatcher(),
+                        matchers[i].getStyle(),
+                        (i == SINGLE_LINE_COMMENT_MATCH));
             }
         }
 
     }
 
     private void applyHighlights(int matcherType,
-                                 String text, 
-                                 int startOffset, 
-                                 Matcher matcher, 
+                                 String text,
+                                 int startOffset,
+                                 Matcher matcher,
                                  Style style,
                                  boolean replace) {
-        
-        if (matcherType == STRING_MATCH ) {
+
+        if (matcherType == STRING_MATCH) {
             stringTokens.clear();
         }
-        
+
         int start = 0;
         int end = 0;
         int realStart = 0;
@@ -699,8 +698,8 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
         // the string token count for when we are not
         // processing string tokens
-        int stringTokenCount = stringTokens.size();        
-        
+        int stringTokenCount = stringTokens.size();
+
         int length = text.length();
         int matcherStart = 0;
         while (matcher.find(matcherStart)) {
@@ -709,9 +708,9 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
             realStart = start + startOffset;
             realEnd = end + startOffset;
-           
+
             applyStyle = true;
-            
+
             // if this is a string mather add to the cache
             if (matcherType == STRING_MATCH) {
                 stringTokens.add(new Token(realStart, realEnd));
@@ -752,16 +751,16 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
                             applyStyle = false;
                             break;
                         }
-                        
+
                     }
                 }
             }
-            
+
             if (applyStyle) {
-                setCharacterAttributes(realStart, 
-                                       end - start, 
-                                       style,
-                                       replace);
+                setCharacterAttributes(realStart,
+                        end - start,
+                        style,
+                        replace);
             }
 
             matcherStart = end + 1;
@@ -773,9 +772,9 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         matcher.reset(Constants.EMPTY);
     }
 
-    public void replace(int offset, int length, 
+    public void replace(int offset, int length,
                         String text, AttributeSet attrs)
-      throws BadLocationException {
+            throws BadLocationException {
 
         if (text == null) {
             return;
@@ -790,7 +789,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
         // if text is selected - ie. length > 0
         // and it is a TAB and we have a text component 
-        if ((length > 0) && (textLength > 0) && 
+        if ((length > 0) && (textLength > 0) &&
 //                (text.charAt(0) == Constants.TAB_CHAR) && 
                 ("\t".equals(text)) &&
                 (textComponent != null)) {
@@ -799,7 +798,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
             int selectionEnd = textComponent.getSelectionEnd();
 
             int start = rootElement.getElementIndex(selectionStart);
-            int end = rootElement.getElementIndex(selectionEnd-1);
+            int end = rootElement.getElementIndex(selectionEnd - 1);
 
             for (int i = start; i <= end; i++) {
                 Element line = rootElement.getElement(i);
@@ -807,17 +806,16 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
                 try {
                     insertString(startOffset, text, attrs);
-                }
-                catch(BadLocationException badLocExc) {
+                } catch (BadLocationException badLocExc) {
                     badLocExc.printStackTrace();
                 }
 
             }
 
             textComponent.setSelectionStart(
-                            rootElement.getElement(start).getStartOffset());
+                    rootElement.getElement(start).getStartOffset());
             textComponent.setSelectionEnd(
-                            rootElement.getElement(end).getEndOffset());
+                    rootElement.getElement(end).getEndOffset());
             return;
 
         }
@@ -831,23 +829,23 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
     }
 
     /**
-     * Shifts the text at start to end left one TAB character. The 
-     * specified region will be selected/reselected if specified. 
+     * Shifts the text at start to end left one TAB character. The
+     * specified region will be selected/reselected if specified.
      *
      * @param selectionStart - the start offset
-     * @param selectionEnd - the end offset
+     * @param selectionEnd   - the end offset
      */
     public void shiftTabEvent(int selectionStart, int selectionEnd) {
         shiftTabEvent(selectionStart, selectionEnd, true);
     }
-    
+
     /**
-     * Shifts the text at start to end left one TAB character. The 
-     * specified region will be selected/reselected if specified. 
+     * Shifts the text at start to end left one TAB character. The
+     * specified region will be selected/reselected if specified.
      *
      * @param selectionStart - the start offset
-     * @param selectionEnd - the end offset
-     * @param reselect - whether to select the region when done
+     * @param selectionEnd   - the end offset
+     * @param reselect       - whether to select the region when done
      */
     public void shiftTabEvent(int selectionStart, int selectionEnd, boolean reselect) {
 
@@ -858,7 +856,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         int minusOffset = tabsToSpaces ? QueryEditorSettings.getTabSize() : 1;
 
         int start = rootElement.getElementIndex(selectionStart);
-        int end = rootElement.getElementIndex(selectionEnd-1);
+        int end = rootElement.getElementIndex(selectionEnd - 1);
 
         for (int i = start; i <= end; i++) {
             Element line = rootElement.getElement(i);
@@ -876,27 +874,26 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
                 for (int j = 0; j < chars.length; j++) {
 
-                    if ((Character.isWhitespace(chars[j])) && 
+                    if ((Character.isWhitespace(chars[j])) &&
                             (chars[j] != Constants.NEW_LINE_CHAR)) {
                         removeCharCount++;
-                    }
-                    else if (j == 0) {
+                    } else if (j == 0) {
                         break;
                     }
 
                 }
                 super.remove(startOffset, removeCharCount);
 
+            } catch (BadLocationException badLocExc) {
             }
-            catch(BadLocationException badLocExc) {}
 
         }
 
         if (reselect) {
             textComponent.setSelectionStart(
-                            rootElement.getElement(start).getStartOffset());
+                    rootElement.getElement(start).getStartOffset());
             textComponent.setSelectionEnd(
-                            rootElement.getElement(end).getEndOffset());
+                    rootElement.getElement(end).getEndOffset());
         }
 
     }
@@ -907,23 +904,23 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         styles = new Style[typeNames.length];
 
         Font font = QueryEditorSettings.getEditorFont();
-        int fontSize =  font.getSize();
+        int fontSize = font.getSize();
         String fontFamily = font.getName();
 
         SyntaxStyle[] syntaxStyles = QueryEditorSettings.getSyntaxStyles();
-        
+
         for (int i = 0; i < syntaxStyles.length; i++) {
             changeStyle(syntaxStyles[i].getType(),
-                        syntaxStyles[i].getForeground(),
-                        syntaxStyles[i].getFontStyle(),
-                        syntaxStyles[i].getBackground(),
-                        fontFamily, 
-                        fontSize);
+                    syntaxStyles[i].getForeground(),
+                    syntaxStyles[i].getFontStyle(),
+                    syntaxStyles[i].getBackground(),
+                    fontFamily,
+                    fontSize);
         }
 
     }
 
-    public void changeStyle(int type, Color fcolor, 
+    public void changeStyle(int type, Color fcolor,
                             int fontStyle, Color bcolor,
                             String fontFamily, int fontSize) {
 
@@ -953,7 +950,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
                 break;
             default:
                 StyleConstants.setItalic(style, false);
-                StyleConstants.setBold(style, false);      
+                StyleConstants.setBold(style, false);
         }
 
         styles[type] = style;
@@ -961,9 +958,9 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
     }
 
     /**
-    * Change the style of a particular type of token.
-    */
-    public void changeStyle (int type, Color color) {
+     * Change the style of a particular type of token.
+     */
+    public void changeStyle(int type, Color color) {
         Style style = addStyle(typeNames[type], null);
         if (color != null) {
             StyleConstants.setForeground(style, color);
@@ -977,12 +974,12 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
      * <code>Font.ITALIC</code> or the bitwise union
      * <code>Font.BOLD|Font.ITALIC</code>.
      */
-    public void changeStyle(int type, Color color, 
+    public void changeStyle(int type, Color color,
                             int fontStyle, Color bcolor) {
 
         Style style = addStyle(typeNames[type], null);
         StyleConstants.setForeground(style, color);
-        
+
         if (bcolor != null) {
             StyleConstants.setBackground(style, bcolor);
         }
@@ -1000,7 +997,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
                 break;
             default:
                 StyleConstants.setItalic(style, false);
-                StyleConstants.setBold(style, false);      
+                StyleConstants.setBold(style, false);
         }
 
         styles[type] = style;
@@ -1021,16 +1018,15 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         // we are trying to achieve the following regex
         // where the first char of each group is the same char 
         // as in: t(?:his|hat) as opposed to (?:this|that)
-        
+
         for (int i = 0, k = keywords.size(); i < k; i++) {
             String _keyword = keywords.get(i).trim();
-            
+
             char firstChar = _keyword.charAt(0);
             if (firstChar == lastFirstChar) {
                 sb.append("|");
                 sb.append(_keyword.substring(1));
-            }
-            else {
+            } else {
                 if (i > 0) {
                     sb.append(")|");
                 }
@@ -1042,10 +1038,10 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
         }
         sb.append("))\\b");
-        
+
         Matcher matcher = Pattern.compile(
-                            sb.toString(), 
-                            Pattern.CASE_INSENSITIVE).matcher(Constants.EMPTY);
+                sb.toString(),
+                Pattern.CASE_INSENSITIVE).matcher(Constants.EMPTY);
         matchers[KEYWORD_MATCH] = new TokenMatcher(KEYWORD, styles[KEYWORD], matcher);
     }
 
@@ -1056,7 +1052,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
     public void setInsertMode(int insertMode) {
         this.insertMode = insertMode;
     }
-    
+
 }
 
 

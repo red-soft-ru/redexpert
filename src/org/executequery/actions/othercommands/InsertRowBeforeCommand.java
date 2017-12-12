@@ -20,32 +20,32 @@
 
 package org.executequery.actions.othercommands;
 
-import java.awt.event.ActionEvent;
 import org.executequery.GUIUtilities;
-
 import org.executequery.gui.table.TableFunction;
+
+import java.awt.event.ActionEvent;
 
 /**
  * Executes insert row before current row in the parent table.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class InsertRowBeforeCommand extends AbstractBaseCommand {
-    
+
     private static final String ICON = "RowInsertBefore24.png";
 
     public static final int CREATE_TABLE = 0;
-    
+
     private TableFunction panel;
-    
+
     public InsertRowBeforeCommand(TableFunction panel) {
         super(GUIUtilities.loadIcon(ICON));
         this.panel = panel;
     }
-    
+
     public void execute(ActionEvent e) {
         panel.insertBefore();
     }
-    
+
 }
 

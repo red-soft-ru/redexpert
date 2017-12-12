@@ -20,21 +20,19 @@
 
 package org.underworldlabs.swing;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JList;
+import javax.swing.*;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class MoveJListItemsStrategy {
 
     private final JList list;
-    
+
     private static final int MOVE_DOWN = 1;
-    
+
     private static final int MOVE_UP = -1;
-    
+
     public MoveJListItemsStrategy(JList list) {
 
         if (!(list.getModel() instanceof DefaultListModel)) {
@@ -54,7 +52,7 @@ public class MoveJListItemsStrategy {
         }
 
         moveSelection(MOVE_DOWN);
-        
+
     }
 
     public void moveSelectionUp() {
@@ -73,7 +71,7 @@ public class MoveJListItemsStrategy {
         Object element = list.getSelectedValue();
 
         DefaultListModel model = modelFromList();
-        
+
         model.remove(index);
         model.add(index + increment, element);
 
@@ -81,16 +79,16 @@ public class MoveJListItemsStrategy {
     }
 
     private DefaultListModel modelFromList() {
-        return (DefaultListModel)list.getModel();
+        return (DefaultListModel) list.getModel();
     }
-    
+
     private boolean firstElementSelected() {
 
         return (list.getSelectedIndex() == 0);
     }
 
     private boolean lastElementSelected() {
-        
+
         return (modelFromList().lastElement() == list.getSelectedValue());
     }
 
@@ -98,7 +96,7 @@ public class MoveJListItemsStrategy {
 
         return list.isSelectionEmpty();
     }
-    
+
 }
 
 

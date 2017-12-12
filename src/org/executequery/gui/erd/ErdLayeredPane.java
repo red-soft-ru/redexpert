@@ -20,57 +20,61 @@
 
 package org.executequery.gui.erd;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import org.underworldlabs.swing.plaf.UIUtils;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
 import java.util.Vector;
 
-import javax.swing.JLayeredPane;
-
-import org.underworldlabs.swing.plaf.UIUtils;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 @SuppressWarnings({"rawtypes"})
 public class ErdLayeredPane extends JLayeredPane
-                            implements MouseListener,
-                                       MouseMotionListener {
-    
-    /** The controller for the ERD viewer */
+        implements MouseListener,
+        MouseMotionListener {
+
+    /**
+     * The controller for the ERD viewer
+     */
     private ErdViewerPanel parent;
-    
-    /** The popup menu */
+
+    /**
+     * The popup menu
+     */
     private ErdPopupMenu popup;
-    
-    /** The currently selected component */
+
+    /**
+     * The currently selected component
+     */
     private static ErdMoveableComponent selectedComponent;
 
     /** The title panel */
     //  private ErdTitle titlePanel;
-    
-    /** The display scale factor */
+
+    /**
+     * The display scale factor
+     */
     private double scale = 1.0;
-    
+
     public ErdLayeredPane(ErdViewerPanel parent) {
         this.parent = parent;
         popup = new ErdPopupMenu(parent);
         addMouseListener(this);
-        addMouseMotionListener(this);        
+        addMouseMotionListener(this);
     }
-    
+
     public void setScale(double scale) {
         this.scale = scale;
     }
-    
+
     public void paintComponent(Graphics g) {
-        Graphics2D g2d = (Graphics2D)g;
-        
+        Graphics2D g2d = (Graphics2D) g;
+
         if (scale != 1.0) {
 /*
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -82,118 +86,117 @@ public class ErdLayeredPane extends JLayeredPane
             af.scale(scale, scale);
             g2d.transform(af);
         }
-        
+
         super.paintComponent(g);
     }
-    
-    /** <p>Sets the specified component as the in-focus component
-     *  and applies a focus border on the table. If the CTRL key
-     *  is specified as held down, any tables that currently have
-     *  the focus keep their focus. This allows for mutliple table
-     *  selection/deselection as required.
+
+    /**
+     * <p>Sets the specified component as the in-focus component
+     * and applies a focus border on the table. If the CTRL key
+     * is specified as held down, any tables that currently have
+     * the focus keep their focus. This allows for mutliple table
+     * selection/deselection as required.
      *
-     *  @param the table to set in-focus
-     *  @param <code>true</code> if the CTRL key is down -
-     *         <code>false</code> otherwise
+     * @param the               table to set in-focus
+     * @param <code>true</code> if the CTRL key is down -
+     *                          <code>false</code> otherwise
      */
     protected void setFocusComponent(ErdMoveableComponent component, boolean ctrlDown) {
-        
+
         if (ctrlDown) {
             boolean currentFocus = component.isSelected();
             component.setSelected(!currentFocus);
-        }
-        
-        else {
+        } else {
             removeFocusBorders();
             component.setSelected(true);
         }
-        
+
         selectedComponent = component;
-        
+
     }
-    
-    /** <p>Removes the focus border from all tables
-     *  if they are currently in focus.
+
+    /**
+     * <p>Removes the focus border from all tables
+     * if they are currently in focus.
      */
     protected void removeFocusBorders() {
         // check the tables
         Vector tables = parent.getAllComponentsVector();
         ErdMoveableComponent component = null;
-        
+
         for (int i = 0, k = tables.size(); i < k; i++) {
-            component = (ErdTable)tables.elementAt(i);
-            
+            component = (ErdTable) tables.elementAt(i);
+
             if (component.isSelected()) {
                 component.setSelected(false);
                 component.deselected(null);
             }
-            
+
         }
-        
+
         // check for a title panel
         component = parent.getTitlePanel();
-        
+
         if (component != null) {
-            
+
             if (component.isSelected()) {
                 component.setSelected(false);
                 component.deselected(null);
             }
-            
+
         }
         repaint();
     }
-    
+
     public double getScale() {
         return scale;
     }
-    
+
     public boolean isOpaque() {
         return true;
     }
-    
+
     public Color getBackground() {
         return UIUtils.getColour("executequery.Erd.background", Color.WHITE);
     }
-    
+
     public void mouseDragged(MouseEvent e) {
         if (selectedComponent != null) {
             selectedComponent.dragging(e);
         }
     }
-    
+
     private void determineSelectedTable(MouseEvent e) {
         Vector tables = parent.getAllComponentsVector();
         ErdMoveableComponent component = null;
         ErdMoveableComponent selectedTable = null;
-        
+
         boolean intersects = false;
         boolean selectTable = false;
-        
+
         int index = -1;
         int lastIndex = Integer.MAX_VALUE;
-        int mouseX = (int)(e.getX() / scale);
-        int mouseY = (int)(e.getY() / scale);
-        
+        int mouseX = (int) (e.getX() / scale);
+        int mouseY = (int) (e.getY() / scale);
+
         for (int i = 0, k = tables.size(); i < k; i++) {
-            component = (ErdMoveableComponent)tables.elementAt(i);
-            
+            component = (ErdMoveableComponent) tables.elementAt(i);
+
             intersects = component.getBounds().contains(mouseX, mouseY);
-            
+
             index = getIndexOf(component);
-            
+
             if (intersects && index < lastIndex) {
                 lastIndex = index;
                 selectedTable = component;
                 selectTable = true;
             }
-            
+
         }
-        
+
         if (selectTable) {
             setFocusComponent(selectedTable, e.isControlDown());
-        }
-        else {
+        } else {
             intersects = false;
             removeFocusBorders();
 
@@ -206,45 +209,45 @@ public class ErdLayeredPane extends JLayeredPane
                     //setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
                 }
             }
-            
+
             if (!intersects) {
                 selectedComponent = null;
             }
 
         }
-        
+
     }
-    
+
     // -------------------------------------------
     // ------ MouseListener implementations ------
     // -------------------------------------------
-    
+
     public void mousePressed(MouseEvent e) {
-        determineSelectedTable(e);        
+        determineSelectedTable(e);
         if (selectedComponent != null) {
             selectedComponent.selected(e);
         }
         maybeShowPopup(e);
     }
-    
+
     public void mouseReleased(MouseEvent e) {
         if (selectedComponent != null) {
             selectedComponent.deselected(e);
         }
         maybeShowPopup(e);
     }
-    
+
     private void maybeShowPopup(MouseEvent e) {
 //        if (!parent.isEditable()) {
 //            return;
 //        }
-        
+
         // check for popup menu
         if (e.isPopupTrigger()) {
             popup.show(this, e.getX(), e.getY());
         }
     }
-    
+
     public void mouseClicked(MouseEvent e) {
         if (e.getClickCount() < 2) {
             return;
@@ -255,23 +258,28 @@ public class ErdLayeredPane extends JLayeredPane
             selectedComponent.doubleClicked(e);
         }
     }
-    
+
     // --------------------------------------------
     // --- Unimplemented mouse listener methods ---
     // --------------------------------------------
-    public void mouseEntered(MouseEvent e) {}
-    public void mouseExited(MouseEvent e) {}
-    public void mouseMoved(MouseEvent e) {}
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
+    }
+
+    public void mouseMoved(MouseEvent e) {
+    }
     // --------------------------------------------
-    
+
     public void setMenuScaleSelection(int index) {
         popup.setMenuScaleSelection(index);
     }
-    
+
     public void setGridDisplayed(boolean display) {
         popup.setGridDisplayed(display);
     }
-    
+
     protected void clean() {
         popup.removeAll();
     }
@@ -431,7 +439,7 @@ public class ErdLayeredPane extends JLayeredPane
         
     } // class PopMenu
     */
-    
+
 }
 
 

@@ -20,29 +20,25 @@
 
 package org.executequery.components;
 
-import java.awt.Color;
-import java.awt.Rectangle;
-
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.border.Border;
+import java.awt.*;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class OutlineDragPanel extends JPanel {
-    
+
     public OutlineDragPanel(Rectangle bounds) {
         this(bounds, BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
     }
-    
+
     public OutlineDragPanel(Rectangle bounds, Border border) {
         setOpaque(false);
         setBounds(bounds);
         setBorder(border);
     }
-    
+
 }
 
 

@@ -29,10 +29,8 @@ public class ComparerDBPanel extends JPanel {
         dbBox1.removeAllItems();
         dbBox2.removeAllItems();
         List<DatabaseConnection> connections = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
-        for(DatabaseConnection dc:connections)
-        {
-            if (dc.isConnected())
-            {
+        for (DatabaseConnection dc : connections) {
+            if (dc.isConnected()) {
                 dcs.add(dc);
                 dbBox1.addItem(dc.getName());
                 dbBox2.addItem(dc.getName());
@@ -40,10 +38,12 @@ public class ComparerDBPanel extends JPanel {
         }
 
     }
+
     Comparer comparer;
     List<DatabaseConnection> dcs;
-    public static final String TITLE= Bundles.get(ComparerDBPanel.class,"ComparerDB");
+    public static final String TITLE = Bundles.get(ComparerDBPanel.class, "ComparerDB");
     public static final String FRAME_ICON = "ComparerDB_16.png";
+
     public class FileTypeFilter extends FileFilter {
 
         private String extension;
@@ -113,20 +113,20 @@ public class ComparerDBPanel extends JPanel {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
                 jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                        .addComponent(dbBox1label)
-                                                        .addComponent(dbBox2label)
-                                                        )
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                        .addComponent(dbBox1)
-                                                        .addComponent(dbBox2)
-                                                )
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addContainerGap())
-                                )
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addComponent(dbBox1label)
+                                                .addComponent(dbBox2label)
+                                        )
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addComponent(dbBox1)
+                                                .addComponent(dbBox2)
+                                        )
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addContainerGap())
+                        )
         );
         jPanel1Layout.setVerticalGroup(
                 jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -134,16 +134,15 @@ public class ComparerDBPanel extends JPanel {
                                 .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                         .addComponent(dbBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(dbBox1label)
-                                        )
+                                )
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                         .addComponent(dbBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(dbBox2label)
-                                        )
+                                )
                                 .addGap(7, 7, 7))
 
         );
-
 
 
         jTextArea1.setColumns(20);
@@ -293,9 +292,9 @@ public class ComparerDBPanel extends JPanel {
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(btnSaveScript, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addGap(8, 8, 8))
-                                        .addComponent(jScrollPane1,GroupLayout.PREFERRED_SIZE,500,Short.MAX_VALUE)
+                                        .addComponent(jScrollPane1, GroupLayout.PREFERRED_SIZE, 500, Short.MAX_VALUE)
                                         .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        )
+                                )
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -321,8 +320,6 @@ public class ComparerDBPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 
-
-
     //GEN-LAST:event_btnConnectDBActionPerformed
 
     private void btnSaveScriptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveScriptActionPerformed
@@ -339,8 +336,7 @@ public class ComparerDBPanel extends JPanel {
          w.close();}
          catch(IOException ex){}*/
 
-        if (comparer==null)
-        {
+        if (comparer == null) {
             jTextArea1.append("\nNothing to save - script is empty");
             return;
         }
@@ -398,15 +394,13 @@ public class ComparerDBPanel extends JPanel {
     }
 
 
-
-
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
 
-        if (dcs.size()<2||dbBox1.getSelectedIndex()==dbBox2.getSelectedIndex()) {
+        if (dcs.size() < 2 || dbBox1.getSelectedIndex() == dbBox2.getSelectedIndex()) {
             jTextArea1.append("\nError: Unable to compare");
             return;
         }
-        comparer = new Comparer(dcs.get(dbBox1.getSelectedIndex()),dcs.get(dbBox2.getSelectedIndex()));
+        comparer = new Comparer(dcs.get(dbBox1.getSelectedIndex()), dcs.get(dbBox2.getSelectedIndex()));
         jTextArea1.append("\nComparing...\n");
 
         jTextArea2.setText(null);
@@ -423,7 +417,7 @@ public class ComparerDBPanel extends JPanel {
                 + "from rdb$database\n";
 
         try {
-            ResultSet rs = comparer.secondConnection.execute(query,true).getResultSet();
+            ResultSet rs = comparer.secondConnection.execute(query, true).getResultSet();
 
             while (rs.next()) {
 
@@ -439,7 +433,7 @@ public class ComparerDBPanel extends JPanel {
                 + "from mon$database\n";
 
         try {
-            ResultSet rs = comparer.secondConnection.execute(query,true).getResultSet();
+            ResultSet rs = comparer.secondConnection.execute(query, true).getResultSet();
 
             while (rs.next()) {
 
@@ -680,8 +674,6 @@ public class ComparerDBPanel extends JPanel {
          }*/
 
 
-
-
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
@@ -731,13 +723,11 @@ public class ComparerDBPanel extends JPanel {
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
-   //GEN-LAST:event_btnInstall_libActionPerformed
+    //GEN-LAST:event_btnInstall_libActionPerformed
 
 
-
-    String bundleString(String key)
-    {
-        return Bundles.get(ComparerDBPanel.class,key);
+    String bundleString(String key) {
+        return Bundles.get(ComparerDBPanel.class, key);
     }
 
 

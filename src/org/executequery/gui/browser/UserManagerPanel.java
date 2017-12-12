@@ -17,8 +17,6 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.BaseDialog;
-import org.executequery.gui.browser.BrowserConstants;
-import org.executequery.gui.browser.BrowserController;
 import org.executequery.gui.browser.managment.FrameLogin;
 import org.executequery.gui.browser.managment.ThreadOfUserManager;
 import org.executequery.gui.browser.managment.WindowAddRole;
@@ -123,13 +121,13 @@ public class UserManagerPanel extends JPanel {
         databaseBox.removeAllItems();
         listConnections = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
         enableElements = true;
-        boolean selected=false;
+        boolean selected = false;
         for (DatabaseConnection dc : listConnections) {
             databaseBox.addItem(dc.getName());
-            if (dc.isConnected()&&!selected) {
+            if (dc.isConnected() && !selected) {
                 execute_w = true;
                 databaseBox.setSelectedItem(dc.getName());
-                selected =true;
+                selected = true;
             }
         }
         if (!execute_w) {
@@ -596,8 +594,7 @@ public class UserManagerPanel extends JPanel {
                     execute_thread();
 
                 } else {
-                    if(jTabbedPane1.getTabCount()>1)
-                    {
+                    if (jTabbedPane1.getTabCount() > 1) {
                         jTabbedPane1.remove(rolesPanel);
                         jTabbedPane1.remove(membershipPanel);
                     }
@@ -663,13 +660,12 @@ public class UserManagerPanel extends JPanel {
             GUIUtilities.showWaitCursor();
             BaseDialog dialog =
                     new BaseDialog(WindowAddRole.TITLE, true);
-            WindowAddRole panel = new WindowAddRole(dialog,dbc);
+            WindowAddRole panel = new WindowAddRole(dialog, dbc);
             dialog.addDisplayComponentWithEmptyBorder(panel);
             dialog.display();
             act = Action.REFRESH;
             execute_thread();
-        }
-        finally {
+        } finally {
             GUIUtilities.showNormalCursor();
         }
     }
@@ -762,7 +758,7 @@ public class UserManagerPanel extends JPanel {
         for (Component component : components) {
             component.setEnabled(enable);
             if (component instanceof Container) {
-                enableComponents((Container)component, enable);
+                enableComponents((Container) component, enable);
             }
         }
     }
@@ -1018,19 +1014,19 @@ public class UserManagerPanel extends JPanel {
                 DatabaseDriverRepository.REPOSITORY_ID);
     }
 
-    public void addUser()throws SQLException,IOException {
+    public void addUser() throws SQLException, IOException {
 
-            userManager.add(userAdd);
-            act = Action.REFRESH;
-            execute_thread();
+        userManager.add(userAdd);
+        act = Action.REFRESH;
+        execute_thread();
 
     }
 
-    public void editUser()throws SQLException,IOException {
+    public void editUser() throws SQLException, IOException {
 
-            userManager.update(userAdd);
-            act = Action.REFRESH;
-            execute_thread();
+        userManager.update(userAdd);
+        act = Action.REFRESH;
+        execute_thread();
 
     }
 

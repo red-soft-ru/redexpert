@@ -20,13 +20,11 @@
 
 package org.executequery.base;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Toolkit;
+import org.apache.commons.lang.StringUtils;
+import org.underworldlabs.swing.VerticalTextIcon;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -34,67 +32,78 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-
-import org.apache.commons.lang.StringUtils;
-import org.underworldlabs.swing.VerticalTextIcon;
-
 /**
  * The base component for a docked tab panel.
  * This will control the docked tab in addition to
  * provide minimised button panels, action controls
  * and tool tip creation.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class DockedTabContainer extends JPanel 
-                                implements SwingConstants,
-                                           PropertyChangeListener {
-    
-    /** the container's position */
+public class DockedTabContainer extends JPanel
+        implements SwingConstants,
+        PropertyChangeListener {
+
+    /**
+     * the container's position
+     */
     private int orientation;
-    
-    /** The mediator/controller class */
+
+    /**
+     * The mediator/controller class
+     */
     private DesktopMediator desktopMediator;
-    
-    /** the north docked tab pane */
+
+    /**
+     * the north docked tab pane
+     */
     private DockedTabPane northTabPane;
 
-    /** the south docked tab pane */
+    /**
+     * the south docked tab pane
+     */
     private DockedTabPane southTabPane;
 
-    /** scrolling tab pane if this is a central container */
+    /**
+     * scrolling tab pane if this is a central container
+     */
     private ScrollingTabPane scrollingTabPane;
-    
-    /** the split pane for this container */
+
+    /**
+     * the split pane for this container
+     */
     private TabContainerSplitPane splitPane;
-    
-    /** the minimised tabs button panel */
+
+    /**
+     * the minimised tabs button panel
+     */
     private ButtonPanel buttonPanel;
-    
-    /** the minimised tab components added to this panel */
+
+    /**
+     * the minimised tab components added to this panel
+     */
     private List<TabComponent> minimisedComponents;
 
-    /** Registered tab pane listeners */
+    /**
+     * Registered tab pane listeners
+     */
     private List<DockedTabDragListener> listeners;
 
-	private TabPane selectedTabPane;
+    private TabPane selectedTabPane;
 
-    /** Creates a new instance of DockedTabContainer */
+    /**
+     * Creates a new instance of DockedTabContainer
+     */
     public DockedTabContainer(DesktopMediator desktopMediator, int orientation) {
         super(new BorderLayout());
         this.desktopMediator = desktopMediator;
         this.orientation = orientation;
         init();
     }
-    
-    /** Initialises the state of this component */
+
+    /**
+     * Initialises the state of this component
+     */
     private void init() {
         initSplitPane();
         add(splitPane, BorderLayout.CENTER);
@@ -116,7 +125,7 @@ public class DockedTabContainer extends JPanel
         }
         return false;
     }
-    
+
     /**
      * Returns the focused tab pane or null if no pane in this
      * container currently has the focus.
@@ -131,55 +140,55 @@ public class DockedTabContainer extends JPanel
         } else if (scrollingTabPane != null && scrollingTabPane.isFocused()) {
             return scrollingTabPane;
         }
-        return null;        
+        return null;
     }
-    
+
     protected void setSelectedTabPane(TabPane tabPane) {
-    	this.selectedTabPane = tabPane;
+        this.selectedTabPane = tabPane;
     }
-    
+
     public TabPane getSelectedTabPane() {
-    	return selectedTabPane;
+        return selectedTabPane;
     }
-    
+
     protected void closeSelectedTab() {
-        
+
         if (selectedTabPane != null) {
-            
+
             int selectedIndex = selectedTabPane.getSelectedIndex();
             selectedTabPane.removeIndex(selectedIndex);
         }
-        
+
     }
 
     protected void closeAllTabsInSelectedContainer() {
-        
+
         if (selectedTabPane != null) {
-            
+
             selectedTabPane.removeAllTabs();
         }
-        
+
     }
-    
+
     protected void removeAllTabsInAllContainers() {
-        
+
         if (northTabPane != null) {
-            
+
             northTabPane.removeAllTabs();
         }
 
         if (scrollingTabPane != null) {
-            
+
             scrollingTabPane.removeAllTabs();
         }
 
         if (southTabPane != null) {
-            
+
             southTabPane.removeAllTabs();
         }
 
     }
-    
+
     /**
      * Indicates a focus change on the tab components.<br>
      * This is propagated to the mediator object.
@@ -191,21 +200,20 @@ public class DockedTabContainer extends JPanel
 
             // turn on the glass pane on non-selected components
             splitPane.setGlassPaneVisible(SwingUtilities.BOTTOM, true);
-            
+
             // turn off the selected one
             splitPane.setGlassPaneVisible(SwingUtilities.TOP, false);
-            
+
             // inform the other tab pane in the split
             if (southTabPane != null) {
                 southTabPane.focusLost();
             }
-            
-        }
-        else if (tabPane == southTabPane) {
-            
+
+        } else if (tabPane == southTabPane) {
+
             splitPane.setGlassPaneVisible(SwingUtilities.TOP, true);
             splitPane.setGlassPaneVisible(SwingUtilities.BOTTOM, false);
-            
+
             // inform the other tab panes in the split
             if (northTabPane != null) {
                 northTabPane.focusLost();
@@ -216,7 +224,7 @@ public class DockedTabContainer extends JPanel
         }
         desktopMediator.tabPaneFocusChange(this);
     }
-    
+
     /**
      * Switches on the glass pane's of this container's tab panes.
      */
@@ -224,11 +232,11 @@ public class DockedTabContainer extends JPanel
         if (northTabPane != null) {
             northTabPane.focusLost();
         }
-        
+
         if (scrollingTabPane != null) {
             scrollingTabPane.focusLost();
         }
-        
+
         if (southTabPane != null) {
             southTabPane.focusLost();
         }
@@ -236,7 +244,7 @@ public class DockedTabContainer extends JPanel
         splitPane.setGlassPaneVisible(SwingUtilities.TOP, true);
         splitPane.setGlassPaneVisible(SwingUtilities.BOTTOM, true);
     }
-    
+
     /**
      * Sets the split pane divider location to that specified.
      *
@@ -247,7 +255,7 @@ public class DockedTabContainer extends JPanel
             splitPane.setDividerLocation(location);
         }
     }
-    
+
     /**
      * Provides notification of split pane divider movement events.
      *
@@ -264,11 +272,11 @@ public class DockedTabContainer extends JPanel
             */
         }
     }
-    
+
     /**
      * Notifies all registered listeners of a tab minimised event.
      *
-     * @param the event 
+     * @param the event
      */
     public void fireTabMinimised(DockedTabEvent e) {
         desktopMediator.fireTabMinimised(e);
@@ -277,7 +285,7 @@ public class DockedTabContainer extends JPanel
     /**
      * Notifies all registered listeners of a tab selected event.
      *
-     * @param the event 
+     * @param the event
      */
     public void fireTabSelected(DockedTabEvent e) {
         desktopMediator.fireTabSelected(e);
@@ -286,16 +294,16 @@ public class DockedTabContainer extends JPanel
     /**
      * Notifies all registered listeners of a tab deselected event.
      *
-     * @param the event 
+     * @param the event
      */
     public void fireTabDeselected(DockedTabEvent e) {
         desktopMediator.fireTabDeselected(e);
     }
-    
+
     /**
      * Notifies all registered listeners of a tab closed event.
      *
-     * @param the event 
+     * @param the event
      */
     public void fireTabClosed(DockedTabEvent e) {
         desktopMediator.fireTabClosed(e);
@@ -304,7 +312,7 @@ public class DockedTabContainer extends JPanel
     /**
      * Notifies all registered listeners of a tab restored event.
      *
-     * @param the event 
+     * @param the event
      */
     protected void fireTabRestored(DockedTabEvent e) {
         desktopMediator.fireTabRestored(e);
@@ -318,7 +326,7 @@ public class DockedTabContainer extends JPanel
     public void fireDockedTabDragged(DockedDragEvent e) {
         desktopMediator.fireDockedTabDragged(e);
     }
- 
+
     /**
      * Invoked when a mouse button has been released on a tab.
      *
@@ -346,7 +354,7 @@ public class DockedTabContainer extends JPanel
 
     /**
      * Closed the specfied tab component with name at the specified position.
-     * 
+     *
      * @param the name of the tab component
      * @param the position
      */
@@ -354,23 +362,23 @@ public class DockedTabContainer extends JPanel
 
         TabPane tabPane = getTabPaneForPosition(position);
 
-        if (position == SwingConstants.SOUTH 
+        if (position == SwingConstants.SOUTH
                 || position == SwingConstants.SOUTH_WEST
                 || position == SwingConstants.SOUTH_EAST) {
 
             if (tabPane != null) {
 
                 ((AbstractTabPane) tabPane).closeTabComponent(name);
-            
+
             } else {
-                
+
                 closeTabComponent(name, NORTH);
             }
-            
+
         }
 
         if (tabPane != null) {
-        
+
             ((AbstractTabPane) tabPane).closeTabComponent(name);
         }
 
@@ -396,21 +404,21 @@ public class DockedTabContainer extends JPanel
         }
         return null;
     }
-    
+
     /**
      * Returns the selected tab component at the specified position.
      *
      * @param the component position - <br>
-     *          SwingConstants.NORTH<br>
-     *          SwingConstants.NORTH_WEST<br>
-     *          SwingConstants.NORTH_EAST<br>
-     *          SwingConstants.SOUTH<br>
-     *          SwingConstants.SOUTH_WEST<br>
-     *          SwingConstants.SOUTH_EAST<br>
-     *          SwingConstants.CENTER<br>
+     *            SwingConstants.NORTH<br>
+     *            SwingConstants.NORTH_WEST<br>
+     *            SwingConstants.NORTH_EAST<br>
+     *            SwingConstants.SOUTH<br>
+     *            SwingConstants.SOUTH_WEST<br>
+     *            SwingConstants.SOUTH_EAST<br>
+     *            SwingConstants.CENTER<br>
      */
     public TabComponent getComponentAt(int position) {
-        
+
         TabPane tabPane = getTabPaneForPosition(position);
 
         if (tabPane != null) {
@@ -420,7 +428,7 @@ public class DockedTabContainer extends JPanel
 
         return null;
     }
-    
+
     /**
      * Adds the specified listener to all tabbed panes within
      * this component to notify of tab events.
@@ -435,7 +443,7 @@ public class DockedTabContainer extends JPanel
     }
 
     /**
-     * Propagates a tab drag event to registered 
+     * Propagates a tab drag event to registered
      * listeners of this type.
      *
      * @param the drag event
@@ -451,7 +459,7 @@ public class DockedTabContainer extends JPanel
     }
 
     /**
-     * Propagates a tab released event to registered 
+     * Propagates a tab released event to registered
      * listeners of this type.
      *
      * @param the drag event
@@ -466,7 +474,7 @@ public class DockedTabContainer extends JPanel
         desktopMediator.fireDockedTabReleased(e);
     }
 
-    /** 
+    /**
      * Returns this panel's orientation (position).
      *
      * @return the orientation/position of this component
@@ -482,8 +490,7 @@ public class DockedTabContainer extends JPanel
             } else {
                 return SwingConstants.NORTH_EAST;
             }
-        }
-        else if (tabPane == southTabPane) {
+        } else if (tabPane == southTabPane) {
             if (orientation == SwingConstants.WEST) {
                 return SwingConstants.SOUTH_WEST;
             } else if (orientation == SwingConstants.CENTER) {
@@ -494,7 +501,7 @@ public class DockedTabContainer extends JPanel
         }
         return SwingConstants.NORTH_WEST; // default
     }
-    
+
     /**
      * Overrides here to return an appropriate size
      * depneding on orinetation/position and visibility
@@ -513,8 +520,8 @@ public class DockedTabContainer extends JPanel
             }
         }
     }
-    
-    /** 
+
+    /**
      * Returns the width of this pane.
      *
      * @return the pane width
@@ -522,8 +529,7 @@ public class DockedTabContainer extends JPanel
     public int getPaneWidth() {
         if (buttonPanel == null) {
             return getWidth();
-        }
-        else if (splitPane != null) {
+        } else if (splitPane != null) {
             return splitPane.getWidth() + buttonPanel.getWidth();
         }
         return getWidth();
@@ -539,7 +545,7 @@ public class DockedTabContainer extends JPanel
      * @param the tab's tool tip
      * @param the position - one of SwingConstants.NORTH | SOUTH
      */
-    public void addDockedTab(String title, Icon icon, Component component, 
+    public void addDockedTab(String title, Icon icon, Component component,
                              String tip, int position) {
 
         // make sure the split pane is visible
@@ -554,16 +560,15 @@ public class DockedTabContainer extends JPanel
             northTabPane = new DockedTabPane(this);
             splitPane.setLeftComponent(northTabPane);
             tabPane = northTabPane;
-            
+
             // if we have minimised tabs but added a tab pane
             // restore it to its previous size
             //if (buttonPanel != null) {
-                //desktopMediator.resetPaneToPreferredSizes(orientation, true);
+            //desktopMediator.resetPaneToPreferredSizes(orientation, true);
             //}
 
-        }
-        else {
-            
+        } else {
+
             switch (position) {
                 case SwingConstants.NORTH:
                 case SwingConstants.NORTH_WEST:
@@ -604,12 +609,12 @@ public class DockedTabContainer extends JPanel
         if (orientation != SwingConstants.CENTER) {
             desktopMediator.resetPaneToPreferredSizes(orientation, true);
         }
-        
+
     }
 
     /**
-     * Sets the tool tip for the specified component to toolTipText 
-     * which can be null. An internal exception is raised if there 
+     * Sets the tool tip for the specified component to toolTipText
+     * which can be null. An internal exception is raised if there
      * is no tab for the specified component.
      *
      * @param the tab pane position
@@ -618,23 +623,23 @@ public class DockedTabContainer extends JPanel
      */
     public void setToolTipTextForComponent(int position,
                                            Component component, String toolTipText) {
-        
+
         TabPane tabPane = getTabPaneForPosition(position);
-        ((AbstractTabPane) tabPane).setToolTipTextForComponent(component, toolTipText);        
+        ((AbstractTabPane) tabPane).setToolTipTextForComponent(component, toolTipText);
     }
-    
+
     /**
-     * Sets the title of the specified component to title which can be null. 
-     * An internal exception is raised if there is no tab for the 
+     * Sets the title of the specified component to title which can be null.
+     * An internal exception is raised if there is no tab for the
      * specified component.
      *
      * @param the tab pane position
      * @param the component where the title should be set
      * @param the title to be displayed in the tab
      */
-    public void setTabTitleForComponent(int position, 
+    public void setTabTitleForComponent(int position,
                                         Component component, String title) {
-        
+
         TabPane tabPane = getTabPaneForPosition(position);
         ((AbstractTabPane) tabPane).setTabTitleForComponent(component, title);
     }
@@ -643,10 +648,10 @@ public class DockedTabContainer extends JPanel
 
         TabPane tabPane = getTabPaneForPosition(position);
         if (tabPane != null) {
-        	((AbstractTabPane) tabPane).setSelectedIndex(index);
+            ((AbstractTabPane) tabPane).setSelectedIndex(index);
         }
     }
-    
+
     public int getSelectedIndex(int position) {
 
         TabPane tabPane = getTabPaneForPosition(position);
@@ -657,18 +662,18 @@ public class DockedTabContainer extends JPanel
 
         return -1;
     }
-    
+
     public void setSelectedPane(int position, String name) {
 
         TabComponent tabComponent = getTabComponent(position, name);
         if (tabComponent == null) {
             return;
         }
-        
+
         TabPane tabPane = getTabPaneForPosition(position);
         ((AbstractTabPane) tabPane).setSelectedTab(tabComponent);
     }
-    
+
     /**
      * Returns the open tab count at the specified position.
      *
@@ -676,35 +681,36 @@ public class DockedTabContainer extends JPanel
      * @return the tab count
      */
     public int getTabCount(int position) {
-        
+
         TabPane tabPane = getTabPaneForPosition(position);
         if (tabPane != null) {
-         
+
             return ((AbstractTabPane) tabPane).getTabCount();
         }
 
         return 0;
     }
+
     /**
-     * Returns the open tab components in a list at 
+     * Returns the open tab components in a list at
      * the specified position.
      *
      * @param the tab pane position
      * @return a list of tab components
      */
     public List<TabComponent> getOpenTabs(int position) {
-        
+
         TabPane tabPane = getTabPaneForPosition(position);
         if (tabPane != null) {
-            
+
             return ((AbstractTabPane) tabPane).getTabComponents();
         }
-        
+
         return null;
     }
 
     public TabComponent getTabComponent(int position, String title) {
-        
+
         String tabTitle = title.toUpperCase();
         List<TabComponent> components = getOpenTabs(position);
         if (components != null) {
@@ -717,34 +723,34 @@ public class DockedTabContainer extends JPanel
                 }
             }
         }
-        
-        return getTabComponent(title);        
+
+        return getTabComponent(title);
     }
 
     private TabComponent getTabComponent(String title) {
-        
-        String tabTitle = title.toUpperCase();        
+
+        String tabTitle = title.toUpperCase();
         int[] positions = {SwingConstants.NORTH, SwingConstants.SOUTH, SwingConstants.CENTER};
         for (int tabPosition : positions) {
-        
+
             List<TabComponent> tabs = getOpenTabs(tabPosition);
             if (tabs != null) {
-             
+
                 for (TabComponent tab : tabs) {
-                    
+
                     if (StringUtils.startsWithIgnoreCase(tab.getTitle(), tabTitle)) {
-                        
+
                         return tab;
                     }
-                    
+
                 }
             }
 
         }
-        
+
         return null;
     }
-    
+
     /**
      * Minimises the tab from the panel at the specified index.
      *
@@ -753,7 +759,7 @@ public class DockedTabContainer extends JPanel
     protected void minimiseComponent(int position, int index) {
         TabPane tabPane = getTabPaneForPosition(position);
         if (tabPane != null && tabPane instanceof DockedTabPane) {
-            ((DockedTabPane)tabPane).minimiseIndex(index);
+            ((DockedTabPane) tabPane).minimiseIndex(index);
         }
     }
 
@@ -773,7 +779,7 @@ public class DockedTabContainer extends JPanel
 
         if (buttonPanel == null) {
             buttonPanel = new ButtonPanel();
-            
+
             // add the button panel in the required position
             switch (orientation) {
                 case WEST:
@@ -793,7 +799,7 @@ public class DockedTabContainer extends JPanel
         repaint();
     }
 
-    /** 
+    /**
      * Removes the south tab pane component and
      * changes the state of the split pane.
      */
@@ -808,7 +814,7 @@ public class DockedTabContainer extends JPanel
         southTabPane = null;
     }
 
-    /** 
+    /**
      * Adds the south tab pane component and
      * changes the state of the split pane.
      */
@@ -817,7 +823,7 @@ public class DockedTabContainer extends JPanel
         splitPane.restoreDividerLocation();
         //splitPane.setDividerLocation(defaultDividerLocation);
 //        if (orientation == SwingConstants.CENTER && scrollingTabPane != null) {
-            splitPane.setDividerSize(ApplicationConstants.SPLIT_PANE_DIVIDER_SIZE);
+        splitPane.setDividerSize(ApplicationConstants.SPLIT_PANE_DIVIDER_SIZE);
 //        }
     }
 
@@ -836,11 +842,10 @@ public class DockedTabContainer extends JPanel
                 southPaneRemoved();
                 splitPane.setLeftComponent(northTabPane);
             }
-        }
-        else if (tabPane == southTabPane) {
+        } else if (tabPane == southTabPane) {
             southPaneRemoved();
         }
-        
+
         // if they're both null and this is not the 
         // center component - hide the split pane
         if (orientation != SwingConstants.CENTER &&
@@ -849,7 +854,7 @@ public class DockedTabContainer extends JPanel
 
             // if the button panel is null also, remove this panel
             if (buttonPanel == null) {
-                
+
                 if (minimisedComponents != null) {
                     minimisedComponents.clear();
                     minimisedComponents = null;
@@ -858,17 +863,17 @@ public class DockedTabContainer extends JPanel
                 return;
             }
         }
-        
+
         if (splitPane.isVisible()) {
             splitPane.validate();
         } else {
             desktopMediator.resetPaneToPreferredSizes(orientation, false);
-        }            
+        }
         validate();
         repaint();
     }
-    
-    /** 
+
+    /**
      * Restores the specified tab component from a minimised state.
      *
      * @param the tab component to restore
@@ -889,8 +894,7 @@ public class DockedTabContainer extends JPanel
                 // check the split pane
                 if (splitPane == null) {
                     initSplitPane();
-                }
-                else if (!splitPane.isVisible()) {
+                } else if (!splitPane.isVisible()) {
                     splitPane.setVisible(true);
                 }
                 splitPane.setLeftComponent(northTabPane);
@@ -898,8 +902,7 @@ public class DockedTabContainer extends JPanel
             }
             northTabPane.addTab(tabComponent);
             northTabPane.setSelectedTab(tabComponent);
-        }
-        else { // for center only
+        } else { // for center only
             if (southTabPane == null) {
                 southTabPane = new DockedTabPane(this);
                 southPaneCreated();
@@ -907,7 +910,7 @@ public class DockedTabContainer extends JPanel
             southTabPane.addTab(tabComponent);
             southTabPane.setSelectedTab(tabComponent);
         }
-        
+
         validate();
         repaint();
 
@@ -916,13 +919,13 @@ public class DockedTabContainer extends JPanel
     }
 
     /**
-     * Initialises the state of the split pane component. 
+     * Initialises the state of the split pane component.
      */
     private void initSplitPane() {
         splitPane = new TabContainerSplitPane(JSplitPane.VERTICAL_SPLIT);
         splitPane.setDividerSize(0);
     }
-    
+
     /**
      * Indicates whether the tab pane in the specified
      * position is visible.
@@ -942,7 +945,7 @@ public class DockedTabContainer extends JPanel
         }
         return (northTabPane != null || southTabPane != null);
     }
-    
+
     /**
      * Returns if the tab with the specfied name is currently minimised.
      *
@@ -990,23 +993,23 @@ public class DockedTabContainer extends JPanel
     public boolean isButtonPanelVisible() {
         return buttonPanel != null;
     }
-    
+
     /**
      * The button panel to containing the minimised tab buttons.
      */
     @SuppressWarnings("deprecation")
-    private class ButtonPanel extends JPanel 
-                              implements ActionListener {
+    private class ButtonPanel extends JPanel
+            implements ActionListener {
 
         private int height;
 
         protected ButtonPanel() {
             super(new FlowLayout(FlowLayout.LEADING, 0, 2));
-            Font font = UIManager.getFont("Label.font"); 
-            FontMetrics fm = Toolkit.getDefaultToolkit().getFontMetrics(font); 
+            Font font = UIManager.getFont("Label.font");
+            FontMetrics fm = Toolkit.getDefaultToolkit().getFontMetrics(font);
             height = fm.getHeight() + 10;
         }
-        
+
         public Dimension getMaximumSize() {
             return getPreferredSize();
         }
@@ -1018,7 +1021,7 @@ public class DockedTabContainer extends JPanel
         public Dimension getPreferredSize() {
             return new Dimension(getWidth(), getHeight());
         }
-        
+
         public int getHeight() {
             if (orientation == CENTER) {
                 return height;
@@ -1026,15 +1029,15 @@ public class DockedTabContainer extends JPanel
                 return super.getHeight();
             }
         }
-        
+
         public int getWidth() {
             if (orientation == CENTER) {
                 return super.getWidth();
             } else {
                 return height;
-            }            
+            }
         }
-        
+
         protected void addButton(TabComponent tabComponent) {
             MinimiseTabButton button = new MinimiseTabButton(tabComponent);
             button.addActionListener(this);
@@ -1042,25 +1045,25 @@ public class DockedTabContainer extends JPanel
         }
 
         public void actionPerformed(ActionEvent e) {
-            MinimiseTabButton button = (MinimiseTabButton)e.getSource();
+            MinimiseTabButton button = (MinimiseTabButton) e.getSource();
             remove(button);
             restoreTabComponent(button.getTabComponent());
         }
-        
+
     }
-    
+
     /**
      * Defines a minimised tab button.
      */
     private class MinimiseTabButton extends JButton {
 
         private TabComponent tabComponent;
-        
+
         protected MinimiseTabButton(TabComponent tabComponent) {
             this.setMargin(ApplicationConstants.EMPTY_INSETS);
             this.tabComponent = tabComponent;
             setToolTipText(tabComponent.getToolTip());
-            
+
             String titleText = tabComponent.getDisplayName();
             // set the icon/text for this button
             switch (orientation) {
@@ -1076,7 +1079,7 @@ public class DockedTabContainer extends JPanel
             }
 
         }
-        
+
         public int getHeight() {
             switch (orientation) {
                 case WEST:
@@ -1100,7 +1103,7 @@ public class DockedTabContainer extends JPanel
         protected TabComponent getTabComponent() {
             return tabComponent;
         }
-        
+
     }
 
     public DockedTabPane getNorthTabPane() {

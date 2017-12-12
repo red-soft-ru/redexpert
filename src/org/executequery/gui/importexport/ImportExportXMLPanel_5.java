@@ -20,88 +20,93 @@
 
 package org.executequery.gui.importexport;
 
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 import org.executequery.gui.WidgetFactory;
 
+import javax.swing.*;
+import java.awt.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ImportExportXMLPanel_5 extends JPanel {
-    
+
     /** The data format text field */
 //    private JTextField dateFormatField;
-    
-    /** The on error combo box */
+
+    /**
+     * The on error combo box
+     */
     private JComboBox errorCombo;
-    
-    /** The rollback combo box */
+
+    /**
+     * The rollback combo box
+     */
     private JComboBox rollbackCombo;
-    
-    /** The batch process check box */
+
+    /**
+     * The batch process check box
+     */
     private JCheckBox batchCheck;
-    
-    /** The controlling object for this process */
+
+    /**
+     * The controlling object for this process
+     */
     private ImportExportDataProcess parent;
-    
-    /** the date parsing selection panel */
+
+    /**
+     * the date parsing selection panel
+     */
     private ParseDateSelectionPanel dateFormatPanel;
 
-    /** <p>Creates a new instance with the specified
-     *  process as the parent.
+    /**
+     * <p>Creates a new instance with the specified
+     * process as the parent.
      *
-     *  @param the parent controlling the process
+     * @param the parent controlling the process
      */
     public ImportExportXMLPanel_5(ImportExportDataProcess parent) {
         super(new GridBagLayout());
         this.parent = parent;
-        
+
         try {
             jbInit();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
     }
-    
-    /** <p>Initialises the state of this instance and
-     *  lays out components on the panel. */
+
+    /**
+     * <p>Initialises the state of this instance and
+     * lays out components on the panel.
+     */
     private void jbInit() throws Exception {
         JLabel rollbackLabel = new JLabel("Rollback Segment Size:");
-        
+
 //        JLabel dateFormatLabel = new JLabel("Date Format:");
 //        dateFormatField = WidgetFactory.createTextField();
-        
+
         String[] errors = {"Log and Continue", "Stop Transfer"};
         errorCombo = WidgetFactory.createComboBox(errors);
-        
+
         String[] rolls = {"50", "100", "500", "1000", "5000",
-                          "10000", "50000", "End of File", "End of all Files"};
+                "10000", "50000", "End of File", "End of all Files"};
         rollbackCombo = WidgetFactory.createComboBox(rolls);
         rollbackCombo.setSelectedIndex(2);
-        
+
         batchCheck = new JCheckBox("Run as a batch process");
-        
+
         Dimension comboDim = new Dimension(140, 20);
         errorCombo.setPreferredSize(comboDim);
         rollbackCombo.setPreferredSize(comboDim);
 
         JLabel instructLabel = new JLabel("Enter any particulars of the XML files " +
-                                          "and select transfer options.");
-        
+                "and select transfer options.");
+
         dateFormatPanel = new ParseDateSelectionPanel(parent);
 
         GridBagConstraints gbc = new GridBagConstraints();
-        Insets ins = new Insets(5,10,20,10);
+        Insets ins = new Insets(5, 10, 20, 10);
         gbc.insets = ins;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.gridwidth = 2;
@@ -136,7 +141,7 @@ public class ImportExportXMLPanel_5 extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(dateFormatField, gbc);
          */
-        
+
         gbc.weighty = 1.0;
         gbc.weightx = 1.0;
         gbc.gridx = 0;
@@ -144,9 +149,9 @@ public class ImportExportXMLPanel_5 extends JPanel {
         gbc.gridwidth = 2;
         gbc.insets.left = 20;
         add(batchCheck, gbc);
-        
+
         int type = parent.getTransferType();
-        
+
         if (type == ImportExportDataProcess.EXPORT) {
 //            dateFormatPanel.setEnabled(false);
             //dateFormatField.setOpaque(false);
@@ -157,13 +162,14 @@ public class ImportExportXMLPanel_5 extends JPanel {
             rollbackLabel.setEnabled(false);
             batchCheck.setEnabled(false);
         }
-        
+
     }
-    
-    /** <p>Retrieves the selected rollback size for
-     *  the transfer.
+
+    /**
+     * <p>Retrieves the selected rollback size for
+     * the transfer.
      *
-     *  @return the rollback size
+     * @return the rollback size
      */
     public int getRollbackSize() {
         if (!rollbackCombo.isEnabled()) {
@@ -173,21 +179,20 @@ public class ImportExportXMLPanel_5 extends JPanel {
         int index = rollbackCombo.getSelectedIndex();
         if (index == 7) {
             return ImportExportDataProcess.COMMIT_END_OF_FILE;
-        } 
-        else if (index == 8) {
+        } else if (index == 8) {
             return ImportExportDataProcess.COMMIT_END_OF_ALL_FILES;
-        }
-        else {
-            return Integer.parseInt((String)rollbackCombo.getSelectedItem());
+        } else {
+            return Integer.parseInt((String) rollbackCombo.getSelectedItem());
         }
     }
-    
-    /** <p>Retrieves the action on an error occuring
-     *  during the import/export process.
+
+    /**
+     * <p>Retrieves the action on an error occuring
+     * during the import/export process.
      *
-     *  @return the action on error -<br>either:
-     *          <code>ImportExportProcess.LOG_AND_CONTINUE</code> or
-     *          <code>ImportExportProcess.STOP_TRANSFER</code>
+     * @return the action on error -<br>either:
+     * <code>ImportExportProcess.LOG_AND_CONTINUE</code> or
+     * <code>ImportExportProcess.STOP_TRANSFER</code>
      */
     public int getOnError() {
         if (errorCombo.getSelectedIndex() == 0)
@@ -195,26 +200,28 @@ public class ImportExportXMLPanel_5 extends JPanel {
         else
             return ImportExportDataProcess.STOP_TRANSFER;
     }
-    
-    /** <p>Indicates whether the process (import only)
-     *  should be run as a batch process.
+
+    /**
+     * <p>Indicates whether the process (import only)
+     * should be run as a batch process.
      *
-     *  @return whether to run as a batch process
+     * @return whether to run as a batch process
      */
     public boolean runAsBatchProcess() {
         return batchCheck.isSelected();
     }
-    
-    /** <p>Retrieves the date format for date fields
-     *  contained within the data file/database table.
+
+    /**
+     * <p>Retrieves the date format for date fields
+     * contained within the data file/database table.
      *
-     *  @return the date format (ie. ddMMyyy)
+     * @return the date format (ie. ddMMyyy)
      */
     public String getDateFormat() {
         return dateFormatPanel.getDateFormat();
         //return dateFormatField.getText();
     }
- 
+
     /**
      * Returns whether to parse date values.
      *

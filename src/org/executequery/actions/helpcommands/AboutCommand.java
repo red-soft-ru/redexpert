@@ -20,19 +20,20 @@
 
 package org.executequery.actions.helpcommands;
 
-import java.awt.event.ActionEvent;
-import org.underworldlabs.swing.actions.BaseCommand;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.AboutPanel;
+import org.underworldlabs.swing.actions.BaseCommand;
 
-/** 
+import java.awt.event.ActionEvent;
+
+/**
  * The Help | About command execution.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class AboutCommand extends OpenFrameCommand
-                          implements BaseCommand {
-    
+        implements BaseCommand {
+
     public void execute(ActionEvent e) {
 
         new AboutPanel();

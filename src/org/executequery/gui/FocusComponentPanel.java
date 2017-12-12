@@ -20,13 +20,13 @@
 
 package org.executequery.gui;
 
-import java.awt.Component;
+import java.awt.*;
 
 /**
- * Defines those component that contain a field or similar 
+ * Defines those component that contain a field or similar
  * that requires focus after being realised.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface FocusComponentPanel {
 
@@ -34,7 +34,7 @@ public interface FocusComponentPanel {
      * Returns the default focus component of this object.
      */
     public Component getDefaultFocusComponent();
-    
+
 }
 
 

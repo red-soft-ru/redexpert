@@ -20,27 +20,31 @@
 
 package org.executequery.base;
 
-import javax.swing.JToolTip;
+import javax.swing.*;
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DockedTabToolTip extends JToolTip {
-    
-    /** the current tab index of this tip */
+
+    /**
+     * the current tab index of this tip
+     */
     private int tabIndex;
-    
-    /** Creates a new instance of DockedTabToolTip */
-    public DockedTabToolTip() {}
-    
+
+    /**
+     * Creates a new instance of DockedTabToolTip
+     */
+    public DockedTabToolTip() {
+    }
+
     public void setVisible(boolean visible) {
         super.setVisible(visible);
         if (!visible) {
@@ -48,7 +52,7 @@ public class DockedTabToolTip extends JToolTip {
             setToolTipText(null);
         }
     }
-    
+
     public int getTabIndex() {
         return tabIndex;
     }
@@ -56,7 +60,7 @@ public class DockedTabToolTip extends JToolTip {
     public void setTabIndex(int tabIndex) {
         this.tabIndex = tabIndex;
     }
-    
+
 }
 
 

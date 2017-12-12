@@ -13,7 +13,6 @@ import org.executequery.sql.DerivedQuery;
 import org.executequery.sql.QueryTokenizer;
 import org.executequery.sql.SqlMessages;
 import org.executequery.sql.SqlStatementResult;
-import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -26,7 +25,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.List;
 import java.util.Vector;
 
 

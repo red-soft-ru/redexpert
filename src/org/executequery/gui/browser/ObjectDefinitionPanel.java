@@ -20,26 +20,6 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.print.Printable;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseObject;
@@ -61,56 +41,88 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.util.MiscUtils;
 
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.print.Printable;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
-                                   implements ChangeListener,
-                                              KeywordListener {
-    
+        implements ChangeListener,
+        KeywordListener {
+
     public static final String NAME = "ObjectDefinitionPanel";
-    
-    /** The table data display */
+
+    /**
+     * The table data display
+     */
     private TableDataTab tableDataPanel;
-    
-    /** The tabbed description pane */
+
+    /**
+     * The tabbed description pane
+     */
     private JTabbedPane tabPane;
-    
-    /** Contains the view name */
+
+    /**
+     * Contains the view name
+     */
     private DisabledField tableNameField;
-    
+
     private DatabaseObjectMetaDataPanel metaDataPanel;
-    
-    /** table description base panel */
+
+    /**
+     * table description base panel
+     */
     private JPanel tableDescriptionPanel;
-    
-    /** the table description table */
+
+    /**
+     * the table description table
+     */
     private DefaultDatabaseObjectTable tableDescriptionTable;
-    
+
     private TablePrivilegeTab tablePrivilegePanel;
 
-    /** the current database object in view */
+    /**
+     * the current database object in view
+     */
     private DatabaseObject currentObjectView;
-    
-    /** panel base */
+
+    /**
+     * panel base
+     */
     private JPanel descBottomPanel;
-    
-    /** no results label */
+
+    /**
+     * no results label
+     */
     private JLabel noResultsLabel;
 
     private boolean hasResults;
 
-    /** header icons */
+    /**
+     * header icons
+     */
     private ImageIcon[] icons;
 
-    /** whether we have privilege data loaded */
+    /**
+     * whether we have privilege data loaded
+     */
     private boolean privilegesLoaded;
-    
-    /** whether we have data loaded */
+
+    /**
+     * whether we have data loaded
+     */
     private boolean dataLoaded;
-    
-    /** the browser's control object */
+
+    /**
+     * the browser's control object
+     */
     private BrowserController controller;
 
     private boolean metaDataLoaded;
@@ -120,27 +132,26 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
     public ObjectDefinitionPanel(BrowserController controller) {
         super();
         this.controller = controller;
-        
+
         try {
             jbInit();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        }        
+        }
     }
-    
+
     private void jbInit() throws Exception {
-        
+
         noResultsLabel = new JLabel("No information for this object is available.",
-                                    JLabel.CENTER);
-        
+                JLabel.CENTER);
+
         JPanel descPanel = new JPanel(new GridBagLayout());
-        
+
         tableNameField = new DisabledField();
         //schemaNameField = new DisabledField();
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
-        Insets ins = new Insets(10,5,5,5);
+        Insets ins = new Insets(10, 5, 5, 5);
         gbc.insets = ins;
         gbc.anchor = GridBagConstraints.NORTHEAST;
         gbc.fill = GridBagConstraints.BOTH;
@@ -160,25 +171,25 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         gbc.gridx = 0;
         gbc.weightx = 0;
         //descPanel.add(new JLabel("Schema:"), gbc);
-        
+
         // configure the table column descriptions panel
         descBottomPanel = new JPanel(new BorderLayout());
         descBottomPanel.setBorder(BorderFactory.createTitledBorder("Columns"));
-        
+
         tableDataPanel = new TableDataTab(true);
         tablePrivilegePanel = new TablePrivilegeTab();
-        
+
         metaDataPanel = new DatabaseObjectMetaDataPanel();
-        
+
         sqlTextPanel = new SimpleSqlTextPanel();
-        
+
         tabPane = new JTabbedPane();
         tabPane.add("Description", descBottomPanel);
         tabPane.add("Privileges", tablePrivilegePanel);
         tabPane.add("Data", tableDataPanel);
         tabPane.add("SQL", sqlTextPanel);
         tabPane.add("Meta Data", metaDataPanel);
-        
+
         // add the tab pane
         gbc.gridy = 2;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -189,43 +200,43 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         descPanel.add(tabPane, gbc);
-        
+
         tabPane.addChangeListener(this);
         //tableDescPanel = new SimpleTableDescriptionPanel();
-        
+
         icons = new ImageIcon[BrowserConstants.META_TYPE_ICONS.length];
-        
+
         for (int i = 0; i < BrowserConstants.META_TYPE_ICONS.length; i++) {
             icons[i] = GUIUtilities.loadIcon(BrowserConstants.META_TYPE_ICONS[i]);
         }
-        
+
         setHeader("Database Object", icons[0]);
         setContentPanel(descPanel);
         //cache = new HashMap();
     }
-    
+
     public String getLayoutName() {
         return NAME;
     }
-    
+
     public Printable getPrintable() {
-        
+
         int tabIndex = tabPane.getSelectedIndex();
         switch (tabIndex) {
-            
+
             case 0:
                 return new TablePrinter(tableDescriptionTable,
-                                        "Table: " + currentObjectView.getName());
+                        "Table: " + currentObjectView.getName());
 
             case 1:
                 return new TablePrinter(tablePrivilegePanel.getTable(),
-                                        "Access rights for table: " + 
-                                                    currentObjectView.getName());
-                
+                        "Access rights for table: " +
+                                currentObjectView.getName());
+
             case 2:
                 return new TablePrinter(tableDataPanel.getTable(),
-                                        "Table Data: " + currentObjectView.getName());
-                
+                        "Table Data: " + currentObjectView.getName());
+
             case 3:
                 return new TablePrinter(tableDataPanel.getTable(),
                         "Table Data: " + currentObjectView.getName());
@@ -233,14 +244,14 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
             case 4:
                 return new TablePrinter(metaDataPanel.getTable(),
                         "Meta Data: " + currentObjectView.getName());
-                
+
             default:
                 return null;
-                
+
         }
-        
+
     }
-    
+
     /**
      * Notification of a new keyword added to the list.
      */
@@ -258,7 +269,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
     public boolean canHandleEvent(ApplicationEvent event) {
         return (event instanceof DefaultKeywordEvent);
     }
-    
+
     public void stateChanged(ChangeEvent e) {
 
         int selectedIndex = tabPane.getSelectedIndex();
@@ -270,21 +281,21 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
             }
 
         } else if (selectedIndex == 1) {
-          
+
             if (!privilegesLoaded) {
-            
+
                 loadPrivileges();
             }
 
         } else if (selectedIndex == 4) {
-            
+
             if (!metaDataLoaded) {
-                
+
                 loadMetaData();
             }
-            
+
         } else if (tableDataPanel.isExecuting()) {
-          
+
             tableDataPanel.cancelStatement();
         }
 
@@ -297,15 +308,15 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
             metaDataPanel.setData(currentObjectView.getMetaData());
 
         } catch (DataSourceException e) {
-          
+
             controller.handleException(e);
             metaDataPanel.setData(null);
 
         } finally {
-            
+
             metaDataLoaded = true;
         }
-        
+
     }
 
     private void loadData() {
@@ -319,7 +330,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
             dataLoaded = true;
         }
     }
-    
+
     private void loadPrivileges() {
 
         try {
@@ -327,7 +338,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
             tablePrivilegePanel.setValues(currentObjectView.getPrivileges());
 
         } catch (DataSourceException e) {
-          
+
             controller.handleException(e);
             tablePrivilegePanel.setValues(new TablePrivilege[0]);
 
@@ -337,7 +348,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         }
 
     }
-    
+
     /**
      * Create the table description panel if not yet initialised.
      */
@@ -347,12 +358,10 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
             tableDescriptionTable.addMouseListener(new MouseListener() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    if(e.getClickCount()>1)
-                    {
-                        if(currentObjectView instanceof DefaultDatabaseView)
-                        {
-                            BaseDialog dialog = new BaseDialog("Edit View",true);
-                            CreateViewPanel panel = new CreateViewPanel(controller.getDatabaseConnection(),dialog,(DefaultDatabaseView) currentObjectView);
+                    if (e.getClickCount() > 1) {
+                        if (currentObjectView instanceof DefaultDatabaseView) {
+                            BaseDialog dialog = new BaseDialog("Edit View", true);
+                            CreateViewPanel panel = new CreateViewPanel(controller.getDatabaseConnection(), dialog, (DefaultDatabaseView) currentObjectView);
                             dialog.addDisplayComponent(panel);
                             dialog.display();
                         }
@@ -381,14 +390,14 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
             });
             tableDescriptionPanel = new JPanel(new GridBagLayout());
             tableDescriptionPanel.add(
-                    new JScrollPane(tableDescriptionTable), 
-                    new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0, 
-                                           GridBagConstraints.SOUTHEAST,
-                                           GridBagConstraints.BOTH, 
-                                           new Insets(2, 2, 2, 2), 0, 0));
+                    new JScrollPane(tableDescriptionTable),
+                    new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
+                            GridBagConstraints.SOUTHEAST,
+                            GridBagConstraints.BOTH,
+                            new Insets(2, 2, 2, 2), 0, 0));
         }
     }
-    
+
     public void setValues(DatabaseObject object) {
 
         // reset to the first tab
@@ -401,7 +410,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         metaDataLoaded = false;
 
         sqlTextPanel.setSQLText(Constants.EMPTY);
-        
+
         // header values
         setHeaderText("Database " + MiscUtils.firstLetterToUpper(object.getMetaDataKey()));
         tableNameField.setText(object.getName());
@@ -413,22 +422,22 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
             setHeaderIcon(icons[type]);
 
         } else {
-        
+
             setHeaderIcon(icons[BrowserConstants.TABLE_NODE]);
         }
 
         descBottomPanel.removeAll();
-        
+
         try {
-        
+
             // retrieve the description info
             List<DatabaseColumn> columns = object.getColumns();
             if (columns == null || columns.size() == 0) {
-              
+
                 descBottomPanel.add(noResultsLabel, BorderLayout.CENTER);
-            
+
             } else {
-                
+
                 hasResults = true;
                 createTablePanel();
                 tableDescriptionTable.setColumnData(columns);
@@ -436,7 +445,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
             }
 
             sqlTextPanel.setSQLText(new SQLFormatter(currentObjectView.getCreateSQLText()).format());
-            
+
         } catch (DataSourceException e) {
 
             controller.handleException(e);
@@ -446,21 +455,22 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         stateChanged(null);
         repaint();
     }
-    
+
     public void refresh() {
         super.refresh();
         privilegesLoaded = false;
         dataLoaded = false;
     }
-    
-    public void cleanup() {}
-    
+
+    public void cleanup() {
+    }
+
     public JTable getTable() {
         if (!hasResults) {
             return null;
         }
 
-        int tabIndex = tabPane.getSelectedIndex();        
+        int tabIndex = tabPane.getSelectedIndex();
         switch (tabIndex) {
             case 0:
                 return tableDescriptionTable;

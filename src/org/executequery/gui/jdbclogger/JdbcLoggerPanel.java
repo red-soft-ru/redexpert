@@ -2,7 +2,6 @@ package org.executequery.gui.jdbclogger;
 
 import org.executequery.gui.AbstractDockedTabPanel;
 import org.underworldlabs.util.MiscUtils;
-import org.yaml.snakeyaml.constructor.Construct;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,11 +9,8 @@ import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 /**
  * Created by vasiliy on 10.12.16.
@@ -41,7 +37,7 @@ public class JdbcLoggerPanel extends AbstractDockedTabPanel {
                 ClassLoader cl = new URLClassLoader(urls, classLoader);
                 clazzdb = cl.loadClass("ch.sla.jdbcperflogger.model.ConnectionInfo");
                 Constructor constructor = clazzdb.getConstructor(UUID.class, int.class, String.class, Date.class, long.class, Properties.class);
-                odb = constructor.newInstance(new Object[] {null, 0, "foo", null, 0, null});
+                odb = constructor.newInstance(new Object[]{null, 0, "foo", null, 0, null});
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -66,7 +62,6 @@ public class JdbcLoggerPanel extends AbstractDockedTabPanel {
         loggerPanel = (JPanel) odb2;
         this.add(loggerPanel);
     }
-
 
 
     public static final String MENU_ITEM_KEY = "jdbcLogger";

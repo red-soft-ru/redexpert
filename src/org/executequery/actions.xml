@@ -10,854 +10,854 @@
 
 <actions>
 
-  <action id="new-command"
-          name="New..."
-          mnemonic="N"
-          small-icon="/org/executequery/icons/New16.png"
-          large-icon="/org/executequery/icons/New24.png"
-          accel-key="control N"
-          accel-editable="true"
-          description="Open a New Editor"
-          execute-class="org.executequery.actions.filecommands.NewCommand"/>
-
-  <action id="open-command"
-          name="Open..."
-          mnemonic="O"
-          small-icon="/org/executequery/icons/Open16.png"
-          large-icon="/org/executequery/icons/Open24.png"
-          accel-key="control O"
-          accel-editable="true"
-          execute-class="org.executequery.actions.filecommands.OpenCommand"/>
-
-  <action id="close-selected-tab-1"
-          name="Close Selected Tab"
-          accel-key="control W"
-          description="Closes the selected central tab component"
-          execute-class="org.executequery.actions.CloseSelectedCentralPaneCommand"/>
-
-  <action id="close-selected-tab-2"
-          name="Close Selected Tab"
-          accel-key="control F4"
-          description="Closes the selected central tab component"
-          execute-class="org.executequery.actions.CloseSelectedCentralPaneCommand"/>
-
-  <action id="select-next-tab"
-          name="Select Next Tab"
-          accel-key="control F6"
-          accel-editable="false"
-          execute-class="org.executequery.actions.windowcommands.SelectNextTabAction"/>
-
-  <action id="select-previous-tab"
-          name="Select Previous Tab"
-          accel-key="control shift F6"
-          accel-editable="false"
-          execute-class="org.executequery.actions.windowcommands.SelectPreviousTabAction"/>
-
-  <action id="select-next-tab-container"
-          name="Select Next Tab Container"
-          accel-key="control F5"
-          accel-editable="false"
-          execute-class="org.executequery.actions.windowcommands.SelectNextTabContainerAction"/>
-
-  <action id="close-selected-tab"
-          name="Close Selected Tab"
-          accel-key="control W"
-          accel-editable="false"
-          execute-class="org.executequery.actions.windowcommands.CloseSelectedTabAction"/>
-
-  <action id="close-all-tabs"
-          name="Close All Tabs"
-          accel-editable="false"
-          execute-class="org.executequery.actions.windowcommands.CloseAllTabsAction"/>
-
-  <action id="close-all-tabs-in-container"
-          name="Close All Tabs in Selected Tab Container"
-          accel-editable="false"
-          execute-class="org.executequery.actions.windowcommands.CloseAllTabsInSelectedContainerAction"/>
-
-  <action id="save-command"
-          name="Save"
-          mnemonic="S"
-          small-icon="/org/executequery/icons/Save16.png"
-          large-icon="/org/executequery/icons/Save24.png"
-          accel-key="control S"
-          accel-editable="true"
-          description="Save an open document"
-          execute-class="org.executequery.actions.filecommands.SaveCommand"/>
-
-  <action id="release-notes-command"
-          name="Release Notes"
-          mnemonic="R"
-          accel-editable="false"
-          description="Red Expert version release notes"
-          execute-class="org.executequery.actions.helpcommands.ReleaseNotesCommand"/>
-
-  <action id="license-command"
-          name="License"
-          mnemonic="L"
-          accel-editable="false"
-          description="Red Expert release license"
-          execute-class="org.executequery.actions.helpcommands.LicenseCommand"/>
-
-  <action id="save-as-command"
-          name="Save As..."
-          mnemonic="A"
-          accel-editable="true"
-          accel-key="control shift S"
-          small-icon="/org/executequery/icons/SaveAs16.png"
-          large-icon="/org/executequery/icons/SaveAs24.png"
-          execute-class="org.executequery.actions.filecommands.SaveAsCommand"/>
-
-  <action id="exit-program-command"
-          name="Exit"
-          mnemonic="X"
-          accel-key="alt F4"
-          accel-editable="false"
-          execute-class="org.executequery.actions.filecommands.ExitCommand"/>
-
-  <action id="print-command"
-          name="Print"
-          mnemonic="P"
-          small-icon="/org/executequery/icons/Print16.png"
-          large-icon="/org/executequery/icons/Print24.png"
-          accel-key="control P"
-          accel-editable="true"
-          execute-class="org.executequery.actions.filecommands.PrintCommand"/>
-
-  <action id="print-preview-command"
-          name="Print Preview"
-          mnemonic="v"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/PrintPreview16.png"
-          large-icon="/org/executequery/icons/PrintPreview24.png"
-          execute-class="org.executequery.actions.filecommands.PrintPreviewCommand"/>
-
-  <action id="page-setup-command"
-          name="Page Setup"
-          mnemonic="u"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/PageSetup16.png"
-          large-icon="/org/executequery/icons/PageSetup24.png"
-          execute-class="org.executequery.actions.filecommands.PageSetupCommand"/>
-
-  <action id="to-upper-case-command"
-          name="Upper Case"
-          mnemonic="U"
-          accel-key="control shift U"
-          accel-editable="true"
-          execute-class="org.executequery.actions.editcommands.ToUpperCaseCommand"/>
-
-  <action id="to-camel-case-command"
-          name="Camel Case"
-          mnemonic="C"
-          accel-editable="false"
-          execute-class="org.executequery.actions.editcommands.ToCamelCaseCommand"/>
-
-  <action id="to-underscore-command"
-          name="Underscore"
-          mnemonic="s"
-          accel-editable="false"
-          execute-class="org.executequery.actions.editcommands.ToUnderscoreCommand"/>
-
-  <action id="to-lower-case-command"
-          name="Lower Case"
-          mnemonic="L"
-          accel-key="control shift L"
-          accel-editable="true"
-          execute-class="org.executequery.actions.editcommands.ToLowerCaseCommand"/>
-
-  <action id="cut-command"
-          name="Cut"
-          mnemonic="T"
-          small-icon="/org/executequery/icons/Cut16.png"
-          large-icon="/org/executequery/icons/Cut24.png"
-          accel-key="control X"
-          accel-editable="false"
-          execute-class="org.executequery.actions.editcommands.CutCommand"/>
-
-  <action id="copy-command"
-          name="Copy"
-          mnemonic="C"
-          small-icon="/org/executequery/icons/Copy16.png"
-          large-icon="/org/executequery/icons/Copy24.png"
-          accel-key="control C"
-          accel-editable="false"
-          execute-class="org.executequery.actions.editcommands.CopyCommand"/>
-
-  <action id="paste-command"
-          name="Paste"
-          mnemonic="P"
-          small-icon="/org/executequery/icons/Paste16.png"
-          large-icon="/org/executequery/icons/Paste24.png"
-          accel-key="control V"
-          accel-editable="false"
-          execute-class="org.executequery.actions.editcommands.PasteCommand"/>
-
-  <action id="redo-command"
-          name="Redo"
-          mnemonic="R"
-          small-icon="/org/executequery/icons/Redo16.png"
-          large-icon="/org/executequery/icons/Redo24.png"
-          accel-key="control Y"
-          accel-editable="false"
-          description="Redo the last action"
-          execute-class="org.executequery.actions.editcommands.RedoCommand"/>
-
-  <action id="undo-command"
-          name="Undo"
-          mnemonic="U"
-          small-icon="/org/executequery/icons/Undo16.png"
-          large-icon="/org/executequery/icons/Undo24.png"
-          accel-key="control Z"
-          accel-editable="false"
-          description="Undo the last action"
-          execute-class="org.executequery.actions.editcommands.UndoCommand"/>
-
-  <action id="find-command"
-          name="Find..."
-          mnemonic="F"
-          small-icon="/org/executequery/icons/Find16.png"
-          large-icon="/org/executequery/icons/Find24.png"
-          accel-key="control F"
-          execute-class="org.executequery.actions.searchcommands.FindCommand"/>
-
-  <action id="find-next-command"
-          name="Find Next"
-          mnemonic="N"
-          small-icon="/org/executequery/icons/FindAgain16.png"
-          large-icon="/org/executequery/icons/FindAgain24.png"
-          accel-key="F3"
-          accel-editable="true"
-          execute-class="org.executequery.actions.searchcommands.FindNextCommand"/>
-
-  <action id="find-in-files"
-          name="Search Files"
-          mnemonic="L"
-          small-icon="/org/executequery/icons/FindInFiles16.png"
-          execute-class="org.executequery.actions.searchcommands.FindInFilesCommand"/>
-
-  <action id="find-previous-command"
-          name="Find Previous"
-          mnemonic="P"
-          large-icon="/org/executequery/icons/FindPrevious24.png"
-          accel-key="shift F3"
-          accel-editable="true"
-          execute-class="org.executequery.actions.searchcommands.FindPreviousCommand"/>
-
-  <action id="replace-command"
-          name="Replace..."
-          mnemonic="E"
-          small-icon="/org/executequery/icons/Replace16.png"
-          large-icon="/org/executequery/icons/Replace24.png"
-          accel-key="control R"
-          accel-editable="true"
-          execute-class="org.executequery.actions.searchcommands.ReplaceCommand"/>
-
-  <action id="replace-next-command"
-          name="Replace Next"
-          mnemonic="X"
-          small-icon="/org/executequery/icons/FindAgain16.png"
-          large-icon="/org/executequery/icons/FindAgain24.png"
-          execute-class="org.executequery.actions.searchcommands.ReplaceNextCommand"/>
-
-  <action id="goto-command"
-          name="Go To..."
-          mnemonic="G"
-          small-icon="/org/executequery/icons/GoTo16.png"
-          large-icon="/org/executequery/icons/GoTo24.png"
-          accel-key="control G"
-          accel-editable="true"
-          description="Go to line number..."
-          execute-class="org.executequery.actions.searchcommands.GotoCommand"/>
-
-<!--
-  <action id="database-properties-command"
-          name="Database Properties"
-          mnemonic="P"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/Database16.png"
-          large-icon="/org/executequery/icons/Database24.png"
-          description="Displays the open connection's properties"
-          execute-class="org.executequery.actions.databasecommands.DatabasePropertiesCommand"/>
--->
-  <action id="create-database-command"
-          name="Create Database"
-          mnemonic="control C"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/create_database16.png"
-          large-icon="/org/executequery/icons/create_database32.png"
-          description="Create Database"
-          execute-class="org.executequery.actions.databasecommands.CreateDatabaseCommand"/>
-
-  <action id="database-disconnect-command"
-          name="Close Connection"
-          mnemonic="C"
-          accel-editable="true"
-          large-icon="/org/executequery/icons/DatabaseDisconnect24.png"
-          description="Close the database connection associated with the current selection"
-          execute-class="org.executequery.actions.databasecommands.DisconnectCommand"/>
-
-  <action id="create-erd-command"
-          name="Create New ERD"
-          mnemonic="N"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/ErdPanel16.png"
-          large-icon="/org/executequery/icons/NewErd24.png"
-          execute-class="org.executequery.actions.databasecommands.CreateErdCommand"/>
-
-  <action id="map-erd-command"
-          name="Map Existing Database"
-          mnemonic="M"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/ErdPanel16.png"
-          large-icon="/org/executequery/icons/NewErd24.png"
-          execute-class="org.executequery.actions.databasecommands.CreateErdFromDatabaseCommand"/>
-
-  <action id="erd-help-command"
-          name="ERD Help"
-          accel-key=""
-          accel-editable="false"
-          small-icon="/org/executequery/icons/ContextualHelp16.png"
-          execute-class="org.executequery.actions.othercommands.ErdHelpCommand"/>
-
-  <action id="execute-command"
-          name="Execute"
-          accel-key="F5"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/Execute16.png"
-          large-icon="/org/executequery/icons/Execute24.png"
-          execute-class="org.executequery.actions.queryeditor.ExecuteCommand"/>
-
-  <action id="execute-as-block-command"
-          name="Execute as Single Statement"
-          accel-key="control shift F5"
-          accel-editable="true"
-          execute-class="org.executequery.actions.queryeditor.ExecuteAsBlockCommand"/>
-
-  <action id="editor-help-command"
-          name=" Query Editor Help"
-          accel-key=""
-          accel-editable="false"
-          small-icon="/org/executequery/icons/ContextualHelp16.png"
-          execute-class="org.executequery.actions.queryeditor.EditorHelpCommand"/>
-
-  <action id="editor-refresh-autocomplete-command"
-          name=" Query Editor Refresh Autocomplete List"
-          accel-key="shift alt R"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/TableRefresh16.png"
-          execute-class="org.executequery.actions.queryeditor.RefreshAutocompleteListCommand"/>
-
-  <action id="editor-format-sql-command"
-          name="Format SQL"
-          accel-key="control shift F"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/FormatSql16.png"
-          execute-class="org.executequery.actions.queryeditor.FormatSQLCommand"/>
-
-  <action id="editor-add-user-keyword"
-          name="Add to User Defined Keywords"
-          accel-key="control shift K"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/Keywords16.png"
-          execute-class="org.executequery.actions.queryeditor.AddToUserDefinedKeywordsCommand"/>
-
-  <action id="manage-shortcuts-command"
-          name="Manage Query Shortcuts"
-          mnemonic="S"
-          accel-key=""
-          accel-editable="false"
-          small-icon="/org/executequery/icons/Shortcut16.png"
-          execute-class="org.executequery.actions.queryeditor.ManageShortcutsCommand"/>
-
-  <action id="manage-bookmarks-command"
-          name="Manage Query Bookmarks"
-          mnemonic="M"
-          accel-key=""
-          accel-editable="false"
-          execute-class="org.executequery.actions.queryeditor.ManageBookmarksCommand"/>
-
-  <action id="add-bookmark-command"
-          name="Bookmark this Query"
-          mnemonic="A"
-          accel-key="control shift B"
-          accel-editable="false"
-          execute-class="org.executequery.actions.queryeditor.AddBookmarkCommand"/>
-
-  <action id="select-bookmark-command"
-          accel-key=""
-          accel-editable="false"
-          execute-class="org.executequery.actions.queryeditor.SelectBookmarkCommand"/>
-
-  <action id="execute-selection-command"
-          name="Execute Selection"
-          accel-key="control shift ENTER"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/ExecuteSelection16.png"
-          execute-class="org.executequery.actions.queryeditor.ExecuteSelectionCommand"/>
-
-  <action id="shift-text-right-command"
-          name="Shift Text Right"
-          accel-key="control shift T"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/ShiftTextRight16.png"
-          execute-class="org.executequery.actions.queryeditor.ShiftTextRightCommand"/>
-
-  <action id="shift-text-left-command"
-          name="Shift Text Left"
-          accel-key="control shift D"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/ShiftTextLeft16.png"
-          execute-class="org.executequery.actions.queryeditor.ShiftTextLeftCommand"/>
-
-  <action id="move-row-up-command"
-          name="Move text up"
-          accel-key="alt UP"
-          accel-editable="true"
-          execute-class="org.executequery.actions.queryeditor.MoveTextUpCommand"/>
-
-  <action id="move-row-down-command"
-          name="Move text down"
-          accel-key="alt DOWN"
-          accel-editable="true"
-          execute-class="org.executequery.actions.queryeditor.MoveTextDownCommand"/>
-
-  <action id="duplicate-row-up-command"
-          name="Duplicate text up"
-          accel-key="control alt UP"
-          accel-editable="true"
-          execute-class="org.executequery.actions.queryeditor.DuplicateTextUpCommand"/>
-
-  <action id="duplicate-row-down-command"
-          name="Duplicate text down"
-          accel-key="control alt DOWN"
-          accel-editable="true"
-          execute-class="org.executequery.actions.queryeditor.DuplicateTextDownCommand"/>
-
-  <action id="toggle-autocommit-command"
-          name="Toggle Auto-Commit"
-          accel-editable="false"
-          small-icon="/org/executequery/icons/AutoCommit16.png"
-          execute-class="org.executequery.actions.queryeditor.AutoCommitCommand"/>
-
-  <action id="clear-editor-output-command"
-          name="Clear Output Log"
-          accel-editable="true"
-          accel-key="control shift BACK_SPACE"
-          small-icon="/org/executequery/icons/ClearOutput16.png"
-          execute-class="org.executequery.actions.queryeditor.ClearEditorCommand"/>
-
-  <action id="editor-next-command"
-          name="Next Statement"
-          accel-editable="true"
-          accel-key="control shift UP"
-          small-icon="/org/executequery/icons/Forward16.png"
-          execute-class="org.executequery.actions.queryeditor.NextCommand"/>
-
-  <action id="editor-previous-command"
-          name="Previous Statement"
-          accel-editable="true"
-          accel-key="control shift DOWN"
-          small-icon="/org/executequery/icons/Previous16.png"
-          execute-class="org.executequery.actions.queryeditor.PrevCommand"/>
-
-  <action id="editor-stop-command"
-          name="Cancel Executing Statement"
-          accel-editable="false"
-          small-icon="/org/executequery/icons/Stop16.png"
-          execute-class="org.executequery.actions.queryeditor.StopCommand"/>
-
-  <action id="editor-export-command"
-          name="Export Result Set"
-          accel-editable="false"
-          small-icon="/org/executequery/icons/ExportDelimited16.png"
-          execute-class="org.executequery.actions.othercommands.ExportResultsTableCommand"/>
-
-  <action id="editor-show-hide-rs-columns-command"
-          name="Visible Result Set Columns"
-          accel-editable="false"
-          small-icon="/org/executequery/icons/TableColumn16.png"
-          execute-class="org.executequery.actions.othercommands.ShowHideResultSetColumnsCommand"/>
-
-  <action id="toggle-editor-output-command"
-          name="Show/Hide Editor Output"
-          accel-editable="false"
-          small-icon="/org/executequery/icons/ToggleEditorOutput16.png"
-          execute-class="org.executequery.actions.queryeditor.ToggleEditorOutputCommand"/>
-
-  <action id="editor-rs-metadata-command"
-          name="Result Meta Data"
-          accel-editable="false"
-          small-icon="/org/executequery/icons/RSMetaData16.png"
-          execute-class="org.executequery.actions.queryeditor.ResultSetMetaDataCommand"/>
-
-  <action id="editor-conn-change-command"
-          name="Recycle Editor Connection"
-          accel-editable="false"
-          small-icon="/org/executequery/icons/RecycleConnection16.png"
-          execute-class="org.executequery.actions.queryeditor.ChangeEditorConnectionCommand"/>
-
-  <action id="comment-lines-command"
-          name="Comment/Uncomment"
-          accel-key="control SLASH"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/AddComment16.png"
-          execute-class="org.executequery.actions.queryeditor.CommentLineCommand"/>
-
-<!--
-  <action id="remove-comment-lines-command"
-          name="Uncomment"
-          accel-key="control SLASH"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/RemoveComment16.png"
-          execute-class="org.executequery.actions.queryeditor.CommentLineCommand"/>
--->
-
-  <action id="commit-command"
-          name="Commit"
-          accel-key="control shift C"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/Commit16.png"
-          large-icon="/org/executequery/icons/Commit24.png"
-          execute-class="org.executequery.actions.queryeditor.CommitCommand"/>
-
-  <action id="rollback-command"
-          name="Rollback"
-          accel-key="control shift R"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/Rollback16.png"
-          large-icon="/org/executequery/icons/Rollback24.png"
-          execute-class="org.executequery.actions.queryeditor.RollbackCommand"/>
-
-  <action id="sql-history-command"
-          name="SQL Command History"
-          accel-key="control shift H"
-          accel-editable="true"
-          mnemonic="H"
-          small-icon="/org/executequery/icons/History16.png"
-          large-icon="/org/executequery/icons/History16.png"
-          execute-class="org.executequery.actions.queryeditor.HistoryCommand"/>
-
-  <action id="execute-at-cursor-command"
-          name="Execute at Cursor"
-          accel-key="control ENTER"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/PartialExecute16.png"
-          large-icon="/org/executequery/icons/PartialExecute24.png"
-          execute-class="org.executequery.actions.queryeditor.PartialExecuteCommand"/>
-
-  <action id="create-index-command"
-          name="Create Index"
-          mnemonic="I"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/NewIndex16.png"
-          large-icon="/org/executequery/icons/NewIndex24.png"
-          description="Create a new database table index"
-          execute-class="org.executequery.actions.databasecommands.CreateIndexCommand"/>
-
-  <action id="create-table-command"
-          name="Create Table"
-          mnemonic="T"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/NewTable16.png"
-          large-icon="/org/executequery/icons/NewTable24.png"
-          description="Create a new database table"
-          execute-class="org.executequery.actions.databasecommands.CreateTableCommand"/>
-
-  <action id="create-sequence-command"
-          name="Create Sequence"
-          mnemonic="T"
-          accel-editable="true"
-          description="Create a new database sequence"
-          execute-class="org.executequery.actions.databasecommands.CreateSequenceCommand"/>
-
-  <action id="generate-scripts-command"
-          name="Generate SQL Scripts"
-          mnemonic="S"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/CreateScripts16.png"
-          large-icon="/org/executequery/icons/CreateScripts24.png"
-          description="Generates SQL CREATE TABLE scripts"
-          execute-class="org.executequery.actions.databasecommands.GenerateScriptsCommand"/>
-
-  <action id="help-command"
-          name="Help Topics"
-          mnemonic="H"
-          small-icon="/org/executequery/icons/Help16.png"
-          large-icon="/org/executequery/icons/Help24.png"
-          accel-key="F1"
-          accel-editable="true"
-          description="Displays the help topics"
-          execute-class="org.executequery.actions.helpcommands.HelpCommand"/>
-
-  <action id="about-command"
-          name="About"
-          mnemonic="A"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/Information16.png"
-          large-icon="/org/executequery/icons/Information24.png"
-          execute-class="org.executequery.actions.helpcommands.AboutCommand"/>
-
-  <action id="visit-eq-command"
-          name="Visit red-soft.biz online"
-          mnemonic="V"
-          small-icon="/org/executequery/icons/WebComponent16.png"
-          accel-editable="false"
-          description="Opens executequery.org in a browser window"
-          execute-class="org.executequery.actions.helpcommands.VisitOnlineCommand"/>
-
-  <action id="check-update-command"
-          name="Check for Update"
-          mnemonic="U"
-          accel-editable="true"
-          execute-class="org.executequery.actions.helpcommands.CheckVersionCommand"/>
-
-  <action id="editor-command"
-          name="Query Editor"
-          mnemonic="Q"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/Edit16.png"
-          large-icon="/org/executequery/icons/Edit24.png"
-          execute-class="org.executequery.actions.toolscommands.EditorCommand"/>
-<!--
-  <action id="browser-command"
-          name="Database Browser"
-          mnemonic="B"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/DBmag16.png"
-          large-icon="/org/executequery/icons/DBmag24.png"
-          execute-class="org.executequery.actions.toolscommands.BrowserCommand"/>
--->
-  <action id="scratch-pad-command"
-          name="Scratch Pad"
-          mnemonic="P"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/ScratchPad16"
-          large-icon="/org/executequery/icons/ScratchPad24.png"
-          execute-class="org.executequery.actions.toolscommands.ScratchPadCommand"/>
-
-  <action id="user-keywords-command"
-          name="User Defined Keywords"
-          mnemonic="K"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/Keywords16.png"
-          large-icon="/org/executequery/icons/KeyWords24.png"
-          execute-class="org.executequery.actions.toolscommands.KeyWordsCommand"/>
-
-  <action id="heap-memory-command"
-          name="Heap Memory Status"
-          mnemonic="M"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/ResourceHeap16.png"
-          description="Virtual machine heap size"
-          execute-class="org.executequery.actions.toolscommands.HeapStatusCommand"/>
-
-  <action id="import-delimited-command"
-          name="Import from Delimited File"
-          mnemonic="D"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/ImportDelimited16.png"
-          large-icon="/org/executequery/icons/ImportDelimited24.png"
-          execute-class="org.executequery.actions.toolscommands.ImportDelimitedCommand"/>
-
-  <action id="export-delimited-command"
-          name="Export to Delimited File"
-          mnemonic="D"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/ExportDelimited16.png"
-          large-icon="/org/executequery/icons/ExportDelimited24.png"
-          execute-class="org.executequery.actions.toolscommands.ExportDelimitedCommand"/>
-
-  <action id="export-resultset-command"
-          name="Export Result Set"
-          description="Execute SQL SELECT statements writing results direct to file"
-          mnemonic="X"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/ExportDelimited16.png"
-          large-icon="/org/executequery/icons/ExportDelimited24.png"
-          execute-class="org.executequery.actions.databasecommands.ExportResultSetCommand"/>
-
-  <action id="execute-sql-script-command"
-          name="Execute SQL Script"
-          mnemonic="S"
-          description="Open and execute an SQL script"
-          accel-editable="false"
-          small-icon="/org/executequery/icons/ExportDelimited16.png"
-          execute-class="org.executequery.actions.databasecommands.ExecuteSqlScriptCommand"/>
-
-  <action id="execute-object"
-          name="Execute Stored Objects"
-          mnemonic="B"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/Procedure16.png"
-          large-icon="/org/executequery/icons/Procedure24.png"
-          description="View and execute stored procedures and functions"
-          execute-class="org.executequery.actions.databasecommands.ExecuteStoredObjectCommand"/>
-
-  <action id="compare-data-types"
-          name="Compare Data Types"
-          mnemonic="D"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/CompareDataTypes16.png"
-          description="Compare data types across different database products"
-          execute-class="org.executequery.actions.databasecommands.CompareDataTypesCommand"/>
-
-  <action id="import-xml-command"
-          name="Import from XML"
-          mnemonic="X"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/ImportXml16.png"
-          large-icon="/org/executequery/icons/ImportXML24.png"
-          execute-class="org.executequery.actions.toolscommands.ImportXMLCommand"/>
-
-  <action id="export-xml-command"
-          name="Export to XML"
-          mnemonic="X"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/ExportXml16.png"
-          large-icon="/org/executequery/icons/ExportXML24.png"
-          execute-class="org.executequery.actions.toolscommands.ExportXMLCommand"/>
-
-  <action id="preferences-command"
-          name="Preferences"
-          mnemonic="P"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/Preferences16.png"
-          large-icon="/org/executequery/icons/Preferences24.png"
-          execute-class="org.executequery.actions.toolscommands.PreferencesCommand"/>
-
-  <action id="connect-command"
-          name="New Connection"
-          mnemonic="N"
-          accel-editable="true"
-          accel-key="control shift N"
-          small-icon="/org/executequery/icons/DatabaseConnect16.png"
-          large-icon="/org/executequery/icons/DatabaseConnect24.png"
-          execute-class="org.executequery.actions.databasecommands.ConnectCommand"/>
-
-  <action id="import-connections-command"
-          name="Import Connections"
-          mnemonic="m"
-          small-icon="/org/executequery/icons/ImportConnections16.png"
-          execute-class="org.executequery.actions.databasecommands.ImportConnectionsCommand"/>
-
-  <action id="export-connections-command"
-          name="Export Connections"
-          mnemonic="x"
-          small-icon="/org/executequery/icons/ExportConnections16.png"
-          execute-class="org.executequery.actions.databasecommands.ExportConnectionsCommand"/>
-
-  <action id="console-command"
-          name="System Console Window"
-          mnemonic="N"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/SystemConsole16.png"
-          large-icon="/org/executequery/icons/SystemConsole24.png"
-          execute-class="org.executequery.actions.toolscommands.ConsoleCommand"/>
-
-  <action id="export-excel-command"
-          name="Export to Excel Spreadsheet"
-          mnemonic="S"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/ExportExcel16.png"
-          execute-class="org.executequery.actions.toolscommands.ExportExcelCommand"/>
-
-  <action id="export-sql-command"
-          name="Export as SQL"
-          mnemonic="Q"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/ExportSQL16.png"
-          execute-class="org.executequery.actions.toolscommands.ExportSQLCommand"/>
-
-  <action id="insert-row-command"
-          name="Create a new table column after the current selection"
-          accel-editable="false"
-          small-icon="/org/executequery/icons/ColumnInsert16.png"
-          execute-class="org.executequery.actions.othercommands.InsertRowAfterCommand"/>
-
-  <action id="delete-row-command"
-          name="Drop the selected table column"
-          accel-editable="false"
-          small-icon="/org/executequery/icons/ColumnDelete16.png"
-          execute-class="org.executequery.actions.othercommands.DeleteColumnCommand"/>
-
-  <action id="drop-object-command"
-          name="Drop the selected object"
-          accel-editable="false"
-          small-icon="/org/executequery/icons/DropTable16.png"
-          large-icon="/org/executequery/icons/DropTable24.png"
-          execute-class="org.executequery.actions.othercommands.DropDatabaseObjectCommand"/>
-
-  <action id="select-editor-connection-combo-command"
-          name="Select connection combo box"
-          accel-editable="false"
-          accel-key="alt C"
-          execute-class="org.executequery.actions.othercommands.FocusEditorConnectionComboCommand"/>
-
-  <action id="clear-recent-files-command"
-          name="Clear recent files list"
-          accel-editable="false"
-          mnemonic="C"
-          execute-class="org.executequery.actions.filecommands.ClearRecentFilesCommand"/>
-
-  <action id="customise-tool-bars-command"
-          name="Customise"
-          accel-editable="false"
-          mnemonic="S"
-          execute-class="org.executequery.actions.viewcommands.CustomiseToolBarsCommand"
-          description="Customize the tool bars"/>
-
-  <action id="customise-query-editor-command"
-          name="Query Editor Options"
-          accel-editable="false"
-          mnemonic="O"
-          execute-class="org.executequery.actions.queryeditor.CustomiseQueryEditorCommand"/>
-
-  <action id="feedback-command"
-          name="Feedback"
-          accel-editable="false"
-          execute-class="org.executequery.actions.helpcommands.FeedbackCommand"/>
-
-  <action id="application-logs-command"
-          accel-editable="false"
-          execute-class="org.executequery.actions.toolscommands.ApplicationLogsCommand"/>
-
-  <action id="text-selection-command"
-          accel-editable="false"
-          execute-class="org.executequery.actions.editcommands.TextSelectionCommand"/>
-
-  <action id="user-manager-command"
-          name="User Manager"
-          mnemonic="U"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/user_manager_16.png"
-          large-icon="/org/executequery/icons/user_manager_32.png"
-          description="User Manager"
-          execute-class="org.executequery.actions.toolscommands.UserManagerCommands"/>
-  <action id="grant-manager-command"
-          name="Grant Manager"
-          mnemonic="GM"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/grant_manager_16.png"
-          large-icon="/org/executequery/icons/grant_manager_32.png"
-          description="Grant Manager"
-          execute-class="org.executequery.actions.toolscommands.GrantManagerCommands"/>
-
-  <action id="comparerDB-command"
-          name="Comparer DB"
-          mnemonic="CDB"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/ComparerDB_16.png"
-          large-icon="/org/executequery/icons/ComparerDB_32.png"
-          description="Comparer DB"
-          execute-class="org.executequery.actions.toolscommands.ComparerDBCommands"/>
-
-  <action id="create-view-command"
-          name="Create View"
-          mnemonic="T"
-          accel-editable="true"
-          description="Create a new database view"
-          execute-class="org.executequery.actions.databasecommands.CreateViewCommand"/>
+    <action id="new-command"
+            name="New..."
+            mnemonic="N"
+            small-icon="/org/executequery/icons/New16.png"
+            large-icon="/org/executequery/icons/New24.png"
+            accel-key="control N"
+            accel-editable="true"
+            description="Open a New Editor"
+            execute-class="org.executequery.actions.filecommands.NewCommand"/>
+
+    <action id="open-command"
+            name="Open..."
+            mnemonic="O"
+            small-icon="/org/executequery/icons/Open16.png"
+            large-icon="/org/executequery/icons/Open24.png"
+            accel-key="control O"
+            accel-editable="true"
+            execute-class="org.executequery.actions.filecommands.OpenCommand"/>
+
+    <action id="close-selected-tab-1"
+            name="Close Selected Tab"
+            accel-key="control W"
+            description="Closes the selected central tab component"
+            execute-class="org.executequery.actions.CloseSelectedCentralPaneCommand"/>
+
+    <action id="close-selected-tab-2"
+            name="Close Selected Tab"
+            accel-key="control F4"
+            description="Closes the selected central tab component"
+            execute-class="org.executequery.actions.CloseSelectedCentralPaneCommand"/>
+
+    <action id="select-next-tab"
+            name="Select Next Tab"
+            accel-key="control F6"
+            accel-editable="false"
+            execute-class="org.executequery.actions.windowcommands.SelectNextTabAction"/>
+
+    <action id="select-previous-tab"
+            name="Select Previous Tab"
+            accel-key="control shift F6"
+            accel-editable="false"
+            execute-class="org.executequery.actions.windowcommands.SelectPreviousTabAction"/>
+
+    <action id="select-next-tab-container"
+            name="Select Next Tab Container"
+            accel-key="control F5"
+            accel-editable="false"
+            execute-class="org.executequery.actions.windowcommands.SelectNextTabContainerAction"/>
+
+    <action id="close-selected-tab"
+            name="Close Selected Tab"
+            accel-key="control W"
+            accel-editable="false"
+            execute-class="org.executequery.actions.windowcommands.CloseSelectedTabAction"/>
+
+    <action id="close-all-tabs"
+            name="Close All Tabs"
+            accel-editable="false"
+            execute-class="org.executequery.actions.windowcommands.CloseAllTabsAction"/>
+
+    <action id="close-all-tabs-in-container"
+            name="Close All Tabs in Selected Tab Container"
+            accel-editable="false"
+            execute-class="org.executequery.actions.windowcommands.CloseAllTabsInSelectedContainerAction"/>
+
+    <action id="save-command"
+            name="Save"
+            mnemonic="S"
+            small-icon="/org/executequery/icons/Save16.png"
+            large-icon="/org/executequery/icons/Save24.png"
+            accel-key="control S"
+            accel-editable="true"
+            description="Save an open document"
+            execute-class="org.executequery.actions.filecommands.SaveCommand"/>
+
+    <action id="release-notes-command"
+            name="Release Notes"
+            mnemonic="R"
+            accel-editable="false"
+            description="Red Expert version release notes"
+            execute-class="org.executequery.actions.helpcommands.ReleaseNotesCommand"/>
+
+    <action id="license-command"
+            name="License"
+            mnemonic="L"
+            accel-editable="false"
+            description="Red Expert release license"
+            execute-class="org.executequery.actions.helpcommands.LicenseCommand"/>
+
+    <action id="save-as-command"
+            name="Save As..."
+            mnemonic="A"
+            accel-editable="true"
+            accel-key="control shift S"
+            small-icon="/org/executequery/icons/SaveAs16.png"
+            large-icon="/org/executequery/icons/SaveAs24.png"
+            execute-class="org.executequery.actions.filecommands.SaveAsCommand"/>
+
+    <action id="exit-program-command"
+            name="Exit"
+            mnemonic="X"
+            accel-key="alt F4"
+            accel-editable="false"
+            execute-class="org.executequery.actions.filecommands.ExitCommand"/>
+
+    <action id="print-command"
+            name="Print"
+            mnemonic="P"
+            small-icon="/org/executequery/icons/Print16.png"
+            large-icon="/org/executequery/icons/Print24.png"
+            accel-key="control P"
+            accel-editable="true"
+            execute-class="org.executequery.actions.filecommands.PrintCommand"/>
+
+    <action id="print-preview-command"
+            name="Print Preview"
+            mnemonic="v"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/PrintPreview16.png"
+            large-icon="/org/executequery/icons/PrintPreview24.png"
+            execute-class="org.executequery.actions.filecommands.PrintPreviewCommand"/>
+
+    <action id="page-setup-command"
+            name="Page Setup"
+            mnemonic="u"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/PageSetup16.png"
+            large-icon="/org/executequery/icons/PageSetup24.png"
+            execute-class="org.executequery.actions.filecommands.PageSetupCommand"/>
+
+    <action id="to-upper-case-command"
+            name="Upper Case"
+            mnemonic="U"
+            accel-key="control shift U"
+            accel-editable="true"
+            execute-class="org.executequery.actions.editcommands.ToUpperCaseCommand"/>
+
+    <action id="to-camel-case-command"
+            name="Camel Case"
+            mnemonic="C"
+            accel-editable="false"
+            execute-class="org.executequery.actions.editcommands.ToCamelCaseCommand"/>
+
+    <action id="to-underscore-command"
+            name="Underscore"
+            mnemonic="s"
+            accel-editable="false"
+            execute-class="org.executequery.actions.editcommands.ToUnderscoreCommand"/>
+
+    <action id="to-lower-case-command"
+            name="Lower Case"
+            mnemonic="L"
+            accel-key="control shift L"
+            accel-editable="true"
+            execute-class="org.executequery.actions.editcommands.ToLowerCaseCommand"/>
+
+    <action id="cut-command"
+            name="Cut"
+            mnemonic="T"
+            small-icon="/org/executequery/icons/Cut16.png"
+            large-icon="/org/executequery/icons/Cut24.png"
+            accel-key="control X"
+            accel-editable="false"
+            execute-class="org.executequery.actions.editcommands.CutCommand"/>
+
+    <action id="copy-command"
+            name="Copy"
+            mnemonic="C"
+            small-icon="/org/executequery/icons/Copy16.png"
+            large-icon="/org/executequery/icons/Copy24.png"
+            accel-key="control C"
+            accel-editable="false"
+            execute-class="org.executequery.actions.editcommands.CopyCommand"/>
+
+    <action id="paste-command"
+            name="Paste"
+            mnemonic="P"
+            small-icon="/org/executequery/icons/Paste16.png"
+            large-icon="/org/executequery/icons/Paste24.png"
+            accel-key="control V"
+            accel-editable="false"
+            execute-class="org.executequery.actions.editcommands.PasteCommand"/>
+
+    <action id="redo-command"
+            name="Redo"
+            mnemonic="R"
+            small-icon="/org/executequery/icons/Redo16.png"
+            large-icon="/org/executequery/icons/Redo24.png"
+            accel-key="control Y"
+            accel-editable="false"
+            description="Redo the last action"
+            execute-class="org.executequery.actions.editcommands.RedoCommand"/>
+
+    <action id="undo-command"
+            name="Undo"
+            mnemonic="U"
+            small-icon="/org/executequery/icons/Undo16.png"
+            large-icon="/org/executequery/icons/Undo24.png"
+            accel-key="control Z"
+            accel-editable="false"
+            description="Undo the last action"
+            execute-class="org.executequery.actions.editcommands.UndoCommand"/>
+
+    <action id="find-command"
+            name="Find..."
+            mnemonic="F"
+            small-icon="/org/executequery/icons/Find16.png"
+            large-icon="/org/executequery/icons/Find24.png"
+            accel-key="control F"
+            execute-class="org.executequery.actions.searchcommands.FindCommand"/>
+
+    <action id="find-next-command"
+            name="Find Next"
+            mnemonic="N"
+            small-icon="/org/executequery/icons/FindAgain16.png"
+            large-icon="/org/executequery/icons/FindAgain24.png"
+            accel-key="F3"
+            accel-editable="true"
+            execute-class="org.executequery.actions.searchcommands.FindNextCommand"/>
+
+    <action id="find-in-files"
+            name="Search Files"
+            mnemonic="L"
+            small-icon="/org/executequery/icons/FindInFiles16.png"
+            execute-class="org.executequery.actions.searchcommands.FindInFilesCommand"/>
+
+    <action id="find-previous-command"
+            name="Find Previous"
+            mnemonic="P"
+            large-icon="/org/executequery/icons/FindPrevious24.png"
+            accel-key="shift F3"
+            accel-editable="true"
+            execute-class="org.executequery.actions.searchcommands.FindPreviousCommand"/>
+
+    <action id="replace-command"
+            name="Replace..."
+            mnemonic="E"
+            small-icon="/org/executequery/icons/Replace16.png"
+            large-icon="/org/executequery/icons/Replace24.png"
+            accel-key="control R"
+            accel-editable="true"
+            execute-class="org.executequery.actions.searchcommands.ReplaceCommand"/>
+
+    <action id="replace-next-command"
+            name="Replace Next"
+            mnemonic="X"
+            small-icon="/org/executequery/icons/FindAgain16.png"
+            large-icon="/org/executequery/icons/FindAgain24.png"
+            execute-class="org.executequery.actions.searchcommands.ReplaceNextCommand"/>
+
+    <action id="goto-command"
+            name="Go To..."
+            mnemonic="G"
+            small-icon="/org/executequery/icons/GoTo16.png"
+            large-icon="/org/executequery/icons/GoTo24.png"
+            accel-key="control G"
+            accel-editable="true"
+            description="Go to line number..."
+            execute-class="org.executequery.actions.searchcommands.GotoCommand"/>
+
+    <!--
+      <action id="database-properties-command"
+              name="Database Properties"
+              mnemonic="P"
+              accel-editable="true"
+              small-icon="/org/executequery/icons/Database16.png"
+              large-icon="/org/executequery/icons/Database24.png"
+              description="Displays the open connection's properties"
+              execute-class="org.executequery.actions.databasecommands.DatabasePropertiesCommand"/>
+    -->
+    <action id="create-database-command"
+            name="Create Database"
+            mnemonic="control C"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/create_database16.png"
+            large-icon="/org/executequery/icons/create_database32.png"
+            description="Create Database"
+            execute-class="org.executequery.actions.databasecommands.CreateDatabaseCommand"/>
+
+    <action id="database-disconnect-command"
+            name="Close Connection"
+            mnemonic="C"
+            accel-editable="true"
+            large-icon="/org/executequery/icons/DatabaseDisconnect24.png"
+            description="Close the database connection associated with the current selection"
+            execute-class="org.executequery.actions.databasecommands.DisconnectCommand"/>
+
+    <action id="create-erd-command"
+            name="Create New ERD"
+            mnemonic="N"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ErdPanel16.png"
+            large-icon="/org/executequery/icons/NewErd24.png"
+            execute-class="org.executequery.actions.databasecommands.CreateErdCommand"/>
+
+    <action id="map-erd-command"
+            name="Map Existing Database"
+            mnemonic="M"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ErdPanel16.png"
+            large-icon="/org/executequery/icons/NewErd24.png"
+            execute-class="org.executequery.actions.databasecommands.CreateErdFromDatabaseCommand"/>
+
+    <action id="erd-help-command"
+            name="ERD Help"
+            accel-key=""
+            accel-editable="false"
+            small-icon="/org/executequery/icons/ContextualHelp16.png"
+            execute-class="org.executequery.actions.othercommands.ErdHelpCommand"/>
+
+    <action id="execute-command"
+            name="Execute"
+            accel-key="F5"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/Execute16.png"
+            large-icon="/org/executequery/icons/Execute24.png"
+            execute-class="org.executequery.actions.queryeditor.ExecuteCommand"/>
+
+    <action id="execute-as-block-command"
+            name="Execute as Single Statement"
+            accel-key="control shift F5"
+            accel-editable="true"
+            execute-class="org.executequery.actions.queryeditor.ExecuteAsBlockCommand"/>
+
+    <action id="editor-help-command"
+            name=" Query Editor Help"
+            accel-key=""
+            accel-editable="false"
+            small-icon="/org/executequery/icons/ContextualHelp16.png"
+            execute-class="org.executequery.actions.queryeditor.EditorHelpCommand"/>
+
+    <action id="editor-refresh-autocomplete-command"
+            name=" Query Editor Refresh Autocomplete List"
+            accel-key="shift alt R"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/TableRefresh16.png"
+            execute-class="org.executequery.actions.queryeditor.RefreshAutocompleteListCommand"/>
+
+    <action id="editor-format-sql-command"
+            name="Format SQL"
+            accel-key="control shift F"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/FormatSql16.png"
+            execute-class="org.executequery.actions.queryeditor.FormatSQLCommand"/>
+
+    <action id="editor-add-user-keyword"
+            name="Add to User Defined Keywords"
+            accel-key="control shift K"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/Keywords16.png"
+            execute-class="org.executequery.actions.queryeditor.AddToUserDefinedKeywordsCommand"/>
+
+    <action id="manage-shortcuts-command"
+            name="Manage Query Shortcuts"
+            mnemonic="S"
+            accel-key=""
+            accel-editable="false"
+            small-icon="/org/executequery/icons/Shortcut16.png"
+            execute-class="org.executequery.actions.queryeditor.ManageShortcutsCommand"/>
+
+    <action id="manage-bookmarks-command"
+            name="Manage Query Bookmarks"
+            mnemonic="M"
+            accel-key=""
+            accel-editable="false"
+            execute-class="org.executequery.actions.queryeditor.ManageBookmarksCommand"/>
+
+    <action id="add-bookmark-command"
+            name="Bookmark this Query"
+            mnemonic="A"
+            accel-key="control shift B"
+            accel-editable="false"
+            execute-class="org.executequery.actions.queryeditor.AddBookmarkCommand"/>
+
+    <action id="select-bookmark-command"
+            accel-key=""
+            accel-editable="false"
+            execute-class="org.executequery.actions.queryeditor.SelectBookmarkCommand"/>
+
+    <action id="execute-selection-command"
+            name="Execute Selection"
+            accel-key="control shift ENTER"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ExecuteSelection16.png"
+            execute-class="org.executequery.actions.queryeditor.ExecuteSelectionCommand"/>
+
+    <action id="shift-text-right-command"
+            name="Shift Text Right"
+            accel-key="control shift T"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ShiftTextRight16.png"
+            execute-class="org.executequery.actions.queryeditor.ShiftTextRightCommand"/>
+
+    <action id="shift-text-left-command"
+            name="Shift Text Left"
+            accel-key="control shift D"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ShiftTextLeft16.png"
+            execute-class="org.executequery.actions.queryeditor.ShiftTextLeftCommand"/>
+
+    <action id="move-row-up-command"
+            name="Move text up"
+            accel-key="alt UP"
+            accel-editable="true"
+            execute-class="org.executequery.actions.queryeditor.MoveTextUpCommand"/>
+
+    <action id="move-row-down-command"
+            name="Move text down"
+            accel-key="alt DOWN"
+            accel-editable="true"
+            execute-class="org.executequery.actions.queryeditor.MoveTextDownCommand"/>
+
+    <action id="duplicate-row-up-command"
+            name="Duplicate text up"
+            accel-key="control alt UP"
+            accel-editable="true"
+            execute-class="org.executequery.actions.queryeditor.DuplicateTextUpCommand"/>
+
+    <action id="duplicate-row-down-command"
+            name="Duplicate text down"
+            accel-key="control alt DOWN"
+            accel-editable="true"
+            execute-class="org.executequery.actions.queryeditor.DuplicateTextDownCommand"/>
+
+    <action id="toggle-autocommit-command"
+            name="Toggle Auto-Commit"
+            accel-editable="false"
+            small-icon="/org/executequery/icons/AutoCommit16.png"
+            execute-class="org.executequery.actions.queryeditor.AutoCommitCommand"/>
+
+    <action id="clear-editor-output-command"
+            name="Clear Output Log"
+            accel-editable="true"
+            accel-key="control shift BACK_SPACE"
+            small-icon="/org/executequery/icons/ClearOutput16.png"
+            execute-class="org.executequery.actions.queryeditor.ClearEditorCommand"/>
+
+    <action id="editor-next-command"
+            name="Next Statement"
+            accel-editable="true"
+            accel-key="control shift UP"
+            small-icon="/org/executequery/icons/Forward16.png"
+            execute-class="org.executequery.actions.queryeditor.NextCommand"/>
+
+    <action id="editor-previous-command"
+            name="Previous Statement"
+            accel-editable="true"
+            accel-key="control shift DOWN"
+            small-icon="/org/executequery/icons/Previous16.png"
+            execute-class="org.executequery.actions.queryeditor.PrevCommand"/>
+
+    <action id="editor-stop-command"
+            name="Cancel Executing Statement"
+            accel-editable="false"
+            small-icon="/org/executequery/icons/Stop16.png"
+            execute-class="org.executequery.actions.queryeditor.StopCommand"/>
+
+    <action id="editor-export-command"
+            name="Export Result Set"
+            accel-editable="false"
+            small-icon="/org/executequery/icons/ExportDelimited16.png"
+            execute-class="org.executequery.actions.othercommands.ExportResultsTableCommand"/>
+
+    <action id="editor-show-hide-rs-columns-command"
+            name="Visible Result Set Columns"
+            accel-editable="false"
+            small-icon="/org/executequery/icons/TableColumn16.png"
+            execute-class="org.executequery.actions.othercommands.ShowHideResultSetColumnsCommand"/>
+
+    <action id="toggle-editor-output-command"
+            name="Show/Hide Editor Output"
+            accel-editable="false"
+            small-icon="/org/executequery/icons/ToggleEditorOutput16.png"
+            execute-class="org.executequery.actions.queryeditor.ToggleEditorOutputCommand"/>
+
+    <action id="editor-rs-metadata-command"
+            name="Result Meta Data"
+            accel-editable="false"
+            small-icon="/org/executequery/icons/RSMetaData16.png"
+            execute-class="org.executequery.actions.queryeditor.ResultSetMetaDataCommand"/>
+
+    <action id="editor-conn-change-command"
+            name="Recycle Editor Connection"
+            accel-editable="false"
+            small-icon="/org/executequery/icons/RecycleConnection16.png"
+            execute-class="org.executequery.actions.queryeditor.ChangeEditorConnectionCommand"/>
+
+    <action id="comment-lines-command"
+            name="Comment/Uncomment"
+            accel-key="control SLASH"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/AddComment16.png"
+            execute-class="org.executequery.actions.queryeditor.CommentLineCommand"/>
+
+    <!--
+      <action id="remove-comment-lines-command"
+              name="Uncomment"
+              accel-key="control SLASH"
+              accel-editable="true"
+              small-icon="/org/executequery/icons/RemoveComment16.png"
+              execute-class="org.executequery.actions.queryeditor.CommentLineCommand"/>
+    -->
+
+    <action id="commit-command"
+            name="Commit"
+            accel-key="control shift C"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/Commit16.png"
+            large-icon="/org/executequery/icons/Commit24.png"
+            execute-class="org.executequery.actions.queryeditor.CommitCommand"/>
+
+    <action id="rollback-command"
+            name="Rollback"
+            accel-key="control shift R"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/Rollback16.png"
+            large-icon="/org/executequery/icons/Rollback24.png"
+            execute-class="org.executequery.actions.queryeditor.RollbackCommand"/>
+
+    <action id="sql-history-command"
+            name="SQL Command History"
+            accel-key="control shift H"
+            accel-editable="true"
+            mnemonic="H"
+            small-icon="/org/executequery/icons/History16.png"
+            large-icon="/org/executequery/icons/History16.png"
+            execute-class="org.executequery.actions.queryeditor.HistoryCommand"/>
+
+    <action id="execute-at-cursor-command"
+            name="Execute at Cursor"
+            accel-key="control ENTER"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/PartialExecute16.png"
+            large-icon="/org/executequery/icons/PartialExecute24.png"
+            execute-class="org.executequery.actions.queryeditor.PartialExecuteCommand"/>
+
+    <action id="create-index-command"
+            name="Create Index"
+            mnemonic="I"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/NewIndex16.png"
+            large-icon="/org/executequery/icons/NewIndex24.png"
+            description="Create a new database table index"
+            execute-class="org.executequery.actions.databasecommands.CreateIndexCommand"/>
+
+    <action id="create-table-command"
+            name="Create Table"
+            mnemonic="T"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/NewTable16.png"
+            large-icon="/org/executequery/icons/NewTable24.png"
+            description="Create a new database table"
+            execute-class="org.executequery.actions.databasecommands.CreateTableCommand"/>
+
+    <action id="create-sequence-command"
+            name="Create Sequence"
+            mnemonic="T"
+            accel-editable="true"
+            description="Create a new database sequence"
+            execute-class="org.executequery.actions.databasecommands.CreateSequenceCommand"/>
+
+    <action id="generate-scripts-command"
+            name="Generate SQL Scripts"
+            mnemonic="S"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/CreateScripts16.png"
+            large-icon="/org/executequery/icons/CreateScripts24.png"
+            description="Generates SQL CREATE TABLE scripts"
+            execute-class="org.executequery.actions.databasecommands.GenerateScriptsCommand"/>
+
+    <action id="help-command"
+            name="Help Topics"
+            mnemonic="H"
+            small-icon="/org/executequery/icons/Help16.png"
+            large-icon="/org/executequery/icons/Help24.png"
+            accel-key="F1"
+            accel-editable="true"
+            description="Displays the help topics"
+            execute-class="org.executequery.actions.helpcommands.HelpCommand"/>
+
+    <action id="about-command"
+            name="About"
+            mnemonic="A"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/Information16.png"
+            large-icon="/org/executequery/icons/Information24.png"
+            execute-class="org.executequery.actions.helpcommands.AboutCommand"/>
+
+    <action id="visit-eq-command"
+            name="Visit red-soft.biz online"
+            mnemonic="V"
+            small-icon="/org/executequery/icons/WebComponent16.png"
+            accel-editable="false"
+            description="Opens executequery.org in a browser window"
+            execute-class="org.executequery.actions.helpcommands.VisitOnlineCommand"/>
+
+    <action id="check-update-command"
+            name="Check for Update"
+            mnemonic="U"
+            accel-editable="true"
+            execute-class="org.executequery.actions.helpcommands.CheckVersionCommand"/>
+
+    <action id="editor-command"
+            name="Query Editor"
+            mnemonic="Q"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/Edit16.png"
+            large-icon="/org/executequery/icons/Edit24.png"
+            execute-class="org.executequery.actions.toolscommands.EditorCommand"/>
+    <!--
+      <action id="browser-command"
+              name="Database Browser"
+              mnemonic="B"
+              accel-editable="true"
+              small-icon="/org/executequery/icons/DBmag16.png"
+              large-icon="/org/executequery/icons/DBmag24.png"
+              execute-class="org.executequery.actions.toolscommands.BrowserCommand"/>
+    -->
+    <action id="scratch-pad-command"
+            name="Scratch Pad"
+            mnemonic="P"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ScratchPad16"
+            large-icon="/org/executequery/icons/ScratchPad24.png"
+            execute-class="org.executequery.actions.toolscommands.ScratchPadCommand"/>
+
+    <action id="user-keywords-command"
+            name="User Defined Keywords"
+            mnemonic="K"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/Keywords16.png"
+            large-icon="/org/executequery/icons/KeyWords24.png"
+            execute-class="org.executequery.actions.toolscommands.KeyWordsCommand"/>
+
+    <action id="heap-memory-command"
+            name="Heap Memory Status"
+            mnemonic="M"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ResourceHeap16.png"
+            description="Virtual machine heap size"
+            execute-class="org.executequery.actions.toolscommands.HeapStatusCommand"/>
+
+    <action id="import-delimited-command"
+            name="Import from Delimited File"
+            mnemonic="D"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ImportDelimited16.png"
+            large-icon="/org/executequery/icons/ImportDelimited24.png"
+            execute-class="org.executequery.actions.toolscommands.ImportDelimitedCommand"/>
+
+    <action id="export-delimited-command"
+            name="Export to Delimited File"
+            mnemonic="D"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ExportDelimited16.png"
+            large-icon="/org/executequery/icons/ExportDelimited24.png"
+            execute-class="org.executequery.actions.toolscommands.ExportDelimitedCommand"/>
+
+    <action id="export-resultset-command"
+            name="Export Result Set"
+            description="Execute SQL SELECT statements writing results direct to file"
+            mnemonic="X"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ExportDelimited16.png"
+            large-icon="/org/executequery/icons/ExportDelimited24.png"
+            execute-class="org.executequery.actions.databasecommands.ExportResultSetCommand"/>
+
+    <action id="execute-sql-script-command"
+            name="Execute SQL Script"
+            mnemonic="S"
+            description="Open and execute an SQL script"
+            accel-editable="false"
+            small-icon="/org/executequery/icons/ExportDelimited16.png"
+            execute-class="org.executequery.actions.databasecommands.ExecuteSqlScriptCommand"/>
+
+    <action id="execute-object"
+            name="Execute Stored Objects"
+            mnemonic="B"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/Procedure16.png"
+            large-icon="/org/executequery/icons/Procedure24.png"
+            description="View and execute stored procedures and functions"
+            execute-class="org.executequery.actions.databasecommands.ExecuteStoredObjectCommand"/>
+
+    <action id="compare-data-types"
+            name="Compare Data Types"
+            mnemonic="D"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/CompareDataTypes16.png"
+            description="Compare data types across different database products"
+            execute-class="org.executequery.actions.databasecommands.CompareDataTypesCommand"/>
+
+    <action id="import-xml-command"
+            name="Import from XML"
+            mnemonic="X"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ImportXml16.png"
+            large-icon="/org/executequery/icons/ImportXML24.png"
+            execute-class="org.executequery.actions.toolscommands.ImportXMLCommand"/>
+
+    <action id="export-xml-command"
+            name="Export to XML"
+            mnemonic="X"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ExportXml16.png"
+            large-icon="/org/executequery/icons/ExportXML24.png"
+            execute-class="org.executequery.actions.toolscommands.ExportXMLCommand"/>
+
+    <action id="preferences-command"
+            name="Preferences"
+            mnemonic="P"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/Preferences16.png"
+            large-icon="/org/executequery/icons/Preferences24.png"
+            execute-class="org.executequery.actions.toolscommands.PreferencesCommand"/>
+
+    <action id="connect-command"
+            name="New Connection"
+            mnemonic="N"
+            accel-editable="true"
+            accel-key="control shift N"
+            small-icon="/org/executequery/icons/DatabaseConnect16.png"
+            large-icon="/org/executequery/icons/DatabaseConnect24.png"
+            execute-class="org.executequery.actions.databasecommands.ConnectCommand"/>
+
+    <action id="import-connections-command"
+            name="Import Connections"
+            mnemonic="m"
+            small-icon="/org/executequery/icons/ImportConnections16.png"
+            execute-class="org.executequery.actions.databasecommands.ImportConnectionsCommand"/>
+
+    <action id="export-connections-command"
+            name="Export Connections"
+            mnemonic="x"
+            small-icon="/org/executequery/icons/ExportConnections16.png"
+            execute-class="org.executequery.actions.databasecommands.ExportConnectionsCommand"/>
+
+    <action id="console-command"
+            name="System Console Window"
+            mnemonic="N"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/SystemConsole16.png"
+            large-icon="/org/executequery/icons/SystemConsole24.png"
+            execute-class="org.executequery.actions.toolscommands.ConsoleCommand"/>
+
+    <action id="export-excel-command"
+            name="Export to Excel Spreadsheet"
+            mnemonic="S"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ExportExcel16.png"
+            execute-class="org.executequery.actions.toolscommands.ExportExcelCommand"/>
+
+    <action id="export-sql-command"
+            name="Export as SQL"
+            mnemonic="Q"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ExportSQL16.png"
+            execute-class="org.executequery.actions.toolscommands.ExportSQLCommand"/>
+
+    <action id="insert-row-command"
+            name="Create a new table column after the current selection"
+            accel-editable="false"
+            small-icon="/org/executequery/icons/ColumnInsert16.png"
+            execute-class="org.executequery.actions.othercommands.InsertRowAfterCommand"/>
+
+    <action id="delete-row-command"
+            name="Drop the selected table column"
+            accel-editable="false"
+            small-icon="/org/executequery/icons/ColumnDelete16.png"
+            execute-class="org.executequery.actions.othercommands.DeleteColumnCommand"/>
+
+    <action id="drop-object-command"
+            name="Drop the selected object"
+            accel-editable="false"
+            small-icon="/org/executequery/icons/DropTable16.png"
+            large-icon="/org/executequery/icons/DropTable24.png"
+            execute-class="org.executequery.actions.othercommands.DropDatabaseObjectCommand"/>
+
+    <action id="select-editor-connection-combo-command"
+            name="Select connection combo box"
+            accel-editable="false"
+            accel-key="alt C"
+            execute-class="org.executequery.actions.othercommands.FocusEditorConnectionComboCommand"/>
+
+    <action id="clear-recent-files-command"
+            name="Clear recent files list"
+            accel-editable="false"
+            mnemonic="C"
+            execute-class="org.executequery.actions.filecommands.ClearRecentFilesCommand"/>
+
+    <action id="customise-tool-bars-command"
+            name="Customise"
+            accel-editable="false"
+            mnemonic="S"
+            execute-class="org.executequery.actions.viewcommands.CustomiseToolBarsCommand"
+            description="Customize the tool bars"/>
+
+    <action id="customise-query-editor-command"
+            name="Query Editor Options"
+            accel-editable="false"
+            mnemonic="O"
+            execute-class="org.executequery.actions.queryeditor.CustomiseQueryEditorCommand"/>
+
+    <action id="feedback-command"
+            name="Feedback"
+            accel-editable="false"
+            execute-class="org.executequery.actions.helpcommands.FeedbackCommand"/>
+
+    <action id="application-logs-command"
+            accel-editable="false"
+            execute-class="org.executequery.actions.toolscommands.ApplicationLogsCommand"/>
+
+    <action id="text-selection-command"
+            accel-editable="false"
+            execute-class="org.executequery.actions.editcommands.TextSelectionCommand"/>
+
+    <action id="user-manager-command"
+            name="User Manager"
+            mnemonic="U"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/user_manager_16.png"
+            large-icon="/org/executequery/icons/user_manager_32.png"
+            description="User Manager"
+            execute-class="org.executequery.actions.toolscommands.UserManagerCommands"/>
+    <action id="grant-manager-command"
+            name="Grant Manager"
+            mnemonic="GM"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/grant_manager_16.png"
+            large-icon="/org/executequery/icons/grant_manager_32.png"
+            description="Grant Manager"
+            execute-class="org.executequery.actions.toolscommands.GrantManagerCommands"/>
+
+    <action id="comparerDB-command"
+            name="Comparer DB"
+            mnemonic="CDB"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ComparerDB_16.png"
+            large-icon="/org/executequery/icons/ComparerDB_32.png"
+            description="Comparer DB"
+            execute-class="org.executequery.actions.toolscommands.ComparerDBCommands"/>
+
+    <action id="create-view-command"
+            name="Create View"
+            mnemonic="T"
+            accel-editable="true"
+            description="Create a new database view"
+            execute-class="org.executequery.actions.databasecommands.CreateViewCommand"/>
 
 
 </actions>

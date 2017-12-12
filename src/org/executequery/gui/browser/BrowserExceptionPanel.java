@@ -26,10 +26,14 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
 
     private JLabel objectNameLabel;
 
-    /** the current database object in view */
+    /**
+     * the current database object in view
+     */
     private DatabaseObject currentObjectView;
 
-    /** The tabbed description pane */
+    /**
+     * The tabbed description pane
+     */
     private JTabbedPane tabPane;
 
     private JTextField idField;

@@ -20,30 +20,23 @@
 
 package org.executequery.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Insets;
-
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-
 import org.executequery.UserPreferencesManager;
 import org.executequery.components.BasicPopupMenuListener;
 import org.executequery.components.LoggingOutputPane;
 import org.underworldlabs.swing.plaf.UIUtils;
 
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import java.awt.*;
+
 /**
- *
- * @author   Takis Diakoumis
-*/
+ * @author Takis Diakoumis
+ */
 public class LoggingOutputPanel extends JPanel
-                                implements DocumentListener, ReadOnlyTextPane {
+        implements DocumentListener, ReadOnlyTextPane {
 
     private LoggingOutputPane outputPane;
 
@@ -171,7 +164,7 @@ public class LoggingOutputPanel extends JPanel
 
         return outputPane;
     }
-    
+
     public void clear() {
 
         outputPane.setText("");

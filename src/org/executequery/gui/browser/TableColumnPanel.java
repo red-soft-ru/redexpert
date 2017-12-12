@@ -20,19 +20,6 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.print.Printable;
-
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.gui.DefaultTable;
@@ -41,12 +28,15 @@ import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.print.Printable;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class TableColumnPanel extends AbstractFormObjectViewPanel {
-    
+
     private static final String DEFAULT_HEADER_TEXT = "Table Column";
 
     private static final String PK_HEADER_TEXT = "Table Column - Primary Key";
@@ -54,14 +44,16 @@ public class TableColumnPanel extends AbstractFormObjectViewPanel {
     private static final String FK_HEADER_TEXT = "Table Column - Foreign Key";
 
     public static final String NAME = "TableColumnPanel";
-    
+
     private DisabledField colNameField;
-    
+
     private JTable table;
 
     private SimpleMetaDataModel model;
 
-    /** the browser's control object */
+    /**
+     * the browser's control object
+     */
     private BrowserController controller;
 
     public TableColumnPanel(BrowserController controller) {
@@ -69,14 +61,13 @@ public class TableColumnPanel extends AbstractFormObjectViewPanel {
         this.controller = controller;
         try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     private void init() throws Exception {
-        
+
         model = new SimpleMetaDataModel();
         table = new DefaultTable(model);
         table.getTableHeader().setReorderingAllowed(false);
@@ -85,18 +76,18 @@ public class TableColumnPanel extends AbstractFormObjectViewPanel {
         table.setRowSelectionAllowed(false);
 
         JPanel paramPanel = new JPanel(new BorderLayout());
-        paramPanel.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
+        paramPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
         paramPanel.add(new JScrollPane(table), BorderLayout.CENTER);
 
         JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP);
         tabs.add("Properties", paramPanel);
-        
+
         colNameField = new DisabledField();
         //tableNameField = new DisabledField();
-        
+
         JPanel base = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        Insets insets = new Insets(12,5,5,5);
+        Insets insets = new Insets(12, 5, 5, 5);
         gbc.anchor = GridBagConstraints.NORTHEAST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridx++;
@@ -125,29 +116,29 @@ public class TableColumnPanel extends AbstractFormObjectViewPanel {
         gbc.gridx = 1;
         base.add(colNameField, gbc);
 
-        setContentPanel(base);        
+        setContentPanel(base);
         setHeaderText(DEFAULT_HEADER_TEXT);
         setHeaderIcon(GUIUtilities.loadIcon("TableColumn24.png"));
 
     }
-    
+
     public String getLayoutName() {
         return NAME;
     }
-    
+
     public void refresh() {
         // nothing to do here
     }
-    
+
     public void cleanup() {
         // nothing to do here
     }
-    
+
     public Printable getPrintable() {
 
         return new TablePrinter(table, "Table Column: " + colNameField.getText());
     }
-    
+
     public void setValues(DatabaseColumn column) {
 
         try {
@@ -156,18 +147,18 @@ public class TableColumnPanel extends AbstractFormObjectViewPanel {
             model.setValues(column.getMetaData());
 
             if (column.isPrimaryKey()) {
-                
+
                 setHeaderText(PK_HEADER_TEXT);
-                
+
             } else if (column.isForeignKey()) {
-                
+
                 setHeaderText(FK_HEADER_TEXT);
 
             } else {
-                
+
                 setHeaderText(DEFAULT_HEADER_TEXT);
             }
-            
+
         } catch (DataSourceException e) {
 
             controller.handleException(e);

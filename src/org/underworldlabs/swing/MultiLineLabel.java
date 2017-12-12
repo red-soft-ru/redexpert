@@ -20,16 +20,18 @@
 
 package org.underworldlabs.swing;
 
-import javax.swing.JLabel;
+import javax.swing.*;
 
 /**
  * Simple multiline JLabel component.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class MultiLineLabel extends JLabel {
-    
-    /** Creates a new instance of MultiLineLabel */
+
+    /**
+     * Creates a new instance of MultiLineLabel
+     */
     public MultiLineLabel(String text) {
         StringBuffer sb = new StringBuffer();
         sb.append("<html><body><p>");
@@ -37,7 +39,7 @@ public class MultiLineLabel extends JLabel {
         sb.append("</p></body></html>");
         setText(sb.toString());
     }
-    
+
 }
 
 

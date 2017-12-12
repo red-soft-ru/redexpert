@@ -20,15 +20,16 @@
 
 package org.executequery.gui.console.commands;
 
-import javax.swing.SwingConstants;
 import org.executequery.GUIUtilities;
-import org.underworldlabs.util.SystemProperties;
-import org.executequery.gui.console.ConsolePanel;
 import org.executequery.gui.console.Console;
+import org.executequery.gui.console.ConsolePanel;
+import org.underworldlabs.util.SystemProperties;
+
+import javax.swing.*;
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
@@ -38,32 +39,31 @@ import org.executequery.gui.console.Console;
  */
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ExitCommand extends Command {
-    
+
     private static final String COMMAND_NAME = "exit";
-    
+
     public String getCommandName() {
         return COMMAND_NAME;
     }
-    
+
     public String getCommandSummary() {
         return SystemProperties.getProperty("console", "console.exit.command.help");
     }
-    
+
     public boolean handleCommand(Console console, String command) {
-        
+
         if (command.equals(COMMAND_NAME)) {
             GUIUtilities.closeDockedComponent(ConsolePanel.TITLE, SwingConstants.SOUTH);
             //GUIUtilities.closeInternalFrame(ConsolePanel.TITLE);
             return true;
         }
-        
+
         return false;
     }
-    
+
 }
 
 

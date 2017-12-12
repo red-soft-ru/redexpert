@@ -25,12 +25,14 @@ import org.executequery.databasemediators.DatabaseDriver;
 /**
  * Defines a default database driver event
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class DefaultDatabaseDriverEvent extends AbstractApplicationEvent 
-                                        implements DatabaseDriverEvent {
+public class DefaultDatabaseDriverEvent extends AbstractApplicationEvent
+        implements DatabaseDriverEvent {
 
-    /** Creates a new instance of ConnectionEvent */
+    /**
+     * Creates a new instance of ConnectionEvent
+     */
     public DefaultDatabaseDriverEvent(DatabaseDriver databaseDriver, String method) {
 
         super(databaseDriver, method);

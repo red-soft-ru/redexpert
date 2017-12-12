@@ -20,6 +20,11 @@
 
 package org.executequery.sql;
 
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.datasource.ConnectionManager;
+import org.underworldlabs.util.FileUtils;
+import org.underworldlabs.util.MiscUtils;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -27,15 +32,10 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.datasource.ConnectionManager;
-import org.underworldlabs.util.FileUtils;
-import org.underworldlabs.util.MiscUtils;
-
 public class SqlScriptRunner {
 
     private Connection connection;
-    
+
     private final ExecutionController executionController;
 
     private boolean cancel;
@@ -47,35 +47,35 @@ public class SqlScriptRunner {
     }
 
     public void stop() {
-        
+
         cancel = true;
     }
-    
+
     public SqlStatementResult execute(DatabaseConnection databaseConnection,
-            String fileName, ActionOnError actionOnError) {
+                                      String fileName, ActionOnError actionOnError) {
 
         int count = 0;
         int result = 0;
 
         Statement statement = null;
         SqlStatementResult sqlStatementResult = new SqlStatementResult();
-        
+
         try {
 
             cancel = false;
             executionController.message("Reading input file " + fileName);
             String script = FileUtils.loadFile(fileName);
-            
+
             executionController.message("Scanning and tokenizing queries...");
             QueryTokenizer queryTokenizer = new QueryTokenizer();
             List<DerivedQuery> queries = queryTokenizer.tokenize(script);
-            
+
             close();
             connection = ConnectionManager.getConnection(databaseConnection);
             connection.setAutoCommit(false);
 
             List<DerivedQuery> executableQueries = new ArrayList<DerivedQuery>();
-            
+
             for (DerivedQuery query : queries) {
 
                 if (shouldNotContinue()) {
@@ -87,11 +87,11 @@ public class SqlScriptRunner {
 
                     executableQueries.add(query);
                 }
-                
+
             }
             queries.clear();
-            
-            executionController.message("Found " + executableQueries.size() + " executable queries");            
+
+            executionController.message("Found " + executableQueries.size() + " executable queries");
             executionController.message("Executing...");
 
             long start = 0L;
@@ -99,7 +99,7 @@ public class SqlScriptRunner {
             int thisResult = 0;
 
             boolean logOutput = executionController.logOutput();
-            
+
             statement = connection.createStatement();
             for (DerivedQuery query : executableQueries) {
 
@@ -123,14 +123,14 @@ public class SqlScriptRunner {
                     start = System.currentTimeMillis();
                     thisResult = statement.executeUpdate(derivedQuery);
                     result += thisResult;
-                    
+
                 } catch (SQLException e) {
 
                     executionController.errorMessage("Error executing statement:");
                     executionController.actionMessage(derivedQuery);
 
                     if (actionOnError != ActionOnError.CONTINUE) {
-                        
+
                         throw e;
 
                     } else {
@@ -139,7 +139,7 @@ public class SqlScriptRunner {
                     }
 
                 }
-                
+
                 end = System.currentTimeMillis();
                 if (logOutput) {
 
@@ -147,7 +147,7 @@ public class SqlScriptRunner {
                 }
 
             }
-            
+
         } catch (IOException e) {
 
             sqlStatementResult.setOtherException(e);
@@ -158,26 +158,26 @@ public class SqlScriptRunner {
             sqlStatementResult.setSqlException(e);
 
         } catch (InterruptedException e) {
-           
+
             sqlStatementResult.setOtherException(e);
 
         } catch (org.underworldlabs.util.InterruptedException e) {
-            
+
             sqlStatementResult.setOtherException(e);
-            
+
         } finally {
 
             if (statement != null) {
-                
+
                 try {
                     statement.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
-            
+
         }
-        
+
         sqlStatementResult.setUpdateCount(result);
         sqlStatementResult.setStatementCount(count);
 
@@ -190,30 +190,30 @@ public class SqlScriptRunner {
     }
 
     public void close() throws SQLException {
-        
+
         if (connection != null) {
 
             connection.close();
         }
     }
-    
+
     public void rollback() throws SQLException {
 
         if (connection != null) {
-        
+
             connection.rollback();
         }
     }
 
     public void commit() throws SQLException {
-     
+
         if (connection != null) {
-         
+
             connection.commit();
         }
     }
 
-    
+
 }
 
 

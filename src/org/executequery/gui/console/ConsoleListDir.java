@@ -20,97 +20,99 @@
 
 package org.executequery.gui.console;
 
-import java.io.File;
+import org.underworldlabs.util.SystemProperties;
 
+import java.io.File;
+import java.text.FieldPosition;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.StringTokenizer;
 
-import java.text.FieldPosition;
-import java.text.SimpleDateFormat;
-
-import org.underworldlabs.util.SystemProperties;
-
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
 /**
  * A ls function for Java Shell. Adapted to Jext.
+ *
  * @author Romain Guy
  * @version 1.9.4
  */
 
 public class ConsoleListDir {
-    
+
     private static Console parent;
     private static int indentSize = 0;
     private static String indent = "";
     private static String pattern = "";
     private static boolean moreInfos, fullNames, longDates, hiddenFiles, noDates, onlyDirs,
-    onlyFiles, recursive, noInfos, kiloBytes, sort;
+            onlyFiles, recursive, noInfos, kiloBytes, sort;
     private static boolean canList = true;
-    
+
     /**
      * Exec the equivalent of system's 'ls' or 'dir' command.
+     *
      * @param cparent Console which executed the command
-     * @param args The command arguments
+     * @param args    The command arguments
      */
-    
+
     public static void list(Console cparent, String args) {
-        
+
         parent = cparent;
-        
+
         if (buildFlags(args)) {
-            
+
             String old = System.getProperty("user.dir");
             run();
-            
+
             if (recursive || !canList)
                 System.getProperties().put("user.dir", old);
-            
+
             // we reset flags
             sort = kiloBytes = recursive = onlyFiles = onlyDirs = noDates
-            = moreInfos = hiddenFiles = longDates = fullNames = false;
+                    = moreInfos = hiddenFiles = longDates = fullNames = false;
             pattern = "";
             canList = true;
             indentSize = 0;
         }
-        
+
     }
-    
+
     /**
      * Output a <code>String</code> in the parent console.
+     *
      * @param print <code>String</print> to output
      */
-    
+
     private final static void print(String print) {
         parent.append(print + "\n", parent.outputColor);
     }
-    
+
     /**
      * Determine which options are enabled.
+     *
      * @param args The arguments containing the option flags
      */
-    
+
     private static boolean buildFlags(String arg) {
         if (arg == null)
             return true;
-        
+
         StringTokenizer tokens = new StringTokenizer(arg);
         String argument;
-        
+
         while (tokens.hasMoreTokens()) {
             argument = tokens.nextToken();
-            
+
             if (argument.startsWith("-")) {
                 if (argument.equals("-help")) {
                     help();
                     return false;
                 }
-                
+
                 for (int j = 1; j < argument.length(); j++) {
                     switch (argument.charAt(j)) {
                         case 'h':               // hidden files to be shown
@@ -151,62 +153,62 @@ public class ConsoleListDir {
             } else
                 pattern = argument;
         }
-        
+
         return true;
     }
-    
+
     /**
      * List according to the options flag activated.
      */
-    
+
     private final static void run() {
-        
+
         // these instances are used to improve speed of dates calculations
         Date date = new Date();
         StringBuffer buffer = new StringBuffer();
         FieldPosition field = new FieldPosition(0);
         SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy - HH:mm:ss");
-        
+
         // default pattern used is '*'
         File[] files = ConsoleUtilities.listFiles(
-        ConsoleUtilities.getWildCardMatches(pattern.equals("") ? "*" : pattern, sort), true);
-        
+                ConsoleUtilities.getWildCardMatches(pattern.equals("") ? "*" : pattern, sort), true);
+
         long totalSize;
         int totalDir, totalFiles;
         totalSize = totalFiles = totalDir = 0;
-        
+
         // if canList, then we have to browse a subdirectory
         if (canList && pattern.indexOf("*") == -1 && pattern.indexOf("?") == -1) {
-            
+
             File curr = new File(ConsoleUtilities.constructPath(pattern));
-            
+
             if (curr == null || !curr.isDirectory()) {
                 parent.error(SystemProperties.getProperty("console", "console.ls.error"));
                 return;
             }
-            
+
             canList = false;
             pattern = "*";
             System.getProperties().put("user.dir", ConsoleUtilities.constructPath(curr.getAbsolutePath()));
             run();
             return;
         }
-        
+
         print("");
-        
+
         for (int i = 0; i < files.length; i++) {
             StringBuffer display = new StringBuffer();
             File current = files[i];
             String currentName = current.getName();
             if (!fullNames)
-                currentName =  ConsoleUtilities.getShortStringOf(currentName, 24);
+                currentName = ConsoleUtilities.getShortStringOf(currentName, 24);
             int amountOfSpaces = 32 - currentName.length();
-            
+
             int sub = 0;
             if (amountOfSpaces > 6)
                 sub = 6;
             else if
-            (amountOfSpaces >= 0) sub = amountOfSpaces;
+                    (amountOfSpaces >= 0) sub = amountOfSpaces;
             else
                 sub = 0;
             // we found a directory
@@ -223,17 +225,17 @@ public class ConsoleListDir {
                     StringBuffer info = new StringBuffer();
                     info.append(current.canWrite() ? 'w' : '-');         // file is writable
                     info.append(current.canRead() ? 'r' : '-');          // file is readable
-                    info.append(current.isHidden() ? 'h': '-');          // file is hidden
+                    info.append(current.isHidden() ? 'h' : '-');          // file is hidden
                     info.append(ConsoleUtilities.createWhiteSpace(8));
                     display = info.append(display);
                 }
                 totalFiles++;
             }
-            
+
             StringBuffer time = new StringBuffer();
             if (!noDates) {
                 date.setTime(current.lastModified());
-                
+
                 if (longDates) {
                     // we display long dates format
                     time.append(date.toString());
@@ -244,16 +246,16 @@ public class ConsoleListDir {
                 }
                 time.append(ConsoleUtilities.createWhiteSpace(8));
             }
-            
+
             // determine if we must show or not (according to flags) found file
             if ((hiddenFiles && current.isHidden()) || !current.isHidden()) {
                 if ((current.isDirectory() && !onlyFiles) || (current.isFile() && !onlyDirs) ||
-                (onlyDirs && onlyFiles)) {
+                        (onlyDirs && onlyFiles)) {
                     if (ConsoleUtilities.match(pattern, current.getName()))
                         print(indent + time.toString() + display.toString());
                 }
             }
-            
+
             // if we are dealing with a dir and -r flag is set, we browse it
             if (recursive && current.isDirectory()) {
                 System.getProperties().put("user.dir", ConsoleUtilities.constructPath(current.getAbsolutePath()));
@@ -263,57 +265,59 @@ public class ConsoleListDir {
                     print("");
             }
         }
-        
+
         // display summary infos
         StringBuffer size = new StringBuffer();
         if (kiloBytes)
             size.append(formatNumber(Long.toString(totalSize / 1024))).append('k');
         else
             size.append(formatNumber(Long.toString(totalSize))).append("bytes");
-        
+
         if (!noInfos)
             print("\n" + indent + totalFiles + " files - " + totalDir + " directories - " +
-            size.toString());
+                    size.toString());
         indent = createIndent(--indentSize);
     }
-    
+
     /**
      * Format a number from 12000123 to 12 000 123.
+     *
      * @param number Number to be formatted
      */
     private final static String formatNumber(String number) {
         StringBuffer formatted = new StringBuffer(number);
-        
+
         for (int i = number.length(); i > 0; i -= 3)
             formatted.insert(i, ' ');
-        
+
         return formatted.toString();
     }
-    
+
     /**
      * Creates the indent for the recursive option.
      * An indent unit adds two '-'.
+     *
      * @param len Length of indentation
      */
     private final static String createIndent(int len) {
         StringBuffer buf = new StringBuffer();
-        
+
         for (int i = 0; i < len; i++) {
             buf.append('-');
             buf.append('-');
         }
-        
+
         return buf.toString();
     }
-    
+
     /**
      * Display command help in the console.
      */
-    
+
     public static void help() {
         parent.help(SystemProperties.getProperty("console", "console.ls.help"));
     }
-    
+
 }
 
 // End of ConsoleListDir.java

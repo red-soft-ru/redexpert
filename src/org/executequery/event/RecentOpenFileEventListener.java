@@ -21,14 +21,14 @@
 package org.executequery.event;
 
 /**
- * Recent file event listener. 
+ * Recent file event listener.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface RecentOpenFileEventListener extends ApplicationEventListener {
 
-   void recentFilesUpdated(RecentOpenFileEvent e); 
-    
+    void recentFilesUpdated(RecentOpenFileEvent e);
+
 }
 
 

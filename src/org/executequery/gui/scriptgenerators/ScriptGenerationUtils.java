@@ -19,33 +19,35 @@
  */
 
 package org.executequery.gui.scriptgenerators;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
+
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.underworldlabs.util.MiscUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
+
 /**
  * Simple utility methods to asist in generating SQL scripts
  * for tables/schemas.
  *
- * @deprecated 
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
+ * @deprecated
  */
 public class ScriptGenerationUtils implements CreateTableSQLSyntax {
-  
+
     /**
-     * Generates a create table script for the specified 
+     * Generates a create table script for the specified
      * column data array.
      */
     public static String createTableScript(ColumnData[] cda) {
         StringBuffer sb = new StringBuffer();
-        
+
         for (int i = 0; i < cda.length; i++) {
             ColumnData cd = cda[i];
-            
+
             if (i == 0) {
                 sb.append(CREATE_TABLE);
 
@@ -58,13 +60,13 @@ public class ScriptGenerationUtils implements CreateTableSQLSyntax {
                 sb.append(SPACE);
                 sb.append(B_OPEN);
             }
-            
+
             sb.append(NEW_LINE_2).append(cd.getColumnName()).append(SPACE);
 
             if (cd.getColumnType() != null) {
                 sb.append(cd.getColumnType());
 
-                if(!cd.getColumnType().equalsIgnoreCase(DATE)) {
+                if (!cd.getColumnType().equalsIgnoreCase(DATE)) {
                     sb.append(B_OPEN).append(cd.getColumnSize());
 
                     if (cd.getColumnScale() != 0) {
@@ -88,19 +90,19 @@ public class ScriptGenerationUtils implements CreateTableSQLSyntax {
     }
 
     public static int ALTER_CONSTRAINTS = 0;
-    
+
     public static int DEFAULT_CONSTRAINTS = 1;
 
-    public static String createTableScript(String tableName, 
+    public static String createTableScript(String tableName,
                                            ColumnData[] cda)
-        throws InterruptedException {
-        return createTableScript(tableName, cda, false);        
+            throws InterruptedException {
+        return createTableScript(tableName, cda, false);
     }
 
-    public static String createTableScript(String tableName, 
+    public static String createTableScript(String tableName,
                                            ColumnData[] cda,
-                                           boolean includeConstraints) 
-        throws InterruptedException {
+                                           boolean includeConstraints)
+            throws InterruptedException {
 
         int sepLength = -1;
         StringBuffer sb = new StringBuffer(500);
@@ -108,17 +110,17 @@ public class ScriptGenerationUtils implements CreateTableSQLSyntax {
         StringBuffer sb_spaces_2 = new StringBuffer(30);
         String initialSpaces = "               ";
 
-        List<ColumnConstraint> columnConstraints = 
-                        new ArrayList<ColumnConstraint>();             
+        List<ColumnConstraint> columnConstraints =
+                new ArrayList<ColumnConstraint>();
 
         // opening create table line
         sb.append(CREATE_TABLE).
-           append(tableName).
-           append(SPACE).
-           append(B_OPEN);
+                append(tableName).
+                append(SPACE).
+                append(B_OPEN);
 
         if (cda.length > 0) {
-            sb_spaces_1.append(initialSpaces);                    
+            sb_spaces_1.append(initialSpaces);
             int tn_length = tableName.length();
 
             // spaces between beginning of line and column name
@@ -133,7 +135,7 @@ public class ScriptGenerationUtils implements CreateTableSQLSyntax {
 
                 if (Thread.interrupted()) {
                     throw new InterruptedException();
-                } 
+                }
 
                 sepLength = getSpaceLength(cda) + 5;
 
@@ -150,8 +152,8 @@ public class ScriptGenerationUtils implements CreateTableSQLSyntax {
 
                 // column name and data type
                 sb.append(column.getColumnName()).
-                   append(sb_spaces_2).
-                   append(column.getFormattedDataType());
+                        append(sb_spaces_2).
+                        append(column.getFormattedDataType());
 
                 // column nullable
                 sb.append(column.isRequired() ? NOT_NULL : EMPTY);
@@ -162,13 +164,13 @@ public class ScriptGenerationUtils implements CreateTableSQLSyntax {
                         columnConstraints.add(ccv.get(a));
                     }
 
-                } 
+                }
 
                 if (j != cda.length - 1) {
                     sb.append(COMMA).append(NEW_LINE);
-                }                        
+                }
                 sb_spaces_2.setLength(0);
-            } 
+            }
 
             int v_size = columnConstraints.size();
             if (v_size > 0) {
@@ -178,54 +180,53 @@ public class ScriptGenerationUtils implements CreateTableSQLSyntax {
                 for (int j = 0; j < v_size; j++) {
                     cc = columnConstraints.get(j);
                     sb.append(spaces_1).
-                       append(CONSTRAINT).
-                       append(cc.getName()).
-                       append(SPACE).
-                       append(cc.getTypeName()).
-                       append(KEY).
-                       append(B_OPEN).
-                       append(cc.getColumn()).
-                       append(B_CLOSE);
+                            append(CONSTRAINT).
+                            append(cc.getName()).
+                            append(SPACE).
+                            append(cc.getTypeName()).
+                            append(KEY).
+                            append(B_OPEN).
+                            append(cc.getColumn()).
+                            append(B_CLOSE);
 
                     if (cc.getType() == ColumnConstraint.FOREIGN_KEY) {
                         sb.append(REFERENCES);
                         if (cc.hasSchema()) {
                             sb.append(cc.getRefSchema()).
-                               append(DOT);
+                                    append(DOT);
                         }
                         sb.append(cc.getRefTable()).
-                           append(B_OPEN).
-                           append(cc.getRefColumn()).
-                           append(B_CLOSE);
-                    } 
+                                append(B_OPEN).
+                                append(cc.getRefColumn()).
+                                append(B_CLOSE);
+                    }
 
-                    if (j < v_size -1) {
+                    if (j < v_size - 1) {
                         sb.append(COMMA).
-                           append(NEW_LINE);
+                                append(NEW_LINE);
                     }
 
                 }
 
-            } 
+            }
 
-            columnConstraints.clear();            
+            columnConstraints.clear();
             sb.append(B_CLOSE).
-               append(SEMI_COLON).
-               append(NEW_LINE).
-               append(NEW_LINE);
+                    append(SEMI_COLON).
+                    append(NEW_LINE).
+                    append(NEW_LINE);
 
-        }
-        else { // no columns
+        } else { // no columns
             sb.append(B_CLOSE).
-               append(SEMI_COLON).
-               append(NEW_LINE).
-               append(NEW_LINE);
+                    append(SEMI_COLON).
+                    append(NEW_LINE).
+                    append(NEW_LINE);
         }
         return sb.toString();
     }
-    
+
     public static String alterTableConstraintsScript(
-                                Vector<ColumnConstraint> columnConstraints) {
+            Vector<ColumnConstraint> columnConstraints) {
 
         int type = -1;
         StringBuffer primaryKeys = new StringBuffer();
@@ -238,64 +239,64 @@ public class ScriptGenerationUtils implements CreateTableSQLSyntax {
             if (type == ColumnConstraint.FOREIGN_KEY) {
 
                 foreignKeys.append(ALTER_TABLE).
-                            append(cc.getTable()).
-                            append(ADD).
-                            append(CONSTRAINT).
-                            append(cc.getName()).
-                            append(SPACE).
-                            append(cc.getTypeName()).
-                            append(KEY).
-                            append(B_OPEN).
-                            append(cc.getColumn()).
-                            append(B_CLOSE).
-                            append(REFERENCES);
+                        append(cc.getTable()).
+                        append(ADD).
+                        append(CONSTRAINT).
+                        append(cc.getName()).
+                        append(SPACE).
+                        append(cc.getTypeName()).
+                        append(KEY).
+                        append(B_OPEN).
+                        append(cc.getColumn()).
+                        append(B_CLOSE).
+                        append(REFERENCES);
 
                 // if (cc.hasSchema())
                 // fKeys.append(cc.getSchema()).append(DOT);
 
                 foreignKeys.append(cc.getRefTable()).
-                            append(B_OPEN).
-                            append(cc.getRefColumn()).
-                            append(B_CLOSE).
-                            append(SEMI_COLON).
-                            append(NEW_LINE);
-            }
-            else if (type == ColumnConstraint.PRIMARY_KEY) {
+                        append(B_OPEN).
+                        append(cc.getRefColumn()).
+                        append(B_CLOSE).
+                        append(SEMI_COLON).
+                        append(NEW_LINE);
+            } else if (type == ColumnConstraint.PRIMARY_KEY) {
                 primaryKeys.append(ALTER_TABLE).
-                            append(cc.getTable()).
-                            append(ADD).
-                            append(CONSTRAINT).
-                            append(cc.getName()).
-                            append(SPACE).
-                            append(cc.getTypeName()).
-                            append(KEY).
-                            append(B_OPEN).
-                            append(cc.getColumn()).
-                            append(B_CLOSE).
-                            append(SEMI_COLON).
-                            append(NEW_LINE);
-            } 
+                        append(cc.getTable()).
+                        append(ADD).
+                        append(CONSTRAINT).
+                        append(cc.getName()).
+                        append(SPACE).
+                        append(cc.getTypeName()).
+                        append(KEY).
+                        append(B_OPEN).
+                        append(cc.getColumn()).
+                        append(B_CLOSE).
+                        append(SEMI_COLON).
+                        append(NEW_LINE);
+            }
 
         }
 
-        if (foreignKeys.length() > 0) {        
+        if (foreignKeys.length() > 0) {
             primaryKeys.append(NEW_LINE).
-                        append(foreignKeys);
+                    append(foreignKeys);
         }
 
         return primaryKeys.toString();
     }
-    
+
     private static int getSpaceLength(ColumnData[] cda) {
         int spaces = 0;
         // spaces between end of column name and data type name
         for (int i = 0; i < cda.length; i++) {
             spaces = Math.max(spaces, cda[i].getColumnName().length());
-        } 
+        }
         return spaces;
     }
 
-    private ScriptGenerationUtils() {}
-    
+    private ScriptGenerationUtils() {
+    }
+
 }
 

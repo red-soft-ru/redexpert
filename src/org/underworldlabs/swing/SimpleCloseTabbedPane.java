@@ -20,24 +20,23 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.underworldlabs.swing.plaf.TabRollOverListener;
 import org.underworldlabs.swing.plaf.TabRolloverEvent;
 import org.underworldlabs.swing.plaf.TabSelectionListener;
 
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SimpleCloseTabbedPane extends AbstractTabPopupMenuContainer {
-    
+
     private List<TabRollOverListener> rollListeners;
-    
+
     private List<TabSelectionListener> selectionListeners;
-    
+
     public SimpleCloseTabbedPane() {
         this(TOP, SCROLL_TAB_LAYOUT);
     }
@@ -51,17 +50,17 @@ public class SimpleCloseTabbedPane extends AbstractTabPopupMenuContainer {
     }
 
     public void fireTabSelected(MouseEvent e) {
-        
+
         if (selectionListeners == null || selectionListeners.isEmpty()) {
             return;
         }
-        
+
         for (TabSelectionListener listener : selectionListeners) {
             listener.tabSelected(e);
         }
-        
+
     }
-    
+
     public void fireTabRollOver(TabRolloverEvent e) {
         if (rollListeners == null || rollListeners.isEmpty()) {
             return;
@@ -96,7 +95,7 @@ public class SimpleCloseTabbedPane extends AbstractTabPopupMenuContainer {
         if (rollListeners == null) {
             rollListeners = new ArrayList<TabRollOverListener>();
         }
-        rollListeners.add(listener);        
+        rollListeners.add(listener);
     }
 
     public void addTabSelectionListener(TabSelectionListener listener) {

@@ -19,12 +19,6 @@
  */
 
 package org.executequery.gui;
-import java.awt.Color;
-import java.io.File;
-import java.io.IOException;
-
-import javax.swing.BorderFactory;
-import javax.swing.SwingUtilities;
 
 import org.executequery.ActiveComponent;
 import org.executequery.Constants;
@@ -35,36 +29,46 @@ import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextFileWriter;
 import org.underworldlabs.util.FileUtils;
 
-/** 
+import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+
+/**
  * The Generated SQL Script Viewer.<br>
  * Used to display generated SQL CREATE TABLE statements.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class GeneratedScriptViewer extends SimpleSqlTextPanel
-                                   implements ActiveComponent,
-                                              TabView {
-    
+        implements ActiveComponent,
+        TabView {
+
     public static final String TITLE = "Generated SQL Script - ";
-    
+
     public static final String FRAME_ICON = "DBImage16.png";
-    
-    /** The text length */
+
+    /**
+     * The text length
+     */
     private int textLength;
-    
-    /** The script file */
+
+    /**
+     * The script file
+     */
     private File file;
-    
+
     public GeneratedScriptViewer(String text, String path) {
         this(text, new File(path));
     }
-    
-    /** Constructs a new instance. */
+
+    /**
+     * Constructs a new instance.
+     */
     public GeneratedScriptViewer(String text, final File file) {
         this.file = file;
 
         if (text == null) {
-            
+
             // load from file
             if (file != null) {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -75,46 +79,45 @@ public class GeneratedScriptViewer extends SimpleSqlTextPanel
                         } catch (IOException e) {
                             GUIUtilities.displayErrorMessage(
                                     "Error reading from file " + file.getName() +
-                                    "\nThe system returned: " + e.getMessage());
-                        }
-                        finally {
+                                            "\nThe system returned: " + e.getMessage());
+                        } finally {
                             GUIUtilities.showNormalCursor();
                         }
                     }
                 });
-            } 
-            
+            }
+
         }
-        
-        try  {
+
+        try {
             jbInit();
             setContent(text);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
-    /** Initializes the state of this instance. */
+
+    /**
+     * Initializes the state of this instance.
+     */
     private void jbInit() throws Exception {
         setDefaultBorder();
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         EventMediator.registerListener(this);
     }
-    
+
     private void setContent(String text) {
         if (text != null) {
             try {
                 GUIUtilities.showWaitCursor();
                 textLength = text.length();
                 setSQLText(text);
-            }
-            finally {
+            } finally {
                 GUIUtilities.showNormalCursor();
             }
         }
     }
-    
+
     // --------------------------------------------
     // DockedTabView implementation
     // --------------------------------------------
@@ -144,7 +147,7 @@ public class GeneratedScriptViewer extends SimpleSqlTextPanel
 
     // --------------------------------------------
 
-    
+
     /**
      * Releases database resources before closing.
      */
@@ -159,17 +162,17 @@ public class GeneratedScriptViewer extends SimpleSqlTextPanel
     public int save() {
         return save(file);
     }
-    
+
     public int save(boolean saveAs) {
         String text = textPane.getText();
         TextFileWriter writer = null;
-        
+
         if (file != null && !saveAs) {
             writer = new TextFileWriter(text, file.getAbsolutePath());
         } else {
             writer = new TextFileWriter(text, Constants.EMPTY);
         }
-        
+
         int result = writer.write();
         if (result == SaveFunction.SAVE_COMPLETE) {
             file = writer.getSavedFile();
@@ -179,18 +182,18 @@ public class GeneratedScriptViewer extends SimpleSqlTextPanel
         return result;
     }
 
-    public boolean contentCanBeSaved() {        
+    public boolean contentCanBeSaved() {
         return textLength != getEditorText().length();
     }
 
     public String getDisplayName() {
         return toString();
     }
-    
+
     public String toString() {
         return TITLE + (file != null ? file.getName() : Constants.EMPTY);
     }
-    
+
 }
 
 

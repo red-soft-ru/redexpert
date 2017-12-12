@@ -20,21 +20,13 @@
 
 package org.executequery.gui.browser;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.util.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 class DatabaseHostNodeSorter {
 
@@ -66,11 +58,11 @@ class DatabaseHostNodeSorter {
     public void sort(DefaultMutableTreeNode parent) {
 
         List<DatabaseHostNode> children = new ArrayList<DatabaseHostNode>(parent.getChildCount());
-        for (Enumeration i = parent.children(); i.hasMoreElements();) {
+        for (Enumeration i = parent.children(); i.hasMoreElements(); ) {
 
             Object object = i.nextElement();
             if (object instanceof DatabaseHostNode) {
-             
+
                 children.add((DatabaseHostNode) object);
             }
         }

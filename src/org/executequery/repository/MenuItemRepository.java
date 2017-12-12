@@ -20,18 +20,17 @@
 
 package org.executequery.repository;
 
-import java.util.List;
-
 import org.executequery.gui.menu.MenuItem;
 
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface MenuItemRepository {
 
     List<MenuItem> getMenuItems();
-    
+
 }
 
 

@@ -20,20 +20,19 @@
 
 package org.executequery.actions.queryeditor;
 
-import java.awt.event.ActionEvent;
-import java.util.Vector;
-
-import javax.swing.SwingUtilities;
-
 import org.executequery.GUIUtilities;
 import org.executequery.gui.editor.SQLHistoryDialog;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.repository.SqlCommandHistoryRepository;
 
-/** 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.util.Vector;
+
+/**
  * <p>The Query Editor's history command execution.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class HistoryCommand extends AbstractQueryEditorCommand {
 
@@ -43,28 +42,28 @@ public class HistoryCommand extends AbstractQueryEditorCommand {
 
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-    
-                    Vector<String> history = 
-                        sqlCommandHistoryRepository().getSqlCommandHistory();
+
+                    Vector<String> history =
+                            sqlCommandHistoryRepository().getSqlCommandHistory();
 
                     if (history == null || history.isEmpty()) {
-                        
+
                         GUIUtilities.displayInformationMessage(bundledString("historyEmptyMessage"));
                         return;
-                    } 
+                    }
 
                     new SQLHistoryDialog(history, queryEditor());
                 }
             });
-            
+
         }
 
     }
-    
+
     private SqlCommandHistoryRepository sqlCommandHistoryRepository() {
 
-        return (SqlCommandHistoryRepository)RepositoryCache.load(
-                SqlCommandHistoryRepository.REPOSITORY_ID);        
+        return (SqlCommandHistoryRepository) RepositoryCache.load(
+                SqlCommandHistoryRepository.REPOSITORY_ID);
     }
 
 }

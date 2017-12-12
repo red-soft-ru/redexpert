@@ -20,23 +20,19 @@
 
 package org.executequery.gui.table;
 
-import java.awt.Component;
-
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.table.TableCellRenderer;
-
 import org.executequery.GUIUtilities;
 import org.executequery.gui.browser.ColumnConstraint;
 
+import javax.swing.*;
+import javax.swing.table.TableCellRenderer;
+import java.awt.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ConstraintCellRenderer extends JLabel
-                                    implements TableCellRenderer {
-    
+        implements TableCellRenderer {
+
     private static ImageIcon deleteImage;
     private static ImageIcon newImage;
 
@@ -45,24 +41,25 @@ public class ConstraintCellRenderer extends JLabel
         newImage = GUIUtilities.loadIcon("MarkNew16.png", true);
     }
 
-    /** Creates a new instance of ConstraintCellRenderer */
-    public ConstraintCellRenderer() {}
+    /**
+     * Creates a new instance of ConstraintCellRenderer
+     */
+    public ConstraintCellRenderer() {
+    }
 
     public Component getTableCellRendererComponent(JTable table,
-                                Object value, boolean isSelected, boolean hasFocus,
-                                int row, int column) {
-        
+                                                   Object value, boolean isSelected, boolean hasFocus,
+                                                   int row, int column) {
 
-        ColumnConstraint cc = (ColumnConstraint)value;
+
+        ColumnConstraint cc = (ColumnConstraint) value;
         if (cc.isMarkedDeleted()) {
             setIcon(deleteImage);
             setToolTipText("This value marked to be dropped");
-        }
-        else if (cc.isNewConstraint()) {
+        } else if (cc.isNewConstraint()) {
             setIcon(newImage);
-            setToolTipText("This value marked new");            
-        }
-        else {
+            setToolTipText("This value marked new");
+        } else {
             setIcon(null);
         }
 

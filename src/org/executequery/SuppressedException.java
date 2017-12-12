@@ -35,10 +35,10 @@ public class SuppressedException extends RuntimeException {
     public String getMessage() {
         return message;
     }
-    
+
     private boolean stackPrintable() {
 //      return Log.isDebugEnabled();
-      return false;
+        return false;
     }
 
     @Override
@@ -61,12 +61,12 @@ public class SuppressedException extends RuntimeException {
             super.printStackTrace(s);
         }
     }
-    
+
     @Override
     public StackTraceElement[] getStackTrace() {
         return new StackTraceElement[0];
     }
-    
+
 }
 
 

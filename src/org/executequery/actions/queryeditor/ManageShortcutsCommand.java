@@ -20,14 +20,13 @@
 
 package org.executequery.actions.queryeditor;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.editor.ManageShortcutsPanel;
 
-/** 
- *
- * @author   Takis Diakoumis
+import java.awt.event.ActionEvent;
+
+/**
+ * @author Takis Diakoumis
  */
 public class ManageShortcutsCommand extends AbstractQueryEditorCommand {
 
@@ -38,7 +37,7 @@ public class ManageShortcutsCommand extends AbstractQueryEditorCommand {
         dialog.addDisplayComponent(new ManageShortcutsPanel(dialog));
         dialog.display();
     }
-    
+
 }
 
 

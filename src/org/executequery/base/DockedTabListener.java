@@ -23,45 +23,45 @@ package org.executequery.base;
 /**
  * Listener interface for tab events.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface DockedTabListener {
-    
+
     /**
      * Indicates a tab minimised event.
      *
-     * @param the event 
+     * @param the event
      */
     public void tabMinimised(DockedTabEvent e);
 
     /**
      * Indicates a tab restored from minimised event.
      *
-     * @param the event 
+     * @param the event
      */
     public void tabRestored(DockedTabEvent e);
 
     /**
      * Indicates a tab selected event.
      *
-     * @param the event 
+     * @param the event
      */
     public void tabSelected(DockedTabEvent e);
 
     /**
      * Indicates a tab deselected event.
      *
-     * @param the event 
+     * @param the event
      */
     public void tabDeselected(DockedTabEvent e);
-    
+
     /**
      * Indicates a tab closed event.
      *
-     * @param the event 
+     * @param the event
      */
     public void tabClosed(DockedTabEvent e);
-    
+
 }
 
 

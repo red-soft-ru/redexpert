@@ -23,22 +23,21 @@ package org.executequery.databaseobjects;
 import java.sql.DatabaseMetaData;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ProcedureParameter {
-    
+
     private String name;
     private int type;
     private int dataType;
     private String sqlType;
     private int size;
     private String value;
-    
+
     private static final String RESULT_STORE = "< Result Store >";
     private static final String RETURN_VALUE = "< Return Value >";
     private static final String UNKNOWN = "< Unknown >";
-    
+
     public ProcedureParameter(String name, int type, int dataType,
                               String sqlType, int size) {
         this.name = name;
@@ -47,73 +46,73 @@ public class ProcedureParameter {
         this.sqlType = sqlType;
         this.size = size;
     }
-    
+
     public void setDataType(int dataType) {
         this.dataType = dataType;
     }
-    
+
     public int getDataType() {
         return dataType;
     }
-    
+
     public void setSize(int size) {
         this.size = size;
     }
-    
+
     public int getSize() {
         return size;
     }
-    
+
     public void setSqlType(String sqlType) {
         this.sqlType = sqlType;
     }
-    
+
     public String getSqlType() {
         return sqlType;
     }
-    
+
     public void setType(int type) {
         this.type = type;
     }
-    
+
     public int getType() {
         return type;
     }
-    
+
     public void setValue(String value) {
         this.value = value;
     }
-    
+
     public String getValue() {
         return value;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public String getName() {
-        
+
         if (name == null) {
-            
+
             if (type == DatabaseMetaData.procedureColumnResult)
                 return RESULT_STORE;
-            
+
             else if (type == DatabaseMetaData.procedureColumnReturn)
                 return RETURN_VALUE;
-            
+
             else
                 return UNKNOWN;
-            
-        } 
-        
+
+        }
+
         return name;
     }
-    
+
     public String toString() {
         return getName();
     }
-    
+
 }
 
 

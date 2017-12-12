@@ -24,13 +24,12 @@ import org.underworldlabs.swing.table.SortableTableModel;
 import org.underworldlabs.swing.table.TableSorter;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SortableColumnsTable extends DefaultTable {
 
     public SortableColumnsTable() {
-        
+
         super();
     }
 
@@ -45,15 +44,15 @@ public class SortableColumnsTable extends DefaultTable {
         TableSorter sorter = new TableSorter(dataModel, getTableHeader());
         super.setModel(sorter);
     }
-    
+
     public final void resetSorter() {
-        
+
         if (getModel() instanceof TableSorter) {
 
-            ((TableSorter)getModel()).reset();
+            ((TableSorter) getModel()).reset();
         }
     }
-    
+
 }
 
 

@@ -20,16 +20,15 @@
 
 package org.executequery.gui.drivers;
 
-import java.awt.print.Printable;
-
-import javax.swing.JScrollPane;
-
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.repository.RepositoryException;
+
+import javax.swing.*;
+import java.awt.print.Printable;
 
 public class TabViewDriverPanel extends AbstractFormObjectViewPanel {
 
@@ -45,7 +44,7 @@ public class TabViewDriverPanel extends AbstractFormObjectViewPanel {
 
         setHeaderText("Database Driver");
         setHeaderIcon(GUIUtilities.loadIcon("DatabaseDriver24.png"));
-        
+
         JScrollPane scrollPane = new JScrollPane(panel);
         scrollPane.setBorder(null);
 
@@ -152,7 +151,8 @@ public class TabViewDriverPanel extends AbstractFormObjectViewPanel {
 
     public class DriverFieldsPanel extends AbstractDriverPanel {
 
-        private DriverFieldsPanel() {}
+        private DriverFieldsPanel() {
+        }
 
         public void driverNameChanged() {
 

@@ -22,12 +22,13 @@ package org.executequery.actions.queryeditor;
 
 import java.awt.event.ActionEvent;
 
-/** <p>The Query Editor's rollback command execution.
+/**
+ * <p>The Query Editor's rollback command execution.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class RollbackCommand extends AbstractQueryEditorCommand {
-    
+
     public void execute(ActionEvent e) {
 
         if (isQueryEditorTheCentralPanel()) {
@@ -36,7 +37,7 @@ public class RollbackCommand extends AbstractQueryEditorCommand {
         }
 
     }
-    
+
 }
 
 

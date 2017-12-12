@@ -22,13 +22,13 @@ package org.executequery.actions.queryeditor;
 
 import java.awt.event.ActionEvent;
 
-/** 
+/**
  * The Query Editor's cancel statement command execution.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class StopCommand extends AbstractQueryEditorCommand {
-    
+
     public void execute(ActionEvent e) {
 
         if (isQueryEditorTheCentralPanel()) {
@@ -37,6 +37,6 @@ public class StopCommand extends AbstractQueryEditorCommand {
         }
 
     }
-    
+
 }
 

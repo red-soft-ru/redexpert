@@ -22,16 +22,18 @@ package org.underworldlabs.swing.actions;
 
 import java.awt.event.ActionEvent;
 
-/** 
+/**
  * Interface to be implemented by all commands.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface BaseCommand {
-    
-    /** This method executes the command. */
+
+    /**
+     * This method executes the command.
+     */
     void execute(ActionEvent e);
-    
+
 }
 
 

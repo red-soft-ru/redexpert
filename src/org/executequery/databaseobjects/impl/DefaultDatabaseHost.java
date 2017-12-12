@@ -20,30 +20,28 @@
 
 package org.executequery.databaseobjects.impl;
 
+import biz.redsoft.IFBDatabaseConnection;
+import org.apache.commons.lang.StringUtils;
+import org.executequery.databasemediators.ConnectionMediator;
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.databaseobjects.*;
+import org.executequery.datasource.ConnectionManager;
+import org.executequery.datasource.DefaultDriverLoader;
+import org.executequery.log.Log;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-import org.executequery.databasemediators.ConnectionMediator;
-import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseCatalog;
-import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.DatabaseSchema;
-import org.executequery.databaseobjects.DatabaseSource;
-import org.executequery.databaseobjects.DatabaseTable;
-import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.TablePrivilege;
-import org.executequery.datasource.ConnectionManager;
-import org.executequery.log.Log;
-import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.MiscUtils;
 
 /**
  * Default database host object implementation.
@@ -751,7 +749,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         if (isGen.compareToIgnoreCase("YES") == 0) {
                             column.setGenerated(true);
 //                        Statement statement = dmd.getConnection().createStatement();
-                        /*ResultSet*/
+                            /*ResultSet*/
                             sourceRS = statement.executeQuery("select RF.RDB$COMPUTED_SOURCE, " +
                                     " RRF.RDB$FIELD_NAME" +
                                     " from RDB$FIELDS RF, " +
@@ -1029,7 +1027,12 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                                                 DatabaseSchema schema) throws DataSourceException {
 
         List<DatabaseMetaTag> metaObjects = new ArrayList<DatabaseMetaTag>();
-        createDefaultMetaObjects(catalog, schema, metaObjects);
+
+        try {
+            createDefaultMetaObjects(catalog, schema, metaObjects);
+        } catch (Exception e) {
+            throw new DataSourceException(e);
+        }
 
         // load other types available not included in the defaults
         ResultSet rs = null;
@@ -1065,7 +1068,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     private void createDefaultMetaObjects(DatabaseCatalog catalog,
                                           DatabaseSchema schema, List<DatabaseMetaTag> metaObjects)
-            throws DataSourceException {
+            throws Exception {
 
         for (int i = 0; i < META_TYPES.length; i++) {
 
@@ -1074,23 +1077,51 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
             metaTag.setCatalog(catalog);
             metaTag.setSchema(schema);
-            String driverClassName = metaTag.getHost().getDatabaseConnection().getJDBCDriver().getClassName();
-            if (supportedObject(i, driverClassName))
+            DatabaseConnection databaseConnection = metaTag.getHost().getDatabaseConnection();
+            if (supportedObject(i))
                 metaObjects.add(metaTag);
 
         }
     }
 
-    boolean supportedObject(int type, String driver) {
-        if (driver.toLowerCase().contains("fbdriver")) {
-            switch (type) {
-                case NamedObject.SYNONYM:
-                case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
-                case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
-                case NamedObject.SYSTEM_STRING_FUNCTIONS:
-                case NamedObject.SYSTEM_VIEW:
-                case NamedObject.SYSTEM_DATABASE_TRIGGER:
-                    return false;
+    boolean supportedObject(int type) throws Exception {
+        DefaultDriverLoader driverLoader = new DefaultDriverLoader();
+        Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
+        DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
+        Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+        if (driver.getClass().getName().contains("FBDriver")) {
+            Connection conn = connection.unwrap(Connection.class);
+            URL[] urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+            ClassLoader cl = new URLClassLoader(urls, conn.getClass().getClassLoader());
+            IFBDatabaseConnection db;
+            Class clazzdb;
+            Object odb;
+            clazzdb = cl.loadClass("biz.redsoft.FBDatabaseConnectionImpl");
+            odb = clazzdb.newInstance();
+            db = (IFBDatabaseConnection) odb;
+            db.setConnection(conn);
+            switch (db.getMajorVersion()) {
+                case 2:
+                    switch (type) {
+                        case NamedObject.SYNONYM:
+                        case NamedObject.FUNCTION:
+                        case NamedObject.SYSTEM_VIEW:
+                        case NamedObject.PACKAGE:
+                        case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
+                        case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
+                        case NamedObject.SYSTEM_STRING_FUNCTIONS:
+                            return false;
+                    }
+                case 3:
+                case 4: // TODO check after the 4 version is released
+                    switch (type) {
+                        case NamedObject.SYNONYM:
+                        case NamedObject.SYSTEM_VIEW:
+                        case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
+                        case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
+                        case NamedObject.SYSTEM_STRING_FUNCTIONS:
+                            return false;
+                    }
             }
         }
         return true;

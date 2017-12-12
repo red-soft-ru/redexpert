@@ -20,16 +20,15 @@
 
 package org.executequery.gui.importexport;
 
-import java.util.List;
-
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseSource;
 import org.executequery.databaseobjects.DatabaseTable;
 
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface ImportExportDataModel {
 
@@ -60,7 +59,7 @@ public interface ImportExportDataModel {
     String getSingleFileExport();
 
     boolean isMultipleTableImportExport();
-    
+
     boolean isHostSelectionChanged();
 
     boolean isImportExportTypeChanged();
@@ -72,7 +71,7 @@ public interface ImportExportDataModel {
     ImportExportFile getImportExportFileForTable(DatabaseTable databaseTable);
 
     OnErrorOption getOnErrorOption();
-    
+
 }
 
 

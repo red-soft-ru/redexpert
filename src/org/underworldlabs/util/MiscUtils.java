@@ -22,6 +22,7 @@ package org.underworldlabs.util;
 
 import org.executequery.util.StringBundle;
 
+import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -38,16 +39,9 @@ import java.util.*;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
-
 /**
- *
- * @author   Takis Diakoumis
- * @author   Dragan Vasic
+ * @author Takis Diakoumis
+ * @author Dragan Vasic
  */
 public final class MiscUtils {
 
@@ -56,7 +50,8 @@ public final class MiscUtils {
     private static DecimalFormat oneDigitFormat;
     private static DecimalFormat twoDigitFormat;
 
-    private MiscUtils() {}
+    private MiscUtils() {
+    }
 
     public static double bytesToKiloBytes(long bytes) {
 
@@ -90,7 +85,7 @@ public final class MiscUtils {
      * word as a WHOLE word.
      *
      * @param value the value to test for the word
-     * @param word the whole word we are looking for
+     * @param word  the whole word we are looking for
      * @return <code>true</code> if found, <code>false</code> otherwise
      */
     public static boolean containsWholeWord(String value, String word) {
@@ -113,13 +108,11 @@ public final class MiscUtils {
             if (index > 0) {
                 return Character.isWhitespace(value.charAt(indexLength)) &&
                         Character.isWhitespace(value.charAt(index - 1));
-            }
-            else {
+            } else {
                 return Character.isWhitespace(value.charAt(indexLength));
             }
 
-        }
-        else {
+        } else {
             return true;
         }
 
@@ -136,7 +129,7 @@ public final class MiscUtils {
 
         int index = exceptionName.lastIndexOf('.');
         if (index != -1) {
-            exceptionName = exceptionName.substring(index+1);
+            exceptionName = exceptionName.substring(index + 1);
         }
         return exceptionName;
     }
@@ -196,7 +189,7 @@ public final class MiscUtils {
      * specified with the specfied delimiter.
      *
      * @param csvString the CSV value
-     * @param delim the delimiter used in the CSV value
+     * @param delim     the delimiter used in the CSV value
      * @return an array of split values
      */
     public static String[] splitSeparatedValues(String csvString, String delim) {
@@ -207,7 +200,7 @@ public final class MiscUtils {
             list.add(st.nextToken());
         }
 
-        String[] values = (String[])list.toArray(new String[list.size()]);
+        String[] values = (String[]) list.toArray(new String[list.size()]);
         return values;
     }
 
@@ -296,8 +289,8 @@ public final class MiscUtils {
 
             jarFile = new JarFile(files[i]);
 
-            for (Enumeration<?> j = jarFile.entries(); j.hasMoreElements();) {
-                ZipEntry entry = (ZipEntry)j.nextElement();
+            for (Enumeration<?> j = jarFile.entries(); j.hasMoreElements(); ) {
+                ZipEntry entry = (ZipEntry) j.nextElement();
                 className = getClassName(entry.getName());
 
                 if (className == null) {
@@ -343,14 +336,15 @@ public final class MiscUtils {
                 // ignore noticed with db2 driver - no serialVersionUID
                 //catch (ClassFormatError e) {}
                 // ignore and continue
-                catch (Throwable e) {}
+                catch (Throwable e) {
+                }
 
             }
 
         }
 
         loader.close();
-        return (String[])clazzes.toArray(new String[clazzes.size()]);
+        return (String[]) clazzes.toArray(new String[clazzes.size()]);
     }
 
     public static boolean implementsClass(Class<?> clazz, String implementation) {
@@ -361,8 +355,7 @@ public final class MiscUtils {
                 String name = interfaces[k].getName();
                 if (name.compareTo(implementation) == 0) {
                     return true;
-                }
-                else if (implementsClass(interfaces[k], implementation)) {
+                } else if (implementsClass(interfaces[k], implementation)) {
                     return true;
                 }
             }
@@ -412,14 +405,13 @@ public final class MiscUtils {
             while (st.hasMoreTokens()) {
                 pathsVector.add(st.nextToken());
             }
-        }
-        else {
+        } else {
             pathsVector.add(paths);
         }
 
         URL[] urls = new URL[pathsVector.size()];
         for (int i = 0; i < urls.length; i++) {
-            File f = new File((String)pathsVector.elementAt(i));
+            File f = new File((String) pathsVector.elementAt(i));
             urls[i] = f.toURI().toURL();
         }
         return urls;
@@ -427,7 +419,7 @@ public final class MiscUtils {
 
     public static String formatNumber(long number, String pattern) {
         NumberFormat nf = NumberFormat.getNumberInstance();
-        DecimalFormat df = (DecimalFormat)nf;
+        DecimalFormat df = (DecimalFormat) nf;
         df.applyPattern(pattern);
         return df.format(number);
     }
@@ -461,8 +453,8 @@ public final class MiscUtils {
         String[] keys = new String[sysProps.size()];
 
         int count = 0;
-        for (Enumeration<?> i = sysProps.propertyNames(); i.hasMoreElements();) {
-            keys[count++] = (String)i.nextElement();
+        for (Enumeration<?> i = sysProps.propertyNames(); i.hasMoreElements(); ) {
+            keys[count++] = (String) i.nextElement();
         }
 
         Arrays.sort(keys);
@@ -490,11 +482,11 @@ public final class MiscUtils {
 
     public static void printInputMap(JComponent component) {
         printInputMap(component.getInputMap(JComponent.WHEN_FOCUSED),
-                        "Input map used when focused");
+                "Input map used when focused");
         printInputMap(component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT),
-                        "Input map used when ancestor of focused component");
+                "Input map used when ancestor of focused component");
         printInputMap(component.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW),
-                        "Input map used when in focused window");
+                "Input map used when in focused window");
     }
 
     public static void printActionMap(ActionMap actionMap, String who) {
@@ -505,7 +497,7 @@ public final class MiscUtils {
                 Object key = keys[i];
                 Action targetAction = actionMap.get(key);
                 System.out.println("\tName: <" + key + ">, action: "
-                                    + targetAction.getClass().getName());
+                        + targetAction.getClass().getName());
             }
         }
     }
@@ -531,14 +523,14 @@ public final class MiscUtils {
             //threeDigitFormat = new DecimalFormat("000");
         }
 
-       // {"milliseconds","seconds","minutes","hours"}
-       long[] divisors = {1000,60,60,24};
-       double[] result = new double[divisors.length];
+        // {"milliseconds","seconds","minutes","hours"}
+        long[] divisors = {1000, 60, 60, 24};
+        double[] result = new double[divisors.length];
 
-       for(int i = 0; i < divisors.length;i++) {
-          result[i] = value % divisors[i];
-          value /= divisors[i];
-       }
+        for (int i = 0; i < divisors.length; i++) {
+            result[i] = value % divisors[i];
+            value /= divisors[i];
+        }
        /*
        String[] labels = {"milliseconds","seconds","minutes","hours"};
        for(int i = divisors.length-1;i >= 0;i--) {
@@ -629,27 +621,27 @@ public final class MiscUtils {
      * @return the Java VM version
      */
     public static final double getVMVersion() {
-        return Double.parseDouble(System.getProperty("java.version").substring(0,3));
+        return Double.parseDouble(System.getProperty("java.version").substring(0, 3));
     }
 
-    public static byte[] inputStreamToBytes(InputStream is){
-        byte[] retVal =new byte[0];
-        ByteArrayOutputStream baos=new ByteArrayOutputStream ();
-        if(is!=null){
+    public static byte[] inputStreamToBytes(InputStream is) {
+        byte[] retVal = new byte[0];
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        if (is != null) {
             byte[] elementi = new byte[10000];
             int size = 0;
             try {
-                while((size = is.read(elementi))!=-1){
+                while ((size = is.read(elementi)) != -1) {
                     //retVal = addBytes(retVal,elementi,(retVal.length),size);
                     System.out.print(".");
-                    baos.write( elementi ,0,size);
+                    baos.write(elementi, 0, size);
                 }
-                retVal = baos.toByteArray() ;
+                retVal = baos.toByteArray();
             } catch (IOException e) {
-                    e.printStackTrace();
-            } catch (Exception  e){
-                    e.printStackTrace() ;
-                    retVal = new byte[0];
+                e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+                retVal = new byte[0];
             }
         }
         return retVal;
@@ -659,8 +651,7 @@ public final class MiscUtils {
         return UUID.randomUUID().toString();
     }
 
-    public static String formattedSQLValue(String value,int type)
-    {
+    public static String formattedSQLValue(String value, int type) {
         boolean str = false;
         switch (type) {
 
@@ -677,7 +668,7 @@ public final class MiscUtils {
             case Types.LONGVARBINARY:
             case Types.VARBINARY:
             case Types.BINARY:
-                value = "'"+value;
+                value = "'" + value;
                 str = true;
                 break;
             default:
@@ -690,22 +681,21 @@ public final class MiscUtils {
     }
 
     public static void printThreadStack(StackTraceElement[] stackTrace) {
-        
+
         for (StackTraceElement stackTraceElement : stackTrace) {
-            
+
             System.err.println(stackTraceElement);
         }
 
     }
 
-    public static String getJavaCharsetFromSqlCharset(String sqlcharset)
-    {
+    public static String getJavaCharsetFromSqlCharset(String sqlcharset) {
         ResourceBundle bundle = ResourceBundle.getBundle("org/executequery/sqlToJavaCharset");
         org.executequery.util.StringBundle sb = new StringBundle(bundle);
         return sb.getString(sqlcharset);
     }
-    public static String replaceUnsupportedSimbolsToDot(String b)
-    {
+
+    public static String replaceUnsupportedSimbolsToDot(String b) {
         b = b.replace("\0", ".");
         b = b.replace("\b", ".");
         b = b.replace("\t", ".");
@@ -714,6 +704,6 @@ public final class MiscUtils {
         b = b.replace("\r", ".");
         return b;
     }
-    
+
 }
 

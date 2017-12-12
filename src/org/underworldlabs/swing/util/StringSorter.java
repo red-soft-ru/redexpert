@@ -23,10 +23,10 @@ package org.underworldlabs.swing.util;
 import java.io.Serializable;
 import java.util.Comparator;
 
-/** 
+/**
  * Simple string sorter.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public final class StringSorter implements Comparator<String>, Serializable {
 
@@ -34,7 +34,7 @@ public final class StringSorter implements Comparator<String>, Serializable {
 
         return value1.compareTo(value2);
     }
-    
+
 }
 
 

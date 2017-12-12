@@ -22,14 +22,14 @@ package org.underworldlabs.swing;
 
 public interface ProgressBar {
 
-	void start();
-	
-	void stop();
-	
-	void cleanup();
-	
+    void start();
+
+    void stop();
+
+    void cleanup();
+
     void fillWhenStopped();
-        
+
 }
 
 

@@ -20,19 +20,11 @@
 
 package org.underworldlabs.swing.plaf.smoothgradient;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
-import java.awt.Frame;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.LayoutManager;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.Window;
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.UIResource;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -40,29 +32,12 @@ import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JRootPane;
-import javax.swing.JSeparator;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.plaf.UIResource;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 class SmoothGradientTitlePane extends JComponent {
 
-    private static final Border handyEmptyBorder = new EmptyBorder(0,0,0,0);
+    private static final Border handyEmptyBorder = new EmptyBorder(0, 0, 0, 0);
     private static final int IMAGE_HEIGHT = 16;
     private static final int IMAGE_WIDTH = 16;
 
@@ -151,7 +126,7 @@ class SmoothGradientTitlePane extends JComponent {
      * MetalRootPaneUI that created us.
      */
     private SmoothGradientRootPaneUI rootPaneUI;
-    
+
 
     // Colors
     private Color inactiveBackground = UIManager.getColor("inactiveCaption");
@@ -245,9 +220,8 @@ class SmoothGradientTitlePane extends JComponent {
         window = SwingUtilities.getWindowAncestor(this);
         if (window != null) {
             if (window instanceof Frame) {
-                setState(((Frame)window).getExtendedState());
-            }
-            else {
+                setState(((Frame) window).getExtendedState());
+            } else {
                 setState(0);
             }
             setActive(window.isActive());
@@ -285,45 +259,45 @@ class SmoothGradientTitlePane extends JComponent {
 //    Color _activeBumpsHighlight = activeBumpsHighlight;
 
         switch (getWindowDecorationStyle()) {
-        case JRootPane.FRAME:
-            activeBackground = UIManager.getColor("activeCaption");
-            activeForeground = UIManager.getColor("activeCaptionText");
-            activeShadow = UIManager.getColor("activeCaptionBorder");
-            break;
-        case JRootPane.ERROR_DIALOG:
-            activeBackground = UIManager.getColor(
-                "OptionPane.errorDialog.titlePane.background");
-            activeForeground = UIManager.getColor(
-                "OptionPane.errorDialog.titlePane.foreground");
-            activeShadow = UIManager.getColor(
-                "OptionPane.errorDialog.titlePane.shadow");
-            break;
-        case JRootPane.QUESTION_DIALOG:
-        case JRootPane.COLOR_CHOOSER_DIALOG:
-        case JRootPane.FILE_CHOOSER_DIALOG:
-            activeBackground = UIManager.getColor(
-                "OptionPane.questionDialog.titlePane.background");
-            activeForeground = UIManager.getColor(
-                "OptionPane.questionDialog.titlePane.foreground");
-            activeShadow = UIManager.getColor(
-                "OptionPane.questionDialog.titlePane.shadow");
-            break;
-        case JRootPane.WARNING_DIALOG:
-            activeBackground = UIManager.getColor(
-                "OptionPane.warningDialog.titlePane.background");
-            activeForeground = UIManager.getColor(
-                "OptionPane.warningDialog.titlePane.foreground");
-            activeShadow = UIManager.getColor(
-                "OptionPane.warningDialog.titlePane.shadow");
-            break;
-        case JRootPane.PLAIN_DIALOG:
-        case JRootPane.INFORMATION_DIALOG:
-        default:
+            case JRootPane.FRAME:
+                activeBackground = UIManager.getColor("activeCaption");
+                activeForeground = UIManager.getColor("activeCaptionText");
+                activeShadow = UIManager.getColor("activeCaptionBorder");
+                break;
+            case JRootPane.ERROR_DIALOG:
+                activeBackground = UIManager.getColor(
+                        "OptionPane.errorDialog.titlePane.background");
+                activeForeground = UIManager.getColor(
+                        "OptionPane.errorDialog.titlePane.foreground");
+                activeShadow = UIManager.getColor(
+                        "OptionPane.errorDialog.titlePane.shadow");
+                break;
+            case JRootPane.QUESTION_DIALOG:
+            case JRootPane.COLOR_CHOOSER_DIALOG:
+            case JRootPane.FILE_CHOOSER_DIALOG:
+                activeBackground = UIManager.getColor(
+                        "OptionPane.questionDialog.titlePane.background");
+                activeForeground = UIManager.getColor(
+                        "OptionPane.questionDialog.titlePane.foreground");
+                activeShadow = UIManager.getColor(
+                        "OptionPane.questionDialog.titlePane.shadow");
+                break;
+            case JRootPane.WARNING_DIALOG:
+                activeBackground = UIManager.getColor(
+                        "OptionPane.warningDialog.titlePane.background");
+                activeForeground = UIManager.getColor(
+                        "OptionPane.warningDialog.titlePane.foreground");
+                activeShadow = UIManager.getColor(
+                        "OptionPane.warningDialog.titlePane.shadow");
+                break;
+            case JRootPane.PLAIN_DIALOG:
+            case JRootPane.INFORMATION_DIALOG:
+            default:
 //            _activeBumpsHighlight = SmoothGradientLookAndFeel.getInternalFrameBumpsHighlight();
-            activeBackground = UIManager.getColor("activeCaption");
-            activeForeground = UIManager.getColor("activeCaptionText");
-            activeShadow = UIManager.getColor("activeCaptionBorder");
-            break;
+                activeBackground = UIManager.getColor("activeCaption");
+                activeForeground = UIManager.getColor("activeCaptionText");
+                activeShadow = UIManager.getColor("activeCaptionBorder");
+                break;
         }
 
     }
@@ -334,7 +308,7 @@ class SmoothGradientTitlePane extends JComponent {
     private void installDefaults() {
         setFont(UIManager.getFont("InternalFrame.titleFont", getLocale()));
     }
-    
+
     /**
      * Uninstalls any previously installed UI values.
      */
@@ -342,7 +316,7 @@ class SmoothGradientTitlePane extends JComponent {
     }
 
     /**
-     * Returns the <code>JMenuBar</code> displaying the appropriate 
+     * Returns the <code>JMenuBar</code> displaying the appropriate
      * system menu items.
      */
     protected JMenuBar createMenuBar() {
@@ -361,7 +335,7 @@ class SmoothGradientTitlePane extends JComponent {
 
         if (window != null) {
             window.dispatchEvent(new WindowEvent(
-                                 window, WindowEvent.WINDOW_CLOSING));
+                    window, WindowEvent.WINDOW_CLOSING));
         }
     }
 
@@ -447,7 +421,7 @@ class SmoothGradientTitlePane extends JComponent {
                 Frame.MAXIMIZED_BOTH)) {
             mi = menu.add(maximizeAction);
             mnemonic =
-                SmoothGradientUtils.getInt("MetalTitlePane.maximizeMnemonic", -1);
+                    SmoothGradientUtils.getInt("MetalTitlePane.maximizeMnemonic", -1);
             if (mnemonic != -1) {
                 mi.setMnemonic(mnemonic);
             }
@@ -555,11 +529,10 @@ class SmoothGradientTitlePane extends JComponent {
 
                 if (((state & Frame.MAXIMIZED_BOTH) != 0) &&
                         (rootPane.getBorder() == null ||
-                        (rootPane.getBorder() instanceof UIResource)) &&
-                            frame.isShowing()) {
+                                (rootPane.getBorder() instanceof UIResource)) &&
+                        frame.isShowing()) {
                     rootPane.setBorder(null);
-                }
-                else if ((state & Frame.MAXIMIZED_BOTH) == 0) {
+                } else if ((state & Frame.MAXIMIZED_BOTH) == 0) {
                     // This is a croak, if state becomes bound, this can
                     // be nuked.
 //                    rootPaneUI.installBorder(rootPane);
@@ -569,22 +542,20 @@ class SmoothGradientTitlePane extends JComponent {
                         updateToggleButton(restoreAction, minimizeIcon);
                         maximizeAction.setEnabled(false);
                         restoreAction.setEnabled(true);
-                    }
-                    else {
+                    } else {
                         updateToggleButton(maximizeAction, maximizeIcon);
                         maximizeAction.setEnabled(true);
                         restoreAction.setEnabled(false);
                     }
                     if (toggleButton.getParent() == null ||
-                        iconifyButton.getParent() == null) {
+                            iconifyButton.getParent() == null) {
                         add(toggleButton);
                         add(iconifyButton);
                         revalidate();
                         repaint();
                     }
                     toggleButton.setText(null);
-                }
-                else {
+                } else {
                     maximizeAction.setEnabled(false);
                     restoreAction.setEnabled(false);
                     if (toggleButton.getParent() != null) {
@@ -593,8 +564,7 @@ class SmoothGradientTitlePane extends JComponent {
                         repaint();
                     }
                 }
-            }
-            else {
+            } else {
                 // Not contained in a Frame
                 maximizeAction.setEnabled(false);
                 restoreAction.setEnabled(false);
@@ -627,7 +597,7 @@ class SmoothGradientTitlePane extends JComponent {
         Window window = getWindow();
 
         if (window instanceof Frame) {
-            return (Frame)window;
+            return (Frame) window;
         }
         return null;
     }
@@ -648,10 +618,9 @@ class SmoothGradientTitlePane extends JComponent {
         Window w = getWindow();
 
         if (w instanceof Frame) {
-            return ((Frame)w).getTitle();
-        }
-        else if (w instanceof Dialog) {
-            return ((Dialog)w).getTitle();
+            return ((Frame) w).getTitle();
+        } else if (w instanceof Dialog) {
+            return ((Dialog) w).getTitle();
         }
         return null;
     }
@@ -659,7 +628,7 @@ class SmoothGradientTitlePane extends JComponent {
     /**
      * Renders the TitlePane.
      */
-    public void paintComponent(Graphics g)  {
+    public void paintComponent(Graphics g) {
         // As state isn't bound, we need a convenience place to check
         // if it has changed. Changing the state typically changes the
         if (getFrame() != null) {
@@ -667,8 +636,8 @@ class SmoothGradientTitlePane extends JComponent {
         }
         Window window = getWindow();
         boolean leftToRight = (window == null) ?
-                               getRootPane().getComponentOrientation().isLeftToRight() :
-                               window.getComponentOrientation().isLeftToRight();
+                getRootPane().getComponentOrientation().isLeftToRight() :
+                window.getComponentOrientation().isLeftToRight();
         boolean isSelected = (window == null) ? true : window.isActive();
         int width = getWidth();
         int height = getHeight();
@@ -690,17 +659,17 @@ class SmoothGradientTitlePane extends JComponent {
         g.setColor(background);
         g.fillRect(0, 0, width, height);
 
-        g.setColor( darkShadow );
-        g.drawLine ( 0, height - 1, width, height -1);
-        g.drawLine ( 0, 0, 0 ,0);    
-        g.drawLine ( width - 1, 0 , width -1, 0);
+        g.setColor(darkShadow);
+        g.drawLine(0, height - 1, width, height - 1);
+        g.drawLine(0, 0, 0, 0);
+        g.drawLine(width - 1, 0, width - 1, 0);
 
         int xOffset = leftToRight ? 5 : width - 5;
 
         if (getWindowDecorationStyle() == JRootPane.FRAME) {
-            xOffset += leftToRight ? IMAGE_WIDTH + 5 : - IMAGE_WIDTH - 5;
+            xOffset += leftToRight ? IMAGE_WIDTH + 5 : -IMAGE_WIDTH - 5;
         }
-        
+
         String theTitle = getTitle();
         if (theTitle != null) {
 //            Font f = getFont();
@@ -708,7 +677,7 @@ class SmoothGradientTitlePane extends JComponent {
 
             g.setColor(foreground);
 
-            int yOffset = ( (height - fm.getHeight() ) / 2 ) + fm.getAscent();
+            int yOffset = ((height - fm.getHeight()) / 2) + fm.getAscent();
 
             Rectangle rect = new Rectangle(0, 0, 0, 0);
             if (iconifyButton != null && iconifyButton.getParent() != null) {
@@ -716,9 +685,9 @@ class SmoothGradientTitlePane extends JComponent {
             }
             int titleW;
 
-            if( leftToRight ) {
+            if (leftToRight) {
                 if (rect.x == 0) {
-                    rect.x = window.getWidth() - window.getInsets().right-2;
+                    rect.x = window.getWidth() - window.getInsets().right - 2;
                 }
                 titleW = rect.x - xOffset - 4;
                 theTitle = clippedText(theTitle, fm, titleW);
@@ -728,11 +697,11 @@ class SmoothGradientTitlePane extends JComponent {
                 xOffset -= SwingUtilities.computeStringWidth(fm, theTitle);
             }
             int titleLength = SwingUtilities.computeStringWidth(fm, theTitle);
-            g.drawString( theTitle, xOffset, yOffset );
-            xOffset += leftToRight ? titleLength + 5  : -5;
+            g.drawString(theTitle, xOffset, yOffset);
+            xOffset += leftToRight ? titleLength + 5 : -5;
         }
 
-        Rectangle r = new Rectangle(1,0,width,height);
+        Rectangle r = new Rectangle(1, 0, width, height);
         SmoothGradientUtils.addLight3DEffekt(g, r, true);
 
     }
@@ -742,8 +711,8 @@ class SmoothGradientTitlePane extends JComponent {
      * size.
      */
     private String clippedText(String text, FontMetrics fm,
-                                 int availTextWidth) {
-        if ((text == null) || (text.equals("")))  {
+                               int availTextWidth) {
+        if ((text == null) || (text.equals(""))) {
             return "";
         }
         int textWidth = SwingUtilities.computeStringWidth(fm, text);
@@ -751,7 +720,7 @@ class SmoothGradientTitlePane extends JComponent {
         if (textWidth > availTextWidth) {
             int totalWidth = SwingUtilities.computeStringWidth(fm, clipString);
             int nChars;
-            for(nChars = 0; nChars < text.length(); nChars++) {
+            for (nChars = 0; nChars < text.length(); nChars++) {
                 totalWidth += fm.charWidth(text.charAt(nChars));
                 if (totalWidth > availTextWidth) {
                     break;
@@ -769,12 +738,12 @@ class SmoothGradientTitlePane extends JComponent {
     private class CloseAction extends AbstractAction {
         public CloseAction() {
             super(UIManager.getString("MetalTitlePane.closeTitle",
-                                      getLocale()));
+                    getLocale()));
         }
 
         public void actionPerformed(ActionEvent e) {
             close();
-        }      
+        }
     }
 
 
@@ -784,13 +753,13 @@ class SmoothGradientTitlePane extends JComponent {
     private class IconifyAction extends AbstractAction {
         public IconifyAction() {
             super(UIManager.getString("MetalTitlePane.iconifyTitle",
-                                      getLocale()));
+                    getLocale()));
         }
 
         public void actionPerformed(ActionEvent e) {
             iconify();
         }
-    } 
+    }
 
 
     /**
@@ -799,7 +768,7 @@ class SmoothGradientTitlePane extends JComponent {
     private class RestoreAction extends AbstractAction {
         public RestoreAction() {
             super(UIManager.getString
-                  ("MetalTitlePane.restoreTitle", getLocale()));
+                    ("MetalTitlePane.restoreTitle", getLocale()));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -814,7 +783,7 @@ class SmoothGradientTitlePane extends JComponent {
     private class MaximizeAction extends AbstractAction {
         public MaximizeAction() {
             super(UIManager.getString("MetalTitlePane.maximizeTitle",
-                                      getLocale()));
+                    getLocale()));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -848,14 +817,16 @@ class SmoothGradientTitlePane extends JComponent {
                 }
             }
         }
+
         public Dimension getMinimumSize() {
             return getPreferredSize();
         }
+
         public Dimension getPreferredSize() {
             Dimension size = super.getPreferredSize();
 
             return new Dimension(Math.max(IMAGE_WIDTH, size.width),
-                                 Math.max(size.height, IMAGE_HEIGHT));
+                    Math.max(size.height, IMAGE_HEIGHT));
         }
     }
 
@@ -864,19 +835,23 @@ class SmoothGradientTitlePane extends JComponent {
      * This class should be treated as a &quot;protected&quot; inner class.
      * Instantiate it only within subclasses of <Foo>.
      */
-    private class TitlePaneLayout implements LayoutManager {  
-        public void addLayoutComponent(String name, Component c) {}
-        public void removeLayoutComponent(Component c) {}   
-        public Dimension preferredLayoutSize(Container c)  {
+    private class TitlePaneLayout implements LayoutManager {
+        public void addLayoutComponent(String name, Component c) {
+        }
+
+        public void removeLayoutComponent(Component c) {
+        }
+
+        public Dimension preferredLayoutSize(Container c) {
             int height = computeHeight();
             return new Dimension(height, height);
         }
-        
+
         public Dimension minimumLayoutSize(Container c) {
             return preferredLayoutSize(c);
-        } 
-    
-        private int computeHeight() {      
+        }
+
+        private int computeHeight() {
 
             FontMetrics fm = getFontMetrics(getFont());
 //                = Toolkit.getDefaultToolkit().getFontMetrics(getFont());
@@ -887,35 +862,34 @@ class SmoothGradientTitlePane extends JComponent {
                 iconHeight = IMAGE_HEIGHT;
             }
 
-            int finalHeight = Math.max( fontHeight, iconHeight );
+            int finalHeight = Math.max(fontHeight, iconHeight);
             return finalHeight;
-        }    
-                    
+        }
+
         public void layoutContainer(Container c) {
             if (getWindowDecorationStyle() != JRootPane.FRAME) {
                 buttonsWidth = 0;
                 return;
             }
             boolean leftToRight = (window == null) ?
-                               getRootPane().getComponentOrientation().isLeftToRight() :
-                               window.getComponentOrientation().isLeftToRight();
+                    getRootPane().getComponentOrientation().isLeftToRight() :
+                    window.getComponentOrientation().isLeftToRight();
 
             int w = getWidth();
-            int x; 
+            int x;
             int y = 3;
             int spacing;
-            int buttonHeight; 
+            int buttonHeight;
             int buttonWidth;
-            
+
             if (closeButton != null && closeButton.getIcon() != null) {
-                buttonHeight = closeButton.getIcon().getIconHeight(); 
+                buttonHeight = closeButton.getIcon().getIconHeight();
                 buttonWidth = closeButton.getIcon().getIconWidth();
-            }
-            else {
+            } else {
                 buttonHeight = IMAGE_HEIGHT;
                 buttonWidth = IMAGE_WIDTH;
             }
-            
+
             // assumes all buttons have the same dimensions
             // these dimensions include the borders
 
@@ -927,18 +901,18 @@ class SmoothGradientTitlePane extends JComponent {
 
             x = leftToRight ? w : 0;
             spacing = 4;
-            x += leftToRight ? -spacing -buttonWidth : spacing;
+            x += leftToRight ? -spacing - buttonWidth : spacing;
             if (closeButton != null) {
                 closeButton.setBounds(x, y, buttonWidth, buttonHeight);
             }
 
-            if( !leftToRight ) x += buttonWidth;
+            if (!leftToRight) x += buttonWidth;
 
             if (Toolkit.getDefaultToolkit().isFrameStateSupported(
                     Frame.MAXIMIZED_BOTH)) {
                 if (toggleButton.getParent() != null) {
                     spacing = 1;//10
-                    x += leftToRight ? -spacing -buttonWidth : spacing;
+                    x += leftToRight ? -spacing - buttonWidth : spacing;
                     toggleButton.setBounds(x, y, buttonWidth, buttonHeight);
                     if (!leftToRight) {
                         x += buttonWidth;
@@ -948,7 +922,7 @@ class SmoothGradientTitlePane extends JComponent {
 
             if (iconifyButton != null && iconifyButton.getParent() != null) {
                 spacing = 1;
-                x += leftToRight ? -spacing -buttonWidth : spacing;
+                x += leftToRight ? -spacing - buttonWidth : spacing;
                 iconifyButton.setBounds(x, y, buttonWidth, buttonHeight);
                 if (!leftToRight) {
                     x += buttonWidth;
@@ -957,7 +931,6 @@ class SmoothGradientTitlePane extends JComponent {
             buttonsWidth = leftToRight ? w - x : x;
         }
     }
-
 
 
     /**
@@ -978,11 +951,9 @@ class SmoothGradientTitlePane extends JComponent {
                 if ("resizable".equals(name)) {
                     getRootPane().repaint();
                 }
-            }
-            else if ("title".equals(name)) {
+            } else if ("title".equals(name)) {
                 repaint();
-            }
-            else if ("componentOrientation".equals(name)) {
+            } else if ("componentOrientation".equals(name)) {
                 revalidate();
                 repaint();
             }

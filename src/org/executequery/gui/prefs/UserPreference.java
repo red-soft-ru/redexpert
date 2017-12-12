@@ -20,14 +20,13 @@
 
 package org.executequery.gui.prefs;
 
-import java.awt.Color;
-
 import org.executequery.Constants;
 import org.underworldlabs.util.LabelValuePair;
 
+import java.awt.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class UserPreference {
 
@@ -51,7 +50,8 @@ public class UserPreference {
     private String displayedKey;
     private Object[] availableValues;
 
-    public UserPreference() {}
+    public UserPreference() {
+    }
 
     public UserPreference(int type, int maxLength, String key, String displayedKey, Object value) {
 
@@ -64,7 +64,7 @@ public class UserPreference {
     }
 
     public UserPreference(int type, String key, String displayedKey, Object value, Object[] availableValues) {
-        
+
         this(type, -1, key, displayedKey, value, availableValues);
     }
 
@@ -73,59 +73,59 @@ public class UserPreference {
         this.type = type;
         this.key = key;
         this.maxLength = maxLength;
-        
+
         if (type == STRING_TYPE) {
 
             if (value.getClass().isEnum()) {
-                
+
                 savedValue = ((Enum) value).name();
-                
-            } else {                
-                
+
+            } else {
+
                 savedValue = value.toString();
             }
 
             if (availableValues != null && availableValues.length > 0) {
 
                 try {
-                  
+
                     int index = Integer.parseInt(savedValue);
                     this.value = availableValues[index];
-                
+
                 } catch (NumberFormatException e) {
 
                     saveActual = true;
                     // try the value
                     for (int i = 0; i < availableValues.length; i++) {
-                        
+
                         if (valueOf(availableValues[i]).equals(value)) {
-                    
+
                             this.value = availableValues[i];
                             break;
                         }
-                        
+
                     }
-                    
+
                 }
-            
-            } else { 
-              
-                this.value = value; 
+
+            } else {
+
+                this.value = value;
             }
-            
+
         } else {
-          
+
             this.value = value;
         }
 
         this.displayedKey = displayedKey;
-        this.availableValues = availableValues;        
+        this.availableValues = availableValues;
     }
 
     private Object valueOf(Object object) {
 
         if (object instanceof LabelValuePair) {
-            
+
             return ((LabelValuePair) object).getValue();
         }
         return object;
@@ -163,11 +163,11 @@ public class UserPreference {
         if (type == STRING_TYPE) {
 
             if (availableValues != null && availableValues.length > 0) {
-                
+
                 if (saveActual) {
                     this.value = savedValue;
                 }
-                
+
                 int index = Integer.parseInt(savedValue);
                 this.value = availableValues[index];
             }
@@ -182,15 +182,15 @@ public class UserPreference {
     }
 
     public String getSaveValue() {
-        switch (type) {        
+        switch (type) {
             case STRING_TYPE:
-                
+
                 if (availableValues != null) {
 
                     if (saveActual && value != null) {
                         return value.toString();
                     }
-                    
+
                     for (int i = 0; i < availableValues.length; i++) {
                         if (value == availableValues[i]) {
                             return Integer.toString(i);
@@ -198,27 +198,27 @@ public class UserPreference {
                     }
 
                 }
-                
+
                 if (value == null) {
-                
+
                     return Constants.EMPTY;
                 }
 
                 return value.toString();
 
             case COLOUR_TYPE:
-                return Integer.toString(((Color)value).getRGB());
+                return Integer.toString(((Color) value).getRGB());
 
             case ENUM_TYPE:
                 return ((Enum) valueOf(value)).name();
-                
+
             case BOOLEAN_TYPE:
             case INTEGER_TYPE:
             default:
                 return value.toString();
         }
     }
-    
+
     public String getDisplayedKey() {
         return displayedKey;
     }

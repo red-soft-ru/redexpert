@@ -20,32 +20,28 @@
 
 package org.underworldlabs.swing.table;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
+import javax.swing.*;
+import java.awt.*;
 
-import javax.swing.UIManager;
-import javax.swing.Icon;
-
-/** 
+/**
  * A simple arrow icon for all directions.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ArrowIcon implements Icon {
-    
+
     // direction constants
     public static final int UP = 0;
-    public static final int DOWN  = 1;
+    public static final int DOWN = 1;
     public static final int RIGHT = 2;
     public static final int LEFT = 2;
-    
+
     private int size;
     private static final int DEFAULT_SIZE = 10;
-    
+
     private int direction;
     private Color fillColour;
-    
+
     public ArrowIcon(int direction) {
         this(UIManager.getColor("controlShadow"), direction, DEFAULT_SIZE);
     }
@@ -63,117 +59,115 @@ public class ArrowIcon implements Icon {
         this.direction = direction;
         setSize(size);
     }
-    
+
     public void setSize(int size) {
         this.size = size;
     }
-    
+
     public void paintIcon(Component c, Graphics g, int x, int y) {
-        
+
         switch (direction) {
-            
+
             case DOWN:
                 drawDownArrow(g, x - 1, y);
                 break;
-                
+
             case UP:
                 drawUpArrow(g, x - 1, y);
                 break;
-                
+
             case RIGHT:
                 drawRightArrow(g, x - 1, y);
                 break;
-                
+
         }
-        
+
     }
-    
+
     public int getIconWidth() {
         return size;
     }
-    
+
     public int getIconHeight() {
         return size;
     }
-    
+
     private void drawRightArrow(Graphics g, int xo, int yo) {
         g.setColor(fillColour);
-        
+
         int x = 0, y = 0;
-        
+
         for (int i = 1; i <= size; i++) {
-            
+
             y = yo + i + 1;
-            
+
             if (i > size / 2) {
-                
+
                 for (int j = size - i; j >= 1; j--) {
                     x = xo + j;
                     g.drawLine(x, y, x, y);
                 }
-                
-            }
-            
-            else {
-                
+
+            } else {
+
                 for (int j = 1; j <= i; j++) {
                     x = xo + j;
                     g.drawLine(x, y, x, y);
                 }
-                
+
             }
-            
+
         }
     }
-    
+
     private void drawDownArrow(Graphics g, int xo, int yo) {
         g.setColor(fillColour);
-        
+
         int x = 0, y = 0;
-        
+
         for (int i = 1; i <= size; i++) {
-            
+
             y = yo + i + 2;
-            
+
             for (int j = i; j <= size; j++) {
-                
+
                 if (j > size - i) {
                     break;
                 }
 
                 x = xo + j;
                 g.drawLine(x, y, x, y);
-                
+
             }
-            
+
         }
     }
-    
+
     private void drawUpArrow(Graphics g, int xo, int yo) {
         g.setColor(fillColour);
-        
+
         int yOffset = yo + 2 + (size / 2);
         int x = 0, y = 0;
-        
+
         for (int i = size; i >= 1; i--) {
-            
+
             y = yOffset - i;
-            
+
             for (int j = i; j <= size; j++) {
-                
+
                 if (j > size - i) {
                     break;
                 }
 
                 x = xo + j;
                 g.drawLine(x, y, x, y);
-                
+
             }
-            
+
         }
-        
+
     }
-    
+
 }
 
 

@@ -23,15 +23,18 @@ package org.executequery.event;
 import org.executequery.databasemediators.DatabaseConnection;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface ConnectionEvent extends ApplicationEvent {
 
-    /** Method name for connected */
+    /**
+     * Method name for connected
+     */
     String CONNECTED = "connected";
-    
-    /** Method name for disconnected */
+
+    /**
+     * Method name for disconnected
+     */
     String DISCONNECTED = "disconnected";
 
     DatabaseConnection getDatabaseConnection();

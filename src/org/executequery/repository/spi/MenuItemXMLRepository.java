@@ -20,9 +20,6 @@
 
 package org.executequery.repository.spi;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.executequery.ExecuteQuerySystemError;
 import org.executequery.gui.menu.MenuItem;
 import org.executequery.log.Log;
@@ -30,25 +27,27 @@ import org.executequery.repository.MenuItemRepository;
 import org.executequery.repository.RepositoryException;
 import org.xml.sax.Attributes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class MenuItemXMLRepository extends AbstractXMLResourceReaderWriter<MenuItem>
-                                   implements MenuItemRepository {
+        implements MenuItemRepository {
 
     private static final String RESOURCE_PATH = "org/executequery/menus.xml";
-    
+
     public List<MenuItem> getMenuItems() {
 
         try {
-     
+
             return (List<MenuItem>) readResource(resourcePath(), new MenuItemHandler());
 
         } catch (RepositoryException e) {
 
             Log.error("Error loading menu items from file.", e);
-            
+
             throw new ExecuteQuerySystemError(e.getMessage());
         }
 
@@ -58,23 +57,23 @@ public class MenuItemXMLRepository extends AbstractXMLResourceReaderWriter<MenuI
         return RESOURCE_PATH;
     }
 
-    class MenuItemHandler 
-        extends AbstractXMLRepositoryHandler<MenuItem> {
-    
+    class MenuItemHandler
+            extends AbstractXMLRepositoryHandler<MenuItem> {
+
         private List<MenuItem> menuItems;
-    
+
         private MenuItem lastParent;
-        
+
         MenuItemHandler() {
-            
+
             menuItems = new ArrayList<MenuItem>();
         }
-    
+
         public void startElement(String nameSpaceURI, String localName,
                                  String qName, Attributes attrs) {
-    
+
             contents().reset();
-            
+
             MenuItem menuItem = new MenuItem();
             menuItem.setParent(lastParent);
 
@@ -83,12 +82,12 @@ public class MenuItemXMLRepository extends AbstractXMLResourceReaderWriter<MenuI
             menuItem.setPropertyKey(attrs.getValue(PROPERTY_KEY));
 
             if (attrs.getValue(INDEX) != null) {
-                
+
                 menuItem.setIndex(Integer.parseInt(attrs.getValue(INDEX)));
             }
-            
+
             if (localName.equals(MENU_ITEM)) {
-    
+
                 menuItem.setId(attrs.getValue(ID));
                 menuItem.setAcceleratorKey(attrs.getValue(ACCEL_KEY));
                 menuItem.setActionCommand(attrs.getValue(ACTION_COMMAND));
@@ -99,36 +98,36 @@ public class MenuItemXMLRepository extends AbstractXMLResourceReaderWriter<MenuI
                 lastParent.add(menuItem);
 
             } else if (localName.equals(MENU)) {
-                
+
                 menuItem.setImplementingClass(attrs.getValue(CLASS));
-                
+
                 if (lastParent != null) {
-                    
+
                     lastParent.add(menuItem);
                 }
 
                 lastParent = menuItem;
 
             }
-    
+
         }
-        
+
         public void endElement(String nameSpaceURI, String localName,
-                String qName) {
+                               String qName) {
 
             if (localName.equals(MENU)) {
-            
+
                 if (lastParent.hasParent()) {
 
                     lastParent = lastParent.getParent();
-                    
+
                 } else {
-                    
+
                     menuItems.add(lastParent);
 
                     lastParent = null;
                 }
-                
+
             }
 
         }
@@ -137,7 +136,7 @@ public class MenuItemXMLRepository extends AbstractXMLResourceReaderWriter<MenuI
 
             return menuItems;
         }
-    
+
         private static final String MENU = "menu";
         private static final String MENU_ITEM = "menu-item";
         private static final String NAME = "name";

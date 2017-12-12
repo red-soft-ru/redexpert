@@ -20,27 +20,6 @@
 
 package org.executequery.gui.editor;
 
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-
-import javax.swing.Action;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
 import org.executequery.Constants;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
@@ -59,13 +38,21 @@ import org.underworldlabs.swing.MutableValueJList;
 import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.util.MiscUtils;
 
-/** 
- *
- * @author   Takis Diakoumis
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+
+/**
+ * @author Takis Diakoumis
  */
-public class ManageBookmarksPanel extends DefaultActionButtonsPanel 
-                                  implements ListSelectionListener {
-    
+public class ManageBookmarksPanel extends DefaultActionButtonsPanel
+        implements ListSelectionListener {
+
     public static final String TITLE = "Manage Query Bookmark";
     public static final String FRAME_ICON = "Bookmarks16.png";
 
@@ -79,16 +66,16 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
     private MoveJListItemsStrategy moveStrategy;
 
     private int lastSelectedIndex = -1;
-    
+
     private final ActionContainer parent;
 
     public ManageBookmarksPanel(ActionContainer parent) {
-        
+
         this.parent = parent;
-        
+
         init();
     }
-    
+
     private void init() {
 
         createTextPane();
@@ -99,7 +86,7 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
         splitPane.setRightComponent(new JScrollPane(textPane));
 
         JPanel panel = new JPanel(new GridBagLayout());
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.gridy = 0;
@@ -126,14 +113,14 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
         addActionButton(createCancelButton());
 
         addContentPanel(panel);
-        
+
         setPreferredSize(new Dimension(800, 500));
     }
 
     private JButton createCancelButton() {
 
         JButton button = new DefaultPanelButton(bundleString("cancelButton"));
-        
+
         button.setActionCommand(CANCEL_COMMAND_NAME);
         button.addActionListener(this);
 
@@ -143,7 +130,7 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
     private JButton createSaveButton() {
 
         JButton button = new DefaultPanelButton(bundleString("okButton"));
-        
+
         button.setActionCommand(SAVE_COMMAND_NAME);
         button.addActionListener(this);
 
@@ -159,80 +146,80 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
     private void createList() {
 
         list = new MutableValueJList(createModel());
-        
+
         list.addListSelectionListener(this);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        
+
         if (modelFromList().size() >= 0) {
 
             list.setSelectedIndex(0);
         }
-        
+
         moveStrategy = new MoveJListItemsStrategy(list);
     }
 
     public void moveUp() {
-        
+
         moveSelection(true);
     }
 
     public void moveDown() {
-        
+
         moveSelection(false);
     }
-    
+
     public void deleteBookmark() {
-        
+
         int index = selectedIndex();
-        
+
         if (index != -1) {
-            
+
             try {
-            
+
                 list.removeListSelectionListener(this);
-                
+
                 DefaultListModel model = modelFromList();
                 model.remove(index);
-    
+
                 lastSelectedIndex = -1;
-    
+
                 int size = model.getSize();
                 if (size > 0) {
-    
+
                     if (index > size - 1) {
-    
+
                         list.setSelectedIndex(size - 1);
-                        
+
                     } else {
-    
+
                         list.setSelectedIndex(index);
                     }
 
                     bookmarkSelected();
 
                 } else {
-                    
+
                     textPane.setText("");
                 }
-                
+
             } finally {
 
                 list.addListSelectionListener(this);
             }
-            
+
         }
 
     }
 
     public void addBookmark() {
-        
+
         QueryBookmark queryBookmark = new QueryBookmark();
         queryBookmark.setName(bundleString("newBookmarkName"));
         queryBookmark.setQuery(Constants.EMPTY);
-        
+
         DefaultListModel model = modelFromList();
 
-        model.addElement(queryBookmark);        
+        model.addElement(queryBookmark);
         int index = model.indexOf(queryBookmark);
 
         list.setSelectedIndex(index);
@@ -244,7 +231,7 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
     private Action listEditingAction() {
         return list.getActionMap().get("startEditing");
     }
-    
+
     private ActionEvent actionEventForEdit() {
         return new ActionEvent(list, ActionEvent.ACTION_FIRST, null);
     }
@@ -286,19 +273,19 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
     private boolean bookmarksValid(List<QueryBookmark> bookmarks) {
 
         for (QueryBookmark bookmark : bookmarks) {
-            
+
             if (nameExists(bookmark, bookmark.getName())) {
-                
+
                 return false;
             }
-            
+
             if (MiscUtils.isNull(bookmark.getQuery())) {
-                
+
                 return false;
             }
-            
+
         }
-        
+
         return true;
     }
 
@@ -317,23 +304,23 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
     }
 
     private void moveSelection(boolean moveUp) {
-        
+
         if (selectedIndex() == -1) {
-            
+
             return;
         }
-        
+
         try {
 
             storeQueryForBookmark();
             list.removeListSelectionListener(this);
-            
+
             if (moveUp) {
-                
+
                 moveStrategy.moveSelectionUp();
-                
+
             } else {
-                
+
                 moveStrategy.moveSelectionDown();
             }
 
@@ -342,17 +329,17 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
             lastSelectedIndex = selectedIndex();
             list.addListSelectionListener(this);
         }
-        
+
     }
 
     private int selectedIndex() {
         return list.getSelectedIndex();
     }
-    
+
     private void storeQueryForBookmark() {
-        
+
         QueryBookmark bookmark = getBookmarkAt(lastSelectedIndex);
-        
+
         if (bookmark != null) {
 
             bookmark.setQuery(textPane.getText().trim());
@@ -361,27 +348,27 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
     }
 
     private void bookmarkSelected() {
-        
-        QueryBookmark bookmark = getSelectedBookmark();        
+
+        QueryBookmark bookmark = getSelectedBookmark();
         textPane.setText(bookmark.getQuery().trim());
-        
+
         lastSelectedIndex = selectedIndex();
     }
 
     private QueryBookmark getBookmarkAt(int index) {
-        
+
         DefaultListModel model = modelFromList();
 
         if (index >= model.size()) {
-            
+
             return null;
         }
 
-        return (QueryBookmark)model.elementAt(index);
+        return (QueryBookmark) model.elementAt(index);
     }
 
     private QueryBookmark getSelectedBookmark() {
-        return (QueryBookmark)list.getSelectedValue();
+        return (QueryBookmark) list.getSelectedValue();
     }
 
     private QueryBookmarks bookmarks() {
@@ -391,25 +378,25 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
     private List<QueryBookmark> bookmarksFromList() {
 
         Object[] bookmarks = modelFromList().toArray();
-        
+
         List<QueryBookmark> bookmarkList = new ArrayList<>(bookmarks.length);
         for (Object bookmark : bookmarks) {
-            
-            bookmarkList.add((QueryBookmark)bookmark);
+
+            bookmarkList.add((QueryBookmark) bookmark);
         }
-        
+
         return bookmarkList;
     }
 
     private DefaultListModel modelFromList() {
 
-        return (DefaultListModel)list.getModel();
+        return (DefaultListModel) list.getModel();
     }
 
     private ListModel createModel() {
-        
+
         QueryBookmarksListModel model = new QueryBookmarksListModel();
-        
+
         List<QueryBookmark> bookmarks = bookmarks().getQueryBookmarks();
         for (QueryBookmark bookmark : bookmarks) {
 
@@ -420,27 +407,27 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
     }
 
     class QueryBookmarksListModel extends DefaultMutableListModel {
-        
+
         public void setValueAt(Object value, int index) {
-            
+
             if (value == null) {
-                
+
                 return;
             }
-            
+
             String name = value.toString();
-            
+
             if (MiscUtils.isNull(name)) {
-                
+
                 return;
             }
-            
-            QueryBookmark bookmark = (QueryBookmark)modelFromList().get(index);
+
+            QueryBookmark bookmark = (QueryBookmark) modelFromList().get(index);
 
             if (!nameExists(bookmark, name)) {
-                
+
                 bookmark.setName(name);
-                
+
             } else {
 
                 GUIUtilities.displayErrorMessage(
@@ -448,50 +435,50 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
             }
 
         }
-        
+
     }
 
     public boolean nameExists(QueryBookmark bookmark, String name) {
 
-        for (Enumeration<?> i = modelFromList().elements(); i.hasMoreElements();) {
-            
-            QueryBookmark _bookmark = (QueryBookmark)i.nextElement();
-            
-            if (name.equals(_bookmark.getName()) 
+        for (Enumeration<?> i = modelFromList().elements(); i.hasMoreElements(); ) {
+
+            QueryBookmark _bookmark = (QueryBookmark) i.nextElement();
+
+            if (name.equals(_bookmark.getName())
                     && _bookmark != bookmark) {
-                
+
                 return true;
             }
-            
+
         }
-        
+
         return false;
     }
 
     private JPanel createMoveButtonsPanel() {
-        
+
         JPanel panel = new JPanel(new GridBagLayout());
 
         JButton upButton = ActionUtilities.createToolbarButton(
-                this, 
-                "Up16.png", 
-                "Move selection up", 
+                this,
+                "Up16.png",
+                "Move selection up",
                 "moveUp");
 
         JButton downButton = ActionUtilities.createToolbarButton(
-                this, 
-                "Down16.png", 
-                "Move selection down", 
+                this,
+                "Down16.png",
+                "Move selection down",
                 "moveDown");
 
         JButton addButton = ActionUtilities.createToolbarButton(
-                this, 
+                this,
                 "addBookmark",
-                GUIUtilities.loadIcon("AddBookmark16.png"), 
+                GUIUtilities.loadIcon("AddBookmark16.png"),
                 "Add bookmark");
 
         JButton deleteButton = ActionUtilities.createToolbarButton(
-                this, 
+                this,
                 "deleteBookmark",
                 GUIUtilities.loadIcon("DeleteBookmark16.png"),
                 "Delete bookmark");
@@ -521,11 +508,11 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
     private JLabel labelForKey(String key) {
         return new JLabel(bundleString(key));
     }
-    
+
     private JSplitPane createSplitPane() {
-        
+
         JSplitPane splitPane = new FlatSplitPane(JSplitPane.VERTICAL_SPLIT);
-        
+
         splitPane.setDividerSize(4);
         splitPane.setResizeWeight(0.5);
         splitPane.setDividerLocation(0.5);

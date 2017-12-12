@@ -20,60 +20,59 @@
 
 package org.executequery.gui.console.commands;
 
+import org.executequery.gui.console.Console;
+import org.executequery.gui.console.ConsoleUtilities;
+import org.underworldlabs.util.SystemProperties;
+
 import java.io.File;
 
-import org.underworldlabs.util.SystemProperties;
-import org.executequery.gui.console.ConsoleUtilities;
-import org.executequery.gui.console.Console;
-
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
 /**
  * This command changes current dir.
+ *
  * @author Romain Guy
  */
 
 /**
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ChangeDirCommand extends Command {
-    
+
     private static final String COMMAND_NAME = "cd";
-    
+
     public String getCommandName() {
         return COMMAND_NAME + " <path>";
     }
-    
+
     public String getCommandSummary() {
         return SystemProperties.getProperty("console", "console.cd.command.help");
     }
-    
+
     public boolean handleCommand(Console console, String command) {
-        
+
         if (command.equals(COMMAND_NAME) || command.equals(COMMAND_NAME + " -help")) {
             console.help(SystemProperties.getProperty("user", "console.cd.help"));
             return true;
-        }
-        
-        else if (command.startsWith(COMMAND_NAME)) {
+        } else if (command.startsWith(COMMAND_NAME)) {
             String newPath = ConsoleUtilities.constructPath(command.substring(3),
-            console.getCurrentPath());
-            
+                    console.getCurrentPath());
+
             if ((new File(newPath)).exists())
                 console.setCurrentPath(newPath);
-            
+
             else
                 console.error(SystemProperties.getProperty("console", "console.cd.error"));
-            
+
             return true;
         }
-        
+
         return false;
     }
 }

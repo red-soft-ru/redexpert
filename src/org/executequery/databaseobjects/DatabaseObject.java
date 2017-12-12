@@ -20,15 +20,16 @@
 
 package org.executequery.databaseobjects;
 
+import org.underworldlabs.jdbc.DataSourceException;
+
 import java.sql.ResultSet;
 import java.util.List;
-import org.underworldlabs.jdbc.DataSourceException;
 
 /**
  * Defines a real database object - ie. a table, procedure,
  * function, index, etc.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface DatabaseObject extends NamedObject {
 
@@ -88,7 +89,7 @@ public interface DatabaseObject extends NamedObject {
      *
      * @return the privileges
      */
-    List<TablePrivilege> getPrivileges()  throws DataSourceException;
+    List<TablePrivilege> getPrivileges() throws DataSourceException;
 
     /**
      * Returns any remarks attached to this object.
@@ -130,11 +131,11 @@ public interface DatabaseObject extends NamedObject {
     void releaseResources();
 
     boolean hasSQLDefinition();
-    
+
     ResultSet getMetaData() throws DataSourceException;
-    
+
     String getCreateSQLText() throws DataSourceException;
-    
+
 }
 
 

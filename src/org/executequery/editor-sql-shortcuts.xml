@@ -3,31 +3,31 @@
 <editor-shortcuts>
 
     <editor-shortcut id="46b6bde3-7f67-4146-a76c-08410cdd682e" shortcut="SF">
-        SELECT * FROM 
+        SELECT * FROM
     </editor-shortcut>
 
     <editor-shortcut id="55948b34-7cfe-4cc8-89e7-2d690289aa50" shortcut="SCF">
-        SELECT COUNT(*) FROM 
+        SELECT COUNT(*) FROM
     </editor-shortcut>
 
     <editor-shortcut id="035a8336-c05a-4a9d-87f7-110329c07680" shortcut="CRT">
-        CREATE TABLE 
+        CREATE TABLE
     </editor-shortcut>
 
     <editor-shortcut id="b7e41b11-344f-4b51-8115-31e18a750504" shortcut="INST">
-        INSERT INTO  
+        INSERT INTO
     </editor-shortcut>
 
     <editor-shortcut id="6e7aef32-6a03-4f7e-b090-c75ee7f72e15" shortcut="DRT">
-        DROP TABLE 
+        DROP TABLE
     </editor-shortcut>
 
     <editor-shortcut id="ee2d63c0-6cbe-4fde-b1a6-09f98baaf663" shortcut="DLT">
-        DELETE FROM 
+        DELETE FROM
     </editor-shortcut>
 
     <editor-shortcut id="62c3fafb-02f3-4515-b090-1226e220a460" shortcut="FORM">
-        FROM 
+        FROM
     </editor-shortcut>
 
 </editor-shortcuts>

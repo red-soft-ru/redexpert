@@ -20,33 +20,27 @@
 
 package org.executequery.gui;
 
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.SQLException;
-import java.util.Vector;
-
 import org.executequery.ActiveComponent;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.components.BottomButtonPanel;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
 import org.executequery.gui.table.CreateTableFunctionPanel;
-import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.GUIUtils;
-import org.underworldlabs.util.MiscUtils;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Vector;
 
 /**
  * <p>The Create Panel function
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CreateTablePanel extends CreateTableFunctionPanel
         implements ActionListener,

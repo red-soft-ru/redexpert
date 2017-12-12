@@ -20,36 +20,38 @@
 
 package org.executequery.databaseobjects.impl;
 
+import org.executequery.databaseobjects.*;
+import org.underworldlabs.jdbc.DataSourceException;
+
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import org.executequery.databaseobjects.DatabaseCatalog;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.DatabaseSchema;
-import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.SimpleDatabaseObject;
-import org.underworldlabs.jdbc.DataSourceException;
 
 /**
  * Default database schema object implementation.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class DefaultDatabaseSchema extends AbstractDatabaseSource 
-                                   implements DatabaseSchema {
-    
-    /** the catalog object for this schema */
+public class DefaultDatabaseSchema extends AbstractDatabaseSource
+        implements DatabaseSchema {
+
+    /**
+     * the catalog object for this schema
+     */
     private DatabaseCatalog catalog;
-    
-    /** Creates a new instance of DefaultDatabaseSchema */
+
+    /**
+     * Creates a new instance of DefaultDatabaseSchema
+     */
     public DefaultDatabaseSchema(DatabaseHost host, String name) {
         this(host, null, name);
     }
 
-    /** Creates a new instance of DefaultDatabaseSchema */
+    /**
+     * Creates a new instance of DefaultDatabaseSchema
+     */
     public DefaultDatabaseSchema(DatabaseHost host, DatabaseCatalog catalog, String name) {
 
         super(host);
@@ -58,9 +60,11 @@ public class DefaultDatabaseSchema extends AbstractDatabaseSource
         setName(name);
     }
 
-    /** indicates whether the meta objects have been loaded */
+    /**
+     * indicates whether the meta objects have been loaded
+     */
     private boolean metaObjectsLoaded = false;
-    
+
     /**
      * Returns the meta type objects from this schema
      *
@@ -72,16 +76,16 @@ public class DefaultDatabaseSchema extends AbstractDatabaseSource
 
             metaObjectsLoaded = false;
         }
-        
+
         List<DatabaseMetaTag> metaObjects = super.getMetaObjects();
 
         if (!metaObjectsLoaded) {
 
             DatabaseCatalog _catalog = getCatalog();
-            
+
             for (DatabaseMetaTag metaObject : metaObjects) {
 
-                DefaultDatabaseMetaTag _metaTag = (DefaultDatabaseMetaTag)metaObject;
+                DefaultDatabaseMetaTag _metaTag = (DefaultDatabaseMetaTag) metaObject;
 
                 _metaTag.setCatalog(_catalog);
                 _metaTag.setSchema(this);
@@ -89,9 +93,9 @@ public class DefaultDatabaseSchema extends AbstractDatabaseSource
 
             metaObjectsLoaded = true;
         }
-        
+
         return metaObjects;
-        
+
     }
 
     /**
@@ -100,12 +104,12 @@ public class DefaultDatabaseSchema extends AbstractDatabaseSource
      * @return the schema objects
      */
     public List<SimpleDatabaseObject> getSchemaObjects() throws DataSourceException {
-        
+
         ResultSet rs = null;
 
         try {
             List<DatabaseMetaTag> metaTags = getMetaObjects();
-            
+
             String[] _metaTags = new String[metaTags.size()];
             for (int i = 0; i < _metaTags.length; i++) {
 
@@ -116,13 +120,13 @@ public class DefaultDatabaseSchema extends AbstractDatabaseSource
             DatabaseMetaData dmd = databaseHost.getDatabaseMetaData();
             String catalogName = databaseHost.getCatalogNameForQueries(getCatalogName());
             String schemaName = databaseHost.getSchemaNameForQueries(getName());
-            
+
             rs = dmd.getTables(catalogName, schemaName, null, _metaTags);
             if (rs == null) {
 
                 return null;
             }
-            
+
             List<SimpleDatabaseObject> list = new ArrayList<SimpleDatabaseObject>();
             while (rs.next()) {
 
@@ -133,16 +137,16 @@ public class DefaultDatabaseSchema extends AbstractDatabaseSource
                 object.setMetaDataKey(rs.getString(4));
                 object.setRemarks(rs.getString(5));
                 list.add(object);
-            } 
-            
+            }
+
             return list;
-        
+
         } catch (SQLException e) {
-          
+
             throw new DataSourceException(e);
 
         } finally {
-          
+
             releaseResources(rs);
         }
 
@@ -154,7 +158,7 @@ public class DefaultDatabaseSchema extends AbstractDatabaseSource
      * @return the hosted tables
      */
     public List<NamedObject> getTables() throws DataSourceException {
-        
+
         return getHost().getTables(getCatalogName(), getName(), "TABLE");
     }
 
@@ -164,7 +168,7 @@ public class DefaultDatabaseSchema extends AbstractDatabaseSource
      * @return the parent object
      */
     public DatabaseCatalog getCatalog() {
-        
+
         return catalog;
     }
 
@@ -174,53 +178,55 @@ public class DefaultDatabaseSchema extends AbstractDatabaseSource
      * @return the parent object or null if we are at the top of the hierarchy
      */
     public NamedObject getParent() {
-        
+
         return getCatalog() == null ? getHost() : getCatalog();
     }
-    
+
     @Override
     public void setParent(NamedObject parent) {
 
-        if (parent instanceof  DatabaseCatalog) {
-            
+        if (parent instanceof DatabaseCatalog) {
+
             this.catalog = (DatabaseCatalog) parent;
         }
-        
+
         super.setParent(parent);
     }
-    
+
     /**
      * Override to return value from getName().
      */
     public String getCatalogName() {
-        
+
         DatabaseCatalog catalog = getCatalog();
-        
+
         if (catalog != null) {
-           
+
             return catalog.getName();
         }
-        
+
         return null;
     }
-    
+
     /**
      * Does nothing in this case.
      */
-    public void setCatalogName(String catalog) {}
+    public void setCatalogName(String catalog) {
+    }
 
     /**
      * Override to return value from getName().
      */
     public String getSchemaName() {
-        
+
         return getName();
     }
-    
+
     /**
      * Does nothing in this case.
      */
-    public void setSchemaName(String schema) {}
+    public void setSchemaName(String schema) {
+    }
 
     /**
      * Returns the database object type.
@@ -228,7 +234,7 @@ public class DefaultDatabaseSchema extends AbstractDatabaseSource
      * @return the object type
      */
     public int getType() {
-        
+
         return SCHEMA;
     }
 
@@ -238,7 +244,7 @@ public class DefaultDatabaseSchema extends AbstractDatabaseSource
      * @return the meta data key name.
      */
     public String getMetaDataKey() {
-        
+
         return null;
     }
 
@@ -248,7 +254,7 @@ public class DefaultDatabaseSchema extends AbstractDatabaseSource
      * @return the parent schema object
      */
     public DatabaseSchema getSchema() {
-        
+
         return this;
     }
 
@@ -257,7 +263,7 @@ public class DefaultDatabaseSchema extends AbstractDatabaseSource
 
         return "SCHEMA: " + getName();
     }
-    
+
 
 }
 

@@ -21,8 +21,7 @@
 package org.executequery.gui.prefs;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PropertyTypes {
 
@@ -55,8 +54,11 @@ public class PropertyTypes {
     public static final int BROWSER_DATA_TAB = 26;
     public static final int EDITOR_COLOURS = 27;
 
-    /** Creates a new instance of PropertyTypes */
-    private PropertyTypes() {}
+    /**
+     * Creates a new instance of PropertyTypes
+     */
+    private PropertyTypes() {
+    }
 
 }
 

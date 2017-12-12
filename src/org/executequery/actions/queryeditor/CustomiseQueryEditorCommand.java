@@ -20,19 +20,17 @@
 
 package org.executequery.actions.queryeditor;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.SwingUtilities;
-
 import org.executequery.GUIUtilities;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.prefs.PropertiesPanel;
 import org.executequery.gui.prefs.PropertyTypes;
 import org.underworldlabs.swing.actions.BaseCommand;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CustomiseQueryEditorCommand implements BaseCommand {
 

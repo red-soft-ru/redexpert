@@ -20,9 +20,12 @@
 
 package org.executequery.repository;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
+import org.apache.commons.lang.RandomStringUtils;
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.gui.browser.ConnectionsFolder;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -33,29 +36,25 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
-import org.apache.commons.lang.RandomStringUtils;
-import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.gui.browser.ConnectionsFolder;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 public class ConnectionExporter {
 
     public void write(String fileName, List<ConnectionsFolder> folders, List<DatabaseConnection> connections) {
-        
+
         String tempDir = System.getProperty("java.io.tmpdir");
-        
+
         String foldersOutput = randomString();
         String connectionsOutput = randomString();
-        
+
         File foldersFile = new File(tempDir, foldersOutput);
         File connectionsFile = new File(tempDir, connectionsOutput);
-        
+
         connectionFolderRepository().save(foldersFile.getAbsolutePath(), folders);
         databaseConnectionRepository().save(connectionsFile.getAbsolutePath(), connections);
-        
+
         try {
 
             Document document = merge(foldersFile, connectionsFile);
@@ -64,7 +63,7 @@ public class ConnectionExporter {
         } catch (ParserConfigurationException | SAXException | IOException | TransformerException e) {
 
             throw new RepositoryException(e);
-        
+
         } finally {
 
             foldersFile.delete();
@@ -73,7 +72,7 @@ public class ConnectionExporter {
 
     }
 
-    private Document merge(File...files) throws ParserConfigurationException, SAXException, IOException {
+    private Document merge(File... files) throws ParserConfigurationException, SAXException, IOException {
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setIgnoringElementContentWhitespace(true);
@@ -99,7 +98,7 @@ public class ConnectionExporter {
     private void write(Document doc, String fileName) throws TransformerException {
 
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        
+
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(doc);
 
@@ -111,9 +110,9 @@ public class ConnectionExporter {
 
         return RandomStringUtils.randomAlphanumeric(12);
     }
-    
+
     private ConnectionFoldersRepository connectionFolderRepository() {
-        
+
         return (ConnectionFoldersRepository) RepositoryCache.load(ConnectionFoldersRepository.REPOSITORY_ID);
     }
 

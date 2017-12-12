@@ -33,31 +33,35 @@ import org.underworldlabs.util.SystemProperties;
 // **************************************************
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
-/** <p>The view properties panel.
+/**
+ * <p>The view properties panel.
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PropertiesView extends AbstractPropertiesBasePanel {
-    
+
     private SimplePreferencesPanel preferencesPanel;
-    
-    /** <p>Constructs a new instance. */
+
+    /**
+     * <p>Constructs a new instance.
+     */
     public PropertiesView() {
         try {
             jbInit();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
-    /** <p>Initializes the state of this instance. */
+
+    /**
+     * <p>Initializes the state of this instance.
+     */
     private void jbInit() throws Exception {
 
         int count = 0;
@@ -113,11 +117,11 @@ public class PropertiesView extends AbstractPropertiesBasePanel {
     public void restoreDefaults() {
         preferencesPanel.savePreferences();
     }
-    
+
     public void save() {
         preferencesPanel.savePreferences();
     }
-    
+
 }
 
 

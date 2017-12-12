@@ -24,15 +24,14 @@ import java.awt.event.FocusEvent;
 
 
 /**
- *
- * @author      Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public abstract class AbstractFieldFocusLostListener implements FieldFocusLostListener {
 
     public final void focusGained(FocusEvent e) {
         // not interested
     }
-   
+
 }
 
 

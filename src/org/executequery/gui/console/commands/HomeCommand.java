@@ -20,48 +20,49 @@
 
 package org.executequery.gui.console.commands;
 
-import org.underworldlabs.util.SystemProperties;
 import org.executequery.gui.console.Console;
+import org.underworldlabs.util.SystemProperties;
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
 /**
  * This command places prompt in Jext dir.
+ *
  * @author Romain Guy
  */
 
 /**
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class HomeCommand extends Command {
-    
+
     private static final String COMMAND_NAME = "home";
-    
+
     public String getCommandName() {
         return COMMAND_NAME;
     }
-    
+
     public String getCommandSummary() {
         return SystemProperties.getProperty("console", "console.home.command.help");
     }
-    
+
     public boolean handleCommand(Console console, String command) {
-        
+
         if (command.equals(COMMAND_NAME)) {
             console.setCurrentPath(System.getProperty("user.dir"));
             return true;
         }
-        
+
         return false;
-        
+
     }
-    
+
 }
 
 // End of HomeCommand.java

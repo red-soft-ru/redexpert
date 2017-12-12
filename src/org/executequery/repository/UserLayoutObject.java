@@ -23,29 +23,40 @@ package org.executequery.repository;
 import java.io.Serializable;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class UserLayoutObject implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	/** the docked component position */
+    /**
+     * the docked component position
+     */
     private int position;
 
-    /** the docked component placement in its position */
+    /**
+     * the docked component placement in its position
+     */
     private int index;
 
-    /** the docked component user prefs key */
+    /**
+     * the docked component user prefs key
+     */
     private String key;
 
-    /** whether the dock is visible */
+    /**
+     * whether the dock is visible
+     */
     private boolean visible;
 
-    /** whether the dock is minimised */
+    /**
+     * whether the dock is minimised
+     */
     private boolean minimised;
-    
-    /** Creates a new instance of UserLayoutObject */
+
+    /**
+     * Creates a new instance of UserLayoutObject
+     */
     public UserLayoutObject() {
         this(null);
     }

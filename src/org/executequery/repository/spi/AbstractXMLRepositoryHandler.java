@@ -20,58 +20,57 @@
 
 package org.executequery.repository.spi;
 
-import java.io.CharArrayWriter;
-import java.util.List;
-
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import java.io.CharArrayWriter;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-abstract class AbstractXMLRepositoryHandler<T> extends DefaultHandler 
-    implements XMLRepositoryHandler<T> {
+abstract class AbstractXMLRepositoryHandler<T> extends DefaultHandler
+        implements XMLRepositoryHandler<T> {
 
     private CharArrayWriter contents;
-    
+
     AbstractXMLRepositoryHandler() {
-        
+
         super();
-        
+
         contents = new CharArrayWriter();
     }
 
     public final void characters(char[] data, int start, int length) {
-        
+
         contents.write(data, start, length);
     }
-    
+
     public final void ignorableWhitespace(char[] data, int start, int length) {
-        
+
         characters(data, start, length);
     }
-    
+
     public final void error(SAXParseException spe) throws SAXException {
-        
+
         throw new SAXException(spe.getMessage());
     }
 
     protected final CharArrayWriter contents() {
-        
+
         return contents;
     }
 
     protected final boolean localNameIsKey(String localName, String key) {
-        
+
         return localName.equalsIgnoreCase(key);
     }
-    
+
     protected final String contentsAsString() {
 
         if (hasContents()) {
-        
+
             return contents.toString();
         }
 
@@ -79,9 +78,9 @@ abstract class AbstractXMLRepositoryHandler<T> extends DefaultHandler
     }
 
     protected final long contentsAsLong() {
-        
+
         if (hasContents()) {
-            
+
             return Long.parseLong(contentsAsString());
         }
 
@@ -89,9 +88,9 @@ abstract class AbstractXMLRepositoryHandler<T> extends DefaultHandler
     }
 
     protected final int contentsAsInt() {
-        
+
         if (hasContents()) {
-            
+
             return Integer.parseInt(contentsAsString());
         }
 
@@ -99,9 +98,9 @@ abstract class AbstractXMLRepositoryHandler<T> extends DefaultHandler
     }
 
     protected final boolean contentsAsBoolean() {
-        
+
         if (hasContents()) {
-            
+
             return Boolean.parseBoolean(contentsAsString());
         }
 
@@ -112,7 +111,7 @@ abstract class AbstractXMLRepositoryHandler<T> extends DefaultHandler
 
         return contents != null && contents.size() > 0;
     }
-    
+
     public abstract List<T> getRepositoryItemsList();
 
 }

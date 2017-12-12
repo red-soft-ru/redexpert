@@ -22,14 +22,11 @@ package org.executequery.datasource;
 
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.log.Log;
-import org.executequery.util.UserProperties;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -40,8 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DefaultDriverLoader implements DriverLoader {
 
@@ -58,7 +54,7 @@ public class DefaultDriverLoader implements DriverLoader {
     private static final Map<String, Driver> LOADED_WRAPPING_DRIVERS = new HashMap<String, Driver>();
 
     private static final Class[] parameters = new Class[]{URL.class};
-    
+
     public Driver load(DatabaseDriver databaseDriver) {
 
         boolean jdbcLogging = SystemProperties.getBooleanProperty("user", "connection.logging");
@@ -68,46 +64,46 @@ public class DefaultDriverLoader implements DriverLoader {
         String key = key(databaseDriver);
         if (LOADED_DRIVERS.containsKey(key)) {
 
-            if(!jdbcLogging)
+            if (!jdbcLogging)
                 return LOADED_DRIVERS.get(key);
 
             return LOADED_WRAPPING_DRIVERS.get(key);
         }
 
         try {
-        
+
             Class<?> clazz = null;
             String driverName = databaseDriver.getClassName();
-    
+
             Log.info("Loading JDBC driver class: " + driverName);
-            
+
             if (!databaseDriver.isDefaultSunOdbc()) {
-                
+
                 String path = databaseDriver.getPath();
                 Log.trace("Loading driver from: " + path);
-                
+
                 if (!MiscUtils.isNull(path)) {
-    
+
                     URL[] urls = MiscUtils.loadURLs(path);
                     DynamicLibraryLoader loader = new DynamicLibraryLoader(urls);
                     clazz = loader.loadLibrary(driverName);
 
                 } else {
-    
+
                     clazz = loadUsingSystemLoader(driverName);
                 }
-    
+
             } else {
-                
+
                 clazz = loadUsingSystemLoader(driverName);
-            } 
+            }
 
             Object object = clazz.newInstance();
             driver = (Driver) object;
 
-            Log.info("JDBC driver " + driverName + " loaded - v" 
+            Log.info("JDBC driver " + driverName + " loaded - v"
                     + driver.getMajorVersion() + "." + driver.getMinorVersion());
-            
+
             LOADED_DRIVERS.put(key(databaseDriver), driver);
 
             ClassLoader classLoader = driver.getClass().getClassLoader();
@@ -126,21 +122,21 @@ public class DefaultDriverLoader implements DriverLoader {
             wrappingDriver = (Driver) odb;
 
             LOADED_WRAPPING_DRIVERS.put(key(databaseDriver), wrappingDriver);
-            
+
         } catch (ClassNotFoundException e) {
-            
+
             handleException("The specified JDBC driver class was not found", databaseDriver, e);
-        
+
         } catch (MalformedURLException e) {
 
             handleException("Error loading the driver from the specified path.", databaseDriver, e);
-            
+
         } catch (InstantiationException e) {
-            
+
             handleException(e.getMessage(), databaseDriver, e);
 
         } catch (IllegalAccessException e) {
-            
+
             handleException("The specified JDBC driver class was not accessible", databaseDriver, e);
         }
         if (!jdbcLogging)
@@ -150,7 +146,7 @@ public class DefaultDriverLoader implements DriverLoader {
     }
 
     private String key(DatabaseDriver databaseDriver) {
-        
+
         return databaseDriver.getId() + "-" + databaseDriver.getClassName();
     }
 
@@ -160,30 +156,32 @@ public class DefaultDriverLoader implements DriverLoader {
     }
 
     public void unload(DatabaseDriver databaseDriver) {
-        
+
         String key = key(databaseDriver);
         if (LOADED_DRIVERS.containsKey(key)) {
-            
+
             Driver driver = LOADED_DRIVERS.get(key);
             try {
                 DriverManager.deregisterDriver(driver);
-            } catch (SQLException e) {e.printStackTrace();}
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
             LOADED_DRIVERS.remove(key);
             driver = null;
         }
-        
+
     }
-    
+
     private void handleException(String message, DatabaseDriver databaseDriver, Throwable e) {
 
         if (Log.isDebugEnabled()) {
-            
+
             Log.error("Error loading JDBC driver " + databaseDriver.getClassName(), e);
         }
 
         throw new DataSourceException(message);
     }
-    
+
 }
 
 

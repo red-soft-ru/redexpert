@@ -21,13 +21,13 @@
 package org.executequery.util;
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
-/** 
+/**
  * The <code>LookAndFeelDefinition</code> describes
  * a custom look and feel installed by the user. It
  * maintains information about the location of the JAR
@@ -37,87 +37,100 @@ package org.executequery.util;
  * the Skin Look and Feel and its associated requirements
  * for a configuration XML file.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class LookAndFeelDefinition {
-    
-    /** The look and feel name */
+
+    /**
+     * The look and feel name
+     */
     private String name;
-    
-    /** The path to the library jar file */
+
+    /**
+     * The path to the library jar file
+     */
     private String libPath;
-    
-    /** The look and feel class name */
+
+    /**
+     * The look and feel class name
+     */
     private String className;
-    
-    /** The path to the theme pack ZIP file for Skin L&F */
+
+    /**
+     * The path to the theme pack ZIP file for Skin L&F
+     */
     private String themePack;
-    
-    /** Identifies whether this is a Skin L&F */
+
+    /**
+     * Identifies whether this is a Skin L&F
+     */
     private int skinLookAndFeel;
-    
-    /** Whethet this look and feel is selected */
+
+    /**
+     * Whethet this look and feel is selected
+     */
     private boolean installed;
-    
-    
+
+
     public LookAndFeelDefinition(String name) {
         this.name = name;
     }
-    
-    public LookAndFeelDefinition() {}
-    
+
+    public LookAndFeelDefinition() {
+    }
+
     public boolean isInstalled() {
         return installed;
     }
-    
+
     public void setInstalled(boolean installed) {
         this.installed = installed;
     }
-    
+
     public boolean isSkinLookAndFeel() {
         return skinLookAndFeel == 1;
     }
-    
+
     public void setIsSkinLookAndFeel(int skinLookAndFeel) {
         this.skinLookAndFeel = skinLookAndFeel;
     }
-    
+
     public String getThemePack() {
         return themePack;
     }
-    
+
     public void setThemePack(String themePack) {
         this.themePack = themePack;
     }
-    
+
     public String getClassName() {
         return className;
     }
-    
+
     public void setClassName(String className) {
         this.className = className;
     }
-    
+
     public String getLibraryPath() {
         return libPath;
     }
-    
+
     public void setLibraryPath(String libPath) {
         this.libPath = libPath;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public String toString() {
         return name;
     }
-    
+
 }
 
 

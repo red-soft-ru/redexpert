@@ -20,31 +20,38 @@
 
 package org.executequery.databaseobjects.impl;
 
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.SystemFunctionMetaTag;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Default system function meta tag object implementation.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject 
-                                          implements SystemFunctionMetaTag {
-    
-    /** the system function type identifier */
+public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
+        implements SystemFunctionMetaTag {
+
+    /**
+     * the system function type identifier
+     */
     private int type;
-    
-    /** the meta tag parent object */
+
+    /**
+     * the meta tag parent object
+     */
     private DatabaseMetaTag metaTagParent;
-    
-    /** Creates a new instance of DefaultSystemFunctionMetaTag */
+
+    /**
+     * Creates a new instance of DefaultSystemFunctionMetaTag
+     */
     public DefaultSystemFunctionMetaTag(DatabaseMetaTag metaTagParent,
                                         int type,
                                         String name) {
@@ -52,7 +59,7 @@ public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
         this.type = type;
         setName(name);
     }
-    
+
     /**
      * Retrieves child objects classified as this tag type.
      *
@@ -74,8 +81,7 @@ public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
                     functions = dmd.getNumericFunctions();
                     break;
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DataSourceException(e);
         }
 

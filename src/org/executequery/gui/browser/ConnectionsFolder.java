@@ -20,24 +20,25 @@
 
 package org.executequery.gui.browser;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 public class ConnectionsFolder {
 
     private String id;
-    
+
     private String name;
 
     private List<String> connections = new ArrayList<String>();
-    
-    public ConnectionsFolder() {}
+
+    public ConnectionsFolder() {
+    }
 
     public ConnectionsFolder(String name) {
         this.name = name;
@@ -48,7 +49,7 @@ public class ConnectionsFolder {
     }
 
     public void setConnections(String connectionsCsv) {
-        
+
         String[] split = StringUtils.split(connectionsCsv, ',');
         connections = new ArrayList<String>(split.length);
 
@@ -56,52 +57,52 @@ public class ConnectionsFolder {
             connections.add(connection);
         }
     }
-    
+
     public void addConnection(String connectionId) {
-        
+
         if (!contains(connectionId)) {
-         
+
             connections.add(connectionId);
         }
     }
-    
+
     private boolean contains(String connectionId) {
 
         for (String id : connections()) {
-            
+
             if (StringUtils.equals(connectionId, id)) {
-                
+
                 return true;
             }
         }
-        
+
         return false;
     }
 
     private List<String> connections() {
 
         if (connections == null) {
-            
+
             connections = new ArrayList<String>();
         }
         return connections;
     }
 
     public void removeConnection(String id) {
-        
+
         int index = 0;
         for (String connection : connections) {
-            
+
             if (connection.equals(id)) {
-                
+
                 connections.remove(index);
                 break;
             }
             index++;
         }
-        
+
     }
-    
+
     public List<String> getConnectionIds() {
         return connections;
     }
@@ -111,10 +112,10 @@ public class ConnectionsFolder {
         List<DatabaseConnection> list = new ArrayList<DatabaseConnection>(connections.size());
         DatabaseConnectionRepository repository = connectionsRepository();
         for (String id : connections) {
-        
+
             DatabaseConnection databaseConnection = repository.findById(id);
             if (databaseConnection != null) {
-             
+
                 list.add(databaseConnection);
             }
 
@@ -122,11 +123,11 @@ public class ConnectionsFolder {
 
         return list;
     }
-    
+
     private DatabaseConnectionRepository connectionsRepository() {
-        return (DatabaseConnectionRepository)RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
+        return (DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
     }
-    
+
     public String getId() {
         if (id == null) {
             setId(generateId());
@@ -158,6 +159,6 @@ public class ConnectionsFolder {
     public String toString() {
         return getName();
     }
-    
+
 }
 

@@ -20,26 +20,25 @@
 
 package org.executequery.gui.table;
 
-import java.util.Vector;
-
 import org.executequery.gui.browser.ColumnData;
 
+import java.util.Vector;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface TableConstraintFunction extends TableFunction {
-    
+
     public Vector getHostedSchemasVector();
-    
+
     public Vector getSchemaTables(String schemaName);
-    
+
     public Vector getColumnNamesVector(String tableName, String schemaName);
-    
+
     public ColumnData[] getTableColumnData();
-    
+
     public Vector getTableColumnDataVector();
-    
+
 }
 
 

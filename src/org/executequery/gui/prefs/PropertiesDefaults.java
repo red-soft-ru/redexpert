@@ -20,43 +20,36 @@
 
 package org.executequery.gui.prefs;
 
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
-import org.executequery.gui.prefs.PropertiesPanel;
-
 /**
  * resets defaults on propertie frame
- * <P>
- * @author   Takis Diakoumis
+ * <p>
+ *
+ * @author Takis Diakoumis
  */
 public class PropertiesDefaults extends JPanel
-                                implements ActionListener {
-    
+        implements ActionListener {
+
     public PropertiesDefaults(PropertiesPanel f) {
         super(new GridBagLayout());
-        try  {
+        try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     /**
      * Initializes the state of this instance.
      */
     private void init() throws Exception {
-        
+
         JButton restoreButton = new JButton("Restore Defaults");
-        restoreButton.setPreferredSize(new Dimension(135,30));
+        restoreButton.setPreferredSize(new Dimension(135, 30));
         restoreButton.addActionListener(this);
 
         GridBagConstraints gbc = new GridBagConstraints();

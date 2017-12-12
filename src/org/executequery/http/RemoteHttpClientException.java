@@ -21,8 +21,7 @@
 package org.executequery.http;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class RemoteHttpClientException extends RuntimeException {
 
@@ -34,7 +33,7 @@ public class RemoteHttpClientException extends RuntimeException {
     }
 
     public RemoteHttpClientException(String message, Throwable throwable) {
-        
+
         super(message, throwable);
     }
 
@@ -47,7 +46,7 @@ public class RemoteHttpClientException extends RuntimeException {
 
         super(throwable);
     }
-    
+
 }
 
 

@@ -21,8 +21,7 @@
 package org.executequery;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public abstract class AbstractBaseRuntimeException extends RuntimeException {
 

@@ -22,33 +22,35 @@ package org.executequery.gui.table;
 
 /**
  * defines those objects with table functions requiring sql output
- * 
- * @author   Takis Diakoumis
+ *
+ * @author Takis Diakoumis
  */
 public interface TableModifier extends CreateTableSQLSyntax {
-    
+
     int COLUMN_VALUES = 0;
     int CONSTRAINT_VALUES = 1;
-    
-    /**  Generates and prints the SQL text. */
+
+    /**
+     * Generates and prints the SQL text.
+     */
     public void setSQLText();
-    
-    /** 
-     * Generates and prints the SQL text with the specified values as either 
+
+    /**
+     * Generates and prints the SQL text with the specified values as either
      * column values or constraints values depending on the type parameter.
      *
      * @param the values to add to the SQL
      * @param the type of values - column or constraint
      */
     public void setSQLText(String values, int type);
-    
-    /** 
+
+    /**
      * Retrieves the currently selected/created table name.
      *
      * @return the table name
      */
     public String getTableName();
-    
+
 }
 
 

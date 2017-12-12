@@ -20,18 +20,17 @@
 
 package org.executequery.components;
 
-import java.awt.LayoutManager;
-
 import org.underworldlabs.swing.ActionPanel;
 
+import java.awt.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public abstract class BaseActionPanel extends ActionPanel {
 
     public BaseActionPanel() {
-        
+
         super();
     }
 
@@ -49,7 +48,7 @@ public abstract class BaseActionPanel extends ActionPanel {
 
         super(layout);
     }
-    
+
 }
 
 

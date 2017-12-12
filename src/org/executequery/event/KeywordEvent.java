@@ -22,12 +22,16 @@ package org.executequery.event;
 
 public interface KeywordEvent extends ApplicationEvent {
 
-    /** Method name for keywords added */
+    /**
+     * Method name for keywords added
+     */
     String KEYWORDS_ADDED = "keywordsAdded";
 
-    /** Method name for keywords added */
+    /**
+     * Method name for keywords added
+     */
     String KEYWORDS_REMOVED = "keywordsRemoved";
-    
+
 }
 
 

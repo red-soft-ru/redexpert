@@ -20,32 +20,32 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Point;
+import javax.swing.*;
+import javax.swing.event.MouseInputListener;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.event.MouseInputListener;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class GlassCapturePanel extends JPanel 
-                               implements MouseInputListener,
-                                          MouseWheelListener {
-    
-    /** The primary component */
+public class GlassCapturePanel extends JPanel
+        implements MouseInputListener,
+        MouseWheelListener {
+
+    /**
+     * The primary component
+     */
     protected Container mainComponent;
 
     private List<GlassPaneSelectionListener> listeners;
 
-    /** Creates a new instance of GlassCapturePanel */
+    /**
+     * Creates a new instance of GlassCapturePanel
+     */
     public GlassCapturePanel(Container mainComponent) {
         this.mainComponent = mainComponent;
         addMouseMotionListener(this);
@@ -58,16 +58,16 @@ public class GlassCapturePanel extends JPanel
         if (listeners == null) {
             return;
         }
-        listeners.remove(listener);        
+        listeners.remove(listener);
     }
-    
+
     public void addGlassPaneSelectionListener(GlassPaneSelectionListener listener) {
         if (listeners == null) {
             listeners = new ArrayList<GlassPaneSelectionListener>();
         }
         listeners.add(listener);
     }
-    
+
     private Component mouseEventTarget = null;
     private Component dragSource = null;
 
@@ -85,35 +85,43 @@ public class GlassCapturePanel extends JPanel
 
     /**
      * Forward the mouseEntered event to the underlying child container.
+     *
      * @see #mousePressed
      */
     public void mouseEntered(MouseEvent e) {
         forwardMouseEvent(e);
     }
+
     /**
      * Forward the mouseMoved event to the underlying child container.
+     *
      * @see #mousePressed
      */
     public void mouseMoved(MouseEvent e) {
         forwardMouseEvent(e);
     }
+
     /**
      * Forward the mouseExited event to the underlying child container.
+     *
      * @see #mousePressed
      */
     public void mouseExited(MouseEvent e) {
         forwardMouseEvent(e);
     }
+
     /**
      * Ignore mouseClicked events.
+     *
      * @see #mousePressed
      */
-    public void mouseClicked(MouseEvent e) {            
+    public void mouseClicked(MouseEvent e) {
         forwardMouseEvent(e);
     }
 
     /**
      * Forward the mouseReleased event to the underlying child container.
+     *
      * @see #mousePressed
      */
     public void mouseReleased(MouseEvent e) {
@@ -122,6 +130,7 @@ public class GlassCapturePanel extends JPanel
 
     /**
      * Forward the mouseDragged event to the underlying child container.
+     *
      * @see #mousePressed
      */
     public void mouseDragged(MouseEvent e) {
@@ -133,7 +142,7 @@ public class GlassCapturePanel extends JPanel
      * if necessary.
      */
     private void forwardMouseEvent(MouseEvent e) {
-        Component target = findComponentAt(mainComponent, e.getX(), e.getY());          
+        Component target = findComponentAt(mainComponent, e.getX(), e.getY());
 
         int id = e.getID();
 
@@ -142,7 +151,7 @@ public class GlassCapturePanel extends JPanel
                 return;
             }
 
-            MouseWheelEvent wheelEvent = (MouseWheelEvent)e;
+            MouseWheelEvent wheelEvent = (MouseWheelEvent) e;
 
             // do the retarget here -  not a focus event
             if (target != mouseEventTarget) {
@@ -150,27 +159,27 @@ public class GlassCapturePanel extends JPanel
             }
 
             Point p = SwingUtilities.convertPoint(mainComponent,
-                                                  e.getX(), e.getY(),
-                                                  target);
+                    e.getX(), e.getY(),
+                    target);
 
-            MouseWheelEvent retargeted = 
+            MouseWheelEvent retargeted =
                     new MouseWheelEvent(target,
-                                        id,
-                                        e.getWhen(),
-                                        wheelEvent.getModifiers() | wheelEvent.getModifiersEx(),
-                                        p.x,
-                                        p.y,
-                                        wheelEvent.getClickCount(),
-                                        wheelEvent.isPopupTrigger(),
-                                        wheelEvent.getScrollType(),
-                                        wheelEvent.getScrollAmount(),
-                                        wheelEvent.getWheelRotation());
+                            id,
+                            e.getWhen(),
+                            wheelEvent.getModifiers() | wheelEvent.getModifiersEx(),
+                            p.x,
+                            p.y,
+                            wheelEvent.getClickCount(),
+                            wheelEvent.isPopupTrigger(),
+                            wheelEvent.getScrollType(),
+                            wheelEvent.getScrollAmount(),
+                            wheelEvent.getWheelRotation());
 
             target.dispatchEvent(retargeted);
 
         }
 
-        switch(id) {
+        switch (id) {
             case MouseEvent.MOUSE_ENTERED:
 
                 if (target != mouseEventTarget) {
@@ -222,13 +231,13 @@ public class GlassCapturePanel extends JPanel
 
         // notify listeners of the selection
         if (listeners != null) {
-            
+
             for (int i = 0, n = listeners.size(); i < n; i++) {
                 listeners.get(i).glassPaneSelected(e);
             }
-            
+
         }
-        
+
     }
 
     /*
@@ -246,12 +255,12 @@ public class GlassCapturePanel extends JPanel
         int ncomponents = c.getComponentCount();
         Component component[] = c.getComponents();
 
-        for (int i = 0 ; i < ncomponents ; i++) {
+        for (int i = 0; i < ncomponents; i++) {
             Component comp = component[i];
             Point loc = comp.getLocation();
 
             if ((comp != null) && (comp.contains(x - loc.x, y - loc.y)) &&
-                //(comp.getPeer() instanceof java.awt.peer.LightweightPeer) &&
+                    //(comp.getPeer() instanceof java.awt.peer.LightweightPeer) &&
                     comp.isDisplayable() && comp.isVisible()) {
 
                 // found a component that intersects the point, see if there
@@ -261,14 +270,13 @@ public class GlassCapturePanel extends JPanel
                     Container child = (Container) comp;
                     Point childLoc = child.getLocation();
                     Component deeper = findComponentAt(child,
-                                x - childLoc.x, y - childLoc.y);
+                            x - childLoc.x, y - childLoc.y);
 
                     if (deeper != null) {
                         return deeper;
                     }
 
-                }
-                else {
+                } else {
                     return comp;
                 }
 
@@ -289,17 +297,17 @@ public class GlassCapturePanel extends JPanel
         }
 
         Point p = SwingUtilities.convertPoint(mainComponent,
-                                              e.getX(), e.getY(),
-                                              target);
+                e.getX(), e.getY(),
+                target);
 
         MouseEvent retargeted = new MouseEvent(target,
-                                        id,
-                                        e.getWhen(),
-                                        e.getModifiers() | e.getModifiersEx(),
-                                        p.x,
-                                        p.y,
-                                        e.getClickCount(),
-                                        e.isPopupTrigger());
+                id,
+                e.getWhen(),
+                e.getModifiers() | e.getModifiersEx(),
+                p.x,
+                p.y,
+                e.getClickCount(),
+                e.isPopupTrigger());
 
         target.dispatchEvent(retargeted);
     }

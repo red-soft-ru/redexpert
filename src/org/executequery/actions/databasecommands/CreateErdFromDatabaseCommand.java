@@ -20,22 +20,22 @@
 
 package org.executequery.actions.databasecommands;
 
-import java.awt.event.ActionEvent;
 import org.executequery.GUIUtilities;
-import org.underworldlabs.swing.actions.BaseCommand;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.GenerateErdPanel;
+import org.underworldlabs.swing.actions.BaseCommand;
+
+import java.awt.event.ActionEvent;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CreateErdFromDatabaseCommand extends OpenFrameCommand
-                                          implements BaseCommand {
+        implements BaseCommand {
 
     public void execute(ActionEvent e) {
-        
+
         if (!isConnected()) {
             return;
         }
@@ -44,7 +44,7 @@ public class CreateErdFromDatabaseCommand extends OpenFrameCommand
             GUIUtilities.acionableDialogToFront();
             return;
         }
-        
+
         if (!isDialogOpen(GenerateErdPanel.TITLE)) {
             try {
                 GUIUtilities.showWaitCursor();
@@ -53,15 +53,14 @@ public class CreateErdFromDatabaseCommand extends OpenFrameCommand
                 dialog.addDisplayComponentWithEmptyBorder(panel);
                 dialog.setResizable(false);
                 dialog.display();
-            }
-            finally {
+            } finally {
                 GUIUtilities.showNormalCursor();
             }
         }
 
-        
+
     }
-    
+
 }
 
 

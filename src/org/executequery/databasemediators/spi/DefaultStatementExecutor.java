@@ -20,27 +20,8 @@
 
 package org.executequery.databasemediators.spi;
 
-import java.lang.reflect.UndeclaredThrowableException;
-import java.math.BigDecimal;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.Statement;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.regex.Pattern;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.ProcedureParameterSorter;
 import org.executequery.databasemediators.QueryTypes;
@@ -54,6 +35,12 @@ import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
+
+import java.lang.reflect.UndeclaredThrowableException;
+import java.math.BigDecimal;
+import java.sql.*;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * This class handles all database query functions
@@ -70,7 +57,7 @@ import org.underworldlabs.util.MiscUtils;
  * within an editor, a dedicated connection is required
  * so as to maintain the correct rollback segment.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DefaultStatementExecutor implements StatementExecutor {
 
@@ -1237,7 +1224,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
     private void finished() throws SQLException {
 
         if (stmnt != null) {
-            if(!stmnt.isClosed())
+            if (!stmnt.isClosed())
                 stmnt.close();
         }
 

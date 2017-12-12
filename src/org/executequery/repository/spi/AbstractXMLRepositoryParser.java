@@ -20,20 +20,14 @@
 
 package org.executequery.repository.spi;
 
-import java.io.IOException;
-
 import org.executequery.Constants;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.DTDHandler;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
 import org.xml.sax.helpers.AttributesImpl;
 
+import java.io.IOException;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 abstract class AbstractXMLRepositoryParser implements XMLReader {
 
@@ -45,7 +39,7 @@ abstract class AbstractXMLRepositoryParser implements XMLReader {
     protected static final String INDENT_THREE = "\n         ";
 
     private ContentHandler handler;
-    
+
     private AttributesImpl attributes;
 
     AbstractXMLRepositoryParser() {
@@ -64,39 +58,39 @@ abstract class AbstractXMLRepositoryParser implements XMLReader {
 
         attributes().clear();
     }
-    
+
     protected final void validateHandler() throws SAXException {
 
         if (handler == null) {
-            
+
             throw new SAXException("No content handler");
         }
 
     }
 
     protected final String valueToString(int value) {
-        
+
         return String.valueOf(value);
     }
 
     protected final String valueToString(long value) {
-        
+
         return String.valueOf(value);
     }
 
     protected final String valueToString(boolean value) {
-        
+
         return String.valueOf(value);
     }
-    
-    protected final void writeXML(String name, 
-            String line, String space) throws SAXException {
-        
+
+    protected final void writeXML(String name,
+                                  String line, String space) throws SAXException {
+
         if (line == null) {
 
             line = Constants.EMPTY;
         }
-        
+
         int textLength = line.length();
 
         handler.ignorableWhitespace(space.toCharArray(), 0, space.length());
@@ -104,48 +98,48 @@ abstract class AbstractXMLRepositoryParser implements XMLReader {
         handler.characters(line.toCharArray(), 0, textLength);
         handler.endElement(NSU, name, name);
     }
-    
+
     protected final void newLineIndentOne() throws SAXException {
-        
+
         newLineForIndent(INDENT_ONE);
     }
-                                             
+
     protected final void newLineIndentTwo() throws SAXException {
-        
+
         newLineForIndent(INDENT_TWO);
     }
 
     protected final void newLineIndentThree() throws SAXException {
-        
+
         newLineForIndent(INDENT_THREE);
     }
 
     protected final void newLine() throws SAXException {
-        
+
         handler().ignorableWhitespace(NEW_LINE, 0, 1);
     }
 
     private void newLineForIndent(String indent) throws SAXException {
-        
+
         handler().ignorableWhitespace(indent.toCharArray(), 0, indent.length());
     }
-    
+
     public void setContentHandler(ContentHandler handler) {
         this.handler = handler;
     }
-    
+
     public ContentHandler getContentHandler() {
         return this.handler;
     }
-    
+
     public ErrorHandler getErrorHandler() {
         return null;
     }
-    
+
     public DTDHandler getDTDHandler() {
         return null;
     }
-    
+
     public EntityResolver getEntityResolver() {
         return null;
     }
@@ -153,22 +147,28 @@ abstract class AbstractXMLRepositoryParser implements XMLReader {
     public Object getProperty(String name) {
         return null;
     }
-    
+
     public boolean getFeature(String name) {
         return false;
     }
 
-    public void setEntityResolver(EntityResolver resolver) {}
-    
-    public void setDTDHandler(DTDHandler handler) {}
+    public void setEntityResolver(EntityResolver resolver) {
+    }
 
-    public void setProperty(String name, java.lang.Object value) {}
-    
-    public void setFeature(String name, boolean value) {}
-    
-    public void parse(String systemId) throws IOException, SAXException {}
-    
-    public void setErrorHandler(ErrorHandler handler) {}
+    public void setDTDHandler(DTDHandler handler) {
+    }
+
+    public void setProperty(String name, java.lang.Object value) {
+    }
+
+    public void setFeature(String name, boolean value) {
+    }
+
+    public void parse(String systemId) throws IOException, SAXException {
+    }
+
+    public void setErrorHandler(ErrorHandler handler) {
+    }
 
 }
 

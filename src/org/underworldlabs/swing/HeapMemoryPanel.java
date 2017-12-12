@@ -20,76 +20,73 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import org.underworldlabs.swing.plaf.UIUtils;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.BorderFactory;
-import javax.swing.DefaultBoundedRangeModel;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-
-import org.underworldlabs.swing.plaf.UIUtils;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class HeapMemoryPanel extends JPanel 
-                             implements ActionListener {
-    
-    /** timer object for heap display */
+public class HeapMemoryPanel extends JPanel
+        implements ActionListener {
+
+    /**
+     * timer object for heap display
+     */
     private java.util.Timer progTimer;
-    
-    /** progress bar model */
+
+    /**
+     * progress bar model
+     */
     private ProgressModel progressBarModel;
-    
-    /** the progress bar */
+
+    /**
+     * the progress bar
+     */
     private JProgressBar progressBar;
-    
-    /** Indicates the timer has started */
+
+    /**
+     * Indicates the timer has started
+     */
     private boolean timerStarted;
-    
+
     public HeapMemoryPanel() {
         super(new GridBagLayout());
-        
+
         try {
             jbInit();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
     }
-    
+
     private void jbInit() {
         JPanel base = new JPanel(new GridBagLayout());
-        
+
         JLabel line1 = new JLabel("Measures the size of the");
         JLabel line2 = new JLabel("Java Virtual Machine\'s object heap.");
-        
+
         progressBarModel = new ProgressModel();
         progressBar = new JProgressBar(progressBarModel);
         progressBar.setPreferredSize(new Dimension(265, 25));
         progressBar.setBorderPainted(false);
-        
+
         JPanel progressBarPanel = new JPanel(new BorderLayout());
         progressBarPanel.add(progressBar, BorderLayout.CENTER);
         progressBarPanel.setBorder(UIUtils.getDefaultLineBorder());
-        
+
         JButton gcButton = new JButton("Run Garbage Collector");
         gcButton.addActionListener(this);
-        
+
         base.setBorder(BorderFactory.createEtchedBorder());
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
-        
-        Insets ins = new Insets(0,5,3,5);
+
+        Insets ins = new Insets(0, 5, 3, 5);
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.insets = ins;
@@ -112,31 +109,31 @@ public class HeapMemoryPanel extends JPanel
         gbc.ipady = 5;
         gbc.fill = GridBagConstraints.NONE;
         base.add(gcButton, gbc);
-        
+
         startMeasure(progressBarModel, progressBar);
-        
+
         setPreferredSize(new Dimension(450, 200));
         add(base, new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                                         GridBagConstraints.SOUTHEAST,
-                                         GridBagConstraints.BOTH,
-                                         new Insets(3, 3, 3, 3), 0, 0));
+                GridBagConstraints.SOUTHEAST,
+                GridBagConstraints.BOTH,
+                new Insets(3, 3, 3, 3), 0, 0));
     }
 
     public void actionPerformed(ActionEvent e) {
-        int total = (int)Runtime.getRuntime().totalMemory();
-        int free = (int)Runtime.getRuntime().freeMemory();
+        int total = (int) Runtime.getRuntime().totalMemory();
+        int free = (int) Runtime.getRuntime().freeMemory();
         int totalUsedBefore = total - free;
-        
+
         System.gc();
-        
-        total = (int)Runtime.getRuntime().totalMemory();
-        free = (int)Runtime.getRuntime().freeMemory();
+
+        total = (int) Runtime.getRuntime().totalMemory();
+        free = (int) Runtime.getRuntime().freeMemory();
         int totalUserAfter = total - free;
-        
+
         System.err.println("Garbage collection released " +
-            ((totalUsedBefore - totalUserAfter) / 1000) + "Kb.");
+                ((totalUsedBefore - totalUserAfter) / 1000) + "Kb.");
     }
-    
+
     /**
      * Stops the timer controlling the heap bar.
      */
@@ -165,19 +162,19 @@ public class HeapMemoryPanel extends JPanel
         final String used_s = " Kb used,  ";
         final String total_s = " Kb total";
         final int thou = 1000;
-        
+
         final Runnable showProgress = new Runnable() {
             public void run() {
-                int total = (int)Runtime.getRuntime().totalMemory();
-                int free = (int)Runtime.getRuntime().freeMemory();
+                int total = (int) Runtime.getRuntime().totalMemory();
+                int free = (int) Runtime.getRuntime().freeMemory();
                 int used = total - free;
                 progModel.setMaximum(total);
                 progModel.setValue(used);
-                memProgress.setString((used/thou) + used_s + 
-                                      (total/thou) + total_s);
+                memProgress.setString((used / thou) + used_s +
+                        (total / thou) + total_s);
             }
         };
-        
+
         java.util.TimerTask updateProgress = new java.util.TimerTask() {
             public void run() {
                 java.awt.EventQueue.invokeLater(showProgress);
@@ -187,44 +184,45 @@ public class HeapMemoryPanel extends JPanel
         progTimer.schedule(updateProgress, 0, 1500);
         timerStarted = true;
     }
-    
-    
+
+
     @SuppressWarnings("unused")
     static class ProgressModel extends DefaultBoundedRangeModel {
-        
+
         private int max;
         private int min;
         private int value;
-        
-        public ProgressModel() {}
-        
+
+        public ProgressModel() {
+        }
+
         public int getMaximum() {
             return max;
         }
-        
+
         public int getMinimum() {
             return 0;
         }
-        
+
         public int getValue() {
-            return getMaximum() - (int)Runtime.getRuntime().freeMemory();
+            return getMaximum() - (int) Runtime.getRuntime().freeMemory();
         }
-        
+
         public void setMaximum(int i) {
             max = i;
         }
-        
+
         public void setMinimum(int i) {
             min = 0;
         }
-        
+
         public void setValue(int i) {
             value = i;
             fireStateChanged();
         }
-        
+
     } // ProgressModel
-    
+
 }
 
 

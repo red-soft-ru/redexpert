@@ -23,9 +23,9 @@ package org.executequery.crypto;
 public interface PasswordEncoderDecoder {
 
     String encode(String key, String value);
-    
+
     String decode(String key, String value);
-    
+
 }
 
 

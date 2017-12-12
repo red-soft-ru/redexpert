@@ -21,97 +21,101 @@
 package org.executequery.gui.prefs;
 
 
+import org.executequery.toolbars.ToolBarManager;
+import org.underworldlabs.swing.toolbar.ToolBarProperties;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.underworldlabs.swing.toolbar.ToolBarProperties;
-import org.executequery.toolbars.ToolBarManager;
-
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
-/** <p>The tool bar general properties panel.
+/**
+ * <p>The tool bar general properties panel.
  *
- *  @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PropertiesToolBarGeneral extends AbstractPropertiesBasePanel {
-   
+
     private SimplePreferencesPanel preferencesPanel;
-    
-    /** <p>Constructs a new instance. */
-    public PropertiesToolBarGeneral() {       
+
+    /**
+     * <p>Constructs a new instance.
+     */
+    public PropertiesToolBarGeneral() {
         try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
-    /** <p>Initializes the state of this instance. */
+
+    /**
+     * <p>Initializes the state of this instance.
+     */
     private void init() throws Exception {
 
-    	List<UserPreference> list = new ArrayList<UserPreference>();
+        List<UserPreference> list = new ArrayList<UserPreference>();
 
         list.add(new UserPreference(
-                    UserPreference.CATEGORY_TYPE,
-                    null,
-                    "Visibility",
-                    null));
+                UserPreference.CATEGORY_TYPE,
+                null,
+                "Visibility",
+                null));
 
         String key = ToolBarManager.FILE_TOOLS;
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "File tool bar",
-                    Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "File tool bar",
+                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
         key = ToolBarManager.EDIT_TOOLS;
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "Edit tool bar",
-                    Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Edit tool bar",
+                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
         key = ToolBarManager.SEARCH_TOOLS;
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "Search tool bar",
-                    Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Search tool bar",
+                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
         key = ToolBarManager.DATABASE_TOOLS;
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "Database tool bar",
-                    Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Database tool bar",
+                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
         key = ToolBarManager.BROWSER_TOOLS;
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "Browser tool bar",
-                    Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Browser tool bar",
+                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
         key = ToolBarManager.IMPORT_EXPORT_TOOLS;
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "Import/Export tool bar",
-                    Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "Import/Export tool bar",
+                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
         key = ToolBarManager.SYSTEM_TOOLS;
         list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "System tool bar",
-                    Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                "System tool bar",
+                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 /*
         key = ToolBarManager.WINDOW_TOOLS;
         list.add(new UserPreference(
@@ -128,8 +132,8 @@ public class PropertiesToolBarGeneral extends AbstractPropertiesBasePanel {
                     Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 */
 
-        UserPreference[] preferences = 
-                (UserPreference[])list.toArray(new UserPreference[list.size()]);
+        UserPreference[] preferences =
+                (UserPreference[]) list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
     }

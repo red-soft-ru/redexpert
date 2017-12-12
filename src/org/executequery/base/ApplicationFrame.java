@@ -20,37 +20,37 @@
 
 package org.executequery.base;
 
-import java.awt.BorderLayout;
-
-import javax.swing.JFrame;
+import javax.swing.*;
+import java.awt.*;
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ApplicationFrame extends JFrame {
 
-    /** Creates a new instance of ApplicationFrame */
+    /**
+     * Creates a new instance of ApplicationFrame
+     */
     public ApplicationFrame(String title) {
         super(title);
         init();
         setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
-    
-    /** 
-     * Initializes the frame 
+
+    /**
+     * Initializes the frame
      */
     private void init() {
         setLayout(new BorderLayout());
     }
-    
+
 }
 
 

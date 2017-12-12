@@ -22,13 +22,13 @@ package org.executequery.actions.queryeditor;
 
 import java.awt.event.ActionEvent;
 
-/** 
+/**
  * Query Editor's tool bar commit toggle execution.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class AutoCommitCommand extends AbstractQueryEditorCommand {
-    
+
     public void execute(ActionEvent e) {
 
         if (isQueryEditorTheCentralPanel()) {
@@ -37,7 +37,7 @@ public class AutoCommitCommand extends AbstractQueryEditorCommand {
         }
 
     }
-    
+
 }
 
 

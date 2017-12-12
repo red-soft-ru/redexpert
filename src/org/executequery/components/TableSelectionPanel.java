@@ -20,26 +20,9 @@
 
 package org.executequery.components;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.util.List;
-import java.util.Vector;
-
-import javax.swing.ComboBoxModel;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-
 import org.executequery.ApplicationException;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseCatalog;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseObjectFactory;
-import org.executequery.databaseobjects.DatabaseSchema;
-import org.executequery.databaseobjects.DatabaseSource;
-import org.executequery.databaseobjects.DatabaseTable;
-import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.WidgetFactory;
@@ -49,23 +32,30 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.ActionPanel;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 
-/** 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.List;
+import java.util.Vector;
+
+/**
  * Panel containing connection -> catalog/schema -> table
  * selection combo boxes.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class TableSelectionPanel extends ActionPanel
-                                 implements ItemListener {
+        implements ItemListener {
 
     private JComboBox connectionsCombo;
-    
+
     private JComboBox schemasCombo;
-    
+
     private JComboBox tablesCombo;
 
     public TableSelectionPanel() {
-        
+
         super(new GridBagLayout());
         init();
         connectionSelected();
@@ -108,7 +98,7 @@ public class TableSelectionPanel extends ActionPanel
         gbc.insets.right = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(tablesCombo, gbc);
-        
+
     }
 
     public DatabaseHost getSelectedHost() {
@@ -127,28 +117,28 @@ public class TableSelectionPanel extends ActionPanel
     }
 
     public void itemStateChanged(ItemEvent e) {
-        
+
         Object source = e.getSource();
 
         if (source == connectionsCombo) {
-            
+
             connectionSelected();
 
         } else if (source == schemasCombo) {
-            
+
             schemaSelected();
-            
+
         } else if (source == tablesCombo) {
-            
+
             tableSelected();
         }
-        
+
     }
 
     private void connectionSelected() {
 
         try {
-        
+
             DatabaseHost host = getSelectedHost();
 
             if (host != null) {
@@ -156,28 +146,28 @@ public class TableSelectionPanel extends ActionPanel
                 List<DatabaseSchema> schemas = host.getSchemas();
 
                 if (schemas != null && schemas.size() > 0) {
-                
+
                     populateModelForCombo(schemasCombo, schemas);
 
                 } else {
 
                     List<DatabaseCatalog> catalogs = host.getCatalogs();
-                    
+
                     if (catalogs != null && catalogs.size() > 0) {
-                        
+
                         populateModelForCombo(schemasCombo, catalogs);
 
                     } else {
-                        
+
                         clearCombos();
                     }
 
                 }
-                
+
                 schemaSelected();
 
             } else {
-                
+
                 clearCombos();
             }
 
@@ -190,22 +180,22 @@ public class TableSelectionPanel extends ActionPanel
     private void schemaSelected() {
 
         try {
-            
+
             DatabaseSource schema = getSelectedSource();
 
-            if (schema != null) { 
+            if (schema != null) {
 
                 List<NamedObject> tables = schema.getTables();
-    
+
                 populateModelForCombo(tablesCombo, tables);
 
             } else {
 
                 populateModelForCombo(tablesCombo, null);
             }
-            
+
         } catch (DataSourceException e) {
-            
+
             handleDataSourceException(e);
         }
 
@@ -213,7 +203,7 @@ public class TableSelectionPanel extends ActionPanel
 
     private void tableSelected() {
 
-        
+
     }
 
     private void populateModelForCombo(JComboBox comboBox, List<?> list) {
@@ -221,25 +211,25 @@ public class TableSelectionPanel extends ActionPanel
         DynamicComboBoxModel model = (DynamicComboBoxModel) comboBox.getModel();
 
         if (list != null && list.size() > 0) {
-            
+
             model.setElements(list);
             comboBox.setEnabled(true);
 
         } else {
-            
+
             model.removeAllElements();
             comboBox.setEnabled(false);
         }
-        
+
     }
 
     private void clearCombos() {
-        
+
         populateModelForCombo(schemasCombo, null);
-        
+
         populateModelForCombo(tablesCombo, null);
     }
-    
+
     private JLabel createLabel(String key) {
 
         return new JLabel(Bundles.get(getClass(), key));
@@ -258,19 +248,19 @@ public class TableSelectionPanel extends ActionPanel
     private JComboBox createConnectionsCombo() {
 
         DatabaseObjectFactory factory = databaseObjectFactory();
-        
+
         Vector<DatabaseHost> hosts = new Vector<DatabaseHost>();
-        
+
         for (DatabaseConnection connection : activeConnections()) {
 
             hosts.add(factory.createDatabaseHost(connection));
         }
 
         ComboBoxModel model = new DynamicComboBoxModel(hosts);
-        
+
         JComboBox comboBox = comboBoxForModel(model);
         comboBox.setEnabled(true);
-        
+
         return comboBox;
     }
 
@@ -294,7 +284,7 @@ public class TableSelectionPanel extends ActionPanel
     }
 
     private void handleDataSourceException(DataSourceException e) {
-        
+
         Log.error("Error during database object selection", e);
         throw new ApplicationException(e);
     }

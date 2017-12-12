@@ -22,24 +22,29 @@ package org.executequery.gui.forms;
 
 import org.executequery.localization.Bundles;
 
-import java.awt.CardLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.JPanel;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class FormObjectViewContainer extends JPanel {
 
-    /** panel map */
-    private Map<String,FormObjectView> panels;
+    /**
+     * panel map
+     */
+    private Map<String, FormObjectView> panels;
 
-    /** The view panel's layout */
+    /**
+     * The view panel's layout
+     */
     private CardLayout cardLayout;
 
-    /** The current panel view */
+    /**
+     * The current panel view
+     */
     protected FormObjectView currentView;
 
     public FormObjectViewContainer() {
@@ -47,7 +52,7 @@ public class FormObjectViewContainer extends JPanel {
         // setup the panel and layout manager and apply
         cardLayout = new CardLayout();
         setLayout(cardLayout);
-        panels = new HashMap<String,FormObjectView>();
+        panels = new HashMap<String, FormObjectView>();
     }
 
     /**
@@ -81,20 +86,20 @@ public class FormObjectViewContainer extends JPanel {
      *
      * @param panel - the component to add
      * @throws <code>IllegalArgumentException</code> if the
-     *         panel specified is not an instance of <code>JPanel</code>
+     *                                               panel specified is not an instance of <code>JPanel</code>
      */
     public void addToLayout(FormObjectView panel) {
 
         if (panel instanceof JPanel) {
 
             String title = panel.getLayoutName();
-            JPanel _panel = (JPanel)panel;
+            JPanel _panel = (JPanel) panel;
             add(_panel, title);
             cardLayout.addLayoutComponent(_panel, title);
 
             // add to the cache if its not there
             if (!panels.containsKey(title)) {
-        
+
                 panels.put(title, panel);
             }
 
@@ -137,7 +142,7 @@ public class FormObjectViewContainer extends JPanel {
         }
         return panels.containsKey(name);
     }
-    
+
     protected String bundleString(String key) {
         return Bundles.get(getClass(), key);
     }

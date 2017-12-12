@@ -31,7 +31,7 @@ public interface QueryShortcutListener extends ApplicationEventListener {
      * Notification of a shortcut removed from the list.
      */
     public void queryShortcutRemoved(QueryShortcutEvent e);
-    
+
 }
 
 

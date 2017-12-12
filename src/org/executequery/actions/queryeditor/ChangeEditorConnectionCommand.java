@@ -25,10 +25,10 @@ import java.awt.event.ActionEvent;
 /**
  * The change editor connection command.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ChangeEditorConnectionCommand extends AbstractQueryEditorCommand {
-    
+
     public void execute(ActionEvent e) {
 
         if (isQueryEditorTheCentralPanel()) {
@@ -37,7 +37,7 @@ public class ChangeEditorConnectionCommand extends AbstractQueryEditorCommand {
         }
 
     }
-    
+
 }
 
 

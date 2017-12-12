@@ -20,16 +20,6 @@
 
 package org.executequery.components.table;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.util.Map;
-
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JTree;
-import javax.swing.UIManager;
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
@@ -41,10 +31,15 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
 
+import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.awt.*;
+import java.util.Map;
+
 /**
  * Tree cell renderer or the database browser.
- * 
- * @author   Takis Diakoumis
+ *
+ * @author Takis Diakoumis
  */
 public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
@@ -218,6 +213,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 }
                 if (databaseObject.getMetaDataKey().compareToIgnoreCase("function") == 0) {
                     setIcon(icons.get(BrowserConstants.FUNCTIONS_IMAGE));
+                    break;
+                }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system view") == 0) {
+                    setIcon(icons.get(BrowserConstants.SYSTEM_VIEWS_IMAGE));
                     break;
                 }
 

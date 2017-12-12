@@ -25,7 +25,7 @@ import java.awt.event.ActionEvent;
 /**
  * Command to shift the current editor's text right
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ShiftTextLeftCommand extends AbstractQueryEditorCommand {
 
@@ -37,7 +37,7 @@ public class ShiftTextLeftCommand extends AbstractQueryEditorCommand {
         }
 
     }
-    
+
 }
 
 

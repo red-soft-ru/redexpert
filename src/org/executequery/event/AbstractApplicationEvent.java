@@ -29,10 +29,10 @@ public abstract class AbstractApplicationEvent extends EventObject {
     public AbstractApplicationEvent(Object source, String method) {
 
         super(source);
-        
+
         this.method = method;
     }
-    
+
     public String getMethod() {
 
         return method;

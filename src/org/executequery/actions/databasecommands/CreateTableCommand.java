@@ -20,20 +20,20 @@
 
 package org.executequery.actions.databasecommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
-import org.underworldlabs.swing.actions.BaseCommand;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.CreateTablePanel;
+import org.underworldlabs.swing.actions.BaseCommand;
+
+import java.awt.event.ActionEvent;
 
 /**
  * Executes the create table action creating an
  * instance of CreateTablePanel and adding this within
  * an internal frame to the desktop.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CreateTableCommand extends OpenFrameCommand
         implements BaseCommand {

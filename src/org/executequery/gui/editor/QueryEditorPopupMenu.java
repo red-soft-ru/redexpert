@@ -20,19 +20,6 @@
 
 package org.executequery.gui.editor;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.Action;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.KeyStroke;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.UserPreferencesManager;
@@ -43,8 +30,16 @@ import org.underworldlabs.swing.actions.ReflectiveAction;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.List;
+
 public class QueryEditorPopupMenu extends JPopupMenu
-                                  implements MouseListener {
+        implements MouseListener {
 
     private final QueryDelegate queryDelegate;
 
@@ -98,7 +93,7 @@ public class QueryEditorPopupMenu extends JPopupMenu
     }
 
     private JMenuItem createUseKeywordAutoComplete() {
-        
+
         JCheckBoxMenuItem menuItem = MenuItemFactory.createCheckBoxMenuItem(action());
         menuItem.setText("Auto-complete keywords");
         menuItem.setSelected(SystemProperties.getBooleanProperty(
@@ -109,7 +104,7 @@ public class QueryEditorPopupMenu extends JPopupMenu
     }
 
     private JMenuItem createUseSchemaAutoComplete() {
-        
+
         JCheckBoxMenuItem menuItem = MenuItemFactory.createCheckBoxMenuItem(action());
         menuItem.setText("Auto-complete database objects");
         menuItem.setSelected(SystemProperties.getBooleanProperty(
@@ -118,7 +113,7 @@ public class QueryEditorPopupMenu extends JPopupMenu
         executeActionButtons().add(menuItem);
         return menuItem;
     }
-    
+
     public void statementExecuting() {
 
         setExecuteActionButtonsEnabled(false);
@@ -150,18 +145,18 @@ public class QueryEditorPopupMenu extends JPopupMenu
 
         checkboxPreferenceChanged((JCheckBoxMenuItem) e.getSource(), "editor.autocomplete.keywords.on");
     }
-    
+
     public void updateAutoCompleteSchemaUsage(ActionEvent e) {
-        
+
         checkboxPreferenceChanged((JCheckBoxMenuItem) e.getSource(), "editor.autocomplete.schema.on");
     }
 
     private void checkboxPreferenceChanged(JCheckBoxMenuItem item, String key) {
-        
+
         SystemProperties.setBooleanProperty(Constants.USER_PROPERTIES_KEY, key, item.isSelected());
-        UserPreferencesManager.fireUserPreferencesChanged();        
+        UserPreferencesManager.fireUserPreferencesChanged();
     }
-    
+
     public void cancelQuery(ActionEvent e) {
 
         queryDelegate.interrupt();
@@ -173,15 +168,15 @@ public class QueryEditorPopupMenu extends JPopupMenu
     }
 
     public void toggleToolsPanelVisible(ActionEvent e) {
-        
+
         checkboxPreferenceChanged((JCheckBoxMenuItem) e.getSource(), "editor.display.toolsPanel");
     }
-    
+
     public void toggleRowNumbersVisible(ActionEvent e) {
-        
+
         checkboxPreferenceChanged((JCheckBoxMenuItem) e.getSource(), "results.table.row.numbers");
     }
-    
+
     public void removeCommentsPriorToQueryExecution(ActionEvent e) {
 
         checkboxPreferenceChanged((JCheckBoxMenuItem) e.getSource(), "editor.execute.remove.comments");
@@ -215,9 +210,14 @@ public class QueryEditorPopupMenu extends JPopupMenu
         }
     }
 
-    public void mouseClicked(MouseEvent e) {}
-    public void mouseEntered(MouseEvent e) {}
-    public void mouseExited(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
+    }
 
 
     public void removeAll() {
@@ -264,7 +264,7 @@ public class QueryEditorPopupMenu extends JPopupMenu
         executeActionButtons().add(menuItem);
         return menuItem;
     }
-    
+
     private JMenuItem createShowRowNumberHeaderMenuItem() {
         JCheckBoxMenuItem menuItem = MenuItemFactory.createCheckBoxMenuItem(action());
         menuItem.setText("Show row number header ");
@@ -274,7 +274,7 @@ public class QueryEditorPopupMenu extends JPopupMenu
         executeActionButtons().add(menuItem);
         return menuItem;
     }
-    
+
     private JMenuItem createRemoveCommentsForQueryMenuItem() {
         JCheckBoxMenuItem menuItem = MenuItemFactory.createCheckBoxMenuItem(action());
         menuItem.setText("Remove comments for execution");
@@ -343,10 +343,10 @@ public class QueryEditorPopupMenu extends JPopupMenu
     }
 
     private JMenuItem createExecuteBlockMenuItem() {
-        
+
         JMenuItem menuItem = createExecuteActionMenuItem("execute-as-block-command", "Execute as Single Statement");
         executeActionButtons().add(menuItem);
-        
+
         return menuItem;
         
         /*
@@ -412,7 +412,6 @@ public class QueryEditorPopupMenu extends JPopupMenu
 
         return menuItem;
     }
-
 
 
     private void setTransactionButtonsEnabled(boolean enable) {

@@ -20,65 +20,74 @@
 
 package org.underworldlabs.swing.plaf.smoothgradient;
 
-import java.awt.Color;
+import org.underworldlabs.swing.plaf.UIUtils;
 
-import javax.swing.UIDefaults;
+import javax.swing.*;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.MetalTheme;
-
-import org.underworldlabs.swing.plaf.UIUtils;
+import java.awt.*;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SmoothGradientLookAndFeel extends MetalLookAndFeel {
-    
-    public static final Color FRAME_BUTTON_START_ACTIVE = new Color(157,157,225);
-    public static final Color FRAME_BUTTON_STOP_ACTIVE = new Color(185,185,244);
+
+    public static final Color FRAME_BUTTON_START_ACTIVE = new Color(157, 157, 225);
+    public static final Color FRAME_BUTTON_STOP_ACTIVE = new Color(185, 185, 244);
     public static final Color FRAME_BUTTON_START_INACTIVE = new Color(223, 223, 223, 223);
     public static final Color FRAME_BUTTON_STOP_INACTIVE = new Color(243, 243, 243, 243);
-    
+
     public static final Color DARKEN_START = new Color(0, 0, 0, 0);
     public static final Color DARKEN_STOP = new Color(0, 0, 0, 64);
     public static final Color LT_DARKEN_STOP = new Color(0, 0, 0, 32);
     public static final Color BRIGHTEN_START = new Color(255, 255, 255, 0);
     public static final Color BRIGHTEN_STOP = new Color(255, 255, 255, 128);
     public static final Color LT_BRIGHTEN_STOP = new Color(255, 255, 255, 64);
-    
-    /** Client property key to disable the pseudo 3D effect. */
+
+    /**
+     * Client property key to disable the pseudo 3D effect.
+     */
     public static final String IS_3D_KEY = "Plastic.is3D";
-    
-    /** The current color theme. */
+
+    /**
+     * The current color theme.
+     */
     private static MetalTheme metalTheme;
-    
-    /** The look-global state for the 3D enabledment. */
-    private static boolean	 is3DEnabled = true;
-    
-    /** The look dependent <code>FontSizeHints</code> */
+
+    /**
+     * The look-global state for the 3D enabledment.
+     */
+    private static boolean is3DEnabled = true;
+
+    /**
+     * The look dependent <code>FontSizeHints</code>
+     */
     private static FontSizeHints fontSizeHints;
-    
-    /** The modified darker highlight for internal frame bumps */
-    private static Color internalFrameBumpsHighlight = new Color(198,198,246);
-    
-    public SmoothGradientLookAndFeel() {}
-    
+
+    /**
+     * The modified darker highlight for internal frame bumps
+     */
+    private static Color internalFrameBumpsHighlight = new Color(198, 198, 246);
+
+    public SmoothGradientLookAndFeel() {
+    }
+
     public String getID() {
         return "SmoothGradient";
     }
-    
+
     public String getName() {
         return "Smooth Gradient Look and Feel";
     }
-    
+
     public String getDescription() {
         return "The Red Expert Smooth Gradient Look and Feel - modified from " +
                 "The JGoodies Plastic Look and Feel";
     }
-    
+
     // Special Properties ***************************************************
-    
+
     /**
      * Answers the current <code>FontSizeHints</code>,
      * where look specific settings shadow the global users defaults
@@ -92,7 +101,7 @@ public class SmoothGradientLookAndFeel extends MetalLookAndFeel {
                 ? fontSizeHints
                 : Options.getGlobalFontSizeHints();
     }
-    
+
     /**
      * Sets <code>FontSizeHints</code> that shadow the global font size hints.
      *
@@ -102,17 +111,17 @@ public class SmoothGradientLookAndFeel extends MetalLookAndFeel {
     public static void setFontSizeHints(FontSizeHints newHints) {
         fontSizeHints = newHints;
     }
-    
+
     protected boolean is3DEnabled() {
         return is3DEnabled;
     }
-    
+
     public static void set3DEnabled(boolean b) {
         is3DEnabled = b;
     }
-    
+
     // Overriding Superclass Behavior ***************************************
-    
+
     /**
      * Initializes the class defaults, that is, overrides some UI delegates
      * with JGoodies Plastic implementations.
@@ -121,69 +130,69 @@ public class SmoothGradientLookAndFeel extends MetalLookAndFeel {
      */
     protected void initClassDefaults(UIDefaults table) {
         super.initClassDefaults(table);
-        
+
         String NAME_PREFIX = "org.underworldlabs.swing.plaf.smoothgradient.SmoothGradient";
-        
+
         // Overwrite some of the uiDefaults.
         Object[] uiDefaults = {
-            "ButtonUI",	NAME_PREFIX + "ButtonUI",
-            //"ToggleButtonUI",	NAME_PREFIX + "ToggleButtonUI",
-            "ComboBoxUI", NAME_PREFIX + "ComboBoxUI",
-            "ScrollBarUI", NAME_PREFIX + "ScrollBarUI",
-            //			"SpinnerUI", NAME_PREFIX + "SpinnerUI",
+                "ButtonUI", NAME_PREFIX + "ButtonUI",
+                //"ToggleButtonUI",	NAME_PREFIX + "ToggleButtonUI",
+                "ComboBoxUI", NAME_PREFIX + "ComboBoxUI",
+                "ScrollBarUI", NAME_PREFIX + "ScrollBarUI",
+                //			"SpinnerUI", NAME_PREFIX + "SpinnerUI",
 //            "TreeUI", NAME_PREFIX + "TreeUI",
 //            "RootPaneUI", NAME_PREFIX + "RootPaneUI",
-            "InternalFrameUI", NAME_PREFIX + "InternalFrameUI",
+                "InternalFrameUI", NAME_PREFIX + "InternalFrameUI",
 
         };
-        
+
         table.putDefaults(uiDefaults);
     }
-    
-    
+
+
     protected void initComponentDefaults(UIDefaults table) {
         super.initComponentDefaults(table);
-        
+
 //        Icon checkBoxMenuItemIcon		= SmoothGradientIconFactory.getCheckBoxMenuItemIcon();
-        
+
         // 	Should be active.
         int treeFontSize = table.getFont("Tree.font").getSize();
         Integer rowHeight = Integer.valueOf(treeFontSize + 6);
         Object treeExpandedIcon = SmoothGradientIconFactory.getExpandedTreeIcon();
         Object treeCollapsedIcon = SmoothGradientIconFactory.getCollapsedTreeIcon();
-        ColorUIResource gray = new ColorUIResource(UIUtils.getBrighter(Color.GRAY,0.8));
-        
+        ColorUIResource gray = new ColorUIResource(UIUtils.getBrighter(Color.GRAY, 0.8));
+
         final Object[] internalFrameIconArgs = new Object[1];
         internalFrameIconArgs[0] = Integer.valueOf(16);
-        
+
         Boolean is3D = Boolean.TRUE;
 
-        Object errorIcon       = makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/dialog-error.png");
+        Object errorIcon = makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/dialog-error.png");
         Object informationIcon = makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/dialog-information.png");
-        Object helpIcon        = makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/dialog-help.png");
-        Object warningIcon     = makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/dialog-warning.png");
+        Object helpIcon = makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/dialog-help.png");
+        Object warningIcon = makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/dialog-warning.png");
 
         Object[] defaults = {
-            //"CheckBoxMenuItem.checkIcon",	checkBoxMenuItemIcon,
-            "ComboBox.selectionForeground",	getMenuSelectedForeground(),
-            "ComboBox.selectionBackground",	getMenuSelectedBackground(),
-            "ComboBox.arrowButtonBorder",   SmoothGradientBorders.getComboBoxArrowButtonBorder(),
-            "ComboBox.editorBorder",        SmoothGradientBorders.getComboBoxEditorBorder(),
-            "Menu.arrowIcon",				SmoothGradientIconFactory.getMenuArrowIcon(),
+                //"CheckBoxMenuItem.checkIcon",	checkBoxMenuItemIcon,
+                "ComboBox.selectionForeground", getMenuSelectedForeground(),
+                "ComboBox.selectionBackground", getMenuSelectedBackground(),
+                "ComboBox.arrowButtonBorder", SmoothGradientBorders.getComboBoxArrowButtonBorder(),
+                "ComboBox.editorBorder", SmoothGradientBorders.getComboBoxEditorBorder(),
+                "Menu.arrowIcon", SmoothGradientIconFactory.getMenuArrowIcon(),
 
-            "OptionPane.errorIcon",         errorIcon,
-            "OptionPane.informationIcon",   informationIcon,
-            "OptionPane.questionIcon",      helpIcon,
-            "OptionPane.warningIcon",       warningIcon,
+                "OptionPane.errorIcon", errorIcon,
+                "OptionPane.informationIcon", informationIcon,
+                "OptionPane.questionIcon", helpIcon,
+                "OptionPane.warningIcon", warningIcon,
 
-            "FileView.computerIcon",		makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/Computer16.png"),
-            "FileView.directoryIcon",		makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/Folder16.png"),
-            "FileView.fileIcon", 			makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/File16.png"),
-            "FileView.floppyDriveIcon", 	makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/FloppyDisk16.png"),
-            "FileView.hardDriveIcon", 		makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/HardDrive16.png"),
-            "FileChooser.homeFolderIcon", 	makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/Home16.png"),
-            "FileChooser.newFolderIcon", 	makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/FolderNew16.png"),
-            "FileChooser.upFolderIcon",		makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/FolderUp16.png"),
+                "FileView.computerIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/Computer16.png"),
+                "FileView.directoryIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/Folder16.png"),
+                "FileView.fileIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/File16.png"),
+                "FileView.floppyDriveIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/FloppyDisk16.png"),
+                "FileView.hardDriveIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/HardDrive16.png"),
+                "FileChooser.homeFolderIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/Home16.png"),
+                "FileChooser.newFolderIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/FolderNew16.png"),
+                "FileChooser.upFolderIcon", makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/FolderUp16.png"),
 
 //            "FileView.computerIcon",		makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/Computer.gif"),
 //            "FileView.directoryIcon",		makeIcon(getClass(), "/org/underworldlabs/swing/plaf/smoothgradient/icons/TreeClosed.gif"),
@@ -197,34 +206,34 @@ public class SmoothGradientLookAndFeel extends MetalLookAndFeel {
 //            "Tree.closedIcon", 				makeIcon(getClass(), "icons/TreeClosed.gif"),
 //            "Tree.openIcon", 				makeIcon(getClass(), "icons/TreeOpen.gif"),
 //            "Tree.leafIcon", 				makeIcon(getClass(), "icons/TreeLeaf.gif"),
-            "Tree.expandedIcon", 			treeExpandedIcon,
-            "Tree.collapsedIcon", 			treeCollapsedIcon,
-            "Tree.line",					gray,
-            "Tree.hash",					gray,
-            "Tree.rowHeight",				rowHeight,
-            "InternalFrame.iconifyIcon", SmoothGradientIconFactory.getInternalFrameMinimizeIcon(16),
-            "InternalFrame.maximizeIcon", SmoothGradientIconFactory.getInternalFrameMaximizeIcon(16),
-            "InternalFrame.minimizeIcon", SmoothGradientIconFactory.getInternalFrameAltMaximizeIcon(16),
-            "InternalFrame.closeIcon", SmoothGradientIconFactory.getInternalFrameCloseIcon(16),
+                "Tree.expandedIcon", treeExpandedIcon,
+                "Tree.collapsedIcon", treeCollapsedIcon,
+                "Tree.line", gray,
+                "Tree.hash", gray,
+                "Tree.rowHeight", rowHeight,
+                "InternalFrame.iconifyIcon", SmoothGradientIconFactory.getInternalFrameMinimizeIcon(16),
+                "InternalFrame.maximizeIcon", SmoothGradientIconFactory.getInternalFrameMaximizeIcon(16),
+                "InternalFrame.minimizeIcon", SmoothGradientIconFactory.getInternalFrameAltMaximizeIcon(16),
+                "InternalFrame.closeIcon", SmoothGradientIconFactory.getInternalFrameCloseIcon(16),
 
-            "Button.is3DEnabled",			is3D,
-            "ComboBox.is3DEnabled",			is3D,
-            "ScrollBar.is3DEnabled",		is3D,
-            "ToggleButton.is3DEnabled",		is3D,
-                    //      PolishedScrollBarUI.MAX_BUMPS_WIDTH_KEY, Integer.valueOf(22),
-                    
-            "InternalFrame.optionDialogBorder", SmoothGradientBorders.getOptionDialogBorder(),
-            "InternalFrame.border", SmoothGradientBorders.getInternalFrameBorder()
-            /*
-            "RootPane.plainDialogBorder", SmoothGradientBorders.getDialogBorder(),
-            "RootPane.informationDialogBorder", SmoothGradientBorders.getDialogBorder(),
-            "RootPane.errorDialogBorder", SmoothGradientBorders.getErrorDialogBorder(),
-            "RootPane.colorChooserDialogBorder", SmoothGradientBorders.getQuestionDialogBorder(),
-            "RootPane.fileChooserDialogBorder", SmoothGradientBorders.getQuestionDialogBorder(),
-            "RootPane.questionDialogBorder", SmoothGradientBorders.getQuestionDialogBorder(),
-            "RootPane.warningDialogBorder", SmoothGradientBorders.getWarningDialogBorder()
-             */
-            
+                "Button.is3DEnabled", is3D,
+                "ComboBox.is3DEnabled", is3D,
+                "ScrollBar.is3DEnabled", is3D,
+                "ToggleButton.is3DEnabled", is3D,
+                //      PolishedScrollBarUI.MAX_BUMPS_WIDTH_KEY, Integer.valueOf(22),
+
+                "InternalFrame.optionDialogBorder", SmoothGradientBorders.getOptionDialogBorder(),
+                "InternalFrame.border", SmoothGradientBorders.getInternalFrameBorder()
+                /*
+                "RootPane.plainDialogBorder", SmoothGradientBorders.getDialogBorder(),
+                "RootPane.informationDialogBorder", SmoothGradientBorders.getDialogBorder(),
+                "RootPane.errorDialogBorder", SmoothGradientBorders.getErrorDialogBorder(),
+                "RootPane.colorChooserDialogBorder", SmoothGradientBorders.getQuestionDialogBorder(),
+                "RootPane.fileChooserDialogBorder", SmoothGradientBorders.getQuestionDialogBorder(),
+                "RootPane.questionDialogBorder", SmoothGradientBorders.getQuestionDialogBorder(),
+                "RootPane.warningDialogBorder", SmoothGradientBorders.getWarningDialogBorder()
+                 */
+
 //            Object errorIcon       = makeIcon(getClass(), iconPrefix + "dialog-error.png");
 //            Object informationIcon = makeIcon(getClass(), iconPrefix + "dialog-information.png");
 //            Object helpIcon        = makeIcon(getClass(), iconPrefix + "dialog-help.png");
@@ -232,19 +241,19 @@ public class SmoothGradientLookAndFeel extends MetalLookAndFeel {
 
 
         };
-        
+
         table.putDefaults(defaults);
-        
+
     }
-    
+
     /**
      * Gets the current <code>PlasticTheme</code>.
      */
     public static MetalTheme getCurrentTheme() {
         return metalTheme;
     }
-    
-    
+
+
     // Accessed by ProxyLazyValues ******************************************
     /*
     public static BorderUIResource getInternalFrameBorder() {
@@ -255,12 +264,12 @@ public class SmoothGradientLookAndFeel extends MetalLookAndFeel {
         return new BorderUIResource(PlasticBorders.getPaletteBorder());
     }
      */
-    
+
     public static Color getInternalFrameBumpsHighlight() {
         return internalFrameBumpsHighlight;
     }
-    
-    
+
+
     // Accessing Theme Colors and Fonts *************************************
 /*
  
@@ -343,7 +352,7 @@ public class SmoothGradientLookAndFeel extends MetalLookAndFeel {
     public static FontUIResource getTitleTextFont() {
         return getMyCurrentTheme().getTitleTextFont();
     }*/
-    
+
 }
 
 

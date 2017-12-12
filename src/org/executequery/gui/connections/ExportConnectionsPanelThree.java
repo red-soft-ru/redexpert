@@ -20,44 +20,35 @@
 
 package org.executequery.gui.connections;
 
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
-
 import org.underworldlabs.swing.ActionPanel;
 import org.underworldlabs.swing.ProgressBar;
 import org.underworldlabs.swing.ProgressBarFactory;
 
+import javax.swing.*;
+import java.awt.*;
+
 public class ExportConnectionsPanelThree extends ActionPanel {
-    
+
     private ProgressBar progressBar;
 
     private JTextArea textArea;
-    
+
     public ExportConnectionsPanelThree() {
 
         super(new GridBagLayout());
         init();
     }
-    
-    private void init() { 
+
+    private void init() {
 
         textArea = new JTextArea();
-        textArea.setMargin(new Insets(5,5,5,5));
+        textArea.setMargin(new Insets(5, 5, 5, 5));
         textArea.setEditable(false);
 
         progressBar = ProgressBarFactory.create(true);
         progressBar.fillWhenStopped();
         ((JComponent) progressBar).setPreferredSize(new Dimension(1, 24));
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0;
         gbc.gridx = 0;
@@ -88,7 +79,7 @@ public class ExportConnectionsPanelThree extends ActionPanel {
         gbc.insets.left = 0;
         gbc.fill = GridBagConstraints.BOTH;
         add(new JScrollPane(textArea), gbc);
-        
+
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
     }
 
@@ -101,19 +92,19 @@ public class ExportConnectionsPanelThree extends ActionPanel {
                 textArea.append("\n");
             }
         });
-        
+
     }
 
     public void stop() {
 
         progressBar.stop();
     }
- 
+
     public void start() {
 
         progressBar.start();
         append("Exporting ... ");
     }
-    
+
 }
 

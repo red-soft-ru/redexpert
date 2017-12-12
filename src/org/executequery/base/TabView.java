@@ -24,7 +24,7 @@ package org.executequery.base;
  * Possible implementation for panels added to the tab panes.
  * This allows for some cleanup to occur when the panel is removed.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface TabView {
 
@@ -45,7 +45,7 @@ public interface TabView {
     /**
      * Indicates the panel is being selected in the pane
      *
-     *  @return true if all ok to proceed, false otherwise
+     * @return true if all ok to proceed, false otherwise
      */
     boolean tabViewDeselected();
 

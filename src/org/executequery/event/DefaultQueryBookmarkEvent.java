@@ -21,15 +21,16 @@
 package org.executequery.event;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class DefaultQueryBookmarkEvent extends AbstractApplicationEvent 
-                                       implements QueryBookmarkEvent {
+public class DefaultQueryBookmarkEvent extends AbstractApplicationEvent
+        implements QueryBookmarkEvent {
 
-    /** Creates a new instance of QueryBookmarkEvent */
+    /**
+     * Creates a new instance of QueryBookmarkEvent
+     */
     public DefaultQueryBookmarkEvent(Object source, String method) {
-        
+
         super(source, method);
     }
 

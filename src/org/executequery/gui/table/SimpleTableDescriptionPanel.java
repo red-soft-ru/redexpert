@@ -22,18 +22,17 @@ package org.executequery.gui.table;
 
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SimpleTableDescriptionPanel extends TableDefinitionPanel {
-    
+
     public SimpleTableDescriptionPanel() {
         // TODO: COMPLETE ME
         super(false, null);
@@ -42,13 +41,17 @@ public class SimpleTableDescriptionPanel extends TableDefinitionPanel {
     // --------------------------------------------------
     // --- do nothing TableDefinitionPanel methods
     // --------------------------------------------------
-    public void tableChanged(int col, int row, String value) {}
-    public void addColumnLines(int row) {}
+    public void tableChanged(int col, int row, String value) {
+    }
+
+    public void addColumnLines(int row) {
+    }
+
     public String getSQLText() {
         return null;
     }
     // --------------------------------------------------
-    
+
 }
 
 

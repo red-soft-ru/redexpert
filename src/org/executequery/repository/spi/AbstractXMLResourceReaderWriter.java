@@ -20,26 +20,6 @@
 
 package org.executequery.repository.spi;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.stream.StreamResult;
-
 import org.executequery.repository.RepositoryException;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.xml.sax.InputSource;
@@ -47,9 +27,17 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.*;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.*;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 abstract class AbstractXMLResourceReaderWriter<T> {
 
@@ -57,13 +45,13 @@ abstract class AbstractXMLResourceReaderWriter<T> {
 
         InputStream input = null;
         ClassLoader cl = ActionBuilder.class.getClassLoader();
-        
+
         if (cl != null) {
 
             input = cl.getResourceAsStream(classPathResource);
-            
+
         } else {
-          
+
             input = ClassLoader.getSystemResourceAsStream(classPathResource);
         }
 
@@ -71,12 +59,12 @@ abstract class AbstractXMLResourceReaderWriter<T> {
     }
 
     protected final List<T> read(String filePath, DefaultHandler handler) throws RepositoryException {
-        
+
         File file = new File(filePath);
         if (file.exists()) {
 
             try {
-             
+
                 return read(new FileInputStream(file), handler);
 
             } catch (FileNotFoundException e) {
@@ -85,13 +73,13 @@ abstract class AbstractXMLResourceReaderWriter<T> {
             }
 
         }
-        
+
         throw new RepositoryException(
                 "Specified resource " + filePath + " does not exist");
 
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private List<T> read(InputStream in, DefaultHandler handler) throws RepositoryException {
 
         if (!(handler instanceof XMLRepositoryHandler<?>)) {
@@ -104,12 +92,12 @@ abstract class AbstractXMLResourceReaderWriter<T> {
 
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
-            
+
             SAXParser parser = factory.newSAXParser();
             parser.parse(in, handler);
 
-            return ((XMLRepositoryHandler)handler).getRepositoryItemsList();
-            
+            return ((XMLRepositoryHandler) handler).getRepositoryItemsList();
+
         } catch (ParserConfigurationException e) {
 
             handleException(e);
@@ -127,20 +115,21 @@ abstract class AbstractXMLResourceReaderWriter<T> {
             if (in != null) {
                 try {
                     in.close();
-                } catch (IOException e) {}
+                } catch (IOException e) {
+                }
             }
 
         }
 
         return null;
     }
-    
-    protected final void write(String filePath, 
-            XMLReader xmlReader, InputSource inputSource) throws RepositoryException {
-        
+
+    protected final void write(String filePath,
+                               XMLReader xmlReader, InputSource inputSource) throws RepositoryException {
+
         OutputStream os = null;
         try {
-            
+
             TransformerFactory transFactory = TransformerFactory.newInstance();
             Transformer transformer = transFactory.newTransformer();
 
@@ -151,7 +140,7 @@ abstract class AbstractXMLResourceReaderWriter<T> {
 
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.transform(source, r);
-            
+
         } catch (TransformerConfigurationException e) {
 
             handleException(e);
@@ -168,17 +157,18 @@ abstract class AbstractXMLResourceReaderWriter<T> {
 
             try {
                 if (os != null) {
-          
+
                     os.close();
                 }
-            } catch (IOException e) {}
+            } catch (IOException e) {
+            }
 
         }
-        
+
     }
 
-    private void handleException(Throwable e)  throws RepositoryException {
-        
+    private void handleException(Throwable e) throws RepositoryException {
+
         throw new RepositoryException(e);
     }
 

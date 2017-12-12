@@ -23,41 +23,48 @@ package org.executequery.gui.importexport;
 import java.io.File;
 
 /**
- * Defines a single table row with all relevant data 
+ * Defines a single table row with all relevant data
  * for the transfer - table name and path to data file.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DataTransferObject {
-    
-    /** The table name */
+
+    /**
+     * The table name
+     */
     private String tableName;
-    
-    /** The path to the data file */
+
+    /**
+     * The path to the data file
+     */
     private String fileName;
-    
+
     public DataTransferObject(String tableName) {
         this.tableName = tableName;
     }
-    
+
     public String getTableName() {
         return tableName;
     }
-    
+
     public String getFileName() {
         return fileName;
     }
-    
-    /** <p>Setter method for the file name.
-     *  @param the file name */
+
+    /**
+     * <p>Setter method for the file name.
+     *
+     * @param the file name
+     */
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
-    
+
     public boolean hasDataFile(int type) {
-        
+
         if (type == ImportExportDataProcess.IMPORT && fileName != null) {
-            
+
             File file = new File(fileName);
             return file.isFile() && file.exists();
 
@@ -67,15 +74,15 @@ public class DataTransferObject {
         }
 
     }
-    
+
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }
-    
+
     public String toString() {
         return tableName;
     }
-    
+
 }
 
 

@@ -20,32 +20,32 @@
 
 package org.executequery.repository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.browser.ConnectionsFolder;
 import org.executequery.gui.connections.ImportProcessMonitor;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class ConnectionImporter {
 
     public ConnectionImport read(String fileName, ImportProcessMonitor importProcessMonitor) {
-        
+
         Map<String, String> connectionMappings = new HashMap<>();
-                
+
         DatabaseConnectionRepository databaseConnectionRepository = databaseConnectionRepository();
         List<DatabaseConnection> connections = databaseConnectionRepository.open(fileName);
         for (DatabaseConnection databaseConnection : connections) {
-            
+
             importProcessMonitor.progress("Importing connection [ " + databaseConnection.getName() + " ]");
 
             connectionMappings.put(databaseConnection.getId(), databaseConnection.withNewId().getId());
             databaseConnectionRepository.add(databaseConnection);
         }
-        
+
         databaseConnectionRepository.save();
-        
+
         ConnectionFoldersRepository connectionFolderRepository = connectionFolderRepository();
         List<ConnectionsFolder> folders = connectionFolderRepository.open(fileName);
         for (ConnectionsFolder connectionsFolder : folders) {
@@ -58,25 +58,25 @@ public class ConnectionImporter {
 
                 List<String> folderConnectionsId = connectionsFolder.getConnectionIds();
                 for (String connectionId : folderConnectionsId) {
-                    
+
                     String newConnectionId = connectionMappings.get(connectionId);
                     if (newConnectionId != null) {
-                        
+
                         existingFolder.addConnection(newConnectionId);
                     }
 
                 }
-                
+
             } else {
-            
+
                 importProcessMonitor.progress("Importing folder [ " + name + " ]");
 
                 List<String> folderConnectionsId = connectionsFolder.getConnectionIds();
                 for (String connectionId : folderConnectionsId) {
-                    
+
                     String newConnectionId = connectionMappings.get(connectionId);
                     if (newConnectionId != null) {
-                        
+
                         connectionsFolder.addConnection(newConnectionId);
                     }
 
@@ -92,7 +92,7 @@ public class ConnectionImporter {
     }
 
     private ConnectionFoldersRepository connectionFolderRepository() {
-        
+
         return (ConnectionFoldersRepository) RepositoryCache.load(ConnectionFoldersRepository.REPOSITORY_ID);
     }
 

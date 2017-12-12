@@ -20,10 +20,6 @@
 
 package org.executequery.sql;
 
-import java.sql.Connection;
-
-import liquibase.database.Database;
-
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.DatabaseView;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
@@ -31,19 +27,19 @@ import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 public interface StatementGenerator {
 
     String END_DELIMITER = ";";
-    
+
     String columnNameValueEscaped(DatabaseTableColumn tableColumn);
-    
+
     String alterTable(String databaseName, DatabaseTable table);
-    
+
     String createTable(String database, DatabaseTable table);
-    
+
     String createTableWithConstraints(String databaseName, DatabaseTable table);
 
     String tableConstraintsAsAlter(String databaseName, DatabaseTable table);
 
     String dropTable(String databaseName, DatabaseTable table);
-    
+
     String dropTableCascade(String databaseName, DatabaseTable table);
 
     String createUniqueKeyChange(String databaseName, DatabaseTable table);

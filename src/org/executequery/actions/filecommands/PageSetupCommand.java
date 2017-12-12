@@ -20,20 +20,20 @@
 
 package org.executequery.actions.filecommands;
 
+import org.executequery.print.PrintingSupport;
+import org.underworldlabs.swing.actions.BaseCommand;
+import org.underworldlabs.swing.util.SwingWorker;
+
 import java.awt.event.ActionEvent;
 import java.awt.print.PageFormat;
 
-import org.executequery.print.PrintingSupport;
-import org.underworldlabs.swing.util.SwingWorker;
-import org.underworldlabs.swing.actions.BaseCommand;
-
-/** 
+/**
  * <p>The File | Page Setup command.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PageSetupCommand implements BaseCommand {
-    
+
     public void execute(ActionEvent e) {
 
         SwingWorker worker = new SwingWorker() {
@@ -41,20 +41,22 @@ public class PageSetupCommand implements BaseCommand {
 
                 return showDialog();
             }
-            public void finished() {}
+
+            public void finished() {
+            }
         };
 
         worker.start();
 
     }
-    
+
     private PageFormat showDialog() {
-    
-        PrintingSupport printer = new PrintingSupport(); 
-        
+
+        PrintingSupport printer = new PrintingSupport();
+
         return printer.pageSetup();
     }
-    
+
 }
 
 

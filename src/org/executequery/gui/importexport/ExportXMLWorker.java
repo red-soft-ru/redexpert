@@ -20,6 +20,22 @@
 
 package org.executequery.gui.importexport;
 
+import org.executequery.Constants;
+import org.executequery.GUIUtilities;
+import org.executequery.gui.browser.ColumnData;
+import org.executequery.log.Log;
+import org.executequery.util.Base64;
+import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.MiscUtils;
+import org.xml.sax.*;
+import org.xml.sax.helpers.AttributesImpl;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -29,50 +45,36 @@ import java.sql.Types;
 import java.text.DateFormat;
 import java.util.Vector;
 
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.stream.StreamResult;
-
-import org.executequery.Constants;
-import org.executequery.GUIUtilities;
-import org.executequery.gui.browser.ColumnData;
-import org.executequery.log.Log;
-import org.executequery.util.Base64;
-import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.util.SwingWorker;
-import org.underworldlabs.util.MiscUtils;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.DTDHandler;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.AttributesImpl;
-
-/** <p>Performs the 'work' during the export XML process.
+/**
+ * <p>Performs the 'work' during the export XML process.
  *
- *  @author   Takis Diakoumis
- *  @author Dragan Vasic
+ * @author Takis Diakoumis
+ * @author Dragan Vasic
  */
-public class ExportXMLWorker extends AbstractImportExportWorker 
-                             implements Constants {
-    
-    /** The thread worker process */
+public class ExportXMLWorker extends AbstractImportExportWorker
+        implements Constants {
+
+    /**
+     * The thread worker process
+     */
     private SwingWorker worker;
-    
-    /** The tables to be exported */
+
+    /**
+     * The tables to be exported
+     */
     private String[] tablesArray;
-    
-    /** the process result */
+
+    /**
+     * the process result
+     */
     private String processResult;
-    
-    /** the current file in process */
+
+    /**
+     * the current file in process
+     */
     private String currentExportFileName;
-    
-    /** 
+
+    /**
      * Constructs a new instance with the specified
      * parent object - an instance of <code>ImportExportXMLPanel</code>.
      *
@@ -83,20 +85,21 @@ public class ExportXMLWorker extends AbstractImportExportWorker
         super(parent, exportingDialog);
         transferData();
     }
-    
-    /** 
+
+    /**
      * Begins the transfer process setting up the <code>SwingWorker</code>
      * and creating the progress dialog.
      */
     private void transferData() {
         reset();
-        
+
         worker = new SwingWorker() {
             public Object construct() {
                 return doWork();
             }
+
             public void finished() {
-                String result = (String)get();
+                String result = (String) get();
                 setResult(result);
 
                 releaseResources(getParent().getDatabaseConnection());
@@ -109,19 +112,21 @@ public class ExportXMLWorker extends AbstractImportExportWorker
         };
         worker.start();
     }
-    
-    /** <p>Performs the actual processing for the worker. */
+
+    /**
+     * <p>Performs the actual processing for the worker.
+     */
     private Object doWork() {
 
         // the custom parser
         TableDataParser parser = null;
-        
+
         // the data input source
         TableDataInputSource tableInputSource = new TableDataInputSource();
-        
+
         // the transfer objects
         Vector<DataTransferObject> transfers = getParent().getDataFileVector();
-        
+
         // single or multiple file for mutliple transfer
         int fileFormat = parent.getMutlipleTableTransferType();
 
@@ -135,34 +140,34 @@ public class ExportXMLWorker extends AbstractImportExportWorker
 
             // the stream result
             StreamResult streamResult;
-            
+
             // the transformer factory to get the transformer
             TransformerFactory transFactory = TransformerFactory.newInstance();
-            
+
             // the actual transformer performing the process
             Transformer transformer = transFactory.newTransformer();
-            
+
             // the custom parser
             parser = new TableDataParser();
-            
+
             // the SAX source object
             SAXSource source = new SAXSource(parser, tableInputSource);
-            
+
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 
             appendProgressText("Beginning export to XML process...");
-            appendProgressText("Using connection: " + 
+            appendProgressText("Using connection: " +
                     getParent().getDatabaseConnection().getName());
-            
+
             // record the start time
             start();
 
             Log.debug("Transfers count: " + transfersCount);
-            
+
             for (int i = 0; i < transfersCount; i++) {
-                
-                DataTransferObject obj = (DataTransferObject)transfers.get(i);
-                
+
+                DataTransferObject obj = (DataTransferObject) transfers.get(i);
+
                 if (fileFormat == ImportExportDataProcess.SINGLE_FILE) {
 
                     tablesArray = parent.getSelectedTables();
@@ -171,17 +176,17 @@ public class ExportXMLWorker extends AbstractImportExportWorker
 
                     tablesArray = new String[]{obj.getTableName()};
                 }
-                
+
                 File exportFile = new File(obj.getFileName());
                 currentExportFileName = exportFile.getName();
                 os = new FileOutputStream(exportFile);
                 streamResult = new StreamResult(os);
                 transformer.transform(source, streamResult);
                 os.close();
-                
+
                 appendFileInfo(exportFile);
             }
-            
+
             if (processResult == null) {
 
                 return SUCCESS;
@@ -205,13 +210,13 @@ public class ExportXMLWorker extends AbstractImportExportWorker
                 setTableCount(transfersCount);
             }
 
-            setRecordCount(parser.getTotalRecordCount() + 
-                           parser.getErrorCount());
+            setRecordCount(parser.getTotalRecordCount() +
+                    parser.getErrorCount());
             setErrorCount(parser.getErrorCount());
             setRecordCountProcessed(parser.getTotalRecordCount());
         }
     }
-    
+
     private void logException(Throwable e) {
         if (Log.isDebugEnabled()) {
             Log.debug("Error on XML export.", e);
@@ -222,15 +227,17 @@ public class ExportXMLWorker extends AbstractImportExportWorker
         worker.interrupt();
         getParent().cancelTransfer();
     }
-    
-    public void finished() {}
-    
+
+    public void finished() {
+    }
+
     class TableDataInputSource extends InputSource {
-        
-        public TableDataInputSource() {}
-        
-        /** 
-         * Retrieves the records for the specified table as a 
+
+        public TableDataInputSource() {
+        }
+
+        /**
+         * Retrieves the records for the specified table as a
          * <code>ResultSet</code> object.
          *
          * @return the records returned from the query
@@ -238,23 +245,21 @@ public class ExportXMLWorker extends AbstractImportExportWorker
         public ResultSet getTableData(String table, Vector<?> columns) {
             try {
                 return getResultSet(table, columns);
-            } 
-            catch (DataSourceException e) {
+            } catch (DataSourceException e) {
                 outputExceptionError("Error retrieving table data", e);
                 appendProgressErrorText(outputBuffer);
-                return null;                
-            }
-            catch (SQLException e) {
+                return null;
+            } catch (SQLException e) {
                 outputExceptionError("Error retrieving table data", e);
                 return null;
             }
-            
+
         }
-        
+
         public String getUserName() {
             return getParent().getMetaDataUtility().getUser();
         }
-        
+
         public String getJDBCURL() {
             return getParent().getMetaDataUtility().getURL();
         }
@@ -266,36 +271,50 @@ public class ExportXMLWorker extends AbstractImportExportWorker
                 }
             } catch (SQLException e) {
                 System.err.println("Exception closing statement at: " +
-                                    e.getMessage());
+                        e.getMessage());
             }
         }
 
         public String getSchemaName() {
             return getParent().getSchemaName();
         }
-        
+
     } // class TableDataInputSource
-    
-    
+
+
     class TableDataParser implements XMLReader {
-        
-        /** The name space - empty string literal */
+
+        /**
+         * The name space - empty string literal
+         */
         private String nsu = EMPTY;
-        /** Attributes object */
+        /**
+         * Attributes object
+         */
         private AttributesImpl atts = new AttributesImpl();
-        /** The process content handler */
+        /**
+         * The process content handler
+         */
         private ContentHandler handler;
 
-        /** the XML format style to use */
+        /**
+         * the XML format style to use
+         */
         int xmlFormat;
-        
-        /** the total error count */
+
+        /**
+         * the total error count
+         */
         int errorCount = 0;
-        /** the total record count */
+        /**
+         * the total record count
+         */
         int totalRecordCount = 0;
-        /** the table's record count */
+        /**
+         * the table's record count
+         */
         int recordCount = 0;
-        
+
         // ---------------------------
         // --- define the XML tags ---
         // ---------------------------
@@ -309,7 +328,7 @@ public class ExportXMLWorker extends AbstractImportExportWorker
         private static final String newLine_s = "\n";
         private static final String attType1 = "CDATA";
         private static final String attType2 = "ID";
-        
+
         // -------------------------------
         // --- define the line indents ---
         // -------------------------------
@@ -323,46 +342,46 @@ public class ExportXMLWorker extends AbstractImportExportWorker
         public TableDataParser() {
             xmlFormat = getParent().getXMLFormat();
         }
-        
+
         public void parse(InputSource input) throws SAXException, IOException {
             if (!(input instanceof TableDataInputSource))
                 throw new SAXException("Parser can only accept a TableDataInputSource");
-            
-            parse((TableDataInputSource)input);
+
+            parse((TableDataInputSource) input);
         }
-        
+
         public void parse(TableDataInputSource input) throws IOException, SAXException {
-            
+
             ResultSet rs = null;
 
             try {
-                
+
                 if (handler == null) {
                     throw new SAXException("No content handler");
                 }
 
                 indent_1a = indent_1;
                 indent_2a = indent_2;
-                
+
                 // start xml document here to account
                 // for multiple table loop
                 handler.startDocument();
-                
+
                 if (xmlFormat == ImportExportDataProcess.SCHEMA_ELEMENT) {
                     atts.addAttribute(EMPTY, NAME, NAME, attType1,
-                                      input.getSchemaName());
+                            input.getSchemaName());
                     atts.addAttribute(EMPTY, schemaUrlAtt, schemaUrlAtt,
-                                      attType1, input.getJDBCURL());
+                            attType1, input.getJDBCURL());
                     atts.addAttribute(EMPTY, schemaUserAtt, schemaUserAtt,
-                                      attType1, input.getUserName());
-                    
+                            attType1, input.getUserName());
+
                     handler.startElement(nsu, rootElement, rootElement, atts);
                     handler.ignorableWhitespace(newLine_s.toCharArray(), 0, 1);
-                    
+
                     atts.removeAttribute(atts.getIndex(NAME));
                     atts.removeAttribute(atts.getIndex(schemaUrlAtt));
                     atts.removeAttribute(atts.getIndex(schemaUserAtt));
-                    
+
                 } else if (xmlFormat == ImportExportDataProcess.TABLE_ELEMENT) {
                     indent_2a = indent_1;
                     indent_1a = newLine_s;
@@ -376,10 +395,10 @@ public class ExportXMLWorker extends AbstractImportExportWorker
                 String[] cols = null;
 
                 DateFormat dateFormat = null;
-                
+
                 boolean parseDateValues = parseDateValues();
                 if (parseDateValues) {
-                    
+
                     dateFormat = createDateFormatter();
                 }
 
@@ -404,44 +423,44 @@ public class ExportXMLWorker extends AbstractImportExportWorker
 
                     recordCount = 0;
                     setProgressStatus(0);
-                    
+
                     cols = new String[columns.size()];
                     for (int i = 0; i < cols.length; i++) {
                         cols[i] = columns.elementAt(i).toString().toLowerCase();
                     }
-                    
+
                     if (xmlFormat == ImportExportDataProcess.SCHEMA_ELEMENT) {
                         handler.ignorableWhitespace(indent_1a.toCharArray(), 0,
-                                                    indent_1a.length());
+                                indent_1a.length());
                     }
-                    
+
                     atts.addAttribute(EMPTY, NAME, NAME, attType1, tablesArray[j]);
                     handler.startElement(nsu, tableNode, tableNode, atts);
                     atts.removeAttribute(atts.getIndex(NAME));
-                    
+
                     appendProgressText("Exporting data...");
-                    
+
                     while (rs.next()) {
-                        
+
                         if (Thread.interrupted()) {
                             rs.close();
                             setProgressStatus(-1);
                             throw new InterruptedException();
                         }
-                        
+
                         totalRecordCount++;
                         recordCount++;
 
                         handler.ignorableWhitespace(newLine_s.toCharArray(), 0, 1);
                         handler.ignorableWhitespace(indent_2a.toCharArray(), 0,
-                        indent_2a.length());
-                        
+                                indent_2a.length());
+
                         atts.addAttribute(EMPTY, rowAttNode, rowAttNode, attType2,
-                        Integer.toString(recordCount));
-                        
+                                Integer.toString(recordCount));
+
                         handler.startElement(nsu, rowNode, rowNode, atts);
                         atts.removeAttribute(atts.getIndex(rowAttNode));
-                        
+
                         int type = -1;
                         String value = null;
 
@@ -464,7 +483,7 @@ public class ExportXMLWorker extends AbstractImportExportWorker
                                 case Types.VARCHAR:
                                 case Types.BOOLEAN:
 
-                                    value = rs.getString(i+1);
+                                    value = rs.getString(i + 1);
                                     break;
 
                                 case Types.DATE:
@@ -486,22 +505,22 @@ public class ExportXMLWorker extends AbstractImportExportWorker
                                 case Types.BLOB:
                                 case Types.CLOB:
 
-                                    value = Base64.encodeBytes(MiscUtils.inputStreamToBytes(rs.getBinaryStream(i+1)));
+                                    value = Base64.encodeBytes(MiscUtils.inputStreamToBytes(rs.getBinaryStream(i + 1)));
                                     break;
 
                                 default:
 
-                                    value = rs.getString(i+1);
+                                    value = rs.getString(i + 1);
                                     break;
 
                             }
 
                             writeXML(cols[i], value, indent_3);
                         }
-                        
+
                         handler.ignorableWhitespace(indent_2a.toCharArray(), 0, indent_2a.length());
                         handler.endElement(nsu, rowNode, rowNode);
-                        
+
                         setProgressStatus(recordCount);
                     }
                     rs.close();
@@ -515,56 +534,52 @@ public class ExportXMLWorker extends AbstractImportExportWorker
                     outputBuffer.append(table);
                     appendProgressText(outputBuffer);
                 }
-                
+
                 if (xmlFormat == ImportExportDataProcess.SCHEMA_ELEMENT) {
                     handler.ignorableWhitespace(newLine_s.toCharArray(), 0, 1);
                     handler.endElement(nsu, rootElement, rootElement);
                 }
-                
+
                 handler.endDocument();
-                
-            }
-            catch (InterruptedException e) {
+
+            } catch (InterruptedException e) {
                 input.cancelStatement();
                 processResult = CANCELLED;
-            }
-            catch (SQLException e) {
+            } catch (SQLException e) {
                 logException(e);
                 outputExceptionError("SQL error exporting table data to file", e);
                 processResult = FAILED;
-            }
-            catch (OutOfMemoryError e) {
+            } catch (OutOfMemoryError e) {
                 processResult = FAILED;
                 outputExceptionError("Error exporting table data to file", e);
-            } 
-            catch (Exception e) {
+            } catch (Exception e) {
                 logException(e);
                 outputExceptionError("Error exporting table data to file", e);
                 processResult = FAILED;
-            }
-            finally {
+            } finally {
                 if (rs != null) {
                     try {
                         rs.close();
-                    } catch (SQLException e) {}
+                    } catch (SQLException e) {
+                    }
                 }
             }
         }
-        
+
         protected int getErrorCount() {
             return errorCount;
         }
-        
+
         protected int getTotalRecordCount() {
             return totalRecordCount;
         }
-        
+
         private void writeXML(String name, String line, String space)
-            throws SAXException {
-            
+                throws SAXException {
+
             if (line == null) {
                 line = EMPTY;
-            }            
+            }
             int textLength = line.length();
 
             handler.ignorableWhitespace(space.toCharArray(), 0, space.length());
@@ -572,51 +587,56 @@ public class ExportXMLWorker extends AbstractImportExportWorker
             handler.characters(line.toCharArray(), 0, textLength);
             handler.endElement(nsu, name, name);
         }
-        
+
         public void setContentHandler(ContentHandler handler) {
             this.handler = handler;
         }
-        
+
         public ContentHandler getContentHandler() {
             return this.handler;
         }
-        
-        public void setErrorHandler(ErrorHandler handler) {}
-        
+
+        public void setErrorHandler(ErrorHandler handler) {
+        }
+
         public ErrorHandler getErrorHandler() {
             return null;
         }
-        
+
         public void parse(String systemId) throws IOException, SAXException {
         }
-        
+
         public DTDHandler getDTDHandler() {
             return null;
         }
-        
+
         public EntityResolver getEntityResolver() {
             return null;
         }
-        
-        public void setEntityResolver(EntityResolver resolver) {}
-        
-        public void setDTDHandler(DTDHandler handler) {}
-        
+
+        public void setEntityResolver(EntityResolver resolver) {
+        }
+
+        public void setDTDHandler(DTDHandler handler) {
+        }
+
         public Object getProperty(String name) {
             return null;
         }
-        
-        public void setProperty(String name, java.lang.Object value) {}
-        
-        public void setFeature(String name, boolean value) {}
-        
+
+        public void setProperty(String name, java.lang.Object value) {
+        }
+
+        public void setFeature(String name, boolean value) {
+        }
+
         public boolean getFeature(String name) {
             return false;
         }
 
     } // class ConnectionParser
-    
-    
+
+
 }
 
 

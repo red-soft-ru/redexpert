@@ -20,33 +20,38 @@
 
 package org.executequery.gui.keywords;
 
-import java.awt.Component;
-import java.awt.Font;
-import javax.swing.Icon;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.table.TableCellRenderer;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 
+import javax.swing.*;
+import javax.swing.table.TableCellRenderer;
+import java.awt.*;
+
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class KeywordCellRenderer extends JLabel 
-                                 implements TableCellRenderer {
-    
-    /** icon for a SQL92 keyword */
+public class KeywordCellRenderer extends JLabel
+        implements TableCellRenderer {
+
+    /**
+     * icon for a SQL92 keyword
+     */
     private Icon sql92;
 
-    /** icon for a user defined keyword */
+    /**
+     * icon for a user defined keyword
+     */
     private Icon userDefined;
-    
-    /** icon for a database specific keyword */
+
+    /**
+     * icon for a database specific keyword
+     */
     private Icon databaseSpecific;
-    
-    /** Creates a new instance of KeywordCellRenderer */
+
+    /**
+     * Creates a new instance of KeywordCellRenderer
+     */
     public KeywordCellRenderer() {
         sb = new StringBuffer();
         setFont(new Font("Dialog", Font.PLAIN, 11));
@@ -54,15 +59,15 @@ public class KeywordCellRenderer extends JLabel
         userDefined = GUIUtilities.loadIcon("User16.png", true);
         databaseSpecific = GUIUtilities.loadIcon("DatabaseKeyword16.png", true);
     }
-    
+
     public Component getTableCellRendererComponent(JTable table,
                                                    Object value,
                                                    boolean isSelected,
                                                    boolean cellHasFocus,
-                                                   int row, 
+                                                   int row,
                                                    int col) {
 
-        SqlKeyword keyword = (SqlKeyword)value;
+        SqlKeyword keyword = (SqlKeyword) value;
         if (keyword.isSql92()) {
             setIcon(sql92);
         } else if (keyword.isDatabaseSpecific()) {
@@ -76,21 +81,23 @@ public class KeywordCellRenderer extends JLabel
         if (isSelected) {
             setBackground(table.getSelectionBackground());
             setForeground(table.getSelectionForeground());
-        }	else {
+        } else {
             setBackground(table.getBackground());
             setForeground(table.getForeground());
         }
 
         return this;
     }
-    
-    /** tool tip concat buffer */
+
+    /**
+     * tool tip concat buffer
+     */
     private StringBuffer sb;
-    
+
     private String buildToolTip(SqlKeyword keyword) {
         // reset
         sb.setLength(0);
-        
+
         // build the html display
         sb.append("<html>");
         sb.append(Constants.TABLE_TAG_START);
@@ -115,7 +122,7 @@ public class KeywordCellRenderer extends JLabel
         sb.append("</html>");
         return sb.toString();
     }
-    
+
     public boolean isOpaque() {
         return true;
     }

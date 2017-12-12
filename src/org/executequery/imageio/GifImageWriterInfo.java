@@ -26,7 +26,7 @@ import java.io.File;
 public class GifImageWriterInfo extends AbstractImageWriterInfo {
 
     public GifImageWriterInfo(BufferedImage buferredImage, File writeToFile) {
-        
+
         super(buferredImage, writeToFile);
     }
 

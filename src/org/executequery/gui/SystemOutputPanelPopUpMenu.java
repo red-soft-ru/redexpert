@@ -20,17 +20,15 @@
 
 package org.executequery.gui;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.JOptionPane;
-
 import org.executequery.GUIUtilities;
 import org.executequery.repository.LogRepository;
 import org.executequery.repository.RepositoryCache;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SystemOutputPanelPopUpMenu extends ReadOnlyTextPanePopUpMenu {
 

@@ -20,30 +20,28 @@
 
 package org.executequery;
 
-import javax.swing.JFrame;
-
 import org.executequery.gui.ExecuteQueryFrame;
 
+import javax.swing.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public final class Workspace {
 
     private static JFrame frame;
-    
+
     public static JFrame createFrame() {
-        
+
         if (frame == null) {
-            
+
             frame = new ExecuteQueryFrame();
         }
 
         return frame;
     }
 
-    
-    
+
 }
 
 

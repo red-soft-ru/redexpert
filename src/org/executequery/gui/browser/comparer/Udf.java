@@ -6,28 +6,28 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 
 public class Udf {
-    public Udf (Comparer comp)
-    {
-        comparer=comp;
+    public Udf(Comparer comp) {
+        comparer = comp;
         init();
     }
-    public void init()
-    {
-        firstConnection=comparer.firstConnection;
-        secondConnection=comparer.secondConnection;
+
+    public void init() {
+        firstConnection = comparer.firstConnection;
+        secondConnection = comparer.secondConnection;
         dependencies = comparer.dependencies;
     }
+
     Dependencies dependencies;
     Comparer comparer;
     StatementExecutor firstConnection;
     StatementExecutor secondConnection;
-    public   String collect = "select rdb$functions.rdb$function_name\n"
+    public String collect = "select rdb$functions.rdb$function_name\n"
             + "from rdb$functions\n"
             + "where rdb$functions.rdb$system_flag = 0";
 
-    private  String query = "";
+    private String query = "";
 
-    public  ArrayList<String> getInfo(StatementExecutor con, String udf) {
+    public ArrayList<String> getInfo(StatementExecutor con, String udf) {
         ArrayList<String> info = new ArrayList<>();
         String position = "";
 
@@ -38,7 +38,7 @@ public class Udf {
                 + "where rdb$functions.rdb$function_name = '" + udf + "'";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
+            ResultSet rs = con.execute(query, true).getResultSet();
 
             while (rs.next()) {
                 info.add(replaceCode.noNull(rs.getString(1)).trim());
@@ -68,7 +68,7 @@ public class Udf {
         String udfParameters = "";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
+            ResultSet rs = con.execute(query, true).getResultSet();
 
             while (rs.next()) {
 
@@ -131,7 +131,7 @@ public class Udf {
         udfParameters = "";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
+            ResultSet rs = con.execute(query, true).getResultSet();
 
             while (rs.next()) {
 
@@ -172,7 +172,7 @@ public class Udf {
         return info;
     }
 
-    public  String create(String udf) {
+    public String create(String udf) {
         String scriptPart = "";
 
         if (!comparer.createdObjects.contains("udf " + udf)) {
@@ -195,7 +195,7 @@ public class Udf {
         return scriptPart;
     }
 
-    public  String alter(String udf) {
+    public String alter(String udf) {
         String scriptPart = "";
 
         ArrayList<String> info = new ArrayList<String>();
@@ -218,7 +218,7 @@ public class Udf {
         return scriptPart;
     }
 
-    public  String drop(String udf) {
+    public String drop(String udf) {
         String scriptPart = "";
 
         ArrayList<ArrayList<String>> dep = new ArrayList<>();
@@ -229,7 +229,7 @@ public class Udf {
                 + "where rdb$dependencies.rdb$depended_on_name = '" + udf + "'";
 
         try {
-            ResultSet rs = secondConnection.execute(query,true).getResultSet();
+            ResultSet rs = secondConnection.execute(query, true).getResultSet();
 
             while (rs.next()) {
                 ArrayList<String> line = new ArrayList<String>();

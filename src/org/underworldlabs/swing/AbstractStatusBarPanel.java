@@ -20,39 +20,37 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Insets;
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.border.Border;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public abstract class AbstractStatusBarPanel extends JPanel {
-    
-    /** default border colour */
+
+    /**
+     * default border colour
+     */
     private static Color BORDER_COLOUR;
-    
-    /** default for for non-JLabel components */
+
+    /**
+     * default for for non-JLabel components
+     */
     private static Border COMPONENT_BORDER;
-    
-    /** components within this status bar */
+
+    /**
+     * components within this status bar
+     */
     private List<JComponent> components;
-    
+
     protected AbstractStatusBarPanel(int height) {
 
         super(new StatusBarLayout(height));
     }
-    
+
     protected void addLabel(int index, int width, boolean resizable) {
 
         if (components == null) {
@@ -72,18 +70,18 @@ public abstract class AbstractStatusBarPanel extends JPanel {
     }
 
     protected void addComponent(JComponent c, int index, int width, boolean resizable) {
-        
+
         if (components == null) {
             components = newComponentsList();
         }
-        
+
         if (COMPONENT_BORDER == null) {
             COMPONENT_BORDER = new StatusBarComponentBorder();
         }
 
         c.setBorder(COMPONENT_BORDER);
         add(c, new StatusBarLayoutConstraints(index, width, resizable));
-        
+
         components.add(index, c);
     }
 
@@ -93,19 +91,19 @@ public abstract class AbstractStatusBarPanel extends JPanel {
 
         if (object instanceof JLabel) {
 
-            return (JLabel)object;
+            return (JLabel) object;
         }
 
         return null;
     }
-    
+
     protected void setLabelText(int index, final String text) {
-        
+
         Object object = components.get(index);
-        
+
         if (object instanceof JLabel) {
-        
-            final JLabel label = (JLabel)object;
+
+            final JLabel label = (JLabel) object;
             label.setText(formatText(text));
 
             scheduleLabelRepaint(label);
@@ -123,7 +121,7 @@ public abstract class AbstractStatusBarPanel extends JPanel {
         };
         SwingUtilities.invokeLater(update);
     }
-    
+
     private String formatText(String text) {
         if (text != null && text.length() > 0) {
             char firstChar = text.charAt(0);
@@ -143,23 +141,23 @@ public abstract class AbstractStatusBarPanel extends JPanel {
         }
         return BORDER_COLOUR;
     }
-    
+
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        
+
         int height = getHeight();
         int width = getWidth();
 
         Insets insets = getInsets();
 
         g.setColor(getBorderColor());
-        g.drawRect(insets.left, 
-                   insets.top,
-                   width - insets.left - insets.right,
-                   height - insets.top - insets.bottom - 1);
-        
+        g.drawRect(insets.left,
+                insets.top,
+                width - insets.left - insets.right,
+                height - insets.top - insets.bottom - 1);
+
     }
-    
+
 }
 
 

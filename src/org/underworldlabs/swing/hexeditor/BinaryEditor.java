@@ -1,20 +1,26 @@
 package org.underworldlabs.swing.hexeditor;
 
-import org.underworldlabs.swing.hexeditor.bdoc.*;
+import org.underworldlabs.swing.hexeditor.bdoc.BinaryDocument;
+import org.underworldlabs.swing.hexeditor.bdoc.ByteSpan;
+import org.underworldlabs.swing.hexeditor.bdoc.Location;
 
 public interface BinaryEditor {
 
-  // General getters and setters
-  public BinaryDocument getDocument();
-  public void setDocument(BinaryDocument document);
+    // General getters and setters
+    public BinaryDocument getDocument();
 
-  public Location getCurrentLocation();
-  public void setCurrentLocation(Location loc);
+    public void setDocument(BinaryDocument document);
 
-  public ByteSpan getSelectionSpan();
-  public void setSelectionSpan(ByteSpan selection);
+    public Location getCurrentLocation();
 
-  // Add/remove listeners
-  public void addBinaryEditorListener( BinaryEditorListener l );
-  public void removeBinaryEditorListener( BinaryEditorListener l );
+    public void setCurrentLocation(Location loc);
+
+    public ByteSpan getSelectionSpan();
+
+    public void setSelectionSpan(ByteSpan selection);
+
+    // Add/remove listeners
+    public void addBinaryEditorListener(BinaryEditorListener l);
+
+    public void removeBinaryEditorListener(BinaryEditorListener l);
 }

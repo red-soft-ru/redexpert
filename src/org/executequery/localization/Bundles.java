@@ -20,11 +20,11 @@
 
 package org.executequery.localization;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
-
 import org.executequery.util.StringBundle;
 import org.underworldlabs.util.MiscUtils;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public final class Bundles {
 
@@ -46,7 +46,7 @@ public final class Bundles {
         for (int i = 0; i < keys.length; i++) {
 
             if (!MiscUtils.isNull(keys[i])) {
-             
+
                 commonKeys[i] = getCommon(keys[i]);
             }
 
@@ -59,7 +59,7 @@ public final class Bundles {
         for (int i = 0; i < keys.length; i++) {
 
             if (!MiscUtils.isNull(keys[i])) {
-             
+
                 keys[i] = get(clazz, keys[i]);
             }
 

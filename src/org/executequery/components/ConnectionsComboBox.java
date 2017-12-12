@@ -20,77 +20,83 @@
 
 package org.executequery.components;
 
-import java.util.List;
-
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
+
+import javax.swing.*;
+import java.util.List;
 
 /**
  * Combo box pre-populated with database connection objects.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ConnectionsComboBox extends JComboBox {
-    
-    /** the selection model */
+
+    /**
+     * the selection model
+     */
     private ConnectionSelectionModel model;
-    
-    /** Creates a new instance of ConnectionsComboBox */
+
+    /**
+     * Creates a new instance of ConnectionsComboBox
+     */
     public ConnectionsComboBox() {
         model = new ConnectionSelectionModel();
         setModel(model);
     }
-    
+
     public DatabaseConnection getSelectedConnection() {
-        return (DatabaseConnection)model.getSelectedItem();
+        return (DatabaseConnection) model.getSelectedItem();
     }
-    
+
     private static class ConnectionSelectionModel extends DefaultComboBoxModel {
-        
-        /** the selected item */
+
+        /**
+         * the selected item
+         */
         private DatabaseConnection selectedItem;
-        
-        /** the database connections vector */
+
+        /**
+         * the database connections vector
+         */
         private List<DatabaseConnection> connections;
-        
+
         public ConnectionSelectionModel() {
             connections = ConnectionManager.getActiveConnections();
         }
-        
+
         public void addElement(Object object) {
-            connections.add((DatabaseConnection)object);
-            int index = connections.indexOf((DatabaseConnection)object);
+            connections.add((DatabaseConnection) object);
+            int index = connections.indexOf((DatabaseConnection) object);
             fireContentsChanged(this, index, index);
         }
-        
+
         public void setSelectedItem(Object object) {
-            selectedItem = (DatabaseConnection)object;
+            selectedItem = (DatabaseConnection) object;
         }
-        
+
         public void removeAllElements() {
             connections.clear();
             selectedItem = null;
         }
-        
+
         public void removeElement(Object object) {
-            connections.remove((DatabaseConnection)object);
+            connections.remove((DatabaseConnection) object);
         }
-        
+
         public Object getSelectedItem() {
             return selectedItem;
         }
-        
+
         public int getIndexOf(Object object) {
-            return connections.indexOf((DatabaseConnection)object);
+            return connections.indexOf((DatabaseConnection) object);
         }
-        
+
         public int getSize() {
             return connections.size();
         }
     }
-    
+
 }
 

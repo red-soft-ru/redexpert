@@ -23,17 +23,16 @@ package org.executequery.repository;
 import org.underworldlabs.util.MiscUtils;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public final class QueryBookmark {
 
     private String id;
-    
+
     private int order;
-    
+
     private String name;
-    
+
     private String query;
 
     public String getName() {
@@ -59,7 +58,7 @@ public final class QueryBookmark {
     public void setOrder(int order) {
         this.order = order;
     }
-    
+
     public String toString() {
         return getName();
     }
@@ -75,7 +74,7 @@ public final class QueryBookmark {
     public boolean isNew() {
         return (MiscUtils.isNull(getId()));
     }
-    
+
 }
 
 

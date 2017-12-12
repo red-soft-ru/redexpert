@@ -20,32 +20,12 @@
 
 package org.executequery.sql.spi;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-
 import liquibase.CatalogAndSchema;
 import liquibase.change.AddColumnConfig;
 import liquibase.change.Change;
 import liquibase.change.ColumnConfig;
 import liquibase.change.ConstraintsConfig;
-import liquibase.change.core.AddColumnChange;
-import liquibase.change.core.AddDefaultValueChange;
-import liquibase.change.core.AddForeignKeyConstraintChange;
-import liquibase.change.core.AddNotNullConstraintChange;
-import liquibase.change.core.AddPrimaryKeyChange;
-import liquibase.change.core.AddUniqueConstraintChange;
-import liquibase.change.core.CreateTableChange;
-import liquibase.change.core.DropColumnChange;
-import liquibase.change.core.DropForeignKeyConstraintChange;
-import liquibase.change.core.DropNotNullConstraintChange;
-import liquibase.change.core.DropPrimaryKeyChange;
-import liquibase.change.core.DropTableChange;
-import liquibase.change.core.DropUniqueConstraintChange;
-import liquibase.change.core.ModifyDataTypeChange;
-import liquibase.change.core.RenameColumnChange;
+import liquibase.change.core.*;
 import liquibase.database.Database;
 import liquibase.database.core.FirebirdDatabase;
 import liquibase.database.jvm.JdbcConnection;
@@ -55,7 +35,6 @@ import liquibase.sql.Sql;
 import liquibase.sqlgenerator.SqlGeneratorFactory;
 import liquibase.statement.SqlStatement;
 import liquibase.structure.core.ForeignKeyConstraintType;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.ApplicationException;
 import org.executequery.databaseobjects.DatabaseColumn;
@@ -66,6 +45,12 @@ import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.log.Log;
 import org.executequery.sql.StatementGenerator;
+
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LiquibaseStatementGenerator implements StatementGenerator {
 

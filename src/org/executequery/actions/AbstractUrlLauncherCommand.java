@@ -20,36 +20,35 @@
 
 package org.executequery.actions;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.ApplicationException;
 import org.executequery.GUIUtilities;
 import org.executequery.actions.othercommands.AbstractBaseCommand;
 import org.executequery.util.SystemWebBrowserLauncher;
 
-/** 
- *
- * @author   Takis Diakoumis
+import java.awt.event.ActionEvent;
+
+/**
+ * @author Takis Diakoumis
  */
 public abstract class AbstractUrlLauncherCommand extends AbstractBaseCommand {
 
     public void execute(ActionEvent e) {
-        
+
         try {
-            
+
             new SystemWebBrowserLauncher().launch(url());
-            
+
         } catch (ApplicationException applicationException) {
-            
+
             GUIUtilities.displayExceptionErrorDialog(
                     bundledString("error.launchBrowser") +
-                    applicationException.getMessage(), applicationException);
-            
+                            applicationException.getMessage(), applicationException);
+
         }
 
     }
 
     public abstract String url();
-    
+
 }
 

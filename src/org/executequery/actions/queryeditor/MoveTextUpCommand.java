@@ -25,7 +25,7 @@ import java.awt.event.ActionEvent;
 /**
  * Command to move the current cursor row or selected text in the editor
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class MoveTextUpCommand extends AbstractQueryEditorCommand {
 

@@ -23,15 +23,14 @@ package org.executequery.repository;
 import org.underworldlabs.util.MiscUtils;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public final class EditorSQLShortcut {
 
     private String id;
-    
+
     private String shortcut;
-    
+
     private String query;
 
     public String getShortcut() {
@@ -65,7 +64,7 @@ public final class EditorSQLShortcut {
     public boolean isNew() {
         return (MiscUtils.isNull(getId()));
     }
-    
+
 }
 
 

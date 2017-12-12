@@ -20,12 +20,6 @@
 
 package org.executequery.gui.text;
 
-import java.io.File;
-import java.io.IOException;
-
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileFilter;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
@@ -38,51 +32,63 @@ import org.underworldlabs.swing.FileSelector;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import java.io.File;
+import java.io.IOException;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class TextFileWriter {
-    
-    /** The text to save */
+
+    /**
+     * The text to save
+     */
     private String text;
-    
-    /** The path to save to */
+
+    /**
+     * The path to save to
+     */
     private String path;
-    
-    /** The selected file */
+
+    /**
+     * The selected file
+     */
     private File selectedFile;
 
     private boolean showDialog;
-    
-    /** 
-     *  Creates a new object with the specified text to be saved to the specified path.
+
+    /**
+     * Creates a new object with the specified text to be saved to the specified path.
      *
-     *  @param the text to be saved
-     *  @param the path to save to
+     * @param the text to be saved
+     * @param the path to save to
      */
     public TextFileWriter(String text, File selectedFile) {
         this.text = text;
         this.selectedFile = selectedFile;
     }
-    
-    /** <p>Creates a new object with the specified text to
-     *  be saved to the specified path.
+
+    /**
+     * <p>Creates a new object with the specified text to
+     * be saved to the specified path.
      *
-     *  @param the text to be saved
-     *  @param the path to save to
+     * @param the text to be saved
+     * @param the path to save to
      */
     public TextFileWriter(String text, String path) {
         this.text = text;
         this.path = path;
     }
 
-    /** <p>Creates a new object with the specified text to
-     *  be saved to the specified path.
+    /**
+     * <p>Creates a new object with the specified text to
+     * be saved to the specified path.
      *
-     *  @param the text to be saved
-     *  @param the path to save to
-     *  @param whether to force show the save dialog or not
+     * @param the     text to be saved
+     * @param the     path to save to
+     * @param whether to force show the save dialog or not
      */
     public TextFileWriter(String text, String path, boolean showDialog) {
         this.text = text;
@@ -90,32 +96,33 @@ public class TextFileWriter {
         this.showDialog = showDialog;
     }
 
-    /** <p>Creates a new object with the specified text to save.
-     *  A call to <code>write()</code> will open a file selector
-     *  dialog to retrieve the path.
+    /**
+     * <p>Creates a new object with the specified text to save.
+     * A call to <code>write()</code> will open a file selector
+     * dialog to retrieve the path.
      *
-     *  @param the text to be saved
+     * @param the text to be saved
      */
     public TextFileWriter(String text) {
         this.text = text;
     }
-    
+
     /**
      * Writes the content to file.
      *
      * @return the result of the process:
-     *         SaveFunction.SAVE_INVALID,
-     *         SaveFunction.SAVE_FAILED,
-     *         SaveFunction.SAVE_CANCELLED,
-     *         SaveFunction.SAVE_COMPLETE
+     * SaveFunction.SAVE_INVALID,
+     * SaveFunction.SAVE_FAILED,
+     * SaveFunction.SAVE_CANCELLED,
+     * SaveFunction.SAVE_COMPLETE
      */
     private int writeFile() {
-        
+
         if (path == null || path.length() == 0) {
-            
+
             return SaveFunction.SAVE_INVALID;
         }
-        
+
         try {
 
             SimpleTextFileWriter writer = new SimpleTextFileWriter();
@@ -128,12 +135,12 @@ public class TextFileWriter {
         } catch (IOException e) {
 
             String message = String.format("An error occurred saving to file." +
-            		"\n\nThe system returned:\n%s", e.getMessage());
+                    "\n\nThe system returned:\n%s", e.getMessage());
 
             GUIUtilities.displayExceptionErrorDialog(message, e);
-            
+
             path = null;
-            
+
             return SaveFunction.SAVE_FAILED;
 
         }
@@ -167,7 +174,7 @@ public class TextFileWriter {
             }
 
             if (message != null) {
-                
+
                 setStatusText(message);
             }
 
@@ -180,67 +187,67 @@ public class TextFileWriter {
         }
 
     }
-    
+
     private void setStatusText(String message) {
-        
+
         GUIUtilities.getStatusBar().setSecondLabelText(message);
     }
-    
+
     public File getSavedFile() {
-        
+
         return new File(path);
     }
-    
+
     private boolean showSaveDialog() {
-        
+
         if (!showDialog && !MiscUtils.isNull(path)) { // already have path
 
             return true;
         }
-        
-        FileSelector textFiles = new FileSelector(new String[] {"txt"}, "Text files");
-        FileSelector sqlFiles = new FileSelector(new String[] {"sql"}, "SQL files");
+
+        FileSelector textFiles = new FileSelector(new String[]{"txt"}, "Text files");
+        FileSelector sqlFiles = new FileSelector(new String[]{"sql"}, "SQL files");
 
         FileChooserDialog fileChooser = new FileChooserDialog();
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.addChoosableFileFilter(textFiles);
         fileChooser.addChoosableFileFilter(sqlFiles);
-        
+
         if (selectedFile != null) {
-            
+
             fileChooser.setSelectedFile(selectedFile);
         }
 
         int result = fileChooser.showSaveDialog(GUIUtilities.getInFocusDialogOrWindow());
         if (result == JFileChooser.CANCEL_OPTION) {
-            
+
             return false;
         }
-        
+
         if (fileChooser.getSelectedFile() != null) {
-            
+
             path = fileChooser.getSelectedFile().getAbsolutePath();
         }
-        
+
         String extension = null;
         FileFilter filter = fileChooser.getFileFilter();
         if (filter == textFiles) {
-            
+
             extension = ".txt";
 
         } else if (filter == sqlFiles) {
-          
+
             extension = ".sql";
         }
 
         if (StringUtils.isNotBlank(extension) && !path.endsWith(extension)) {
-            
+
             path += extension;
         }
-        
+
         return true;
     }
-    
+
     private void fireFileOpened(String file) {
 
         EventMediator.fireEvent(

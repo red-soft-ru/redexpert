@@ -6,29 +6,29 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 
 public class Exception {
-    public Exception (Comparer comp)
-    {
-        comparer=comp;
+    public Exception(Comparer comp) {
+        comparer = comp;
         init();
     }
-    public void init()
-    {
-        firstConnection=comparer.firstConnection;
-        secondConnection=comparer.secondConnection;
+
+    public void init() {
+        firstConnection = comparer.firstConnection;
+        secondConnection = comparer.secondConnection;
         dependencies = comparer.dependencies;
     }
+
     Dependencies dependencies;
     Comparer comparer;
     StatementExecutor firstConnection;
     StatementExecutor secondConnection;
 
-    public   String collect = "select rdb$exceptions.rdb$exception_name\n"
+    public String collect = "select rdb$exceptions.rdb$exception_name\n"
             + "from rdb$exceptions\n"
             + "where rdb$exceptions.rdb$system_flag = 0";
 
-    private  String query = "";
+    private String query = "";
 
-    public  String getInfo(StatementExecutor con, String exc) {
+    public String getInfo(StatementExecutor con, String exc) {
         String info = "";
 
         // получить текст исключения
@@ -37,7 +37,7 @@ public class Exception {
                 + "where rdb$exceptions.rdb$exception_name = '" + exc + "'";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
+            ResultSet rs = con.execute(query, true).getResultSet();
 
             while (rs.next()) {
 
@@ -54,7 +54,7 @@ public class Exception {
         return info;
     }
 
-    public  String create(String exception) {
+    public String create(String exception) {
         String scriptPart = "";
 
         if (!comparer.createdObjects.contains("exception " + exception)) {
@@ -66,7 +66,7 @@ public class Exception {
         return scriptPart;
     }
 
-    public  String alter(String exception) {
+    public String alter(String exception) {
         String scriptPart = "";
 
         String info = "";
@@ -82,7 +82,7 @@ public class Exception {
         return scriptPart;
     }
 
-    public  String drop(String exception) {
+    public String drop(String exception) {
         String scriptPart = "";
         ArrayList<ArrayList<String>> dep = new ArrayList<>();
 
@@ -92,7 +92,7 @@ public class Exception {
                 + "where rdb$dependencies.rdb$depended_on_name = '" + exception + "'";
 
         try {
-            ResultSet rs = secondConnection.execute(query,true).getResultSet();
+            ResultSet rs = secondConnection.execute(query, true).getResultSet();
 
             while (rs.next()) {
                 ArrayList<String> line = new ArrayList<String>();

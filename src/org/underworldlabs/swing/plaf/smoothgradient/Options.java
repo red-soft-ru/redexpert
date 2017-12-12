@@ -20,28 +20,28 @@
 
 package org.underworldlabs.swing.plaf.smoothgradient;
 
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
+
 //import java.util.HashMap;
 //import java.util.Map;
-
-import javax.swing.UIManager;
 
 //import com.jgoodies.clearlook.ClearLookMode;
 
 /* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the 
- *           release of version 3.0.0beta1 has meant a 
+ * CVS NOTE: Changes to the CVS repository prior to the
+ *           release of version 3.0.0beta1 has meant a
  *           resetting of CVS revision numbers.
  * ----------------------------------------------------------
  */
 
 /**
- * Provides access to several optional properties for the 
+ * Provides access to several optional properties for the
  * JGoodies L&amp;Fs, either by a key to the <code>UIDefaults</code> table
  * or via a method or both.
- * 
- * @author  Karsten Lentzsch
- * @author   Takis Diakoumis
+ *
+ * @author Karsten Lentzsch
+ * @author Takis Diakoumis
  */
 
 public final class Options {
@@ -68,7 +68,7 @@ public final class Options {
 */
     /**
      * Holds a <code>Map</code> that enables the look&amp;feel replacement
-     * mechanism to replace one look by another. 
+     * mechanism to replace one look by another.
      * Maps the original class names to their replacement class names.
      */ /*
     private static final Map LAF_REPLACEMENTS;
@@ -85,21 +85,21 @@ public final class Options {
         
     public static final String CONTROL_FONT_KEY = 
         "jgoodies.controlFont";
-*/        
-    public static final String FONT_SIZE_HINTS_KEY = 
-        "jgoodies.fontSizeHints";
-        
+*/
+    public static final String FONT_SIZE_HINTS_KEY =
+            "jgoodies.fontSizeHints";
+
     public static final String USE_SYSTEM_FONTS_KEY =
-        "swing.useSystemFontSettings";
-        
+            "swing.useSystemFontSettings";
+
     public static final String USE_SYSTEM_FONTS_APP_KEY =
-        "Application.useSystemFontSettings";
+            "Application.useSystemFontSettings";
 
 
     // Optional Global User Properties **************************************
 
     public static final String DEFAULT_ICON_SIZE_KEY =
-        "jgoodies.defaultIconSize";
+            "jgoodies.defaultIconSize";
 /*        
     public static final String USE_NARROW_BUTTONS_KEY =
         "jgoodies.useNarrowButtons";
@@ -131,70 +131,70 @@ public final class Options {
 
     // Optional Client Properties *******************************************
 
-    /** 
-     * Hint that the button margin should be narrow.                   
+    /**
+     * Hint that the button margin should be narrow.
      */
     public static final String IS_NARROW_KEY = "jgoodies.isNarrow";
 
-    /** 
-     * Hint that the scroll pane border should be etched.				
+    /**
+     * Hint that the scroll pane border should be etched.
      */
     public static final String IS_ETCHED_KEY = "jgoodies.isEtched";
 
-    /** 
+    /**
      * Hint for the style: Single or Both, see <code>HeaderStyle</code>.
      */
     public static final String HEADER_STYLE_KEY = "jgoodies.headerStyle";
 
-    /** 
-     * Hint that the menu items in the menu have no icons.				
+    /**
+     * Hint that the menu items in the menu have no icons.
      */
     public static final String NO_ICONS_KEY = "jgoodies.noIcons";
 
-    /** 
+    /**
      * A client property key for <code>JTree</code>s.
      * Used with the angled and none style values.
      */
-    public static final String TREE_LINE_STYLE_KEY = 
-        "JTree.lineStyle";
+    public static final String TREE_LINE_STYLE_KEY =
+            "JTree.lineStyle";
 
-    /** 
+    /**
      * A client property value for <code>JTree</code>s
      * that indicates that lines shall be drawn.
      */
-    public static final String TREE_LINE_STYLE_ANGLED_VALUE = 
-        "Angled";
+    public static final String TREE_LINE_STYLE_ANGLED_VALUE =
+            "Angled";
 
-    /** 
+    /**
      * A client property value for <code>JTree</code>s
      * that indicates that lines shall be hidden.
      */
-    public static final String TREE_LINE_STYLE_NONE_VALUE   = 
-        "None";
+    public static final String TREE_LINE_STYLE_NONE_VALUE =
+            "None";
 
-    /** 
-     * A client property key for <code>JTabbedPane</code>s that indicates 
-     * that no content border shall be painted. 
+    /**
+     * A client property key for <code>JTabbedPane</code>s that indicates
+     * that no content border shall be painted.
      * Supported by the Plastic look and feel family.
      * This effect will be achieved also if the EMBEDDED property is true.
      */
     public static final String NO_CONTENT_BORDER_KEY =
-        "jgoodies.noContentBorder";
+            "jgoodies.noContentBorder";
 
     /**
      * A client property key for <code>JTabbedPane</code>s that indicates
-     * that tabs are painted with a special embedded appearance. 
+     * that tabs are painted with a special embedded appearance.
      * Supported by the Plastic look and feel family.
      * This effect will be achieved also if the EMBEDDED property is true.
      */
-    public static final String EMBEDDED_TABS_KEY = 
-        "jgoodies.embeddedTabs";
+    public static final String EMBEDDED_TABS_KEY =
+            "jgoodies.embeddedTabs";
 
 
     // Private ****************************************************************
 
-    private static final Dimension DEFAULT_ICON_SIZE = 
-        new Dimension(20, 20);
+    private static final Dimension DEFAULT_ICON_SIZE =
+            new Dimension(20, 20);
 
     // Override default constructor;
     private Options() {
@@ -204,7 +204,7 @@ public final class Options {
     // Accessing Options ******************************************************
 
     /**
-     * Answers whether a hint is set in the <code>UIManager</code> 
+     * Answers whether a hint is set in the <code>UIManager</code>
      * that indicates, that a look&amp;feel may use the native system fonts.
      */
     public static boolean getUseSystemFonts() {
@@ -212,7 +212,7 @@ public final class Options {
     }
 
     /**
-     * Sets a value in the <code>UIManager</code> to indicate, 
+     * Sets a value in the <code>UIManager</code> to indicate,
      * that a look&amp;feel may use the native system fonts.
      */
     public static void setUseSystemFonts(boolean useSystemFonts) {
@@ -235,7 +235,7 @@ public final class Options {
     }
 
     /**
-     * Answers the global <code>FontSizeHints</code>, can be overriden 
+     * Answers the global <code>FontSizeHints</code>, can be overriden
      * by look specific setting.
      */
     public static FontSizeHints getGlobalFontSizeHints() {
@@ -262,10 +262,10 @@ public final class Options {
      * Checks and answers if we shall use narrow button margins of 4 pixels.
      * Sun's L&F implementations use a much wider button margin of 14 pixels, 
      * which leads to good button minimum width in the typical case.<p>
-     * 
+     *
      * Using narrow button margins can potentially cause compatibility issues, 
      * so this feature must be switched on programmatically.<p>
-     * 
+     *
      * If you use narrow margin, you should take care of minimum button width,
      * either by the layout management or appropriate ButtonUI minimum widths.
      */ /*
@@ -276,7 +276,7 @@ public final class Options {
 */
     /**
      * Sets if we use narrow or standard button margins.
-     * 
+     *
      * @see #getUseNarrowButtons
      */ /*
     public static void setUseNarrowButtons(boolean b) {
@@ -287,7 +287,7 @@ public final class Options {
      * Detects and answers if we shall use icons in <code>JTabbedPanes</code>.
      * This has an effect only inside NetBeans, it will answer 'yes'
      * if we are outside NetBeans.<p>
-     * 
+     *
      * If the user has set a system property, we log a message 
      * about the choosen style.
      */ /*
@@ -317,7 +317,7 @@ public final class Options {
 */
     /**
      * Enables or disables the use of icons in <code>JTabbedPane</code>s.
-     * 
+     *
      * @see #isTabIconsEnabled
      */ /*
     public static void setTabIconsEnabled(boolean b) {

@@ -25,7 +25,7 @@ import java.awt.event.ActionEvent;
 /**
  * Command to comment the current or selected line(s).
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CommentLineCommand extends AbstractQueryEditorCommand {
 
@@ -37,7 +37,7 @@ public class CommentLineCommand extends AbstractQueryEditorCommand {
         }
 
     }
-    
+
 }
 
 

@@ -20,6 +20,18 @@
 
 package org.executequery.gui.importexport;
 
+import org.executequery.Constants;
+import org.executequery.GUIUtilities;
+import org.executequery.gui.browser.ColumnData;
+import org.executequery.log.Log;
+import org.underworldlabs.swing.util.SwingWorker;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.helpers.DefaultHandler;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.sql.BatchUpdateException;
@@ -31,104 +43,122 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
-import org.executequery.Constants;
-import org.executequery.GUIUtilities;
-import org.executequery.datasource.ConnectionDataSource;
-import org.executequery.datasource.ConnectionManager;
-import org.executequery.gui.browser.ColumnData;
-import org.executequery.log.Log;
-import org.underworldlabs.swing.util.SwingWorker;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.helpers.DefaultHandler;
-
-/** 
+/**
  * Performs the 'work' during the import XML process.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class ImportXMLWorker extends AbstractImportExportWorker 
-                             implements Constants {
-    
-    /** The worker object performing the process */
+public class ImportXMLWorker extends AbstractImportExportWorker
+        implements Constants {
+
+    /**
+     * The worker object performing the process
+     */
     private SwingWorker worker;
 
-    /** The tables to be imported */
+    /**
+     * The tables to be imported
+     */
     private String[] tablesArray;
-    
-    /** The type of table transfer - single/multiple */
+
+    /**
+     * The type of table transfer - single/multiple
+     */
     private int tableTransferType;
-    
-    /** the current file in process */
+
+    /**
+     * the current file in process
+     */
     private String currentImportFileName;
-    
-    /** the process result */
+
+    /**
+     * the process result
+     */
     private String processResult;
 
-    /** the specified rollback size */
+    /**
+     * the specified rollback size
+     */
     private int rollbackSize = 0;
 
-    /** Whether we are halting on errors */
+    /**
+     * Whether we are halting on errors
+     */
     private boolean haltOnError;
 
-    /** the number of errors */
+    /**
+     * the number of errors
+     */
     private int errorCount = 0;
 
     // ---------------------------------------
     // table specific counters
 
-    /** the record count per table */
+    /**
+     * the record count per table
+     */
     private int tableRowCount = 0;
-    
-    /** the table commit count */
+
+    /**
+     * the table commit count
+     */
     private int tableCommitCount = 0;
 
-    /** the table statement result */
+    /**
+     * the table statement result
+     */
     private int tableInsertCount = 0;
 
     // ---------------------------------------
     // total import process counters
 
-    /** the current commit block size */
+    /**
+     * the current commit block size
+     */
     private int commitCount = 0;
 
-    /** the total record count */
+    /**
+     * the total record count
+     */
     private int totalRecordCount = 0;
 
-    /** the total number of records inserted */
+    /**
+     * the total number of records inserted
+     */
     private int totalInsertCount = 0;
 
-    /** the file format - single or multiple */
+    /**
+     * the file format - single or multiple
+     */
     private int fileFormat;
-    
+
     // ---------------------------------------
 
-    /** SAX exception message not to be printed */
+    /**
+     * SAX exception message not to be printed
+     */
     private static final String SAX_NO_PRINT_EXCEPTION = "SAX_NO_PRINT";
-    
+
     public ImportXMLWorker(ImportExportDataProcess parent,
                            ImportExportProgressPanel progress) {
         super(parent, progress);
         tableTransferType = parent.getTableTransferType();
         transferData();
     }
-    
+
     // initialise results Hashtable and start the worker
     private void transferData() {
 
         setIndeterminateProgress(true);
         reset();
-        
+
         worker = new SwingWorker() {
             public Object construct() {
                 return doWork();
             }
+
             public void finished() {
-                String result = (String)get();
+                String result = (String) get();
                 setResult(result);
                 printResults();
                 setProgressStatus(-1);
@@ -139,56 +169,55 @@ public class ImportXMLWorker extends AbstractImportExportWorker
         };
         worker.start();
     }
-    
+
     // retrieve the file, create the parser and start parseing
     private Object doWork() {
-        
+
         haltOnError = (getParent().getOnError() == ImportExportDataProcess.STOP_TRANSFER);
 
         // the XML handler
         ImportXMLHandler handler = null;
-        
+
         // the parser factory for the process
         SAXParserFactory factory = null;
-        
+
         // the parser for the process
         SAXParser parser = null;
-        
+
         // the transfer objects
         Vector<DataTransferObject> transfers = getParent().getDataFileVector();
-        
+
         // single or multiple file for mutliple transfer
         fileFormat = getParent().getMutlipleTableTransferType();
 
         // the rollback/commit block size
         rollbackSize = getParent().getRollbackSize();
-        
+
         appendProgressText("Beginning import from XML process...");
-        appendProgressText("Using connection: " + 
+        appendProgressText("Using connection: " +
                 getParent().getDatabaseConnection().getName());
 
         // record the start time
         start();
 
-        try {           
+        try {
             // the size of the transfer
             int transfers_size = transfers.size();
 
             // the current import file
             File importFile = null;
-            
+
             factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
             handler = new ImportXMLHandler();
-            
+
             for (int i = 0; i < transfers_size; i++) {
 
-                DataTransferObject obj = (DataTransferObject)transfers.get(i);
+                DataTransferObject obj = (DataTransferObject) transfers.get(i);
 
                 if (fileFormat == ImportExportDataProcess.SINGLE_FILE) {
                     tablesArray = getParent().getSelectedTables();
-                }
-                else {
+                } else {
                     tablesArray = new String[]{obj.getTableName()};
                 }
 
@@ -212,8 +241,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                         conn.commit();
                         totalInsertCount += commitCount;
                     }
-                }
-                catch (SQLException e) {
+                } catch (SQLException e) {
                     errorCount++;
                     processResult = FAILED;
                     outputExceptionError("Error committing last transaction block", e);
@@ -224,9 +252,8 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                 return SUCCESS;
             }
             return processResult;
-            
-        }
-        catch (SAXException e) {
+
+        } catch (SAXException e) {
             if (e.getMessage() != SAX_NO_PRINT_EXCEPTION) {
                 outputExceptionError("Error parsing XML data file", e);
             }
@@ -234,20 +261,18 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                 return FAILED;
             }
             return processResult;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logException(e);
             outputExceptionError("Error importing table data from XML", e);
             return FAILED;
-        } 
-        finally {
+        } finally {
             finish();
             setRecordCount(totalRecordCount);
             setRecordCountProcessed(totalInsertCount);
             setErrorCount(errorCount);
         }
     }
-   
+
     private void logException(Throwable e) {
         if (Log.isDebugEnabled()) {
             Log.debug("Error on XML import.", e);
@@ -255,32 +280,33 @@ public class ImportXMLWorker extends AbstractImportExportWorker
     }
 
     /**
-     * Cancels the current in-process transfer. 
+     * Cancels the current in-process transfer.
      */
     public void cancelTransfer() {
         worker.interrupt();
         getParent().cancelTransfer();
     }
-    
-    /** 
-     * Indicates that the process has completed. 
+
+    /**
+     * Indicates that the process has completed.
      */
-    public void finished() {}
-    
+    public void finished() {
+    }
+
     private String lastTableResultsPrinted;
-    
+
     /**
      * Prints the table specific execution results to the output buffer.
      */
-    private void printTableResult(int tableRowCount, 
-                                  int tableInsertCount, 
+    private void printTableResult(int tableRowCount,
+                                  int tableInsertCount,
                                   String tableName) {
-        
+
         if (tableName.equals(lastTableResultsPrinted)) {
 
             return;
         }
-        
+
         // update the progress display
         outputBuffer.append("Records processed: ");
         outputBuffer.append(tableRowCount);
@@ -295,69 +321,69 @@ public class ImportXMLWorker extends AbstractImportExportWorker
     class ImportXMLHandler extends DefaultHandler {
 
         private CharArrayWriter contents = new CharArrayWriter();
-        
+
         // ----------------------------------
         // --- reuseable string constants ---
         // ----------------------------------
         private static final char COMMA = ',';
-        
+
         // the date format
         private String dateFormatString;
 
         // the current table's column meta-data
         private Vector<ColumnData> columns;
-        
+
         // the ongoing rollback count
         private int rollbackCount = 0;
-        
+
         // the table tag name
         private String tableTag;
-        
+
         // the table tag attribute
         private String tableAtt;
-        
+
         // the table identifier as shown in the XML file
         private String tableIdentifier;
-        
+
         // the row identifier as shown in the XML file
         private String rowIdentifier;
-        
+
         // denotes the first tag pass
         private boolean firstPass;
-        
+
         //  whether the row tag has been encountered
         private boolean rowTagFound;
-        
+
         // denotes the second tag pass
         private int passes;
-        
+
         // the date format for DATE type fields
         private SimpleDateFormat df;
-        
+
         // whether the table name is an attribute
         private boolean hasTableAttribute;
-        
+
         // whether this is to be run as a batch process
         private boolean isBatch;
-        
+
         // whether we are parsing date formats
         private boolean parsingDates;
-        
+
         private boolean importThisTable;
 
         // the table currently being processed
         private String tableName;
 
         // columns in the import file to be ignored
-        private Map<String,String> ignoredColumns;
-        
+        private Map<String, String> ignoredColumns;
+
         // currently bound variables in the prepared statement
-        private Map<String,String> boundVariables;
+        private Map<String, String> boundVariables;
 
         public ImportXMLHandler() {
             dateFormatString = getParent().getDateFormat();
             isBatch = getParent().runAsBatchProcess();
-            
+
             if (dateFormatString != null) {
                 if (dateFormatString.length() == 0) {
                     dateFormatString = null;
@@ -366,17 +392,17 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                 }
             }
 
-            ImportExportXMLPanel _parent = (ImportExportXMLPanel)getParent();
+            ImportExportXMLPanel _parent = (ImportExportXMLPanel) getParent();
             hasTableAttribute = _parent.hasTableNameAsAttribute();
             tableIdentifier = _parent.getTableIdentifier();
             rowIdentifier = _parent.getRowIdentifier();
             parsingDates = _parent.parseDateValues();
-            
+
             if (hasTableAttribute) {
                 tableTag = (tableIdentifier.substring(0,
-                                tableIdentifier.indexOf(COMMA))).trim();
+                        tableIdentifier.indexOf(COMMA))).trim();
                 tableAtt = (tableIdentifier.substring(
-                                tableIdentifier.indexOf(COMMA)+1)).trim();
+                        tableIdentifier.indexOf(COMMA) + 1)).trim();
             } else {
                 tableTag = tableIdentifier;
             }
@@ -394,20 +420,20 @@ public class ImportXMLWorker extends AbstractImportExportWorker
             lastStartElement = null;
             columns = null;
         }
-        
+
         private String lastStartElement;
 
-        public void startElement(String nameSpaceURI, 
+        public void startElement(String nameSpaceURI,
                                  String localName,
-                                 String qName, 
+                                 String qName,
                                  Attributes attrs) throws SAXException {
 
             contents.reset();
             passes++;
 
             lastStartElement = localName;
-            
-            if (tableTransferType == ImportExportDataProcess.MULTIPLE_TABLE 
+
+            if (tableTransferType == ImportExportDataProcess.MULTIPLE_TABLE
                     && !hasTableAttribute) {
 
                 if (fileFormat == ImportExportDataProcess.SINGLE_FILE) {
@@ -426,20 +452,18 @@ public class ImportXMLWorker extends AbstractImportExportWorker
             if (localName.equalsIgnoreCase(tableTag)) {
                 firstPass = false;
                 rowTagFound = false;
-                
+
                 if (hasTableAttribute) {
                     if (attrs.getIndex(tableAtt) == -1) {
                         appendProgressErrorText(
-                            "The attribute name entered was not found.\nProcess is exiting.");
+                                "The attribute name entered was not found.\nProcess is exiting.");
                         processResult = FAILED;
                         getParent().cancelTransfer();
                         throw new SAXException(SAX_NO_PRINT_EXCEPTION);
-                    } 
-                    else {
+                    } else {
                         tableName = attrs.getValue(tableAtt);
                     }
-                }
-                else {
+                } else {
                     tableName = tableTag;
                 }
 
@@ -448,8 +472,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                 if (tableName == null) {
                     importThisTable = false;
                     return;
-                }
-                else {
+                } else {
                     importThisTable = true;
                 }
 
@@ -461,19 +484,20 @@ public class ImportXMLWorker extends AbstractImportExportWorker
 
                 // increment the table count
                 tableCount++;
-                
+
                 // retrieve the columns to be imported (or all)
                 try {
                     columns = getColumns(tableName);
-                } catch (SQLException e) {}
+                } catch (SQLException e) {
+                }
                 int columnCount = columns.size();
-                
+
                 if (parsingDates && dateFormatString == null) {
                     // check for a date data type
                     boolean hasDateField = false;
                     for (int j = 0; j < columnCount; j++) {
                         if (dateFormatString == null) {
-                            ColumnData cd = (ColumnData)columns.get(j);
+                            ColumnData cd = (ColumnData) columns.get(j);
 
                             int sqlType = cd.getSQLType();
                             if (sqlType == Types.DATE || sqlType == Types.TIME ||
@@ -483,7 +507,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                             }
 
                         }
-                    }                
+                    }
 
                     if (hasDateField && dateFormatString == null) {
                         dateFormatString = verifyDate();
@@ -492,7 +516,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                 }
 
                 if (boundVariables == null) {
-                    boundVariables = new HashMap<String,String>();
+                    boundVariables = new HashMap<String, String>();
                 } else {
                     boundVariables.clear();
                 }
@@ -516,7 +540,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
             // encountered a table tag, display error
             else if (rowTagFound && firstPass) {
                 appendProgressErrorText(
-                    "The table tag name entered was not found.\nProcess is exiting.");
+                        "The table tag name entered was not found.\nProcess is exiting.");
                 processResult = FAILED;
                 getParent().cancelTransfer();
                 throw new SAXException(SAX_NO_PRINT_EXCEPTION);
@@ -526,36 +550,36 @@ public class ImportXMLWorker extends AbstractImportExportWorker
             // table elements have been found, show error
             else if (passes > 2 && !rowTagFound) {
                 appendProgressErrorText(
-                    "The XML tag elements for a table row as entered were not found.\n" +
-                        "Process is exiting.");
+                        "The XML tag elements for a table row as entered were not found.\n" +
+                                "Process is exiting.");
                 processResult = FAILED;
                 getParent().cancelTransfer();
                 throw new SAXException(SAX_NO_PRINT_EXCEPTION);
             }
-            
+
         }
 
         private boolean cancelled;
-        
+
         public void endElement(String nameSpaceURI, String localName,
                                String qName) throws SAXException {
-            
+
             if (!importThisTable) {
                 return;
             }
-            
+
             try {
-            
+
                 if (Thread.interrupted()) {
                     cancelled = true;
-                    printTableResult(tableRowCount, 
+                    printTableResult(tableRowCount,
                             tableCommitCount, tableName);
                     throw new InterruptedException();
                 }
 
                 // check if we have reached the end of a row tag
                 if (localName.equalsIgnoreCase(rowIdentifier)) {
-                    
+
                     // check all variables are bound - insert NULL otherwise
                     for (int i = 0, n = columns.size(); i < n; i++) {
                         ColumnData columnData = columns.get(i);
@@ -573,8 +597,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
 
                         if (isBatch) { // add to batch if in batch mode
                             prepStmnt.addBatch();
-                        }
-                        else { // just execute otherwise
+                        } else { // just execute otherwise
                             int result = prepStmnt.executeUpdate();
                             tableInsertCount += result;
                             commitCount += result;
@@ -591,10 +614,9 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                             totalInsertCount += commitCount;
                             tableCommitCount = tableInsertCount;
                             rollbackCount = 0;
-                            commitCount = 0;                            
-                        }                        
-                    }
-                    catch (SQLException e) {
+                            commitCount = 0;
+                        }
+                    } catch (SQLException e) {
                         logException(e);
                         errorCount++;
                         processResult = FAILED;
@@ -603,31 +625,30 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                         if (haltOnError) {
                             throw new SAXException(SAX_NO_PRINT_EXCEPTION);
                         }
-                        
+
                     }
                     return;
                 }
                 // check if we have reached the end of a table tag
                 else if (localName.equalsIgnoreCase(tableTag)) {
-                    
+
                     if (isBatch) {
                         int[] batchResult = null;
-                        
+
                         try {
                             batchResult = getBatchResult(prepStmnt.executeBatch());
                             int result = batchResult[0];
                             tableInsertCount += result;
                             commitCount += result;
                             tableCommitCount = tableInsertCount;
-                        }
-                        catch (BatchUpdateException e) {
+                        } catch (BatchUpdateException e) {
                             logException(e);
                             batchResult = getBatchResult(e.getUpdateCounts());
                             errorCount += batchResult[1];
 
                             outputBuffer.append("An error occured during the batch process: ");
                             outputBuffer.append(e.getMessage());
-                            
+
                             SQLException _e = e.getNextException();
                             while (_e != null) {
                                 outputBuffer.append("\nNext Exception: ");
@@ -640,20 +661,20 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                             outputBuffer.append(batchResult.length);
                             appendProgressErrorText(outputBuffer);
                             processResult = FAILED;
-                            
+
                             if (haltOnError) {
                                 throw new SAXException(SAX_NO_PRINT_EXCEPTION);
                             }
 
                         }
-                        
+
                         if (tableRowCount != tableInsertCount) {
                             conn.rollback();
                             if (haltOnError) {
                                 getParent().cancelTransfer();
                                 processResult = FAILED;
                                 throw new SAXException("Failed to import all rows");
-                            }                            
+                            }
                         }
 
                     }
@@ -671,7 +692,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                     }
 
                     // log some record progress figures
-                    printTableResult(tableRowCount, 
+                    printTableResult(tableRowCount,
                             tableInsertCount, tableName);
 
                     return;
@@ -683,12 +704,12 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                 if (!isSelectedColumn(localName)) {
                     return;
                 }
-                
+
                 int index = getColumnIndex(localName);
                 if (index == -1) {
 
                     if (localName.equals(lastStartElement)) {
-                        
+
                         // if it doesn't exist in the insert table
                         // check the column selections in cases of 
                         // single file import
@@ -704,8 +725,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                         appendProgressErrorText(outputBuffer);
                         processResult = FAILED;
                         throw new SAXException(SAX_NO_PRINT_EXCEPTION);
-                    }
-                    else {
+                    } else {
                         return;
                     }
                 }
@@ -715,25 +735,23 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                     value = null;
                 }
 
-                ColumnData cd = (ColumnData)columns.get(index);
+                ColumnData cd = (ColumnData) columns.get(index);
                 try {
                     setValue(value,
-                            (index+1), 
+                            (index + 1),
                             cd.getSQLType(),
                             false,
                             df);
                     // this is now a bound variable
                     boundVariables.put(cd.getColumnName(), VARIABLE_BOUND);
-                }
-                catch (ParseException e) {
+                } catch (ParseException e) {
                     errorCount++;
                     processResult = FAILED;
                     outputBuffer.append("Error parsing date value for column ");
                     outputBuffer.append(cd.getColumnName());
                     outputExceptionError(null, e);
                     throw new SAXException(SAX_NO_PRINT_EXCEPTION);
-                }
-                catch (NumberFormatException e) {
+                } catch (NumberFormatException e) {
                     errorCount++;
                     processResult = FAILED;
                     outputBuffer.append("Error parsing value for column ");
@@ -742,8 +760,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                     throw new SAXException(SAX_NO_PRINT_EXCEPTION);
                 }
 
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
 
                 if (processResult != FAILED) {
                     processResult = CANCELLED;
@@ -764,13 +781,12 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                 errorCount++;
                 processResult = FAILED;
                 outputExceptionError("Error importing table data from XML", e);
-                
+
                 if (haltOnError) {
                     throw new SAXException(SAX_NO_PRINT_EXCEPTION);
                 }
 
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 logException(e);
                 errorCount++;
                 processResult = FAILED;
@@ -788,17 +804,17 @@ public class ImportXMLWorker extends AbstractImportExportWorker
             int insert = 0;
             int success = 0;
             int errors = 0;
-            
+
             // annoying as becoming a little db specific,
             // but Oracle returns -2 on a successful batch
             // execution using prepared statement (-3 on error)
-            
+
             if (isOracle()) {
-                
+
                 success = -2;
 
             } else {
-                
+
                 success = 1;
             }
 
@@ -823,7 +839,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
          */
         private boolean isSelectedColumn(String columnName) {
             // return true for a multi-table import
-            if (parent.getTableTransferType() == 
+            if (parent.getTableTransferType() ==
                     ImportExportDataProcess.MULTIPLE_TABLE) {
                 return true;
             }
@@ -834,19 +850,19 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                     return false;
                 }
             }
-         
+
             // check the selected columns
             Vector<ColumnData> columns = parent.getSelectedColumns();
             for (int i = 0, n = columns.size(); i < n; i++) {
-                
+
                 if (columns.get(i).getColumnName().equalsIgnoreCase(columnName)) {
                     return true;
                 }
-                
+
             }
             return false;
         }
-        
+
         /**
          * Evaluates whether the specified column is not a selected
          * import column in cases of a single file import where
@@ -856,7 +872,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
          */
         private boolean isIgnoredColumn(String columnName) {
             // return false for a multi-table import
-            if (parent.getTableTransferType() == 
+            if (parent.getTableTransferType() ==
                     ImportExportDataProcess.MULTIPLE_TABLE) {
                 return false;
             }
@@ -867,25 +883,25 @@ public class ImportXMLWorker extends AbstractImportExportWorker
                     return true;
                 }
             }
-            
+
             // check the selected columns
             Vector<ColumnData> columns = parent.getSelectedColumns();
             for (int i = 0, n = columns.size(); i < n; i++) {
-                
+
                 if (columns.get(i).getColumnName().equalsIgnoreCase(columnName)) {
                     return false;
                 }
-                
+
             }
 
             // otherwise add to the ignored list
             if (ignoredColumns == null) {
-                ignoredColumns = new HashMap<String,String>();
+                ignoredColumns = new HashMap<String, String>();
             }
             ignoredColumns.put(columnName, columnName);
             return true;
         }
-        
+
         private int getColumnIndex(String columnName) {
             for (int i = 0, n = columns.size(); i < n; i++) {
                 ColumnData cd = columns.get(i);
@@ -896,7 +912,7 @@ public class ImportXMLWorker extends AbstractImportExportWorker
             }
             return -1;
         }
-        
+
         private String findTableName(String name) {
             for (int i = 0; i < tablesArray.length; i++) {
                 if (name.equalsIgnoreCase(tablesArray[i])) {
@@ -909,18 +925,18 @@ public class ImportXMLWorker extends AbstractImportExportWorker
         public void characters(char[] data, int start, int length) {
             contents.write(data, start, length);
         }
-        
+
         public void ignorableWhitespace(char[] data, int start, int length) {
             characters(data, start, length);
         }
-        
+
         public void error(SAXParseException spe) throws SAXException {
             throw new SAXException(spe.getMessage());
         }
-        
+
     } // ImportXMLHandler
-    
-    
+
+
 }
 
 

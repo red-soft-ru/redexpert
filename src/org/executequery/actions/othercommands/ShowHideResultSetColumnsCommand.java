@@ -20,40 +20,38 @@
 
 package org.executequery.actions.othercommands;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.JPanel;
-
 import org.executequery.GUIUtilities;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.editor.VisibleResultSetColumnsDialog;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
 
-/** 
- *
- * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+
+/**
+ * @author Takis Diakoumis
+ * @version $Revision$
+ * @date $Date$
  */
 public class ShowHideResultSetColumnsCommand extends AbstractBaseCommand {
-    
+
     public void execute(ActionEvent e) {
 
         JPanel panel = GUIUtilities.getSelectedCentralPane();
         if (panel instanceof QueryEditor) {
-        
+
             QueryEditor editor = (QueryEditor) panel;
             if (editor.isResultSetSelected()) {
-            
+
                 new VisibleResultSetColumnsDialog(editor.getResultSetTable());
-            
+
             } else {
-              
+
                 GUIUtilities.displayErrorMessage(bundledString("errorMessage"));
             }
 
-        }        
+        }
     }
-    
+
 }
 

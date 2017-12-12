@@ -20,14 +20,13 @@
 
 package org.executequery.event;
 
-/** 
- *
- * @author   Takis Diakoumis
+/**
+ * @author Takis Diakoumis
  */
 public interface UserPreferenceListener extends ApplicationEventListener {
 
     void preferencesChanged(UserPreferenceEvent event);
-    
+
 }
 
 

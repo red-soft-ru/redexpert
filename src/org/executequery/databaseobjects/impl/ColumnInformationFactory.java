@@ -24,9 +24,9 @@ import java.sql.Types;
 
 public class ColumnInformationFactory {
 
-    public ColumnInformation build(String tableName, String columnName, String typeName, 
-            int typeInt, int size, int scale, boolean isNotNullable) {
-        
+    public ColumnInformation build(String tableName, String columnName, String typeName,
+                                   int typeInt, int size, int scale, boolean isNotNullable) {
+
         String typeString = typeName == null ? "" : typeName;
 
         StringBuilder buffer = new StringBuilder();
@@ -41,11 +41,11 @@ public class ColumnInformationFactory {
 
         if (!typeString.matches("\\b\\D+\\d+\\b") ||
                 (typeInt == Types.CHAR ||
-                 typeInt == Types.VARCHAR ||
-                 typeInt == Types.LONGVARCHAR)) {
+                        typeInt == Types.VARCHAR ||
+                        typeInt == Types.LONGVARCHAR)) {
 
-            if (size > 0 && !isDateDataType(typeInt) 
-                                    && !isNonPrecisionType(typeInt)) {
+            if (size > 0 && !isDateDataType(typeInt)
+                    && !isNonPrecisionType(typeInt)) {
 
                 buffer.append("(");
                 buffer.append(size);
@@ -61,7 +61,7 @@ public class ColumnInformationFactory {
         }
 
         if (isNotNullable) {
-            
+
             buffer.append(" NOT NULL");
         }
 
@@ -71,7 +71,7 @@ public class ColumnInformationFactory {
 
         return new ColumnInformation(columnName, buffer.toString());
     }
-    
+
     private boolean isNonPrecisionType(int typeInt) {
 
         return typeInt == Types.BIT;
@@ -84,7 +84,7 @@ public class ColumnInformationFactory {
                 typeInt == Types.TIMESTAMP;
     }
 
-    
+
 }
 
 

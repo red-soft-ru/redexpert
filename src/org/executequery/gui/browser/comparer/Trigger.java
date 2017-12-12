@@ -6,29 +6,29 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 
 public class Trigger {
-    public Trigger(Comparer comp)
-    {
-        comparer=comp;
+    public Trigger(Comparer comp) {
+        comparer = comp;
         init();
     }
-    public void init()
-    {
-        firstConnection=comparer.firstConnection;
-        secondConnection=comparer.secondConnection;
+
+    public void init() {
+        firstConnection = comparer.firstConnection;
+        secondConnection = comparer.secondConnection;
         dependencies = comparer.dependencies;
     }
+
     Dependencies dependencies;
     Comparer comparer;
     StatementExecutor firstConnection;
     StatementExecutor secondConnection;
-    public   String collect = "select rdb$triggers.rdb$trigger_name\n"
+    public String collect = "select rdb$triggers.rdb$trigger_name\n"
             + "from rdb$triggers\n"
             + "where rdb$triggers.rdb$system_flag = 0";
 
-    public  ArrayList<String> triggerToFill = new ArrayList<String>();
-    private  String query = "";
+    public ArrayList<String> triggerToFill = new ArrayList<String>();
+    private String query = "";
 
-    public  ArrayList<String> getInfo(StatementExecutor con, String trigger) {
+    public ArrayList<String> getInfo(StatementExecutor con, String trigger) {
         ArrayList<String> info = new ArrayList<>();
 
         query = "select rdb$triggers.rdb$relation_name,\n"
@@ -42,8 +42,8 @@ public class Trigger {
                 + "where rdb$triggers.rdb$trigger_name = '" + trigger + "'";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
-            
+            ResultSet rs = con.execute(query, true).getResultSet();
+
 
             while (rs.next()) {
                 if (!replaceCode.noNull(rs.getString(4)).equals("")) {
@@ -71,7 +71,7 @@ public class Trigger {
         return info;
     }
 
-    public  String create(String trigger) {
+    public String create(String trigger) {
         String scriptPart = "";
 
         ArrayList<ArrayList<String>> depTables = new ArrayList<>();
@@ -86,7 +86,7 @@ public class Trigger {
         //+ "and rdb$dependencies.rdb$field_name is not null";
 
         try {
-            ResultSet rs = firstConnection.execute(query,true).getResultSet();
+            ResultSet rs = firstConnection.execute(query, true).getResultSet();
 
             while (rs.next()) {
                 ArrayList<String> line = new ArrayList<String>();
@@ -134,7 +134,7 @@ public class Trigger {
         return scriptPart;
     }
 
-    public  String alter(String trigger) {
+    public String alter(String trigger) {
         String scriptPart = "";
 
         ArrayList<String> info = new ArrayList<String>();
@@ -163,7 +163,7 @@ public class Trigger {
         return scriptPart;
     }
 
-    public  String drop(String trigger) {
+    public String drop(String trigger) {
         String scriptPart = "";
 
         scriptPart = "drop trigger \"" + trigger + "\";\n\n";

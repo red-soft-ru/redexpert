@@ -25,7 +25,7 @@ import java.awt.event.ActionEvent;
 /**
  * Command to duplicate the current cursor row or selection text in the editor
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DuplicateTextDownCommand extends AbstractQueryEditorCommand {
 

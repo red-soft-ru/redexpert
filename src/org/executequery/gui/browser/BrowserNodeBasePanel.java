@@ -20,38 +20,31 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.print.Printable;
-
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
-
 import org.executequery.gui.SortableColumnsTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.swing.DisabledField;
 
+import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
+import java.awt.*;
+import java.awt.print.Printable;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 abstract class BrowserNodeBasePanel extends AbstractFormObjectViewPanel {
-    
+
     private DisabledField typeField;
-    
+
     private JPanel tablePanel;
-    
+
     private JScrollPane scroller;
-    
+
     private JTable table;
-    
+
     private DisabledField rowCountField;
 
     BrowserNodeBasePanel(String labelText) {
@@ -65,16 +58,16 @@ abstract class BrowserNodeBasePanel extends AbstractFormObjectViewPanel {
 
             e.printStackTrace();
         }
-        
+
     }
-    
+
     private void init(String labelText) throws Exception {
-        
+
         JPanel base = new JPanel(new GridBagLayout());
         typeField = new DisabledField();
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
-        Insets ins = new Insets(10,5,5,5);
+        Insets ins = new Insets(10, 5, 5, 5);
         gbc.insets = ins;
         gbc.anchor = GridBagConstraints.NORTHEAST;
         gbc.fill = GridBagConstraints.BOTH;
@@ -87,18 +80,18 @@ abstract class BrowserNodeBasePanel extends AbstractFormObjectViewPanel {
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         base.add(typeField, gbc);
-        
+
         table = createTable();
 
         tablePanel = new JPanel(new GridBagLayout());
         scroller = new JScrollPane(table,
-                                   JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                                   JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
         tablePanel.add(scroller, getPanelConstraints());
-        
+
         rowCountField = new DisabledField();
-        
+
         // add to the panel
         gbc.insets.top = 10;
         gbc.weighty = 1.0;
@@ -107,7 +100,7 @@ abstract class BrowserNodeBasePanel extends AbstractFormObjectViewPanel {
         gbc.insets.left = 5;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         base.add(tablePanel, gbc);
-        
+
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.weighty = 0;
@@ -120,15 +113,15 @@ abstract class BrowserNodeBasePanel extends AbstractFormObjectViewPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.SOUTHWEST;
         base.add(creatCountPanel(), gbc);
-        
+
         setContentPanel(base);
     }
 
     private JPanel creatCountPanel() {
-        
+
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        
+
         gbc.gridy = 0;
         gbc.gridx = 0;
         gbc.weighty = 1.0;
@@ -149,11 +142,11 @@ abstract class BrowserNodeBasePanel extends AbstractFormObjectViewPanel {
 
         return panel;
     }
-    
+
     private JTable createTable() {
-        
+
         final JTable table = new SortableColumnsTable() {
-            
+
             @Override
             public void setModel(final TableModel dataModel) {
                 dataModel.addTableModelListener(new TableModelListener() {
@@ -163,7 +156,7 @@ abstract class BrowserNodeBasePanel extends AbstractFormObjectViewPanel {
                 });
                 super.setModel(dataModel);
             }
-            
+
         };
 
         table.getTableHeader().setReorderingAllowed(false);
@@ -171,24 +164,24 @@ abstract class BrowserNodeBasePanel extends AbstractFormObjectViewPanel {
 
         return table;
     }
-    
+
     protected final DisabledField typeField() {
-        
+
         return typeField;
     }
 
     protected final JPanel tablePanel() {
-        
+
         return tablePanel;
     }
 
     protected final JScrollPane scroller() {
-        
+
         return scroller;
     }
 
     protected final JTable table() {
-        
+
         return table;
     }
 
@@ -204,14 +197,20 @@ abstract class BrowserNodeBasePanel extends AbstractFormObjectViewPanel {
     }
 
     protected abstract String getPrintablePrefixLabel();
-    
-    /** Performs some cleanup and releases resources before being closed. */
+
+    /**
+     * Performs some cleanup and releases resources before being closed.
+     */
     public abstract void cleanup();
-    
-    /** Refreshes the data and clears the cache */
+
+    /**
+     * Refreshes the data and clears the cache
+     */
     public abstract void refresh();
-    
-    /** Returns the name of this panel */
+
+    /**
+     * Returns the name of this panel
+     */
     public abstract String getLayoutName();
 
 }

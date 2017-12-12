@@ -20,13 +20,12 @@
 
 package org.underworldlabs.swing;
 
-import java.awt.Component;
-
 import org.underworldlabs.swing.plaf.CloseTabContentPanel;
 
+import java.awt.*;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CloseTabbedPane extends AbstractTabPopupMenuContainer {
 
@@ -41,7 +40,7 @@ public class CloseTabbedPane extends AbstractTabPopupMenuContainer {
     public CloseTabbedPane(int tabPlacement, int tabLayoutPolicy) {
         super(tabPlacement, tabLayoutPolicy);
     }
-    
+
     protected Component tabContentPanelForComponent(Component component) {
         return new CloseTabContentPanel(tabPlacement, component);
     }

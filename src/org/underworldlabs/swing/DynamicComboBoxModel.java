@@ -20,26 +20,25 @@
 
 package org.underworldlabs.swing;
 
+import javax.swing.*;
 import java.util.List;
 import java.util.Vector;
 
-import javax.swing.DefaultComboBoxModel;
-
 /**
- * Simple combo box model that allows complete removal 
+ * Simple combo box model that allows complete removal
  * and resetting of all values.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DynamicComboBoxModel extends DefaultComboBoxModel {
-    
+
     public DynamicComboBoxModel() {
 
         super();
     }
 
     public DynamicComboBoxModel(Object[] items) {
-     
+
         super(items);
     }
 
@@ -50,16 +49,16 @@ public class DynamicComboBoxModel extends DefaultComboBoxModel {
 
     public void contentsChanged() {
 
-        fireContentsChanged(this,-1, -1);
+        fireContentsChanged(this, -1, -1);
     }
 
     public boolean contains(Object item) {
-        
-        return (getIndexOf(item) != -1); 
+
+        return (getIndexOf(item) != -1);
     }
-    
+
     private boolean rebuilding;
-    
+
     public void setElements(Object[] items) {
 
         if (getSize() > 0) {
@@ -70,26 +69,26 @@ public class DynamicComboBoxModel extends DefaultComboBoxModel {
         if (items != null && items.length > 0) {
 
             try {
-            
+
                 rebuilding = true;
-                
+
                 for (Object item : items) {
-                    
+
                     addElement(item);
                 }
 
             } finally {
-                
-                rebuilding = false;                    
+
+                rebuilding = false;
             }
 
             fireIntervalAdded(this, 0, items.length - 1);
             setSelectedItem(getElementAt(0));
-        
+
         }
 
     }
-    
+
     @Override
     public void setSelectedItem(Object anObject) {
 
@@ -99,25 +98,25 @@ public class DynamicComboBoxModel extends DefaultComboBoxModel {
         }
 
     }
-    
+
     @Override
     protected void fireIntervalAdded(Object source, int index0, int index1) {
 
         if (!rebuilding) {
-        
+
             super.fireIntervalAdded(source, index0, index1);
         }
 
     }
-    
+
     public void setElements(List<?> elements) {
 
         if (elements != null) {
-        
+
             setElements(elements.toArray(new Object[elements.size()]));
-            
+
         } else {
-            
+
             removeAllElements();
         }
     }

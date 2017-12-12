@@ -23,27 +23,26 @@ package org.executequery.gui.browser;
 import java.util.Vector;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ReferencesCacheObject {
-    
+
     private Vector tableNames;
     private Vector columnData;
-    
+
     public ReferencesCacheObject(Vector tableNames, Vector columnData) {
         this.tableNames = tableNames;
         this.columnData = columnData;
     }
-    
+
     public Vector getTableNames() {
         return tableNames;
     }
-    
+
     public Vector getColumnData() {
         return columnData;
     }
-    
+
 }
 
 

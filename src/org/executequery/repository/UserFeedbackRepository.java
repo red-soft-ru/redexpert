@@ -23,9 +23,9 @@ package org.executequery.repository;
 public interface UserFeedbackRepository {
 
     void cancel();
-    
+
     void postFeedback(UserFeedback userFeedback) throws RepositoryException;
-    
+
 }
 
 

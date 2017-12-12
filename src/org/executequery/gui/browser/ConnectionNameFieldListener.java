@@ -20,18 +20,18 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.event.FocusEvent;
 import org.executequery.gui.AbstractFieldFocusLostListener;
+
+import java.awt.event.FocusEvent;
 
 
 /**
- *
- * @author      Takis Diakoumis
+ * @author Takis Diakoumis
  */
 class ConnectionNameFieldListener extends AbstractFieldFocusLostListener {
 
     private final ConnectionPanel connectionPanel;
-    
+
     ConnectionNameFieldListener(ConnectionPanel connectionPanel) {
         this.connectionPanel = connectionPanel;
     }
@@ -39,7 +39,7 @@ class ConnectionNameFieldListener extends AbstractFieldFocusLostListener {
     public void focusLost(FocusEvent e) {
         connectionPanel.connectionNameChanged();
     }
-    
+
 }
 
 

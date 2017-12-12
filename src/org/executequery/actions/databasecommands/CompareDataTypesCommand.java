@@ -20,34 +20,35 @@
 
 package org.executequery.actions.databasecommands;
 
-import java.awt.event.ActionEvent;
 import org.executequery.GUIUtilities;
-import org.underworldlabs.swing.actions.BaseCommand;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.CompareDataTypesPanel;
+import org.underworldlabs.swing.actions.BaseCommand;
+
+import java.awt.event.ActionEvent;
 
 /**
  * Execution command for data type comparison.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class CompareDataTypesCommand extends OpenFrameCommand
-                                     implements BaseCommand {
-    
+        implements BaseCommand {
+
     public void execute(ActionEvent e) {
 
         if (!isConnected()) {
-        
+
             return;
         }
 
         GUIUtilities.addCentralPane(CompareDataTypesPanel.TITLE,
-                                    CompareDataTypesPanel.FRAME_ICON, 
-                                    new CompareDataTypesPanel(),
-                                    null,
-                                    true);
+                CompareDataTypesPanel.FRAME_ICON,
+                new CompareDataTypesPanel(),
+                null,
+                true);
     }
-    
+
 }
 
 

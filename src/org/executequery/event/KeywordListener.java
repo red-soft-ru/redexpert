@@ -23,7 +23,7 @@ package org.executequery.event;
 /**
  * Defines a listener for keywords added/removed.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface KeywordListener extends ApplicationEventListener {
 
@@ -36,7 +36,7 @@ public interface KeywordListener extends ApplicationEventListener {
      * Notification of a keyword removed from the list.
      */
     public void keywordsRemoved(KeywordEvent e);
-    
+
 }
 
 

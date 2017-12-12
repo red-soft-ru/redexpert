@@ -20,35 +20,46 @@
 
 package org.executequery.databaseobjects.impl;
 
-import java.sql.DatabaseMetaData;
-import java.util.Map;
-
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databaseobjects.NamedObject;
 import org.underworldlabs.jdbc.DataSourceException;
 
+import java.sql.DatabaseMetaData;
+import java.util.Map;
+
 /**
- *
  * @author takisd
  */
 public class TableColumnIndex extends AbstractDatabaseObjectElement {
-    
-    /** Whether the index is non-unique */
+
+    /**
+     * Whether the index is non-unique
+     */
     private boolean non_unique;
-    
-    /** The indexed column */
+
+    /**
+     * The indexed column
+     */
     private String column;
-    
-    /** Whether this a new index value */
+
+    /**
+     * Whether this a new index value
+     */
     private boolean markedNew;
-    
-    /** Whether this column is marked as to be deleted */
+
+    /**
+     * Whether this column is marked as to be deleted
+     */
     private boolean markedDeleted;
 
-    /** the column meta data map */
-    private Map<String,String> metaData;
-    
-    /** Creates a new instance of DatabaseTableColumnIndex */
+    /**
+     * the column meta data map
+     */
+    private Map<String, String> metaData;
+
+    /**
+     * Creates a new instance of DatabaseTableColumnIndex
+     */
     public TableColumnIndex(String name) {
         setName(name);
     }
@@ -66,7 +77,7 @@ public class TableColumnIndex extends AbstractDatabaseObjectElement {
     public int getType() {
         return TABLE_INDEX;
     }
-    
+
     /**
      * Returns the parent named object of this object.
      *
@@ -86,15 +97,15 @@ public class TableColumnIndex extends AbstractDatabaseObjectElement {
     public void setIndexedColumn(String column) {
         this.column = column;
     }
-    
+
     public String getIndexedColumn() {
         return column;
     }
-    
+
     public void setNonUnique(boolean non_unique) {
         this.non_unique = non_unique;
     }
-    
+
     public boolean isNonUnique() {
         return non_unique;
     }
@@ -118,7 +129,7 @@ public class TableColumnIndex extends AbstractDatabaseObjectElement {
     public void setMetaData(Map<String, String> metaData) {
         this.metaData = metaData;
         for (String key : this.metaData.keySet()) {
-            
+
             if (StringUtils.equalsIgnoreCase("TYPE", key)) {
 
                 Short value = Short.valueOf(this.metaData.get(key));
@@ -127,7 +138,7 @@ public class TableColumnIndex extends AbstractDatabaseObjectElement {
 
         }
     }
-    
+
     private String translateType(Short value) {
 
         String translated = String.valueOf(value);
@@ -143,14 +154,14 @@ public class TableColumnIndex extends AbstractDatabaseObjectElement {
 
             case DatabaseMetaData.tableIndexOther:
                 return translated + " - tableIndexOther";
-        }        
+        }
         return translated;
     }
 
     public Map<String, String> getMetaData() {
         return metaData;
     }
-    
+
 }
 
 

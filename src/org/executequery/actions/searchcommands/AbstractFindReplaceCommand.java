@@ -26,24 +26,23 @@ import org.executequery.gui.BaseDialog;
 import org.executequery.gui.FindReplaceDialog;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-/** 
- *
- * @author   Takis Diakoumis
+/**
+ * @author Takis Diakoumis
  */
 abstract class AbstractFindReplaceCommand extends OpenFrameCommand implements BaseCommand {
 
     protected final boolean canOpenDialog() {
-        
+
         return (!findReplaceDialogOpen() && componentInFocusCanSearch());
     }
-            
+
     protected final BaseDialog createFindReplaceDialog() {
 
         return new BaseDialog(FindReplaceDialog.TITLE, false, false);
     }
-    
+
     private boolean hasTextEditorInFocus() {
-        
+
         return (GUIUtilities.getTextEditorInFocus() != null);
     }
 
@@ -51,14 +50,14 @@ abstract class AbstractFindReplaceCommand extends OpenFrameCommand implements Ba
 
         return isDialogOpen(FindReplaceDialog.TITLE);
     }
-    
+
     private boolean componentInFocusCanSearch() {
-        
+
         if (!hasTextEditorInFocus()) {
 
             return false;
         }
-        
+
         return (GUIUtilities.getTextEditorInFocus().canSearch());
     }
 

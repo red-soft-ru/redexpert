@@ -21,14 +21,13 @@
 package org.executequery.event;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public class DefaultFileIOEvent extends AbstractApplicationEvent 
-                                implements FileIOEvent {
+public class DefaultFileIOEvent extends AbstractApplicationEvent
+        implements FileIOEvent {
 
     private final String absoluteFilePath;
-    
+
     public DefaultFileIOEvent(Object source, String method, String absoluteFilePath) {
 
         super(source, method);

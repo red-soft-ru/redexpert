@@ -29,7 +29,7 @@ import org.executequery.localization.Bundles;
 /**
  * Base command for those opening a new frame
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public abstract class OpenFrameCommand extends AbstractBaseCommand {
 

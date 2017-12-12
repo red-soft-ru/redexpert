@@ -20,19 +20,19 @@
 
 package org.executequery.databasemediators;
 
+import org.executequery.databaseobjects.ProcedureParameter;
+
 import java.io.Serializable;
 import java.sql.DatabaseMetaData;
 import java.util.Comparator;
-import org.executequery.databaseobjects.ProcedureParameter;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ProcedureParameterSorter implements Comparator<ProcedureParameter>, Serializable {
 
     public int compare(ProcedureParameter value1, ProcedureParameter value2) {
-        
+
         int type1 = value1.getType();
         int type2 = value2.getType();
 
@@ -41,12 +41,12 @@ public class ProcedureParameterSorter implements Comparator<ProcedureParameter>,
             return 0;
 
         } else if (type1 == DatabaseMetaData.procedureColumnIn ||
-              type1 == DatabaseMetaData.procedureColumnInOut) {
+                type1 == DatabaseMetaData.procedureColumnInOut) {
 
             return 1;
 
         } else {
-          
+
             return -1;
         }
 

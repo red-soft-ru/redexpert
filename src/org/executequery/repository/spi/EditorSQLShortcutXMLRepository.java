@@ -20,10 +20,6 @@
 
 package org.executequery.repository.spi;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.executequery.repository.EditorSQLShortcut;
 import org.executequery.repository.EditorSQLShortcutRepository;
 import org.executequery.repository.RepositoryException;
@@ -33,55 +29,59 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
-public final class EditorSQLShortcutXMLRepository extends AbstractXMLResourceReaderWriter<EditorSQLShortcut> 
-    implements EditorSQLShortcutRepository {
-    
+public final class EditorSQLShortcutXMLRepository extends AbstractXMLResourceReaderWriter<EditorSQLShortcut>
+        implements EditorSQLShortcutRepository {
+
     // -------------------------------------------
     // XML tag names and attributes
-    
+
     private static final String FILE_PATH = "editorsqlshortcuts.xml";
-    
+
     private static final String EDITOR_SQL_SHORTCUTS = "editor-shortcuts";
     private static final String EDITOR_SHORTCUT = "editor-shortcut";
     private static final String ID = "id";
     private static final String SHORTCUT = "shortcut";
-    
-    public EditorSQLShortcutXMLRepository() {}
 
-    public void save(List<EditorSQLShortcut> shortcuts) 
-        throws RepositoryException {
-        write(filePath(), new EditorSQLShortcutParser(), 
+    public EditorSQLShortcutXMLRepository() {
+    }
+
+    public void save(List<EditorSQLShortcut> shortcuts)
+            throws RepositoryException {
+        write(filePath(), new EditorSQLShortcutParser(),
                 new EditorSQLShortcutInputSource(shortcuts));
     }
 
     public List<EditorSQLShortcut> open() {
-        
-        return (List<EditorSQLShortcut>)read(filePath(), new EditorSQLShortcutHandler());
+
+        return (List<EditorSQLShortcut>) read(filePath(), new EditorSQLShortcutHandler());
     }
-    
+
     private String filePath() {
-        
+
         UserSettingsProperties settings = new UserSettingsProperties();
-        
+
         return settings.getUserSettingsDirectory() + FILE_PATH;
     }
-    
+
     public String getId() {
 
         return REPOSITORY_ID;
     }
-    
-    class EditorSQLShortcutHandler 
-        extends AbstractXMLRepositoryHandler<EditorSQLShortcut> {
+
+    class EditorSQLShortcutHandler
+            extends AbstractXMLRepositoryHandler<EditorSQLShortcut> {
 
         private List<EditorSQLShortcut> shortcuts;
 
         private EditorSQLShortcut shortcut;
-        
+
         EditorSQLShortcutHandler() {
             shortcuts = new ArrayList<EditorSQLShortcut>();
         }
@@ -90,7 +90,7 @@ public final class EditorSQLShortcutXMLRepository extends AbstractXMLResourceRea
                                  String qName, Attributes attrs) {
 
             contents().reset();
-            
+
             if (localNameIsKey(localName, EDITOR_SHORTCUT)) {
 
                 shortcut = new EditorSQLShortcut();
@@ -99,7 +99,7 @@ public final class EditorSQLShortcutXMLRepository extends AbstractXMLResourceRea
             }
 
         }
-        
+
         public void endElement(String nameSpaceURI, String localName,
                                String qName) {
 
@@ -118,9 +118,9 @@ public final class EditorSQLShortcutXMLRepository extends AbstractXMLResourceRea
         }
 
     } // EditorSQLShortcutHandler
-    
+
     class EditorSQLShortcutInputSource extends InputSource {
-        
+
         private List<EditorSQLShortcut> shortcuts;
 
         public EditorSQLShortcutInputSource(List<EditorSQLShortcut> shortcuts) {
@@ -128,17 +128,18 @@ public final class EditorSQLShortcutXMLRepository extends AbstractXMLResourceRea
             super();
             this.shortcuts = shortcuts;
         }
-        
+
         public List<EditorSQLShortcut> getEditorSQLShortcuts() {
-            
+
             return shortcuts;
         }
-        
+
     } // class EditorSQLShortcutInputSource
-    
+
     class EditorSQLShortcutParser extends AbstractXMLRepositoryParser {
 
-        public EditorSQLShortcutParser() {}
+        public EditorSQLShortcutParser() {
+        }
 
         public void parse(InputSource input) throws SAXException, IOException {
 
@@ -147,17 +148,17 @@ public final class EditorSQLShortcutXMLRepository extends AbstractXMLResourceRea
                 throw new SAXException(
                         "Parser can only accept a EditorSQLShortcutInputSource");
             }
-            
-            parse((EditorSQLShortcutInputSource)input);
+
+            parse((EditorSQLShortcutInputSource) input);
         }
-        
-        public void parse(EditorSQLShortcutInputSource input) 
-            throws IOException, SAXException {
+
+        public void parse(EditorSQLShortcutInputSource input)
+                throws IOException, SAXException {
 
             validateHandler();
-            
+
             List<EditorSQLShortcut> shortcuts = input.getEditorSQLShortcuts();
-            
+
             handler().startDocument();
             newLine();
             handler().startElement(NSU, EDITOR_SQL_SHORTCUTS, EDITOR_SQL_SHORTCUTS, attributes());
@@ -167,16 +168,16 @@ public final class EditorSQLShortcutXMLRepository extends AbstractXMLResourceRea
 
                 writeXMLRows(shortcuts);
             }
-            
+
             newLine();
-            
+
             handler().endElement(NSU, EDITOR_SQL_SHORTCUTS, EDITOR_SQL_SHORTCUTS);
             handler().endDocument();
 
         }
 
         private void writeXMLRows(List<EditorSQLShortcut> shortcuts)
-            throws SAXException {
+                throws SAXException {
 
             for (EditorSQLShortcut shortcut : shortcuts) {
 
@@ -184,13 +185,13 @@ public final class EditorSQLShortcutXMLRepository extends AbstractXMLResourceRea
 
                     shortcut.setId(generateUniqueId());
                 }
-                
+
                 newLineIndentOne();
 
-                attributes().addAttribute(NSU, ID, ID, 
+                attributes().addAttribute(NSU, ID, ID,
                         CDDATA, shortcut.getId());
 
-                attributes().addAttribute(NSU, SHORTCUT, SHORTCUT, 
+                attributes().addAttribute(NSU, SHORTCUT, SHORTCUT,
                         CDDATA, shortcut.getShortcut().toUpperCase());
 
                 handler().startElement(NSU, EDITOR_SHORTCUT, EDITOR_SHORTCUT, attributes());
@@ -200,7 +201,7 @@ public final class EditorSQLShortcutXMLRepository extends AbstractXMLResourceRea
 
                 String query = shortcut.getQuery();
                 handler().characters(query.toCharArray(), 0, query.length());
-                
+
                 newLineIndentOne();
                 handler().endElement(NSU, EDITOR_SHORTCUT, EDITOR_SHORTCUT);
                 newLine();
@@ -211,9 +212,9 @@ public final class EditorSQLShortcutXMLRepository extends AbstractXMLResourceRea
         private String generateUniqueId() {
             return MiscUtils.generateUniqueId();
         }
-        
+
     } // class EditorSQLShortcutParser
-    
+
 }
 
 

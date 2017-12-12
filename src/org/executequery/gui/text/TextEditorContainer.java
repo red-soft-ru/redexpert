@@ -21,10 +21,10 @@
 package org.executequery.gui.text;
 
 /**
- * Defines those components that contain one or more 
+ * Defines those components that contain one or more
  * text editor type panels implementing TextEditor.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface TextEditorContainer {
 
@@ -32,7 +32,7 @@ public interface TextEditorContainer {
      * Returns the TextEditor component that this container holds.
      */
     public TextEditor getTextEditor();
-    
+
 }
 
 

@@ -20,8 +20,6 @@
 
 package org.executequery.actions.toolscommands;
 
-import java.awt.event.ActionEvent;
-
 import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.databaseobjects.DatabaseTable;
@@ -29,31 +27,33 @@ import org.executequery.gui.BaseDialog;
 import org.executequery.gui.importexport.ExportAsSQLWizard;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-/** 
+import java.awt.event.ActionEvent;
+
+/**
  * Execution for Export Excel
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ExportSQLCommand extends OpenFrameCommand
-                                implements BaseCommand {
-    
+        implements BaseCommand {
+
     public void execute(ActionEvent e) {
         if (!isConnected()) {
             return;
         }
-        
+
         if (isActionableDialogOpen()) {
-            
+
             GUIUtilities.acionableDialogToFront();
             return;
         }
 
         if (!isDialogOpen(ExportAsSQLWizard.TITLE)) {
-            
+
             GUIUtilities.showWaitCursor();
-            
+
             try {
-            
+
                 BaseDialog dialog = createDialog(ExportAsSQLWizard.TITLE, false, false);
 
                 ExportAsSQLWizard panel = null;
@@ -62,21 +62,21 @@ public class ExportSQLCommand extends OpenFrameCommand
                     panel = new ExportAsSQLWizard(dialog, (DatabaseTable) e.getSource());
 
                 } else {
-                
+
                     panel = new ExportAsSQLWizard(dialog);
                 }
-                
+
                 dialog.addDisplayComponent(panel);
                 dialog.display();
-                
+
             } finally {
-                
+
                 GUIUtilities.showNormalCursor();
             }
         }
 
     }
-    
+
 }
 
 

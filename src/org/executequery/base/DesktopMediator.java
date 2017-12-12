@@ -19,87 +19,96 @@
  */
 
 package org.executequery.base;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Cursor;
+
+import javax.swing.*;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.InputMap;
-import javax.swing.JFrame;
-import javax.swing.JLayeredPane;
-import javax.swing.SwingConstants;
-
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DesktopMediator implements DockedTabDragListener {
-    
+
     // ----------------------------------
     // property names for divider locations
 
     // left-hand left-right split
     public static final String LEFT_DIVIDER_LOCATION = "divider.location.left";
-    
+
     // right-hand left-right split
     public static final String RIGHT_DIVIDER_LOCATION = "divider.location.right";
-    
+
     // left-hand top-bottom split
     public static final String WEST_DIVIDER_LOCATION = "divider.location.west";
-    
+
     // center top-bottom split
     public static final String CENTER_DIVIDER_LOCATION = "divider.location.center";
-    
+
     // right-hand top-bottom split
     public static final String EAST_DIVIDER_LOCATION = "divider.location.east";
 
     public static final String[] DIVIDER_LOCATION_KEYS = {
-                                            LEFT_DIVIDER_LOCATION,
-                                            RIGHT_DIVIDER_LOCATION,
-                                            WEST_DIVIDER_LOCATION,
-                                            CENTER_DIVIDER_LOCATION,
-                                            EAST_DIVIDER_LOCATION};
+            LEFT_DIVIDER_LOCATION,
+            RIGHT_DIVIDER_LOCATION,
+            WEST_DIVIDER_LOCATION,
+            CENTER_DIVIDER_LOCATION,
+            EAST_DIVIDER_LOCATION};
 
-    
+
     // ----------------------------------
-    
-    /** the application frame */
+
+    /**
+     * the application frame
+     */
     private JFrame frame;
-    
-    /** the application base panel */
+
+    /**
+     * the application base panel
+     */
     private BaseApplicationPane baseWindowPane;
-    
-    /** tab pane event listeners */
+
+    /**
+     * tab pane event listeners
+     */
     private List<DockedTabListener> tabListeners;
 
-    /** tab pane drag event listeners */
+    /**
+     * tab pane drag event listeners
+     */
     private List<DockedTabDragListener> tabDragListeners;
 
-    /** tab pane event listeners */
+    /**
+     * tab pane event listeners
+     */
     private List<PropertyChangeListener> propertyListeners;
 
     // -------------------------------------------
     // the application tab pane containers
     // -------------------------------------------
 
-    /** the container at the WEST position */
+    /**
+     * the container at the WEST position
+     */
     private DockedTabContainer westContainer;
 
-    /** the container at the CENTER position */
+    /**
+     * the container at the CENTER position
+     */
     private DockedTabContainer centerContainer;
 
-    /** the container at the EAST position */
+    /**
+     * the container at the EAST position
+     */
     private DockedTabContainer eastContainer;
 
     // -------------------------------------------
-    
-    /** prevent instantiation */
+
+    /**
+     * prevent instantiation
+     */
     public DesktopMediator(JFrame frame) {
         this.frame = frame;
         baseWindowPane = new BaseApplicationPane(this);
@@ -109,7 +118,7 @@ public class DesktopMediator implements DockedTabDragListener {
         frame.add(p, BorderLayout.CENTER);
          */
         baseWindowPane.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
-        
+
         //BaseRootPane rootPane = new BaseRootPane(baseWindowPane);
         //frame.add(rootPane, BorderLayout.CENTER);
         frame.add(baseWindowPane, BorderLayout.CENTER);
@@ -125,7 +134,7 @@ public class DesktopMediator implements DockedTabDragListener {
             return;
         }
         tabListeners.remove(listener);
-    }    
+    }
 
     /**
      * Adds the specified docked tab listener.
@@ -154,7 +163,7 @@ public class DesktopMediator implements DockedTabDragListener {
     /**
      * Notifies all registered listeners of a tab minimised event.
      *
-     * @param the event 
+     * @param the event
      */
     public void fireTabMinimised(DockedTabEvent e) {
         if (tabListeners == null || tabListeners.size() == 0) {
@@ -168,7 +177,7 @@ public class DesktopMediator implements DockedTabDragListener {
     /**
      * Notifies all registered listeners of a tab selected event.
      *
-     * @param the event 
+     * @param the event
      */
     public void fireTabSelected(DockedTabEvent e) {
         if (tabListeners == null || tabListeners.isEmpty()) {
@@ -182,7 +191,7 @@ public class DesktopMediator implements DockedTabDragListener {
     /**
      * Notifies all registered listeners of a tab deselected event.
      *
-     * @param the event 
+     * @param the event
      */
     public void fireTabDeselected(DockedTabEvent e) {
         if (tabListeners == null || tabListeners.isEmpty()) {
@@ -192,11 +201,11 @@ public class DesktopMediator implements DockedTabDragListener {
             tabListeners.get(i).tabSelected(e);
         }
     }
-    
+
     /**
      * Notifies all registered listeners of a tab restored event.
      *
-     * @param the event 
+     * @param the event
      */
     protected void fireTabRestored(DockedTabEvent e) {
         if (tabListeners == null || tabListeners.isEmpty()) {
@@ -204,13 +213,13 @@ public class DesktopMediator implements DockedTabDragListener {
         }
         for (int i = 0, k = tabListeners.size(); i < k; i++) {
             tabListeners.get(i).tabRestored(e);
-        }        
+        }
     }
 
     /**
      * Notifies all registered listeners of a tab closed event.
      *
-     * @param the event 
+     * @param the event
      */
     public void fireTabClosed(DockedTabEvent e) {
         if (tabListeners == null || tabListeners.isEmpty()) {
@@ -234,9 +243,9 @@ public class DesktopMediator implements DockedTabDragListener {
             tabDragListeners.get(i).dockedTabDragged(e);
         }
     }
- 
+
     /**
-     *  Invoked when a mouse button has been released on a tab.
+     * Invoked when a mouse button has been released on a tab.
      *
      * @param the encapsulating event object
      */
@@ -246,14 +255,14 @@ public class DesktopMediator implements DockedTabDragListener {
         }
         for (int i = 0, k = tabDragListeners.size(); i < k; i++) {
             tabDragListeners.get(i).dockedTabReleased(e);
-        }        
+        }
     }
 
     public ActionMap getActionMap() {
         return baseWindowPane.getActionMap();
     }
-    
-    /** 
+
+    /**
      * Retrieves the applications <code>InputMap</code>.
      *
      * @return the <code>InputMap</code>
@@ -270,14 +279,14 @@ public class DesktopMediator implements DockedTabDragListener {
     public void setFrameCursor(Cursor cursor) {
         frame.setCursor(cursor);
     }
-    
+
     public void addPropertyChangeListener(PropertyChangeListener l) {
         if (propertyListeners == null) {
             propertyListeners = new ArrayList<PropertyChangeListener>();
         }
         propertyListeners.add(l);
     }
-    
+
     public void firePropertyChange(String name, int oldValue, int newValue) {
         if (propertyListeners == null || propertyListeners.isEmpty()) {
             return;
@@ -304,20 +313,16 @@ public class DesktopMediator implements DockedTabDragListener {
         int position = -1;
         if (key.equals(LEFT_DIVIDER_LOCATION)) {
             position = SwingConstants.LEFT;
-        }
-        else if (key.equals(RIGHT_DIVIDER_LOCATION)) {
+        } else if (key.equals(RIGHT_DIVIDER_LOCATION)) {
             position = SwingConstants.RIGHT;
-        }
-        else if (key.equals(WEST_DIVIDER_LOCATION)) {
+        } else if (key.equals(WEST_DIVIDER_LOCATION)) {
             position = SwingConstants.WEST;
-        }
-        else if (key.equals(CENTER_DIVIDER_LOCATION)) {
+        } else if (key.equals(CENTER_DIVIDER_LOCATION)) {
             position = SwingConstants.CENTER;
-        }
-        else if (key.equals(EAST_DIVIDER_LOCATION)) {
+        } else if (key.equals(EAST_DIVIDER_LOCATION)) {
             position = SwingConstants.EAST;
         }
-        
+
         if (position != -1) {
             setSplitPaneDividerLocation(position, location);
         }
@@ -378,9 +383,9 @@ public class DesktopMediator implements DockedTabDragListener {
             tabContainer.setSplitPaneDividerLocation(location);
         }
     }
-    
+
     public void splitPaneDividerMoved(int position, int newValue) {
-        
+
         switch (position) {
             case SwingConstants.LEFT:
                 firePropertyChange(LEFT_DIVIDER_LOCATION, -1, newValue);
@@ -403,13 +408,13 @@ public class DesktopMediator implements DockedTabDragListener {
 
         }
     }
-    
+
     /**
      * Adds the specified drag panel to the frame's
      * layered pane.
      *
      * @param the drag panel
-     */  
+     */
     public void addDragPanel(DragPanel dragPanel) {
         frame.getLayeredPane().add(dragPanel, JLayeredPane.DRAG_LAYER);
     }
@@ -419,7 +424,7 @@ public class DesktopMediator implements DockedTabDragListener {
      * layered pane.
      *
      * @param the drag panel to be removed
-     */  
+     */
     public void removeDragPanel(DragPanel dragPanel) {
         frame.getLayeredPane().remove(dragPanel);
         frame.getLayeredPane().repaint();
@@ -433,8 +438,8 @@ public class DesktopMediator implements DockedTabDragListener {
      * @param the component
      * @param the position
      */
-    public void addDockedTab(String title, 
-                             Component component, 
+    public void addDockedTab(String title,
+                             Component component,
                              int position,
                              boolean selected) {
         addDockedTab(title, null, component, null, position, selected);
@@ -449,9 +454,9 @@ public class DesktopMediator implements DockedTabDragListener {
      * @param the component
      * @param the position
      */
-    public void addDockedTab(String title, 
-                             Icon icon, 
-                             Component component, 
+    public void addDockedTab(String title,
+                             Icon icon,
+                             Component component,
                              int position,
                              boolean selected) {
         addDockedTab(title, icon, component, null, position, selected);
@@ -466,19 +471,19 @@ public class DesktopMediator implements DockedTabDragListener {
      * @param the component
      * @param the position
      */
-    public void addDockedTab(TabComponent tabComponent, 
+    public void addDockedTab(TabComponent tabComponent,
                              int position,
                              boolean selected) {
-        addDockedTab(tabComponent.getTitle(), 
-                     tabComponent.getIcon(),
-                     tabComponent.getComponent(),
-                     tabComponent.getToolTip(),
-                     position,
-                     selected);
+        addDockedTab(tabComponent.getTitle(),
+                tabComponent.getIcon(),
+                tabComponent.getComponent(),
+                tabComponent.getToolTip(),
+                position,
+                selected);
     }
 
     /**
-     * Adds the specified component as a docked tab component in the 
+     * Adds the specified component as a docked tab component in the
      * specified position.
      *
      * @param the tab title
@@ -487,10 +492,10 @@ public class DesktopMediator implements DockedTabDragListener {
      * @param the tab's tool tip
      * @param the position
      */
-    public void addDockedTab(String title, 
-                             Icon icon, 
-                             Component component, 
-                             String tip, 
+    public void addDockedTab(String title,
+                             Icon icon,
+                             Component component,
+                             String tip,
                              int position,
                              boolean selected) {
 
@@ -534,15 +539,15 @@ public class DesktopMediator implements DockedTabDragListener {
             tabContainer.addDockedTab(title, icon, component, tip, position);
 
             if (selected) {
-            
+
                 int tabCount = tabContainer.getTabCount(position);
                 tabContainer.setSelectedIndex(position, tabCount - 1);
             }
 
         }
-        
+
     }
-    
+
     /**
      * Returns the open tab components in a list at the specified position.
      *
@@ -558,8 +563,8 @@ public class DesktopMediator implements DockedTabDragListener {
     }
 
     /**
-     * Sets the tool tip for the specified component to toolTipText 
-     * which can be null. An internal exception is raised if there 
+     * Sets the tool tip for the specified component to toolTipText
+     * which can be null. An internal exception is raised if there
      * is no tab for the specified component.
      *
      * @param the tab pane position
@@ -581,30 +586,30 @@ public class DesktopMediator implements DockedTabDragListener {
 
         DockedTabContainer nextContainer = null;
         DockedTabContainer focusedContainer = getTabContainerInFocus();
-        
+
         if (focusedContainer == westContainer) {
 
-        	nextContainer = centerContainer;
+            nextContainer = centerContainer;
 
         } else if (focusedContainer == centerContainer) {
 
-        	if (eastContainer != null) {
+            if (eastContainer != null) {
 
-        		nextContainer = eastContainer;
+                nextContainer = eastContainer;
 
-        	} else {
-        		
-        		nextContainer = westContainer;
-        	}
-        	
+            } else {
+
+                nextContainer = westContainer;
+            }
+
         } else if (focusedContainer == eastContainer) {
 
-        	nextContainer = westContainer;
+            nextContainer = westContainer;
         }
-        
+
         if (nextContainer != null) {
 
-        	nextContainer.getSelectedTabPane().focusGained();
+            nextContainer.getSelectedTabPane().focusGained();
         }
 
     }
@@ -618,7 +623,7 @@ public class DesktopMediator implements DockedTabDragListener {
         } else if (centerContainer != null && centerContainer.hasFocusedTabPane()) {
 
             return centerContainer;
-            
+
         } else if (eastContainer != null && eastContainer.hasFocusedTabPane()) {
 
             return eastContainer;
@@ -626,21 +631,21 @@ public class DesktopMediator implements DockedTabDragListener {
 
         return null;
     }
-    
-    
+
+
     /**
      * Selects the next tab from the current selection.
      */
     public void selectNextTab() {
-        
+
         DockedTabContainer container = getTabContainerInFocus();
-        
+
         if (container != null) {
-            
+
             TabPane tabPane = container.getTabPaneInFocus();
-            tabPane.selectNextTab();            
+            tabPane.selectNextTab();
         }
-        
+
     }
 
     /**
@@ -649,25 +654,25 @@ public class DesktopMediator implements DockedTabDragListener {
     public void selectPreviousTab() {
 
         DockedTabContainer container = getTabContainerInFocus();
-        
+
         if (container != null) {
-            
+
             TabPane tabPane = container.getTabPaneInFocus();
-            tabPane.selectPreviousTab();            
+            tabPane.selectPreviousTab();
         }
 
     }
 
     /**
-     * Sets the title of the specified component to title which can be null. 
-     * An internal exception is raised if there is no tab for the 
+     * Sets the title of the specified component to title which can be null.
+     * An internal exception is raised if there is no tab for the
      * specified component.
      *
      * @param the tab pane position
      * @param the component where the title should be set
      * @param the title to be displayed in the tab
      */
-    public void setTabTitleForComponent(int position, 
+    public void setTabTitleForComponent(int position,
                                         Component component, String title) {
         DockedTabContainer container = getContainerAt(position);
         if (container != null) {
@@ -705,7 +710,7 @@ public class DesktopMediator implements DockedTabDragListener {
 
     /**
      * Closed the specfied tab component with name at the specified position.
-     * 
+     *
      * @param the name of the tab component
      * @param the position
      */
@@ -717,37 +722,37 @@ public class DesktopMediator implements DockedTabDragListener {
     }
 
     public void closeSelectedTab() {
-        
+
         DockedTabContainer container = getTabContainerInFocus();
         container.getSelectedTabPane().removeSelectedTab();
     }
-    
+
     public void closeAllTabs() {
 
         if (westContainer != null) {
 
             westContainer.removeAllTabsInAllContainers();
-        } 
-        
+        }
+
         if (centerContainer != null) {
 
             centerContainer.removeAllTabsInAllContainers();
-            
-        } 
+
+        }
 
         if (eastContainer != null) {
-            
+
             eastContainer.removeAllTabsInAllContainers();
         }
 
     }
-    
+
     public void closeAllTabsInSelectedContainer() {
 
         DockedTabContainer container = getTabContainerInFocus();
         container.closeAllTabsInSelectedContainer();
     }
-    
+
     /**
      * Initialises a docked tab container in the specified
      * position.
@@ -786,9 +791,9 @@ public class DesktopMediator implements DockedTabDragListener {
         }
         return dockedTabContainer;
     }
-    
-    /** 
-     * Indicates whether the pane at the specified 
+
+    /**
+     * Indicates whether the pane at the specified
      * position (left or right) is visible.
      *
      * @param SwingConstants.LEFT | SwingConstants.RIGHT
@@ -797,21 +802,21 @@ public class DesktopMediator implements DockedTabDragListener {
     public boolean isPaneVisible(int position) {
         switch (position) {
             case SwingConstants.WEST:
-                return westContainer != null && 
-                        (!westContainer.isButtonPanelVisible() || 
-                            westContainer.isTabPaneVisible(-1));
+                return westContainer != null &&
+                        (!westContainer.isButtonPanelVisible() ||
+                                westContainer.isTabPaneVisible(-1));
             case SwingConstants.CENTER:
                 return centerContainer != null;
             case SwingConstants.EAST:
-                return eastContainer != null && 
-                        (!eastContainer.isButtonPanelVisible() || 
-                            eastContainer.isTabPaneVisible(-1));
+                return eastContainer != null &&
+                        (!eastContainer.isButtonPanelVisible() ||
+                                eastContainer.isTabPaneVisible(-1));
         }
         return false;
     }
 
-    /** 
-     * Indicates whether the pane at the specified 
+    /**
+     * Indicates whether the pane at the specified
      * position (left or right) is visible.
      *
      * @param SwingConstants.LEFT | SwingConstants.RIGHT
@@ -839,7 +844,7 @@ public class DesktopMediator implements DockedTabDragListener {
         return false;
     }
 
-    /** 
+    /**
      * Returns the width of the specified pane.
      *
      * @return the pane width
@@ -863,8 +868,8 @@ public class DesktopMediator implements DockedTabDragListener {
     }
 
     /**
-     * Resets the split pane component in the specified 
-     * position to the preferred sizes of the split pane 
+     * Resets the split pane component in the specified
+     * position to the preferred sizes of the split pane
      * children components.
      *
      * @param the position of the pane
@@ -884,8 +889,8 @@ public class DesktopMediator implements DockedTabDragListener {
                 break;
         }
     }
-    
-    /** 
+
+    /**
      * Indicates whether the pane at the specified 
      * position (left or right) is visible.
      *
@@ -921,7 +926,7 @@ public class DesktopMediator implements DockedTabDragListener {
     } */
 
     /**
-     * Removes the specified docked tab pane from the 
+     * Removes the specified docked tab pane from the
      * parent split pane and application frame.
      *
      * @param the tab pane to remove
@@ -990,7 +995,7 @@ public class DesktopMediator implements DockedTabDragListener {
      * Restores the tab component with the specified name.
      *
      * @param position - the component position in the pane
-     * @param name - the component's name (tab title)
+     * @param name     - the component's name (tab title)
      */
     public void restore(int position, String name) {
         DockedTabContainer container = getContainerAt(position);
@@ -998,13 +1003,13 @@ public class DesktopMediator implements DockedTabDragListener {
             container.restore(name);
         }
     }
-    
+
     /**
      * Returns if the tab at the specified position with the
      * specfied name is currently minimised.
      *
      * @param position - the component position in the pane
-     * @param name - the component's name (tab title)
+     * @param name     - the component's name (tab title)
      */
     public boolean isMinimised(int position, String name) {
         DockedTabContainer container = getContainerAt(position);
@@ -1019,7 +1024,7 @@ public class DesktopMediator implements DockedTabDragListener {
      * the specified position.
      *
      * @param position - the component position in the pane
-     * @param name - the component's name (tab title)
+     * @param name     - the component's name (tab title)
      */
     public void minimiseDockedTab(int position, String name) {
         DockedTabContainer container = getContainerAt(position);
@@ -1047,13 +1052,13 @@ public class DesktopMediator implements DockedTabDragListener {
         }
         return null;
     }
-    
+
     /**
      * Sets the selected panel at the specified index for the tab pane
      * at the specified position.
      *
      * @param position - the tab pane position
-     * @param index - the index to be selected
+     * @param index    - the index to be selected
      */
     public void setSelectedPane(int position, int index) {
         DockedTabContainer container = getContainerAt(position);
@@ -1067,12 +1072,12 @@ public class DesktopMediator implements DockedTabDragListener {
      * at the specified position.
      *
      * @param position - the tab pane position
-     * @param name - the name/title of the tab to select
+     * @param name     - the name/title of the tab to select
      */
     public void setSelectedPane(int position, String name) {
-        
+
         DockedTabContainer container = getContainerAt(position);
-        
+
         // check we are not already selected
         // if so - verify focus and return
         TabComponent tabComponent = getSelectedComponent(position);
@@ -1088,8 +1093,8 @@ public class DesktopMediator implements DockedTabDragListener {
             }
              */
             return;
-        }        
-        
+        }
+
         if (container != null) {
             container.setSelectedPane(position, name);
         }
@@ -1100,7 +1105,7 @@ public class DesktopMediator implements DockedTabDragListener {
      * with the specified name.
      *
      * @param position - the position of the component
-     * @param name - the name of the component (tab title)
+     * @param name     - the name of the component (tab title)
      */
     public TabComponent getTabComponent(int position, String name) {
         DockedTabContainer container = getContainerAt(position);
@@ -1118,7 +1123,7 @@ public class DesktopMediator implements DockedTabDragListener {
     public void dockedTabDragged(DockedDragEvent e) {
         baseWindowPane.dockedTabDragged(e);
     }
-    
+
     /**
      * Tab drag event listener implementation.
      *
@@ -1139,7 +1144,7 @@ public class DesktopMediator implements DockedTabDragListener {
     public void setFrame(JFrame aFrame) {
         frame = aFrame;
     }
-    
+
 }
 
 

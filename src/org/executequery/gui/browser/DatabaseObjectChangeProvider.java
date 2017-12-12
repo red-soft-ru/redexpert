@@ -20,10 +20,6 @@
 
 package org.executequery.gui.browser;
 
-import java.text.ParseException;
-
-import javax.swing.JOptionPane;
-
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.DatabaseTableObject;
@@ -34,6 +30,9 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.InterruptibleProgressDialog;
 import org.underworldlabs.swing.util.Interruptible;
 import org.underworldlabs.swing.util.SwingWorker;
+
+import javax.swing.*;
+import java.text.ParseException;
 
 public class DatabaseObjectChangeProvider implements Interruptible {
 
@@ -178,6 +177,7 @@ public class DatabaseObjectChangeProvider implements Interruptible {
         worker.start();
         interruptibleProgressDialog.run();
     }
+
     private void executeApplyDataChanges() {
 
         interruptibleProgressDialog = new InterruptibleProgressDialog(GUIUtilities.getParentFrame(), "Applying changes", "Please wait...", this);

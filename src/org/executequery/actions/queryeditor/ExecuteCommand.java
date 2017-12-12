@@ -22,10 +22,10 @@ package org.executequery.actions.queryeditor;
 
 import java.awt.event.ActionEvent;
 
-/** 
+/**
  * The Query Editor's execute command.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class ExecuteCommand extends AbstractQueryEditorCommand {
 
@@ -37,7 +37,7 @@ public class ExecuteCommand extends AbstractQueryEditorCommand {
         }
 
     }
-    
+
 }
 
 

@@ -28,11 +28,11 @@ enum OnErrorOption {
     public static boolean isStopTransfer(OnErrorOption onErrorOption) {
         return (onErrorOption == STOP_TRANSFER);
     }
-    
+
     public static boolean isLogAndContinue(OnErrorOption onErrorOption) {
         return (onErrorOption == LOG_AND_CONTINUE);
     }
-    
+
 }
 
 

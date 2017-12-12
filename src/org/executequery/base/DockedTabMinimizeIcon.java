@@ -19,34 +19,35 @@
  */
 
 package org.executequery.base;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
-import javax.swing.SwingConstants;
 
 /**
  * Simple icon drawing the close button
  * for a closeable tab on the CloseTabbedPane.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class DockedTabMinimizeIcon implements TabControlIcon,
-                                              SwingConstants {
-    
-    /** The icons orientation */
+        SwingConstants {
+
+    /**
+     * The icons orientation
+     */
     private int orientation;
-    
-    /** 
-     * Creates a new instance of DockedTabMinimizeIcon 
-     * with default orientation WEST. 
+
+    /**
+     * Creates a new instance of DockedTabMinimizeIcon
+     * with default orientation WEST.
      */
     public DockedTabMinimizeIcon() {
         this(WEST);
     }
 
     /**
-     * Creates a new instance of DockedTabMinimizeIcon 
+     * Creates a new instance of DockedTabMinimizeIcon
      * at the specified orientation.
      *
      * @param the orientation - SwingConstants.WEST | EAST | CENTER
@@ -57,7 +58,7 @@ public class DockedTabMinimizeIcon implements TabControlIcon,
 
     /**
      * Returns the icon's height.
-     * 
+     *
      * @return the height of the icon
      */
     public int getIconHeight() {
@@ -66,7 +67,7 @@ public class DockedTabMinimizeIcon implements TabControlIcon,
 
     /**
      * Returns the icon's width.
-     * 
+     *
      * @return the width of the icon
      */
     public int getIconWidth() {
@@ -78,13 +79,13 @@ public class DockedTabMinimizeIcon implements TabControlIcon,
      *
      * @param the component
      * @param the graphics context
-     * @param x coordinate
-     * @param y coordinate
+     * @param x   coordinate
+     * @param y   coordinate
      */
     public void paintIcon(Component c, Graphics g, int x, int y) {
-        Graphics2D g2 = (Graphics2D)g;
+        Graphics2D g2 = (Graphics2D) g;
         AffineTransform oldTransform = g2.getTransform();
-        
+
         g2.setColor(ICON_COLOR);
 
         if (orientation != WEST) {
@@ -94,13 +95,12 @@ public class DockedTabMinimizeIcon implements TabControlIcon,
 
             if (orientation == CENTER) {
                 theta = Math.PI * 1.5;
-            }
-            else if (orientation == EAST) {
+            } else if (orientation == EAST) {
                 theta = Math.PI;
             }
             g2.rotate(theta, xOrigin, yOrigin);
         }
-        
+
         int x1 = x + ICON_WIDTH - 1;
         int y2 = y + ICON_HEIGHT - 1;
         g2.drawLine(x1, y, x + ICON_WIDTH - 1, y2);
@@ -113,9 +113,9 @@ public class DockedTabMinimizeIcon implements TabControlIcon,
         g2.drawLine(x1 - 1, y + ICON_HEIGHT - 1, x, y2);
 
         g2.setTransform(oldTransform);
-        
+
     }
-    
+
 }
 
 

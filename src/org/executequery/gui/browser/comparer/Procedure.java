@@ -12,32 +12,32 @@ class ProcedureParameters {
 }
 
 public class Procedure {
-    public Procedure (Comparer comp)
-    {
-        comparer=comp;
+    public Procedure(Comparer comp) {
+        comparer = comp;
         init();
     }
-    public void init()
-    {
-        firstConnection=comparer.firstConnection;
-        secondConnection=comparer.secondConnection;
+
+    public void init() {
+        firstConnection = comparer.firstConnection;
+        secondConnection = comparer.secondConnection;
         this.domain = comparer.domain;
-        dependencies=comparer.dependencies;
+        dependencies = comparer.dependencies;
     }
+
     Dependencies dependencies;
     Comparer comparer;
     Domain domain;
     StatementExecutor firstConnection;
     StatementExecutor secondConnection;
-    public  String collect = "select rdb$procedures.rdb$procedure_name\n"
+    public String collect = "select rdb$procedures.rdb$procedure_name\n"
             + "from rdb$procedures\n"
             + "where rdb$procedures.rdb$system_flag = 0";
 
-    public  ArrayList<String> procToFill = new ArrayList<String>();
+    public ArrayList<String> procToFill = new ArrayList<String>();
 
-    private  String query = "";
+    private String query = "";
 
-    public  String setParameters(ProcedureParameters info) {
+    public String setParameters(ProcedureParameters info) {
         String scriptPart = "";
 
         if (!info.inputParameters.isEmpty()) {
@@ -79,7 +79,7 @@ public class Procedure {
         return scriptPart;
     }
 
-    public  String getInfo(StatementExecutor con, String procedure) {
+    public String getInfo(StatementExecutor con, String procedure) {
         String info = "";
 
         query = "select rdb$procedures.rdb$procedure_source\n"
@@ -87,7 +87,7 @@ public class Procedure {
                 + "where rdb$procedures.rdb$procedure_name = upper('" + procedure + "')";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
+            ResultSet rs = con.execute(query, true).getResultSet();
 
             while (rs.next()) {
 
@@ -104,7 +104,7 @@ public class Procedure {
         return info;
     }
 
-    public  ProcedureParameters getParameters(StatementExecutor con, String procedure) {
+    public ProcedureParameters getParameters(StatementExecutor con, String procedure) {
         ProcedureParameters IOparam = new ProcedureParameters();
 
         query = "select rdb$procedure_parameters.rdb$parameter_name,\n" + //1
@@ -127,7 +127,7 @@ public class Procedure {
                 + "order by rdb$procedure_parameters.rdb$parameter_number";
 
         try {
-            ResultSet rs = con.execute(query,true).getResultSet();
+            ResultSet rs = con.execute(query, true).getResultSet();
 
             while (rs.next()) {
                 ArrayList<String> line = new ArrayList<String>();
@@ -181,7 +181,7 @@ public class Procedure {
         return IOparam;
     }
 
-    public  String create(String procedure) {
+    public String create(String procedure) {
         String scriptPart = "";
 
         if (!comparer.createdObjects.contains("procedure " + procedure)) {
@@ -220,15 +220,15 @@ public class Procedure {
                     + "or rdb$dependencies.rdb$depended_on_type = 7)";
 
             try {
-                ResultSet rs = firstConnection.execute(query,true).getResultSet();
+                ResultSet rs = firstConnection.execute(query, true).getResultSet();
 
                 while (rs.next()) {
-                    String obj1=rs.getString(1).trim();
-                    String obj2=rs.getString(2).trim();
-                    String obj3=rs.getString(3).trim();
-                    if (obj3==("DOMAIN")) {
+                    String obj1 = rs.getString(1).trim();
+                    String obj2 = rs.getString(2).trim();
+                    String obj3 = rs.getString(3).trim();
+                    if (obj3 == ("DOMAIN")) {
                         depDomains.add(obj1);
-                    } else if (obj3=="FIELD") {
+                    } else if (obj3 == "FIELD") {
                         ArrayList<String> line = new ArrayList<String>();
 
                         line.add(obj1);
@@ -261,7 +261,7 @@ public class Procedure {
                         + "where rdb$fields.rdb$field_name = '" + d + "'";
 
                 try {
-                    ResultSet rs = secondConnection.execute(query,true).getResultSet();
+                    ResultSet rs = secondConnection.execute(query, true).getResultSet();
                     while (rs.next()) {
 
                         exist = true;
@@ -282,14 +282,14 @@ public class Procedure {
             }
 
             for (ArrayList<String> d : depFields) {
-                String obj1=d.get(0);
-                String obj2=d.get(1);
-                scriptPart = scriptPart + dependencies.addFields(obj1,obj2);
+                String obj1 = d.get(0);
+                String obj2 = d.get(1);
+                scriptPart = scriptPart + dependencies.addFields(obj1, obj2);
             }
 
             for (ArrayList<String> d : dep) {
-                String obj1=d.get(0);
-                String obj2=d.get(1);
+                String obj1 = d.get(0);
+                String obj2 = d.get(1);
                 scriptPart = scriptPart + dependencies.addDependencies(obj2, obj1);
             }
 
@@ -308,7 +308,7 @@ public class Procedure {
         return scriptPart;
     }
 
-    public  String fill(String procedure) {
+    public String fill(String procedure) {
         String scriptPart = "";
 
         ProcedureParameters info = getParameters(firstConnection, procedure);
@@ -320,7 +320,7 @@ public class Procedure {
         return scriptPart;
     }
 
-    public  String alter(String procedure) {
+    public String alter(String procedure) {
         String scriptPart = "";
 
         ProcedureParameters info = new ProcedureParameters();
@@ -476,7 +476,7 @@ public class Procedure {
         return scriptPart;
     }
 
-    public  String empty(String procedure) {
+    public String empty(String procedure) {
         String scriptPart = "";
 
         ProcedureParameters info = new ProcedureParameters();
@@ -495,7 +495,7 @@ public class Procedure {
         return scriptPart;
     }
 
-    public  String drop(String procedure) {
+    public String drop(String procedure) {
         String scriptPart = "";
 
         if (!comparer.droppedObjects.contains("procedure " + procedure)) {
@@ -508,7 +508,7 @@ public class Procedure {
                     + "where rdb$dependencies.rdb$depended_on_name = '" + procedure + "'";
 
             try {
-                ResultSet rs = secondConnection.execute(query,true).getResultSet();
+                ResultSet rs = secondConnection.execute(query, true).getResultSet();
 
                 while (rs.next()) {
                     ArrayList<String> line = new ArrayList<String>();

@@ -20,26 +20,27 @@
 
 package org.executequery.base;
 
-import java.awt.LayoutManager;
 import org.executequery.GUIUtilities;
 import org.underworldlabs.swing.ActionPanel;
 
+import java.awt.*;
+
 /**
  * Default implementation for a tab panel view as an action panel.
- * 
- * @author   Takis Diakoumis
+ *
+ * @author Takis Diakoumis
  */
 public class DefaultTabViewActionPanel extends ActionPanel
-                                       implements TabView {
-    
+        implements TabView {
+
     public DefaultTabViewActionPanel() {
         super();
     }
-    
+
     public DefaultTabViewActionPanel(boolean isDoubleBuffered) {
         super(isDoubleBuffered);
     }
-    
+
     public DefaultTabViewActionPanel(LayoutManager layout) {
         super(layout);
     }
@@ -50,7 +51,7 @@ public class DefaultTabViewActionPanel extends ActionPanel
 
     /**
      * Indicates that a [long-running] process has begun or ended
-     * as specified. This will trigger the glass pane on or off 
+     * as specified. This will trigger the glass pane on or off
      * and set the cursor appropriately.
      *
      * @param inProcess - true | false
@@ -63,9 +64,9 @@ public class DefaultTabViewActionPanel extends ActionPanel
             GUIUtilities.showNormalCursor();
         }
     }
-    
+
     /**
-     * Toggles the visibility of the glass pane on the 
+     * Toggles the visibility of the glass pane on the
      * enclosing frame as specified.
      *
      * @param visible - true | false
@@ -73,14 +74,14 @@ public class DefaultTabViewActionPanel extends ActionPanel
     public void setGlassPaneVisible(boolean visible) {
         GUIUtilities.setGlassPaneVisible(visible);
     }
-    
+
     /**
      * Returns whether the glass pane is currently visible.
      */
     public boolean isGlassPaneVisible() {
         return GUIUtilities.isGlassPaneVisible();
     }
-    
+
     /**
      * Indicates the panel is being removed from the pane.
      *
@@ -102,13 +103,13 @@ public class DefaultTabViewActionPanel extends ActionPanel
     /**
      * Indicates the panel is being selected in the pane
      *
-     *  @return true if all ok to proceed, false otherwise
+     * @return true if all ok to proceed, false otherwise
      */
     public boolean tabViewDeselected() {
         return true;
     }
 
-    
+
 }
 
 

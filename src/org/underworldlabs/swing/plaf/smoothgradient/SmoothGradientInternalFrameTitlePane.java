@@ -20,79 +20,67 @@
 
 package org.underworldlabs.swing.plaf.smoothgradient;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.LayoutManager;
-import java.awt.Rectangle;
-
-import javax.swing.Icon;
-import javax.swing.JInternalFrame;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.plaf.metal.MetalInternalFrameTitlePane;
+import java.awt.*;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public final class SmoothGradientInternalFrameTitlePane
         extends MetalInternalFrameTitlePane {
-    
+
     private String closeButtonToolTip;
     private String iconButtonToolTip;
     private String restoreButtonToolTip;
     private String maxButtonToolTip;
-    
+
     public SmoothGradientInternalFrameTitlePane(JInternalFrame frame) {
         super(frame);
     }
-    
+
     public void paintPalette(Graphics g) {
 //        boolean leftToRight = SmoothGradientUtils.isLeftToRight(frame);
-        
+
         int width = getWidth();
         int height = getHeight();
-        
+
         Color background = SmoothGradientLookAndFeel.getPrimaryControlShadow();
         Color darkShadow = SmoothGradientLookAndFeel.getControlDarkShadow();
-        
+
         g.setColor(background);
         g.fillRect(0, 0, width, height);
-        
+
         g.setColor(darkShadow);
         g.drawLine(0, height - 1, width, height - 1);
-        
+
 //        int buttonsWidth = getButtonsWidth();
 //        int xOffset = leftToRight ? 4 : buttonsWidth + 4;
 //        int bumpLength = width - buttonsWidth - 2 * 4;
 //        int bumpHeight = getHeight() - 4;
     }
-    
+
     protected LayoutManager createLayout() {
         return new PolishedTitlePaneLayout();
     }
-    
+
     public void paintComponent(Graphics g) {
-        
+
         if (isPalette) {
             paintPalette(g);
             return;
         }
-        
+
         boolean leftToRight = SmoothGradientUtils.isLeftToRight(frame);
         boolean isSelected = frame.isSelected();
-        
+
         int width = getWidth();
         int height = getHeight();
-        
+
         Color background = null;
         Color foreground = null;
         Color shadow = null;
-        
+
         if (isSelected) {
             background = SmoothGradientLookAndFeel.getWindowTitleBackground();
             foreground = SmoothGradientLookAndFeel.getWindowTitleForeground();
@@ -100,86 +88,84 @@ public final class SmoothGradientInternalFrameTitlePane
             background = SmoothGradientLookAndFeel.getWindowTitleInactiveBackground();
             foreground = SmoothGradientLookAndFeel.getWindowTitleInactiveForeground();
         }
-        
+
         shadow = SmoothGradientLookAndFeel.getControlDarkShadow();
         g.setColor(background);
         g.fillRect(0, 0, width, height);
-        
+
         g.setColor(shadow);
         g.drawLine(0, height - 1, width, height - 1);
         g.drawLine(0, 0, 0, 0);
         g.drawLine(width - 1, 0, width - 1, 0);
-        
+
         int titleLength = 0;
         int xOffset = leftToRight ? 5 : width - 5;
         String frameTitle = frame.getTitle();
-        
+
         Icon icon = frame.getFrameIcon();
-        
+
         if (icon != null) {
-            
+
             if (!leftToRight)
                 xOffset -= icon.getIconWidth();
-            
+
             int iconY = ((height / 2) - (icon.getIconHeight() / 2));
             icon.paintIcon(frame, g, xOffset, iconY);
             xOffset += leftToRight ? icon.getIconWidth() + 5 : -5;
-            
+
         }
-        
+
         boolean iconifiable = frame.isIconifiable();
         boolean maximizable = frame.isMaximizable();
-        
+
         if (frameTitle != null) {
             Font f = getFont();
             g.setFont(f);
             FontMetrics fm = g.getFontMetrics();
             //int fHeight = fm.getHeight();
-            
+
             g.setColor(foreground);
-            
+
             int yOffset = ((height - fm.getHeight()) / 2) + fm.getAscent();
             Rectangle rect = new Rectangle(0, 0, 0, 0);
-            
+
             if (iconifiable)
                 rect = iconButton.getBounds();
-            
+
             else if (maximizable)
                 rect = maxButton.getBounds();
-            
+
             else if (frame.isClosable())
                 rect = closeButton.getBounds();
-            
+
             int titleW;
-            
+
             if (leftToRight) {
-                
+
                 if (rect.x == 0)
                     rect.x = frame.getWidth() - frame.getInsets().right - 2;
-                
+
                 titleW = rect.x - xOffset - 4;
                 frameTitle = getTitle(frameTitle, fm, titleW);
-                
-            }
-            
-            else {
+
+            } else {
                 titleW = xOffset - rect.x - rect.width - 4;
                 frameTitle = getTitle(frameTitle, fm, titleW);
                 xOffset -= SwingUtilities.computeStringWidth(fm, frameTitle);
             }
-            
+
             titleLength = SwingUtilities.computeStringWidth(fm, frameTitle);
             g.drawString(frameTitle, xOffset, yOffset);
             xOffset += leftToRight ? titleLength + 5 : -5;
-            
+
         }
-        
+
         // draw the gradient
-        Rectangle r = new Rectangle(1,0,width,height);
+        Rectangle r = new Rectangle(1, 0, width, height);
         SmoothGradientUtils.addLight3DEffekt(g, r, true);
-        
+
     }
-    
+
     protected String getTitle(
             String text,
             FontMetrics fm,
@@ -201,18 +187,18 @@ public final class SmoothGradientInternalFrameTitlePane
         }
         return text;
     }
-    
+
     private int getButtonsWidth() {
         boolean leftToRight = SmoothGradientUtils.isLeftToRight(frame);
-        
+
         int w = getWidth();
         int x = leftToRight ? w : 0;
         int spacing;
-        
+
         // assumes all buttons have the same dimensions
         // these dimensions include the borders
         int buttonWidth = closeButton.getIcon().getIconWidth();
-        
+
         if (frame.isClosable()) {
             if (isPalette) {
                 spacing = 3;
@@ -226,14 +212,14 @@ public final class SmoothGradientInternalFrameTitlePane
                     x += buttonWidth;
             }
         }
-        
+
         if (frame.isMaximizable() && !isPalette) {
             spacing = frame.isClosable() ? 10 : 4;
             x += leftToRight ? -spacing - buttonWidth : spacing;
             if (!leftToRight)
                 x += buttonWidth;
         }
-        
+
         if (frame.isIconifiable() && !isPalette) {
             spacing =
                     frame.isMaximizable() ? 2 : (frame.isClosable() ? 10 : 4);
@@ -241,17 +227,21 @@ public final class SmoothGradientInternalFrameTitlePane
             if (!leftToRight)
                 x += buttonWidth;
         }
-        
+
         return leftToRight ? w - x : x;
     }
-    
+
     class PolishedTitlePaneLayout extends TitlePaneLayout {
-        public void addLayoutComponent(String name, Component c) {}
-        public void removeLayoutComponent(Component c) {}
-        public Dimension preferredLayoutSize(Container c)  {
+        public void addLayoutComponent(String name, Component c) {
+        }
+
+        public void removeLayoutComponent(Component c) {
+        }
+
+        public Dimension preferredLayoutSize(Container c) {
             return minimumLayoutSize(c);
         }
-        
+
         public Dimension minimumLayoutSize(Container c) {
             // Compute width.
             int width = 30;
@@ -263,13 +253,13 @@ public final class SmoothGradientInternalFrameTitlePane
             }
             if (frame.isIconifiable()) {
                 width += 16 + (frame.isMaximizable() ? 2 :
-                    (frame.isClosable() ? 10 : 4));
+                        (frame.isClosable() ? 10 : 4));
             }
             FontMetrics fm = getFontMetrics(getFont());
             String frameTitle = frame.getTitle();
             int title_w = frameTitle != null ? fm.stringWidth(frameTitle) : 0;
             int title_length = frameTitle != null ? frameTitle.length() : 0;
-            
+
             if (title_length > 2) {
                 int subtitle_w =
                         fm.stringWidth(frame.getTitle().substring(0, 2) + "...");
@@ -277,7 +267,7 @@ public final class SmoothGradientInternalFrameTitlePane
             } else {
                 width += title_w;
             }
-            
+
             // Compute height.
             int height = 0;
             if (isPalette) {
@@ -293,57 +283,57 @@ public final class SmoothGradientInternalFrameTitlePane
                 }
                 iconHeight += 5;
                 height = Math.max(fontHeight, iconHeight);
-                
+
             }
-            
+
             return new Dimension(width, height);
         }
-        
+
         public void layoutContainer(Container c) {
             boolean leftToRight = SmoothGradientUtils.isLeftToRight(frame);
-            
+
             int w = getWidth();
             int x = leftToRight ? w : 0;
             int y = 3;
             int spacing;
-            
+
             // assumes all buttons have the same dimensions
             // these dimensions include the borders
             int buttonHeight = closeButton.getIcon().getIconHeight();
             int buttonWidth = closeButton.getIcon().getIconWidth();
-            
-            if(frame.isClosable()) {
+
+            if (frame.isClosable()) {
                 if (isPalette) {
                     spacing = 3;
-                    x += leftToRight ? -spacing -(buttonWidth+2) : spacing;
-                    closeButton.setBounds(x, y, buttonWidth+2, getHeight()-4);
-                    if( !leftToRight ) x += (buttonWidth+2);
+                    x += leftToRight ? -spacing - (buttonWidth + 2) : spacing;
+                    closeButton.setBounds(x, y, buttonWidth + 2, getHeight() - 4);
+                    if (!leftToRight) x += (buttonWidth + 2);
                 } else {
                     spacing = 4;
-                    x += leftToRight ? -spacing -buttonWidth : spacing;
+                    x += leftToRight ? -spacing - buttonWidth : spacing;
                     closeButton.setBounds(x, y, buttonWidth, buttonHeight);
-                    if( !leftToRight ) x += buttonWidth;
+                    if (!leftToRight) x += buttonWidth;
                 }
             }
-            
-            if(frame.isMaximizable() && !isPalette ) {
+
+            if (frame.isMaximizable() && !isPalette) {
                 spacing = 1;
-                x += leftToRight ? -spacing -buttonWidth : spacing;
+                x += leftToRight ? -spacing - buttonWidth : spacing;
                 maxButton.setBounds(x, y, buttonWidth, buttonHeight);
-                if( !leftToRight ) x += buttonWidth;
+                if (!leftToRight) x += buttonWidth;
             }
-            
-            if(frame.isIconifiable() && !isPalette ) {
+
+            if (frame.isIconifiable() && !isPalette) {
                 spacing = 1;
-                x += leftToRight ? -spacing -buttonWidth : spacing;
+                x += leftToRight ? -spacing - buttonWidth : spacing;
                 iconButton.setBounds(x, y, buttonWidth, buttonHeight);
-                if( !leftToRight ) x += buttonWidth;
+                if (!leftToRight) x += buttonWidth;
             }
-            
+
         }
-        
+
     } // class PolishedTitlePaneLayout
-    
+
 }
 
 

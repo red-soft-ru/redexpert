@@ -20,17 +20,18 @@
 
 package org.underworldlabs.swing.table;
 
+import org.underworldlabs.util.KeyValuePair;
+
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Properties;
 
-import org.underworldlabs.util.KeyValuePair;
-
-/** Simple wrapper class for key/value property values
- *  providing table model and sorting by key or value.
+/**
+ * Simple wrapper class for key/value property values
+ * providing table model and sorting by key or value.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class PropertyWrapperModel extends AbstractSortableTableModel {
 
@@ -68,27 +69,27 @@ public class PropertyWrapperModel extends AbstractSortableTableModel {
             valuePairs[count++] = new KeyValuePair(
                     entry.getKey().toString(), entry.getValue().toString());
         }
-        
+
         fireTableDataChanged();
     }
 
     public void setValues(Map<Object, Object> values, boolean sort) {
 
         Properties properties = new Properties();
-        
+
         for (Map.Entry<Object, Object> entry : values.entrySet()) {
 
             properties.put(entry.getKey(), entry.getValue());
         }
 
         setValues(properties);
-        
+
         if (sort) {
             sort();
         }
-        
+
     }
-    
+
     public void sort() {
         if (valuePairs == null || valuePairs.length == 0) {
             return;
@@ -101,7 +102,7 @@ public class PropertyWrapperModel extends AbstractSortableTableModel {
         this.sortBy = sortBy;
         sort();
     }
-    
+
     public int getColumnCount() {
         return 2;
     }
@@ -116,17 +117,17 @@ public class PropertyWrapperModel extends AbstractSortableTableModel {
     public boolean isCellEditable(int row, int col) {
         return true;
     }
-    
-    public Object getValueAt(int row, int col) {        
+
+    public Object getValueAt(int row, int col) {
 
         KeyValuePair value = valuePairs[row];
-        
+
         if (col == 0) {
             return value.getKey();
         } else {
             return value.getValue();
         }
-        
+
     }
 
     public String getColumnName(int col) {
@@ -153,7 +154,7 @@ public class PropertyWrapperModel extends AbstractSortableTableModel {
         }
 
     } // class KeyValuePairSorter
-    
+
 }
 
 

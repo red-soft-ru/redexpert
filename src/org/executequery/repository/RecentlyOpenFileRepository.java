@@ -23,11 +23,11 @@ package org.executequery.repository;
 public interface RecentlyOpenFileRepository extends Repository {
 
     String REPOSITORY_ID = "recently-open-files";
-    
+
     String[] getFiles();
 
     void clear() throws RepositoryException;
-    
+
     void addFile(String file) throws RepositoryException;
 
 }

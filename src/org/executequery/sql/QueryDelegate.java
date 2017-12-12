@@ -20,55 +20,57 @@
 
 package org.executequery.sql;
 
-import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface QueryDelegate {
-    
+
     /**
-     * Notifies the runner that the commit mode has changed 
+     * Notifies the runner that the commit mode has changed
      * to that specified.
-     * 
+     *
      * @param the commit mode
      */
     void commitModeChanged(boolean autoCommit);
-    
-    /** 
+
+    /**
      * Notifies the runner that a query is executing.
      *
-     *  @param a message
+     * @param a message
      */
     void executing();
 
-    /** Sets the result text within the designated
-     *  statement results area to the specified values.
+    /**
+     * Sets the result text within the designated
+     * statement results area to the specified values.
      *
-     *  @param the result of the executed query (update)
-     *  @param the type of statement executed
+     * @param the result of the executed query (update)
+     * @param the type of statement executed
      */
     void setResult(int result, int type);
-    
-    /** Sets the text within status bar's left-hand
-     *  message area to the specified value.
+
+    /**
+     * Sets the text within status bar's left-hand
+     * message area to the specified value.
      *
-     *  @param the text to display
+     * @param the text to display
      */
     void setStatusMessage(String text);
-    
-    /** Sets the error message text within the
-     *  designated area to the specified value. This
-     *  will usually send <code>SQLException</code>
-     *  messages or dumps.
+
+    /**
+     * Sets the error message text within the
+     * designated area to the specified value. This
+     * will usually send <code>SQLException</code>
+     * messages or dumps.
      *
-     *  @param the error message to display
+     * @param the error message to display
      */
     void setOutputMessage(int type, String text);
 
-    /** 
+    /**
      * Sets the error message text within the
      * designated area to the specified value and selects
      * the output pane as specified.
@@ -77,43 +79,45 @@ public interface QueryDelegate {
      */
     void setOutputMessage(int type, String text, boolean selectTab);
 
-    /** 
-     * Interrupts any executing statement. 
+    /**
+     * Interrupts any executing statement.
      */
     void interrupt();
 
-    /** Sets the table results to the specified
-     *  <code>ResultSet</code> object for display.
+    /**
+     * Sets the table results to the specified
+     * <code>ResultSet</code> object for display.
      *
-     *  @param the table results to display
-     *  @param the executed query of the result set
+     * @param the table results to display
+     * @param the executed query of the result set
      */
     void setResultSet(ResultSet rs, String query) throws SQLException;
 
-    /** Adds the specified SQL statement to the statement
-     *  history list if available.
+    /**
+     * Adds the specified SQL statement to the statement
+     * history list if available.
      *
-     *  @param the statement to add
+     * @param the statement to add
      */
     void statementExecuted(String statement);
-    
-    /** 
+
+    /**
      * Notifies that am execution has finished.
      */
     void finished(String message);
-    
+
     /**
      * Indicates whether an internal logger is used.
      */
     boolean isLogEnabled();
-    
+
     /**
      * Logs the specified message.
-     * 
+     *
      * @param message
      */
     void log(String message);
- 
+
     /**
      * Attempts to commit any currently open transaction.
      */
@@ -123,7 +127,7 @@ public interface QueryDelegate {
      * Attempts to rollback any currently open transaction.
      */
     void rollback();
-    
+
     /**
      * Executes the specified query.
      *
@@ -134,7 +138,7 @@ public interface QueryDelegate {
     /**
      * Executes the specified query as a 'block' if specified.
      *
-     * @param the query
+     * @param the     query
      * @param whether to execute ALL query text as one statement
      */
     void executeQuery(String query, boolean executeAsBlock);

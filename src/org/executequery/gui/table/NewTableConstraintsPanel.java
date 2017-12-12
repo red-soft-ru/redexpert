@@ -20,167 +20,168 @@
 
 package org.executequery.gui.table;
 
-import java.util.Vector;
-
 import org.apache.commons.lang.StringUtils;
-import org.executequery.gui.browser.*;
-import org.executequery.gui.table.TableConstraintFunction;
+import org.executequery.gui.browser.ColumnConstraint;
+import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
 
+import java.util.Vector;
+
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class NewTableConstraintsPanel extends TableConstraintsPanel
-                                      implements CreateTableSQLSyntax {
-    
-    /** The table creator object - parent to this */
+        implements CreateTableSQLSyntax {
+
+    /**
+     * The table creator object - parent to this
+     */
     private TableConstraintFunction creator;
-    
-    /** The buffer off all SQL generated */
+
+    /**
+     * The buffer off all SQL generated
+     */
     private StringBuffer sqlBuffer;
-    
+
     public NewTableConstraintsPanel(TableConstraintFunction creator) {
         super();
         this.creator = creator;
         sqlBuffer = new StringBuffer(100);
     }
-    
+
     public ColumnData[] getTableColumnData() {
         return creator.getTableColumnData();
     }
-    
+
     public int getMode() {
         return CREATE_TABLE_MODE;
     }
 
     public void updateCellEditor(int col, int row, String value) {
         ColumnConstraint cc = getConstraintAt(row);
-        
-        switch(col) {
-            
+
+        switch (col) {
+
             case 0:
             case 1:
                 return;
-            
+
             case 2:
                 setCellEditor(3, new ComboBoxCellEditor(
-                                        creator.getTableColumnDataVector()));
-                
+                        creator.getTableColumnDataVector()));
+
                 if (cc.getType() != -1 && cc.getTypeName() == ColumnConstraint.FOREIGN) {
                     Vector schemas = creator.getHostedSchemasVector();
                     setCellEditor(4, new ComboBoxCellEditor(schemas));
-                    
+
                     if (schemas == null || schemas.size() == 0)
                         setCellEditor(5, new ComboBoxCellEditor(
-                        creator.getSchemaTables(value)));
-                    
+                                creator.getSchemaTables(value)));
+
                 }
                 break;
-                
+
             case 3:
                 break;
-                
+
             case 4:
                 setCellEditor(5, new ComboBoxCellEditor(
-                creator.getSchemaTables(value)));
+                        creator.getSchemaTables(value)));
                 break;
-                
+
             case 5:
                 String schema = cc.getRefSchema();
                 if (schema == null || schema.length() == 0) {
                     schema = "";
                 }
-                
+
                 try {
                     setCellEditor(6, new ComboBoxCellEditor(
-                                creator.getColumnNamesVector(value, schema)));
-                }
-                catch (NullPointerException nullExc) {} // i forget why
+                            creator.getColumnNamesVector(value, schema)));
+                } catch (NullPointerException nullExc) {
+                } // i forget why
                 break;
-                
+
         }
-        
+
     }
-    
+
     public void columnValuesChanged(int col, int row, String value) {
 
         Vector v = getKeys();
         String name = null;
         boolean hasName = false;
-        
+
         sqlBuffer.setLength(0);
-        
+
         for (int i = 0, n = v.size(); i < n; i++) {
 
             ColumnConstraint cc = (ColumnConstraint) v.elementAt(i);
-            
+
             if (i == row && StringUtils.isNotBlank(value)) {
 
                 name = value;
                 hasName = true;
 
             } else if (cc.getName() != ColumnConstraint.EMPTY) {
-                
+
                 name = cc.getName();
                 hasName = true;
 
             } else {
-              
+
                 hasName = false;
             }
-            
+
             if (hasName) {
 
                 sqlBuffer.append(COMMA).append(NEW_LINE_2).append(CONSTRAINT);
                 sqlBuffer.append(name).append(SPACE);
-                
+
                 if (cc.getType() != -1) {
-                    
+
                     if (cc.getType() == ColumnConstraint.UNIQUE_KEY) {
                         sqlBuffer.append(ColumnConstraint.UNIQUE).append(B_OPEN);
                         sqlBuffer.append(cc.getColumn()).append(B_CLOSE);
-                    }
-                    
-                    else {
+                    } else {
                         sqlBuffer.append(cc.getTypeName()).append(KEY).append(B_OPEN);
                         sqlBuffer.append(cc.getColumn());
                         sqlBuffer.append(B_CLOSE);
-                        
+
                         if (cc.getType() == ColumnConstraint.FOREIGN_KEY) {
                             sqlBuffer.append(INDENT).append(REFERENCES);
-                            
+
                             if (cc.hasSchema())
                                 sqlBuffer.append(cc.getRefSchema()).append(DOT);
-                            
+
                             sqlBuffer.append(cc.getRefTable()).
-                            append(B_OPEN).append(cc.getRefColumn()).
-                            append(B_CLOSE);
+                                    append(B_OPEN).append(cc.getRefColumn()).
+                                    append(B_CLOSE);
                         }
-                        
+
                     }
-                    
+
                 }
-                
+
             }
-            
+
         }
-        creator.setSQLText(sqlBuffer.toString(), TableModifier.CONSTRAINT_VALUES);        
+        creator.setSQLText(sqlBuffer.toString(), TableModifier.CONSTRAINT_VALUES);
     }
-    
+
     public void resetSQLText() {
         columnValuesChanged(0, 0, null);
     }
-    
+
     public String getSQLText() {
         return sqlBuffer.toString();
     }
-    
+
     public void columnValuesChanged() {
         columnValuesChanged(-1, -1, null);
     }
-    
-    
+
+
 }
 
 

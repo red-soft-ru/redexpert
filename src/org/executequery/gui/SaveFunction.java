@@ -23,22 +23,30 @@ package org.executequery.gui;
 /**
  * Defines those panel views where a save to file is available.
  *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public interface SaveFunction extends NamedView {
-    
-    /** Indicates a save has been successful. */
+
+    /**
+     * Indicates a save has been successful.
+     */
     int SAVE_COMPLETE = 0;
-    
-    /** Indicates a save has failed. */
+
+    /**
+     * Indicates a save has failed.
+     */
     int SAVE_FAILED = 1;
-    
-    /** Indicates a save has been cancelled. */
+
+    /**
+     * Indicates a save has been cancelled.
+     */
     int SAVE_CANCELLED = 2;
-    
-    /** Indicates a save has been invalid. */
+
+    /**
+     * Indicates a save has been invalid.
+     */
     int SAVE_INVALID = 3;
-    
+
     /**
      * Performs a save on this panel view.
      *
@@ -52,7 +60,7 @@ public interface SaveFunction extends NamedView {
      * @return true | false
      */
     boolean contentCanBeSaved();
-    
+
 }
 
 

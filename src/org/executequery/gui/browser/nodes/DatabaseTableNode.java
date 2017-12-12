@@ -20,13 +20,13 @@
 
 package org.executequery.gui.browser.nodes;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseTableNode extends DatabaseObjectNode {
 
@@ -34,7 +34,7 @@ public class DatabaseTableNode extends DatabaseObjectNode {
 
         super(databaseObject);
     }
-    
+
     @Override
     public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
 
@@ -46,62 +46,63 @@ public class DatabaseTableNode extends DatabaseObjectNode {
 
         return nodes;
     }
+
     private DatabaseTable databaseTable() {
-        
+
         return (DatabaseTable) getDatabaseObject();
     }
 
     private List<DatabaseObjectNode> asNodes(List<? extends NamedObject> values) {
-        
+
         if (values != null) {
 
             List<DatabaseObjectNode> nodes = new ArrayList<DatabaseObjectNode>();
             for (int i = 0, n = values.size(); i < n; i++) {
-            
+
                 nodes.add(new DatabaseObjectNode(values.get(i)));
             }
-            
+
             return nodes;
         }
 
         return null;
     }
-    
-    
+
+
     class ColumnFolderNode extends TableFolderNode {
-        
+
         @Override
         public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
 
             return asNodes(databaseTable().getObjects());
         }
-        
+
         @Override
         public String getName() {
-            
+
             return bundleString("columns");
         }
-        
+
         @Override
         public int getType() {
 
             return NamedObject.COLUMNS_FOLDER_NODE;
         }
-        
+
     }
-    
-    
+
+
     class ForeignKeysFolderNode extends TableFolderNode {
-        
+
         @Override
         public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
 
             return asNodes(databaseTable().getForeignKeys());
         }
-        
+
         @Override
         public String getName() {
-            
+
             return bundleString("foreign-keys");
         }
 
@@ -112,18 +113,18 @@ public class DatabaseTableNode extends DatabaseObjectNode {
         }
 
     }
-    
+
     class PrimaryKeysFolderNode extends TableFolderNode {
-        
+
         @Override
         public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
 
             return asNodes(databaseTable().getPrimaryKeys());
         }
-        
+
         @Override
         public String getName() {
-            
+
             return bundleString("primary-keys");
         }
 
@@ -136,19 +137,19 @@ public class DatabaseTableNode extends DatabaseObjectNode {
     }
 
     class IndexesFolderNode extends TableFolderNode {
-        
+
         @Override
         public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
 
             return asNodes(databaseTable().getIndexes());
         }
-        
+
         @Override
         public String getName() {
-            
+
             return bundleString("indexes");
         }
-     
+
         @Override
         public int getType() {
 
@@ -156,11 +157,11 @@ public class DatabaseTableNode extends DatabaseObjectNode {
         }
 
     }
-    
+
     abstract class TableFolderNode extends DatabaseObjectNode {
 
         protected String bundleString(String key) {
-            
+
             return Bundles.get(getClass().getEnclosingClass(), key);
         }
 
@@ -169,9 +170,9 @@ public class DatabaseTableNode extends DatabaseObjectNode {
 
             return getName();
         }
-        
+
     }
-    
+
 }
 
 

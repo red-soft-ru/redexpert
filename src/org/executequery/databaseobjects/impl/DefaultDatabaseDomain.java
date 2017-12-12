@@ -4,10 +4,12 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.datasource.ConnectionManager;
-import org.executequery.datasource.PooledConnection;
 import org.underworldlabs.jdbc.DataSourceException;
 
-import java.sql.*;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +45,8 @@ public class DefaultDatabaseDomain extends DefaultDatabaseExecutable
     /**
      * Creates a new instance.
      */
-    public DefaultDatabaseDomain() {}
+    public DefaultDatabaseDomain() {
+    }
 
     /**
      * Creates a new instance.
@@ -177,14 +180,14 @@ public class DefaultDatabaseDomain extends DefaultDatabaseExecutable
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
                     return "NUMERIC(" + sqlSize + "," + Math.abs(sqlscale) + ")";
                 else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL("+ sqlSize + "," + Math.abs(sqlscale) + ")";
+                    return "DECIMAL(" + sqlSize + "," + Math.abs(sqlscale) + ")";
                 else
                     return "SMALLINT";
             case integer_type:
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
                     return "NUMERIC(" + sqlSize + "," + Math.abs(sqlscale) + ")";
                 else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL("+ sqlSize + "," + Math.abs(sqlscale) + ")";
+                    return "DECIMAL(" + sqlSize + "," + Math.abs(sqlscale) + ")";
                 else
                     return "INTEGER";
             case double_type:
@@ -192,7 +195,7 @@ public class DefaultDatabaseDomain extends DefaultDatabaseExecutable
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
                     return "NUMERIC(" + sqlSize + "," + Math.abs(sqlscale) + ")";
                 else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL("+ sqlSize + "," + Math.abs(sqlscale) + ")";
+                    return "DECIMAL(" + sqlSize + "," + Math.abs(sqlscale) + ")";
                 else
                     return "DOUBLE PRECISION";
             case float_type:
@@ -211,7 +214,7 @@ public class DefaultDatabaseDomain extends DefaultDatabaseExecutable
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
                     return "NUMERIC(" + sqlSize + "," + Math.abs(sqlscale) + ")";
                 else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL("+ sqlSize + "," + Math.abs(sqlscale) + ")";
+                    return "DECIMAL(" + sqlSize + "," + Math.abs(sqlscale) + ")";
                 else
                     return "BIGINT";
             case blob_type:

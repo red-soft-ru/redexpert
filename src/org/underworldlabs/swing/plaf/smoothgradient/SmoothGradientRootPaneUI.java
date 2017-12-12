@@ -20,79 +20,80 @@
 
 package org.underworldlabs.swing.plaf.smoothgradient;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Insets;
-import java.awt.LayoutManager;
-import java.awt.LayoutManager2;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.Window;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseEvent;
-
-import java.beans.PropertyChangeEvent;
-
-import javax.swing.JComponent;
-import javax.swing.JLayeredPane;
-import javax.swing.JRootPane;
-import javax.swing.LookAndFeel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicRootPaneUI;
+import java.awt.*;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
 
 // Modified to inlcude the PolishedTitlePane instead of MetalTitlePane.
 // Except for those references, all other code is the same as for MetalRootPaneUI
 
 /**
- *
- * @author   Takis Diakoumis
+ * @author Takis Diakoumis
  */
 public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
 
-    /** Keys to lookup borders in defaults table. */
-    private static final String[] borderKeys = new String[] {
-        null, "RootPane.frameBorder", "RootPane.plainDialogBorder",
-        "RootPane.informationDialogBorder",
-        "RootPane.errorDialogBorder", "RootPane.colorChooserDialogBorder",
-        "RootPane.fileChooserDialogBorder", "RootPane.questionDialogBorder",
-        "RootPane.warningDialogBorder"
+    /**
+     * Keys to lookup borders in defaults table.
+     */
+    private static final String[] borderKeys = new String[]{
+            null, "RootPane.frameBorder", "RootPane.plainDialogBorder",
+            "RootPane.informationDialogBorder",
+            "RootPane.errorDialogBorder", "RootPane.colorChooserDialogBorder",
+            "RootPane.fileChooserDialogBorder", "RootPane.questionDialogBorder",
+            "RootPane.warningDialogBorder"
     };
 
-    /** The amount of space (in pixels) that the cursor is changed on. */
+    /**
+     * The amount of space (in pixels) that the cursor is changed on.
+     */
     private static final int CORNER_DRAG_WIDTH = 16;
 
-    /** Region from edges that dragging is active from. */
+    /**
+     * Region from edges that dragging is active from.
+     */
     private static final int BORDER_DRAG_THICKNESS = 5;
 
-    /** Window the <code>JRootPane</code> is in. */
+    /**
+     * Window the <code>JRootPane</code> is in.
+     */
     private Window window;
 
-    /** <code>JComponent</code> providing window decorations. This will be
-     *  null if not providing window decorations. */
+    /**
+     * <code>JComponent</code> providing window decorations. This will be
+     * null if not providing window decorations.
+     */
     private JComponent titlePane;
 
-    /** <code>MouseInputListener</code> that is added to the parent
-     *  <code>Window</code> the <code>JRootPane</code> is contained in. */
+    /**
+     * <code>MouseInputListener</code> that is added to the parent
+     * <code>Window</code> the <code>JRootPane</code> is contained in.
+     */
     private MouseInputListener mouseInputListener;
 
-    /** The <code>LayoutManager</code> that is set on the <code>JRootPane</code>. */
+    /**
+     * The <code>LayoutManager</code> that is set on the <code>JRootPane</code>.
+     */
     private LayoutManager layoutManager;
 
-    /** <code>LayoutManager</code> of the <code>JRootPane</code> before we replaced it. */
+    /**
+     * <code>LayoutManager</code> of the <code>JRootPane</code> before we replaced it.
+     */
     private LayoutManager savedOldLayout;
 
-    /** <code>JRootPane</code> providing the look and feel for. */
+    /**
+     * <code>JRootPane</code> providing the look and feel for.
+     */
     private JRootPane root;
 
-    /** <code>Cursor</code> used to track the cursor set by the user.  
-     *  This is initially <code>Cursor.DEFAULT_CURSOR</code>. */
+    /**
+     * <code>Cursor</code> used to track the cursor set by the user.
+     * This is initially <code>Cursor.DEFAULT_CURSOR</code>.
+     */
     private Cursor lastCursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
 
     /**
@@ -119,9 +120,9 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
      *
      * @param c the JRootPane to install state onto
      */
-    public void installUI(JComponent c) { 
+    public void installUI(JComponent c) {
         super.installUI(c);
-        root = (JRootPane)c;
+        root = (JRootPane) c;
         int style = root.getWindowDecorationStyle();
         if (style != JRootPane.NONE) {
             installClientDecorations(root);
@@ -158,8 +159,7 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
 
         if (style == JRootPane.NONE) {
             LookAndFeel.uninstallBorder(root);
-        }
-        else {
+        } else {
             LookAndFeel.installBorder(root, borderKeys[style]);
         }
     }
@@ -183,9 +183,8 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
      */
     private void installWindowListeners(JRootPane root, Component parent) {
         if (parent instanceof Window) {
-            window = (Window)parent;
-        }
-        else {
+            window = (Window) parent;
+        } else {
             window = SwingUtilities.getWindowAncestor(parent);
         }
         if (window != null) {
@@ -261,20 +260,20 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
         uninstallWindowListeners(root);
         setTitlePane(root, null);
         uninstallLayout(root);
-	// We have to revalidate/repaint root if the style is JRootPane.NONE
-	// only. When we needs to call revalidate/repaint with other styles
-	// the installClientDecorations is always called after this method
-	// imediatly and it will cause the revalidate/repaint at the proper
-	// time.
+        // We have to revalidate/repaint root if the style is JRootPane.NONE
+        // only. When we needs to call revalidate/repaint with other styles
+        // the installClientDecorations is always called after this method
+        // imediatly and it will cause the revalidate/repaint at the proper
+        // time.
         int style = root.getWindowDecorationStyle();
         if (style == JRootPane.NONE) {
-	    root.repaint();
-	    root.revalidate();
-	}
+            root.repaint();
+            root.revalidate();
+        }
         // Reset the cursor, as we may have changed it to a resize cursor
         if (window != null) {
             window.setCursor(Cursor.getPredefinedCursor
-                             (Cursor.DEFAULT_CURSOR));
+                    (Cursor.DEFAULT_CURSOR));
         }
         window = null;
     }
@@ -303,13 +302,13 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
         return new MetalRootLayout();
     }
 
-    /** 
+    /**
      * Sets the window title pane -- the JComponent used to provide a plaf a
      * way to override the native operating system's window title pane with
-     * one whose look and feel are controlled by the plaf.  The plaf creates 
+     * one whose look and feel are controlled by the plaf.  The plaf creates
      * and sets this value; the default is null, implying a native operating
      * system window title pane.
-     *  
+     *
      * @param content the <code>JComponent</code> to use for the window title pane.
      */
     private void setTitlePane(JRootPane root, JComponent titlePane) {
@@ -350,7 +349,7 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
      * Invoked when a property changes. <code>PolishedRootPaneUI</code> is
      * primarily interested in events originating from the
      * <code>JRootPane</code> it has been installed on identifying the
-     * property <code>windowDecorationStyle</code>. If the 
+     * property <code>windowDecorationStyle</code>. If the
      * <code>windowDecorationStyle</code> has changed to a value other
      * than <code>JRootPane.NONE</code>, this will add a <code>Component</code>
      * to the <code>JRootPane</code> to render the window decorations, as well
@@ -361,18 +360,18 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
      * as well resetting the Border to what it was before
      * <code>installUI</code> was invoked.
      *
-     * @param e A PropertyChangeEvent object describing the event source 
+     * @param e A PropertyChangeEvent object describing the event source
      *          and the property that has changed.
      */
     public void propertyChange(PropertyChangeEvent e) {
         super.propertyChange(e);
-        
+
         String propertyName = e.getPropertyName();
-        if(propertyName == null) {
+        if (propertyName == null) {
             return;
         }
-    
-        if(propertyName.equals("windowDecorationStyle")) {
+
+        if (propertyName.equals("windowDecorationStyle")) {
             JRootPane root = (JRootPane) e.getSource();
             int style = root.getWindowDecorationStyle();
 
@@ -384,19 +383,18 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
             if (style != JRootPane.NONE) {
                 installClientDecorations(root);
             }
-        }
-        else if (propertyName.equals("ancestor")) {
+        } else if (propertyName.equals("ancestor")) {
             uninstallWindowListeners(root);
-            if (((JRootPane)e.getSource()).getWindowDecorationStyle() !=
-                                           JRootPane.NONE) {
+            if (((JRootPane) e.getSource()).getWindowDecorationStyle() !=
+                    JRootPane.NONE) {
                 installWindowListeners(root, root.getParent());
             }
         }
         return;
-    } 
+    }
 
-    /** 
-     * A custom layout manager that is responsible for the layout of 
+    /**
+     * A custom layout manager that is responsible for the layout of
      * layeredPane, glassPane, menuBar and titlePane, if one has been
      * installed.
      */
@@ -408,7 +406,7 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
          *
          * @param the Container for which this layout manager is being used
          * @return a Dimension object containing the layout's preferred size
-         */ 
+         */
         public Dimension preferredLayoutSize(Container parent) {
             Dimension cpd, mbd, tpd;
             int cpWidth = 0;
@@ -419,8 +417,8 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
             int tpHeight = 0;
             Insets i = parent.getInsets();
             JRootPane root = (JRootPane) parent;
-    
-            if(root.getContentPane() != null) {
+
+            if (root.getContentPane() != null) {
                 cpd = root.getContentPane().getPreferredSize();
             } else {
                 cpd = root.getSize();
@@ -430,18 +428,18 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
                 cpHeight = cpd.height;
             }
 
-            if(root.getJMenuBar() != null) {
+            if (root.getJMenuBar() != null) {
                 mbd = root.getJMenuBar().getPreferredSize();
                 if (mbd != null) {
                     mbWidth = mbd.width;
                     mbHeight = mbd.height;
                 }
-            } 
+            }
 
             if (root.getWindowDecorationStyle() != JRootPane.NONE &&
-                     (root.getUI() instanceof SmoothGradientRootPaneUI)) {
-                JComponent titlePane = ((SmoothGradientRootPaneUI)root.getUI()).
-                                       getTitlePane();
+                    (root.getUI() instanceof SmoothGradientRootPaneUI)) {
+                JComponent titlePane = ((SmoothGradientRootPaneUI) root.getUI()).
+                        getTitlePane();
                 if (titlePane != null) {
                     tpd = titlePane.getPreferredSize();
                     if (tpd != null) {
@@ -451,8 +449,8 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
                 }
             }
 
-            return new Dimension(Math.max(Math.max(cpWidth, mbWidth), tpWidth) + i.left + i.right, 
-                                 cpHeight + mbHeight + tpWidth + i.top + i.bottom);
+            return new Dimension(Math.max(Math.max(cpWidth, mbWidth), tpWidth) + i.left + i.right,
+                    cpHeight + mbHeight + tpWidth + i.top + i.bottom);
         }
 
         /**
@@ -460,7 +458,7 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
          *
          * @param the Container for which this layout manager is being used
          * @return a Dimension object containing the layout's minimum size
-         */ 
+         */
         public Dimension minimumLayoutSize(Container parent) {
             Dimension cpd, mbd, tpd;
             int cpWidth = 0;
@@ -471,8 +469,8 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
             int tpHeight = 0;
             Insets i = parent.getInsets();
             JRootPane root = (JRootPane) parent;
-        
-            if(root.getContentPane() != null) {
+
+            if (root.getContentPane() != null) {
                 cpd = root.getContentPane().getMinimumSize();
             } else {
                 cpd = root.getSize();
@@ -482,17 +480,17 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
                 cpHeight = cpd.height;
             }
 
-            if(root.getJMenuBar() != null) {
+            if (root.getJMenuBar() != null) {
                 mbd = root.getJMenuBar().getMinimumSize();
                 if (mbd != null) {
                     mbWidth = mbd.width;
                     mbHeight = mbd.height;
                 }
-            }            
+            }
             if (root.getWindowDecorationStyle() != JRootPane.NONE &&
-                     (root.getUI() instanceof SmoothGradientRootPaneUI)) {
-                JComponent titlePane = ((SmoothGradientRootPaneUI)root.getUI()).
-                                       getTitlePane();
+                    (root.getUI() instanceof SmoothGradientRootPaneUI)) {
+                JComponent titlePane = ((SmoothGradientRootPaneUI) root.getUI()).
+                        getTitlePane();
                 if (titlePane != null) {
                     tpd = titlePane.getMinimumSize();
                     if (tpd != null) {
@@ -502,8 +500,8 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
                 }
             }
 
-            return new Dimension(Math.max(Math.max(cpWidth, mbWidth), tpWidth) + i.left + i.right, 
-                                 cpHeight + mbHeight + tpWidth + i.top + i.bottom);
+            return new Dimension(Math.max(Math.max(cpWidth, mbWidth), tpWidth) + i.left + i.right,
+                    cpHeight + mbHeight + tpWidth + i.top + i.bottom);
         }
 
         /**
@@ -511,7 +509,7 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
          *
          * @param the Container for which this layout manager is being used
          * @return a Dimension object containing the layout's maximum size
-         */ 
+         */
         public Dimension maximumLayoutSize(Container target) {
             Dimension cpd, mbd, tpd;
             int cpWidth = Integer.MAX_VALUE;
@@ -522,8 +520,8 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
             int tpHeight = Integer.MAX_VALUE;
             Insets i = target.getInsets();
             JRootPane root = (JRootPane) target;
-        
-            if(root.getContentPane() != null) {
+
+            if (root.getContentPane() != null) {
                 cpd = root.getContentPane().getMaximumSize();
                 if (cpd != null) {
                     cpWidth = cpd.width;
@@ -531,7 +529,7 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
                 }
             }
 
-            if(root.getJMenuBar() != null) {
+            if (root.getJMenuBar() != null) {
                 mbd = root.getJMenuBar().getMaximumSize();
                 if (mbd != null) {
                     mbWidth = mbd.width;
@@ -540,11 +538,10 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
             }
 
             if (root.getWindowDecorationStyle() != JRootPane.NONE &&
-                     (root.getUI() instanceof SmoothGradientRootPaneUI)) {
-                JComponent titlePane = ((SmoothGradientRootPaneUI)root.getUI()).
-                                       getTitlePane();
-                if (titlePane != null)
-                {
+                    (root.getUI() instanceof SmoothGradientRootPaneUI)) {
+                JComponent titlePane = ((SmoothGradientRootPaneUI) root.getUI()).
+                        getTitlePane();
+                if (titlePane != null) {
                     tpd = titlePane.getMaximumSize();
                     if (tpd != null) {
                         tpWidth = tpd.width;
@@ -559,7 +556,7 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
             if (maxHeight != Integer.MAX_VALUE) {
                 maxHeight = cpHeight + mbHeight + tpHeight + i.top + i.bottom;
             }
-    
+
             int maxWidth = Math.max(Math.max(cpWidth, mbWidth), tpWidth);
             // Similar overflow comment as above
             if (maxWidth != Integer.MAX_VALUE) {
@@ -568,13 +565,13 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
 
             return new Dimension(maxWidth, maxHeight);
         }
-    
+
         /**
          * Instructs the layout manager to perform the layout for the specified
          * container.
          *
          * @param the Container for which this layout manager is being used
-         */ 
+         */
         public void layoutContainer(Container parent) {
             JRootPane root = (JRootPane) parent;
             Rectangle b = root.getBounds();
@@ -582,46 +579,59 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
             int nextY = 0;
             int w = b.width - i.right - i.left;
             int h = b.height - i.top - i.bottom;
-    
-            if(root.getLayeredPane() != null) {
+
+            if (root.getLayeredPane() != null) {
                 root.getLayeredPane().setBounds(i.left, i.top, w, h);
             }
-            if(root.getGlassPane() != null) {
+            if (root.getGlassPane() != null) {
                 root.getGlassPane().setBounds(i.left, i.top, w, h);
             }
             // Note: This is laying out the children in the layeredPane,
             // technically, these are not our children.
             if (root.getWindowDecorationStyle() != JRootPane.NONE &&
-                     (root.getUI() instanceof SmoothGradientRootPaneUI)) {
-                JComponent titlePane = ((SmoothGradientRootPaneUI)root.getUI()).
-                                       getTitlePane();
+                    (root.getUI() instanceof SmoothGradientRootPaneUI)) {
+                JComponent titlePane = ((SmoothGradientRootPaneUI) root.getUI()).
+                        getTitlePane();
                 if (titlePane != null) {
                     Dimension tpd = titlePane.getPreferredSize();
                     if (tpd != null) {
                         int tpHeight = tpd.height;
                         titlePane.setBounds(0, 0, w, tpHeight);
                         nextY += tpHeight;
-                    }                    
+                    }
                 }
             }
-            if(root.getJMenuBar() != null) {
+            if (root.getJMenuBar() != null) {
                 Dimension mbd = root.getJMenuBar().getPreferredSize();
                 root.getJMenuBar().setBounds(0, nextY, w, mbd.height);
                 nextY += mbd.height;
             }
-            if(root.getContentPane() != null) {
+            if (root.getContentPane() != null) {
                 Dimension cpd = root.getContentPane().getPreferredSize();
-                root.getContentPane().setBounds(0, nextY, w, 
-                h < nextY ? 0 : h - nextY);
+                root.getContentPane().setBounds(0, nextY, w,
+                        h < nextY ? 0 : h - nextY);
             }
         }
-    
-        public void addLayoutComponent(String name, Component comp) {}
-        public void removeLayoutComponent(Component comp) {}
-        public void addLayoutComponent(Component comp, Object constraints) {}
-        public float getLayoutAlignmentX(Container target) { return 0.0f; }
-        public float getLayoutAlignmentY(Container target) { return 0.0f; }
-        public void invalidateLayout(Container target) {}
+
+        public void addLayoutComponent(String name, Component comp) {
+        }
+
+        public void removeLayoutComponent(Component comp) {
+        }
+
+        public void addLayoutComponent(Component comp, Object constraints) {
+        }
+
+        public float getLayoutAlignmentX(Container target) {
+            return 0.0f;
+        }
+
+        public float getLayoutAlignmentY(Container target) {
+            return 0.0f;
+        }
+
+        public void invalidateLayout(Container target) {
+        }
     }
 
 
@@ -630,14 +640,14 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
      * calculatePosition for details of this.
      */
     private static final int[] cursorMapping = new int[]
-    { Cursor.NW_RESIZE_CURSOR, Cursor.NW_RESIZE_CURSOR, Cursor.N_RESIZE_CURSOR,
-             Cursor.NE_RESIZE_CURSOR, Cursor.NE_RESIZE_CURSOR,
-      Cursor.NW_RESIZE_CURSOR, 0, 0, 0, Cursor.NE_RESIZE_CURSOR,
-      Cursor.W_RESIZE_CURSOR, 0, 0, 0, Cursor.E_RESIZE_CURSOR,
-      Cursor.SW_RESIZE_CURSOR, 0, 0, 0, Cursor.SE_RESIZE_CURSOR,
-      Cursor.SW_RESIZE_CURSOR, Cursor.SW_RESIZE_CURSOR, Cursor.S_RESIZE_CURSOR,
-             Cursor.SE_RESIZE_CURSOR, Cursor.SE_RESIZE_CURSOR
-    };
+            {Cursor.NW_RESIZE_CURSOR, Cursor.NW_RESIZE_CURSOR, Cursor.N_RESIZE_CURSOR,
+                    Cursor.NE_RESIZE_CURSOR, Cursor.NE_RESIZE_CURSOR,
+                    Cursor.NW_RESIZE_CURSOR, 0, 0, 0, Cursor.NE_RESIZE_CURSOR,
+                    Cursor.W_RESIZE_CURSOR, 0, 0, 0, Cursor.E_RESIZE_CURSOR,
+                    Cursor.SW_RESIZE_CURSOR, 0, 0, 0, Cursor.SE_RESIZE_CURSOR,
+                    Cursor.SW_RESIZE_CURSOR, Cursor.SW_RESIZE_CURSOR, Cursor.S_RESIZE_CURSOR,
+                    Cursor.SE_RESIZE_CURSOR, Cursor.SE_RESIZE_CURSOR
+            };
 
     /**
      * MouseInputHandler is responsible for handling resize/moving of
@@ -683,38 +693,37 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
                 return;
             }
             Point dragWindowOffset = ev.getPoint();
-            Window w = (Window)ev.getSource();
+            Window w = (Window) ev.getSource();
             if (w != null) {
                 w.toFront();
             }
             Point convertedDragWindowOffset = SwingUtilities.convertPoint(
-                           w, dragWindowOffset, getTitlePane());
+                    w, dragWindowOffset, getTitlePane());
 
             Frame f = null;
             Dialog d = null;
 
             if (w instanceof Frame) {
-                f = (Frame)w;
+                f = (Frame) w;
             } else if (w instanceof Dialog) {
-                d = (Dialog)w;
+                d = (Dialog) w;
             }
 
             int frameState = (f != null) ? f.getExtendedState() : 0;
 
             if (getTitlePane() != null &&
-                        getTitlePane().contains(convertedDragWindowOffset)) {
+                    getTitlePane().contains(convertedDragWindowOffset)) {
                 if ((f != null && ((frameState & Frame.MAXIMIZED_BOTH) == 0)
                         || (d != null))
                         && dragWindowOffset.y >= BORDER_DRAG_THICKNESS
                         && dragWindowOffset.x >= BORDER_DRAG_THICKNESS
                         && dragWindowOffset.x < w.getWidth()
-                            - BORDER_DRAG_THICKNESS) {
+                        - BORDER_DRAG_THICKNESS) {
                     isMovingWindow = true;
                     dragOffsetX = dragWindowOffset.x;
                     dragOffsetY = dragWindowOffset.y;
                 }
-            }
-            else if (f != null && f.isResizable()
+            } else if (f != null && f.isResizable()
                     && ((frameState & Frame.MAXIMIZED_BOTH) == 0)
                     || (d != null && d.isResizable())) {
                 dragOffsetX = dragWindowOffset.x;
@@ -722,7 +731,7 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
                 dragWidth = w.getWidth();
                 dragHeight = w.getHeight();
                 dragCursor = getCursor(calculateCorner(
-                             w, dragWindowOffset.x, dragWindowOffset.y));
+                        w, dragWindowOffset.x, dragWindowOffset.y));
             }
         }
 
@@ -744,15 +753,15 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
                 return;
             }
 
-            Window w = (Window)ev.getSource();
+            Window w = (Window) ev.getSource();
 
             Frame f = null;
             Dialog d = null;
 
             if (w instanceof Frame) {
-                f = (Frame)w;
+                f = (Frame) w;
             } else if (w instanceof Dialog) {
-                d = (Dialog)w;
+                d = (Dialog) w;
             }
 
             // Update the cursor
@@ -762,8 +771,7 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
                     (f.getExtendedState() & Frame.MAXIMIZED_BOTH) == 0))
                     || (d != null && d.isResizable()))) {
                 w.setCursor(Cursor.getPredefinedCursor(cursor));
-            }
-            else {
+            } else {
                 w.setCursor(lastCursor);
             }
         }
@@ -793,7 +801,7 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
         }
 
         public void mouseDragged(MouseEvent ev) {
-            Window w = (Window)ev.getSource();
+            Window w = (Window) ev.getSource();
             Point pt = ev.getPoint();
 
             if (isMovingWindow) {
@@ -802,53 +810,52 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
                 windowPt.x += pt.x - dragOffsetX;
                 windowPt.y += pt.y - dragOffsetY;
                 w.setLocation(windowPt);
-            }
-            else if (dragCursor != 0) {
+            } else if (dragCursor != 0) {
                 Rectangle r = w.getBounds();
                 Rectangle startBounds = new Rectangle(r);
                 Dimension min = w.getMinimumSize();
 
                 switch (dragCursor) {
-                case Cursor.E_RESIZE_CURSOR:
-                    adjust(r, min, 0, 0, pt.x + (dragWidth - dragOffsetX) -
-                           r.width, 0);
-                    break;
-                case Cursor.S_RESIZE_CURSOR:
-                    adjust(r, min, 0, 0, 0, pt.y + (dragHeight - dragOffsetY) -
-                           r.height);
-                    break;
-                case Cursor.N_RESIZE_CURSOR:
-                    adjust(r, min, 0, pt.y -dragOffsetY, 0,
-                           -(pt.y - dragOffsetY));
-                    break;
-                case Cursor.W_RESIZE_CURSOR:
-                    adjust(r, min, pt.x - dragOffsetX, 0,
-                           -(pt.x - dragOffsetX), 0);
-                    break;
-                case Cursor.NE_RESIZE_CURSOR:
-                    adjust(r, min, 0, pt.y - dragOffsetY,
-                           pt.x + (dragWidth - dragOffsetX) - r.width,
-                           -(pt.y - dragOffsetY));
-                    break;
-                case Cursor.SE_RESIZE_CURSOR:
-                    adjust(r, min, 0, 0, 
-                           pt.x + (dragWidth - dragOffsetX) - r.width,
-                           pt.y + (dragHeight - dragOffsetY) -
-                           r.height);
-                    break;
-                case Cursor.NW_RESIZE_CURSOR:
-                    adjust(r, min, pt.x - dragOffsetX,
-                           pt.y - dragOffsetY,
-                           -(pt.x - dragOffsetX),
-                           -(pt.y - dragOffsetY));
-                    break;
-                case Cursor.SW_RESIZE_CURSOR:
-                    adjust(r, min, pt.x - dragOffsetX, 0,
-                           -(pt.x - dragOffsetX),
-                           pt.y + (dragHeight - dragOffsetY) - r.height);
-                    break;
-                default:
-                    break;
+                    case Cursor.E_RESIZE_CURSOR:
+                        adjust(r, min, 0, 0, pt.x + (dragWidth - dragOffsetX) -
+                                r.width, 0);
+                        break;
+                    case Cursor.S_RESIZE_CURSOR:
+                        adjust(r, min, 0, 0, 0, pt.y + (dragHeight - dragOffsetY) -
+                                r.height);
+                        break;
+                    case Cursor.N_RESIZE_CURSOR:
+                        adjust(r, min, 0, pt.y - dragOffsetY, 0,
+                                -(pt.y - dragOffsetY));
+                        break;
+                    case Cursor.W_RESIZE_CURSOR:
+                        adjust(r, min, pt.x - dragOffsetX, 0,
+                                -(pt.x - dragOffsetX), 0);
+                        break;
+                    case Cursor.NE_RESIZE_CURSOR:
+                        adjust(r, min, 0, pt.y - dragOffsetY,
+                                pt.x + (dragWidth - dragOffsetX) - r.width,
+                                -(pt.y - dragOffsetY));
+                        break;
+                    case Cursor.SE_RESIZE_CURSOR:
+                        adjust(r, min, 0, 0,
+                                pt.x + (dragWidth - dragOffsetX) - r.width,
+                                pt.y + (dragHeight - dragOffsetY) -
+                                        r.height);
+                        break;
+                    case Cursor.NW_RESIZE_CURSOR:
+                        adjust(r, min, pt.x - dragOffsetX,
+                                pt.y - dragOffsetY,
+                                -(pt.x - dragOffsetX),
+                                -(pt.y - dragOffsetY));
+                        break;
+                    case Cursor.SW_RESIZE_CURSOR:
+                        adjust(r, min, pt.x - dragOffsetX, 0,
+                                -(pt.x - dragOffsetX),
+                                pt.y + (dragHeight - dragOffsetY) - r.height);
+                        break;
+                    default:
+                        break;
                 }
                 if (!r.equals(startBounds)) {
                     w.setBounds(r);
@@ -863,28 +870,28 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
         }
 
         public void mouseEntered(MouseEvent ev) {
-            Window w = (Window)ev.getSource();
+            Window w = (Window) ev.getSource();
             lastCursor = w.getCursor();
             mouseMoved(ev);
         }
 
         public void mouseExited(MouseEvent ev) {
-            Window w = (Window)ev.getSource();
+            Window w = (Window) ev.getSource();
             w.setCursor(lastCursor);
         }
 
         public void mouseClicked(MouseEvent ev) {
-            Window w = (Window)ev.getSource();
+            Window w = (Window) ev.getSource();
             Frame f = null;
 
             if (w instanceof Frame) {
-                f = (Frame)w;
+                f = (Frame) w;
             } else {
                 return;
             }
 
             Point convertedPoint = SwingUtilities.convertPoint(
-                           w, ev.getPoint(), getTitlePane());
+                    w, ev.getPoint(), getTitlePane());
 
             int state = f.getExtendedState();
             if (getTitlePane() != null &&
@@ -894,8 +901,7 @@ public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
                     if (f.isResizable()) {
                         if ((state & Frame.MAXIMIZED_BOTH) != 0) {
                             f.setExtendedState(state & ~Frame.MAXIMIZED_BOTH);
-                        }
-                        else {
+                        } else {
                             f.setExtendedState(state | Frame.MAXIMIZED_BOTH);
                         }
                         return;

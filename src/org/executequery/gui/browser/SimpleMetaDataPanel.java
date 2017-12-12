@@ -20,19 +20,6 @@
 
 package org.executequery.gui.browser;
 
-import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.print.Printable;
-
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-
 import org.executequery.databaseobjects.DatabaseObjectElement;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.DefaultTable;
@@ -41,27 +28,32 @@ import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.print.Printable;
+
 /**
- *
- * @author   Takis Diakoumis
- * @version  $Revision$
- * @date     $Date$
+ * @author Takis Diakoumis
+ * @version $Revision$
+ * @date $Date$
  */
 public class SimpleMetaDataPanel extends AbstractFormObjectViewPanel {
-    
+
     public static final String NAME = "SimpleMetaDataPanel";
 
     private static final String INDEX_HEADER_TEXT = "Table Index";
 
     private static final String FOREIGN_KEY_HEADER_TEXT = "Foreign Key";
-    
+
     private DisabledField nameField;
-    
+
     private JTable table;
 
     private SimpleMetaDataModel model;
 
-    /** the browser's control object */
+    /**
+     * the browser's control object
+     */
     private BrowserController controller;
 
     public SimpleMetaDataPanel(BrowserController controller) {
@@ -69,14 +61,13 @@ public class SimpleMetaDataPanel extends AbstractFormObjectViewPanel {
         this.controller = controller;
         try {
             init();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     private void init() throws Exception {
-        
+
         model = new SimpleMetaDataModel();
         table = new DefaultTable(model);
         table.getTableHeader().setReorderingAllowed(false);
@@ -85,18 +76,18 @@ public class SimpleMetaDataPanel extends AbstractFormObjectViewPanel {
         table.setRowSelectionAllowed(false);
 
         JPanel paramPanel = new JPanel(new BorderLayout());
-        paramPanel.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
+        paramPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
         paramPanel.add(new JScrollPane(table), BorderLayout.CENTER);
 
         JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP);
         tabs.add("Properties", paramPanel);
-        
+
         nameField = new DisabledField();
         //tableNameField = new DisabledField();
-        
+
         JPanel base = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        Insets insets = new Insets(12,5,5,5);
+        Insets insets = new Insets(12, 5, 5, 5);
         gbc.anchor = GridBagConstraints.NORTHEAST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridx++;
@@ -127,31 +118,31 @@ public class SimpleMetaDataPanel extends AbstractFormObjectViewPanel {
 
         setContentPanel(base);
     }
-    
+
     public String getLayoutName() {
         return NAME;
     }
-    
+
     public void refresh() {
         // nothing to do here
     }
-    
+
     public void cleanup() {
         // nothing to do here
     }
-    
+
     public Printable getPrintable() {
 
         return new TablePrinter(table, getHeaderText() + ": " + nameField.getText());
     }
-    
+
     public void setValues(NamedObject namedObject) {
 
         if (!(namedObject instanceof DatabaseObjectElement)) {
-            
+
             throw new IllegalArgumentException("Requires valid DatabaseObjectElement instance");
         }
-        
+
         try {
 
             nameField.setText(namedObject.getName());
@@ -167,18 +158,18 @@ public class SimpleMetaDataPanel extends AbstractFormObjectViewPanel {
     }
 
     private String headerTextForType(NamedObject namedObject) {
-        
+
         if (namedObject.getType() == NamedObject.TABLE_INDEX) {
-            
+
             return INDEX_HEADER_TEXT;
 
         } else {
-            
-            return FOREIGN_KEY_HEADER_TEXT;                
+
+            return FOREIGN_KEY_HEADER_TEXT;
         }
 
     }
-    
+
 }
 
 

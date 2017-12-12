@@ -84,7 +84,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     /**
      * interface of FB database
      */
-    static IFBDatabaseConnection db;
+    static ClassLoader cl;
 
     /**
      * Creates a new instance of DefaultDatabaseHost with the
@@ -1100,33 +1100,20 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
         Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
         if (driver.getClass().getName().contains("FBDriver")) {
-            int databaseMajorVersion = 0;
+            Connection conn = connection.unwrap(Connection.class);
             if (!pluginLoaded) {
-                Connection conn = connection.unwrap(Connection.class);
 
-                URL[] urls = new URL[0];
-                Class clazzdb = null;
-                Object odb = null;
-                try {
-                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-                    ClassLoader cl = new URLClassLoader(urls, conn.getClass().getClassLoader());
-                    clazzdb = cl.loadClass("biz.redsoft.FBDatabaseConnectionImpl");
-                    odb = clazzdb.newInstance();
-                } catch (ClassNotFoundException e) {
-                    throw new Exception(e);
-                } catch (IllegalAccessException e) {
-                    throw new Exception(e);
-                } catch (InstantiationException e) {
-                    throw new Exception(e);
-                } catch (MalformedURLException e) {
-                    throw new Exception(e);
-                }
-
-                db = (IFBDatabaseConnection) odb;
-
-                db.setConnection(conn);
+                URL[] urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                cl = new URLClassLoader(urls, conn.getClass().getClassLoader());
                 pluginLoaded = true;
             }
+            IFBDatabaseConnection db;
+            Class clazzdb;
+            Object odb;
+            clazzdb = cl.loadClass("biz.redsoft.FBDatabaseConnectionImpl");
+            odb = clazzdb.newInstance();
+            db = (IFBDatabaseConnection) odb;
+            db.setConnection(conn);
             switch (db.getMajorVersion()) {
                 case 2:
                     switch (type) {

@@ -77,16 +77,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     private List<DatabaseSchema> schemas;
 
     /**
-     * indicate if the plugin is loaded or not
-     */
-    static boolean pluginLoaded = false;
-
-    /**
-     * interface of FB database
-     */
-    static ClassLoader cl;
-
-    /**
      * Creates a new instance of DefaultDatabaseHost with the
      * specifiec database connection wrapper.
      *
@@ -1101,12 +1091,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
         if (driver.getClass().getName().contains("FBDriver")) {
             Connection conn = connection.unwrap(Connection.class);
-            if (!pluginLoaded) {
-
-                URL[] urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-                cl = new URLClassLoader(urls, conn.getClass().getClassLoader());
-                pluginLoaded = true;
-            }
+            URL[] urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+            ClassLoader cl = new URLClassLoader(urls, conn.getClass().getClassLoader());
             IFBDatabaseConnection db;
             Class clazzdb;
             Object odb;

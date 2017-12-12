@@ -2,6 +2,7 @@ package org.executequery.gui.procedure;
 
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
+import org.executequery.gui.table.TableFunction;
 import org.executequery.gui.table.TableModifier;
 import org.underworldlabs.util.MiscUtils;
 
@@ -18,7 +19,7 @@ public class NewProcedurePanel extends ProcedureDefinitionPanel
     /**
      * The table creator object - parent to this
      */
-    private TableModifier creator;
+    private CreateProcedureFunctionPanel creator;
 
     /**
      * The buffer for the current line
@@ -36,7 +37,7 @@ public class NewProcedurePanel extends ProcedureDefinitionPanel
 
     boolean primary;
 
-    public NewProcedurePanel(TableModifier creator) {
+    public NewProcedurePanel(CreateProcedureFunctionPanel creator) {
         super();
         this.creator = creator;
 
@@ -281,4 +282,48 @@ public class NewProcedurePanel extends ProcedureDefinitionPanel
             return primaryText.toString();
         else return "";
     }
+
+//    // -----------------------------------------------
+//    // -------- TableFunction implementations --------
+//    // -----------------------------------------------
+//
+//    public void moveColumnUp() {
+////        NewProcedurePanel panel = (NewProcedurePanel)parametersTabs.getSelectedComponent();
+////        panel.get
+////        int index = ().getSelectedIndex();
+////        if (index == 0) {
+//        this.moveColumnUp();
+////        }
+//    }
+//
+//    public void moveColumnDown() {
+////        int index = parametersTabs.getSelectedIndex();
+////        if (index == 0) {
+////            inputParametersPanel.moveColumnDown();
+////        }
+//        this.moveColumnDown();
+////        panel.moveColumnDown();
+//    }
+//
+//    public void deleteRow() {
+////        if (parametersTabs.getSelectedIndex() == 0) {
+////            inputParametersPanel.deleteRow();
+////        }
+////        NewProcedurePanel panel = (NewProcedurePanel)parametersTabs.getSelectedComponent();
+//        deleteRow();
+//    }
+//
+//    public void insertBefore() {
+////        inputParametersPanel.insertBefore();
+//        NewProcedurePanel panel = (NewProcedurePanel)parametersTabs.getSelectedComponent();
+//        panel.insertBefore();
+//    }
+//
+//    public void insertAfter() {
+////        if (parametersTabs.getSelectedIndex() == 0) {
+////            inputParametersPanel.insertAfter();
+////        }
+//        NewProcedurePanel panel = (NewProcedurePanel)parametersTabs.getSelectedComponent();
+//        panel.insertAfter();
+//    }
 }

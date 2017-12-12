@@ -5,9 +5,7 @@ import org.executequery.components.table.BrowsingCellEditor;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
-import org.executequery.gui.table.CreateTableSQLSyntax;
-import org.executequery.gui.table.DataTypeSelectionListener;
-import org.executequery.gui.table.DataTypesDialog;
+import org.executequery.gui.table.*;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 import org.underworldlabs.swing.table.NumberCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
@@ -75,6 +73,8 @@ public abstract class ProcedureDefinitionPanel extends JPanel
     protected DataTypeSelectionTableCell dataTypeCell;
 
     protected DomainSelectionTableCell domainCell;
+
+    private CreateProcedureToolBar tools;
 
     /**
      * The <code>Vector</code> of <code>ColumnData</code> objects
@@ -259,7 +259,32 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
             _model.addTableModelListener(this);
         }
-        add(new JScrollPane(table), new GridBagConstraints(
+
+        tools = new CreateProcedureToolBar(this);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        JPanel definitionPanel = new JPanel(new GridBagLayout());
+        gbc.gridwidth = 1;
+        gbc.gridx = 0;
+        gbc.gridy++;
+        gbc.weightx = 0;
+        gbc.insets.right = 5;
+        gbc.insets.left = 5;
+        gbc.insets.top = 20;
+        gbc.fill = GridBagConstraints.VERTICAL;
+        definitionPanel.add(tools, gbc);
+        gbc.insets.left = 0;
+        gbc.insets.right = 5;
+        gbc.insets.top = 0;
+        gbc.gridx = 1;
+        gbc.weighty = 0.4;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        definitionPanel.add(new JScrollPane(table), gbc);
+
+        add(definitionPanel, new GridBagConstraints(
                 1, 1, 1, 1, 1.0, 1.0,
                 GridBagConstraints.SOUTHEAST,
                 GridBagConstraints.BOTH,
@@ -329,7 +354,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
     public void tableChanged(TableModelEvent e) {
         int row = table.getEditingRow();
-        if (row == -1) {
+        if (row == -1 || tableVector.size() == row) {
             return;
         }
         tableChanged(table.getEditingColumn(), row, null);

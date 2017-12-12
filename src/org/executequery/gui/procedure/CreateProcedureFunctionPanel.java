@@ -11,6 +11,7 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.*;
 import org.executequery.gui.text.SimpleSqlTextPanel;
+import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
 import org.executequery.log.Log;
@@ -36,8 +37,6 @@ import java.util.Vector;
 public abstract class CreateProcedureFunctionPanel extends JPanel
         implements FocusComponentPanel,
         ItemListener,
-        ChangeListener,
-        TableFunction,
         TextEditorContainer {
 
     /**
@@ -56,9 +55,19 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     protected DynamicComboBoxModel connectionsModel;
 
     /**
-     * The procedure column definition panel
+     * The input parameters for procedure
      */
-    protected NewProcedurePanel procedurePanel;
+    protected NewProcedurePanel inputParametersPanel;
+
+    /**
+     * The output parameters for procedure
+     */
+    protected NewProcedurePanel outputParametersPanel;
+
+    /**
+     * The output parameters for procedure
+     */
+    protected NewProcedurePanel variablesPanel;
 
     /**
      * The body of procedure
@@ -71,9 +80,14 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     protected SimpleSqlTextPanel outSqlText;
 
     /**
-     * The tabbed pane containing definition and constraints
+     * The tabbed pane containing parameters
      */
-    private JTabbedPane tableTabs;
+    private JTabbedPane procedureTabs;
+
+    /**
+     * The tabbed pane containing parameters
+     */
+    private JTabbedPane parametersTabs;
 
     /**
      * The buffer off all SQL generated
@@ -83,12 +97,23 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     /**
      * The tool bar
      */
-    private CreateTableToolBar tools;
+//    private CreateTableToolBar tools;
 
     /**
      * Utility to retrieve database meta data
      */
     protected MetaDataValues metaData;
+
+    /**
+     * The base panel
+     */
+    protected JPanel containerPanel;
+
+    protected JPanel descriptionPanel;
+    protected SimpleTextArea descriptionArea;
+
+    protected JPanel ddlPanel;
+    protected SimpleSqlTextPanel ddlTextPanel;
 
     /**
      * The base panel
@@ -122,20 +147,39 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         connectionsCombo.addItemListener(this);
 
         // create tab pane
-        tableTabs = new JTabbedPane();
+        procedureTabs = new JTabbedPane();
+
+        // create tab pane
+        parametersTabs = new JTabbedPane();
         // create the column definition panel
         // and add this to the tabbed pane
-        procedurePanel = new NewProcedurePanel(this);
-        tableTabs.add("Input parameters", procedurePanel);
+        inputParametersPanel = new NewProcedurePanel(this);
+        parametersTabs.add("Input parameters", inputParametersPanel);
+
+        outputParametersPanel = new NewProcedurePanel(this);
+        parametersTabs.add("Output parameters", outputParametersPanel);
+
+        variablesPanel = new NewProcedurePanel(this);
+        parametersTabs.add("Variables", variablesPanel);
 
         sqlBodyText = new SimpleSqlTextPanel();
-        sqlBodyText.setBorder(BorderFactory.createTitledBorder("LOL"));
+        sqlBodyText.appendSQLText("begin\n" +
+            "  /* Procedure Text */\n" +
+            "  suspend;\n" +
+            "end");
+        sqlBodyText.setBorder(BorderFactory.createTitledBorder("Procedure body"));
 
         outSqlText = new SimpleSqlTextPanel();
-        tools = new CreateTableToolBar(this);
+//        tools = new CreateTableToolBar(this);
 
         mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBorder(BorderFactory.createEtchedBorder());
+
+        containerPanel = new JPanel(new GridBagLayout());
+
+        descriptionPanel = new JPanel(new GridBagLayout());
+
+        ddlPanel = new JPanel(new GridBagLayout());
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.NORTHWEST;
@@ -152,7 +196,7 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         gbc.insets.left = 5;
         gbc.insets.top = 20;
         gbc.fill = GridBagConstraints.VERTICAL;
-        definitionPanel.add(tools, gbc);
+//        definitionPanel.add(tools, gbc);
         gbc.insets.left = 0;
         gbc.insets.right = 5;
         gbc.insets.top = 0;
@@ -161,12 +205,12 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
-        definitionPanel.add(tableTabs, gbc);
+        definitionPanel.add(parametersTabs, gbc);
 
         gbc.gridx = 0;
         gbc.gridy++;
         gbc.insets.top = 10;
-        mainPanel.add(definitionPanel, gbc);
+        containerPanel.add(definitionPanel, gbc);
 
         gbc.gridx = 0;
         gbc.gridy++;
@@ -174,20 +218,57 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         gbc.insets.left = 5;
         gbc.insets.bottom = 5;
         gbc.insets.top = 5;
-        mainPanel.add(sqlBodyText, gbc);
+        containerPanel.add(sqlBodyText, gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.weighty = 0.6;
-        gbc.insets.left = 5;
-        gbc.insets.bottom = 5;
-        gbc.insets.top = 5;
-        mainPanel.add(outSqlText, gbc);
+//        gbc.gridx = 0;
+//        gbc.gridy++;
+//        gbc.weighty = 0.6;
+//        gbc.insets.left = 5;
+//        gbc.insets.bottom = 5;
+//        gbc.insets.top = 5;
+//        containerPanel.add(outSqlText, gbc);
+
+        descriptionArea = new SimpleTextArea();
+
+        GridBagConstraints gbc1 = new GridBagConstraints();
+        gbc1.gridx = 0;
+        gbc1.gridy = 0;
+        gbc1.weightx = 1;
+        gbc1.weighty = 1;
+        gbc1.fill = GridBagConstraints.BOTH;
+        gbc1.insets.right = 5;
+        gbc1.insets.left = 5;
+        gbc1.insets.top = 5;
+        gbc1.insets.bottom = 5;
+
+        descriptionPanel.add(descriptionArea, gbc1);
+
+        procedureTabs.insertTab("Edit", null,  containerPanel, null, 0);
+
+        procedureTabs.insertTab("Description", null, descriptionPanel, null, 1);
+
+        ddlTextPanel = new SimpleSqlTextPanel();
+
+        GridBagConstraints gbc2 = new GridBagConstraints();
+        gbc2.gridx = 0;
+        gbc2.gridy = 0;
+        gbc2.weightx = 1;
+        gbc2.weighty = 1;
+        gbc2.fill = GridBagConstraints.BOTH;
+        gbc2.insets.right = 5;
+        gbc2.insets.left = 5;
+        gbc2.insets.top = 5;
+        gbc2.insets.bottom = 5;
+
+        ddlPanel.add(ddlTextPanel, gbc2);
+        procedureTabs.insertTab("DDL", null, ddlPanel, null, 2);
+
+
+        mainPanel.add(procedureTabs, gbc);
 
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         add(mainPanel, BorderLayout.CENTER);
 
-        tableTabs.addChangeListener(this);
         nameField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(KeyEvent e) {
                 setSQLText();
@@ -203,9 +284,17 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
             DatabaseConnection connection =
                     (DatabaseConnection) connections.elementAt(0);
             metaData.setDatabaseConnection(connection);
-            procedurePanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
-            procedurePanel.setDomains(getDomains());
-            procedurePanel.setDatabaseConnection(connection);
+            inputParametersPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+            inputParametersPanel.setDomains(getDomains());
+            inputParametersPanel.setDatabaseConnection(connection);
+
+            outputParametersPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+            outputParametersPanel.setDomains(getDomains());
+            outputParametersPanel.setDatabaseConnection(connection);
+
+            variablesPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+            variablesPanel.setDomains(getDomains());
+            variablesPanel.setDatabaseConnection(connection);
             //metaData
         }
 
@@ -296,7 +385,17 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     }
 
     private void columnChangeConnection(DatabaseConnection dc) {
-        Vector<ColumnData> cd = getTableColumnDataVector();
+        Vector<ColumnData> cd = inputParametersPanel.getTableColumnDataVector();
+        for (ColumnData c : cd) {
+            c.setDatabaseConnection(dc);
+        }
+
+        cd = outputParametersPanel.getTableColumnDataVector();
+        for (ColumnData c : cd) {
+            c.setDatabaseConnection(dc);
+        }
+
+        cd = variablesPanel.getTableColumnDataVector();
         for (ColumnData c : cd) {
             c.setDatabaseConnection(dc);
         }
@@ -309,7 +408,9 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
 
         // reset meta data
         metaData.setDatabaseConnection(connection);
-        procedurePanel.setDatabaseConnection(connection);
+        inputParametersPanel.setDatabaseConnection(connection);
+        outputParametersPanel.setDatabaseConnection(connection);
+        variablesPanel.setDatabaseConnection(connection);
         columnChangeConnection(connection);
 
         // reset data types
@@ -328,8 +429,14 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     private void populateDataTypes(final String[] dataTypes, final int[] intDataTypes) {
         GUIUtils.invokeAndWait(new Runnable() {
             public void run() {
-                procedurePanel.setDataTypes(dataTypes, intDataTypes);
-                procedurePanel.setDomains(getDomains());
+                inputParametersPanel.setDataTypes(dataTypes, intDataTypes);
+                inputParametersPanel.setDomains(getDomains());
+
+                outputParametersPanel.setDataTypes(dataTypes, intDataTypes);
+                outputParametersPanel.setDomains(getDomains());
+
+                variablesPanel.setDataTypes(dataTypes, intDataTypes);
+                variablesPanel.setDomains(getDomains());
             }
         });
     }
@@ -348,11 +455,15 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     }
 
     public void fireEditingStopped() {
-        procedurePanel.fireEditingStopped();
+        inputParametersPanel.fireEditingStopped();
+        outputParametersPanel.fireEditingStopped();
+        variablesPanel.fireEditingStopped();
     }
 
     public void setColumnDataArray(ColumnData[] cda) {
-        procedurePanel.setColumnDataArray(cda, null);
+        inputParametersPanel.setColumnDataArray(cda, null);
+        outputParametersPanel.setColumnDataArray(cda, null);
+        variablesPanel.setColumnDataArray(cda, null);
     }
 
     /**
@@ -372,7 +483,9 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     public abstract Vector<String> getColumnNamesVector(String tableName, String schemaName);
 
     public void resetSQLText() {
-        procedurePanel.resetSQLText();
+        inputParametersPanel.resetSQLText();
+        outputParametersPanel.resetSQLText();
+        variablesPanel.resetSQLText();
     }
 
     public void setSQLText() {
@@ -382,7 +495,9 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         sqlBuffer.append(nameField.getText()).
                 append(CreateTableSQLSyntax.SPACE).
                 append(CreateTableSQLSyntax.B_OPEN).
-                append(procedurePanel.getSQLText());
+                append(inputParametersPanel.getSQLText()).
+                append(outputParametersPanel.getSQLText()).
+                append(variablesPanel.getSQLText());
 
         sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE).
                 append(CreateTableSQLSyntax.SEMI_COLON);
@@ -398,11 +513,11 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         primary.append(",\nCONSTRAINT PK_");
         primary.append(nameField.getText());
         primary.append(" PRIMARY KEY (");
-        primary.append(procedurePanel.getPrimaryText());
+        primary.append(inputParametersPanel.getPrimaryText());
         primary.append(")");
         StringBuffer description = new StringBuffer(50);
         description.setLength(0);
-        for (String d : procedurePanel.descriptions) {
+        for (String d : inputParametersPanel.descriptions) {
             description.append("COMMENT ON COLUMN ");
             description.append(nameField.getText());
             description.append("." + d);
@@ -416,12 +531,12 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
 
 //        if (type == TableModifier.COLUMN_VALUES) {
 //            sqlBuffer.append(values);
-//            if (procedurePanel.primary)
+//            if (inputParametersPanel.primary)
 //                sqlBuffer.append(primary);
 //            sqlBuffer.append(consPanel.getSQLText());
 //        } else if (type == TableModifier.CONSTRAINT_VALUES) {
-//            sqlBuffer.append(procedurePanel.getSQLText());
-//            if (procedurePanel.primary)
+//            sqlBuffer.append(inputParametersPanel.getSQLText());
+//            if (inputParametersPanel.primary)
 //                sqlBuffer.append(primary);
 //            sqlBuffer.append(values);
 //        }
@@ -458,26 +573,14 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     public void columnValuesChanging(int col, int row, String value) {
     }
 
-    public Vector getTableColumnDataVector() {
-        return procedurePanel.getTableColumnDataVector();
-    }
-
     public void stateChanged(ChangeEvent e) {
-        if (tableTabs.getSelectedIndex() == 1) {
-            tools.enableButtons(false);
 
-            //          if (table.isEditing())
-            //            table.removeEditor();
-
-        } else {
-            tools.enableButtons(true);
-        }
     }
 
     /*
     private void tableTabs_changed() {
 
-        if (tableTabs.getSelectedIndex() == 1) {
+        if (parametersTabs.getSelectedIndex() == 1) {
             tools.enableButtons(false);
 
             //          if (table.isEditing())
@@ -493,7 +596,7 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
 
     public ColumnData[] getTableColumnDataAndConstraints() {
 
-        ColumnData[] cda = procedurePanel.getTableColumnData();
+        ColumnData[] cda = inputParametersPanel.getTableColumnData();
 
         for (int i = 0; i < cda.length; i++) {
 
@@ -510,43 +613,11 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     public void columnValuesChanging() {
     }
 
-    public ColumnData[] getTableColumnData() {
-        return procedurePanel.getTableColumnData();
-    }
+//    public ColumnData[] getTableColumnData() {
+//        return inputParametersPanel.getTableColumnData();
+//    }
 
-    // -----------------------------------------------
-    // -------- TableFunction implementations --------
-    // -----------------------------------------------
 
-    public void moveColumnUp() {
-        int index = tableTabs.getSelectedIndex();
-        if (index == 0) {
-            procedurePanel.moveColumnUp();
-        }
-    }
-
-    public void moveColumnDown() {
-        int index = tableTabs.getSelectedIndex();
-        if (index == 0) {
-            procedurePanel.moveColumnDown();
-        }
-    }
-
-    public void deleteRow() {
-        if (tableTabs.getSelectedIndex() == 0) {
-            procedurePanel.deleteRow();
-        }
-    }
-
-    public void insertBefore() {
-        procedurePanel.insertBefore();
-    }
-
-    public void insertAfter() {
-        if (tableTabs.getSelectedIndex() == 0) {
-            procedurePanel.insertAfter();
-        }
-    }
 
     // -----------------------------------------------
 

@@ -278,12 +278,6 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         add(mainPanel, BorderLayout.CENTER);
 
-        nameField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(KeyEvent e) {
-                setSQLText();
-            }
-        });
-
         sqlBuffer = new StringBuffer(CreateTableSQLSyntax.CREATE_TABLE);
 
         // check initial values for possible value inits
@@ -388,7 +382,7 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         sb.append(")\n");
         sb.append("returns (");
         sb.append(formattedParameters(outputParametersPanel._model.getTableVector(), false));
-        sb.append(")\nas\n");
+        sb.append(")\nas");
         sb.append(formattedParameters(variablesPanel._model.getTableVector(), true));
         sb.append(sqlBodyText.getSQLText());
         ddlTextPanel.setSQLText(sb.toString());
@@ -580,73 +574,6 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         inputParametersPanel.resetSQLText();
         outputParametersPanel.resetSQLText();
         variablesPanel.resetSQLText();
-    }
-
-    public void setSQLText() {
-        sqlBuffer.setLength(0);
-        sqlBuffer.append(CreateTableSQLSyntax.CREATE_TABLE);
-
-        sqlBuffer.append(nameField.getText()).
-                append(CreateTableSQLSyntax.SPACE).
-                append(CreateTableSQLSyntax.B_OPEN).
-                append(inputParametersPanel.getSQLText()).
-                append(outputParametersPanel.getSQLText()).
-                append(variablesPanel.getSQLText());
-
-        sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE).
-                append(CreateTableSQLSyntax.SEMI_COLON);
-
-        setSQLText(sqlBuffer.toString());
-    }
-
-    public void setSQLText(String values, int type) {
-        sqlBuffer.setLength(0);
-        sqlBuffer.append(CreateTableSQLSyntax.CREATE_TABLE);
-        StringBuffer primary = new StringBuffer(50);
-        primary.setLength(0);
-        primary.append(",\nCONSTRAINT PK_");
-        primary.append(nameField.getText());
-        primary.append(" PRIMARY KEY (");
-        primary.append(inputParametersPanel.getPrimaryText());
-        primary.append(")");
-        StringBuffer description = new StringBuffer(50);
-        description.setLength(0);
-        for (String d : inputParametersPanel.descriptions) {
-            description.append("COMMENT ON COLUMN ");
-            description.append(nameField.getText());
-            description.append("." + d);
-            description.append("^");
-
-        }
-
-        sqlBuffer.append(nameField.getText()).
-                append(CreateTableSQLSyntax.SPACE).
-                append(CreateTableSQLSyntax.B_OPEN);
-
-//        if (type == TableModifier.COLUMN_VALUES) {
-//            sqlBuffer.append(values);
-//            if (inputParametersPanel.primary)
-//                sqlBuffer.append(primary);
-//            sqlBuffer.append(consPanel.getSQLText());
-//        } else if (type == TableModifier.CONSTRAINT_VALUES) {
-//            sqlBuffer.append(inputParametersPanel.getSQLText());
-//            if (inputParametersPanel.primary)
-//                sqlBuffer.append(primary);
-//            sqlBuffer.append(values);
-//        }
-
-        sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE).
-                append(CreateTableSQLSyntax.SEMI_COLON);
-        sqlBuffer.append("\n").append(description);
-        setSQLText(sqlBuffer.toString());
-    }
-
-    private void setSQLText(final String text) {
-        GUIUtils.invokeLater(new Runnable() {
-            public void run() {
-                outSqlText.setSQLText(text);
-            }
-        });
     }
 
     public String getSQLText() {

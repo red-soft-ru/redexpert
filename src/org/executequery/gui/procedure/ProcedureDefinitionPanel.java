@@ -44,15 +44,15 @@ public abstract class ProcedureDefinitionPanel extends JPanel
     /**
      * The cell editor for the column names
      */
-    protected static StringCellEditor colNameEditor;
+    protected  StringCellEditor colNameEditor;
 
-    protected static StringCellEditor checkEditor;
+    protected  StringCellEditor checkEditor;
 
-    protected static StringCellEditor descEditor;
+    protected  StringCellEditor descEditor;
 
-    protected static StringCellEditor computedEditor;
+    protected  StringCellEditor computedEditor;
 
-    protected static StringCellEditor defaultValueEditor;
+    protected  StringCellEditor defaultValueEditor;
 
     /**
      * The cell editor for the column size

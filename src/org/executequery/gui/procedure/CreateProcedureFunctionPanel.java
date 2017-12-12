@@ -18,6 +18,7 @@ import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -27,6 +28,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -164,9 +166,9 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
 
         sqlBodyText = new SimpleSqlTextPanel();
         sqlBodyText.appendSQLText("begin\n" +
-            "  /* Procedure Text */\n" +
-            "  suspend;\n" +
-            "end");
+                "  /* Procedure Text */\n" +
+                "  suspend;\n" +
+                "end");
         sqlBodyText.setBorder(BorderFactory.createTitledBorder("Procedure body"));
 
         outSqlText = new SimpleSqlTextPanel();
@@ -243,7 +245,7 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
 
         descriptionPanel.add(descriptionArea, gbc1);
 
-        procedureTabs.insertTab("Edit", null,  containerPanel, null, 0);
+        procedureTabs.insertTab("Edit", null, containerPanel, null, 0);
 
         procedureTabs.insertTab("Description", null, descriptionPanel, null, 1);
 
@@ -265,6 +267,13 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
 
 
         mainPanel.add(procedureTabs, gbc);
+
+        procedureTabs.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent changeEvent) {
+                generateScript();
+            }
+        });
 
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         add(mainPanel, BorderLayout.CENTER);
@@ -298,6 +307,91 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
             //metaData
         }
 
+    }
+
+    String formattedParameter(ColumnData cd) {
+        StringBuffer sb = new StringBuffer();
+        sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnName()).
+                append(" ");
+        if (MiscUtils.isNull(cd.getComputedBy())) {
+            if (MiscUtils.isNull(cd.getDomain())) {
+                if (cd.getColumnType() != null) {
+                    sb.append(cd.getFormattedDataType());
+                }
+            } else {
+                sb.append(cd.getDomain());
+            }
+            if (!MiscUtils.isNull(cd.getDefaultValue())) {
+                String value = "";
+                boolean str = false;
+                int sqlType = cd.getSQLType();
+                switch (sqlType) {
+
+                    case Types.LONGVARCHAR:
+                    case Types.LONGNVARCHAR:
+                    case Types.CHAR:
+                    case Types.NCHAR:
+                    case Types.VARCHAR:
+                    case Types.NVARCHAR:
+                    case Types.CLOB:
+                    case Types.DATE:
+                    case Types.TIME:
+                    case Types.TIMESTAMP:
+                        value = "'";
+                        str = true;
+                        break;
+                    default:
+                        break;
+                }
+                value += cd.getDefaultValue();
+                if (str) {
+                    value += "'";
+                }
+                sb.append(" DEFAULT " + value);
+            }
+            sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
+            if (!MiscUtils.isNull(cd.getCheck())) {
+                sb.append(" CHECK ( " + cd.getCheck() + ")");
+            }
+        } else {
+            sb.append("COMPUTED BY ( " + cd.getComputedBy() + ")");
+        }
+        return sb.toString();
+    }
+
+    public String formattedParameters(Vector<ColumnData> tableVector, boolean variable) {
+        StringBuffer sqlText = new StringBuffer();
+        sqlText.append("\n");
+        for (int i = 0, k = tableVector.size(); i < k; i++) {
+            ColumnData cd = (ColumnData) tableVector.elementAt(i);
+            if(!MiscUtils.isNull(cd.getColumnName())) {
+                if (variable)
+                    sqlText.append("DECLARE VARIABLE ");
+                sqlText.append(formattedParameter(cd));
+                if (variable) {
+                    sqlText.append(";");
+                } else if (i != k - 1) {
+                    sqlText.append(",");
+                }
+                sqlText.append("\n");
+            }
+        }
+        return sqlText.toString();
+    }
+
+    void generateScript() {
+        StringBuffer sb = new StringBuffer();
+        sb.append("create or alter procedure ");
+        sb.append(nameField.getText());
+        sb.append(" (");
+        sb.append(formattedParameters(inputParametersPanel._model.getTableVector(), false));
+        sb.append(")\n");
+        sb.append("returns (");
+        sb.append(formattedParameters(outputParametersPanel._model.getTableVector(), false));
+        sb.append(")\nas\n");
+        sb.append(formattedParameters(variablesPanel._model.getTableVector(), true));
+        sb.append(sqlBodyText.getSQLText());
+        ddlTextPanel.setSQLText(sb.toString());
     }
 
     String[] getDomains() {
@@ -556,7 +650,9 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     }
 
     public String getSQLText() {
-        return outSqlText.getSQLText();
+        if(procedureTabs.getSelectedComponent()!=ddlPanel)
+            generateScript();
+        return ddlTextPanel.getSQLText();
     }
 
     public String getTableName() {
@@ -616,7 +712,6 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
 //    public ColumnData[] getTableColumnData() {
 //        return inputParametersPanel.getTableColumnData();
 //    }
-
 
 
     // -----------------------------------------------

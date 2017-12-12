@@ -927,7 +927,10 @@ public abstract class ProcedureDefinitionPanel extends JPanel
             }
 
         }
-
+        public Vector<ColumnData> getTableVector()
+        {
+            return tableVector;
+        }
     } // class CreateTableModel
 
     private class DataTypeSelectionTableCell extends BrowsingCellEditor

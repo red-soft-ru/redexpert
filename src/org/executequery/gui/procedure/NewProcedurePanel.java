@@ -75,7 +75,7 @@ public class NewProcedurePanel extends ProcedureDefinitionPanel
         //Log.debug("tableChanged [row: "+row+" col: "+col+" value: "+value + "]");
 
         if (value == null) {
-            updateScript(row, col);
+            //updateScript(row, col);
             return;
         }
 
@@ -108,7 +108,7 @@ public class NewProcedurePanel extends ProcedureDefinitionPanel
                 }
                 break;
         }
-        updateScript(row, col);
+        //updateScript(row, col);
     }
 
     /**

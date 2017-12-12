@@ -395,10 +395,12 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                             "where T.RDB$RELATION_NAME='" + getName() + "'";
                     result = executor.execute(QueryTypes.SELECT, query);
                     ResultSet rs = result.getResultSet();
-                    while (rs.next()) {
-                        ColumnConstraint constraint = new TableColumnConstraint(rs.getString(2));
-                        constraint.setName(rs.getString(1).trim());
-                        constraints.add(constraint);
+                    if (rs != null) {
+                        while (rs.next()) {
+                            ColumnConstraint constraint = new TableColumnConstraint(rs.getString(2));
+                            constraint.setName(rs.getString(1).trim());
+                            constraints.add(constraint);
+                        }
                     }
                 } catch (Exception e) {
                     Log.error("Error loading check-constraints:" + result.getErrorMessage(), e);

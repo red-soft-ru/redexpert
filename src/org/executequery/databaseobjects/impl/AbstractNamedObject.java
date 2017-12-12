@@ -112,6 +112,8 @@ public abstract class AbstractNamedObject implements NamedObject,
      */
     protected void releaseResources(ResultSet rs) {
         try {
+            if (rs == null) // On RDB 2.6 is null
+                return;
             Statement st = rs.getStatement();
             if (rs != null) {
                 if (!rs.isClosed())

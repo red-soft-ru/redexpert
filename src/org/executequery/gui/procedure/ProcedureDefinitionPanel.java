@@ -857,6 +857,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                     break;
                 case DEFAULT_COLUMN:
                     cd.setDefaultValue((String) value);
+                    break;
                 case ENCODING_COLUMN:
                     cd.setCharset((String) value);
                     break;

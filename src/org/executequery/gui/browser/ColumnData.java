@@ -611,7 +611,7 @@ public class ColumnData implements Serializable {
 
             return "";
         }
-
+        typeString = typeString.replace(" SUB_TYPE <0","");
         StringBuilder sb = new StringBuilder(typeString);
 
         // if the type doesn't end with a digit or it

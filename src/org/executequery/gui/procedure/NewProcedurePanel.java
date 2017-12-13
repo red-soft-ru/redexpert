@@ -22,8 +22,8 @@ public class NewProcedurePanel extends ProcedureDefinitionPanel
 
     boolean primary;
 
-    public NewProcedurePanel(CreateProcedureFunctionPanel creator) {
-        super();
+    public NewProcedurePanel(int typeParameter) {
+        super(typeParameter);
         sqlText = new StringBuffer(100);
     }
 

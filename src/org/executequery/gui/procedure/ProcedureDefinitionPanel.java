@@ -111,20 +111,26 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
     public static final int ENCODING_COLUMN = 7;
 
+    public static final int REQUIRED_COLUMN = 8;
+
     private String[] domains;
 
     DatabaseConnection dc;
 
     List<String> charsets;
 
-    public ProcedureDefinitionPanel() {
-        this(true, null);
+    int parameterType;
+
+    public ProcedureDefinitionPanel(int parameterType) {
+        this(true, null,parameterType);
+
     }
 
-    public ProcedureDefinitionPanel(boolean editing, String[] dataTypes) {
+    public ProcedureDefinitionPanel(boolean editing, String[] dataTypes,int parameterType) {
         super(new GridBagLayout());
         this.editing = editing;
         this.dataTypes = dataTypes;
+        this.parameterType = parameterType;
 
         try {
             jbInit();
@@ -136,7 +142,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
     private void jbInit() throws Exception {
         // set the table model to use
-        _model = new ProcedureParameterModel();
+        _model = new ProcedureParameterModel(parameterType);
         table = new DatabaseTable(_model);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         TableColumnModel tcm = table.getColumnModel();
@@ -148,6 +154,8 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         tcm.getColumn(DESCRIPTION_COLUMN).setPreferredWidth(200);
         tcm.getColumn(DEFAULT_COLUMN).setPreferredWidth(200);
         tcm.getColumn(ENCODING_COLUMN).setPreferredWidth(200);
+        tcm.getColumn(REQUIRED_COLUMN).setPreferredWidth(70);
+        tcm.getColumn(REQUIRED_COLUMN).setMaxWidth(70);
 
         // add the editors if editing
         if (editing) {
@@ -579,10 +587,14 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
         if (selection == -1) {
             return;
-        } else if (selection == tableVector.size()) {
-            tableVector.add(new ColumnData(dc));
         } else {
-            tableVector.add(newRow, new ColumnData(dc));
+            ColumnData cd = new ColumnData(dc);
+            cd.setTypeParameter(parameterType);
+            if (selection == tableVector.size()) {
+                tableVector.add(cd);
+            } else {
+                tableVector.add(newRow, cd);
+            }
         }
 
         _model.fireTableRowsInserted(selection, newRow);
@@ -681,11 +693,13 @@ public abstract class ProcedureDefinitionPanel extends JPanel
     protected class ProcedureParameterModel extends AbstractPrintableTableModel {
 
         protected String[] header = {"Name", "Datatype", "Domain",
-                "Size", "Scale", "Description", "Default Value", "Encoding"};
+                "Size", "Scale", "Description", "Default Value", "Encoding","Required"};
 
-        public ProcedureParameterModel() {
+        public ProcedureParameterModel(int parameterType) {
             tableVector = new Vector<ColumnData>();
-            tableVector.addElement(new ColumnData(dc));
+            ColumnData cd = new ColumnData(dc);
+            cd.setTypeParameter(parameterType);
+            tableVector.addElement(cd);
         }
 
         public ProcedureParameterModel(Vector<ColumnData> data) {
@@ -769,6 +783,9 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                 case ENCODING_COLUMN:
                     return cd.getCharset();
 
+                case REQUIRED_COLUMN:
+                    return Boolean.valueOf(cd.isRequired());
+
                 default:
                     return null;
 
@@ -792,7 +809,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
                             else
-                                _model.setValueAt("0", row, SIZE_COLUMN);
+                                _model.setValueAt("10", row, SIZE_COLUMN);
                             if (!isEditScale(row))
                                 _model.setValueAt("-1", row, SCALE_COLUMN);
                             else
@@ -815,7 +832,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
                             else
-                                _model.setValueAt("0", row, SIZE_COLUMN);
+                                _model.setValueAt("10", row, SIZE_COLUMN);
                             if (!isEditScale(row))
                                 _model.setValueAt("-1", row, SCALE_COLUMN);
                             else
@@ -860,6 +877,9 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                     break;
                 case ENCODING_COLUMN:
                     cd.setCharset((String) value);
+                    break;
+                case REQUIRED_COLUMN:
+                    cd.setColumnRequired(((Boolean) value).booleanValue() ? 0 : 1);
                     break;
             }
 
@@ -914,6 +934,8 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         }
 
         public Class getColumnClass(int col) {
+            if (col == REQUIRED_COLUMN)
+                return Boolean.class;
             if (col == SIZE_COLUMN || col == SCALE_COLUMN) {
                 return Integer.class;
             } else {

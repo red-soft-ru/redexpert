@@ -155,13 +155,13 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         parametersTabs = new JTabbedPane();
         // create the column definition panel
         // and add this to the tabbed pane
-        inputParametersPanel = new NewProcedurePanel(this);
+        inputParametersPanel = new NewProcedurePanel(ColumnData.INPUT_PARAMETER);
         parametersTabs.add("Input parameters", inputParametersPanel);
 
-        outputParametersPanel = new NewProcedurePanel(this);
+        outputParametersPanel = new NewProcedurePanel(ColumnData.OUTPUT_PARAMETER);
         parametersTabs.add("Output parameters", outputParametersPanel);
 
-        variablesPanel = new NewProcedurePanel(this);
+        variablesPanel = new NewProcedurePanel(ColumnData.VARIABLE);
         parametersTabs.add("Variables", variablesPanel);
 
         sqlBodyText = new SimpleSqlTextPanel();
@@ -315,7 +315,8 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
             } else {
                 sb.append(cd.getDomain());
             }
-            if (!MiscUtils.isNull(cd.getDefaultValue())) {
+            sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
+            if (cd.getTypeParameter()!=ColumnData.OUTPUT_PARAMETER&&!MiscUtils.isNull(cd.getDefaultValue())) {
                 String value = "";
                 boolean str = false;
                 int sqlType = cd.getSQLType();
@@ -326,6 +327,8 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
                     case Types.CHAR:
                     case Types.NCHAR:
                     case Types.VARCHAR:
+                    case Types.VARBINARY:
+                    case Types.BINARY:
                     case Types.NVARCHAR:
                     case Types.CLOB:
                     case Types.DATE:
@@ -343,7 +346,6 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
                 }
                 sb.append(" DEFAULT " + value);
             }
-            sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
             if (!MiscUtils.isNull(cd.getCheck())) {
                 sb.append(" CHECK ( " + cd.getCheck() + ")");
             }

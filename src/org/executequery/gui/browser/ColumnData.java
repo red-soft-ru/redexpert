@@ -51,6 +51,12 @@ public class ColumnData implements Serializable {
 
     public static final int VALUE_NOT_REQUIRED = 1;
 
+    public static final int INPUT_PARAMETER = 0;
+
+    public static final int OUTPUT_PARAMETER = 1;
+
+    public static final int VARIABLE = 2;
+
     /**
      * the catalog for this column
      */
@@ -166,6 +172,8 @@ public class ColumnData implements Serializable {
     private String charset;
 
     ColumnData copy;
+
+    int typeParameter;
 
     public ColumnData(DatabaseConnection databaseConnection) {
         primaryKey = false;
@@ -787,6 +795,14 @@ public class ColumnData implements Serializable {
         if (!hasCopy())
             return false;
         return isCheckChanged() || isDefaultChanged() || isNameChanged() || isDescriptionChanged() || isTypeChanged();
+    }
+
+    public void setTypeParameter(int typeParameter) {
+        this.typeParameter = typeParameter;
+    }
+
+    public int getTypeParameter() {
+        return typeParameter;
     }
 }
 

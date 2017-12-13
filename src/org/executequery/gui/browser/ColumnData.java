@@ -175,6 +175,8 @@ public class ColumnData implements Serializable {
 
     int typeParameter;
 
+    int subtype;
+
     public ColumnData(DatabaseConnection databaseConnection) {
         primaryKey = false;
         foreignKey = false;
@@ -280,6 +282,7 @@ public class ColumnData implements Serializable {
         check = cd.getCheck();
         computedBy = cd.getComputedBy();
         defaultValue = cd.getDefaultValue();
+        subtype = cd.getSubType();
 
         Vector<ColumnConstraint> constraints = cd.getColumnConstraintsVector();
         if (constraints != null) {
@@ -611,7 +614,12 @@ public class ColumnData implements Serializable {
 
             return "";
         }
-        typeString = typeString.replace(" SUB_TYPE <0","");
+        if(typeString.contains("<0"))
+        {
+            if(subtype<0)
+                typeString = typeString.replace("<0",""+subtype);
+            else typeString = typeString.replace(" SUB_TYPE <0","");
+        }
         StringBuilder sb = new StringBuilder(typeString);
 
         // if the type doesn't end with a digit or it
@@ -806,6 +814,14 @@ public class ColumnData implements Serializable {
 
     public int getTypeParameter() {
         return typeParameter;
+    }
+
+    public int getSubType() {
+        return subtype;
+    }
+
+    public void setSubType(int subtype) {
+        this.subtype = subtype;
     }
 }
 

@@ -193,6 +193,52 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     }
 
+    public void editObject(ActionEvent e) {
+        if (currentPath != null && currentSelection != null) {
+            DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
+            int type = node.getType();
+            if (type == NamedObject.META_TAG)
+                for (int i = 0; i < NamedObject.META_TYPES.length; i++)
+                    if (NamedObject.META_TYPES[i] == node.getName()) {
+                        type = i;
+                        break;
+                    }
+            switch (type) {
+                case NamedObject.TABLE:
+                    break;
+                case NamedObject.ROLE:
+                    break;
+                case NamedObject.SEQUENCE:
+                    break;
+                case NamedObject.VIEW:
+                    break;
+                case NamedObject.DOMAIN:
+                    if (GUIUtilities.isDialogOpen(CreateDomainPanel.CREATE_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateDomainPanel.CREATE_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+
+                            BaseDialog dialog = new BaseDialog(CreateDomainPanel.EDIT_TITLE, false);
+                            CreateDomainPanel panel = new CreateDomainPanel(currentSelection, dialog, node.getName().trim());
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
+                default:
+                    GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
+                    break;
+            }
+        }
+
+    }
+
     public void addNewConnection(ActionEvent e) {
         treePanel.newConnection();
     }

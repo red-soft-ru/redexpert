@@ -622,9 +622,12 @@ public class ColumnData implements Serializable {
         if (!typeString.matches("\\b\\D+\\d+\\b") ||
                 (type == Types.CHAR ||
                         type == Types.VARCHAR ||
-                        type == Types.LONGVARCHAR)) {
-
-            if (getColumnSize() > 0 && !isDateDataType()
+                        type == Types.BLOB || type == Types.LONGVARCHAR
+                        || type == Types.LONGVARBINARY)) {
+            if (type == Types.BLOB || type == Types.LONGVARCHAR
+                    || type == Types.LONGVARBINARY)
+                sb.append(" segment size ").append(getColumnSize());
+            else if (getColumnSize() > 0 && !isDateDataType()
                     && !isNonPrecisionType()) {
                 sb.append("(");
                 sb.append(getColumnSize());

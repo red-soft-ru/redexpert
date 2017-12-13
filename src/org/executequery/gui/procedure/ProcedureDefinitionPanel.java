@@ -901,7 +901,8 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         boolean isEditSize(int row) {
             ColumnData cd = tableVector.elementAt(row);
             return cd.getColumnType() != null && (cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
-                    || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB
+                    || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB || cd.getSQLType() == Types.LONGVARCHAR
+                    || cd.getSQLType() == Types.LONGVARBINARY
                     || cd.getColumnType().toUpperCase().equals("VARCHAR")
                     || cd.getColumnType().toUpperCase().equals("CHAR"));
         }

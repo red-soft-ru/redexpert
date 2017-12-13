@@ -359,7 +359,7 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         StringBuffer sqlText = new StringBuffer();
         sqlText.append("\n");
         for (int i = 0, k = tableVector.size(); i < k; i++) {
-            ColumnData cd = (ColumnData) tableVector.elementAt(i);
+            ColumnData cd = tableVector.elementAt(i);
             if(!MiscUtils.isNull(cd.getColumnName())) {
                 if (variable)
                     sqlText.append("DECLARE VARIABLE ");
@@ -382,9 +382,13 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         sb.append(" (");
         sb.append(formattedParameters(inputParametersPanel._model.getTableVector(), false));
         sb.append(")\n");
-        sb.append("returns (");
-        sb.append(formattedParameters(outputParametersPanel._model.getTableVector(), false));
-        sb.append(")\nas");
+        String output = formattedParameters(outputParametersPanel._model.getTableVector(), false);
+        if(!MiscUtils.isNull(output.trim())) {
+            sb.append("returns (");
+            sb.append(output);
+            sb.append(")\n");
+        }
+        sb.append("as");
         sb.append(formattedParameters(variablesPanel._model.getTableVector(), true));
         sb.append(sqlBodyText.getSQLText());
         ddlTextPanel.setSQLText(sb.toString());

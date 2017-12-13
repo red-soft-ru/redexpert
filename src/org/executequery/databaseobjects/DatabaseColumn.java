@@ -68,6 +68,13 @@ public interface DatabaseColumn extends DatabaseObjectElement {
     int getColumnScale();
 
     /**
+     * Returns the subtype of this database column.
+     *
+     * @return the subtype
+     */
+    int getColumnSubtype();
+
+    /**
      * Indicates whether this database column is required
      * (may the value be null).
      *

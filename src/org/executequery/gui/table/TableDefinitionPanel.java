@@ -84,6 +84,11 @@ public abstract class TableDefinitionPanel extends JPanel
      */
     protected NumberCellEditor scaleEditor;
 
+    /**
+     * The cell editor for the column subtype
+     */
+    protected NumberCellEditor subtypeEditor;
+
     /** The cell editor for the datatype column */
     //protected ComboBoxCellEditor comboCell;
 
@@ -135,19 +140,21 @@ public abstract class TableDefinitionPanel extends JPanel
 
     public static final int SCALE_COLUMN = 5;
 
-    public static final int REQUIRED_COLUMN = 6;
+    public static final int SUBTYPE_COLUMN = 6;
 
-    public static final int CHECK_COLUMN = 7;
+    public static final int REQUIRED_COLUMN = 7;
 
-    public static final int DESCRIPTION_COLUMN = 8;
+    public static final int CHECK_COLUMN = 8;
 
-    public static final int COMPUTED_BY_COLUMN = 9;
+    public static final int DESCRIPTION_COLUMN = 9;
+
+    public static final int COMPUTED_BY_COLUMN = 10;
 
     public static final int AUTOINCREMENT_COLUMN = 11;
 
-    public static final int DEFAULT_COLUMN = 10;
+    public static final int DEFAULT_COLUMN = 12;
 
-    public static final int ENCODING_COLUMN = 12;
+    public static final int ENCODING_COLUMN = 13;
 
     public static final String SUBSTITUTE_NAME = "<TABLE_NAME>";
 
@@ -217,6 +224,7 @@ public abstract class TableDefinitionPanel extends JPanel
         tcm.getColumn(DOMAIN_COLUMN).setPreferredWidth(130);
         tcm.getColumn(SIZE_COLUMN).setPreferredWidth(50);
         tcm.getColumn(SCALE_COLUMN).setPreferredWidth(70);
+        tcm.getColumn(SUBTYPE_COLUMN).setPreferredWidth(70);
         tcm.getColumn(REQUIRED_COLUMN).setPreferredWidth(70);
         tcm.getColumn(REQUIRED_COLUMN).setMaxWidth(70);
         tcm.getColumn(CHECK_COLUMN).setPreferredWidth(200);
@@ -275,6 +283,13 @@ public abstract class TableDefinitionPanel extends JPanel
                 }
             };
 
+            subtypeEditor = new NumberCellEditor();
+            DefaultCellEditor stEditor = new DefaultCellEditor(subtypeEditor) {
+                public Object getCellEditorValue() {
+                return subtypeEditor.getStringValue();
+              }
+            };
+
             sizeEditor = new NumberCellEditor();
             DefaultCellEditor szEditor = new DefaultCellEditor(sizeEditor) {
                 public Object getCellEditorValue() {
@@ -288,6 +303,7 @@ public abstract class TableDefinitionPanel extends JPanel
 
             tcm.getColumn(SIZE_COLUMN).setCellEditor(szEditor);
             tcm.getColumn(SCALE_COLUMN).setCellEditor(scEditor);
+            tcm.getColumn(SUBTYPE_COLUMN).setCellEditor(stEditor);
             domainCell = new DomainSelectionTableCell();
             tcm.getColumn(DOMAIN_COLUMN).setCellRenderer(domainCell);
             tcm.getColumn(DOMAIN_COLUMN).setCellEditor(domainCell);
@@ -315,6 +331,8 @@ public abstract class TableDefinitionPanel extends JPanel
                         value = sizeEditor.getEditorValue();
                     } else if (object == scaleEditor) {
                         value = scaleEditor.getEditorValue();
+                    } else if (object == subtypeEditor) {
+                        value = subtypeEditor.getEditorValue();
                     } else if (object == dataTypeCell.getComponent()) {
                         value = dataTypeCell.getEditorValue();
                     } else if (object == domainCell.getComponent()) {
@@ -335,6 +353,7 @@ public abstract class TableDefinitionPanel extends JPanel
             dataTypeCell.addKeyListener(valueKeyListener);
             sizeEditor.addKeyListener(valueKeyListener);
             scaleEditor.addKeyListener(valueKeyListener);
+            subtypeEditor.addKeyListener(valueKeyListener);
             domainCell.addKeyListener(valueKeyListener);
             charsetEditor.addKeyListener(valueKeyListener);
 
@@ -781,7 +800,7 @@ public abstract class TableDefinitionPanel extends JPanel
     protected class CreateTableModel extends AbstractPrintableTableModel {
 
         protected String[] header = {"PK", "Name", "Datatype", "Domain",
-                "Size", "Scale", "Required", "Check",
+                "Size", "Scale", "Subtype", "Required", "Check",
                 "Description", "Computed by", "Default Value", "Autoincrement",
                 "Encoding"};
 
@@ -874,6 +893,9 @@ public abstract class TableDefinitionPanel extends JPanel
 
                 case SCALE_COLUMN:
                     return Integer.valueOf(cd.getColumnScale());
+
+                case SUBTYPE_COLUMN:
+                    return Integer.valueOf(cd.getColumnSubtype());
 
                 case REQUIRED_COLUMN:
                     return Boolean.valueOf(cd.isRequired());
@@ -987,6 +1009,9 @@ public abstract class TableDefinitionPanel extends JPanel
                 case SCALE_COLUMN:
                     cd.setColumnScale(Integer.parseInt((String) value));
                     break;
+                case SUBTYPE_COLUMN:
+                    cd.setColumnSubtype(Integer.parseInt((String) value));
+                    break;
                 case REQUIRED_COLUMN:
                     cd.setColumnRequired(((Boolean) value).booleanValue() ? 0 : 1);
                     break;
@@ -1036,6 +1061,10 @@ public abstract class TableDefinitionPanel extends JPanel
             return cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL;
         }
 
+        boolean isEditSubtype(int row) {
+            ColumnData cd = tableVector.elementAt(row);
+            return cd.getSQLType() == Types.BLOB;
+        }
 
         public boolean isCellEditable(int row, int col) {
             if (editing)
@@ -1046,6 +1075,8 @@ public abstract class TableDefinitionPanel extends JPanel
                         return isEditSize(row);
                     case SCALE_COLUMN:
                         return isEditScale(row);
+                    case SUBTYPE_COLUMN:
+                        return isEditSubtype(row);
                     case AUTOINCREMENT_COLUMN:
                         return false;
                     case ENCODING_COLUMN:
@@ -1054,7 +1085,6 @@ public abstract class TableDefinitionPanel extends JPanel
                         return editing;
                 }
             else return editing;
-
 
         }
 
@@ -1065,7 +1095,7 @@ public abstract class TableDefinitionPanel extends JPanel
         public Class getColumnClass(int col) {
             if (col == REQUIRED_COLUMN || col == AUTOINCREMENT_COLUMN) {
                 return Boolean.class;
-            } else if (col == SIZE_COLUMN || col == SCALE_COLUMN) {
+            } else if (col == SIZE_COLUMN || col == SCALE_COLUMN || col == SUBTYPE_COLUMN) {
                 return Integer.class;
             } else {
                 return String.class;

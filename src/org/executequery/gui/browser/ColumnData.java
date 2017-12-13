@@ -109,6 +109,11 @@ public class ColumnData implements Serializable {
     private int columnScale;
 
     /**
+     * The subtype of this column
+     */
+    private int columnSubtype;
+
+    /**
      * Whether this column is required ie. NOT NULL
      */
     private int columnRequired;
@@ -252,6 +257,14 @@ public class ColumnData implements Serializable {
 
     public void setColumnScale(int columnScale) {
         this.columnScale = columnScale;
+    }
+
+    public void setColumnSubtype(int columnSubtype) {
+        this.columnSubtype = columnSubtype;
+    }
+
+    public int getColumnSubtype() {
+        return columnSubtype;
     }
 
     public void setNamesToUpper() {
@@ -485,6 +498,7 @@ public class ColumnData implements Serializable {
             sqlType = domainType;
             columnSize = domainSize;
             columnScale = domainScale;
+            columnSubtype = domainSubType;
             if (!MiscUtils.isNull(domainCheck)) {
                 domainCheck = domainCheck.trim();
                 if (domainCheck.toUpperCase().startsWith("CHECK"))
@@ -611,7 +625,11 @@ public class ColumnData implements Serializable {
 
             return "";
         }
-        typeString = typeString.replace(" SUB_TYPE <0","");
+        if (typeString.contains("<0")) {
+            if (columnSubtype < 0)
+                typeString = typeString.replace("<0", "" + columnSubtype);
+            else typeString = typeString.replace("<0", "0");
+        }
         StringBuilder sb = new StringBuilder(typeString);
 
         // if the type doesn't end with a digit or it

@@ -95,7 +95,7 @@ public class MetaDataValues implements ConnectionListener {
      * connection is initialised and maintained following
      * the first request and reused for any subsequent requests.
      *
-     * @param whether to keep the connection open
+     * @param keepAlive to keep the connection open
      */
     public MetaDataValues(boolean keepAlive) {
         this(null, keepAlive);
@@ -614,6 +614,7 @@ public class MetaDataValues implements ConnectionListener {
                 cd.setColumnName(columnName);
                 cd.setSQLType(rs.getShort(5));
                 cd.setColumnType(rs.getString(6));
+                cd.setColumnSubtype(rs.getInt(4));
                 cd.setColumnSize(rs.getInt(7));
                 cd.setColumnScale(rs.getInt(9));
                 cd.setColumnRequired(rs.getInt(11));

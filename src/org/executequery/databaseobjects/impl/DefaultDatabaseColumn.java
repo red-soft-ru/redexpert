@@ -50,6 +50,11 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     private int columnScale;
 
     /**
+     * the database column subtype
+     */
+    private int columnSubtype;
+
+    /**
      * the parent object's name
      */
     private String parentsName;
@@ -137,6 +142,14 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
 
     public void setColumnScale(int columnScale) {
         this.columnScale = columnScale;
+    }
+
+    public int getColumnSubtype() {
+        return columnSubtype;
+    }
+
+    public void setColumnSubtype(int columnSubtype) {
+        this.columnSubtype = columnSubtype;
     }
 
     public String getParentsName() {

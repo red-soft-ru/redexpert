@@ -333,6 +333,7 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
         columnData.setColumnType(column.getTypeName());
         columnData.setColumnSize(column.getColumnSize());
         columnData.setColumnScale(column.getColumnScale());
+        columnData.setColumnSubtype(column.getColumnSubtype());
         selectTypePanel.refresh();
         fieldNameField.setText(columnEdited.getName());
         notNullBox.setSelected(columnEdited.isRequired());

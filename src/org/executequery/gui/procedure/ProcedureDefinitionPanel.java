@@ -64,6 +64,11 @@ public abstract class ProcedureDefinitionPanel extends JPanel
      */
     protected NumberCellEditor scaleEditor;
 
+    /**
+     * The cell editor for the column subtype
+     */
+    protected NumberCellEditor subtypeEditor;
+
     /** The cell editor for the datatype column */
     //protected ComboBoxCellEditor comboCell;
 
@@ -105,13 +110,15 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
     public static final int SCALE_COLUMN = 4;
 
-    public static final int DESCRIPTION_COLUMN = 5;
+    public static final int SUBTYPE_COLUMN = 5;
 
-    public static final int DEFAULT_COLUMN = 6;
+    public static final int DESCRIPTION_COLUMN = 6;
 
-    public static final int ENCODING_COLUMN = 7;
+    public static final int DEFAULT_COLUMN = 7;
 
-    public static final int REQUIRED_COLUMN = 8;
+    public static final int ENCODING_COLUMN = 8;
+
+    public static final int REQUIRED_COLUMN = 9;
 
     private String[] domains;
 
@@ -151,10 +158,10 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         tcm.getColumn(DOMAIN_COLUMN).setPreferredWidth(130);
         tcm.getColumn(SIZE_COLUMN).setPreferredWidth(50);
         tcm.getColumn(SCALE_COLUMN).setPreferredWidth(70);
+        tcm.getColumn(SUBTYPE_COLUMN).setPreferredWidth(70);
         tcm.getColumn(DESCRIPTION_COLUMN).setPreferredWidth(200);
         tcm.getColumn(DEFAULT_COLUMN).setPreferredWidth(200);
-        tcm.getColumn(ENCODING_COLUMN).setPreferredWidth(200);
-        tcm.getColumn(REQUIRED_COLUMN).setPreferredWidth(70);
+        tcm.getColumn(ENCODING_COLUMN).setPreferredWidth(70);
         tcm.getColumn(REQUIRED_COLUMN).setMaxWidth(70);
 
         // add the editors if editing
@@ -202,6 +209,13 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                 }
             };
 
+            subtypeEditor = new NumberCellEditor();
+            DefaultCellEditor stEditor = new DefaultCellEditor(subtypeEditor) {
+                public Object getCellEditorValue() {
+                    return subtypeEditor.getStringValue();
+                }
+            };
+
             sizeEditor = new NumberCellEditor();
             DefaultCellEditor szEditor = new DefaultCellEditor(sizeEditor) {
                 public Object getCellEditorValue() {
@@ -215,6 +229,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
             tcm.getColumn(SIZE_COLUMN).setCellEditor(szEditor);
             tcm.getColumn(SCALE_COLUMN).setCellEditor(scEditor);
+            tcm.getColumn(SCALE_COLUMN).setCellEditor(stEditor);
             domainCell = new DomainSelectionTableCell();
             tcm.getColumn(DOMAIN_COLUMN).setCellRenderer(domainCell);
             tcm.getColumn(DOMAIN_COLUMN).setCellEditor(domainCell);
@@ -242,6 +257,8 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                         value = sizeEditor.getEditorValue();
                     } else if (object == scaleEditor) {
                         value = scaleEditor.getEditorValue();
+                    } else if (object == subtypeEditor) {
+                        value = subtypeEditor.getEditorValue();
                     } else if (object == dataTypeCell.getComponent()) {
                         value = dataTypeCell.getEditorValue();
                     } else if (object == domainCell.getComponent()) {
@@ -262,6 +279,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
             dataTypeCell.addKeyListener(valueKeyListener);
             sizeEditor.addKeyListener(valueKeyListener);
             scaleEditor.addKeyListener(valueKeyListener);
+            subtypeEditor.addKeyListener(valueKeyListener);
             domainCell.addKeyListener(valueKeyListener);
             charsetEditor.addKeyListener(valueKeyListener);
 
@@ -693,7 +711,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
     protected class ProcedureParameterModel extends AbstractPrintableTableModel {
 
         protected String[] header = {"Name", "Datatype", "Domain",
-                "Size", "Scale", "Description", "Default Value", "Encoding","Required"};
+                "Size", "Scale", "Subtype","Description", "Default Value", "Encoding","Required"};
 
         public ProcedureParameterModel(int parameterType) {
             tableVector = new Vector<ColumnData>();
@@ -774,6 +792,9 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                 case SCALE_COLUMN:
                     return Integer.valueOf(cd.getColumnScale());
 
+                case SUBTYPE_COLUMN:
+                    return Integer.valueOf(cd.getColumnSubtype());
+
                 case DESCRIPTION_COLUMN:
                     return cd.getDescription();
 
@@ -809,9 +830,14 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
                             else
-                                _model.setValueAt("10", row, SIZE_COLUMN);
+                                _model.setValueAt((cd.getSQLType() == Types.BLOB || cd.getSQLType() == Types.LONGVARCHAR
+                                        || cd.getSQLType() == Types.LONGVARBINARY) ? "80" : "10", row, SIZE_COLUMN);
                             if (!isEditScale(row))
                                 _model.setValueAt("-1", row, SCALE_COLUMN);
+                            else
+                                _model.setValueAt("0", row, SCALE_COLUMN);
+                            if (!isEditSubtype(row))
+                                _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SCALE_COLUMN);
                             else
                                 _model.setValueAt("0", row, SCALE_COLUMN);
                         } else {
@@ -823,6 +849,10 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                                 _model.setValueAt("-1", row, SCALE_COLUMN);
                             else
                                 _model.setValueAt(String.valueOf(cd.getColumnScale()), row, SCALE_COLUMN);
+                            if (!isEditSubtype(row))
+                                _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
+                            else
+                                _model.setValueAt(String.valueOf(cd.getColumnSubtype()), row, SUBTYPE_COLUMN);
                         }
                     } else {
                         cd.setColumnType(dataTypes[(int) value]);
@@ -832,11 +862,16 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
                             else
-                                _model.setValueAt("10", row, SIZE_COLUMN);
+                                _model.setValueAt((cd.getSQLType() == Types.BLOB || cd.getSQLType() == Types.LONGVARCHAR
+                                        || cd.getSQLType() == Types.LONGVARBINARY) ? "80" : "10", row, SIZE_COLUMN);
                             if (!isEditScale(row))
                                 _model.setValueAt("-1", row, SCALE_COLUMN);
                             else
                                 _model.setValueAt("0", row, SCALE_COLUMN);
+                            if (!isEditSubtype(row))
+                                _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
+                            else
+                                _model.setValueAt("0", row, SUBTYPE_COLUMN);
                         } else {
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
@@ -846,11 +881,13 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                                 _model.setValueAt("-1", row, SCALE_COLUMN);
                             else
                                 _model.setValueAt(String.valueOf(cd.getColumnScale()), row, SCALE_COLUMN);
+                            if (!isEditSubtype(row))
+                                _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
+                            else
+                                _model.setValueAt(String.valueOf(cd.getColumnSubtype()), row, SUBTYPE_COLUMN);
                         }
                         if (!isEditEncoding(row))
                             cd.setCharset(charsets.get(0));
-
-
                     }
                     break;
                 case DOMAIN_COLUMN:
@@ -868,6 +905,9 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                     break;
                 case SCALE_COLUMN:
                     cd.setColumnScale(Integer.parseInt((String) value));
+                    break;
+                case SUBTYPE_COLUMN:
+                    cd.setColumnSubtype(Integer.parseInt(value.toString()));
                     break;
                 case DESCRIPTION_COLUMN:
                     cd.setDescription((String) value);
@@ -912,6 +952,10 @@ public abstract class ProcedureDefinitionPanel extends JPanel
             return cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL;
         }
 
+        boolean isEditSubtype(int row) {
+            ColumnData cd = tableVector.elementAt(row);
+            return cd.getSQLType() == Types.BLOB;
+        }
 
         public boolean isCellEditable(int row, int col) {
             if (editing)
@@ -920,6 +964,8 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                         return isEditSize(row);
                     case SCALE_COLUMN:
                         return isEditScale(row);
+                    case SUBTYPE_COLUMN:
+                        return isEditSubtype(row);
                     case ENCODING_COLUMN:
                         return isEditEncoding(row);
                     default:
@@ -937,7 +983,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         public Class getColumnClass(int col) {
             if (col == REQUIRED_COLUMN)
                 return Boolean.class;
-            if (col == SIZE_COLUMN || col == SCALE_COLUMN) {
+            if (col == SIZE_COLUMN || col == SCALE_COLUMN || col == SUBTYPE_COLUMN) {
                 return Integer.class;
             } else {
                 return String.class;

@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.TablePrivilege;
 import org.executequery.databaseobjects.impl.DefaultDatabaseProcedure;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DatabaseDataSource;
+import org.executequery.datasource.PooledConnection;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
@@ -614,7 +615,6 @@ public class MetaDataValues implements ConnectionListener {
                 cd.setColumnName(columnName);
                 cd.setSQLType(rs.getShort(5));
                 cd.setColumnType(rs.getString(6));
-                cd.setColumnSubtype(rs.getInt(4));
                 cd.setColumnSize(rs.getInt(7));
                 cd.setColumnScale(rs.getInt(9));
                 cd.setColumnRequired(rs.getInt(11));
@@ -662,6 +662,30 @@ public class MetaDataValues implements ConnectionListener {
 //                cd.setNamesToUpper();
                 _columns.add(cd);
 
+            }
+            
+            if(((PooledConnection) connection).getRealConnection().unwrap(Connection.class).getClass().getName().contains("FBConnection")) {
+                // need to add info about column subtype
+                Statement statement;
+                for (Object od :
+                        _columns) {
+                    ColumnData cd = (ColumnData)od;
+                    statement = connection.createStatement();
+                    ResultSet resultSet = null;
+                    try {
+                        resultSet = statement.executeQuery("select \n" +
+                                "f.rdb$field_sub_type as field_sub_type \n" +
+                                "from rdb$relation_fields rf, \n" +
+                                "rdb$fields f \n" +
+                                "where rf.rdb$relation_name = '" + cd.getTableName() + "'\n" +
+                                "and rf.rdb$field_name = '" + cd.getColumnName() + "'\n" +
+                                "and  rf.rdb$field_source = f.rdb$field_name");
+                        resultSet.next();
+                        cd.setColumnSubtype(resultSet.getShort(1));
+                    } finally {
+                        releaseResources(resultSet);
+                    }
+                }
             }
 
             v_size = _columns.size();

@@ -159,7 +159,7 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
                 }
             }
         });
-
+        columnData.setNotNull(notNullBox.isSelected());
         primaryBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {

@@ -107,6 +107,7 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
                 columnData.setNotNull(notNullBox.isSelected());
             }
         });
+        columnData.setNotNull(notNullBox.isSelected());
         tabPane.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent changeEvent) {

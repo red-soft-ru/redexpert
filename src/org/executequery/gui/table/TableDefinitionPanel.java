@@ -949,11 +949,16 @@ public abstract class TableDefinitionPanel extends JPanel
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
                             else
-                                _model.setValueAt("0", row, SIZE_COLUMN);
+                                _model.setValueAt((cd.getSQLType() == Types.BLOB || cd.getSQLType() == Types.LONGVARCHAR
+                                        || cd.getSQLType() == Types.LONGVARBINARY) ? "80" : "10", row, SIZE_COLUMN);
                             if (!isEditScale(row))
                                 _model.setValueAt("-1", row, SCALE_COLUMN);
                             else
                                 _model.setValueAt("0", row, SCALE_COLUMN);
+                            if (!isEditSubtype(row))
+                                _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
+                            else
+                                _model.setValueAt("0", row, SUBTYPE_COLUMN);
                         } else {
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
@@ -963,6 +968,10 @@ public abstract class TableDefinitionPanel extends JPanel
                                 _model.setValueAt("-1", row, SCALE_COLUMN);
                             else
                                 _model.setValueAt(String.valueOf(cd.getColumnScale()), row, SCALE_COLUMN);
+                            if (!isEditSubtype(row))
+                                _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
+                            else
+                                _model.setValueAt(String.valueOf(cd.getColumnSubtype()), row, SUBTYPE_COLUMN);
                         }
                     } else {
                         cd.setColumnType(dataTypes[(int) value]);
@@ -972,11 +981,16 @@ public abstract class TableDefinitionPanel extends JPanel
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
                             else
-                                _model.setValueAt("0", row, SIZE_COLUMN);
+                                _model.setValueAt((cd.getSQLType() == Types.BLOB || cd.getSQLType() == Types.LONGVARCHAR
+                                        || cd.getSQLType() == Types.LONGVARBINARY) ? "80" : "10", row, SIZE_COLUMN);
                             if (!isEditScale(row))
                                 _model.setValueAt("-1", row, SCALE_COLUMN);
                             else
                                 _model.setValueAt("0", row, SCALE_COLUMN);
+                            if (!isEditSubtype(row))
+                                _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
+                            else
+                                _model.setValueAt("0", row, SUBTYPE_COLUMN);
                         } else {
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
@@ -986,6 +1000,10 @@ public abstract class TableDefinitionPanel extends JPanel
                                 _model.setValueAt("-1", row, SCALE_COLUMN);
                             else
                                 _model.setValueAt(String.valueOf(cd.getColumnScale()), row, SCALE_COLUMN);
+                            if (!isEditSubtype(row))
+                                _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
+                            else
+                                _model.setValueAt(String.valueOf(cd.getColumnSubtype()), row, SUBTYPE_COLUMN);
                         }
                         if (!isEditEncoding(row))
                             cd.setCharset(charsets.get(0));
@@ -1051,7 +1069,8 @@ public abstract class TableDefinitionPanel extends JPanel
         boolean isEditSize(int row) {
             ColumnData cd = tableVector.elementAt(row);
             return cd.getColumnType() != null && (cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
-                    || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB
+                    || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB || cd.getSQLType() == Types.LONGVARCHAR
+                    || cd.getSQLType() == Types.LONGVARBINARY
                     || cd.getColumnType().toUpperCase().equals("VARCHAR")
                     || cd.getColumnType().toUpperCase().equals("CHAR"));
         }

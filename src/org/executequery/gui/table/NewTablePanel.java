@@ -127,7 +127,7 @@ public class NewTablePanel extends TableDefinitionPanel
             case SUBTYPE_COLUMN:
                 if (!MiscUtils.isNull(value)) {
                     int _value = Integer.parseInt(value);
-                    cd.setColumnScale(_value);
+                    cd.setColumnSubtype(_value);
                 }
                 break;
         }

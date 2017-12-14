@@ -801,7 +801,7 @@ public abstract class TableDefinitionPanel extends JPanel
 
         protected String[] header = {"PK", "Name", "Datatype", "Domain",
                 "Size", "Scale", "Subtype", "Required", "Check",
-                "Description", "Computed by", "Default Value", "Autoincrement",
+                "Description", "Computed by", "Autoincrement", "Default Value",
                 "Encoding"};
 
         public CreateTableModel() {

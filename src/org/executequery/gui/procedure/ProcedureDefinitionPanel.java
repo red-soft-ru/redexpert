@@ -229,7 +229,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
             tcm.getColumn(SIZE_COLUMN).setCellEditor(szEditor);
             tcm.getColumn(SCALE_COLUMN).setCellEditor(scEditor);
-            tcm.getColumn(SCALE_COLUMN).setCellEditor(stEditor);
+            tcm.getColumn(SUBTYPE_COLUMN).setCellEditor(stEditor);
             domainCell = new DomainSelectionTableCell();
             tcm.getColumn(DOMAIN_COLUMN).setCellRenderer(domainCell);
             tcm.getColumn(DOMAIN_COLUMN).setCellEditor(domainCell);

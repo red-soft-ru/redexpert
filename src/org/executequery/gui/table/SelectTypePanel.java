@@ -21,6 +21,7 @@ public class SelectTypePanel extends JPanel {
     private JLabel typeLabel;
     private JLabel sizeLabel;
     private JLabel scaleLabel;
+    private JLabel subtypeLabel;
     private JLabel encodingLabel;
     private JComboBox typeBox;
     private JComboBox encodingBox;
@@ -50,6 +51,7 @@ public class SelectTypePanel extends JPanel {
         typeLabel = new JLabel("Type");
         sizeLabel = new JLabel("Size");
         scaleLabel = new JLabel("Scale");
+        subtypeLabel = new JLabel("Subtype");
         encodingLabel = new JLabel("Encoding");
         typeBox = new JComboBox();
         encodingBox = new JComboBox();
@@ -110,6 +112,8 @@ public class SelectTypePanel extends JPanel {
         this.add(sizeLabel, gbc);
         gbc.gridy++;
         this.add(scaleLabel, gbc);
+        gbc.gridy++;
+        this.add(subtypeLabel, gbc);
         gbc.gridy++;
         gbc.weighty = 1;
         this.add(encodingLabel, gbc);

@@ -145,6 +145,7 @@ public class SelectTypePanel extends JPanel {
         cd.setSQLType(intDataTypes[index]);
         setSizeVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
                 || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB
+                || cd.getSQLType() == Types.LONGVARBINARY || cd.getSQLType() == Types.LONGVARCHAR
                 || cd.getColumnType().toUpperCase().equals("VARCHAR")
                 || cd.getColumnType().toUpperCase().equals("CHAR"));
         setScaleVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL);
@@ -154,6 +155,16 @@ public class SelectTypePanel extends JPanel {
                 || cd.getSQLType() == Types.LONGVARCHAR || cd.getSQLType() == Types.CLOB
                 || cd.getColumnType().toUpperCase().equals("VARCHAR")
                 || cd.getColumnType().toUpperCase().equals("CHAR"));
+
+        if (cd.getSQLType() == Types.LONGVARBINARY || cd.getSQLType() == Types.LONGVARCHAR || cd.getSQLType() == Types.BLOB) {
+            sizeField.setText("80");
+        }
+        if (cd.getSQLType() == Types.LONGVARBINARY)
+            subtypeField.setText("0");
+        if (cd.getSQLType() == Types.LONGVARCHAR)
+            subtypeField.setText("1");
+        if (cd.getSQLType() == Types.BLOB)
+            subtypeField.setText("0");
     }
 
     public void refreshColumn() {

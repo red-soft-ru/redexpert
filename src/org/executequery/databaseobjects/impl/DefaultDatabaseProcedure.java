@@ -97,31 +97,65 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                 sbInput.append("\t");
                 sbInput.append(parameter.getName());
                 sbInput.append(" ");
-                sbInput.append(parameter.getSqlType());
-                if (parameter.getDataType() == Types.CHAR
-                        || parameter.getDataType() == Types.VARCHAR
-                        || parameter.getDataType() == Types.NVARCHAR
-                        || parameter.getDataType() == Types.VARBINARY) {
-                    sbInput.append("(");
+                if (parameter.getSqlType().contains("SUB_TYPE")) {
+                    sbInput.append(parameter.getSqlType().replace("<0", String.valueOf(parameter.getSubtype())));
+                    sbInput.append(" segment size ");
                     sbInput.append(parameter.getSize());
-                    sbInput.append("),\n");
-                } else {
+                    if (parameter.getNullable() == 1)
+                        sbInput.append(" not null ");
                     sbInput.append(",\n");
+                } else {
+                    sbInput.append(parameter.getSqlType());
+
+                    if (parameter.getDataType() == Types.CHAR
+                            || parameter.getDataType() == Types.VARCHAR
+                            || parameter.getDataType() == Types.NVARCHAR
+                            || parameter.getDataType() == Types.VARBINARY) {
+                        sbInput.append("(");
+                        sbInput.append(parameter.getSize());
+                        sbInput.append(")");
+                        if (parameter.getNullable() == 1)
+                            sbInput.append(" not null,\n");
+                        else
+                            sbInput.append(",\n");
+                    } else {
+                        if (parameter.getNullable() == 1)
+                            sbInput.append(" not null,\n");
+                        else
+                            sbInput.append(",\n");
+                    }
                 }
             } else if (parameter.getType() == DatabaseMetaData.procedureColumnOut) {
                 sbOutput.append("\t");
                 sbOutput.append(parameter.getName());
                 sbOutput.append(" ");
-                sbOutput.append(parameter.getSqlType());
-                if (parameter.getDataType() == Types.CHAR
-                        || parameter.getDataType() == Types.VARCHAR
-                        || parameter.getDataType() == Types.NVARCHAR
-                        || parameter.getDataType() == Types.VARBINARY) {
-                    sbOutput.append("(");
+                if (parameter.getSqlType().contains("SUB_TYPE")) {
+                    sbOutput.append(parameter.getSqlType().replace("<0", String.valueOf(parameter.getSubtype())));
+                    sbOutput.append(" segment size ");
                     sbOutput.append(parameter.getSize());
-                    sbOutput.append("),\n");
-                } else {
+                    if (parameter.getNullable() == 1)
+                        sbOutput.append(" not null ");
                     sbOutput.append(",\n");
+                } else {
+                    sbOutput.append(parameter.getSqlType());
+
+                    if (parameter.getDataType() == Types.CHAR
+                            || parameter.getDataType() == Types.VARCHAR
+                            || parameter.getDataType() == Types.NVARCHAR
+                            || parameter.getDataType() == Types.VARBINARY) {
+                        sbOutput.append("(");
+                        sbOutput.append(parameter.getSize());
+                        sbOutput.append(")");
+                        if (parameter.getNullable() == 1)
+                            sbOutput.append(" not null,\n");
+                        else
+                            sbOutput.append(",\n");
+                    } else {
+                        if (parameter.getNullable() == 1)
+                            sbOutput.append(" not null,\n");
+                        else
+                            sbOutput.append(",\n");
+                    }
                 }
             }
         }

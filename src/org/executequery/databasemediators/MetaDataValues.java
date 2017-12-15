@@ -785,7 +785,8 @@ public class MetaDataValues implements ConnectionListener {
                             rs.getInt(5),
                             rs.getInt(6),
                             rs.getString(7),
-                            rs.getInt(8));
+                            rs.getInt(8),
+                            rs.getInt(12));
                 }
                 list.add(proc);
                 rs.close();
@@ -901,7 +902,8 @@ public class MetaDataValues implements ConnectionListener {
                                 _rs.getInt(5),
                                 _rs.getInt(6),
                                 _rs.getString(7),
-                                _rs.getInt(8));
+                                _rs.getInt(8),
+                                rs.getInt(12));
                     }
 
                     _rs.close();

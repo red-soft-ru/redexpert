@@ -33,18 +33,21 @@ public class ProcedureParameter {
     private String sqlType;
     private int size;
     private String value;
+    private int subtype;
+    private int nullable;
 
     private static final String RESULT_STORE = "< Result Store >";
     private static final String RETURN_VALUE = "< Return Value >";
     private static final String UNKNOWN = "< Unknown >";
 
     public ProcedureParameter(String name, int type, int dataType,
-                              String sqlType, int size) {
+                              String sqlType, int size, int nullable) {
         this.name = name;
         this.type = type;
         this.dataType = dataType;
         this.sqlType = sqlType;
         this.size = size;
+        this.nullable = nullable;
     }
 
     public void setDataType(int dataType) {
@@ -109,10 +112,25 @@ public class ProcedureParameter {
         return name;
     }
 
+    public int getSubtype() {
+        return subtype;
+    }
+
+    public void setSubtype(int subtype) {
+        this.subtype = subtype;
+    }
+
     public String toString() {
         return getName();
     }
 
+    public void setNullable(int nullable) {
+        this.nullable = nullable;
+    }
+
+    public int getNullable() {
+        return nullable;
+    }
 }
 
 

@@ -230,6 +230,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 parameters.add(udfParameter);
             }
 
+            releaseResources(rs);
+
             if (returnArg != 0)
                 returnMechanism = parameters.get(returnArg - 1).getStringMechanism();
             else

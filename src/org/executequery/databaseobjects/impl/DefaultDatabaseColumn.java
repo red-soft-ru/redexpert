@@ -364,7 +364,7 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
             buffer.append("/*");
         }
 
-        buffer.append(typeString);
+        buffer.append(typeString.replace("<0", String.valueOf(this.getColumnSubtype())));
 
         // if the type doesn't end with a digit or it
         // is a char type then add the size - attempt
@@ -374,7 +374,9 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
         if (!typeString.matches("\\b\\D+\\d+\\b") ||
                 (_type == Types.CHAR ||
                         _type == Types.VARCHAR ||
-                        _type == Types.LONGVARCHAR)) {
+                        _type == Types.LONGVARCHAR ||
+                        _type == Types.LONGVARBINARY ||
+                        _type == Types.BLOB)) {
 
             if (getColumnSize() > 0 && !isDateDataType() && !isNonPrecisionType()) {
 

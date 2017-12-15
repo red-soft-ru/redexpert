@@ -31,6 +31,13 @@ public class FirebirdDataTypeFactory extends DataTypeFactory {
             ((LiquibaseDataType) type).finishInitialization(dataTypeDefinition);
             return (LiquibaseDataType) type;
         }
+        if (dataTypeDefinition.contains("BLOB")) {
+            dataTypeDefinition = dataTypeDefinition.replace("(", " SEGMENT SIZE ");
+            dataTypeDefinition = dataTypeDefinition.replace(")", "");
+            Object type = new UnknownType(dataTypeDefinition);
+            ((LiquibaseDataType) type).finishInitialization(dataTypeDefinition);
+            return (LiquibaseDataType) type;
+        }
 
         return super.fromDescription(dataTypeDefinition, database);
     }

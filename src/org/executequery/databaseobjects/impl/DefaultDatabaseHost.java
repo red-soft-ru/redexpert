@@ -775,6 +775,31 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         statement.close();
                     }
 
+                    // if column is blob, get segment size
+                    if (column.getTypeInt() == Types.LONGVARBINARY ||
+                            column.getTypeInt() == Types.LONGVARCHAR ||
+                            column.getTypeInt() == Types.BLOB) {
+                        Statement st = dmd.getConnection().createStatement();
+                        try {
+                            ResultSet sourceRS = st.executeQuery("select\n" +
+                                    "f.rdb$field_sub_type as field_subtype,\n" +
+                                    "f.rdb$segment_length as segment_length\n" +
+                                    "from rdb$relation_fields rf,\n" +
+                                    "rdb$fields f\n" +
+                                    "where rf.rdb$relation_name = '" + table + "'\n" +
+                                    "and rf.rdb$field_name = '" + column.getName() + "'\n" +
+                                    "and rf.rdb$field_source = f.rdb$field_name");
+                            if (sourceRS.next()) {
+                                column.setColumnSubtype(sourceRS.getInt(1));
+                                column.setColumnSize(sourceRS.getInt(2));
+                                sourceRS.close();
+                            }
+
+                        } finally {
+                            st.close();
+                        }
+                    }
+
                 }
                 columns.add(column);
             }

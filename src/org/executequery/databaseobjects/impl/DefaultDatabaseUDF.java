@@ -313,7 +313,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
 
     public String getCreateSQLText() {
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE EXTERNAL FUNCTION ");
+        sb.append("DECLARE EXTERNAL FUNCTION ");
         sb.append(getName());
         sb.append("\n");
         String args = "";
@@ -333,7 +333,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         else
             sb.append("PARAMETER " + returnArg);
         sb.append("\n");
-        sb.append("ENTRY POINT '");
+        sb.append("ENTRY_POINT '");
         sb.append(getEntryPoint().trim());
         sb.append("' MODULE_NAME '");
         sb.append(getModuleName().trim());

@@ -215,13 +215,14 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 "order by fa.rdb$argument_position";
 
         Statement statement = null;
+        ResultSet rs = null;
 
         parameters.clear();
 
         try {
             statement = this.getHost().getConnection().createStatement();
 
-            ResultSet rs = statement.executeQuery(sqlQuery);
+            rs = statement.executeQuery(sqlQuery);
 
             while (rs.next()) {
                 UDFParameter udfParameter = new UDFParameter(rs.getInt(6),
@@ -229,6 +230,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                         rs.getInt(10), rs.getInt(11), rs.getInt(14));
                 parameters.add(udfParameter);
             }
+
+            releaseResources(rs);
 
             if (returnArg != 0)
                 returnMechanism = parameters.get(returnArg - 1).getStringMechanism();
@@ -241,7 +244,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 inputParameters += parameters.get(i).getFieldStringType() + " "
                         + parameters.get(i).getStringMechanism() + ", ";
             }
-            inputParameters = inputParameters.substring(0, inputParameters.length() - 2);
+            if (!inputParameters.isEmpty())
+                inputParameters = inputParameters.substring(0, inputParameters.length() - 2);
 
             if (returnArg != 0)
                 returns = "Parameter " + returnArg;
@@ -251,6 +255,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
 
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            releaseResources(rs);
         }
 
     }
@@ -317,7 +323,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
             args += "\t" + parameters.get(i).getFieldStringType() + " " +
                     parameters.get(i).getStringMechanism() + ",\n";
         }
-        args = args.substring(0, args.length() - 2);
+        if (!args.isEmpty())
+            args = args.substring(0, args.length() - 2);
         sb.append(args);
         sb.append("\n");
         sb.append("RETURNS\n");

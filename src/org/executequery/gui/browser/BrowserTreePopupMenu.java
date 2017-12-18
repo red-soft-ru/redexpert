@@ -46,6 +46,7 @@ class BrowserTreePopupMenu extends JPopupMenu {
     private JMenuItem disconnect;
     private JMenuItem reload;
     private JMenuItem createObject;
+    private JMenuItem editObject;
     private JMenuItem deleteObject;
     private JMenuItem duplicate;
     private JMenuItem duplicateWithSource;
@@ -81,6 +82,8 @@ class BrowserTreePopupMenu extends JPopupMenu {
 
         createObject = createMenuItem(bundleString("create"), "createObject", listener);
         add(createObject);
+        editObject = createMenuItem(bundleString("edit"), "editObject", listener);
+        add(editObject);
         deleteObject = createMenuItem(bundleString("delete"), "deleteObject", listener);
         add(deleteObject);
 
@@ -173,6 +176,7 @@ class BrowserTreePopupMenu extends JPopupMenu {
                     recycleConnection.setEnabled(!canConnect);
                     deleteObject.setEnabled(false);
                     createObject.setEnabled(false);
+                    editObject.setEnabled(false);
                 } else {
 
                     label = node.toString();
@@ -189,8 +193,10 @@ class BrowserTreePopupMenu extends JPopupMenu {
                         createObjectEnabled = !node.getName().contains("SYSTEM");
                     deleteObject.setEnabled(deleteObjectEnabled);
                     createObject.setEnabled(createObjectEnabled);
+                    editObject.setEnabled(deleteObjectEnabled);
                     if (deleteObjectEnabled) {
                         deleteObject.setText(bundleString("delete") + " " + node.toString());
+                        editObject.setText(bundleString("edit") + " " + node.toString());
                     }
                     if (createObjectEnabled) {
                         String str = "";

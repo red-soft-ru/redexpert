@@ -20,12 +20,17 @@
 
 package org.executequery.databaseobjects.impl;
 
+import biz.redsoft.IFBDatabaseConnection;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -764,6 +769,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             logThrowable(e);
             return false;
 
+        } catch (Exception e) {
+
+            logThrowable(e);
+            return false;
+
         } finally {
 
             releaseResources(rs);
@@ -1154,6 +1164,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             logThrowable(e);
             return new ArrayList<NamedObject>(0);
 
+        } catch (Exception e) {
+            logThrowable(e);
+            return new ArrayList<NamedObject>(0);
         } finally {
 
             releaseResources(rs);
@@ -1466,21 +1479,48 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return resultSet;
     }
 
-    private ResultSet getUDFResultSet() throws SQLException {
+    private ResultSet getUDFResultSet() throws Exception {
 
         String catalogName = catalogNameForQuery();
         String schemaName = schemaNameForQuery();
 
+        ResultSet resultSet = null;
+
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("select RDB$FUNCTION_NAME,\n" +
-                "RDB$DESCRIPTION,\n" +
-                "RDB$MODULE_NAME,\n" +
-                "RDB$ENTRYPOINT,\n" +
-                "RDB$RETURN_ARGUMENT\n" +
-                "from RDB$FUNCTIONS\n" +
-                "order by RDB$FUNCTION_NAME");
+        PooledConnection connection = (PooledConnection) dmd.getConnection();
+        Connection fbConn = connection.unwrap(Connection.class);
+        URL[] urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+        ClassLoader cl = new URLClassLoader(urls, fbConn.getClass().getClassLoader());
+        IFBDatabaseConnection db;
+        Class clazzdb;
+        Object odb;
+        clazzdb = cl.loadClass("biz.redsoft.FBDatabaseConnectionImpl");
+        odb = clazzdb.newInstance();
+        db = (IFBDatabaseConnection) odb;
+        db.setConnection(fbConn);
+        switch (db.getMajorVersion()) {
+            case 2:
+                resultSet = statement.executeQuery("select RDB$FUNCTION_NAME,\n" +
+                        "RDB$DESCRIPTION,\n" +
+                        "RDB$MODULE_NAME,\n" +
+                        "RDB$ENTRYPOINT,\n" +
+                        "RDB$RETURN_ARGUMENT\n" +
+                        "from RDB$FUNCTIONS\n" +
+                        "order by RDB$FUNCTION_NAME");
+                break;
+            case 3:
+            case 4:
+                resultSet = statement.executeQuery("select RDB$FUNCTION_NAME,\n" +
+                        "RDB$DESCRIPTION,\n" +
+                        "RDB$MODULE_NAME,\n" +
+                        "RDB$ENTRYPOINT,\n" +
+                        "RDB$RETURN_ARGUMENT\n" +
+                        "from RDB$FUNCTIONS\n" +
+                        "where RDB$LEGACY_FLAG = 1\n" +
+                        "order by RDB$FUNCTION_NAME");
+                break;
+        }
 
         return resultSet;
     }

@@ -19,6 +19,7 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
 
     private long value = -1;
     private String description;
+    private Integer increment;
 
     /**
      * Creates a new instance.
@@ -146,6 +147,52 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
                         statement.close();
                 } catch (SQLException e) {
                     Log.error("Error close statement in method getDescription in class DefaultDatabaseSequence", e);
+                }
+            setMarkedForReload(false);
+        }
+    }
+
+    public int getIncrement() {
+
+        Statement statement = null;
+
+        if (!isMarkedForReload() && increment != null) {
+
+            return increment;
+        }
+
+        try {
+
+            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
+
+            String _catalog = getCatalogName();
+            String _schema = getSchemaName();
+
+            if (ConnectionManager.realConnection(dmd).getClass().getName().contains("FBConnection")) {
+
+                statement = dmd.getConnection().createStatement();
+                ResultSet rs = statement.executeQuery("select r.rdb$generator_increment\n" +
+                        "from rdb$generators r\n" +
+                        "where\n" +
+                        "trim(r.rdb$generator_name)='" + getName() + "'");
+
+                if (rs.next())
+                    increment = rs.getInt(1);
+            }
+
+            return increment;
+
+        } catch (SQLException e) {
+
+            throw new DataSourceException(e);
+
+        } finally {
+            if (statement != null)
+                try {
+                    if (!statement.isClosed())
+                        statement.close();
+                } catch (SQLException e) {
+                    Log.error("Error close statement in method getIncrement in class DefaultDatabaseSequence", e);
                 }
             setMarkedForReload(false);
         }

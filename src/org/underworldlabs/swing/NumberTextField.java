@@ -81,8 +81,22 @@ public class NumberTextField extends JTextField {
         return retVal;
     }
 
+    public long getLongValue() {
+        long retVal = 0;
+        try {
+            String value = getText();
+            if (MiscUtils.isNull(value)) {
+                value = "0";
+            }
+            retVal = integerFormatter.parse(value).longValue();
+        } catch (ParseException e) {
+            //toolkit.beep();
+        }
+        return retVal;
+    }
+
     public String getStringValue() {
-        return Integer.toString(getValue());
+        return String.valueOf(getLongValue());
     }
 
     public boolean isZero() {
@@ -90,6 +104,10 @@ public class NumberTextField extends JTextField {
     }
 
     public void setValue(int value) {
+        setText(integerFormatter.format(value));
+    }
+
+    public void setLongValue(long value) {
         setText(integerFormatter.format(value));
     }
 

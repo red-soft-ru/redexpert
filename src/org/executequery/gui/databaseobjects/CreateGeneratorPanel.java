@@ -4,6 +4,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
+import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -46,29 +47,52 @@ public class CreateGeneratorPanel extends JPanel {
 
     private DynamicComboBoxModel connectionsModel;
 
-    public static final String TITLE = "Create Sequence";
+    DefaultDatabaseSequence generator;
+
+    boolean editing;
+
+    public static final String CREATE_TITLE = "Create Sequence";
+
+    public static final String ALTER_TITLE = "Alter Sequence";
 
     public CreateGeneratorPanel(DatabaseConnection dc, ActionContainer dialog) {
-        this(dc, dialog, 0, 1);
+        this(dc, dialog, null);
     }
 
-    public CreateGeneratorPanel(DatabaseConnection dc, ActionContainer dialog, int initial_value, int increment) {
-        this(dc, dialog, "NEW_SEQUENCE", initial_value, increment);
+    public CreateGeneratorPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseSequence generator) {
+        this(dc, dialog, 0, 1, generator);
     }
 
-    public CreateGeneratorPanel(DatabaseConnection dc, ActionContainer dialog, String name, int initial_value, int increment) {
-        this(dc, dialog, name, initial_value, increment, null);
+    public CreateGeneratorPanel(DatabaseConnection dc, ActionContainer dialog, int initial_value, int increment, DefaultDatabaseSequence generator) {
+        this(dc, dialog, "NEW_SEQUENCE", initial_value, increment, generator);
     }
 
-    public CreateGeneratorPanel(DatabaseConnection dc, ActionContainer dialog, String name, int initial_value, int increment, String description) {
+    public CreateGeneratorPanel(DatabaseConnection dc, ActionContainer dialog, String name, int initial_value, int increment, DefaultDatabaseSequence generator) {
+        this(dc, dialog, name, initial_value, increment, null, generator);
+    }
+
+    public CreateGeneratorPanel(DatabaseConnection dc, ActionContainer dialog, String name, int initial_value, int increment, String description, DefaultDatabaseSequence generator_edited) {
         parent = dialog;
         connection = dc;
+        generator = generator_edited;
         init(name, initial_value, increment, description);
         if (getVersion() < 3) {
             labelIncrement.setVisible(false);
             incrementText.setVisible(false);
         }
+        editing = generator != null;
+        if (editing)
+            init_edited();
+    }
 
+    void init_edited() {
+        nameText.setText(generator.getName().trim());
+        nameText.setEnabled(false);
+        startValueText.setLongValue(generator.getSequenceValue());
+        if (getVersion() >= 3)
+            incrementText.setValue(generator.getIncrement());
+        description.setText(generator.getDescription());
+        //valueText.setVisible(false);
     }
 
     void init(String name, int initial_value, int increment, String description) {
@@ -189,15 +213,17 @@ public class CreateGeneratorPanel extends JPanel {
         if (!MiscUtils.isNull(nameText.getText().trim())) {
             String query;
             if (getVersion() == 3) {
-                query = "CREATE SEQUENCE " + nameText.getText() + " START WITH " + startValueText.getStringValue()
+                query = "CREATE OR ALTER SEQUENCE " + nameText.getText() + " START WITH " + startValueText.getStringValue()
                         + " INCREMENT BY " + incrementText.getStringValue() + ";";
             } else {
-                query = "CREATE SEQUENCE " + nameText.getText() + ";";
+                if (!editing)
+                    query = "CREATE SEQUENCE " + nameText.getText() + ";";
+                else query = "";
                 query += "\nALTER SEQUENCE " + nameText.getText() + " RESTART WITH " + startValueText.getStringValue() + ";";
             }
             if (!MiscUtils.isNull(description.getText().trim()))
                 query += "\nCOMMENT ON SEQUENCE " + nameText.getText() + " IS '" + description.getText() + "'";
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog(TITLE, query, connection, true);
+            ExecuteQueryDialog eqd = new ExecuteQueryDialog(CREATE_TITLE, query, connection, true);
             eqd.display();
             if (eqd.getCommit()) {
                 parent.finished();

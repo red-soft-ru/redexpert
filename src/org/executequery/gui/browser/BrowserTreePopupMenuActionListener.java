@@ -26,6 +26,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.CreateTablePanel;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -126,15 +127,15 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     }
                     break;
                 case NamedObject.SEQUENCE:
-                    if (GUIUtilities.isDialogOpen(CreateGeneratorPanel.TITLE)) {
+                    if (GUIUtilities.isDialogOpen(CreateGeneratorPanel.CREATE_TITLE)) {
 
-                        GUIUtilities.setSelectedDialog(CreateGeneratorPanel.TITLE);
+                        GUIUtilities.setSelectedDialog(CreateGeneratorPanel.CREATE_TITLE);
 
                     } else {
                         try {
                             GUIUtilities.showWaitCursor();
                             BaseDialog dialog =
-                                    new BaseDialog(CreateGeneratorPanel.TITLE, false);
+                                    new BaseDialog(CreateGeneratorPanel.CREATE_TITLE, false);
                             CreateGeneratorPanel panel = new CreateGeneratorPanel(currentSelection, dialog);
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
@@ -209,13 +210,30 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 case NamedObject.ROLE:
                     break;
                 case NamedObject.SEQUENCE:
+                    if (GUIUtilities.isDialogOpen(CreateGeneratorPanel.ALTER_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateGeneratorPanel.ALTER_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateGeneratorPanel.ALTER_TITLE, false);
+                            CreateGeneratorPanel panel = new CreateGeneratorPanel(currentSelection, dialog,(DefaultDatabaseSequence)node.getDatabaseObject());
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
                     break;
                 case NamedObject.VIEW:
                     break;
                 case NamedObject.DOMAIN:
-                    if (GUIUtilities.isDialogOpen(CreateDomainPanel.CREATE_TITLE)) {
+                    if (GUIUtilities.isDialogOpen(CreateDomainPanel.EDIT_TITLE)) {
 
-                        GUIUtilities.setSelectedDialog(CreateDomainPanel.CREATE_TITLE);
+                        GUIUtilities.setSelectedDialog(CreateDomainPanel.EDIT_TITLE);
 
                     } else {
                         try {

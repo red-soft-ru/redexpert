@@ -32,9 +32,12 @@ public class ProcedureParameter {
     private int dataType;
     private String sqlType;
     private int size;
+    private int scale;
+    private String encoding;
     private String value;
     private int subtype;
     private int nullable;
+    private String domain;
 
     private static final String RESULT_STORE = "< Result Store >";
     private static final String RETURN_VALUE = "< Return Value >";
@@ -126,6 +129,30 @@ public class ProcedureParameter {
 
     public void setNullable(int nullable) {
         this.nullable = nullable;
+    }
+
+    public int getScale() {
+        return scale;
+    }
+
+    public void setScale(int scale) {
+        this.scale = scale;
+    }
+
+    public String getEncoding() {
+        return encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
     }
 
     public int getNullable() {

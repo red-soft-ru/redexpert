@@ -5,6 +5,9 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.FocusComponentPanel;
 import org.executequery.gui.WidgetFactory;
@@ -27,8 +30,7 @@ import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
-import java.sql.ResultSet;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -41,6 +43,7 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         ItemListener,
         TextEditorContainer {
 
+    private String procedure;
     /**
      * The procedure name field
      */
@@ -134,6 +137,87 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
             e.printStackTrace();
         }
 
+    }
+
+    public CreateProcedureFunctionPanel(String procedure) {
+        this();
+        this.procedure = procedure;
+        try {
+            initEditing();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void initEditing() throws Exception {
+        nameField.setText(this.procedure);
+        nameField.setEnabled(false);
+        loadParameters();
+        loadVariables();
+    }
+
+    private void loadVariables() {
+
+    }
+
+    private void loadParameters() throws SQLException {
+        DatabaseHost host = null;
+        try {
+            DatabaseConnection connection =
+                    (DatabaseConnection) connectionsCombo.getSelectedItem();
+            host = new DatabaseObjectFactoryImpl().createDatabaseHost(connection);
+            DatabaseMetaData dmd = host.getDatabaseMetaData();
+            List<ProcedureParameter> parameters = new ArrayList<ProcedureParameter>();
+
+            ResultSet rs = dmd.getProcedureColumns(null, null, this.procedure, null);
+
+            while (rs.next()) {
+                ProcedureParameter procedureParameter = new ProcedureParameter(rs.getString(4),
+                        rs.getInt(5),
+                        rs.getInt(6),
+                        rs.getString(7),
+                        rs.getInt(8),
+                        rs.getInt(12));
+                procedureParameter.setScale(rs.getInt(10));
+                procedureParameter.setNullable(rs.getInt(12));
+                parameters.add(procedureParameter);
+            }
+
+            if (rs != null)
+                rs.close();
+
+            for (ProcedureParameter pp :
+                    parameters) {
+                Statement statement = dmd.getConnection().createStatement();
+                ResultSet resultSet = statement.executeQuery("select\n" +
+                        "f.rdb$field_sub_type as field_subtype,\n" +
+                        "f.rdb$segment_length as segment_length,\n" +
+                        "pp.rdb$field_source as field_source\n" +
+                        "from rdb$procedure_parameters pp,\n" +
+                        "rdb$fields f\n" +
+                        "where pp.rdb$parameter_name = '" + pp.getName() + "'\n" +
+                        "and pp.rdb$procedure_name = '" + this.procedure + "'\n" +
+                        "and  pp.rdb$field_source = f.rdb$field_name");
+                if (resultSet.next()) {
+                    pp.setSubtype(resultSet.getInt(1));
+                    pp.setSize(resultSet.getInt(2));
+                    String domain = resultSet.getString(3);
+                    if (!domain.contains("RDB$"))
+                        pp.setDomain(domain.trim());
+                    resultSet.close();
+                }
+                statement.close();
+                if (pp.getType() == DatabaseMetaData.procedureColumnIn)
+                    inputParametersPanel.addRow(pp);
+                else if (pp.getType() == DatabaseMetaData.procedureColumnOut)
+                    outputParametersPanel.addRow(pp);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (host != null)
+                host.close();
+        }
     }
 
     private void init() throws Exception {

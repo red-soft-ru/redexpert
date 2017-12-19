@@ -3,6 +3,7 @@ package org.executequery.gui.procedure;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowsingCellEditor;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.*;
@@ -15,6 +16,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
@@ -562,6 +564,36 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         if (table.isEditing()) {
             table.removeEditor();
         }
+    }
+
+    /**
+     * Adding new row
+     */
+    public void addRow(ProcedureParameter parameter) {
+        table.editingStopped(null);
+        if (table.isEditing()) {
+            table.removeEditor();
+        }
+
+        ColumnData cd = new ColumnData(true, dc);
+        cd.setColumnName(parameter.getName());
+        cd.setDomain(parameter.getDomain());
+        cd.setColumnSubtype(parameter.getSubtype());
+        cd.setColumnSize(parameter.getSize());
+        cd.setColumnType(parameter.getSqlType());
+        cd.setColumnScale(parameter.getScale());
+        cd.setColumnRequired(parameter.getNullable());
+        tableVector.addElement(cd);
+        int selection = table.getRowCount() - 1;
+        _model.fireTableRowsInserted(
+                selection == 0 ? 0 : selection - 1,
+                selection == 0 ? 1 : selection);
+
+        table.setRowSelectionInterval(selection, selection);
+        table.setColumnSelectionInterval(1, 1);
+
+        table.setEditingRow(selection);
+        table.setEditingColumn(NAME_COLUMN);
     }
 
     /**

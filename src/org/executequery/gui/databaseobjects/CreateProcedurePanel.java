@@ -33,6 +33,8 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
      */
     public static final String TITLE = "Create Procedure";
 
+    public static final String EDIT_TITLE = "Edit Procedure";
+
     /**
      * This objects icon as an internal frame
      */
@@ -62,6 +64,18 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
         connectionsCombo.setSelectedItem(dc);
     }
 
+    public CreateProcedurePanel(DatabaseConnection connection, ActionContainer parent, String procedure) {
+        super(procedure);
+        this.parent = parent;
+        try {
+            alterInit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        setFocusComponent();
+        connectionsCombo.setSelectedItem(connection);
+    }
+
     /**
      * <p>Initializes the state of this instance.
      */
@@ -69,6 +83,14 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
 
         addButtonsPanel(new BottomButtonPanel(
                 this, "Create", "create-procedure", parent.isDialog()));
+        setPreferredSize(new Dimension(750, 480));
+        EventMediator.registerListener(this);
+    }
+
+    private void alterInit() throws Exception {
+
+        addButtonsPanel(new BottomButtonPanel(
+                this, "Alter", "create-procedure", parent.isDialog()));
         setPreferredSize(new Dimension(750, 480));
         EventMediator.registerListener(this);
     }

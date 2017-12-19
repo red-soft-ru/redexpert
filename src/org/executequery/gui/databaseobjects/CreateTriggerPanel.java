@@ -6,11 +6,13 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
+import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.BrowserConstants;
+import org.executequery.gui.browser.comparer.Trigger;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.DynamicComboBoxModel;
@@ -112,6 +114,10 @@ public class CreateTriggerPanel extends JPanel {
 
     ActionContainer parent;
 
+    DefaultDatabaseTrigger trigger;
+
+    boolean editing;
+
     String[] meta_types = {"FUNCTION",
             "INDEX",
             "PROCEDURE",
@@ -129,16 +135,27 @@ public class CreateTriggerPanel extends JPanel {
             "MAPPING",
             "ROLE"};
 
-    public static final String TITLE = "Create Trigger";
+    public static final String CREATE_TITLE = "Create Trigger";
+
+    public static final String EDIT_TITLE = "Edit Trigger";
 
     /**
      * The constructor
      */
+
     public CreateTriggerPanel(DatabaseConnection dc, ActionContainer parent) {
+        this(dc, parent, null);
+    }
+
+    public CreateTriggerPanel(DatabaseConnection dc, ActionContainer parent, DefaultDatabaseTrigger trigger) {
+        this.trigger = trigger;
         this.parent = parent;
         connection = dc;
         executor = new DefaultStatementExecutor(connection, true);
         init();
+        editing = trigger != null;
+        if (editing)
+            init_edited();
     }
 
     void init() {
@@ -221,11 +238,7 @@ public class CreateTriggerPanel extends JPanel {
         anyDdlBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                boolean selected = anyDdlBox.isSelected();
-                for (JCheckBox checkBox : ddlCheckBoxes) {
-                    checkBox.setSelected(selected);
-                    checkBox.setEnabled(!selected);
-                }
+                changeAnyDdlBox();
             }
         });
 
@@ -354,6 +367,59 @@ public class CreateTriggerPanel extends JPanel {
 
     }
 
+    void changeAnyDdlBox() {
+        boolean selected = anyDdlBox.isSelected();
+        for (JCheckBox checkBox : ddlCheckBoxes) {
+            checkBox.setSelected(selected);
+            checkBox.setEnabled(!selected);
+        }
+    }
+
+    void init_edited() {
+        typeTriggerCombo.setSelectedIndex(trigger.getIntTriggerType());
+        typeTriggerCombo.setEnabled(false);
+        nameField.setText(trigger.getName());
+        nameField.setEnabled(false);
+        activeBox.setSelected(trigger.isTriggerActive());
+        positionField.setValue(trigger.getTriggerSequence());
+        sqlBodyText.setSQLText(trigger.getTriggerSourceCode());
+        if (trigger.getIntTriggerType() == DefaultDatabaseTrigger.DATABASE_TRIGGER) {
+            int type = ((int) trigger.getLongTriggerType()) - 8192;
+            actionCombo.setSelectedIndex(type);
+            actionCombo.setEnabled(false);
+        } else {
+            if (trigger.getStringTriggerType().startsWith("BEFORE"))
+                typeTableTriggerCombo.setSelectedIndex(0);
+            else typeTableTriggerCombo.setSelectedIndex(1);
+            //typeTableTriggerCombo
+            if (trigger.getIntTriggerType() == DefaultDatabaseTrigger.TABLE_TRIGGER) {
+                insertBox.setSelected(trigger.getStringTriggerType().contains("INSERT"));
+                updateBox.setSelected(trigger.getStringTriggerType().contains("UPDATE"));
+                deleteBox.setSelected(trigger.getStringTriggerType().contains("DELETE"));
+                for (int i = 0; i < tablesCombo.getItemCount(); i++) {
+                    if (((String) tablesCombo.getModel().getElementAt(i)).trim().toUpperCase().equals(trigger.getTriggerTableName().trim().toUpperCase())) {
+                        tablesCombo.setSelectedIndex(i);
+                        tablesCombo.setEnabled(false);
+                        break;
+                    }
+                }
+            } else {
+                typeTableTriggerCombo.setEnabled(false);
+                anyDdlBox.setEnabled(false);
+                if (trigger.getStringTriggerType().trim().contains(anyDdlBox.getText())) {
+                    anyDdlBox.setSelected(true);
+                    changeAnyDdlBox();
+                } else {
+                    for (JCheckBox checkBox : ddlCheckBoxes) {
+                        checkBox.setSelected(trigger.getStringTriggerType().contains(checkBox.getText()));
+                        checkBox.setEnabled(false);
+                    }
+                }
+            }
+        }
+
+    }
+
     int getVersion() {
         DatabaseHost host = new DefaultDatabaseHost(connection);
         String vers = host.getDatabaseProductVersion();
@@ -401,7 +467,7 @@ public class CreateTriggerPanel extends JPanel {
     }
 
     void generateScript() {
-        String query = "CREATE TRIGGER " + nameField.getText();
+        String query = "CREATE OR ALTER TRIGGER " + nameField.getText();
         if (typeTriggerCombo.getSelectedIndex() == 0)
             query += " FOR " + tablesCombo.getSelectedItem();
         query += "\n";

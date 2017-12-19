@@ -26,6 +26,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.CreateTablePanel;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -203,15 +204,15 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     }
                     break;
                 case NamedObject.TRIGGER:
-                    if (GUIUtilities.isDialogOpen(CreateTriggerPanel.TITLE)) {
+                    if (GUIUtilities.isDialogOpen(CreateTriggerPanel.CREATE_TITLE)) {
 
-                        GUIUtilities.setSelectedDialog(CreateTriggerPanel.TITLE);
+                        GUIUtilities.setSelectedDialog(CreateTriggerPanel.CREATE_TITLE);
 
                     } else {
                         try {
                             GUIUtilities.showWaitCursor();
                             BaseDialog dialog =
-                                    new BaseDialog(CreateTriggerPanel.TITLE, false);
+                                    new BaseDialog(CreateTriggerPanel.CREATE_TITLE, false);
                             CreateTriggerPanel panel = new CreateTriggerPanel(currentSelection, dialog);
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
@@ -259,6 +260,25 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
                             BaseDialog dialog = new BaseDialog(CreateDomainPanel.EDIT_TITLE, false);
                             CreateDomainPanel panel = new CreateDomainPanel(currentSelection, dialog, node.getName().trim());
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
+                case NamedObject.TRIGGER:
+                    if (GUIUtilities.isDialogOpen(CreateTriggerPanel.EDIT_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateTriggerPanel.EDIT_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+
+                            BaseDialog dialog = new BaseDialog(CreateTriggerPanel.EDIT_TITLE, false);
+                            CreateTriggerPanel panel = new CreateTriggerPanel(currentSelection, dialog,  (DefaultDatabaseTrigger) node.getDatabaseObject());
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());

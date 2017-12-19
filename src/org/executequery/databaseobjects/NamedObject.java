@@ -97,7 +97,7 @@ public interface NamedObject extends java.io.Serializable {
             "SYSTEM DOMAIN",
             "SYSTEM INDEX",
             "SYSTEM TRIGGER",
-            "SYSTEM DATABASE TRIGGER",
+            "DATABASE TRIGGER",
             "PACKAGE",
             "ROLE"};
 

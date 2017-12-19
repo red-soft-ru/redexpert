@@ -1021,6 +1021,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
             case QueryTypes.REVOKE:
             case QueryTypes.DROP_OBJECT:
             case QueryTypes.COMMENT:
+            case QueryTypes.CREATE_TRIGGER:
                 return updateRecords(query);
 
             case QueryTypes.UNKNOWN:

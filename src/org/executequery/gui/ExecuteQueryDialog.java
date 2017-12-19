@@ -438,6 +438,9 @@ public class ExecuteQueryDialog extends BaseDialog {
             case QueryTypes.CREATE_PROCEDURE:
                 rText = "Procedure created.";
                 break;
+            case QueryTypes.CREATE_TRIGGER:
+                rText = "Trigger created.";
+                break;
             case QueryTypes.CREATE_FUNCTION:
                 rText = "Function created.";
                 break;
@@ -550,6 +553,9 @@ public class ExecuteQueryDialog extends BaseDialog {
                     break;
                 case QueryTypes.ALTER_TABLE:
                     nameOperation = "ALTER TABLE";
+                    break;
+                case QueryTypes.CREATE_TRIGGER:
+                    nameOperation = "CREATE OR ALTER TRIGGER";
                     break;
                 case QueryTypes.CREATE_SEQUENCE:
                     nameOperation = "CREATE SEQUENCE";

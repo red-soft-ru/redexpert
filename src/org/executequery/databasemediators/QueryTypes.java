@@ -133,6 +133,8 @@ public final class QueryTypes {
 
     public static final int CREATE_ROLE = 32;
 
+    public static final int CREATE_TRIGGER = 35;
+
     public static final int DROP_OBJECT = 33;
 
     public static final int COMMENT = 34;

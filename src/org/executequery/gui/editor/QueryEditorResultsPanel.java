@@ -556,6 +556,9 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
             case QueryTypes.CREATE_PROCEDURE:
                 rText = "Procedure created.";
                 break;
+            case QueryTypes.CREATE_TRIGGER:
+                rText = "Trigger created.";
+                break;
             case QueryTypes.CREATE_FUNCTION:
                 rText = "Function created.";
                 break;

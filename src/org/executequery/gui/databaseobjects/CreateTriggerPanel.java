@@ -244,33 +244,47 @@ public class CreateTriggerPanel extends JPanel {
 
         this.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints(0, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1),
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0);
         this.add(connectionLabel, gbc);
         gbc.gridx++;
-        gbc.gridwidth = 3;
+        gbc.gridwidth = 4;
+        gbc.weightx = 1;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         this.add(connectionsCombo, gbc);
         gbc.gridx = 0;
         gbc.gridy++;
         gbc.gridwidth = 1;
+        gbc.weightx = 0;
+        gbc.anchor = GridBagConstraints.NORTHEAST;
+        gbc.fill = GridBagConstraints.NONE;
         this.add(nameLabel, gbc);
         gbc.gridx++;
-        gbc.gridwidth = 3;
+        gbc.gridwidth = 4;
+        gbc.weightx = 1;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         this.add(nameField, gbc);
         gbc.gridx = 0;
         gbc.gridy++;
-        gbc.gridwidth = 1;
+        gbc.gridwidth = 2;
+        gbc.weightx = 0;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
         this.add(typeTriggerCombo, gbc);
-        gbc.gridx++;
+        gbc.gridx += 2;
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.NORTHEAST;
         this.add(positionLabel, gbc);
         gbc.gridx++;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
         this.add(positionField, gbc);
         gbc.gridx++;
         this.add(activeBox, gbc);
         gbc.gridx = 0;
         gbc.gridy++;
-        gbc.gridwidth = 4;
+        gbc.gridwidth = 5;
         this.add(databaseTriggerPanel, gbc);
         gbc.gridy++;
         this.add(ddlTableTriggerPanel, gbc);
@@ -279,7 +293,7 @@ public class CreateTriggerPanel extends JPanel {
         gbc.fill = GridBagConstraints.BOTH;
         this.add(scrollSqlBody, gbc);
         gbc.gridy++;
-        gbc.gridx = 2;
+        gbc.gridx = 3;
         gbc.weighty = 0;
         gbc.weightx = 1;
         gbc.gridwidth = 1;
@@ -295,17 +309,21 @@ public class CreateTriggerPanel extends JPanel {
         ddlTableTriggerPanel.setLayout(new GridBagLayout());
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.weightx = 1;
+        gbc.weightx = 0;
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.NORTHEAST;
         databaseTriggerPanel.add(actionLabel, gbc);
-        ddlTableTriggerPanel.add(typeTableTriggerCombo, gbc);
         tableTriggerPanel.add(labelTable, gbc);
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        ddlTableTriggerPanel.add(typeTableTriggerCombo, gbc);
         gbc.gridx++;
+        gbc.weightx = 1;
         databaseTriggerPanel.add(actionCombo, gbc);
         tableTriggerPanel.add(tablesCombo, gbc);
         gbc.gridx++;
+        gbc.weightx = 0.1;
         tableTriggerPanel.add(insertBox, gbc);
         gbc.gridx++;
         tableTriggerPanel.add(updateBox, gbc);
@@ -318,6 +336,7 @@ public class CreateTriggerPanel extends JPanel {
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 1;
+        gbc.weightx = 1;
         ddlTableTriggerPanel.add(tableTriggerPanel, gbc);
         gbc.gridy++;
         ddlTableTriggerPanel.add(scrolDDL, gbc);

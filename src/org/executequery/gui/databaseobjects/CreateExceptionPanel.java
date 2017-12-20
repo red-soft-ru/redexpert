@@ -50,6 +50,8 @@ public class CreateExceptionPanel extends JPanel {
 
     public static final String CREATE_TITLE = "Create Exception";
 
+    public static final String ALTER_TITLE = "Edit Exception";
+
     public CreateExceptionPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseException exception) {
         parent = dialog;
         connection = dc;
@@ -156,10 +158,14 @@ public class CreateExceptionPanel extends JPanel {
     }
 
     void init_edited() {
+        nameText.setText(exception.getName().trim());
+        nameText.setEnabled(false);
+        textExceptionPanel.getTextAreaComponent().setText(exception.getExceptionText());
+        descriptionPanel.getTextAreaComponent().setText(exception.getRemarks());
     }
 
     void generateScript() {
-        String query = "CREATE EXCEPTION "+nameText.getText()+" '"+textExceptionPanel.getTextAreaComponent().getText()+"'^";
+        String query = "CREATE OR ALTER EXCEPTION "+nameText.getText()+" '"+textExceptionPanel.getTextAreaComponent().getText()+"'^";
         query+="COMMENT ON EXCEPTION "+nameText.getText()+" IS '"+descriptionPanel.getTextAreaComponent().getText()+"'";
         ExecuteQueryDialog eqd = new ExecuteQueryDialog(CREATE_TITLE, query, connection, true,"^");
         eqd.display();

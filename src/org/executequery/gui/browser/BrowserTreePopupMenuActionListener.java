@@ -26,6 +26,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseException;
 import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.CreateTablePanel;
@@ -261,6 +262,25 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
                             BaseDialog dialog = new BaseDialog(CreateDomainPanel.EDIT_TITLE, false);
                             CreateDomainPanel panel = new CreateDomainPanel(currentSelection, dialog, node.getName().trim());
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
+                case NamedObject.EXCEPTION:
+                    if (GUIUtilities.isDialogOpen(CreateExceptionPanel.ALTER_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateExceptionPanel.ALTER_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateExceptionPanel.ALTER_TITLE, false);
+                            CreateExceptionPanel panel = new CreateExceptionPanel(currentSelection, dialog,(DefaultDatabaseException)node.getDatabaseObject());
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());

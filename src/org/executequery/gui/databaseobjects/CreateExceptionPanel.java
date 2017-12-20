@@ -159,7 +159,8 @@ public class CreateExceptionPanel extends JPanel {
     }
 
     void generateScript() {
-        String query = "CREATE EXCEPTION "+nameText.getText()+" '"+textExceptionPanel.getTextAreaComponent().getText()+"'";
+        String query = "CREATE EXCEPTION "+nameText.getText()+" '"+textExceptionPanel.getTextAreaComponent().getText()+"'^";
+        query+="COMMENT ON EXCEPTION "+nameText.getText()+" IS '"+descriptionPanel.getTextAreaComponent().getText()+"'";
         ExecuteQueryDialog eqd = new ExecuteQueryDialog(CREATE_TITLE, query, connection, true,"^");
         eqd.display();
         if (eqd.getCommit()) {

@@ -1,5 +1,6 @@
 package org.executequery.gui.databaseobjects;
 
+import org.executequery.components.SplitPaneFactory;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
@@ -69,6 +70,8 @@ public class CreateTriggerPanel extends JPanel {
 
     private JButton cancelButton;
 
+    private JSplitPane splitPane;
+
     //components for database trigger
 
     private JPanel databaseTriggerPanel;
@@ -82,6 +85,8 @@ public class CreateTriggerPanel extends JPanel {
     private JLabel labelTable;
 
     private JPanel tableTriggerPanel;
+
+    private JLabel beforeAfterlabel;
 
     private JComboBox typeTableTriggerCombo;
 
@@ -183,16 +188,17 @@ public class CreateTriggerPanel extends JPanel {
         updateBox = new JCheckBox("UPDATE");
         deleteBox = new JCheckBox("DELETE");
         labelTable = new JLabel("Table");
+        beforeAfterlabel = new JLabel("Before/After");
         tablesCombo = new JComboBox(getTables());
         sqlBodyText = new SimpleSqlTextPanel();
         scrollSqlBody = new JScrollPane(sqlBodyText);
         okButton = new JButton("OK");
         cancelButton = new JButton("Cancel");
-        ddlTriggerPanel = new JPanel();
+        ddlTriggerPanel = new JPanel(new GridBagLayout());
         scrolDDL = new JScrollPane(ddlTriggerPanel);
         scrolDDL.setMinimumSize(new Dimension(100, 200));
         setPreferredSize(new Dimension(800, 800));
-        ddlTableTriggerPanel = new JPanel();
+        ddlTableTriggerPanel = new JPanel(new GridBagLayout());
         ddlCheckBoxes = new ArrayList<>();
         anyDdlBox = new JCheckBox("ANY DDL STATEMENT");
         sqlBodyText.setSQLText("AS\n" +
@@ -283,30 +289,63 @@ public class CreateTriggerPanel extends JPanel {
         gbc.anchor = GridBagConstraints.NORTHEAST;
         this.add(positionLabel, gbc);
         gbc.gridx++;
-        gbc.anchor = GridBagConstraints.EAST;
-        this.add(positionField, gbc);
+        gbc.anchor = GridBagConstraints.NORTHEAST;
+        this.add(positionField, new GridBagConstraints(3, 2,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
         gbc.gridx++;
         this.add(activeBox, gbc);
         gbc.gridx = 0;
         gbc.gridy++;
         gbc.gridwidth = 5;
-        this.add(databaseTriggerPanel, gbc);
-        gbc.gridy++;
-        this.add(ddlTableTriggerPanel, gbc);
+
+        JPanel topPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbcTop = new GridBagConstraints(0, 0,
+                1, 1, 1, 1,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0);
+        topPanel.add(databaseTriggerPanel, gbcTop);
+        gbcTop.gridy++;
+        gbcTop.fill = GridBagConstraints.BOTH;
+        topPanel.add(ddlTableTriggerPanel, gbcTop);
+
         gbc.gridy++;
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
-        this.add(scrollSqlBody, gbc);
+
+        JPanel bottomPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbcBottom = new GridBagConstraints(0, 0,
+                1, 1, 1, 1,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
+                0, 0);
+        bottomPanel.add(scrollSqlBody, gbcBottom);
+
+        splitPane = new SplitPaneFactory().create(JSplitPane.VERTICAL_SPLIT, topPanel, bottomPanel);
+        splitPane.setDividerLocation(-1);
+        splitPane.setDividerSize(5);
+
+        this.add(splitPane, gbc);
+
         gbc.gridy++;
         gbc.gridx = 3;
         gbc.weighty = 0;
         gbc.weightx = 1;
-        gbc.gridwidth = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        this.add(okButton, gbc);
-        gbc.gridx++;
-        this.add(cancelButton, gbc);
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.SOUTHEAST;
+
+        JPanel okCancelPanel = new JPanel(new GridBagLayout());
+        okCancelPanel.add(okButton, new GridBagConstraints(0, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        okCancelPanel.add(cancelButton, new GridBagConstraints(1, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+//        gbc.gridx++;
+        this.add(okCancelPanel, gbc);
 
         databaseTriggerPanel.setLayout(new GridBagLayout());
         tableTriggerPanel.setLayout(new GridBagLayout());
@@ -322,7 +361,14 @@ public class CreateTriggerPanel extends JPanel {
         databaseTriggerPanel.add(actionLabel, gbc);
         tableTriggerPanel.add(labelTable, gbc);
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        ddlTableTriggerPanel.add(typeTableTriggerCombo, gbc);
+        ddlTableTriggerPanel.add(beforeAfterlabel, new GridBagConstraints(0, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        ddlTableTriggerPanel.add(typeTableTriggerCombo, new GridBagConstraints(1, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
         gbc.gridx++;
         gbc.weightx = 1;
         databaseTriggerPanel.add(actionCombo, gbc);
@@ -340,12 +386,17 @@ public class CreateTriggerPanel extends JPanel {
         gbc.weightx = 1;
         gbc.gridx = 0;
         gbc.gridy = 1;
-        gbc.gridwidth = 1;
+        gbc.gridwidth = 2;
         gbc.weightx = 1;
         ddlTableTriggerPanel.add(tableTriggerPanel, gbc);
         gbc.gridy++;
-        ddlTableTriggerPanel.add(scrolDDL, gbc);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.BOTH;
+        ddlTableTriggerPanel.add(scrolDDL, new GridBagConstraints(0, 1,
+                2, 1, 1, 1,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
+                0, 0));
+//        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.BOTH;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.weightx = 1;
         gbc.gridx = 0;
@@ -455,6 +506,7 @@ public class CreateTriggerPanel extends JPanel {
         tableTriggerPanel.setVisible(tabletrigger);
         scrolDDL.setVisible(!tabletrigger && !dbtrigger);
 
+        splitPane.setDividerLocation(-1);
     }
 
     Object[] getTables() {

@@ -705,12 +705,10 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         String text = descriptionArea.getTextAreaComponent().getText();
         if (text != null && !text.isEmpty()) {
             sb.append("\n");
-            sb.append("update rdb$procedures\n");
-            sb.append("set rdb$description = '");
+            sb.append("COMMENT ON PROCEDURE ");
+            sb.append(nameField.getText());
+            sb.append(" IS '");
             sb.append(text);
-            sb.append("'\n");
-            sb.append("where rdb$procedure_name = '");
-            sb.append(this.procedure);
             sb.append("'");
             sb.append("^\n");
         }
@@ -720,17 +718,12 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
             String cdText = cd.getDescription();
             if (cdText != null && !cdText.isEmpty()) {
                 sb.append("\n");
-                sb.append("update rdb$procedure_parameters \n");
-                sb.append("set rdb$description = '");
+                sb.append("COMMENT ON PARAMETER ");
+                sb.append(nameField.getText()).append(".");
+                sb.append(cd.getColumnName());
+                sb.append(" IS '");
                 sb.append(cdText);
                 sb.append("'\n");
-                sb.append("where rdb$procedure_name = '");
-                sb.append(this.procedure);
-                sb.append("'\n");
-                sb.append("and\n");
-                sb.append("rdb$parameter_name = '");
-                sb.append(cd.getColumnName());
-                sb.append("'");
                 sb.append("^\n");
             }
         }
@@ -740,17 +733,12 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
             String cdText = cd.getDescription();
             if (cdText != null && !cdText.isEmpty()) {
                 sb.append("\n");
-                sb.append("update rdb$procedure_parameters \n");
-                sb.append("set rdb$description = '");
+                sb.append("COMMENT ON PARAMETER ");
+                sb.append(nameField.getText()).append(".");
+                sb.append(cd.getColumnName());
+                sb.append(" IS '");
                 sb.append(cdText);
                 sb.append("'\n");
-                sb.append("where rdb$procedure_name = '");
-                sb.append(this.procedure);
-                sb.append("'\n");
-                sb.append("and\n");
-                sb.append("rdb$parameter_name = '");
-                sb.append(cd.getColumnName());
-                sb.append("'");
                 sb.append("^\n");
             }
         }

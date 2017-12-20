@@ -38,6 +38,7 @@ public class ProcedureParameter {
     private int subtype;
     private int nullable;
     private String domain;
+    private String description;
 
     private static final String RESULT_STORE = "< Result Store >";
     private static final String RETURN_VALUE = "< Return Value >";
@@ -157,6 +158,14 @@ public class ProcedureParameter {
 
     public int getNullable() {
         return nullable;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
     }
 }
 

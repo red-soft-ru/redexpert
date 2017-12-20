@@ -102,7 +102,7 @@ catch (any)
 }
 finally
 {
-    mail(to: Pipeline.defaultEmailAddresses(),
+    mail(to: Pipeline.defaultEmailAddresses() + ',mikhail.kalyashin@red-soft.ru',
          subject: Pipeline.defaultEmailSubject(currentBuild, version, rev),
          body: Pipeline.defaultEmailBody(currentBuild, vcs_url, release_hub_project, version));
 }

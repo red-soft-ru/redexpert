@@ -575,25 +575,32 @@ public abstract class ProcedureDefinitionPanel extends JPanel
             table.removeEditor();
         }
 
+//        if (parameter.getSqlType().toLowerCase().equals("BLOB SUB_TYPE 0"))
+//            parameter.setSqlType("BLOB SUB_TYPE BINARY");
+//        else if (parameter.getSqlType().toLowerCase().equals("BLOB SUB_TYPE 1"))
+//            parameter.setSqlType("BLOB SUB_TYPE TEXT");
+
         ColumnData cd = new ColumnData(true, dc);
         cd.setColumnName(parameter.getName());
         cd.setDomain(parameter.getDomain());
         cd.setColumnSubtype(parameter.getSubtype());
+        cd.setSQLType(parameter.getDataType());
         cd.setColumnSize(parameter.getSize());
         cd.setColumnType(parameter.getSqlType());
         cd.setColumnScale(parameter.getScale());
         cd.setColumnRequired(parameter.getNullable());
-        tableVector.addElement(cd);
-        int selection = table.getRowCount() - 1;
-        _model.fireTableRowsInserted(
-                selection == 0 ? 0 : selection - 1,
-                selection == 0 ? 1 : selection);
+        cd.setCharset(parameter.getEncoding());
+        cd.setDescription(parameter.getDescription());
 
-        table.setRowSelectionInterval(selection, selection);
-        table.setColumnSelectionInterval(1, 1);
+        for (int i = 0; i < dataTypes.length; i++) {
+            if (dataTypes[i].toLowerCase().equals(parameter.getSqlType().toLowerCase()))
+                cd.setSQLType(intDataTypes[i]);
+        }
 
-        table.setEditingRow(selection);
-        table.setEditingColumn(NAME_COLUMN);
+        tableVector.add(cd);
+        table.setEditingRow(tableVector.size() - 1);
+        _model.fireTableRowsUpdated(tableVector.size() - 1, tableVector.size() - 1);
+        addColumnLines(-1);
     }
 
     /**
@@ -620,6 +627,20 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         }
 
         addColumnLines(-1);
+    }
+
+    public void deleteEmptyRow() {
+        table.editingStopped(null);
+        if (table.isEditing()) {
+            table.removeEditor();
+        }
+
+        if (tableVector.size() == 0) {
+            return;
+        }
+
+        tableVector.removeElementAt(0);
+        _model.fireTableRowsDeleted(0, 0);
     }
 
     public void addMouseListener() {

@@ -168,13 +168,13 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
                     "No database connection is available.");
             return;
         }
-        createTable();
+        createProcedure();
     }
 
-    private void createTable() {
+    private void createProcedure() {
         try {
             String querys = getSQLText();
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog("Creating procedure", querys, getSelectedConnection(), true, "^");
+            ExecuteQueryDialog eqd = new ExecuteQueryDialog("Creating or altering procedure", querys, getSelectedConnection(), true, "^");
             eqd.display();
             boolean commit = eqd.getCommit();
             if (commit)

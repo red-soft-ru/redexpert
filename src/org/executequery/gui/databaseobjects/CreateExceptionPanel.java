@@ -71,7 +71,7 @@ public class CreateExceptionPanel extends JPanel {
         descriptionPanel = new SimpleTextArea();
         textExceptionPanel = new SimpleTextArea();
         tabbedPane = new JTabbedPane();
-        tabbedPane.setPreferredSize(new Dimension(500,200));
+        tabbedPane.setPreferredSize(new Dimension(500, 200));
         nameLabel = new JLabel("Name");
         connectionLabel = new JLabel("Connection");
         ok = new JButton("OK");
@@ -128,32 +128,44 @@ public class CreateExceptionPanel extends JPanel {
         gbcLabel.insets = new Insets(5, 5, 5, 5);
         gbc.insets = new Insets(5, 5, 5, 5);
         this.setLayout(new GridBagLayout());
-        this.add(connectionLabel,gbcLabel);
-        this.add(connectionsCombo,gbc);
+        this.add(connectionLabel, gbcLabel);
+        this.add(connectionsCombo, gbc);
         gbc.gridy++;
         gbcLabel.gridy++;
-        this.add(nameLabel,gbcLabel);
-        this.add(nameText,gbc);
-        gbc.gridx=0;
+        this.add(nameLabel, gbcLabel);
+        this.add(nameText, gbc);
+        gbc.gridx = 0;
         gbc.gridy++;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1.0;
-        gbc.gridwidth =2;
-        this.add(tabbedPane,gbc);
-        tabbedPane.add("Text Exception",textExceptionPanel);
-        tabbedPane.add("Description",descriptionPanel);
+        gbc.gridwidth = 2;
+        this.add(tabbedPane, gbc);
+        tabbedPane.add("Text Exception", textExceptionPanel);
+        tabbedPane.add("Description", descriptionPanel);
         gbc.gridy++;
         gbc.gridx++;
         gbc.gridwidth = 1;
         gbc.weightx = 0.2;
-        gbc.weighty =0;
+        gbc.weighty = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbcLabel.gridy = gbc.gridy;
         gbcLabel.gridx = 0;
         gbcLabel.weightx = 0.2;
         gbcLabel.fill = GridBagConstraints.HORIZONTAL;
-        this.add(ok,gbcLabel);
-        this.add(cancel,gbc);
+
+        JPanel okCancelPanel = new JPanel(new GridBagLayout());
+        okCancelPanel.add(ok, new GridBagConstraints(0, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        okCancelPanel.add(cancel, new GridBagConstraints(1, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        this.add(okCancelPanel, new GridBagConstraints(1, 3,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
 
     }
 
@@ -165,9 +177,9 @@ public class CreateExceptionPanel extends JPanel {
     }
 
     void generateScript() {
-        String query = "CREATE OR ALTER EXCEPTION "+nameText.getText()+" '"+textExceptionPanel.getTextAreaComponent().getText()+"'^";
-        query+="COMMENT ON EXCEPTION "+nameText.getText()+" IS '"+descriptionPanel.getTextAreaComponent().getText()+"'";
-        ExecuteQueryDialog eqd = new ExecuteQueryDialog(CREATE_TITLE, query, connection, true,"^");
+        String query = "CREATE OR ALTER EXCEPTION " + nameText.getText() + " '" + textExceptionPanel.getTextAreaComponent().getText() + "'^";
+        query += "COMMENT ON EXCEPTION " + nameText.getText() + " IS '" + descriptionPanel.getTextAreaComponent().getText() + "'";
+        ExecuteQueryDialog eqd = new ExecuteQueryDialog(CREATE_TITLE, query, connection, true, "^");
         eqd.display();
         if (eqd.getCommit()) {
             parent.finished();

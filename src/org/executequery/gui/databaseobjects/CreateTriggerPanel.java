@@ -152,13 +152,18 @@ public class CreateTriggerPanel extends JPanel {
         this.parent = parent;
         connection = dc;
         executor = new DefaultStatementExecutor(connection, true);
-        init();
+        try {
+            init();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return;
+        }
         editing = trigger != null;
         if (editing)
             init_edited();
     }
 
-    void init() {
+    void init() throws SQLException {
         if (getVersion() > 2)
             typeTriggerCombo = new JComboBox(new String[]{"Table trigger", "Database trigger", "DDL trigger"});
         else typeTriggerCombo = new JComboBox(new String[]{"Table trigger", "Database trigger"});
@@ -258,7 +263,7 @@ public class CreateTriggerPanel extends JPanel {
         gbc.gridy++;
         gbc.gridwidth = 1;
         gbc.weightx = 0;
-        gbc.anchor = GridBagConstraints.NORTHEAST;
+        gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.NONE;
         this.add(nameLabel, gbc);
         gbc.gridx++;
@@ -278,7 +283,7 @@ public class CreateTriggerPanel extends JPanel {
         gbc.anchor = GridBagConstraints.NORTHEAST;
         this.add(positionLabel, gbc);
         gbc.gridx++;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.anchor = GridBagConstraints.EAST;
         this.add(positionField, gbc);
         gbc.gridx++;
         this.add(activeBox, gbc);
@@ -352,7 +357,6 @@ public class CreateTriggerPanel extends JPanel {
         ddlTriggerPanel.add(separator, gbc);
         gbc.gridwidth = 1;
 
-
         for (int i = 0; i < meta_types.length; i++) {
             for (int g = 0; g < 3; g++) {
                 String operator = "";
@@ -382,7 +386,6 @@ public class CreateTriggerPanel extends JPanel {
         }
 
         changeTypeTrigger();
-
 
     }
 
@@ -439,23 +442,9 @@ public class CreateTriggerPanel extends JPanel {
 
     }
 
-    int getVersion() {
+    int getVersion() throws SQLException {
         DatabaseHost host = new DefaultDatabaseHost(connection);
-        String vers = host.getDatabaseProductVersion();
-        int version = 2;
-        if (vers != null) {
-            int number = 0;
-            for (int i = 0; i < vers.length(); i++) {
-                if (Character.isDigit(vers.charAt(i))) {
-                    number = Character.getNumericValue(vers.charAt(i));
-                    break;
-                }
-            }
-            if (number >= 3)
-                version = 3;
-
-        }
-        return version;
+        return host.getDatabaseMetaData().getDatabaseMajorVersion();
     }
 
     void changeTypeTrigger() {

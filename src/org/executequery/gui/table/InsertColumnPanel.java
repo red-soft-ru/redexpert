@@ -28,6 +28,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,8 +97,13 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
         this.column = new DatabaseTableColumn(table, columnEdited);
         statementGenerator = new LiquibaseStatementGenerator();
         init();
-        if (editing)
-            init_edited_elements();
+        if (editing) {
+            try {
+                init_edited_elements();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     void init() {
@@ -328,7 +334,7 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
         editDomainButton.setEnabled(false);
     }
 
-    void init_edited_elements() {
+    void init_edited_elements() throws SQLException {
         columnData.setSQLType(column.getTypeInt());
         columnData.setColumnType(column.getTypeName());
         columnData.setColumnSize(column.getColumnSize());
@@ -413,22 +419,9 @@ public class InsertColumnPanel extends JPanel implements KeyListener {
         }
     }
 
-    int getVersion() {
+    int getVersion() throws SQLException {
         DatabaseHost host = new DefaultDatabaseHost(databaseConnection);
-        String vers = host.getDatabaseProductVersion();
-        int version = 2;
-        if (vers != null) {
-            int number = 0;
-            for (int i = 0; i < vers.length(); i++) {
-                if (Character.isDigit(vers.charAt(i))) {
-                    number = Character.getNumericValue(vers.charAt(i));
-                    break;
-                }
-            }
-            if (number >= 3)
-                version = 3;
-        }
-        return version;
+        return host.getDatabaseMetaData().getDatabaseMajorVersion();
     }
 
     String[] getDomains() {

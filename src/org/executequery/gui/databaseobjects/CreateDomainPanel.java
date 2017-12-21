@@ -19,6 +19,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.sql.SQLException;
 
 public class CreateDomainPanel extends JPanel implements KeyListener {
     private JLabel fieldLabel;
@@ -60,8 +61,13 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
         columnData = new ColumnData(databaseConnection);
         editing = domain != null;
         init();
-        if (editing)
-            init_edited();
+        if (editing) {
+            try {
+                init_edited();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public CreateDomainPanel(DatabaseConnection connection, ActionContainer parent) {
@@ -199,7 +205,7 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
         this.add(cancelButton, gbc);
     }
 
-    void init_edited() {
+    void init_edited() throws SQLException {
         columnData.setColumnName(domain);
         columnData.setDomain(domain);
         columnData.setDescription(columnData.getDomainDescription());
@@ -217,22 +223,9 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
         columnData.makeCopy();
     }
 
-    int getVersion() {
+    int getVersion() throws SQLException {
         DatabaseHost host = new DefaultDatabaseHost(databaseConnection);
-        String vers = host.getDatabaseProductVersion();
-        int version = 2;
-        if (vers != null) {
-            int number = 0;
-            for (int i = 0; i < vers.length(); i++) {
-                if (Character.isDigit(vers.charAt(i))) {
-                    number = Character.getNumericValue(vers.charAt(i));
-                    break;
-                }
-            }
-            if (number >= 3)
-                version = 3;
-        }
-        return version;
+        return host.getDatabaseMetaData().getDatabaseMajorVersion();
     }
 
     @Override

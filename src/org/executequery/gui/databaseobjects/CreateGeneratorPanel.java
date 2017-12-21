@@ -19,6 +19,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.sql.SQLException;
 import java.util.Vector;
 
 public class CreateGeneratorPanel extends JPanel {
@@ -76,16 +77,25 @@ public class CreateGeneratorPanel extends JPanel {
         connection = dc;
         generator = generator_edited;
         init(name, initial_value, increment, description);
-        if (getVersion() < 3) {
-            labelIncrement.setVisible(false);
-            incrementText.setVisible(false);
+        try {
+            if (getVersion() < 3) {
+                labelIncrement.setVisible(false);
+                incrementText.setVisible(false);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         editing = generator != null;
-        if (editing)
-            init_edited();
+        if (editing) {
+            try {
+                init_edited();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    void init_edited() {
+    void init_edited() throws SQLException {
         nameText.setText(generator.getName().trim());
         nameText.setEnabled(false);
         startValueText.setLongValue(generator.getSequenceValue());
@@ -110,7 +120,11 @@ public class CreateGeneratorPanel extends JPanel {
         ok.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                createGenerator();
+                try {
+                    createGenerator();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         });
         cancel = new JButton("Cancel");
@@ -190,26 +204,12 @@ public class CreateGeneratorPanel extends JPanel {
 
     }
 
-    int getVersion() {
+    int getVersion() throws SQLException {
         DatabaseHost host = new DefaultDatabaseHost(connection);
-        String vers = host.getDatabaseProductVersion();
-        int version = 2;
-        if (vers != null) {
-            int number = 0;
-            for (int i = 0; i < vers.length(); i++) {
-                if (Character.isDigit(vers.charAt(i))) {
-                    number = Character.getNumericValue(vers.charAt(i));
-                    break;
-                }
-            }
-            if (number >= 3)
-                version = 3;
-
-        }
-        return version;
+        return host.getDatabaseMetaData().getDatabaseMajorVersion();
     }
 
-    void createGenerator() {
+    void createGenerator() throws SQLException {
         if (!MiscUtils.isNull(nameText.getText().trim())) {
             String query;
             if (getVersion() == 3) {

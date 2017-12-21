@@ -149,58 +149,71 @@ public class CreateGeneratorPanel extends JPanel {
         if (connection != null) {
             connectionsCombo.setSelectedItem(connection);
         } else connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
-        GridBagConstraints gbc = new GridBagConstraints();
-        GridBagConstraints gbcLabel = new GridBagConstraints();
-        gbcLabel.gridx = 0;
-        gbc.gridx = 1;
-        gbcLabel.gridheight = 1;
-        gbc.gridheight = 1;
-        gbcLabel.gridwidth = 1;
-        gbc.gridwidth = 1;
-        gbcLabel.weightx = 0;
-        gbc.weightx = 1.0;
-        gbcLabel.weighty = 0;
-        gbc.weighty = 0;
-        gbcLabel.gridy = 0;
-        gbc.gridy = 0;
-        gbcLabel.fill = GridBagConstraints.NONE;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbcLabel.anchor = GridBagConstraints.WEST;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbcLabel.ipadx = 0;
-        gbc.ipadx = 0;
-        gbcLabel.ipady = 0;
-        gbc.ipady = 0;
-        gbcLabel.insets = new Insets(5, 5, 5, 5);
-        gbc.insets = new Insets(5, 5, 5, 5);
-        this.setLayout(new GridBagLayout());
-        JLabel label = new JLabel("Connections");
-        add(label, gbcLabel);
-        add(connectionsCombo, gbc);
-        gbc.gridy++;
-        gbcLabel.gridy++;
-        label = new JLabel("Name");
-        add(label, gbcLabel);
-        add(nameText, gbc);
-        gbc.gridy++;
-        gbcLabel.gridy++;
-        label = new JLabel("Start Value");
-        add(label, gbcLabel);
-        add(startValueText, gbc);
-        gbc.gridy++;
-        gbcLabel.gridy++;
+
+        this.setLayout(new BorderLayout());
+
+        JPanel elementsPanel = new JPanel(new GridBagLayout());
+
+        JLabel connLabel = new JLabel("Connections");
+        elementsPanel.add(connLabel, new GridBagConstraints(0, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        elementsPanel.add(connectionsCombo, new GridBagConstraints(1, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+        JLabel nameLabel = new JLabel("Name");
+        elementsPanel.add(nameLabel, new GridBagConstraints(0, 1,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+        elementsPanel.add(nameText, new GridBagConstraints(1, 1,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+        JLabel startLabel = new JLabel("Start Value");
+        elementsPanel.add(startLabel, new GridBagConstraints(0, 2,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+        elementsPanel.add(startValueText, new GridBagConstraints(1, 2,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+
         labelIncrement = new JLabel("Increment");
-        add(labelIncrement, gbcLabel);
-        add(incrementText, gbc);
-        gbc.gridy++;
-        gbcLabel.gridy++;
-        label = new JLabel("Description");
-        add(label, gbcLabel);
-        add(this.description, gbc);
-        gbc.gridy++;
-        gbcLabel.gridy++;
-        add(cancel, gbcLabel);
-        add(ok, gbc);
+        elementsPanel.add(labelIncrement, new GridBagConstraints(0, 3,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+        elementsPanel.add(incrementText, new GridBagConstraints(1, 3,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+        JLabel descLabel = new JLabel("Description");
+        elementsPanel.add(descLabel, new GridBagConstraints(0, 4,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+        elementsPanel.add(this.description, new GridBagConstraints(1, 4,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        this.add(elementsPanel, BorderLayout.PAGE_START);
+
+        JPanel okCancelPanel = new JPanel(new GridBagLayout());
+        okCancelPanel.add(ok, new GridBagConstraints(0, 0,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        okCancelPanel.add(cancel, new GridBagConstraints(1, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        this.add(okCancelPanel, BorderLayout.PAGE_END);
 
     }
 

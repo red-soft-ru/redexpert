@@ -15,7 +15,6 @@ public class CreateSequenceCommand extends OpenFrameCommand implements BaseComma
             return;
         }
 
-
         if (isActionableDialogOpen()) {
             GUIUtilities.acionableDialogToFront();
             return;

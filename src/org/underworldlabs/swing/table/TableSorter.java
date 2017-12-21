@@ -252,7 +252,7 @@ public class TableSorter extends AbstractTableModel {
         }
 
         boolean isAscend = (directive.direction == ASCENDING);
-        return isAscend ? ArrowIcon.DOWN : ArrowIcon.UP;
+        return isAscend ? ArrowIcon.UP : ArrowIcon.DOWN;
     }
 
     private void cancelSorting() {

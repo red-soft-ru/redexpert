@@ -182,6 +182,10 @@ public final class DerivedQuery {
 
             type = QueryTypes.CREATE_TABLE;
 
+        } else if (query.indexOf("CREATE TRIGGER") == 0 || query.indexOf("CREATE OR ALTER TRIGGER") == 0) {
+
+            type = QueryTypes.CREATE_TRIGGER;
+
         } else if (query.indexOf("CREATE ") == 0 && (query.indexOf("PROCEDURE ") != -1 ||
                 query.indexOf("PACKAGE ") != -1)) {
 

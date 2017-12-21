@@ -15,6 +15,8 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     private String triggerDescription;
     private int triggerSequence;
     private String triggerType;
+    private int intTriggerType;
+    private long longTriggerType;
 
     private static String DDL_TRIGGER_ACTION_NAMES[][] =
             {
@@ -122,6 +124,9 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     final int DDL_TRIGGER_CREATE_MAPPING = 45;
     final int DDL_TRIGGER_ALTER_MAPPING = 46;
     final int DDL_TRIGGER_DROP_MAPPING = 47;
+    public static final int DATABASE_TRIGGER = 1;
+    public static final int TABLE_TRIGGER = 0;
+    public static final int DDL_TRIGGER = 2;
 
     /**
      * Creates a new instance.
@@ -215,6 +220,28 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
 
     public void setTriggerType(long type) {
         triggerType = triggerTypeFromLong(type);
+        intTriggerType = getIntTypeTrigger(type);
+        setLongTriggerType(type);
+    }
+
+    public int getIntTriggerType() {
+        return intTriggerType;
+    }
+
+    public void setLongTriggerType(long type) {
+        longTriggerType = type;
+    }
+
+    public long getLongTriggerType() {
+        return longTriggerType;
+    }
+
+    private int getIntTypeTrigger(long type) {
+        if (type < 8192)
+            return TABLE_TRIGGER;
+        else if (type <= 8196)
+            return DATABASE_TRIGGER;
+        else return DDL_TRIGGER;
     }
 
     private String triggerTypeFromLong(long type) {

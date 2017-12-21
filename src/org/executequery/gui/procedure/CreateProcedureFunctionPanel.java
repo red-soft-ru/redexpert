@@ -149,14 +149,9 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     public CreateProcedureFunctionPanel(String procedure) {
         this();
         this.procedure = procedure;
-        try {
-            initEditing();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
-    private void initEditing() throws Exception {
+    public void initEditing() throws Exception {
         nameField.setText(this.procedure);
         nameField.setEnabled(false);
         loadParameters();

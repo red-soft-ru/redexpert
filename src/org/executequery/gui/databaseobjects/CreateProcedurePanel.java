@@ -66,14 +66,15 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
 
     public CreateProcedurePanel(DatabaseConnection connection, ActionContainer parent, String procedure) {
         super(procedure);
+        connectionsCombo.setSelectedItem(connection);
         this.parent = parent;
         try {
+            initEditing();
             alterInit();
         } catch (Exception e) {
             e.printStackTrace();
         }
         setFocusComponent();
-        connectionsCombo.setSelectedItem(connection);
     }
 
     /**

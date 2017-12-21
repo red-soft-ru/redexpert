@@ -254,7 +254,10 @@ public class BrowserController {
         try {
 
             FormObjectView panel = buildPanelView(node);
-            panel.setObjectName(node.getDisplayName().trim()+":"+getDatabaseConnection().getName());
+            String type = "";
+            if(node.getType()<NamedObject.META_TYPES.length)
+                type = NamedObject.META_TYPES[node.getType()];
+            panel.setObjectName(node.getDisplayName().trim()+":"+type+":"+getDatabaseConnection().getName());
 
             if (panel != null) {
 

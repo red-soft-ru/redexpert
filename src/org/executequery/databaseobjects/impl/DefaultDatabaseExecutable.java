@@ -88,13 +88,13 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
      * Adds the specified values as a single parameter to this object.
      */
     public ProcedureParameter addParameter(String name, int type, int dataType,
-                                           String sqlType, int size) {
+                                           String sqlType, int size, int nullable) {
         if (parameters == null) {
 
             parameters = new ArrayList<ProcedureParameter>();
         }
 
-        ProcedureParameter parameter = new ProcedureParameter(name, type, dataType, sqlType, size);
+        ProcedureParameter parameter = new ProcedureParameter(name, type, dataType, sqlType, size, nullable);
         parameters.add(parameter);
 
         return parameter;
@@ -194,14 +194,37 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
             rs = dmd.getProcedureColumns(_catalog, _schema, getName(), null);
 
-
             while (rs.next()) {
 
                 parameters.add(new ProcedureParameter(rs.getString(4),
                         rs.getInt(5),
                         rs.getInt(6),
                         rs.getString(7),
-                        rs.getInt(8)));
+                        rs.getInt(8),
+                        rs.getInt(12)));
+            }
+
+
+            for (ProcedureParameter pp :
+                    parameters) {
+                if (pp.getDataType() == Types.LONGVARBINARY ||
+                        pp.getDataType() == Types.LONGVARCHAR ||
+                        pp.getDataType() == Types.BLOB) {
+                    Statement statement = dmd.getConnection().createStatement();
+                    ResultSet resultSet = statement.executeQuery("select\n" +
+                            "f.rdb$field_sub_type as field_subtype,\n" +
+                            "f.rdb$segment_length as segment_length\n" +
+                            "from rdb$procedure_parameters pp,\n" +
+                            "rdb$fields f\n" +
+                            "where pp.rdb$parameter_name = '" + pp.getName() + "'\n" +
+                            "and pp.rdb$procedure_name = '" + getName() + "'\n" +
+                            "and  pp.rdb$field_source = f.rdb$field_name");
+                    if (resultSet.next()) {
+                        pp.setSubtype(resultSet.getInt(1));
+                        pp.setSize(resultSet.getInt(2));
+                        releaseResources(resultSet);
+                    }
+                }
             }
 
             return parameters;

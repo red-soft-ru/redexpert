@@ -49,7 +49,7 @@ public interface DatabaseExecutable extends DatabaseObject {
     /**
      * Adds the specified values as a single parameter to this object.
      */
-    ProcedureParameter addParameter(String name, int type, int dataType, String sqlType, int size);
+    ProcedureParameter addParameter(String name, int type, int dataType, String sqlType, int size, int nullable);
 
     /**
      * Returns this object's parameters.

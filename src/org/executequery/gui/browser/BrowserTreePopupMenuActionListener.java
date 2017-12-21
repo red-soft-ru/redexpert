@@ -34,10 +34,7 @@ import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.managment.WindowAddRole;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
-import org.executequery.gui.databaseobjects.CreateDomainPanel;
-import org.executequery.gui.databaseobjects.CreateExceptionPanel;
-import org.executequery.gui.databaseobjects.CreateGeneratorPanel;
-import org.executequery.gui.databaseobjects.CreateViewPanel;
+import org.executequery.gui.databaseobjects.*;
 import org.executequery.gui.importexport.ImportExportDataProcess;
 import org.executequery.gui.importexport.ImportExportDelimitedPanel;
 import org.executequery.gui.importexport.ImportExportExcelPanel;
@@ -188,6 +185,44 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         }
                     }
                     break;
+                case NamedObject.PROCEDURE:
+                    if (GUIUtilities.isDialogOpen(CreateProcedurePanel.TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateProcedurePanel.TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateProcedurePanel.TITLE, false);
+                            CreateProcedurePanel panel = new CreateProcedurePanel(currentSelection, dialog);
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
+                case NamedObject.TRIGGER:
+                    if (GUIUtilities.isDialogOpen(CreateTriggerPanel.TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateTriggerPanel.TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateTriggerPanel.TITLE, false);
+                            CreateTriggerPanel panel = new CreateTriggerPanel(currentSelection, dialog);
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
                 case NamedObject.EXCEPTION:
                     if (GUIUtilities.isDialogOpen(CreateExceptionPanel.CREATE_TITLE)) {
 
@@ -250,6 +285,25 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     }
                     break;
                 case NamedObject.VIEW:
+                    break;
+                case NamedObject.PROCEDURE:
+                    if (GUIUtilities.isDialogOpen(CreateProcedurePanel.EDIT_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateProcedurePanel.EDIT_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+
+                            BaseDialog dialog = new BaseDialog(CreateProcedurePanel.EDIT_TITLE, false);
+                            CreateProcedurePanel panel = new CreateProcedurePanel(currentSelection, dialog, node.getName().trim());
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
                     break;
                 case NamedObject.DOMAIN:
                     if (GUIUtilities.isDialogOpen(CreateDomainPanel.EDIT_TITLE)) {

@@ -124,6 +124,12 @@ public class NewTablePanel extends TableDefinitionPanel
                     cd.setColumnScale(_value);
                 }
                 break;
+            case SUBTYPE_COLUMN:
+                if (!MiscUtils.isNull(value)) {
+                    int _value = Integer.parseInt(value);
+                    cd.setColumnSubtype(_value);
+                }
+                break;
         }
         updateScript(row, col);
     }
@@ -232,16 +238,29 @@ public class NewTablePanel extends TableDefinitionPanel
                 if (MiscUtils.isNull(cd.getComputedBy())) {
                     if (MiscUtils.isNull(cd.getDomain())) {
                         if (cd.getColumnType() != null) {
-                            sqlText.append(cd.getColumnType().toUpperCase());
+                            if ((cd.getSQLType() == Types.BLOB || cd.getSQLType() == Types.LONGVARCHAR
+                                    || cd.getSQLType() == Types.LONGVARBINARY)) {
+                                if (cd.getColumnType().contains("<0"))
+                                    sqlText.append(cd.getColumnType().replace("<0", String.valueOf(cd.getColumnSubtype())));
+                                else
+                                    sqlText.append(cd.getColumnType());
+                            } else {
+                                sqlText.append(cd.getColumnType().toUpperCase());
+                            }
 
                             if (cd.getColumnSize() != -1) {
-                                sqlText.append(B_OPEN).append(cd.getColumnSize());
+                                if ((cd.getSQLType() == Types.BLOB || cd.getSQLType() == Types.LONGVARCHAR
+                                        || cd.getSQLType() == Types.LONGVARBINARY)) {
+                                    sqlText.append(" segment size ").append(cd.getColumnSize());
+                                } else {
+                                    sqlText.append(B_OPEN).append(cd.getColumnSize());
 
-                                if (cd.getColumnScale() != -1) {
-                                    sqlText.append(COMMA).append(cd.getColumnScale());
+                                    if (cd.getColumnScale() != -1) {
+                                        sqlText.append(COMMA).append(cd.getColumnScale());
+                                    }
+
+                                    sqlText.append(B_CLOSE);
                                 }
-
-                                sqlText.append(B_CLOSE);
                             }
 
                         }

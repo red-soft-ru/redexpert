@@ -885,7 +885,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
                         parameters = new ProcedureParameter[st.countTokens()];
                         for (int i = 0, n = st.countTokens(); i < n; i++) {
 
-                            procedure.addParameter("UNKNOWN", DatabaseMetaData.procedureColumnIn, Types.OTHER, "OTHER", -1);
+                            procedure.addParameter("UNKNOWN", DatabaseMetaData.procedureColumnIn, Types.OTHER, "OTHER", -1, 0);
                         }
 
                         parameters = procedure.getParametersArray();

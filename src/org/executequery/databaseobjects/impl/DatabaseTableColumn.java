@@ -103,6 +103,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         setComputedSource(column.getComputedSource());
         setColumnDescription(column.getColumnDescription());
         setDomain(column.getDomain());
+        setColumnSubtype(column.getColumnSubtype());
     }
 
     @Override

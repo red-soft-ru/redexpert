@@ -51,6 +51,12 @@ public class ColumnData implements Serializable {
 
     public static final int VALUE_NOT_REQUIRED = 1;
 
+    public static final int INPUT_PARAMETER = 0;
+
+    public static final int OUTPUT_PARAMETER = 1;
+
+    public static final int VARIABLE = 2;
+
     /**
      * the catalog for this column
      */
@@ -101,6 +107,11 @@ public class ColumnData implements Serializable {
      * The data scale of this column
      */
     private int columnScale;
+
+    /**
+     * The subtype of this column
+     */
+    private int columnSubtype;
 
     /**
      * Whether this column is required ie. NOT NULL
@@ -166,6 +177,8 @@ public class ColumnData implements Serializable {
     private String charset;
 
     ColumnData copy;
+
+    int typeParameter;
 
     public ColumnData(DatabaseConnection databaseConnection) {
         primaryKey = false;
@@ -244,6 +257,14 @@ public class ColumnData implements Serializable {
 
     public void setColumnScale(int columnScale) {
         this.columnScale = columnScale;
+    }
+
+    public void setColumnSubtype(int columnSubtype) {
+        this.columnSubtype = columnSubtype;
+    }
+
+    public int getColumnSubtype() {
+        return columnSubtype;
     }
 
     public void setNamesToUpper() {
@@ -477,6 +498,7 @@ public class ColumnData implements Serializable {
             sqlType = domainType;
             columnSize = domainSize;
             columnScale = domainScale;
+            columnSubtype = domainSubType;
             if (!MiscUtils.isNull(domainCheck)) {
                 domainCheck = domainCheck.trim();
                 if (domainCheck.toUpperCase().startsWith("CHECK"))
@@ -603,7 +625,11 @@ public class ColumnData implements Serializable {
 
             return "";
         }
-
+        if (typeString.contains("<0")) {
+            if (columnSubtype < 0)
+                typeString = typeString.replace("<0", "" + columnSubtype);
+            else typeString = typeString.replace("<0", "0");
+        }
         StringBuilder sb = new StringBuilder(typeString);
 
         // if the type doesn't end with a digit or it
@@ -614,9 +640,12 @@ public class ColumnData implements Serializable {
         if (!typeString.matches("\\b\\D+\\d+\\b") ||
                 (type == Types.CHAR ||
                         type == Types.VARCHAR ||
-                        type == Types.LONGVARCHAR)) {
-
-            if (getColumnSize() > 0 && !isDateDataType()
+                        type == Types.BLOB || type == Types.LONGVARCHAR
+                        || type == Types.LONGVARBINARY)) {
+            if (type == Types.BLOB || type == Types.LONGVARCHAR
+                    || type == Types.LONGVARBINARY)
+                sb.append(" segment size ").append(getColumnSize());
+            else if (getColumnSize() > 0 && !isDateDataType()
                     && !isNonPrecisionType()) {
                 sb.append("(");
                 sb.append(getColumnSize());
@@ -627,7 +656,7 @@ public class ColumnData implements Serializable {
                 }
                 sb.append(")");
             }
-            if (!getCharset().equals(CreateTableSQLSyntax.NONE)) {
+            if (getCharset() != null && !getCharset().equals(CreateTableSQLSyntax.NONE)) {
                 sb.append(" CHARACTER SET ").append(getCharset());
             }
         }
@@ -787,6 +816,14 @@ public class ColumnData implements Serializable {
         if (!hasCopy())
             return false;
         return isCheckChanged() || isDefaultChanged() || isNameChanged() || isDescriptionChanged() || isTypeChanged();
+    }
+
+    public void setTypeParameter(int typeParameter) {
+        this.typeParameter = typeParameter;
+    }
+
+    public int getTypeParameter() {
+        return typeParameter;
     }
 }
 

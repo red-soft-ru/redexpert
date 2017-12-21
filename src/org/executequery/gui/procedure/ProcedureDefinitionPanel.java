@@ -1,31 +1,12 @@
-/*
- * TableDefinitionPanel.java
- *
- * Copyright (C) 2002-2017 Takis Diakoumis
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the License, or any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
-package org.executequery.gui.table;
+package org.executequery.gui.procedure;
 
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowsingCellEditor;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.gui.BaseDialog;
+import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.table.*;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 import org.underworldlabs.swing.table.NumberCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
@@ -35,6 +16,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
@@ -46,9 +28,9 @@ import java.util.List;
 import java.util.Vector;
 
 /**
- * @author Takis Diakoumis
+ * @author vasiliy
  */
-public abstract class TableDefinitionPanel extends JPanel
+public abstract class ProcedureDefinitionPanel extends JPanel
         implements TableModelListener {
 
     /**
@@ -59,20 +41,20 @@ public abstract class TableDefinitionPanel extends JPanel
     /**
      * The table's _model
      */
-    protected CreateTableModel _model;
+    protected ProcedureParameterModel _model;
 
     /**
      * The cell editor for the column names
      */
-    protected static StringCellEditor colNameEditor;
+    protected  StringCellEditor colNameEditor;
 
-    protected static StringCellEditor checkEditor;
+    protected  StringCellEditor checkEditor;
 
-    protected static StringCellEditor descEditor;
+    protected  StringCellEditor descEditor;
 
-    protected static StringCellEditor computedEditor;
+    protected  StringCellEditor computedEditor;
 
-    protected static StringCellEditor defaultValueEditor;
+    protected  StringCellEditor defaultValueEditor;
 
     /**
      * The cell editor for the column size
@@ -99,20 +81,12 @@ public abstract class TableDefinitionPanel extends JPanel
 
     protected DomainSelectionTableCell domainCell;
 
+    private CreateProcedureToolBar tools;
+
     /**
      * The <code>Vector</code> of <code>ColumnData</code> objects
      */
     protected Vector<ColumnData> tableVector;
-
-    /**
-     * The literal 'PK'
-     */
-    private static final String PRIMARY = "PK";
-
-    /**
-     * The literal 'FK'
-     */
-    private static final String FOREIGN = "FK";
 
     /**
      * An empty String literal
@@ -128,54 +102,44 @@ public abstract class TableDefinitionPanel extends JPanel
 
     private int[] intDataTypes;
 
-    public static final int PK_COLUMN = 0;
+    public static final int NAME_COLUMN = 0;
 
-    public static final int NAME_COLUMN = 1;
+    public static final int TYPE_COLUMN = 1;
 
-    public static final int TYPE_COLUMN = 2;
+    public static final int DOMAIN_COLUMN = 2;
 
-    public static final int DOMAIN_COLUMN = 3;
+    public static final int SIZE_COLUMN = 3;
 
-    public static final int SIZE_COLUMN = 4;
+    public static final int SCALE_COLUMN = 4;
 
-    public static final int SCALE_COLUMN = 5;
+    public static final int SUBTYPE_COLUMN = 5;
 
-    public static final int SUBTYPE_COLUMN = 6;
+    public static final int DESCRIPTION_COLUMN = 6;
 
-    public static final int REQUIRED_COLUMN = 7;
+    public static final int DEFAULT_COLUMN = 7;
 
-    public static final int CHECK_COLUMN = 8;
+    public static final int ENCODING_COLUMN = 8;
 
-    public static final int DESCRIPTION_COLUMN = 9;
-
-    public static final int COMPUTED_BY_COLUMN = 10;
-
-    public static final int AUTOINCREMENT_COLUMN = 11;
-
-    public static final int DEFAULT_COLUMN = 12;
-
-    public static final int ENCODING_COLUMN = 13;
-
-    public static final String SUBSTITUTE_NAME = "<TABLE_NAME>";
+    public static final int REQUIRED_COLUMN = 9;
 
     private String[] domains;
-
-    private String[] generators;
 
     DatabaseConnection dc;
 
     List<String> charsets;
 
-    String AutoincrementSQLText = "";
+    int parameterType;
 
-    public TableDefinitionPanel() {
-        this(true, null);
+    public ProcedureDefinitionPanel(int parameterType) {
+        this(true, null,parameterType);
+
     }
 
-    public TableDefinitionPanel(boolean editing, String[] dataTypes) {
+    public ProcedureDefinitionPanel(boolean editing, String[] dataTypes,int parameterType) {
         super(new GridBagLayout());
         this.editing = editing;
         this.dataTypes = dataTypes;
+        this.parameterType = parameterType;
 
         try {
             jbInit();
@@ -187,54 +151,20 @@ public abstract class TableDefinitionPanel extends JPanel
 
     private void jbInit() throws Exception {
         // set the table model to use
-        _model = new CreateTableModel();
+        _model = new ProcedureParameterModel(parameterType);
         table = new DatabaseTable(_model);
-        table.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent mouseEvent) {
-                click(mouseEvent);
-            }
-
-            @Override
-            public void mousePressed(MouseEvent mouseEvent) {
-
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent mouseEvent) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent mouseEvent) {
-
-            }
-
-            @Override
-            public void mouseExited(MouseEvent mouseEvent) {
-
-            }
-        });
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         TableColumnModel tcm = table.getColumnModel();
-        tcm.getColumn(PK_COLUMN).setPreferredWidth(25);
-        tcm.getColumn(PK_COLUMN).setMaxWidth(25);
         tcm.getColumn(NAME_COLUMN).setPreferredWidth(200);
         tcm.getColumn(TYPE_COLUMN).setPreferredWidth(130);
         tcm.getColumn(DOMAIN_COLUMN).setPreferredWidth(130);
         tcm.getColumn(SIZE_COLUMN).setPreferredWidth(50);
         tcm.getColumn(SCALE_COLUMN).setPreferredWidth(70);
         tcm.getColumn(SUBTYPE_COLUMN).setPreferredWidth(70);
-        tcm.getColumn(REQUIRED_COLUMN).setPreferredWidth(70);
-        tcm.getColumn(REQUIRED_COLUMN).setMaxWidth(70);
-        tcm.getColumn(CHECK_COLUMN).setPreferredWidth(200);
         tcm.getColumn(DESCRIPTION_COLUMN).setPreferredWidth(200);
-        tcm.getColumn(COMPUTED_BY_COLUMN).setPreferredWidth(200);
         tcm.getColumn(DEFAULT_COLUMN).setPreferredWidth(200);
-        tcm.getColumn(AUTOINCREMENT_COLUMN).setPreferredWidth(70);
-        tcm.getColumn(ENCODING_COLUMN).setPreferredWidth(200);
-
-        tcm.getColumn(PK_COLUMN).setCellRenderer(new KeyCellRenderer());
+        tcm.getColumn(ENCODING_COLUMN).setPreferredWidth(70);
+        tcm.getColumn(REQUIRED_COLUMN).setMaxWidth(70);
 
         // add the editors if editing
         if (editing) {
@@ -272,9 +202,7 @@ public abstract class TableDefinitionPanel extends JPanel
             };
 
             tcm.getColumn(NAME_COLUMN).setCellEditor(colStrEditor);
-            tcm.getColumn(CHECK_COLUMN).setCellEditor(checkStrEditor);
             tcm.getColumn(DESCRIPTION_COLUMN).setCellEditor(descStrEditor);
-            tcm.getColumn(COMPUTED_BY_COLUMN).setCellEditor(computedStrEditor);
 
             scaleEditor = new NumberCellEditor();
             DefaultCellEditor scEditor = new DefaultCellEditor(scaleEditor) {
@@ -286,8 +214,8 @@ public abstract class TableDefinitionPanel extends JPanel
             subtypeEditor = new NumberCellEditor();
             DefaultCellEditor stEditor = new DefaultCellEditor(subtypeEditor) {
                 public Object getCellEditorValue() {
-                return subtypeEditor.getStringValue();
-              }
+                    return subtypeEditor.getStringValue();
+                }
             };
 
             sizeEditor = new NumberCellEditor();
@@ -359,31 +287,28 @@ public abstract class TableDefinitionPanel extends JPanel
 
             _model.addTableModelListener(this);
         }
-        add(new JScrollPane(table), new GridBagConstraints(
-                1, 1, 1, 1, 1.0, 1.0,
-                GridBagConstraints.SOUTHEAST,
+
+        tools = new CreateProcedureToolBar(this);
+
+        JPanel definitionPanel = new JPanel(new GridBagLayout());
+
+        definitionPanel.add(tools, new GridBagConstraints(
+                0, 0, 1, 1, 0, 0,
+                GridBagConstraints.CENTER,
+                GridBagConstraints.VERTICAL,
+                new Insets(2, 2, 2, 2), 0, 0));
+
+        definitionPanel.add(new JScrollPane(table), new GridBagConstraints(
+                1, 0, 0, 1, 1.0, 1.0,
+                GridBagConstraints.NORTHEAST,
                 GridBagConstraints.BOTH,
                 new Insets(2, 2, 2, 2), 0, 0));
 
-    }
-
-    private void click(MouseEvent e) {
-        if (e.getClickCount() > 1) {
-            int row = table.getSelectedRow();
-            if (table.getSelectedColumn() == PK_COLUMN) {
-                tableVector.elementAt(row).setPrimaryKey(!tableVector.elementAt(row).isPrimaryKey());
-                _model.setValueAt(null, row, PK_COLUMN);
-                tableChanged(PK_COLUMN, row, null);
-
-            } else if (table.getSelectedColumn() == AUTOINCREMENT_COLUMN) {
-                BaseDialog dialog = new BaseDialog("Autoincrement", true);
-                AutoIncrementPanel panel = new AutoIncrementPanel(dc, dialog, tableVector.elementAt(row).getAutoincrement(), SUBSTITUTE_NAME, generators);
-                dialog.addDisplayComponent(panel);
-                dialog.display();
-                tableChanged(AUTOINCREMENT_COLUMN, row, null);
-
-            }
-        }
+        add(definitionPanel, new GridBagConstraints(
+                1, 1, 1, 1, 1.0, 1.0,
+                GridBagConstraints.NORTHEAST,
+                GridBagConstraints.BOTH,
+                new Insets(2, 2, 2, 2), 0, 0));
     }
 
     public void setColumnDataArray(ColumnData[] cda) {
@@ -398,11 +323,6 @@ public abstract class TableDefinitionPanel extends JPanel
     public void setDomains(String[] domains) {
         this.domains = domains;
     }
-
-    public void setGenerators(String[] generators) {
-        this.generators = generators;
-    }
-
 
     /**
      * Sets the available data types to the values specified.
@@ -453,7 +373,7 @@ public abstract class TableDefinitionPanel extends JPanel
 
     public void tableChanged(TableModelEvent e) {
         int row = table.getEditingRow();
-        if (row == -1) {
+        if (row == -1 || tableVector.size() == row) {
             return;
         }
         tableChanged(table.getEditingColumn(), row, null);
@@ -638,6 +558,43 @@ public abstract class TableDefinitionPanel extends JPanel
     }
 
     /**
+     * Adding new row
+     */
+    public void addRow(ProcedureParameter parameter) {
+        table.editingStopped(null);
+        if (table.isEditing()) {
+            table.removeEditor();
+        }
+
+//        if (parameter.getSqlType().toLowerCase().equals("BLOB SUB_TYPE 0"))
+//            parameter.setSqlType("BLOB SUB_TYPE BINARY");
+//        else if (parameter.getSqlType().toLowerCase().equals("BLOB SUB_TYPE 1"))
+//            parameter.setSqlType("BLOB SUB_TYPE TEXT");
+
+        ColumnData cd = new ColumnData(true, dc);
+        cd.setColumnName(parameter.getName());
+        cd.setDomain(parameter.getDomain());
+        cd.setColumnSubtype(parameter.getSubtype());
+        cd.setSQLType(parameter.getDataType());
+        cd.setColumnSize(parameter.getSize());
+        cd.setColumnType(parameter.getSqlType());
+        cd.setColumnScale(parameter.getScale());
+        cd.setColumnRequired(parameter.getNullable());
+        cd.setCharset(parameter.getEncoding());
+        cd.setDescription(parameter.getDescription());
+
+        for (int i = 0; i < dataTypes.length; i++) {
+            if (dataTypes[i].toLowerCase().equals(parameter.getSqlType().toLowerCase()))
+                cd.setSQLType(intDataTypes[i]);
+        }
+
+        tableVector.add(cd);
+        table.setEditingRow(tableVector.size() - 1);
+        _model.fireTableRowsUpdated(tableVector.size() - 1, tableVector.size() - 1);
+        addColumnLines(-1);
+    }
+
+    /**
      * <p>Deletes the selected row from the table.
      * This will also modify the SQL generated text.
      */
@@ -663,6 +620,20 @@ public abstract class TableDefinitionPanel extends JPanel
         addColumnLines(-1);
     }
 
+    public void deleteEmptyRow() {
+        table.editingStopped(null);
+        if (table.isEditing()) {
+            table.removeEditor();
+        }
+
+        if (tableVector.size() == 0) {
+            return;
+        }
+
+        tableVector.removeElementAt(0);
+        _model.fireTableRowsDeleted(0, 0);
+    }
+
     public void addMouseListener() {
         table.addMouseListener();
     }
@@ -678,10 +649,14 @@ public abstract class TableDefinitionPanel extends JPanel
 
         if (selection == -1) {
             return;
-        } else if (selection == tableVector.size()) {
-            tableVector.add(new ColumnData(dc));
         } else {
-            tableVector.add(newRow, new ColumnData(dc));
+            ColumnData cd = new ColumnData(dc);
+            cd.setTypeParameter(parameterType);
+            if (selection == tableVector.size()) {
+                tableVector.add(cd);
+            } else {
+                tableVector.add(newRow, cd);
+            }
         }
 
         _model.fireTableRowsInserted(selection, newRow);
@@ -757,26 +732,6 @@ public abstract class TableDefinitionPanel extends JPanel
         }
 
         public void mouseClicked(MouseEvent e) {
-            int mouseX = e.getX();
-            int mouseY = e.getY();
-
-            int col = columnAtPoint(new Point(mouseX, mouseY));
-            if (col != PK_COLUMN) {
-                return;
-            }
-
-            ColumnData[] cda = getTableColumnData();
-            int row = rowAtPoint(new Point(mouseX, mouseY));
-            for (int i = 0; i < cda.length; i++) {
-                if (i == row && !cda[i].isPrimaryKey()) {
-                    cda[i].setPrimaryKey(true);
-                } else {
-                    cda[i].setPrimaryKey(false);
-                }
-            }
-
-            _model.fireTableRowsUpdated(0, cda.length);
-            addColumnLines(-1);
         }
 
         public void mouseEntered(MouseEvent e) {
@@ -797,19 +752,19 @@ public abstract class TableDefinitionPanel extends JPanel
     /**
      * The table's model.
      */
-    protected class CreateTableModel extends AbstractPrintableTableModel {
+    protected class ProcedureParameterModel extends AbstractPrintableTableModel {
 
-        protected String[] header = {"PK", "Name", "Datatype", "Domain",
-                "Size", "Scale", "Subtype", "Required", "Check",
-                "Description", "Computed by", "Autoincrement", "Default Value",
-                "Encoding"};
+        protected String[] header = {"Name", "Datatype", "Domain",
+                "Size", "Scale", "Subtype","Description", "Default Value", "Encoding","Required"};
 
-        public CreateTableModel() {
+        public ProcedureParameterModel(int parameterType) {
             tableVector = new Vector<ColumnData>();
-            tableVector.addElement(new ColumnData(dc));
+            ColumnData cd = new ColumnData(dc);
+            cd.setTypeParameter(parameterType);
+            tableVector.addElement(cd);
         }
 
-        public CreateTableModel(Vector<ColumnData> data) {
+        public ProcedureParameterModel(Vector<ColumnData> data) {
             tableVector = data;
         }
 
@@ -848,21 +803,10 @@ public abstract class TableDefinitionPanel extends JPanel
          * @return the value to print
          */
         public String getPrintValueAt(int row, int col) {
-            if (col != PK_COLUMN && col >= 0) {
+            if (col >= 0) {
                 Object value = getValueAt(row, col);
                 if (value != null) {
                     return value.toString();
-                }
-                return EMPTY;
-            } else if (col == PK_COLUMN) {
-                ColumnData cd = tableVector.elementAt(row);
-                if (cd.isPrimaryKey()) {
-                    if (cd.isForeignKey()) {
-                        return "PFK";
-                    }
-                    return "PK";
-                } else if (cd.isForeignKey()) {
-                    return "FK";
                 }
                 return EMPTY;
             } else return EMPTY;
@@ -877,8 +821,6 @@ public abstract class TableDefinitionPanel extends JPanel
 
             switch (col) {
 
-                case PK_COLUMN:
-                    return cd;
                 case NAME_COLUMN:
                     return cd.getColumnName();
 
@@ -897,26 +839,17 @@ public abstract class TableDefinitionPanel extends JPanel
                 case SUBTYPE_COLUMN:
                     return Integer.valueOf(cd.getColumnSubtype());
 
-                case REQUIRED_COLUMN:
-                    return Boolean.valueOf(cd.isRequired());
-
-                case CHECK_COLUMN:
-                    return cd.getCheck();
-
                 case DESCRIPTION_COLUMN:
                     return cd.getDescription();
-
-                case COMPUTED_BY_COLUMN:
-                    return cd.getComputedBy();
 
                 case DEFAULT_COLUMN:
                     return cd.getDefaultValue();
 
-                case AUTOINCREMENT_COLUMN:
-                    return cd.isAutoincrement();
-
                 case ENCODING_COLUMN:
                     return cd.getCharset();
+
+                case REQUIRED_COLUMN:
+                    return Boolean.valueOf(cd.isRequired());
 
                 default:
                     return null;
@@ -930,15 +863,7 @@ public abstract class TableDefinitionPanel extends JPanel
             //Log.debug("setValueAt [row: "+row+" col: "+col+" value: "+value+"]");
 
             switch (col) {
-                case PK_COLUMN:
-                    if (cd.isPrimaryKey()) {
-                        cd.setKeyType(PRIMARY);
-                    } else if (cd.isForeignKey()) {
-                        cd.setKeyType(FOREIGN);
-                    } else {
-                        cd.setKeyType(null);
-                    }
-                    break;
+
                 case NAME_COLUMN:
                     cd.setColumnName((String) value);
                     break;
@@ -956,9 +881,9 @@ public abstract class TableDefinitionPanel extends JPanel
                             else
                                 _model.setValueAt("0", row, SCALE_COLUMN);
                             if (!isEditSubtype(row))
-                                _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
+                                _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SCALE_COLUMN);
                             else
-                                _model.setValueAt("0", row, SUBTYPE_COLUMN);
+                                _model.setValueAt("0", row, SCALE_COLUMN);
                         } else {
                             if (!isEditSize(row))
                                 _model.setValueAt("-1", row, SIZE_COLUMN);
@@ -1007,8 +932,6 @@ public abstract class TableDefinitionPanel extends JPanel
                         }
                         if (!isEditEncoding(row))
                             cd.setCharset(charsets.get(0));
-
-
                     }
                     break;
                 case DOMAIN_COLUMN:
@@ -1028,26 +951,19 @@ public abstract class TableDefinitionPanel extends JPanel
                     cd.setColumnScale(Integer.parseInt((String) value));
                     break;
                 case SUBTYPE_COLUMN:
-                    cd.setColumnSubtype(Integer.parseInt((String) value));
-                    break;
-                case REQUIRED_COLUMN:
-                    cd.setColumnRequired(((Boolean) value).booleanValue() ? 0 : 1);
-                    break;
-                case CHECK_COLUMN:
-                    cd.setCheck((String) value);
+                    cd.setColumnSubtype(Integer.parseInt(value.toString()));
                     break;
                 case DESCRIPTION_COLUMN:
                     cd.setDescription((String) value);
                     break;
-                case COMPUTED_BY_COLUMN:
-                    cd.setComputedBy((String) value);
-                    break;
                 case DEFAULT_COLUMN:
                     cd.setDefaultValue((String) value);
-                case AUTOINCREMENT_COLUMN:
                     break;
                 case ENCODING_COLUMN:
                     cd.setCharset((String) value);
+                    break;
+                case REQUIRED_COLUMN:
+                    cd.setColumnRequired(((Boolean) value).booleanValue() ? 0 : 1);
                     break;
             }
 
@@ -1088,22 +1004,19 @@ public abstract class TableDefinitionPanel extends JPanel
         public boolean isCellEditable(int row, int col) {
             if (editing)
                 switch (col) {
-                    case PK_COLUMN:
-                        return false;
                     case SIZE_COLUMN:
                         return isEditSize(row);
                     case SCALE_COLUMN:
                         return isEditScale(row);
                     case SUBTYPE_COLUMN:
                         return isEditSubtype(row);
-                    case AUTOINCREMENT_COLUMN:
-                        return false;
                     case ENCODING_COLUMN:
                         return isEditEncoding(row);
                     default:
                         return editing;
                 }
             else return editing;
+
 
         }
 
@@ -1112,9 +1025,9 @@ public abstract class TableDefinitionPanel extends JPanel
         }
 
         public Class getColumnClass(int col) {
-            if (col == REQUIRED_COLUMN || col == AUTOINCREMENT_COLUMN) {
+            if (col == REQUIRED_COLUMN)
                 return Boolean.class;
-            } else if (col == SIZE_COLUMN || col == SCALE_COLUMN || col == SUBTYPE_COLUMN) {
+            if (col == SIZE_COLUMN || col == SCALE_COLUMN || col == SUBTYPE_COLUMN) {
                 return Integer.class;
             } else {
                 return String.class;
@@ -1128,7 +1041,10 @@ public abstract class TableDefinitionPanel extends JPanel
             }
 
         }
-
+        public Vector<ColumnData> getTableVector()
+        {
+            return tableVector;
+        }
     } // class CreateTableModel
 
     private class DataTypeSelectionTableCell extends BrowsingCellEditor
@@ -1242,22 +1158,4 @@ public abstract class TableDefinitionPanel extends JPanel
         }
 
     }
-
-    public String getAutoincrementSQLText() {
-        return AutoincrementSQLText;
-    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

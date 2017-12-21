@@ -32,19 +32,26 @@ public class ProcedureParameter {
     private int dataType;
     private String sqlType;
     private int size;
+    private int scale;
+    private String encoding;
     private String value;
+    private int subtype;
+    private int nullable;
+    private String domain;
+    private String description;
 
     private static final String RESULT_STORE = "< Result Store >";
     private static final String RETURN_VALUE = "< Return Value >";
     private static final String UNKNOWN = "< Unknown >";
 
     public ProcedureParameter(String name, int type, int dataType,
-                              String sqlType, int size) {
+                              String sqlType, int size, int nullable) {
         this.name = name;
         this.type = type;
         this.dataType = dataType;
         this.sqlType = sqlType;
         this.size = size;
+        this.nullable = nullable;
     }
 
     public void setDataType(int dataType) {
@@ -109,10 +116,57 @@ public class ProcedureParameter {
         return name;
     }
 
+    public int getSubtype() {
+        return subtype;
+    }
+
+    public void setSubtype(int subtype) {
+        this.subtype = subtype;
+    }
+
     public String toString() {
         return getName();
     }
 
+    public void setNullable(int nullable) {
+        this.nullable = nullable;
+    }
+
+    public int getScale() {
+        return scale;
+    }
+
+    public void setScale(int scale) {
+        this.scale = scale;
+    }
+
+    public String getEncoding() {
+        return encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
+    }
+
+    public int getNullable() {
+        return nullable;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }
 
 

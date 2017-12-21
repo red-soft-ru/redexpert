@@ -21,11 +21,13 @@ public class SelectTypePanel extends JPanel {
     private JLabel typeLabel;
     private JLabel sizeLabel;
     private JLabel scaleLabel;
+    private JLabel subtypeLabel;
     private JLabel encodingLabel;
     private JComboBox typeBox;
     private JComboBox encodingBox;
     private NumberTextField sizeField;
     private NumberTextField scaleField;
+    private NumberTextField subtypeField;
 
     String[] dataTypes;
     int[] intDataTypes;
@@ -49,11 +51,13 @@ public class SelectTypePanel extends JPanel {
         typeLabel = new JLabel("Type");
         sizeLabel = new JLabel("Size");
         scaleLabel = new JLabel("Scale");
+        subtypeLabel = new JLabel("Subtype");
         encodingLabel = new JLabel("Encoding");
         typeBox = new JComboBox();
         encodingBox = new JComboBox();
         sizeField = new NumberTextField();
         scaleField = new NumberTextField();
+        subtypeField = new NumberTextField();
 
         keyListener = new KeyListener() {
             @Override
@@ -75,6 +79,8 @@ public class SelectTypePanel extends JPanel {
                     cd.setColumnSize(field.getValue());
                 } else if (field == scaleField) {
                     cd.setColumnScale(field.getValue());
+                } else if (field == subtypeField) {
+                    cd.setColumnSubtype(field.getValue());
                 }
             }
         };
@@ -107,6 +113,8 @@ public class SelectTypePanel extends JPanel {
         gbc.gridy++;
         this.add(scaleLabel, gbc);
         gbc.gridy++;
+        this.add(subtypeLabel, gbc);
+        gbc.gridy++;
         gbc.weighty = 1;
         this.add(encodingLabel, gbc);
         gbc.gridy = 0;
@@ -118,6 +126,8 @@ public class SelectTypePanel extends JPanel {
         this.add(sizeField, gbc);
         gbc.gridy++;
         this.add(scaleField, gbc);
+        gbc.gridy++;
+        this.add(subtypeField, gbc);
         gbc.gridy++;
         gbc.weighty = 1;
         this.add(encodingBox, gbc);
@@ -135,18 +145,32 @@ public class SelectTypePanel extends JPanel {
         cd.setSQLType(intDataTypes[index]);
         setSizeVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
                 || cd.getSQLType() == Types.DECIMAL || cd.getSQLType() == Types.BLOB
+                || cd.getSQLType() == Types.LONGVARBINARY || cd.getSQLType() == Types.LONGVARCHAR
                 || cd.getColumnType().toUpperCase().equals("VARCHAR")
                 || cd.getColumnType().toUpperCase().equals("CHAR"));
         setScaleVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL);
+        setScaleVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL);
+        setSubtypeVisible(cd.getSQLType() == Types.BLOB);
         setEncodingVisible(cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
                 || cd.getSQLType() == Types.LONGVARCHAR || cd.getSQLType() == Types.CLOB
                 || cd.getColumnType().toUpperCase().equals("VARCHAR")
                 || cd.getColumnType().toUpperCase().equals("CHAR"));
+
+        if (cd.getSQLType() == Types.LONGVARBINARY || cd.getSQLType() == Types.LONGVARCHAR || cd.getSQLType() == Types.BLOB) {
+            sizeField.setText("80");
+        }
+        if (cd.getSQLType() == Types.LONGVARBINARY)
+            subtypeField.setText("0");
+        if (cd.getSQLType() == Types.LONGVARCHAR)
+            subtypeField.setText("1");
+        if (cd.getSQLType() == Types.BLOB)
+            subtypeField.setText("0");
     }
 
     public void refreshColumn() {
         cd.setColumnSize(sizeField.getValue());
         cd.setColumnScale(scaleField.getValue());
+        cd.setColumnSubtype(subtypeField.getValue());
     }
 
     void setSizeVisible(boolean flag) {
@@ -169,6 +193,16 @@ public class SelectTypePanel extends JPanel {
         if (refreshing)
             scaleField.setValue(cd.getColumnScale());
         cd.setColumnScale(scaleField.getValue());
+    }
+
+    void setSubtypeVisible(boolean flag) {
+        subtypeField.setEnabled(flag);
+        if (flag) {
+            subtypeField.setValue(1);
+        } else subtypeField.setValue(0);
+        if (refreshing)
+            subtypeField.setValue(cd.getColumnSubtype());
+        cd.setColumnSubtype(subtypeField.getValue());
     }
 
     void setEncodingVisible(boolean flag) {

@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.TablePrivilege;
 import org.executequery.databaseobjects.impl.DefaultDatabaseProcedure;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DatabaseDataSource;
+import org.executequery.datasource.PooledConnection;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
@@ -95,7 +96,7 @@ public class MetaDataValues implements ConnectionListener {
      * connection is initialised and maintained following
      * the first request and reused for any subsequent requests.
      *
-     * @param whether to keep the connection open
+     * @param keepAlive to keep the connection open
      */
     public MetaDataValues(boolean keepAlive) {
         this(null, keepAlive);
@@ -662,6 +663,30 @@ public class MetaDataValues implements ConnectionListener {
                 _columns.add(cd);
 
             }
+            
+            if(((PooledConnection) connection).getRealConnection().unwrap(Connection.class).getClass().getName().contains("FBConnection")) {
+                // need to add info about column subtype
+                Statement statement;
+                for (Object od :
+                        _columns) {
+                    ColumnData cd = (ColumnData)od;
+                    statement = connection.createStatement();
+                    ResultSet resultSet = null;
+                    try {
+                        resultSet = statement.executeQuery("select \n" +
+                                "f.rdb$field_sub_type as field_sub_type \n" +
+                                "from rdb$relation_fields rf, \n" +
+                                "rdb$fields f \n" +
+                                "where rf.rdb$relation_name = '" + cd.getTableName() + "'\n" +
+                                "and rf.rdb$field_name = '" + cd.getColumnName() + "'\n" +
+                                "and  rf.rdb$field_source = f.rdb$field_name");
+                        resultSet.next();
+                        cd.setColumnSubtype(resultSet.getShort(1));
+                    } finally {
+                        releaseResources(resultSet);
+                    }
+                }
+            }
 
             v_size = _columns.size();
             ColumnData[] columnDataArray = new ColumnData[v_size];
@@ -760,7 +785,8 @@ public class MetaDataValues implements ConnectionListener {
                             rs.getInt(5),
                             rs.getInt(6),
                             rs.getString(7),
-                            rs.getInt(8));
+                            rs.getInt(8),
+                            rs.getInt(12));
                 }
                 list.add(proc);
                 rs.close();
@@ -876,7 +902,8 @@ public class MetaDataValues implements ConnectionListener {
                                 _rs.getInt(5),
                                 _rs.getInt(6),
                                 _rs.getString(7),
-                                _rs.getInt(8));
+                                _rs.getInt(8),
+                                rs.getInt(12));
                     }
 
                     _rs.close();

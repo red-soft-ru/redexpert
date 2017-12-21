@@ -52,7 +52,7 @@ public class CreateTriggerPanel extends JPanel {
 
     private JTextField nameField;
 
-    private NumberTextField positionField;
+    private JSpinner positionField;
 
     private JCheckBox activeBox;
 
@@ -176,7 +176,8 @@ public class CreateTriggerPanel extends JPanel {
         connectionLabel = new JLabel("Connection");
         nameLabel = new JLabel("Name");
         positionLabel = new JLabel("Position");
-        positionField = new NumberTextField();
+        SpinnerModel model = new SpinnerNumberModel(0, 0, Short.MAX_VALUE, 1);
+        positionField = new JSpinner(model);
         positionField.setValue(0);
         activeBox = new JCheckBox("Active");
         databaseTriggerPanel = new JPanel();

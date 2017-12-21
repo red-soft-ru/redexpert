@@ -83,7 +83,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
 
         addButtonsPanel(new BottomButtonPanel(
                 this, "Create", "create-procedure", parent.isDialog()));
-        setPreferredSize(new Dimension(750, 480));
+        setPreferredSize(new Dimension(750, 820));
         EventMediator.registerListener(this);
     }
 
@@ -91,7 +91,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
 
         addButtonsPanel(new BottomButtonPanel(
                 this, "Alter", "create-procedure", parent.isDialog()));
-        setPreferredSize(new Dimension(750, 480));
+        setPreferredSize(new Dimension(750, 820));
         EventMediator.registerListener(this);
     }
 

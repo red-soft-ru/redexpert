@@ -2,6 +2,7 @@ package org.executequery.gui.procedure;
 
 import biz.redsoft.IFBDatabaseMetadata;
 import org.executequery.GUIUtilities;
+import org.executequery.components.SplitPaneFactory;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.QueryTypes;
@@ -473,7 +474,6 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         sqlBodyText.setBorder(BorderFactory.createTitledBorder("Procedure body"));
 
         outSqlText = new SimpleSqlTextPanel();
-//        tools = new CreateTableToolBar(this);
 
         mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -490,46 +490,32 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         WidgetFactory.addLabelFieldPair(mainPanel, "Connection:", connectionsCombo, gbc);
         WidgetFactory.addLabelFieldPair(mainPanel, "Procedure Name:", nameField, gbc);
 
-        JPanel definitionPanel = new JPanel(new GridBagLayout());
-        gbc.gridwidth = 1;
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.weightx = 0;
-        gbc.insets.right = 5;
-        gbc.insets.left = 5;
-        gbc.insets.top = 20;
-        gbc.fill = GridBagConstraints.VERTICAL;
-//        definitionPanel.add(tools, gbc);
-        gbc.insets.left = 0;
-        gbc.insets.right = 5;
-        gbc.insets.top = 0;
-        gbc.gridx = 1;
-        gbc.weighty = 0.4;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        definitionPanel.add(parametersTabs, gbc);
+        JPanel topPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbcTop = new GridBagConstraints(0, 0,
+                1, 1, 1, 1,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
+                0, 0);
+        topPanel.add(parametersTabs, gbcTop);
 
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.insets.top = 10;
-        containerPanel.add(definitionPanel, gbc);
+        JPanel bottomPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbcBottom = new GridBagConstraints(0, 0,
+                1, GridBagConstraints.REMAINDER, 1, 1,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
+                0, 0);
+        bottomPanel.add(sqlBodyText, gbcBottom);
 
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.weighty = 0.6;
-        gbc.insets.left = 5;
-        gbc.insets.bottom = 5;
-        gbc.insets.top = 5;
-        containerPanel.add(sqlBodyText, gbc);
+        JSplitPane3 splitPane = new JSplitPane3();//new SplitPaneFactory().create(JSplitPane.VERTICAL_SPLIT, topPanel, bottomPanel);
+        splitPane.setTopComponent(topPanel);
+        splitPane.setBottomComponent(bottomPanel);
+        splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setDividerLocation(0.3);
+        splitPane.setDividerSize(5);
 
-//        gbc.gridx = 0;
-//        gbc.gridy++;
-//        gbc.weighty = 0.6;
-//        gbc.insets.left = 5;
-//        gbc.insets.bottom = 5;
-//        gbc.insets.top = 5;
-//        containerPanel.add(outSqlText, gbc);
+        containerPanel.add(splitPane,
+                new GridBagConstraints(0, 0,
+                        1, 1, 1, 1,
+                        GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
+                        0, 0));
 
         descriptionArea = new SimpleTextArea();
 
@@ -566,8 +552,10 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         ddlPanel.add(ddlTextPanel, gbc2);
         procedureTabs.insertTab("DDL", null, ddlPanel, null, 2);
 
-
-        mainPanel.add(procedureTabs, gbc);
+        mainPanel.add(procedureTabs, new GridBagConstraints(0, 2,
+                2, 1, 1, 1,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
+                0, 0));
 
         procedureTabs.addChangeListener(new ChangeListener() {
             @Override
@@ -1015,6 +1003,32 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
      */
     public TextEditor getTextEditor() {
         return outSqlText;
+    }
+
+    public class JSplitPane3 extends JSplitPane {
+        private boolean hasProportionalLocation = false;
+        private double proportionalLocation = 0.5;
+        private boolean isPainted = false;
+
+        public void setDividerLocation(double proportionalLocation) {
+            if (!isPainted) {
+                hasProportionalLocation = true;
+                this.proportionalLocation = proportionalLocation;
+            } else {
+                super.setDividerLocation(proportionalLocation);
+            }
+        }
+
+        public void paint(Graphics g) {
+            super.paint(g);
+            if (!isPainted) {
+                if (hasProportionalLocation) {
+                    super.setDividerLocation(proportionalLocation);
+                }
+                isPainted = true;
+            }
+        }
+
     }
 
 }

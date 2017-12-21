@@ -290,34 +290,25 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
         tools = new CreateProcedureToolBar(this);
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.NORTHWEST;
         JPanel definitionPanel = new JPanel(new GridBagLayout());
-        gbc.gridwidth = 1;
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.weightx = 0;
-        gbc.insets.right = 5;
-        gbc.insets.left = 5;
-        gbc.insets.top = 20;
-        gbc.fill = GridBagConstraints.VERTICAL;
-        definitionPanel.add(tools, gbc);
-        gbc.insets.left = 0;
-        gbc.insets.right = 5;
-        gbc.insets.top = 0;
-        gbc.gridx = 1;
-        gbc.weighty = 0.4;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        definitionPanel.add(new JScrollPane(table), gbc);
 
-        add(definitionPanel, new GridBagConstraints(
-                1, 1, 1, 1, 1.0, 1.0,
-                GridBagConstraints.SOUTHEAST,
+        definitionPanel.add(tools, new GridBagConstraints(
+                0, 0, 1, 1, 0, 0,
+                GridBagConstraints.CENTER,
+                GridBagConstraints.VERTICAL,
+                new Insets(2, 2, 2, 2), 0, 0));
+
+        definitionPanel.add(new JScrollPane(table), new GridBagConstraints(
+                1, 0, 0, 1, 1.0, 1.0,
+                GridBagConstraints.NORTHEAST,
                 GridBagConstraints.BOTH,
                 new Insets(2, 2, 2, 2), 0, 0));
 
+        add(definitionPanel, new GridBagConstraints(
+                1, 1, 1, 1, 1.0, 1.0,
+                GridBagConstraints.NORTHEAST,
+                GridBagConstraints.BOTH,
+                new Insets(2, 2, 2, 2), 0, 0));
     }
 
     public void setColumnDataArray(ColumnData[] cda) {

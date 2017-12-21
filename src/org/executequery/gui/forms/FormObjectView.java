@@ -54,6 +54,10 @@ public interface FormObjectView {
      */
     public String getLayoutName();
 
+    String getObjectName();
+
+    void setObjectName(String objectName);
+
     public void validate();
 
     public void repaint();

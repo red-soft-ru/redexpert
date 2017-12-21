@@ -163,19 +163,23 @@ public class BrowserController {
 //        }
 
         // check the panel is in the pane
-        JPanel _viewPanel = GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
+
+        String title = viewPanel.getNameObject();
+        if(title == null)
+            title = BrowserViewPanel.TITLE;
+        JPanel _viewPanel = GUIUtilities.getCentralPane(title);
 
         if (_viewPanel == null) {
 
-            GUIUtilities.addCentralPane(BrowserViewPanel.TITLE,
+            GUIUtilities.addCentralPane(title,
                     BrowserViewPanel.FRAME_ICON,
                     viewPanel,
-                    BrowserViewPanel.TITLE,
+                    title,
                     true);
 
         } else {
 
-            GUIUtilities.setSelectedCentralPane(BrowserViewPanel.TITLE);
+            GUIUtilities.setSelectedCentralPane(title);
         }
 
     }
@@ -250,6 +254,7 @@ public class BrowserController {
         try {
 
             FormObjectView panel = buildPanelView(node);
+            panel.setObjectName(node.getDisplayName().trim()+":"+getDatabaseConnection().getName());
 
             if (panel != null) {
 
@@ -282,7 +287,7 @@ public class BrowserController {
             }
 
 //            System.out.println("selected object type: " + databaseObject.getClass().getName());
-
+            viewPanel = new BrowserViewPanel(this);
             int type = node.getType();
             switch (type) {
                 case NamedObject.HOST:

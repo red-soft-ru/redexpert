@@ -47,6 +47,8 @@ public class FormObjectViewContainer extends JPanel {
      */
     protected FormObjectView currentView;
 
+    private String nameObject;
+
     public FormObjectViewContainer() {
         super();
         // setup the panel and layout manager and apply
@@ -75,10 +77,15 @@ public class FormObjectViewContainer extends JPanel {
 
             currentView = panel;
             cardLayout.show(this, panel.getLayoutName());
+            nameObject = panel.getObjectName();
         }
 
         panel.validate();
         panel.repaint();
+    }
+
+    public String getNameObject() {
+        return nameObject;
     }
 
     /**

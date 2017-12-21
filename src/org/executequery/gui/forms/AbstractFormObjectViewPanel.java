@@ -35,6 +35,8 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
         implements FormObjectView {
     private boolean reload;
 
+    private String nameObject;
+
     protected static Border emptyBorder;
 
     protected GradientLabel gradientLabel;
@@ -122,5 +124,14 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
         return Bundles.get(getClass(), key);
     }
 
+    public void setObjectName(String nameObject)
+    {
+        this.nameObject = nameObject;
+    }
+
+    @Override
+    public String getObjectName() {
+        return nameObject;
+    }
 }
 

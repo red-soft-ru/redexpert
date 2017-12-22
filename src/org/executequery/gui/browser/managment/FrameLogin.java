@@ -123,7 +123,11 @@ public class FrameLogin extends JFrame {
     private void buttonOKActionPerformed(java.awt.event.ActionEvent evt) {
         ump.userManager.setUser(Username_field.getText());
         ump.userManager.setPassword(new String(passw_field.getPassword()));
-        ump.refresh();
+        try {
+            ump.refresh();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         this.dispose();
     }
 

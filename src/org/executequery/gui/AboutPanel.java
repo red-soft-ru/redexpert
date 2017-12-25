@@ -89,7 +89,7 @@ public class AboutPanel extends BaseDialog
 
         String versionText = "Version " +
                 System.getProperty("executequery.minor.version") +
-                ". Red Soft 2015-" + Calendar.getInstance().get(Calendar.YEAR) + ". http://www.red-soft.biz";
+                ". Red Soft 2015-" + Calendar.getInstance().get(Calendar.YEAR) + ". http://www.red-soft.ru";
 
         String forkText = "Fork of Execute Query: http://executequery.org";
         base.setBorder(BorderFactory.createEtchedBorder());

@@ -29,7 +29,7 @@ import java.io.IOException;
 /**
  * @author Takis Diakoumis
  */
-public abstract class AbstractXMLRepositoryParser implements XMLReader {
+abstract class AbstractXMLRepositoryParser implements XMLReader {
 
     protected static final String CDDATA = "CDATA";
     protected static final String NSU = Constants.EMPTY;
@@ -42,7 +42,7 @@ public abstract class AbstractXMLRepositoryParser implements XMLReader {
 
     private AttributesImpl attributes;
 
-    public AbstractXMLRepositoryParser() {
+    AbstractXMLRepositoryParser() {
         attributes = new AttributesImpl();
     }
 

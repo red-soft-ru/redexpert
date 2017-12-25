@@ -20,10 +20,6 @@
 
 package org.executequery.gui.forms;
 
-import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseObject;
-import org.executequery.gui.browser.nodes.DatabaseObjectNode;
-
 import java.awt.print.Printable;
 
 /* ----------------------------------------------------------
@@ -61,14 +57,6 @@ public interface FormObjectView {
     String getObjectName();
 
     void setObjectName(String objectName);
-
-    void setDatabaseObjectNode(DatabaseObjectNode node);
-
-    DatabaseObjectNode getDatabaseObjectNode();
-
-    void setDatabaseConnection(DatabaseConnection connection);
-
-    DatabaseConnection getDatabaseConnection();
 
     public void validate();
 

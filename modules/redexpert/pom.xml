@@ -229,6 +229,7 @@
           <include>**/*.keywords</include>
           <include>**/*.license</include>
           <include>**/*.html</include>
+          <include>**/*.notes</include>
         </includes>
       </resource>
     </resources>

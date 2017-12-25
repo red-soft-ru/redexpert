@@ -30,7 +30,7 @@ import org.executequery.actions.AbstractUrlLauncherCommand;
  */
 public class VisitOnlineCommand extends AbstractUrlLauncherCommand {
 
-    private static final String URL = "http://red-soft.biz";
+    private static final String URL = "http://red-soft.ru";
 
     @Override
     public String url() {

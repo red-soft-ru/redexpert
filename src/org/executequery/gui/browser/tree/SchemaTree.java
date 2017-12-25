@@ -30,6 +30,7 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.swing.tree.DynamicTree;
+import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
@@ -43,6 +44,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.*;
 
 /**
@@ -50,7 +52,7 @@ import java.util.*;
  */
 public class SchemaTree extends DynamicTree
         implements TreeExpansionListener,
-        TreeSelectionListener {
+        TreeSelectionListener, MouseListener {
 
     private static final int ROW_HEIGHT = 26;
 
@@ -63,6 +65,7 @@ public class SchemaTree extends DynamicTree
 
         addTreeSelectionListener(this);
         addTreeExpansionListener(this);
+        addMouseListener(this);
 
         DefaultTreeCellRenderer renderer = new BrowserTreeCellRenderer(loadIcons());
         setCellRenderer(renderer);
@@ -164,6 +167,32 @@ public class SchemaTree extends DynamicTree
         }
 
         return false;
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent mouseEvent) {
+        if (mouseEvent.getClickCount() > 1)
+            panel.valueChanged((DatabaseObjectNode) getSelectionPath().getLastPathComponent());
+    }
+
+    @Override
+    public void mousePressed(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent mouseEvent) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent mouseEvent) {
+
     }
 
 

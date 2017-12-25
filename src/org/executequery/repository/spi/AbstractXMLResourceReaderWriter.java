@@ -39,7 +39,7 @@ import java.util.List;
 /**
  * @author Takis Diakoumis
  */
-abstract class AbstractXMLResourceReaderWriter<T> {
+public abstract class AbstractXMLResourceReaderWriter<T> {
 
     protected final List<T> readResource(String classPathResource, DefaultHandler handler) throws RepositoryException {
 

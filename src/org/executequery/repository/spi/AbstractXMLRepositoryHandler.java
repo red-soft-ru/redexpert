@@ -30,12 +30,12 @@ import java.util.List;
 /**
  * @author Takis Diakoumis
  */
-abstract class AbstractXMLRepositoryHandler<T> extends DefaultHandler
+public abstract class AbstractXMLRepositoryHandler<T> extends DefaultHandler
         implements XMLRepositoryHandler<T> {
 
     private CharArrayWriter contents;
 
-    AbstractXMLRepositoryHandler() {
+    public AbstractXMLRepositoryHandler() {
 
         super();
 

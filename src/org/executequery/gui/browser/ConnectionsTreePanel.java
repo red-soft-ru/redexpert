@@ -472,7 +472,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
             Object object = tree.getLastPathComponent();
             if (isADatabaseHostNode(object)) {
 
-                controller.valueChanged_(asDatabaseHostNode(object));
+                controller.valueChanged_(asDatabaseHostNode(object),null);
             }
 
         }
@@ -1126,7 +1126,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
             if (tree.getSelectionPath().getLastPathComponent() == host) {
 
                 enableButtons(true, true, false, true);
-                controller.valueChanged_(host);
+                controller.valueChanged_(host,null);
             }
 
         }
@@ -1340,31 +1340,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
 
         final ConnectionsTreePanel c = this;
 
-        c.setInProcess(true);
 
-        worker = new SwingWorker() {
-            public Object construct() {
-                try {
-
-                    tree.startLoadingNode();
-                    treeExpanding = true;
-                    valueChanged(node);
-
-                } finally {
-
-                    treeExpanding = false;
-                }
-                return null;
-            }
-
-            public void finished() {
-                tree.finishedLoadingNode();
-                treeExpanding = false;
-
-                c.setInProcess(false);
-            }
-        };
-        worker.start();
     }
 
     private boolean canProceedWithChangesApplied(Object selectedNode) {
@@ -1405,8 +1381,11 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
         }
     }
 
-    private synchronized void valueChanged(DatabaseObjectNode node) {
-        controller.valueChanged_(node);
+    public synchronized void valueChanged(DatabaseObjectNode node) {
+        controller.valueChanged_(node,null);
+    }
+    public synchronized void valueChanged(DatabaseObjectNode node,DatabaseConnection connection) {
+        controller.valueChanged_(node,connection);
     }
 
     /**

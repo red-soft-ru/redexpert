@@ -663,7 +663,7 @@ public class MetaDataValues implements ConnectionListener {
                 _columns.add(cd);
 
             }
-            
+
             if(((PooledConnection) connection).getRealConnection().unwrap(Connection.class).getClass().getName().contains("FBConnection")) {
                 // need to add info about column subtype
                 Statement statement;
@@ -1105,11 +1105,14 @@ public class MetaDataValues implements ConnectionListener {
 
     private void releaseResources(ResultSet rs) {
         try {
-            Statement st = rs.getStatement();
             if (rs != null) {
-                rs.close();
+                Statement st = rs.getStatement();
+                if (rs != null) {
+                    if (!rs.isClosed())
+                        rs.close();
+                }
+                releaseResources(st);
             }
-            releaseResources(st);
         } catch (SQLException sqlExc) {
         } finally {
             releaseResources();

@@ -775,9 +775,9 @@ public class BrowserController {
     }
   }
 
-  protected ColumnData[] getColumnData(String catalog, String schema, String name) {
+  protected ColumnData[] getColumnData(String catalog, String schema, String name,DatabaseConnection connection) {
     try {
-      metaData.setDatabaseConnection(getDatabaseConnection());
+      metaData.setDatabaseConnection(connection);
       return metaData.getColumnMetaData(
           isUsingCatalogs() ? catalog : null, schema, name);
     } catch (DataSourceException e) {

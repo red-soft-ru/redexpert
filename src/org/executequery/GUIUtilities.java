@@ -30,6 +30,7 @@ import org.executequery.components.StatusBarPanel;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.*;
+import org.executequery.gui.browser.ConnectionHistory;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.managment.GrantManagerConnectionListener;
 import org.executequery.gui.drivers.DriversTreePanel;
@@ -202,6 +203,7 @@ public final class GUIUtilities {
         EventMediator.registerListener(new LogUserPreferenceListener(errLogger, outLogger));
         EventMediator.registerListener(new KeyboardShortcutsUserPreferenceListener());
         EventMediator.registerListener(new GrantManagerConnectionListener());
+        EventMediator.registerListener(ConnectionHistory.getInstance());
     }
 
     public static void initPanels() {
@@ -1409,6 +1411,11 @@ public final class GUIUtilities {
         }
 
         return saveFunctions;
+    }
+
+    public static List<ComponentPanel> getOpenPanels()
+    {
+        return register.getOpenPanels();
     }
 
     /**

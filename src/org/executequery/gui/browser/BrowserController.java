@@ -38,6 +38,7 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -165,7 +166,7 @@ public class BrowserController {
         // check the panel is in the pane
 
         String title = viewPanel.getNameObject();
-        if(title == null)
+        if (title == null)
             title = BrowserViewPanel.TITLE;
         JPanel _viewPanel = GUIUtilities.getCentralPane(title);
 
@@ -176,6 +177,7 @@ public class BrowserController {
                     viewPanel,
                     title,
                     true);
+            ConnectionHistory.add(viewPanel.getCurrentView());
 
         } else {
 
@@ -247,18 +249,21 @@ public class BrowserController {
      * //@param the connection host parent object
      * //@param the selected node
      */
-    public synchronized void valueChanged_(DatabaseObjectNode node) {
+    public synchronized void valueChanged_(DatabaseObjectNode node,DatabaseConnection connection) {
 
         treePanel.setInProcess(true);
 
         try {
 
             FormObjectView panel = buildPanelView(node);
+            panel.setDatabaseObjectNode(node);
             String type = "";
-            if(node.getType()<NamedObject.META_TYPES.length)
+            if (node.getType() < NamedObject.META_TYPES.length)
                 type = NamedObject.META_TYPES[node.getType()];
-            panel.setObjectName(node.getDisplayName().trim()+":"+type+":"+getDatabaseConnection().getName());
-
+            if(connection==null)
+                connection = getDatabaseConnection();
+            panel.setObjectName(node.getDisplayName().trim() + ":" + type + ":" + connection.getName());
+            panel.setDatabaseConnection(connection);
             if (panel != null) {
 
                 viewPanel.setView(panel);

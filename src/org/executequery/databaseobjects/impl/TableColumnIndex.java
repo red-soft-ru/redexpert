@@ -25,6 +25,8 @@ import org.executequery.databaseobjects.NamedObject;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.DatabaseMetaData;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,135 +34,146 @@ import java.util.Map;
  */
 public class TableColumnIndex extends AbstractDatabaseObjectElement {
 
-    /**
-     * Whether the index is non-unique
-     */
-    private boolean non_unique;
+  /**
+   * Whether the index is non-unique
+   */
+  private boolean non_unique;
 
-    /**
-     * The indexed column
-     */
-    private String column;
+  /**
+   * The indexed column
+   */
+  private List<String> columns;
 
-    /**
-     * Whether this a new index value
-     */
-    private boolean markedNew;
+  /**
+   * Whether this a new index value
+   */
+  private boolean markedNew;
 
-    /**
-     * Whether this column is marked as to be deleted
-     */
-    private boolean markedDeleted;
+  /**
+   * Whether this column is marked as to be deleted
+   */
+  private boolean markedDeleted;
 
-    /**
-     * the column meta data map
-     */
-    private Map<String, String> metaData;
+  /**
+   * the column meta data map
+   */
+  private Map<String, String> metaData;
 
-    /**
-     * Creates a new instance of DatabaseTableColumnIndex
-     */
-    public TableColumnIndex(String name) {
-        setName(name);
+  /**
+   * Creates a new instance of DatabaseTableColumnIndex
+   */
+  public TableColumnIndex(String name) {
+    setName(name);
+    columns = new ArrayList<>();
+  }
+
+  /**
+   * Returns the meta data key name of this object.
+   *
+   * @return the meta data key name.
+   */
+  public String getMetaDataKey() {
+    return "INDEX";
+  }
+
+  @Override
+  public int getType() {
+    return TABLE_INDEX;
+  }
+
+  /**
+   * Returns the parent named object of this object.
+   *
+   * @return the parent object
+   */
+  public NamedObject getParent() {
+    return null;
+  }
+
+  /**
+   * Does nothing.
+   */
+  public int drop() throws DataSourceException {
+    return 0;
+  }
+
+  public void addIndexedColumn(String column) {
+    columns.add(column);
+  }
+
+  public List<String> getIndexedColumns() {
+    return columns;
+  }
+
+  public String getIndexedColumn() {
+    String column = "";
+    for (int i = 0; i < columns.size(); i++) {
+      if (i != 0)
+        column += ",";
+      column += columns.get(i);
     }
+    return column;
+  }
 
-    /**
-     * Returns the meta data key name of this object.
-     *
-     * @return the meta data key name.
-     */
-    public String getMetaDataKey() {
-        return "INDEX";
+  public void setNonUnique(boolean non_unique) {
+    this.non_unique = non_unique;
+  }
+
+  public boolean isNonUnique() {
+    return non_unique;
+  }
+
+  public boolean isMarkedNew() {
+    return markedNew;
+  }
+
+  public void setMarkedNew(boolean markedNew) {
+    this.markedNew = markedNew;
+  }
+
+  public boolean isMarkedDeleted() {
+    return markedDeleted;
+  }
+
+  public void setMarkedDeleted(boolean markedDeleted) {
+    this.markedDeleted = markedDeleted;
+  }
+
+  public void setMetaData(Map<String, String> metaData) {
+    this.metaData = metaData;
+    for (String key : this.metaData.keySet()) {
+
+      if (StringUtils.equalsIgnoreCase("TYPE", key)) {
+
+        Short value = Short.valueOf(this.metaData.get(key));
+        this.metaData.put(key, translateType(value));
+      }
+
     }
+  }
 
-    @Override
-    public int getType() {
-        return TABLE_INDEX;
+  private String translateType(Short value) {
+
+    String translated = String.valueOf(value);
+    switch (value) {
+      case DatabaseMetaData.tableIndexStatistic:
+        return translated + " - tableIndexStatistic";
+
+      case DatabaseMetaData.tableIndexClustered:
+        return translated + " - tableIndexClustered";
+
+      case DatabaseMetaData.tableIndexHashed:
+        return translated + " - tableIndexHashed";
+
+      case DatabaseMetaData.tableIndexOther:
+        return translated + " - tableIndexOther";
     }
+    return translated;
+  }
 
-    /**
-     * Returns the parent named object of this object.
-     *
-     * @return the parent object
-     */
-    public NamedObject getParent() {
-        return null;
-    }
-
-    /**
-     * Does nothing.
-     */
-    public int drop() throws DataSourceException {
-        return 0;
-    }
-
-    public void setIndexedColumn(String column) {
-        this.column = column;
-    }
-
-    public String getIndexedColumn() {
-        return column;
-    }
-
-    public void setNonUnique(boolean non_unique) {
-        this.non_unique = non_unique;
-    }
-
-    public boolean isNonUnique() {
-        return non_unique;
-    }
-
-    public boolean isMarkedNew() {
-        return markedNew;
-    }
-
-    public void setMarkedNew(boolean markedNew) {
-        this.markedNew = markedNew;
-    }
-
-    public boolean isMarkedDeleted() {
-        return markedDeleted;
-    }
-
-    public void setMarkedDeleted(boolean markedDeleted) {
-        this.markedDeleted = markedDeleted;
-    }
-
-    public void setMetaData(Map<String, String> metaData) {
-        this.metaData = metaData;
-        for (String key : this.metaData.keySet()) {
-
-            if (StringUtils.equalsIgnoreCase("TYPE", key)) {
-
-                Short value = Short.valueOf(this.metaData.get(key));
-                this.metaData.put(key, translateType(value));
-            }
-
-        }
-    }
-
-    private String translateType(Short value) {
-
-        String translated = String.valueOf(value);
-        switch (value) {
-            case DatabaseMetaData.tableIndexStatistic:
-                return translated + " - tableIndexStatistic";
-
-            case DatabaseMetaData.tableIndexClustered:
-                return translated + " - tableIndexClustered";
-
-            case DatabaseMetaData.tableIndexHashed:
-                return translated + " - tableIndexHashed";
-
-            case DatabaseMetaData.tableIndexOther:
-                return translated + " - tableIndexOther";
-        }
-        return translated;
-    }
-
-    public Map<String, String> getMetaData() {
-        return metaData;
-    }
+  public Map<String, String> getMetaData() {
+    return metaData;
+  }
 
 }
 

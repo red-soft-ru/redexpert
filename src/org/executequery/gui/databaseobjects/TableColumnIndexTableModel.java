@@ -92,7 +92,7 @@ public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
                 index.setName((String) value);
                 break;
             case 2:
-                index.addIndexedColumn((String) value);
+                index.setIndexedColumn((String) value);
                 break;
             case 3:
                 index.setNonUnique(((Boolean) value).booleanValue());

@@ -262,7 +262,9 @@ public class BrowserController {
                 type = NamedObject.META_TYPES[node.getType()];
             if(connection==null)
                 connection = getDatabaseConnection();
-            panel.setObjectName(node.getDisplayName().trim() + ":" + type + ":" + connection.getName());
+            if(node.isHostNode()||node.getType()==NamedObject.CATALOG)
+                panel.setObjectName(null);
+            else panel.setObjectName(node.getDisplayName().trim() + ":" + type + ":" + connection.getName());
             panel.setDatabaseConnection(connection);
             if (panel != null) {
 
@@ -299,7 +301,7 @@ public class BrowserController {
             int type = node.getType();
             switch (type) {
                 case NamedObject.HOST:
-
+                    viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
                     HostPanel hostPanel = hostPanel();
                     hostPanel.setValues((DatabaseHost) databaseObject);
 
@@ -308,6 +310,7 @@ public class BrowserController {
                 // catalog node:
                 // this will display the schema table list
                 case NamedObject.CATALOG:
+                    viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
                     CatalogPanel catalogPanel = null;
                     if (!viewPanel.containsPanel(CatalogPanel.NAME)) {
                         catalogPanel = new CatalogPanel(this);
@@ -321,6 +324,7 @@ public class BrowserController {
                     return catalogPanel;
 
                 case NamedObject.SCHEMA:
+                    viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
                     SchemaPanel schemaPanel = null;
                     if (!viewPanel.containsPanel(SchemaPanel.NAME)) {
                         schemaPanel = new SchemaPanel(this);

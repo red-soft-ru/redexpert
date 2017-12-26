@@ -1338,9 +1338,36 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
             enableButtons(false, false, true, false);
         }
 
-        final ConnectionsTreePanel c = this;
+        if(node.isHostNode()) {
 
+            final ConnectionsTreePanel c = this;
 
+            c.setInProcess(true);
+
+            worker = new SwingWorker() {
+                public Object construct() {
+                    try {
+
+                        tree.startLoadingNode();
+                        treeExpanding = true;
+                        valueChanged(node);
+
+                    } finally {
+
+                        treeExpanding = false;
+                    }
+                    return null;
+                }
+
+                public void finished() {
+                    tree.finishedLoadingNode();
+                    treeExpanding = false;
+
+                    c.setInProcess(false);
+                }
+            };
+            worker.start();
+        }
     }
 
     private boolean canProceedWithChangesApplied(Object selectedNode) {

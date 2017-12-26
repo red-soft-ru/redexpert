@@ -164,7 +164,8 @@ public class BrowserController {
 //        }
 
     // check the panel is in the pane
-
+    if(viewPanel == null)
+      viewPanel = new BrowserViewPanel(this);
     String title = viewPanel.getNameObject();
     if (title == null)
       title = BrowserViewPanel.TITLE;
@@ -564,6 +565,7 @@ public class BrowserController {
    * Displays the root main view panel.
    */
   protected void displayConnectionList(ConnectionsFolder folder) {
+    viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
     checkBrowserPanel();
     viewPanel.displayConnectionList(folder);
   }
@@ -572,6 +574,7 @@ public class BrowserController {
    * Displays the root main view panel.
    */
   protected void displayConnectionList() {
+    viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
     checkBrowserPanel();
     viewPanel.displayConnectionList();
   }

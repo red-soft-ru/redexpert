@@ -193,7 +193,7 @@ public class ConnectionHistory extends AbstractXMLResourceReaderWriter<String[]>
     for (int i = 0; i < panels.size(); i++) {
       if (panels.get(i).getComponent() instanceof BrowserViewPanel) {
         BrowserViewPanel panel = (BrowserViewPanel) panels.get(i).getComponent();
-        if (panel.getCurrentView() != null)
+        if (panel.getCurrentView() != null && !panels.get(i).getName().equals(BrowserViewPanel.TITLE))
           if (panel.getCurrentView().getDatabaseConnection() == connectionEvent.getDatabaseConnection())
             closeTabs.add(panels.get(i).getName());
       }

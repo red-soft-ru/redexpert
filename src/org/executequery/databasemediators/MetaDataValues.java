@@ -156,7 +156,7 @@ public class MetaDataValues implements ConnectionListener {
                     openConnectionAndAddToCache();
                 }
 
-                connection = connections.get(databaseConnection);
+                connection = ConnectionManager.getConnection(databaseConnection);
                 if (connection == null) {
 
                     if (Log.isDebugEnabled()) {

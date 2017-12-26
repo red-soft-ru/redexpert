@@ -25,6 +25,8 @@ import org.executequery.databaseobjects.NamedObject;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.DatabaseMetaData;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,7 +42,7 @@ public class TableColumnIndex extends AbstractDatabaseObjectElement {
     /**
      * The indexed column
      */
-    private String column;
+    private List<String> columns;
 
     /**
      * Whether this a new index value
@@ -62,6 +64,7 @@ public class TableColumnIndex extends AbstractDatabaseObjectElement {
      */
     public TableColumnIndex(String name) {
         setName(name);
+        columns = new ArrayList<>();
     }
 
     /**
@@ -94,13 +97,23 @@ public class TableColumnIndex extends AbstractDatabaseObjectElement {
         return 0;
     }
 
-    public void setIndexedColumn(String column) {
-        this.column = column;
-    }
+  public void addIndexedColumn(String column) {
+    columns.add(column);
+  }
 
-    public String getIndexedColumn() {
-        return column;
+  public List<String> getIndexedColumns() {
+    return columns;
+  }
+
+  public String getIndexedColumn() {
+    String column = "";
+    for (int i = 0; i < columns.size(); i++) {
+      if (i != 0)
+        column += ",";
+      column += columns.get(i);
     }
+    return column;
+  }
 
     public void setNonUnique(boolean non_unique) {
         this.non_unique = non_unique;

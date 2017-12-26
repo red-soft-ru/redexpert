@@ -425,58 +425,60 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
      */
     public List<TableColumnIndex> getIndexes() throws DataSourceException {
 
-        if (!isMarkedForReload() && indexes != null) {
+      if (!isMarkedForReload() && indexes != null) {
 
-            return indexes;
+        return indexes;
+      }
+
+      ResultSet rs = null;
+      try {
+
+        DatabaseHost _host = getHost();
+        rs = _host.getDatabaseMetaData().getIndexInfo(getCatalogName(), getSchemaName(), getName(), false, true);
+        TableColumnIndex lastIndex = null;
+        indexes = databaseIndexListWithSize(10);
+        while (rs.next()) {
+
+          String name = rs.getString(6);
+          if (StringUtils.isBlank(name)) {
+
+            continue;
+          }
+          if (lastIndex == null || !lastIndex.getName().equals(name)) {
+            TableColumnIndex index = new TableColumnIndex(name);
+            index.setNonUnique(rs.getBoolean(4));
+            index.addIndexedColumn(rs.getString(9));
+            index.setMetaData(resultSetRowToMap(rs));
+            lastIndex = index;
+            indexes.add(index);
+          } else {
+            lastIndex.addIndexedColumn(rs.getString(9));
+          }
         }
 
-        ResultSet rs = null;
-        try {
+        return indexes;
 
-            DatabaseHost _host = getHost();
-            rs = _host.getDatabaseMetaData().getIndexInfo(getCatalogName(), getSchemaName(), getName(), false, true);
+      } catch (DataSourceException e) {
 
-            indexes = databaseIndexListWithSize(10);
-            while (rs.next()) {
+        // catch and re-throw here to create
+        // an empty index list so we don't
+        // keep hitting the same error
+        indexes = databaseIndexListWithSize(0);
+        throw e;
 
-                String name = rs.getString(6);
-                if (StringUtils.isBlank(name)) {
+      } catch (SQLException e) {
 
-                    continue;
-                }
+        // catch and re-throw here to create
+        // an empty index list so we don't
+        // keep hitting the same error
+        indexes = databaseIndexListWithSize(0);
+        throw new DataSourceException(e);
 
-                TableColumnIndex index = new TableColumnIndex(name);
+      } finally {
 
-                index.setNonUnique(rs.getBoolean(4));
-                index.setIndexedColumn(rs.getString(9));
-                index.setMetaData(resultSetRowToMap(rs));
-
-                indexes.add(index);
-            }
-
-            return indexes;
-
-        } catch (DataSourceException e) {
-
-            // catch and re-throw here to create
-            // an empty index list so we don't
-            // keep hitting the same error
-            indexes = databaseIndexListWithSize(0);
-            throw e;
-
-        } catch (SQLException e) {
-
-            // catch and re-throw here to create
-            // an empty index list so we don't
-            // keep hitting the same error
-            indexes = databaseIndexListWithSize(0);
-            throw new DataSourceException(e);
-
-        } finally {
-
-            releaseResources(rs);
-            setMarkedForReload(false);
-        }
+        releaseResources(rs);
+        setMarkedForReload(false);
+      }
     }
 
     /**

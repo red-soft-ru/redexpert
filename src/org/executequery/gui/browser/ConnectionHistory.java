@@ -76,20 +76,22 @@ public class ConnectionHistory extends AbstractXMLResourceReaderWriter<String[]>
     if (formObjectView != null) {
       Vector<String> path = new Vector<>();
       DatabaseObjectNode don = formObjectView.getDatabaseObjectNode();
-      TreeNode[] mas = don.getPath();
-      for (TreeNode node : mas) {
-        DatabaseObjectNode dnode = (DatabaseObjectNode) node;
-        path.add(dnode.getName());
-      }
-      String[] x = (String[]) path.toArray(new String[path.size()]);
-      for (int i = 0; i < getListPaths().size(); i++) {
-        String[] y = getListPaths().get(i);
-        if (cley(y, "^").equals(cley(x, "^"))) {
-          getListPaths().remove(i);
-          break;
+      if (don != null) {
+        TreeNode[] mas = don.getPath();
+        for (TreeNode node : mas) {
+          DatabaseObjectNode dnode = (DatabaseObjectNode) node;
+          path.add(dnode.getName());
         }
+        String[] x = (String[]) path.toArray(new String[path.size()]);
+        for (int i = 0; i < getListPaths().size(); i++) {
+          String[] y = getListPaths().get(i);
+          if (cley(y, "^").equals(cley(x, "^"))) {
+            getListPaths().remove(i);
+            break;
+          }
+        }
+        getInstance().save();
       }
-      getInstance().save();
     }
   }
 

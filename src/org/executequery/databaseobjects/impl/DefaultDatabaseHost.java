@@ -22,6 +22,7 @@ package org.executequery.databaseobjects.impl;
 
 import biz.redsoft.IFBDatabaseConnection;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.ss.formula.functions.Column;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
@@ -38,10 +39,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static org.executequery.databaseobjects.impl.DefaultDatabaseDomain.getDataTypeName;
 
 /**
  * Default database host object implementation.
@@ -684,8 +684,55 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             String _schema = getSchemaNameForQueries(schema);
             DatabaseMetaData dmd = getDatabaseMetaData();
 
+            boolean isFirebirdConnection = false;
+            Connection connection = dmd.getConnection();;
+            if (connection.unwrap(Connection.class).getClass().getName().contains("FBConnection"))
+                isFirebirdConnection = true;
+
             // retrieve the base column info
-            rs = dmd.getColumns(_catalog, _schema, table, null);
+
+            Statement statement = null;
+
+            if (isFirebirdConnection) {
+                String firebirdSql = "SELECT\n" +
+                        "    '' AS CATALOG,\n" +
+                        "    '' AS SCHEME,\n" +
+                        "    cast(RF.RDB$RELATION_NAME as varchar(63)) AS RELATION_NAME,\n" +
+                        "    cast(RF.RDB$FIELD_NAME as varchar(63)) AS FIELD_NAME,\n" +
+                        "    F.RDB$FIELD_TYPE AS FIELD_TYPE,\n" +
+                        "    F.RDB$FIELD_SUB_TYPE AS FIELD_SUB_TYPE,\n" +
+                        "    F.RDB$FIELD_PRECISION AS FIELD_PRECISION,\n" +
+                        "    F.RDB$FIELD_SCALE AS FIELD_SCALE,\n" +
+                        "    F.RDB$FIELD_LENGTH AS FIELD_LENGTH,\n" +
+                        "    F.RDB$CHARACTER_LENGTH AS CHAR_LEN,\n" +
+                        "    RF.RDB$DESCRIPTION AS REMARKS,\n" +
+                        "    RF.RDB$DEFAULT_SOURCE AS DEFAULT_SOURCE,\n" +
+                        "    F.RDB$DEFAULT_SOURCE AS DOMAIN_DEFAULT_SOURCE,\n" +
+                        "    RF.RDB$FIELD_POSITION + 1 AS FIELD_POSITION,\n" +
+                        "    RF.RDB$NULL_FLAG AS NULL_FLAG,\n" +
+                        "    F.RDB$NULL_FLAG AS SOURCE_NULL_FLAG,\n" +
+                        "    F.RDB$COMPUTED_BLR AS COMPUTED_BLR,\n" +
+                        "    F.RDB$CHARACTER_SET_ID,\n" +
+                        "    'NO' AS IS_IDENTITY,\n" +
+                        "    CAST(NULL AS VARCHAR(10)) AS JB_IDENTITY_TYPE\n" +
+                        "FROM\n" +
+                        "    RDB$RELATION_FIELDS RF,\n" +
+                        "    RDB$FIELDS F\n" +
+                        "WHERE\n" +
+                        "    RF.RDB$RELATION_NAME = " +
+                        "'" +
+                        table +
+                        "'" +
+                        "and\n" +
+                        "    RF.RDB$FIELD_SOURCE = F.RDB$FIELD_NAME\n" +
+                        "order by\n" +
+                        "    RF.RDB$RELATION_NAME, RF.RDB$FIELD_POSITION";
+
+                statement = connection.createStatement();
+                rs = statement.executeQuery(firebirdSql);
+            } else {
+                rs = dmd.getColumns(_catalog, _schema, table, null);
+            }
             
             /*
             if (Log.isDebugEnabled()) {
@@ -701,107 +748,27 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             }
             */
 
-            boolean isFirebirdConnection = false;
-            Connection connection = ConnectionManager.realConnection(dmd);
-            if (connection.getClass().getName().contains("FBConnection"))
-                isFirebirdConnection = true;
+            if (isFirebirdConnection) {
+                columns = createColumns(rs, table);
+            } else {
 
-            while (rs.next()) {
+                while (rs.next()) {
 
-                DefaultDatabaseColumn column = new DefaultDatabaseColumn();
-                column.setCatalogName(catalog);
-                column.setSchemaName(schema);
-                column.setName(rs.getString(4));
-                column.setTypeInt(rs.getInt(5));
-                column.setTypeName(rs.getString(6));
-                column.setColumnSize(rs.getInt(7));
-                column.setColumnScale(rs.getInt(9));
-                column.setRequired(rs.getInt(11) == DatabaseMetaData.columnNoNulls);
-                column.setRemarks(rs.getString(12));
-                column.setDefaultValue(rs.getString(13));
+                    DefaultDatabaseColumn column = new DefaultDatabaseColumn();
 
-                if (isFirebirdConnection) {
-                    int fieldLength = rs.getInt(16);
-                    String isGen = rs.getString(24);
-                    String computedSource = null;
+                    column.setCatalogName(catalog);
+                    column.setSchemaName(schema);
+                    column.setName(rs.getString(4));
+                    column.setTypeInt(rs.getInt(5));
+                    column.setTypeName(rs.getString(6));
+                    column.setColumnSize(rs.getInt(7));
+                    column.setColumnScale(rs.getInt(9));
+                    column.setRequired(rs.getInt(11) == DatabaseMetaData.columnNoNulls);
+                    column.setRemarks(rs.getString(12));
+                    column.setDefaultValue(rs.getString(13));
 
-                    Statement statement = dmd.getConnection().createStatement();
-                    try {
-                        ResultSet sourceRS = statement.executeQuery("select " +
-                                " RRF.RDB$FIELD_SOURCE" +
-                                " from RDB$FIELDS RF, " +
-                                "rdb$relation_fields RRF\n" +
-                                "where\n" +
-                                "    RRF.rdb$field_name = '" + column.getName() + "'\n" +
-                                "    and\n" +
-                                "    RRF.rdb$relation_name = '" + table + "'\n" +
-                                "    and\n" +
-                                "    RF.rdb$field_name = RRF.rdb$field_source");
-                        if (sourceRS.next()) {
-                            computedSource = sourceRS.getString(1);
-                            sourceRS.close();
-                        }
-
-                        if (computedSource != null && !computedSource.isEmpty()) {
-                            column.setDomain(computedSource);
-                        }
-
-                        if (isGen.compareToIgnoreCase("YES") == 0) {
-                            column.setGenerated(true);
-//                        Statement statement = dmd.getConnection().createStatement();
-                            /*ResultSet*/
-                            sourceRS = statement.executeQuery("select RF.RDB$COMPUTED_SOURCE, " +
-                                    " RRF.RDB$FIELD_NAME" +
-                                    " from RDB$FIELDS RF, " +
-                                    "rdb$relation_fields RRF\n" +
-                                    "where\n" +
-                                    "    RRF.rdb$field_name = '" + column.getName() + "'\n" +
-                                    "    and\n" +
-                                    "    RRF.rdb$relation_name = '" + table + "'\n" +
-                                    "    and\n" +
-                                    "    RF.rdb$field_name = RRF.rdb$field_source");
-                            if (sourceRS.next()) {
-                                computedSource = sourceRS.getString(1);
-                                sourceRS.close();
-                            }
-                            if (fieldLength != 0)
-                                column.setColumnSize(fieldLength);
-                            if (computedSource != null && !computedSource.isEmpty()) {
-//                            column.setTypeName(computedSource);
-                                column.setComputedSource(computedSource);
-                            }
-                        }
-                    } finally {
-                        statement.close();
-                    }
-
-                    // if column is blob, get segment size
-                    if (column.getTypeInt() == Types.LONGVARBINARY ||
-                            column.getTypeInt() == Types.LONGVARCHAR ||
-                            column.getTypeInt() == Types.BLOB) {
-                        Statement st = dmd.getConnection().createStatement();
-                        try {
-                            ResultSet sourceRS = st.executeQuery("select\n" +
-                                    "f.rdb$field_sub_type as field_subtype,\n" +
-                                    "f.rdb$segment_length as segment_length\n" +
-                                    "from rdb$relation_fields rf,\n" +
-                                    "rdb$fields f\n" +
-                                    "where rf.rdb$relation_name = '" + table + "'\n" +
-                                    "and rf.rdb$field_name = '" + column.getName() + "'\n" +
-                                    "and rf.rdb$field_source = f.rdb$field_name");
-                            if (sourceRS.next()) {
-                                column.setColumnSubtype(sourceRS.getInt(1));
-                                column.setColumnSize(sourceRS.getInt(2));
-                                sourceRS.close();
-                            }
-
-                        } finally {
-                            st.close();
-                        }
-                    }
-
+                    columns.add(column);
                 }
-                columns.add(column);
             }
             releaseResources(rs);
 
@@ -868,6 +835,368 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             releaseResources(rs);
         }
 
+    }
+
+    private List<DatabaseColumn> createColumns (ResultSet rs, String table) throws SQLException {
+        List<DatabaseColumn> columns = new ArrayList<>();
+
+        while (rs.next()) {
+            DefaultDatabaseColumn column = new DefaultDatabaseColumn();
+            final short fieldType = rs.getShort("FIELD_TYPE");
+            final short fieldSubType = rs.getShort("FIELD_SUB_TYPE");
+            final short fieldScale = rs.getShort("FIELD_SCALE");
+            final int characterSetId = rs.getInt("RDB$CHARACTER_SET_ID");
+            final int dataType = getDataType(fieldType, fieldSubType, fieldScale, characterSetId);
+
+            column.setTypeInt(dataType);
+            column.setColumnSubtype(fieldSubType);
+            column.setColumnScale(fieldScale);
+            column.setName(rs.getString("FIELD_NAME"));
+            column.setTypeName(getDataTypeName(fieldType, fieldSubType, fieldScale));
+
+            switch (dataType) {
+                case Types.DECIMAL:
+                case Types.NUMERIC:
+                    // TODO column precision
+                    column.setColumnScale(fieldScale * (-1));
+                    break;
+                case Types.CHAR:
+                case Types.VARCHAR:
+                case Types.BINARY:
+                case Types.VARBINARY:
+                    //valueBuilder.at(15).set(createInt(rs.getShort("FIELD_LENGTH")));
+                    column.setColumnSize(rs.getShort("FIELD_LENGTH"));
+                    short charLen = rs.getShort("CHAR_LEN");
+                    break;
+                case Types.FLOAT:
+                    // TODO column precision
+//                    valueBuilder.at(6).set(FLOAT_PRECISION);
+                    break;
+                case Types.DOUBLE:
+                    // TODO column precision
+//                    valueBuilder.at(6).set(DOUBLE_PRECISION);
+                    break;
+                case Types.BIGINT:
+                    // TODO column precision
+//                    valueBuilder
+//                            .at(6).set(BIGINT_PRECISION)
+//                            .at(8).set(INT_ZERO);
+                    break;
+                case Types.INTEGER:
+                    // TODO column precision
+//                    valueBuilder
+//                            .at(6).set(INTEGER_PRECISION)
+//                            .at(8).set(INT_ZERO);
+                    break;
+                case Types.SMALLINT:
+                    // TODO column precision
+//                    valueBuilder
+//                            .at(6).set(SMALLINT_PRECISION)
+//                            .at(8).set(INT_ZERO);
+                    break;
+                case Types.DATE:
+                    // TODO column precision
+//                    valueBuilder.at(6).set(DATE_PRECISION);
+                    break;
+                case Types.TIME:
+                    // TODO column precision
+//                    valueBuilder.at(6).set(TIME_PRECISION);
+                    break;
+                case Types.TIMESTAMP:
+                    // TODO column precision
+//                    valueBuilder.at(6).set(TIMESTAMP_PRECISION);
+                    break;
+                case Types.BOOLEAN:
+                    // TODO column precision
+//                    valueBuilder
+//                            .at(6).set(BOOLEAN_PRECISION)
+//                            .at(9).set(RADIX_BINARY);
+                    break;
+            }
+
+            final short nullFlag = rs.getShort("NULL_FLAG");
+            final short sourceNullFlag = rs.getShort("SOURCE_NULL_FLAG");
+            column.setRemarks(rs.getString("REMARKS"));
+            column.setRequired((nullFlag == 1 || sourceNullFlag == 1) ? true : false);
+
+            String column_def = rs.getString("DEFAULT_SOURCE");
+            if (column_def == null) {
+                column_def = rs.getString("DOMAIN_DEFAULT_SOURCE");
+            }
+            if (column_def != null) {
+                // TODO This looks suspicious (what if it contains default)
+                int defaultPos = column_def.toUpperCase().indexOf("DEFAULT");
+                if (defaultPos >= 0)
+                    column_def = column_def.substring(7).trim();
+                column.setDefaultValue(column_def);
+            }
+
+            final boolean isIdentity = Objects.equals("YES", rs.getString("IS_IDENTITY"));
+
+            columns.add(column);
+        }
+
+        releaseResources(rs);
+
+        Statement statement = null;
+
+        for (Iterator it = columns.iterator(); it.hasNext();) {
+            DefaultDatabaseColumn column = (DefaultDatabaseColumn)it.next();
+            String computedSource = null;
+
+            statement = connection.createStatement();
+            try {
+                ResultSet sourceRS = statement.executeQuery("select " +
+                        " RRF.RDB$FIELD_SOURCE" +
+                        " from RDB$FIELDS RF, " +
+                        "rdb$relation_fields RRF\n" +
+                        "where\n" +
+                        "    RRF.rdb$field_name = '" + column.getName() + "'\n" +
+                        "    and\n" +
+                        "    RRF.rdb$relation_name = '" + table + "'\n" +
+                        "    and\n" +
+                        "    RF.rdb$field_name = RRF.rdb$field_source");
+                if (sourceRS.next()) {
+                    computedSource = sourceRS.getString(1);
+                }
+
+                releaseResources(sourceRS);
+
+                if (computedSource != null && !computedSource.isEmpty()) {
+                    column.setDomain(computedSource);
+                }
+
+                computedSource = null;
+
+                // TODO check for RDB 3.0
+//                if (isGen.compareToIgnoreCase("YES") == 0) {
+//                    column.setGenerated(true);
+//                        Statement statement = dmd.getConnection().createStatement();
+                    /*ResultSet*/
+                    statement = connection.createStatement();
+                    sourceRS = statement.executeQuery("select RF.RDB$COMPUTED_SOURCE, " +
+                            " RRF.RDB$FIELD_NAME" +
+                            " from RDB$FIELDS RF, " +
+                            "rdb$relation_fields RRF\n" +
+                            "where\n" +
+                            "    RRF.rdb$field_name = '" + column.getName() + "'\n" +
+                            "    and\n" +
+                            "    RRF.rdb$relation_name = '" + table + "'\n" +
+                            "    and\n" +
+                            "    RF.rdb$field_name = RRF.rdb$field_source");
+                    if (sourceRS.next()) {
+                        computedSource = sourceRS.getString(1);
+                    }
+                    releaseResources(sourceRS);
+                    if (computedSource != null && !computedSource.isEmpty()) {
+//                            column.setTypeName(computedSource);
+                        column.setGenerated(true);
+                        column.setComputedSource(computedSource);
+                    }
+//                }
+            } finally {
+                if (!statement.isClosed())
+                    statement.close();
+            }
+
+            // if column is blob, get segment size
+            if (column.getTypeInt() == Types.LONGVARBINARY ||
+                    column.getTypeInt() == Types.LONGVARCHAR ||
+                    column.getTypeInt() == Types.BLOB) {
+                Statement st = connection.createStatement();
+                try {
+                    ResultSet sourceRS = st.executeQuery("select\n" +
+                            "f.rdb$field_sub_type as field_subtype,\n" +
+                            "f.rdb$segment_length as segment_length\n" +
+                            "from rdb$relation_fields rf,\n" +
+                            "rdb$fields f\n" +
+                            "where rf.rdb$relation_name = '" + table + "'\n" +
+                            "and rf.rdb$field_name = '" + column.getName() + "'\n" +
+                            "and rf.rdb$field_source = f.rdb$field_name");
+                    if (sourceRS.next()) {
+                        column.setColumnSubtype(sourceRS.getInt(1));
+                        column.setColumnSize(sourceRS.getInt(2));
+                        releaseResources(sourceRS);
+                    }
+
+                } finally {
+                    releaseResources(st);
+                }
+            }
+
+        }
+
+        return columns;
+    }
+
+    private static final int smallint_type = 7;
+    private static final int integer_type = 8;
+    private static final int quad_type = 9;
+    private static final int float_type = 10;
+    private static final int d_float_type = 11;
+    private static final int date_type = 12;
+    private static final int time_type = 13;
+    private static final int char_type = 14;
+    private static final int int64_type = 16;
+    private static final int double_type = 27;
+    private static final int timestamp_type = 35;
+    private static final int varchar_type = 37;
+    //  private static final int cstring_type = 40;
+    private static final int blob_type = 261;
+    private static final short boolean_type = 23;
+
+    static final int SUBTYPE_NUMERIC = 1;
+    static final int SUBTYPE_DECIMAL = 2;
+
+    final static int SQL_TEXT      = 452;
+    final static int SQL_VARYING   = 448;
+    final static int SQL_SHORT     = 500;
+    final static int SQL_LONG      = 496;
+    final static int SQL_FLOAT     = 482;
+    final static int SQL_DOUBLE    = 480;
+    final static int SQL_D_FLOAT   = 530;
+    final static int SQL_TIMESTAMP = 510;
+    final static int SQL_BLOB      = 520;
+    final static int SQL_ARRAY     = 540;
+    final static int SQL_QUAD      = 550;
+    final static int SQL_TYPE_TIME = 560;
+    final static int SQL_TYPE_DATE = 570;
+    final static int SQL_INT64     = 580;
+    final static int SQL_BOOLEAN   = 32764;
+    final static int SQL_NULL      = 32766;
+
+    final static int CS_NONE    = 0; /* No Character Set */
+    final static int CS_BINARY  = 1; /* BINARY BYTES */
+    final static int CS_dynamic = 127; // Pseudo number for runtime charset (see intl\charsets.h and references to it in Firebird)
+
+    private static int getDataType(int fieldType, int fieldSubType, int fieldScale, int characterSetId) {
+
+        // TODO Preserved for backwards compatibility, is this really necessary?
+        if (fieldType == blob_type && fieldSubType > 1) {
+            return Types.OTHER;
+        }
+        final int jdbcType = fromMetaDataToJdbcType(fieldType, fieldSubType, fieldScale);
+        // Metadata from RDB$ tables does not contain character set in subtype, manual fixup
+        if (characterSetId == CS_BINARY) {
+            if (jdbcType == Types.CHAR) {
+                return Types.BINARY;
+            } else if (jdbcType == Types.VARCHAR) {
+                return Types.VARBINARY;
+            }
+        }
+        return jdbcType;
+    }
+
+    public static int fromMetaDataToJdbcType(int metaDataType, int subtype, int scale) {
+        return fromFirebirdToJdbcType(fromMetaDataToFirebirdType(metaDataType), subtype, scale);
+    }
+
+    public static int fromFirebirdToJdbcType(int firebirdType, int subtype, int scale) {
+        firebirdType = firebirdType & ~1;
+
+        switch (firebirdType) {
+            case SQL_SHORT:
+                if (subtype == SUBTYPE_NUMERIC || (subtype == 0 && scale < 0))
+                    return Types.NUMERIC;
+                else if (subtype == SUBTYPE_DECIMAL)
+                    return Types.DECIMAL;
+                else
+                    return Types.SMALLINT;
+            case SQL_LONG:
+                if (subtype == SUBTYPE_NUMERIC || (subtype == 0 && scale < 0))
+                    return Types.NUMERIC;
+                else if (subtype == SUBTYPE_DECIMAL)
+                    return Types.DECIMAL;
+                else
+                    return Types.INTEGER;
+            case SQL_INT64:
+                if (subtype == SUBTYPE_NUMERIC || (subtype == 0 && scale < 0))
+                    return Types.NUMERIC;
+                else if (subtype == SUBTYPE_DECIMAL)
+                    return Types.DECIMAL;
+                else
+                    return Types.BIGINT;
+            case SQL_DOUBLE:
+            case SQL_D_FLOAT:
+                if (subtype == SUBTYPE_NUMERIC || (subtype == 0 && scale < 0))
+                    return Types.NUMERIC;
+                else if (subtype == SUBTYPE_DECIMAL)
+                    return Types.DECIMAL;
+                else
+                    return Types.DOUBLE;
+            case SQL_FLOAT:
+                return Types.FLOAT;
+            case SQL_TEXT:
+                if (subtype == CS_BINARY){
+                    return Types.BINARY;
+                } else {
+                    return Types.CHAR;
+                }
+            case SQL_VARYING:
+                if (subtype == CS_BINARY){
+                    return Types.VARBINARY;
+                } else {
+                    return Types.VARCHAR;
+                }
+            case SQL_TIMESTAMP:
+                return Types.TIMESTAMP;
+            case SQL_TYPE_TIME:
+                return Types.TIME;
+            case SQL_TYPE_DATE:
+                return Types.DATE;
+            case SQL_BLOB:
+                if (subtype < 0)
+                    return Types.BLOB;
+                else if (subtype == 1)
+                    return Types.LONGVARCHAR;
+                else // if (subtype == 0 || subtype > 1)
+                    return Types.LONGVARBINARY;
+            case SQL_BOOLEAN:
+                return Types.BOOLEAN;
+            case SQL_NULL:
+                return Types.NULL;
+            case SQL_ARRAY:
+                return Types.ARRAY;
+            case SQL_QUAD:
+            default:
+                return Types.OTHER;
+        }
+    }
+
+    public static int fromMetaDataToFirebirdType(int metaDataType) {
+        switch (metaDataType) {
+            case smallint_type:
+                return SQL_SHORT;
+            case integer_type:
+                return SQL_LONG;
+            case int64_type:
+                return SQL_INT64;
+            case quad_type:
+                return SQL_QUAD;
+            case float_type:
+                return SQL_FLOAT;
+            case double_type:
+                return SQL_DOUBLE;
+            case d_float_type:
+                return SQL_D_FLOAT;
+            case date_type:
+                return SQL_TYPE_DATE;
+            case time_type:
+                return SQL_TYPE_TIME;
+            case timestamp_type:
+                return SQL_TIMESTAMP;
+            case char_type:
+                return SQL_TEXT;
+            case varchar_type:
+                return SQL_VARYING;
+            case blob_type:
+                return SQL_BLOB;
+            case boolean_type:
+                return SQL_BOOLEAN;
+            default:
+                // TODO Throw illegal arg / unsupported instead?
+                return SQL_NULL;
+        }
     }
 
     public boolean supportCatalogOrSchemaInFunctionOrProcedureCalls() throws DataSourceException {

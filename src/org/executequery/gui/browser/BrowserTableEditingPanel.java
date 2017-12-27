@@ -583,14 +583,14 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             return;
         }
 
-        GUIUtils.startWorker(new Runnable() {
-
-            public void run() {
+//        GUIUtils.startWorker(new Runnable() {
+//
+//            public void run() {
 
                 tabIndexSelected(index);
-            }
-
-        });
+//            }
+//
+//        });
 
     }
 

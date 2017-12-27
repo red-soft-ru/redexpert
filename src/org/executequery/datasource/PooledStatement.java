@@ -55,7 +55,7 @@ public class PooledStatement implements CallableStatement {
             connection.lock(false);
             closed = true;
         } else {
-            Log.info("2 close");
+            Log.info("Trying to close connection a second time.");
         }
     }
 

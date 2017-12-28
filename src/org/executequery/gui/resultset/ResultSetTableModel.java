@@ -478,10 +478,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                 g++;
             }
             Statement st = resultSet.getStatement();
-            if (resultSet != null)
-                resultSet.close();
             if (st != null)
-                if (st.isClosed()) {
+                if (!st.isClosed()) {
                     st.close();
                 }
             int count = g - 1;

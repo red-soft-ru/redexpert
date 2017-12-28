@@ -881,7 +881,7 @@ public class MetaDataValues implements ConnectionListener {
                 list.add(rs.getString(3));
             }
 
-            rs.close();
+            releaseResources(rs);
 
             String[] procedures = (String[]) list.toArray(new String[list.size()]);
             list.clear();
@@ -909,6 +909,7 @@ public class MetaDataValues implements ConnectionListener {
                     _rs.close();
                     list.add(dbproc);
                 }
+                releaseResources(rs);
 
             }
 

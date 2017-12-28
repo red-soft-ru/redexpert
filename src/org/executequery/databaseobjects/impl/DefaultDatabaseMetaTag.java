@@ -1704,7 +1704,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
             Connection realConnection = ((PooledConnection) dmd.getConnection()).getRealConnection();
             if (realConnection.unwrap(Connection.class).getClass().getName().contains("FBConnection")) {
-                Statement statement = realConnection.createStatement();
+                Statement statement = dmd.getConnection().createStatement();
                 ResultSet rs = statement.executeQuery("select rdb$function_type,\n" +
                         "rdb$system_flag,\n" +
                         "cast(rdb$function_name as varchar(63)) as function_name,\n" +

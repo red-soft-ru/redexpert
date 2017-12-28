@@ -51,7 +51,9 @@ public class PooledStatement implements CallableStatement {
     @Override
     public void close() throws SQLException {
         if (!closed) {
-            statement.close();
+            if (statement != null)
+                if (!statement.isClosed())
+                    statement.close();
             connection.lock(false);
             closed = true;
         } else {
@@ -231,7 +233,7 @@ public class PooledStatement implements CallableStatement {
 
     @Override
     public boolean isClosed() throws SQLException {
-        return statement.isClosed();
+        return closed;
     }
 
     @Override

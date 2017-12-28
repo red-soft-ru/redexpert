@@ -273,7 +273,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
               }
             }
           }
-          rs.close();
+          releaseResources(rs);
 
           try {
 

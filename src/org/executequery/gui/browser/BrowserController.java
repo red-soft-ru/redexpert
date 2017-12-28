@@ -38,6 +38,7 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -163,9 +164,10 @@ public class BrowserController {
 //        }
 
         // check the panel is in the pane
-
+        if (viewPanel == null)
+            viewPanel = new BrowserViewPanel(this);
         String title = viewPanel.getNameObject();
-        if(title == null)
+        if (title == null)
             title = BrowserViewPanel.TITLE;
         JPanel _viewPanel = GUIUtilities.getCentralPane(title);
 
@@ -176,6 +178,7 @@ public class BrowserController {
                     viewPanel,
                     title,
                     true);
+            ConnectionHistory.add(viewPanel.getCurrentView());
 
         } else {
 
@@ -247,18 +250,23 @@ public class BrowserController {
      * //@param the connection host parent object
      * //@param the selected node
      */
-    public synchronized void valueChanged_(DatabaseObjectNode node) {
+    public synchronized void valueChanged_(DatabaseObjectNode node, DatabaseConnection connection) {
 
         treePanel.setInProcess(true);
 
         try {
 
             FormObjectView panel = buildPanelView(node);
+            panel.setDatabaseObjectNode(node);
             String type = "";
-            if(node.getType()<NamedObject.META_TYPES.length)
+            if (node.getType() < NamedObject.META_TYPES.length)
                 type = NamedObject.META_TYPES[node.getType()];
-            panel.setObjectName(node.getDisplayName().trim()+":"+type+":"+getDatabaseConnection().getName());
-
+            if (connection == null)
+                connection = getDatabaseConnection();
+            if (node.isHostNode() || node.getType() == NamedObject.CATALOG)
+                panel.setObjectName(null);
+            else panel.setObjectName(node.getDisplayName().trim() + ":" + type + ":" + connection.getName());
+            panel.setDatabaseConnection(connection);
             if (panel != null) {
 
                 viewPanel.setView(panel);
@@ -294,7 +302,9 @@ public class BrowserController {
             int type = node.getType();
             switch (type) {
                 case NamedObject.HOST:
-
+                    viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
+                    if (viewPanel == null)
+                        viewPanel = new BrowserViewPanel(this);
                     HostPanel hostPanel = hostPanel();
                     hostPanel.setValues((DatabaseHost) databaseObject);
 
@@ -303,6 +313,7 @@ public class BrowserController {
                 // catalog node:
                 // this will display the schema table list
                 case NamedObject.CATALOG:
+                    viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
                     CatalogPanel catalogPanel = null;
                     if (!viewPanel.containsPanel(CatalogPanel.NAME)) {
                         catalogPanel = new CatalogPanel(this);
@@ -316,6 +327,7 @@ public class BrowserController {
                     return catalogPanel;
 
                 case NamedObject.SCHEMA:
+                    viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
                     SchemaPanel schemaPanel = null;
                     if (!viewPanel.containsPanel(SchemaPanel.NAME)) {
                         schemaPanel = new SchemaPanel(this);
@@ -555,6 +567,7 @@ public class BrowserController {
      * Displays the root main view panel.
      */
     protected void displayConnectionList(ConnectionsFolder folder) {
+        viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
         checkBrowserPanel();
         viewPanel.displayConnectionList(folder);
     }
@@ -563,6 +576,7 @@ public class BrowserController {
      * Displays the root main view panel.
      */
     protected void displayConnectionList() {
+        viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
         checkBrowserPanel();
         viewPanel.displayConnectionList();
     }
@@ -763,9 +777,9 @@ public class BrowserController {
         }
     }
 
-    protected ColumnData[] getColumnData(String catalog, String schema, String name) {
+    protected ColumnData[] getColumnData(String catalog, String schema, String name, DatabaseConnection connection) {
         try {
-            metaData.setDatabaseConnection(getDatabaseConnection());
+            metaData.setDatabaseConnection(connection);
             return metaData.getColumnMetaData(
                     isUsingCatalogs() ? catalog : null, schema, name);
         } catch (DataSourceException e) {

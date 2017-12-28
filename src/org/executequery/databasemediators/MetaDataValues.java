@@ -551,7 +551,7 @@ public class MetaDataValues implements ConnectionListener {
                 _primaryKeys.add(cc);
             }
 
-            keys.close();
+            releaseResources(keys);
 
             int v_size = _primaryKeys.size();
             ColumnConstraint[] primaryKeys = new ColumnConstraint[v_size];
@@ -587,7 +587,7 @@ public class MetaDataValues implements ConnectionListener {
                 foreignKeys[i] = (ColumnConstraint) _foreignKeys.get(i);
             }
 
-            keys.close();
+           releaseResources(keys);
 
             // The primary key count
             int primaryKeyCount = 0;
@@ -663,7 +663,9 @@ public class MetaDataValues implements ConnectionListener {
                 _columns.add(cd);
 
             }
-            
+
+            releaseResources(rs);
+
             if(((PooledConnection) connection).getRealConnection().unwrap(Connection.class).getClass().getName().contains("FBConnection")) {
                 // need to add info about column subtype
                 Statement statement;
@@ -881,7 +883,7 @@ public class MetaDataValues implements ConnectionListener {
                 list.add(rs.getString(3));
             }
 
-            rs.close();
+            releaseResources(rs);
 
             String[] procedures = (String[]) list.toArray(new String[list.size()]);
             list.clear();
@@ -909,6 +911,7 @@ public class MetaDataValues implements ConnectionListener {
                     _rs.close();
                     list.add(dbproc);
                 }
+                releaseResources(rs);
 
             }
 
@@ -1105,11 +1108,14 @@ public class MetaDataValues implements ConnectionListener {
 
     private void releaseResources(ResultSet rs) {
         try {
-            Statement st = rs.getStatement();
             if (rs != null) {
-                rs.close();
+                Statement st = rs.getStatement();
+                if (rs != null) {
+                    if (!rs.isClosed())
+                        rs.close();
+                }
+                releaseResources(st);
             }
-            releaseResources(st);
         } catch (SQLException sqlExc) {
         } finally {
             releaseResources();

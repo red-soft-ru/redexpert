@@ -235,7 +235,7 @@ public class DefaultDatabaseDomain extends DefaultDatabaseExecutable
         }
     }
 
-    private static String getDataTypeName(int sqltype, int sqlsubtype, int sqlscale) {
+    public static String getDataTypeName(int sqltype, int sqlsubtype, int sqlscale) {
         switch (sqltype) {
             case smallint_type:
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))

@@ -23,6 +23,7 @@ package org.executequery.gui.browser;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.TablePrivilege;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
@@ -582,14 +583,14 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             return;
         }
 
-        GUIUtils.startWorker(new Runnable() {
-
-            public void run() {
+//        GUIUtils.startWorker(new Runnable() {
+//
+//            public void run() {
 
                 tabIndexSelected(index);
-            }
-
-        });
+//            }
+//
+//        });
 
     }
 
@@ -674,7 +675,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                         tableNamesAdded.add(tableName);
                         columns.add(controller.getColumnData(constraint.getCatalogName(),
                                 constraint.getSchemaName(),
-                                tableName));
+                                tableName,table.getHost().getDatabaseConnection()));
                     }
 
                 } else if (constraint.isForeignKey()) {
@@ -686,7 +687,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                         tableNamesAdded.add(referencedTable);
                         columns.add(controller.getColumnData(constraint.getReferencedCatalog(),
                                 constraint.getReferencedSchema(),
-                                referencedTable));
+                                referencedTable,table.getHost().getDatabaseConnection()));
                     }
 
                     String columnName = constraint.getColumnName();
@@ -696,7 +697,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                         tableNamesAdded.add(tableName);
                         columns.add(controller.getColumnData(constraint.getCatalogName(),
                                 constraint.getSchemaName(),
-                                tableName));
+                                tableName,table.getHost().getDatabaseConnection()));
                     }
 
 
@@ -714,7 +715,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                     tableNamesAdded.add(parentsName);
                     columns.add(controller.getColumnData(column.getCatalogName(),
                             column.getSchemaName(),
-                            parentsName));
+                            parentsName,table.getHost().getDatabaseConnection()));
                 }
 
             }

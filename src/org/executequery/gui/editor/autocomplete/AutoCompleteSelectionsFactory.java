@@ -717,8 +717,11 @@ public class AutoCompleteSelectionsFactory {
     private void releaseResources(ResultSet rs) {
         try {
             if (rs != null) {
-
-                rs.close();
+                Statement st = rs.getStatement();
+                if(st!=null)
+                    if(!st.isClosed())
+                        st.close();
+                //rs.close();
             }
         } catch (SQLException sqlExc) {
         }

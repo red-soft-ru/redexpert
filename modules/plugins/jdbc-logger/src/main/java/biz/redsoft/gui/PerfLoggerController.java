@@ -12,6 +12,7 @@ import org.apache.log4j.RollingFileAppender;
 import javax.swing.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -124,7 +125,7 @@ public class PerfLoggerController {
             LogProcessor logProcessor = logReceiver.getLogProcessor();
 
             HashMap<UUID, ConnectionInfo> connections = logProcessor.getConnections();
-            LinkedHashMap<UUID, FullStatementLog> fullStatementLogs = logProcessor.getFullStatementLogs();
+            ConcurrentHashMap<UUID, FullStatementLog> fullStatementLogs = logProcessor.getFullStatementLogs();
 
             for (Map.Entry<UUID, FullStatementLog> entry : fullStatementLogs.entrySet()) {
                 FullStatementLog statement = entry.getValue();
@@ -184,7 +185,7 @@ public class PerfLoggerController {
                     if (!logProcessor.isNeededUpdate() && !forceRefresh)
                         return;
 
-                    LinkedHashMap<UUID, FullStatementLog> fullStatementLogs = logProcessor.getFullStatementLogs();
+                    ConcurrentHashMap<UUID, FullStatementLog> fullStatementLogs = logProcessor.getFullStatementLogs();
                     HashMap<UUID, ConnectionInfo> connections = logProcessor.getConnections();
                     if (fullStatementLogs.size() > 0) {
                         for (Iterator<FullStatementLog> iterator = fullStatementLogs.values().iterator(); iterator.hasNext();) {

@@ -20,6 +20,8 @@
 
 package org.executequery.gui.forms;
 
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.GradientLabel;
 
@@ -36,6 +38,10 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
     private boolean reload;
 
     private String nameObject;
+
+    private DatabaseObjectNode node;
+
+    private DatabaseConnection databaseConnection;
 
     protected static Border emptyBorder;
 
@@ -127,6 +133,26 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
     public void setObjectName(String nameObject)
     {
         this.nameObject = nameObject;
+    }
+
+    @Override
+    public DatabaseObjectNode getDatabaseObjectNode() {
+        return node;
+    }
+
+    @Override
+    public void setDatabaseObjectNode(DatabaseObjectNode node) {
+        this.node = node;
+    }
+
+    @Override
+    public DatabaseConnection getDatabaseConnection() {
+        return databaseConnection;
+    }
+
+    @Override
+    public void setDatabaseConnection(DatabaseConnection databaseConnection) {
+        this.databaseConnection = databaseConnection;
     }
 
     @Override

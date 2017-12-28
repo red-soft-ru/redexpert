@@ -3,6 +3,7 @@ package biz.redsoft.net;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import biz.redsoft.model.FullStatementLog;
@@ -17,12 +18,12 @@ public class LogProcessor extends Thread implements AutoCloseable {
 
     private final BlockingQueue<LogMessage> logs = new ArrayBlockingQueue<>(10000);
     private final HashMap<UUID, ConnectionInfo> connections = new HashMap<>();
-    private final LinkedHashMap<UUID, FullStatementLog> fullStatementLogs = new LinkedHashMap<>();
+    private final ConcurrentHashMap<UUID, FullStatementLog> fullStatementLogs = new ConcurrentHashMap<>();
 
     public HashMap<UUID, ConnectionInfo> getConnections() {
         return connections;
     }
-    public LinkedHashMap<UUID, FullStatementLog> getFullStatementLogs() {
+    public ConcurrentHashMap<UUID, FullStatementLog> getFullStatementLogs() {
         return fullStatementLogs;
     }
 

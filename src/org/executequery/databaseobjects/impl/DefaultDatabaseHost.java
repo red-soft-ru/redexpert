@@ -851,7 +851,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             column.setTypeInt(dataType);
             column.setColumnSubtype(fieldSubType);
             column.setColumnScale(fieldScale);
-            column.setName(rs.getString("FIELD_NAME"));
+            column.setName(rs.getString("FIELD_NAME").trim());
             column.setTypeName(getDataTypeName(fieldType, fieldSubType, fieldScale));
 
             switch (dataType) {

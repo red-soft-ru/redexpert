@@ -303,6 +303,8 @@ public class BrowserController {
       switch (type) {
         case NamedObject.HOST:
           viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
+          if(viewPanel==null)
+              viewPanel = new BrowserViewPanel(this);
           HostPanel hostPanel = hostPanel();
           hostPanel.setValues((DatabaseHost) databaseObject);
 

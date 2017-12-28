@@ -551,7 +551,7 @@ public class MetaDataValues implements ConnectionListener {
                 _primaryKeys.add(cc);
             }
 
-            keys.close();
+            releaseResources(keys);
 
             int v_size = _primaryKeys.size();
             ColumnConstraint[] primaryKeys = new ColumnConstraint[v_size];
@@ -587,7 +587,7 @@ public class MetaDataValues implements ConnectionListener {
                 foreignKeys[i] = (ColumnConstraint) _foreignKeys.get(i);
             }
 
-            keys.close();
+           releaseResources(keys);
 
             // The primary key count
             int primaryKeyCount = 0;
@@ -663,6 +663,8 @@ public class MetaDataValues implements ConnectionListener {
                 _columns.add(cd);
 
             }
+
+            releaseResources(rs);
 
             if(((PooledConnection) connection).getRealConnection().unwrap(Connection.class).getClass().getName().contains("FBConnection")) {
                 // need to add info about column subtype

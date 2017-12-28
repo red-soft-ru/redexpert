@@ -75,6 +75,7 @@ public class PooledDatabaseMetaData extends FilterDatabaseMetaData {
     public Connection getRealConnection() throws SQLException {
         return inner.getConnection();
     }
+
     public ResultSet getProcedures(String a, String b, String c) throws SQLException {
         return asPooledResultSet(this.inner.getProcedures(a, b, c));
     }
@@ -161,10 +162,10 @@ public class PooledDatabaseMetaData extends FilterDatabaseMetaData {
 
     private PooledResultSet asPooledResultSet(ResultSet rs) throws SQLException {
         connection.lock(true);
-        PooledStatement st = new PooledStatement(connection,rs.getStatement());
+        PooledStatement st = new PooledStatement(connection, rs.getStatement());
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-        for(int i=0;i<stack.length;i++)
-        Log.debug(stack[stack.length-1-i]);
-        return new PooledResultSet(st,rs);
+        for (int i = 0; i < stack.length; i++)
+            Log.debug(stack[stack.length - 1 - i]);
+        return new PooledResultSet(st, rs);
     }
 }

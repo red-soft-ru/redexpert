@@ -72,6 +72,8 @@ public class CreateIndexPanel extends JPanel {
 
     DefaultDatabaseIndex databaseIndex;
 
+    boolean edited;
+
     boolean editing;
 
     public static final String CREATE_TITLE = "Create Index";
@@ -95,12 +97,42 @@ public class CreateIndexPanel extends JPanel {
                 e.printStackTrace();
             }
         }
+        edited = false;
     }
 
     void init_edited() {
         nameText.setText(databaseIndex.getName().trim());
+        databaseIndex.loadColumns();
         nameText.setEnabled(false);
-        description.getTextAreaComponent().setText(databaseIndex.getDescription());
+        description.getTextAreaComponent().setText(databaseIndex.getRemarks());
+        for (int i = 0; i < tableName.getItemCount(); i++) {
+            if (databaseIndex.getTableName().trim().equals(tableName.getItemAt(i))) {
+                tableName.setSelectedIndex(i);
+                updateListFields();
+                break;
+            }
+
+        }
+        if (databaseIndex.getExpression() == null) {
+            for (int i = 0; i < databaseIndex.getIndexColumns().size(); i++) {
+                DefaultDatabaseIndex.DatabaseIndexColumn column = databaseIndex.getIndexColumns().get(i);
+                for (int g = 0; g < ((DefaultListModel<CheckListItem>) fields.getModel()).getSize(); g++) {
+                    CheckListItem item = ((DefaultListModel<CheckListItem>) fields.getModel()).elementAt(g);
+                    if (column.getFieldName().trim().equals(item.label))
+                        item.setSelected(true);
+                }
+            }
+            fields.repaint();
+        } else {
+            computedBox.setSelected(true);
+            computedPanel.setSQLText(databaseIndex.getExpression());
+            tabbedPane.remove(0);
+            tabbedPane.insertTab("Computed", null, computedPanel, null, 0);
+            tabbedPane.setSelectedIndex(0);
+        }
+        uniqueBox.setSelected(databaseIndex.isUnique());
+        activeBox.setSelected(databaseIndex.isActive());
+
     }
 
 
@@ -113,7 +145,6 @@ public class CreateIndexPanel extends JPanel {
         uniqueBox = new JCheckBox("Unique");
         computedBox = new JCheckBox("Computed");
         activeBox = new JCheckBox("Active");
-        activeBox.setEnabled(false);
         fields = new JList<>();
         fields.setModel(new DefaultListModel<>());
         scrollList = new JScrollPane(fields);
@@ -132,6 +163,7 @@ public class CreateIndexPanel extends JPanel {
                     tabbedPane.insertTab("Fields", null, fieldsPanel, null, 0);
                 }
                 tabbedPane.setSelectedIndex(0);
+                edited = true;
 
             }
         });
@@ -146,8 +178,9 @@ public class CreateIndexPanel extends JPanel {
                 // clicked
                 CheckListItem item = (CheckListItem) list.getModel()
                         .getElementAt(index);
-                item.setSelected(!item.isSelected()); // Toggle selected state
+                item.setSelected(!item.isSelected());// Toggle selected state
                 list.repaint(list.getCellBounds(index, index));// Repaint cell
+                edited = true;
             }
         });
 
@@ -315,30 +348,45 @@ public class CreateIndexPanel extends JPanel {
     }
 
     void createIndex() {
-        String query = "CREATE ";
-        if (uniqueBox.isSelected())
-            query += "UNIQUE ";
-        if (sortingBox.getSelectedIndex() == 1)
-            query += "DESCENDING ";
-        query += "INDEX " + nameText.getText() +
-                " ON " + tableName.getSelectedItem() + " ";
-        if (computedBox.isSelected()) {
-            query += "COMPUTED BY (" + computedPanel.getSQLText() + ");";
-        } else {
-            query += "(";
-            DefaultListModel model = ((DefaultListModel) fields.getModel());
-            String fieldss = "";
-            boolean first = true;
-            for (int i = 0; i < model.getSize(); i++) {
-                CheckListItem item = (CheckListItem) model.elementAt(i);
-                if (item.isSelected) {
-                    if (!first)
-                        fieldss += ",";
-                    first = false;
-                    fieldss += item.label;
-                }
+        String query = "";
+        if (editing && !edited) {
+            if (activeBox.isSelected() != databaseIndex.isActive()) {
+                String act;
+                if(activeBox.isSelected())
+                    act = "ACTIVE";
+                else act = "INACTIVE";
+                query = "ALTER INDEX "+nameText.getText()+" "+act;
             }
-            query += fieldss + ");";
+        } else {
+            if(editing)
+                query="DROP INDEX "+nameText.getText()+";";
+            query += "CREATE ";
+            if (uniqueBox.isSelected())
+                query += "UNIQUE ";
+            if (sortingBox.getSelectedIndex() == 1)
+                query += "DESCENDING ";
+            query += "INDEX " + nameText.getText() +
+                    " ON " + tableName.getSelectedItem() + " ";
+            if (computedBox.isSelected()) {
+                query += "COMPUTED BY (" + computedPanel.getSQLText() + ");";
+            } else {
+                query += "(";
+                DefaultListModel model = ((DefaultListModel) fields.getModel());
+                String fieldss = "";
+                boolean first = true;
+                for (int i = 0; i < model.getSize(); i++) {
+                    CheckListItem item = (CheckListItem) model.elementAt(i);
+                    if (item.isSelected) {
+                        if (!first)
+                            fieldss += ",";
+                        first = false;
+                        fieldss += item.label;
+                    }
+                }
+                query += fieldss + ");";
+                if(!activeBox.isSelected())
+                    query+= "ALTER INDEX "+nameText.getText()+" INACTIVE;";
+            }
         }
         if (!MiscUtils.isNull(description.getTextAreaComponent().getText()))
             query += "COMMENT ON INDEX " + nameText.getText() + " IS '" + description.getTextAreaComponent().getText() + "'";
@@ -346,6 +394,7 @@ public class CreateIndexPanel extends JPanel {
         eqd.display();
         if (eqd.getCommit())
             parent.finished();
+
     }
 
     class CheckListItem {

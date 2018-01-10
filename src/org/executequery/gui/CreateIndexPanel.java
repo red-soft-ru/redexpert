@@ -66,6 +66,7 @@ import java.util.List;
  *
  * @author Takis Diakoumis
  */
+@Deprecated
 public class CreateIndexPanel extends ActionPanel
         implements FocusComponentPanel,
         ActiveComponent,
@@ -108,7 +109,7 @@ public class CreateIndexPanel extends ActionPanel
 
     private MoveListItemStrategy<IndexedTableColumn> moveStrategy;
 
-    public CreateIndexPanel(ActionContainer parent) {
+    /*public CreateIndexPanel(ActionContainer parent) {
 
         super(new BorderLayout());
 
@@ -123,7 +124,7 @@ public class CreateIndexPanel extends ActionPanel
             e.printStackTrace();
         }
 
-    }
+    }*/
 
     private void init() throws Exception {
 

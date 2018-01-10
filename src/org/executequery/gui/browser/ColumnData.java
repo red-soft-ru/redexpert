@@ -170,6 +170,8 @@ public class ColumnData implements Serializable {
 
     private String computedBy;
 
+    private String domainComputedBy;
+
     Autoincrement ai;
 
     DatabaseConnection dc;
@@ -474,7 +476,7 @@ public class ColumnData implements Serializable {
 
     private void getDomainInfo() {
         String query = "SELECT F.RDB$FIELD_TYPE,F.RDB$FIELD_LENGTH,F.RDB$FIELD_SCALE,F.RDB$FIELD_SUB_TYPE,C.RDB$CHARACTER_SET_NAME," +
-                "F.RDB$VALIDATION_SOURCE,F.RDB$DESCRIPTION,F.RDB$NULL_FLAG,F.RDB$DEFAULT_SOURCE,F.RDB$FIELD_PRECISION\n" +
+                "F.RDB$VALIDATION_SOURCE,F.RDB$DESCRIPTION,F.RDB$NULL_FLAG,F.RDB$DEFAULT_SOURCE,F.RDB$FIELD_PRECISION,F.RDB$COMPUTED_SOURCE\n" +
                 "FROM RDB$FIELDS AS F LEFT JOIN RDB$CHARACTER_SETS AS C ON F.RDB$CHARACTER_SET_ID = C.RDB$CHARACTER_SET_ID" +
                 "\nWHERE RDB$FIELD_NAME='" +
                 domain.trim() + "'";
@@ -493,6 +495,7 @@ public class ColumnData implements Serializable {
                 domainDescription = rs.getString(7);
                 domainNotNull = rs.getInt(8) == 1;
                 domainDefault = rs.getString(9);
+                domainComputedBy = rs.getString(11);
             }
             domainType = getSqlTypeFromRDBtype(domainType, domainSubType);
             sqlType = domainType;
@@ -542,6 +545,12 @@ public class ColumnData implements Serializable {
 
     public DatabaseConnection getDatabaseConnection() {
         return dc;
+    }
+
+    public boolean isLOB() {
+        return sqlType == Types.BINARY || sqlType == Types.BLOB || sqlType == Types.CLOB ||
+                sqlType == Types.LONGNVARCHAR || sqlType == Types.LONGVARBINARY || sqlType == Types.LONGVARCHAR ||
+                sqlType == Types.NCLOB;
     }
 
 
@@ -824,6 +833,10 @@ public class ColumnData implements Serializable {
 
     public int getTypeParameter() {
         return typeParameter;
+    }
+
+    public String getDomainComputedBy() {
+        return domainComputedBy;
     }
 }
 

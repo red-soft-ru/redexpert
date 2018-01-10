@@ -8,6 +8,9 @@ import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.DynamicComboBoxModel;
@@ -20,6 +23,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Vector;
 import java.util.List;
 
@@ -51,6 +56,8 @@ public class CreateIndexPanel extends JPanel {
 
     SimpleTextArea description;
 
+    SimpleSqlTextPanel computedPanel;
+
     DefaultStatementExecutor sender;
 
     JScrollPane scrollList;
@@ -58,6 +65,12 @@ public class CreateIndexPanel extends JPanel {
     JComboBox sortingBox;
 
     JCheckBox uniqueBox;
+
+    JCheckBox computedBox;
+
+    JCheckBox activeBox;
+
+    DefaultDatabaseIndex databaseIndex;
 
     boolean editing;
 
@@ -73,6 +86,21 @@ public class CreateIndexPanel extends JPanel {
         parent = dialog;
         connection = dc;
         init();
+        databaseIndex = index;
+        editing = index != null;
+        if (editing) {
+            try {
+                init_edited();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    void init_edited() {
+        nameText.setText(databaseIndex.getName().trim());
+        nameText.setEnabled(false);
+        description.getTextAreaComponent().setText(databaseIndex.getDescription());
     }
 
 
@@ -81,13 +109,32 @@ public class CreateIndexPanel extends JPanel {
         descriptionPanel = new JPanel();
         nameText = new JTextField();
         tableName = new JComboBox(new Vector());
-        sortingBox = new JComboBox(new String[]{"DESCENDING", "ASCENDING"});
+        sortingBox = new JComboBox(new String[]{"ASCENDING", "DESCENDING"});
         uniqueBox = new JCheckBox("Unique");
+        computedBox = new JCheckBox("Computed");
+        activeBox = new JCheckBox("Active");
+        activeBox.setEnabled(false);
         fields = new JList<>();
         fields.setModel(new DefaultListModel<>());
         scrollList = new JScrollPane(fields);
         this.description = new SimpleTextArea();
         tabbedPane = new JTabbedPane();
+        computedPanel = new SimpleSqlTextPanel();
+
+        computedBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if (computedBox.isSelected()) {
+                    tabbedPane.remove(0);
+                    tabbedPane.insertTab("Computed", null, computedPanel, null, 0);
+                } else {
+                    tabbedPane.remove(0);
+                    tabbedPane.insertTab("Fields", null, fieldsPanel, null, 0);
+                }
+                tabbedPane.setSelectedIndex(0);
+
+            }
+        });
 
         fields.setCellRenderer(new CheckListRenderer());
         fields.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -156,31 +203,43 @@ public class CreateIndexPanel extends JPanel {
         JLabel connLabel = new JLabel("Connections");
         this.add(connLabel, gbc);
         gbc.gridx++;
+        gbc.gridwidth = 3;
         this.add(connectionsCombo, gbc);
         JLabel tableLabel = new JLabel("Table");
+        gbc.gridwidth = 1;
         gbc.gridx = 0;
         gbc.gridy++;
         this.add(tableLabel, gbc);
+        gbc.gridwidth = 3;
         gbc.gridx++;
         this.add(tableName, gbc);
         JLabel nameLabel = new JLabel("Name");
         gbc.gridx = 0;
         gbc.gridy++;
+        gbc.gridwidth = 1;
         this.add(nameLabel, gbc);
         gbc.gridx++;
+        gbc.gridwidth = 3;
         this.add(nameText, gbc);
         JLabel sortLabel = new JLabel("Sorting");
         gbc.gridx = 0;
         gbc.gridy++;
+        gbc.gridwidth = 1;
         this.add(sortLabel, gbc);
         gbc.gridx++;
+        gbc.gridwidth = 3;
         this.add(sortingBox, gbc);
         gbc.gridx = 0;
         gbc.gridy++;
+        gbc.gridwidth = 1;
         this.add(uniqueBox, gbc);
+        gbc.gridx++;
+        this.add(computedBox, gbc);
+        gbc.gridx++;
+        this.add(activeBox, gbc);
         gbc.gridx = 0;
         gbc.gridy++;
-        gbc.gridwidth = 2;
+        gbc.gridwidth = 4;
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
         this.add(tabbedPane, gbc);
@@ -190,7 +249,7 @@ public class CreateIndexPanel extends JPanel {
         tabbedPane.add("Description", descriptionPanel);
         descriptionPanel.setLayout(new BorderLayout());
         descriptionPanel.add(description);
-        gbc.gridx = 0;
+        gbc.gridx = 2;
         gbc.gridy++;
         gbc.gridwidth = 1;
         gbc.weighty = 0;
@@ -228,13 +287,24 @@ public class CreateIndexPanel extends JPanel {
     void updateListFields() {
         if (tableName.getSelectedItem() != null && free_sender)
             try {
-                String query = "select  RRF.RDB$FIELD_NAME from rdb$relation_fields RRF\n" +
+                String query = "select  RRF.RDB$FIELD_NAME, RRF.RDB$FIELD_SOURCE,RRF.RDB$FIELD_POSITION from rdb$relation_fields RRF\n" +
                         "where\n" +
-                        "    RRF.rdb$relation_name = '" + tableName.getSelectedItem() + "'\n order by 1";
+                        "    RRF.rdb$relation_name = '" + tableName.getSelectedItem() + "'\n order by 3";
                 ResultSet rs = sender.getResultSet(query).getResultSet();
                 ((DefaultListModel<CheckListItem>) fields.getModel()).clear();
+                List<ColumnData> cols = new ArrayList<>();
                 while (rs.next()) {
-                    ((DefaultListModel<CheckListItem>) fields.getModel()).addElement(new CheckListItem(rs.getString(1).trim()));
+                    ColumnData col = new ColumnData(rs.getString(1).trim(), connection);
+                    col.setDescription(rs.getString(2).trim());
+                    cols.add(col);
+                }
+                sender.releaseResources();
+                for (int i = 0; i < cols.size(); i++) {
+                    ColumnData col = cols.get(i);
+                    col.setDomain(col.getDescription());
+                    if (!col.isLOB() && col.getSQLType() != Types.ARRAY && col.getDomainComputedBy() == null) {
+                        ((DefaultListModel<CheckListItem>) fields.getModel()).addElement(new CheckListItem(col.getColumnName()));
+                    }
                 }
             } catch (Exception e) {
                 Log.error("Error getting fields in CreateIndexPanel");
@@ -248,30 +318,33 @@ public class CreateIndexPanel extends JPanel {
         String query = "CREATE ";
         if (uniqueBox.isSelected())
             query += "UNIQUE ";
-        if (sortingBox.getSelectedIndex() == 0)
+        if (sortingBox.getSelectedIndex() == 1)
             query += "DESCENDING ";
         query += "INDEX " + nameText.getText() +
-                " ON "+tableName.getSelectedItem()+" (";
-        DefaultListModel model = ((DefaultListModel)fields.getModel());
-        String fieldss="";
-        boolean first=true;
-        for(int i = 0;i<model.getSize();i++)
-        {
-            CheckListItem item = (CheckListItem) model.elementAt(i);
-            if(item.isSelected)
-            {
-                if(!first)
-                    fieldss+=",";
-                first=false;
-                fieldss+=item.label;
+                " ON " + tableName.getSelectedItem() + " ";
+        if (computedBox.isSelected()) {
+            query += "COMPUTED BY (" + computedPanel.getSQLText() + ");";
+        } else {
+            query += "(";
+            DefaultListModel model = ((DefaultListModel) fields.getModel());
+            String fieldss = "";
+            boolean first = true;
+            for (int i = 0; i < model.getSize(); i++) {
+                CheckListItem item = (CheckListItem) model.elementAt(i);
+                if (item.isSelected) {
+                    if (!first)
+                        fieldss += ",";
+                    first = false;
+                    fieldss += item.label;
+                }
             }
+            query += fieldss + ");";
         }
-        query+=fieldss+");";
-        if(!MiscUtils.isNull(description.getTextAreaComponent().getText()))
-            query+="COMMENT ON INDEX "+nameText.getText()+" IS '"+description.getTextAreaComponent().getText()+"'";
-        ExecuteQueryDialog eqd = new ExecuteQueryDialog(CREATE_TITLE,query,connection,true);
+        if (!MiscUtils.isNull(description.getTextAreaComponent().getText()))
+            query += "COMMENT ON INDEX " + nameText.getText() + " IS '" + description.getTextAreaComponent().getText() + "'";
+        ExecuteQueryDialog eqd = new ExecuteQueryDialog(CREATE_TITLE, query, connection, true);
         eqd.display();
-        if(eqd.getCommit())
+        if (eqd.getCommit())
             parent.finished();
     }
 

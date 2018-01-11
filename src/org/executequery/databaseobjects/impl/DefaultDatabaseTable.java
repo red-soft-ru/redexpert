@@ -20,7 +20,6 @@
 
 package org.executequery.databaseobjects.impl;
 
-import com.sun.xml.internal.ws.api.streaming.XMLStreamReaderFactory;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;

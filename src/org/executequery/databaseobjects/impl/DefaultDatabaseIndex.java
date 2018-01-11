@@ -124,6 +124,7 @@ public class DefaultDatabaseIndex extends DefaultDatabaseExecutable {
     private boolean isActive;
     private boolean isUnique;
     private String expression;
+    private String constraint_type;
 
     public DefaultDatabaseIndex(String name) {
         setName(name);
@@ -224,6 +225,14 @@ public class DefaultDatabaseIndex extends DefaultDatabaseExecutable {
 
     public String getExpression() {
         return expression;
+    }
+
+    public void setConstraint_type(String constraint_type) {
+        this.constraint_type = constraint_type;
+    }
+
+    public String getConstraint_type() {
+        return constraint_type;
     }
 
     @Override

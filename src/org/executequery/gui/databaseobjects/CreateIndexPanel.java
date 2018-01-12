@@ -355,7 +355,7 @@ public class CreateIndexPanel extends JPanel {
                 if(activeBox.isSelected())
                     act = "ACTIVE";
                 else act = "INACTIVE";
-                query = "ALTER INDEX "+nameText.getText()+" "+act;
+                query = "ALTER INDEX "+nameText.getText()+" "+act+";";
             }
         } else {
             if(editing)

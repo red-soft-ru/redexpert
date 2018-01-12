@@ -3,26 +3,21 @@ package org.executequery.gui.databaseobjects;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
-import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ColumnData;
-import org.executequery.gui.text.SQLTextPane;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.DynamicComboBoxModel;
-import org.underworldlabs.swing.NumberTextField;
-import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Vector;
@@ -36,9 +31,9 @@ public class CreateIndexPanel extends JPanel {
 
     JTextField nameText;
 
-    JButton ok;
+    JButton okButton;
 
-    JButton cancel;
+    JButton cancelButton;
 
     DatabaseConnection connection;
 
@@ -184,15 +179,15 @@ public class CreateIndexPanel extends JPanel {
             }
         });
 
-        ok = new JButton("OK");
-        ok.addActionListener(new ActionListener() {
+        okButton = new JButton("OK");
+        okButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 createIndex();
             }
         });
-        cancel = new JButton("Cancel");
-        cancel.addActionListener(new ActionListener() {
+        cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 parent.finished();
@@ -229,67 +224,96 @@ public class CreateIndexPanel extends JPanel {
         updateListTables();
 
         this.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints(0, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0);
+
+        JPanel firstPanel = new JPanel(new GridBagLayout());
+
         JLabel connLabel = new JLabel("Connections");
-        this.add(connLabel, gbc);
-        gbc.gridx++;
-        gbc.gridwidth = 3;
-        this.add(connectionsCombo, gbc);
+        firstPanel.add(connLabel, new GridBagConstraints(0, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        firstPanel.add(connectionsCombo, new GridBagConstraints(1, 0,
+                3, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
         JLabel tableLabel = new JLabel("Table");
-        gbc.gridwidth = 1;
-        gbc.gridx = 0;
-        gbc.gridy++;
-        this.add(tableLabel, gbc);
-        gbc.gridwidth = 3;
-        gbc.gridx++;
-        this.add(tableName, gbc);
+        firstPanel.add(tableLabel, new GridBagConstraints(0, 1,
+                1, 1, 0, 0,
+                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        firstPanel.add(tableName, new GridBagConstraints(1, 1,
+                3, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
         JLabel nameLabel = new JLabel("Name");
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.gridwidth = 1;
-        this.add(nameLabel, gbc);
-        gbc.gridx++;
-        gbc.gridwidth = 3;
-        this.add(nameText, gbc);
+        firstPanel.add(nameLabel, new GridBagConstraints(0, 2,
+                1, 1, 0, 0,
+                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        firstPanel.add(nameText, new GridBagConstraints(1, 2,
+                3, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
         JLabel sortLabel = new JLabel("Sorting");
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.gridwidth = 1;
-        this.add(sortLabel, gbc);
-        gbc.gridx++;
-        gbc.gridwidth = 3;
-        this.add(sortingBox, gbc);
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.gridwidth = 1;
-        this.add(uniqueBox, gbc);
-        gbc.gridx++;
-        this.add(computedBox, gbc);
-        gbc.gridx++;
-        this.add(activeBox, gbc);
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.gridwidth = 4;
-        gbc.weighty = 1;
-        gbc.fill = GridBagConstraints.BOTH;
-        this.add(tabbedPane, gbc);
+        firstPanel.add(sortLabel, new GridBagConstraints(0, 3,
+                1, 1, 0, 0,
+                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        firstPanel.add(sortingBox, new GridBagConstraints(1, 3,
+                3, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        this.add(firstPanel, new GridBagConstraints(0, 0,
+                4, 4, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        JPanel checksPanel = new JPanel(new GridBagLayout());
+
+        checksPanel.add(uniqueBox, new GridBagConstraints(0, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        checksPanel.add(computedBox, new GridBagConstraints(1, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        checksPanel.add(activeBox, new GridBagConstraints(2, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        this.add(checksPanel, new GridBagConstraints(0, 4,
+                4, 1, 0, 0,
+                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        this.add(tabbedPane, new GridBagConstraints(0, 5,
+                4, 1, 1, 1,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
+                0, 0));
         tabbedPane.add("Fields", fieldsPanel);
         fieldsPanel.setLayout(new BorderLayout());
         fieldsPanel.add(scrollList);
         tabbedPane.add("Description", descriptionPanel);
         descriptionPanel.setLayout(new BorderLayout());
         descriptionPanel.add(description);
-        gbc.gridx = 2;
-        gbc.gridy++;
-        gbc.gridwidth = 1;
-        gbc.weighty = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        this.add(ok, gbc);
-        gbc.gridx++;
-        this.add(cancel, gbc);
+        JPanel okCancelPanel = new JPanel(new GridBagLayout());
+        okCancelPanel.add(okButton, new GridBagConstraints(0, 0,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        okCancelPanel.add(cancelButton, new GridBagConstraints(1, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        this.add(okCancelPanel, new GridBagConstraints(3, 6,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
 
     }
 

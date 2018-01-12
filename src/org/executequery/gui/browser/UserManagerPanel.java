@@ -498,7 +498,7 @@ public class UserManagerPanel extends JPanel {
             urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
             cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
             clazzdb = cl.loadClass(loadedClass);
-            if (version > 3)
+            if (version >= 3)
                 odb = clazzdb.getConstructor(Connection.class).newInstance(con);
             else
                 odb = clazzdb.newInstance();

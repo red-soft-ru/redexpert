@@ -36,7 +36,7 @@ public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
   private List<TableColumnIndex> indexes;
 
   private static final String[] header = {"", "Index Name",
-      "Indexed Column", "Non-Unique"};
+      "Indexed Column","Expression", "Non-Unique"};
 
   /**
    * Creates a new instance of DatabaseTableColumnIndexTableModel
@@ -74,11 +74,15 @@ public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
   public Object getValueAt(int row, int col) {
     TableColumnIndex index = indexes.get(row);
     switch (col) {
+      case 0:
+        return index.getConstraint_type();
       case 1:
         return index.getName();
       case 2:
         return index.getIndexedColumn();
       case 3:
+        return index.getExpression();
+      case 4:
         return Boolean.valueOf(index.isNonUnique());
       default:
         return null;
@@ -94,7 +98,7 @@ public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
       case 2:
         index.addIndexedColumn((String) value);
         break;
-      case 3:
+      case 4:
         index.setNonUnique(((Boolean) value).booleanValue());
         break;
     }
@@ -102,7 +106,7 @@ public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
   }
 
   public Class<?> getColumnClass(int col) {
-    if (col == 3) {
+    if (col == 4) {
       return Boolean.class;
     }
     return String.class;

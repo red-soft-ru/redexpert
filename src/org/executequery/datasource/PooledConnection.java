@@ -768,6 +768,9 @@ public class PooledConnection implements Connection {
         if (flag) {
             try {
                 mutex.acquire();
+                StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+                for (int i = 0; i < stack.length; i++)
+                    Log.debug(stack[stack.length - 1 - i]);
             } catch (InterruptedException e) {
                 throw new SQLException(e);
             }

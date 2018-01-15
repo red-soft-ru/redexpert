@@ -23,7 +23,7 @@ package org.executequery.actions.databasecommands;
 import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.BaseDialog;
-import org.executequery.gui.CreateIndexPanel;
+import org.executequery.gui.databaseobjects.CreateIndexPanel;
 import org.underworldlabs.swing.actions.BaseCommand;
 
 import java.awt.event.ActionEvent;
@@ -47,16 +47,16 @@ public class CreateIndexCommand extends OpenFrameCommand
             return;
         }
 
-        if (!isDialogOpen(CreateIndexPanel.TITLE)) {
+        if (!isDialogOpen(CreateIndexPanel.CREATE_TITLE)) {
 
             try {
 
                 GUIUtilities.showWaitCursor();
 
                 BaseDialog dialog =
-                        createDialog(CreateIndexPanel.TITLE, false);
+                        createDialog(CreateIndexPanel.CREATE_TITLE, false);
 
-                CreateIndexPanel panel = new CreateIndexPanel(dialog);
+                CreateIndexPanel panel = new CreateIndexPanel(null,dialog);
 
                 dialog.addDisplayComponentWithEmptyBorder(panel);
                 dialog.display();

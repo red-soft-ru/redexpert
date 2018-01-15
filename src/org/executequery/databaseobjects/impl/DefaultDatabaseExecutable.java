@@ -275,7 +275,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
      * @return the parent object - the meta tag
      */
     public NamedObject getParent() {
-        return getMetaTagParent();
+        return super.getParent();
     }
 
     /**

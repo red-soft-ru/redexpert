@@ -12,10 +12,10 @@
 <jdbcdrivers>
     <databasedrivers>
         <id>1111111</id>
-        <name>Jaybird 3.1 Driver</name>
-        <description>Jaybird 3.1 Driver</description>
+        <name>Jaybird 3 Driver</name>
+        <description>Jaybird 3 Driver</description>
         <type>16</type>
-        <path>./lib/jaybird-full-3.1.0-SNAPSHOT.jar</path>
+        <path>./lib/jaybird-full-jdk18-3.0.4.7.jar</path>
         <classname>org.firebirdsql.jdbc.FBDriver</classname>
         <url>jdbc:firebirdsql://[host]:[port]/[source]</url>
     </databasedrivers>

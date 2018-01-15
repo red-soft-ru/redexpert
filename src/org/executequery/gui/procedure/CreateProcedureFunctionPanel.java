@@ -205,10 +205,7 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
                 if (resultSet.next())
                     descriptionArea.getTextAreaComponent().setText(resultSet.getString(1));
             } finally {
-                if (resultSet != null && !resultSet.isClosed())
-                    resultSet.close();
-                if (statement != null && !statement.isClosed())
-                    statement.close();
+               releaseResources(resultSet);
             }
 
         } catch (IllegalAccessException e) {
@@ -382,8 +379,7 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
                 parameters.add(procedureParameter);
             }
 
-            if (rs != null)
-                rs.close();
+            releaseResources(rs);
 
             for (ProcedureParameter pp :
                     parameters) {
@@ -417,8 +413,7 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
                         pp.setDescription(resultSet.getString(6));
                     }
                 } finally {
-                    resultSet.close();
-                    statement.close();
+                    releaseResources(resultSet);
                 }
                 if (pp.getType() == DatabaseMetaData.procedureColumnIn)
                     inputParametersPanel.addRow(pp);
@@ -1024,6 +1019,19 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
             }
         }
 
+    }
+
+    void releaseResources(ResultSet rs) {
+        try {
+            if (rs == null)
+                return;
+            Statement st = rs.getStatement();
+            if (st != null) {
+                if (!st.isClosed())
+                    st.close();
+            }
+        } catch (SQLException sqlExc) {
+        }
     }
 
 }

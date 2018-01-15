@@ -59,30 +59,43 @@ public class KeyCellRenderer extends JLabel
                                                    int row, int column) {
 
         if (value != null) {
-            ColumnData columnData = (ColumnData) value;
-            if (columnData.isMarkedDeleted()) {
-                setIcon(deleteImage);
-                setToolTipText("This column marked to be dropped");
-            } else if (columnData.isNewColumn()) {
-                setIcon(newImage);
-                setToolTipText("This column marked new");
-            } else if (columnData.isPrimaryKey()) {
+            if (value instanceof ColumnData) {
+                ColumnData columnData = (ColumnData) value;
+                if (columnData.isMarkedDeleted()) {
+                    setIcon(deleteImage);
+                    setToolTipText("This column marked to be dropped");
+                } else if (columnData.isNewColumn()) {
+                    setIcon(newImage);
+                    setToolTipText("This column marked new");
+                } else if (columnData.isPrimaryKey()) {
 
-                if (columnData.isForeignKey()) {
-                    setIcon(pkfkImage);
-                    setToolTipText("Primary Key/Foreign Key");
+                    if (columnData.isForeignKey()) {
+                        setIcon(pkfkImage);
+                        setToolTipText("Primary Key/Foreign Key");
+                    } else {
+                        setIcon(pkImage);
+                        setToolTipText("Primary Key");
+                    }
+
+                } else if (columnData.isForeignKey()) {
+                    setIcon(fkImage);
+                    setToolTipText("Foreign Key");
                 } else {
+                    setIcon(null);
+                }
+            } else if (value instanceof String) {
+                String svalue = (String) value;
+                if (svalue.trim().equals("PRIMARY KEY")) {
                     setIcon(pkImage);
                     setToolTipText("Primary Key");
+                } else if (svalue.trim().equals("FOREIGN KEY")) {
+                    setIcon(fkImage);
+                    setToolTipText("Foreign Key");
+                } else {
+                    setIcon(null);
                 }
-
-            } else if (columnData.isForeignKey()) {
-                setIcon(fkImage);
-                setToolTipText("Foreign Key");
-            } else {
-                setIcon(null);
             }
-        }
+        }else setIcon(null);
 
         setHorizontalAlignment(JLabel.CENTER);
         

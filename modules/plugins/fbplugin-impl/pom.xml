@@ -13,6 +13,14 @@
     <relativePath>../../../pom.xml</relativePath>
   </parent>
 
+  <repositories>
+    <repository>
+      <id>red-database</id>
+      <name>red-database</name>
+      <url>http://artifactory.red-soft.biz/red-database</url>
+    </repository>
+  </repositories>
+
   <!-- project dependencies -->
   <dependencies>
     <dependency>
@@ -21,12 +29,9 @@
       <version>1.0</version>
     </dependency>
     <dependency>
-      <groupId>biz.redsoft.customlib</groupId>
-      <artifactId>jaybird</artifactId>
-      <version>3.1.0</version>
-      <scope>system</scope>
-      <systemPath>${pom.basedir}/../../../lib/jaybird-full-3.1.0-SNAPSHOT.jar</systemPath>
-      <type>jar</type>
+      <groupId>ru.red-soft.jdbc</groupId>
+      <artifactId>jaybird-full-jdk18</artifactId>
+      <version>3.0.4.7</version>
     </dependency>
   </dependencies>
 
@@ -54,6 +59,22 @@
           </archive>
           <outputDirectory>../../../lib</outputDirectory>
         </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}</outputDirectory>
+              <outputDirectory>../../../lib</outputDirectory>
+              <excludeArtifactIds>fbplugin</excludeArtifactIds>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

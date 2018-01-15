@@ -163,9 +163,6 @@ public class PooledDatabaseMetaData extends FilterDatabaseMetaData {
     private PooledResultSet asPooledResultSet(ResultSet rs) throws SQLException {
         connection.lock(true);
         PooledStatement st = new PooledStatement(connection, rs.getStatement());
-        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-        for (int i = 0; i < stack.length; i++)
-            Log.debug(stack[stack.length - 1 - i]);
         return new PooledResultSet(st, rs);
     }
 }

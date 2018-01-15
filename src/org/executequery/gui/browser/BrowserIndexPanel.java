@@ -136,8 +136,8 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
         activeCheckBox.setSelected(false);
         sortingComboBox = new DefaultComboBox();
         List<String> sorting = new ArrayList<>();
-        sorting.add("ASC");
-        sorting.add("DESC");
+        sorting.add("Ascending");
+        sorting.add("Descending");
         sortingComboBox.setModel(new DefaultComboBoxModel(sorting.toArray()));
 
         base.add(indexNameField, gbc);

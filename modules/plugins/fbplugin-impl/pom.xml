@@ -31,7 +31,7 @@
     <dependency>
       <groupId>ru.red-soft.jdbc</groupId>
       <artifactId>jaybird-full-jdk18</artifactId>
-      <version>3.0.4.7</version>
+      <version>3.0.4.12</version>
     </dependency>
   </dependencies>
 
@@ -71,6 +71,7 @@
             <configuration>
               <outputDirectory>${project.build.directory}</outputDirectory>
               <outputDirectory>../../../lib</outputDirectory>
+              <outputDirectory>../../redexpert/target/lib</outputDirectory>
               <excludeArtifactIds>fbplugin</excludeArtifactIds>
             </configuration>
           </execution>

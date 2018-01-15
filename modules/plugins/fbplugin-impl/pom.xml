@@ -64,14 +64,25 @@
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
+            <id>copy-dep-1</id>
             <phase>package</phase>
             <goals>
               <goal>copy-dependencies</goal>
             </goals>
             <configuration>
               <outputDirectory>${project.build.directory}</outputDirectory>
-              <outputDirectory>../../../lib</outputDirectory>
               <outputDirectory>../../redexpert/target/lib</outputDirectory>
+              <excludeArtifactIds>fbplugin</excludeArtifactIds>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-dep-2</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>../../../lib</outputDirectory>
               <excludeArtifactIds>fbplugin</excludeArtifactIds>
             </configuration>
           </execution>

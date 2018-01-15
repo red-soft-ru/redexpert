@@ -2,12 +2,16 @@ package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseObject;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
+import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DefaultComboBox;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.StyledLogPane;
+
 
 import javax.swing.*;
 import java.awt.*;
@@ -52,6 +56,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
     private JTextField tableField;
     private JComboBox sortingComboBox;
     private JCheckBox activeCheckBox;
+    private SimpleSqlTextPanel expressionText;
 
     /**
      * the browser's control object
@@ -133,8 +138,8 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
         activeCheckBox.setSelected(false);
         sortingComboBox = new DefaultComboBox();
         List<String> sorting = new ArrayList<>();
-        sorting.add("ASC");
-        sorting.add("DESC");
+        sorting.add("Ascending");
+        sorting.add("Descending");
         sortingComboBox.setModel(new DefaultComboBoxModel(sorting.toArray()));
 
         base.add(indexNameField, gbc);
@@ -204,7 +209,13 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
     public void setValues(DefaultDatabaseIndex index) {
 
-        currentObjectView = index;
+        if (index.getParent().getMetaDataKey() != NamedObject.META_TYPES[NamedObject.SYSTEM_INDEX]) {
+            DefaultDatabaseMetaTag metaTag = (DefaultDatabaseMetaTag) index.getParent();
+            currentObjectView = metaTag.getIndexFromName(index.getName());
+            index = (DefaultDatabaseIndex) currentObjectView;
+        } else {
+            currentObjectView = index;
+        }
 
         columns.clear();
         index.loadColumns();
@@ -218,6 +229,13 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
         uniqueCheckBox.setSelected(index.isUnique());
         activeCheckBox.setSelected(index.isActive());
         descriptionPane.setText(index.getRemarks());
+        if (index.getExpression() != null) {
+            expressionText = new SimpleSqlTextPanel();
+            expressionText.setSQLText(index.getExpression());
+            tabPane.remove(0);
+            tabPane.insertTab("Expression", null, expressionText, null, 0);
+            tabPane.setSelectedIndex(0);
+        }
 
         objectNameLabel.setText("Index Name:");
         setHeaderText("Database Index");

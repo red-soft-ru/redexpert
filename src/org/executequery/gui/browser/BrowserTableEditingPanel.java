@@ -40,6 +40,7 @@ import org.executequery.gui.databaseobjects.EditableDatabaseTable;
 import org.executequery.gui.databaseobjects.TableColumnIndexTableModel;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.table.InsertColumnPanel;
+import org.executequery.gui.table.KeyCellRenderer;
 import org.executequery.gui.table.TableConstraintFunction;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextEditor;
@@ -769,9 +770,12 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             tcm.getColumn(0).setPreferredWidth(25);
             tcm.getColumn(0).setMaxWidth(25);
             tcm.getColumn(0).setMinWidth(25);
+            tcm.getColumn(0).setCellRenderer(new KeyCellRenderer());
             tcm.getColumn(1).setPreferredWidth(130);
             tcm.getColumn(2).setPreferredWidth(130);
-            tcm.getColumn(3).setPreferredWidth(90);
+            tcm.getColumn(3).setPreferredWidth(130);
+            tcm.getColumn(4).setPreferredWidth(90);
+
         } catch (DataSourceException e) {
             controller.handleException(e);
             citm.setIndexData(null);

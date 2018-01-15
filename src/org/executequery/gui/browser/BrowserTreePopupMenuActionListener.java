@@ -27,6 +27,7 @@ import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseException;
+import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.gui.BaseDialog;
@@ -243,9 +244,29 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         }
                     }
                     break;
+                case NamedObject.INDEX:
+                    if (GUIUtilities.isDialogOpen(CreateIndexPanel.CREATE_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateIndexPanel.CREATE_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateIndexPanel.CREATE_TITLE, false);
+                            CreateIndexPanel panel = new CreateIndexPanel(currentSelection, dialog);
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
                 default:
                     GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
                     break;
+
             }
         }
 
@@ -355,6 +376,25 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             BaseDialog dialog =
                                     new BaseDialog(CreateExceptionPanel.ALTER_TITLE, false);
                             CreateExceptionPanel panel = new CreateExceptionPanel(currentSelection, dialog,(DefaultDatabaseException)node.getDatabaseObject());
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
+                case NamedObject.INDEX:
+                    if (GUIUtilities.isDialogOpen(CreateIndexPanel.ALTER_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateIndexPanel.ALTER_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateIndexPanel.ALTER_TITLE, false);
+                            CreateIndexPanel panel = new CreateIndexPanel(currentSelection, dialog,(DefaultDatabaseIndex) node.getDatabaseObject());
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());

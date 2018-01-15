@@ -967,6 +967,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 index.setActive(rs.getInt(6) != 1);
                 index.setUnique(rs.getInt(5) == 1);
                 index.setRemarks(rs.getString(7));
+                index.setConstraint_type(rs.getString(8));
                 index.setHost(this.getHost());
                 list.add(index);
             }
@@ -977,6 +978,38 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
             logThrowable(e);
             return new ArrayList<NamedObject>(0);
+
+        } finally {
+
+            releaseResources(rs);
+        }
+    }
+
+    public DefaultDatabaseIndex getIndexFromName(String name) throws DataSourceException {
+
+        ResultSet rs = null;
+        DefaultDatabaseIndex index=null;
+        try {
+
+            rs = getIndexFromNameResultSet(name);
+            while (rs.next()) {
+
+                index = new DefaultDatabaseIndex(rs.getString(1).trim());
+                index.setTableName(rs.getString(2));
+                index.setIndexType(rs.getInt(4));
+                index.setActive(rs.getInt(6) != 1);
+                index.setUnique(rs.getInt(5) == 1);
+                index.setRemarks(rs.getString(7));
+                index.setConstraint_type(rs.getString(8));
+                index.setHost(this.getHost());
+            }
+
+            return index;
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return null;
 
         } finally {
 
@@ -1362,16 +1395,41 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         Statement statement = dmd.getConnection().createStatement();
 
         ResultSet resultSet = statement.executeQuery("select " +
-                "RDB$INDEX_NAME, " +
-                "RDB$RELATION_NAME, " +
-                "RDB$SYSTEM_FLAG," +
-                "RDB$INDEX_TYPE," +
-                "RDB$UNIQUE_FLAG," +
-                "RDB$INDEX_INACTIVE," +
-                "RDB$DESCRIPTION\n" +
-                "FROM RDB$INDICES " +
-                "where RDB$SYSTEM_FLAG = 0 \n" +
-                "ORDER BY RDB$INDEX_NAME");
+                "I.RDB$INDEX_NAME, " +
+                "I.RDB$RELATION_NAME, " +
+                "I.RDB$SYSTEM_FLAG," +
+                "I.RDB$INDEX_TYPE," +
+                "I.RDB$UNIQUE_FLAG," +
+                "I.RDB$INDEX_INACTIVE," +
+                "I.RDB$DESCRIPTION," +
+                "C.RDB$CONSTRAINT_TYPE\n" +
+                "FROM RDB$INDICES AS I LEFT JOIN rdb$relation_constraints as c on i.rdb$index_name=c.rdb$index_name\n" +
+                "where I.RDB$SYSTEM_FLAG = 0 \n" +
+                "ORDER BY I.RDB$INDEX_NAME");
+
+        return resultSet;
+    }
+
+    private ResultSet getIndexFromNameResultSet(String name) throws SQLException {
+
+        String catalogName = catalogNameForQuery();
+        String schemaName = schemaNameForQuery();
+
+        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+        Statement statement = dmd.getConnection().createStatement();
+
+        ResultSet resultSet = statement.executeQuery("select " +
+                "I.RDB$INDEX_NAME, " +
+                "I.RDB$RELATION_NAME, " +
+                "I.RDB$SYSTEM_FLAG," +
+                "I.RDB$INDEX_TYPE," +
+                "I.RDB$UNIQUE_FLAG," +
+                "I.RDB$INDEX_INACTIVE," +
+                "I.RDB$DESCRIPTION," +
+                "C.RDB$CONSTRAINT_TYPE\n" +
+                "FROM RDB$INDICES AS I LEFT JOIN rdb$relation_constraints as c on i.rdb$index_name=c.rdb$index_name\n" +
+                "where I.RDB$SYSTEM_FLAG = 0 \n" +
+                "AND I.RDB$INDEX_NAME='"+name+"'");
 
         return resultSet;
     }

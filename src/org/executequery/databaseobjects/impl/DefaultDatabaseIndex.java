@@ -123,6 +123,8 @@ public class DefaultDatabaseIndex extends DefaultDatabaseExecutable {
     private String tableName;
     private boolean isActive;
     private boolean isUnique;
+    private String expression;
+    private String constraint_type;
 
     public DefaultDatabaseIndex(String name) {
         setName(name);
@@ -195,7 +197,7 @@ public class DefaultDatabaseIndex extends DefaultDatabaseExecutable {
                 column.setFieldName(rs2.getString(6));
                 column.setSelectivity(rs2.getDouble(8));
                 column.setFieldPosition(rs2.getInt(7));
-
+                setExpression(rs2.getString(9));
                 columns.add(column);
             }
 
@@ -212,6 +214,25 @@ public class DefaultDatabaseIndex extends DefaultDatabaseExecutable {
                 }
             setMarkedForReload(false);
         }
+    }
+
+    public void setExpression(String expression) {
+        if (expression == null)
+            return;
+        expression = expression.trim().substring(1, expression.trim().length() - 1);
+        this.expression = expression;
+    }
+
+    public String getExpression() {
+        return expression;
+    }
+
+    public void setConstraint_type(String constraint_type) {
+        this.constraint_type = constraint_type;
+    }
+
+    public String getConstraint_type() {
+        return constraint_type;
     }
 
     @Override

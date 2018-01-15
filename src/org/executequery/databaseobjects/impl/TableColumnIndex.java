@@ -59,6 +59,10 @@ public class TableColumnIndex extends AbstractDatabaseObjectElement {
    */
   private Map<String, String> metaData;
 
+  private String expression;
+
+  private String constraint_type;
+
   /**
    * Creates a new instance of DatabaseTableColumnIndex
    */
@@ -101,12 +105,17 @@ public class TableColumnIndex extends AbstractDatabaseObjectElement {
     columns.add(column);
   }
 
+  public void setIndexedColumns(List<String> columns) {
+    this.columns = columns;
+  }
+
   public List<String> getIndexedColumns() {
     return columns;
   }
 
   public String getIndexedColumn() {
     String column = "";
+    if(columns!=null)
     for (int i = 0; i < columns.size(); i++) {
       if (i != 0)
         column += ",";
@@ -175,6 +184,21 @@ public class TableColumnIndex extends AbstractDatabaseObjectElement {
     return metaData;
   }
 
+  public void setConstraint_type(String constraint_type) {
+    this.constraint_type = constraint_type;
+  }
+
+  public String getConstraint_type() {
+    return constraint_type;
+  }
+
+  public void setExpression(String expression) {
+    this.expression = expression;
+  }
+
+  public String getExpression() {
+    return expression;
+  }
 }
 
 

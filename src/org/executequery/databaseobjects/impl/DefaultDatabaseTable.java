@@ -438,7 +438,6 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       TableColumnIndex lastIndex = null;
       indexes = databaseIndexListWithSize(10);
       while (rs.next()) {
-
         String name = rs.getString(6);
         if (StringUtils.isBlank(name)) {
 
@@ -454,6 +453,19 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         } else {
           lastIndex.addIndexedColumn(rs.getString(9));
         }
+      }
+      releaseResources(rs);
+      DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(getHost(),null,null,META_TYPES[INDEX]);
+      for (TableColumnIndex index:indexes)
+      {
+        DefaultDatabaseIndex index1 = metaTag.getIndexFromName(index.getName());
+        index1.loadColumns();
+        if(index1.getExpression()!=null)
+        {
+          index.setIndexedColumns(null);
+          index.setExpression(index1.getExpression());
+        }
+        index.setConstraint_type(index1.getConstraint_type());
       }
 
       return indexes;

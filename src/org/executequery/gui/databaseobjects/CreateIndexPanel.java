@@ -408,9 +408,9 @@ public class CreateIndexPanel extends JPanel {
                     }
                 }
                 query += fieldss + ");";
-                if(!activeBox.isSelected())
-                    query+= "ALTER INDEX "+nameText.getText()+" INACTIVE;";
             }
+            if(!activeBox.isSelected())
+                query+= "ALTER INDEX "+nameText.getText()+" INACTIVE;";
         }
         if (!MiscUtils.isNull(description.getTextAreaComponent().getText()))
             query += "COMMENT ON INDEX " + nameText.getText() + " IS '" + description.getTextAreaComponent().getText() + "'";

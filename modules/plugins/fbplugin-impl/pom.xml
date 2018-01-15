@@ -31,7 +31,7 @@
     <dependency>
       <groupId>ru.red-soft.jdbc</groupId>
       <artifactId>jaybird-full-jdk18</artifactId>
-      <version>3.0.4.7</version>
+      <version>3.0.4.12</version>
     </dependency>
   </dependencies>
 
@@ -64,12 +64,24 @@
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
+            <id>copy-dep-1</id>
             <phase>package</phase>
             <goals>
               <goal>copy-dependencies</goal>
             </goals>
             <configuration>
               <outputDirectory>${project.build.directory}</outputDirectory>
+              <outputDirectory>../../redexpert/target/lib</outputDirectory>
+              <excludeArtifactIds>fbplugin</excludeArtifactIds>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-dep-2</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
               <outputDirectory>../../../lib</outputDirectory>
               <excludeArtifactIds>fbplugin</excludeArtifactIds>
             </configuration>

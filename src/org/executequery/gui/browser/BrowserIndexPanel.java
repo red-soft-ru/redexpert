@@ -209,7 +209,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
     public void setValues(DefaultDatabaseIndex index) {
 
         if (index.getParent().getMetaDataKey() != NamedObject.META_TYPES[NamedObject.SYSTEM_INDEX]) {
-            DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(index.getHost(), null, null, NamedObject.META_TYPES[NamedObject.INDEX]);
+            DefaultDatabaseMetaTag metaTag = (DefaultDatabaseMetaTag) index.getParent();
             currentObjectView = metaTag.getIndexFromName(index.getName());
             index = (DefaultDatabaseIndex) currentObjectView;
         } else {

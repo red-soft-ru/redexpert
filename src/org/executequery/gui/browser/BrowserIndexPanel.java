@@ -6,6 +6,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DefaultComboBox;
 import org.underworldlabs.swing.DisabledField;
@@ -55,6 +56,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
     private JTextField tableField;
     private JComboBox sortingComboBox;
     private JCheckBox activeCheckBox;
+    private SimpleSqlTextPanel expressionText;
 
     /**
      * the browser's control object
@@ -227,6 +229,13 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
         uniqueCheckBox.setSelected(index.isUnique());
         activeCheckBox.setSelected(index.isActive());
         descriptionPane.setText(index.getRemarks());
+        if (index.getExpression() != null) {
+            expressionText = new SimpleSqlTextPanel();
+            expressionText.setSQLText(index.getExpression());
+            tabPane.remove(0);
+            tabPane.insertTab("Expression", null, expressionText, null, 0);
+            tabPane.setSelectedIndex(0);
+        }
 
         objectNameLabel.setText("Index Name:");
         setHeaderText("Database Index");

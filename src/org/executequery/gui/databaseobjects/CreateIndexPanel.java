@@ -241,7 +241,7 @@ public class CreateIndexPanel extends JPanel {
 
         JPanel firstPanel = new JPanel(new GridBagLayout());
 
-        JLabel connLabel = new JLabel("Connections");
+        JLabel connLabel = new JLabel("Connection");
         firstPanel.add(connLabel, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),

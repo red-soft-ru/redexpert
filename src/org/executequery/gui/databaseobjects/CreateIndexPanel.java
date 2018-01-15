@@ -2,7 +2,9 @@ package org.executequery.gui.databaseobjects;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
+import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -97,6 +99,8 @@ public class CreateIndexPanel extends JPanel {
 
     void init_edited() {
         nameText.setText(databaseIndex.getName().trim());
+        DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseIndex.getHost(),null,null, NamedObject.META_TYPES[NamedObject.INDEX]);
+        databaseIndex = metaTag.getIndexFromName(databaseIndex.getName());
         databaseIndex.loadColumns();
         nameText.setEnabled(false);
         description.getTextAreaComponent().setText(databaseIndex.getRemarks());
@@ -127,6 +131,7 @@ public class CreateIndexPanel extends JPanel {
         }
         uniqueBox.setSelected(databaseIndex.isUnique());
         activeBox.setSelected(databaseIndex.isActive());
+        sortingBox.setSelectedIndex(databaseIndex.getIndexType());
 
     }
 

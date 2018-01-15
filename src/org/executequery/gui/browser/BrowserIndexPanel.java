@@ -208,9 +208,13 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
     public void setValues(DefaultDatabaseIndex index) {
 
-        DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(index.getHost(),null,null, NamedObject.META_TYPES[NamedObject.INDEX]);
-        currentObjectView = metaTag.getIndexFromName(index.getName());
-        index = (DefaultDatabaseIndex) currentObjectView;
+        if (index.getParent().getMetaDataKey() != NamedObject.META_TYPES[NamedObject.SYSTEM_INDEX]) {
+            DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(index.getHost(), null, null, NamedObject.META_TYPES[NamedObject.INDEX]);
+            currentObjectView = metaTag.getIndexFromName(index.getName());
+            index = (DefaultDatabaseIndex) currentObjectView;
+        } else {
+            currentObjectView = index;
+        }
 
         columns.clear();
         index.loadColumns();

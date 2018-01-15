@@ -227,6 +227,15 @@ public class CreateIndexPanel extends JPanel {
             }
         });
         updateListTables();
+        sortingBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent event) {
+                if (event.getStateChange() == ItemEvent.DESELECTED) {
+                    return;
+                }
+                edited = true;
+            }
+        });
 
         this.setLayout(new GridBagLayout());
 

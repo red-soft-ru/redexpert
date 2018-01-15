@@ -1,7 +1,6 @@
 package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
-import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
@@ -12,7 +11,7 @@ import org.underworldlabs.swing.DefaultComboBox;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.StyledLogPane;
 
-import javax.print.attribute.standard.MediaSize;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.print.Printable;

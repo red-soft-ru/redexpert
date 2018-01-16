@@ -6,6 +6,7 @@ import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.datasource.ConnectionManager;
@@ -15,6 +16,7 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.gui.browser.comparer.Trigger;
 import org.executequery.gui.text.SimpleSqlTextPanel;
+import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.NumberTextField;
@@ -31,46 +33,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-public class CreateTriggerPanel extends JPanel {
+public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
-    /**
-     * The connection combo selection
-     */
-    private JComboBox connectionsCombo;
-
-    /**
-     * the schema combo box model
-     */
-    private DynamicComboBoxModel connectionsModel;
-
-    /**
-     * the type trigger combo selection
-     */
     private JComboBox typeTriggerCombo;
 
     //common components for table and database trigger
-
-    private JTextField nameField;
 
     private JSpinner positionField;
 
     private JCheckBox activeBox;
 
-    private JLabel connectionLabel;
-
-    private JLabel nameLabel;
-
     private JLabel positionLabel;
 
     private SimpleSqlTextPanel sqlBodyText;
 
-    private JScrollPane scrollSqlBody;
-
-    private JButton okButton;
-
-    private JButton cancelButton;
-
-    private JSplitPane splitPane;
+    private SimpleTextArea descriptionText;
 
     //components for database trigger
 
@@ -113,17 +90,10 @@ public class CreateTriggerPanel extends JPanel {
      */
     private JComboBox tablesCombo;
 
-    private DatabaseConnection connection;
-
-    DefaultStatementExecutor executor;
-
-    ActionContainer parent;
 
     DefaultDatabaseTrigger trigger;
 
-    boolean editing;
-
-    String[] meta_types = {"FUNCTION",
+    static String[] meta_types = {"FUNCTION",
             "INDEX",
             "PROCEDURE",
             "SEQUENCE",
@@ -153,29 +123,15 @@ public class CreateTriggerPanel extends JPanel {
     }
 
     public CreateTriggerPanel(DatabaseConnection dc, ActionContainer parent, DefaultDatabaseTrigger trigger) {
-        this.trigger = trigger;
-        this.parent = parent;
-        connection = dc;
-        executor = new DefaultStatementExecutor(connection, true);
-        try {
-            init();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return;
-        }
-        editing = trigger != null;
-        if (editing)
-            init_edited();
+        super(dc,parent,trigger);
     }
 
-    void init() throws SQLException {
-        if (getVersion() > 2)
+    protected void init() {
+        if (getDatabaseVersion() > 2)
             typeTriggerCombo = new JComboBox(new String[]{"Table trigger", "Database trigger", "DDL trigger"});
         else typeTriggerCombo = new JComboBox(new String[]{"Table trigger", "Database trigger"});
-        nameField = new JTextField(15);
-        connectionLabel = new JLabel("Connection");
-        nameLabel = new JLabel("Name");
         positionLabel = new JLabel("Position");
+        descriptionText = new SimpleTextArea();
         SpinnerModel model = new SpinnerNumberModel(0, 0, Short.MAX_VALUE, 1);
         positionField = new JSpinner(model);
         positionField.setValue(0);
@@ -192,7 +148,6 @@ public class CreateTriggerPanel extends JPanel {
         beforeAfterlabel = new JLabel("Before/After");
         tablesCombo = new JComboBox(getTables());
         sqlBodyText = new SimpleSqlTextPanel();
-        scrollSqlBody = new JScrollPane(sqlBodyText);
         okButton = new JButton("OK");
         cancelButton = new JButton("Cancel");
         ddlTriggerPanel = new JPanel(new GridBagLayout());
@@ -207,43 +162,11 @@ public class CreateTriggerPanel extends JPanel {
                 "  /* Trigger text */\n" +
                 "end");
 
-        Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
-        connectionsModel = new DynamicComboBoxModel(connections);
-        connectionsCombo = WidgetFactory.createComboBox(connectionsModel);
-        connectionsCombo.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent event) {
-                if (event.getStateChange() == ItemEvent.DESELECTED) {
-                    return;
-                }
-                connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
-                executor.setDatabaseConnection(connection);
-            }
-        });
-        if (connection != null) {
-            connectionsCombo.setSelectedItem(connection);
-        } else {
-            connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
-        }
 
         typeTriggerCombo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 changeTypeTrigger();
-            }
-        });
-
-        okButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                generateScript();
-            }
-        });
-
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                parent.finished();
             }
         });
 
@@ -254,53 +177,28 @@ public class CreateTriggerPanel extends JPanel {
             }
         });
 
-        this.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints(0, 0,
+        main_panel.setLayout(new GridBagLayout());
+        JPanel commonPanel = new JPanel(new GridBagLayout());
+        commonPanel.add(typeTriggerCombo, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0);
-        this.add(connectionLabel, gbc);
-        gbc.gridx++;
-        gbc.gridwidth = 4;
-        gbc.weightx = 1;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        this.add(connectionsCombo, gbc);
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.gridwidth = 1;
-        gbc.weightx = 0;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.NONE;
-        this.add(nameLabel, gbc);
-        gbc.gridx++;
-        gbc.gridwidth = 4;
-        gbc.weightx = 1;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        this.add(nameField, gbc);
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.gridwidth = 2;
-        gbc.weightx = 0;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        this.add(typeTriggerCombo, gbc);
-        gbc.gridx += 2;
-        gbc.gridwidth = 1;
-        gbc.anchor = GridBagConstraints.NORTHEAST;
-        this.add(positionLabel, gbc);
-        gbc.gridx++;
-        gbc.anchor = GridBagConstraints.NORTHEAST;
-        this.add(positionField, new GridBagConstraints(3, 2,
+                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        commonPanel.add(positionLabel, new GridBagConstraints(1, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        commonPanel.add(positionField, new GridBagConstraints(2, 0,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        gbc.gridx++;
-        this.add(activeBox, gbc);
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.gridwidth = 5;
-
+        commonPanel.add(activeBox, new GridBagConstraints(3, 0,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+        main_panel.add(commonPanel, new GridBagConstraints(0, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
         JPanel topPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbcTop = new GridBagConstraints(0, 0,
                 1, 1, 1, 1,
@@ -311,53 +209,25 @@ public class CreateTriggerPanel extends JPanel {
         gbcTop.fill = GridBagConstraints.BOTH;
         topPanel.add(ddlTableTriggerPanel, gbcTop);
 
-        gbc.gridy++;
-        gbc.weighty = 1;
-        gbc.fill = GridBagConstraints.BOTH;
-
-        JPanel bottomPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbcBottom = new GridBagConstraints(0, 0,
-                1, 1, 1, 1,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
-                0, 0);
-        bottomPanel.add(scrollSqlBody, gbcBottom);
-
-        splitPane = new SplitPaneFactory().create(JSplitPane.VERTICAL_SPLIT, topPanel, bottomPanel);
-        splitPane.setDividerLocation(-1);
-        splitPane.setDividerSize(5);
-
-        this.add(splitPane, gbc);
-
-        gbc.gridy++;
-        gbc.gridx = 3;
-        gbc.weighty = 0;
-        gbc.weightx = 1;
-        gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.SOUTHEAST;
-
-        JPanel okCancelPanel = new JPanel(new GridBagLayout());
-        okCancelPanel.add(okButton, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+        main_panel.add(topPanel,new GridBagConstraints(0, 1,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        okCancelPanel.add(cancelButton, new GridBagConstraints(1, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-//        gbc.gridx++;
-        this.add(okCancelPanel, gbc);
 
+        tabbedPane.add("SQL Body",sqlBodyText);
+        tabbedPane.add("Description",descriptionText);
+
+        GridBagConstraints gbc = new GridBagConstraints();
         databaseTriggerPanel.setLayout(new GridBagLayout());
         tableTriggerPanel.setLayout(new GridBagLayout());
         ddlTriggerPanel.setLayout(new GridBagLayout());
         ddlTableTriggerPanel.setLayout(new GridBagLayout());
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.weightx = 0;
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
+        gbc.insets = new Insets(5,5,5,5);
         gbc.anchor = GridBagConstraints.NORTHEAST;
         databaseTriggerPanel.add(actionLabel, gbc);
         tableTriggerPanel.add(labelTable, gbc);
@@ -449,11 +319,12 @@ public class CreateTriggerPanel extends JPanel {
         }
     }
 
-    void init_edited() {
+    protected void init_edited() {
         typeTriggerCombo.setSelectedIndex(trigger.getIntTriggerType());
         typeTriggerCombo.setEnabled(false);
         nameField.setText(trigger.getName());
         nameField.setEnabled(false);
+        descriptionText.getTextAreaComponent().setText(trigger.getRemarks());
         activeBox.setSelected(trigger.isTriggerActive());
         positionField.setValue(trigger.getTriggerSequence());
         sqlBodyText.setSQLText(trigger.getTriggerSourceCode());
@@ -494,6 +365,31 @@ public class CreateTriggerPanel extends JPanel {
 
     }
 
+    @Override
+    public void create_object() {
+        generateScript();
+    }
+
+    @Override
+    public String getCreateTitle() {
+        return CREATE_TITLE;
+    }
+
+    @Override
+    public String getEditTitle() {
+        return EDIT_TITLE;
+    }
+
+    @Override
+    public String getTypeObject() {
+        return NamedObject.META_TYPES[NamedObject.TRIGGER];
+    }
+
+    @Override
+    public void setDatabaseObject(Object databaseObject) {
+        trigger = (DefaultDatabaseTrigger) databaseObject;
+    }
+
     int getVersion() throws SQLException {
         DatabaseHost host = new DefaultDatabaseHost(connection);
         return host.getDatabaseMetaData().getDatabaseMajorVersion();
@@ -506,8 +402,6 @@ public class CreateTriggerPanel extends JPanel {
         ddlTableTriggerPanel.setVisible(!dbtrigger);
         tableTriggerPanel.setVisible(tabletrigger);
         scrolDDL.setVisible(!tabletrigger && !dbtrigger);
-
-        splitPane.setDividerLocation(-1);
     }
 
     Object[] getTables() {
@@ -515,11 +409,11 @@ public class CreateTriggerPanel extends JPanel {
             Vector<String> tables = new Vector<>();
             String query = "Select RDB$RELATION_NAME,RDB$SYSTEM_FLAG from RDB$RELATIONS" +
                     " WHERE RDB$RELATION_TYPE != 1 order by 1";
-            ResultSet rs = executor.getResultSet(query).getResultSet();
+            ResultSet rs = sender.getResultSet(query).getResultSet();
             while (rs.next()) {
                 tables.add(rs.getString(1));
             }
-            executor.releaseResources();
+            sender.releaseResources();
             return tables.toArray();
         } catch (SQLException e) {
             Log.error("Error load tables for creating trigger");
@@ -575,11 +469,9 @@ public class CreateTriggerPanel extends JPanel {
             }
         }
         query += "POSITION " + positionField.getValue() + "\n";
-        query += sqlBodyText.getSQLText();
-        ExecuteQueryDialog eqd = new ExecuteQueryDialog("Creating trigger", query, connection, true, "^");
-        eqd.display();
-        if (eqd.getCommit())
-            parent.finished();
+        query += sqlBodyText.getSQLText()+"^";
+        query += "COMMENT ON TRIGGER "+nameField.getText()+" IS '"+descriptionText.getTextAreaComponent().getText()+"'^";
+        displayExecuteQueryDialog(query,"^");
     }
 
 }

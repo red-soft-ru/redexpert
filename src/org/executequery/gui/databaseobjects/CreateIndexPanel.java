@@ -1,19 +1,14 @@
 package org.executequery.gui.databaseobjects;
 
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
-import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
-import org.executequery.gui.ExecuteQueryDialog;
-import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.log.Log;
-import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -25,27 +20,11 @@ import java.util.ArrayList;
 import java.util.Vector;
 import java.util.List;
 
-public class CreateIndexPanel extends JPanel {
-
-    private ActionContainer parent;
+public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
     JComboBox tableName;
 
-    JTextField nameText;
-
-    JButton okButton;
-
-    JButton cancelButton;
-
-    DatabaseConnection connection;
-
-    private JComboBox connectionsCombo;
-
-    private DynamicComboBoxModel connectionsModel;
-
     JList<CheckListItem> fields;
-
-    JTabbedPane tabbedPane;
 
     JPanel fieldsPanel;
 
@@ -54,8 +33,6 @@ public class CreateIndexPanel extends JPanel {
     SimpleTextArea description;
 
     SimpleSqlTextPanel computedPanel;
-
-    DefaultStatementExecutor sender;
 
     JScrollPane scrollList;
 
@@ -71,8 +48,6 @@ public class CreateIndexPanel extends JPanel {
 
     boolean edited;
 
-    boolean editing;
-
     public static final String CREATE_TITLE = "Create Index";
 
     public static final String ALTER_TITLE = "Alter Index";
@@ -82,27 +57,16 @@ public class CreateIndexPanel extends JPanel {
     }
 
     public CreateIndexPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseIndex index) {
-        parent = dialog;
-        connection = dc;
-        init();
-        databaseIndex = index;
-        editing = index != null;
-        if (editing) {
-            try {
-                init_edited();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        super(dc,dialog,index);
         edited = false;
     }
 
-    void init_edited() {
-        nameText.setText(databaseIndex.getName().trim());
+    protected void init_edited() {
+        nameField.setText(databaseIndex.getName().trim());
         DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseIndex.getHost(),null,null, NamedObject.META_TYPES[NamedObject.INDEX]);
         databaseIndex = metaTag.getIndexFromName(databaseIndex.getName());
         databaseIndex.loadColumns();
-        nameText.setEnabled(false);
+        nameField.setEnabled(false);
         description.getTextAreaComponent().setText(databaseIndex.getRemarks());
         for (int i = 0; i < tableName.getItemCount(); i++) {
             if (databaseIndex.getTableName().trim().equals(tableName.getItemAt(i))) {
@@ -135,11 +99,35 @@ public class CreateIndexPanel extends JPanel {
 
     }
 
+    @Override
+    public void create_object() {
+        createIndex();
+    }
 
-    void init() {
+    @Override
+    public String getCreateTitle() {
+        return CREATE_TITLE;
+    }
+
+    @Override
+    public String getEditTitle() {
+        return ALTER_TITLE;
+    }
+
+    @Override
+    public String getTypeObject() {
+        return NamedObject.META_TYPES[NamedObject.INDEX];
+    }
+
+    @Override
+    public void setDatabaseObject(Object databaseObject) {
+        databaseIndex = (DefaultDatabaseIndex) databaseObject;
+    }
+
+
+    protected void init() {
         fieldsPanel = new JPanel();
         descriptionPanel = new JPanel();
-        nameText = new JTextField();
         tableName = new JComboBox(new Vector());
         sortingBox = new JComboBox(new String[]{"ASCENDING", "DESCENDING"});
         uniqueBox = new JCheckBox("Unique");
@@ -149,7 +137,6 @@ public class CreateIndexPanel extends JPanel {
         fields.setModel(new DefaultListModel<>());
         scrollList = new JScrollPane(fields);
         this.description = new SimpleTextArea();
-        tabbedPane = new JTabbedPane();
         computedPanel = new SimpleSqlTextPanel();
 
         computedBox.addActionListener(new ActionListener() {
@@ -183,38 +170,6 @@ public class CreateIndexPanel extends JPanel {
                 edited = true;
             }
         });
-
-        okButton = new JButton("OK");
-        okButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                createIndex();
-            }
-        });
-        cancelButton = new JButton("Cancel");
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                parent.finished();
-            }
-        });
-        Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
-        connectionsModel = new DynamicComboBoxModel(connections);
-        connectionsCombo = WidgetFactory.createComboBox(connectionsModel);
-        connectionsCombo.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent event) {
-                if (event.getStateChange() == ItemEvent.DESELECTED) {
-                    return;
-                }
-                connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
-                sender.setDatabaseConnection(connection);
-            }
-        });
-        if (connection != null) {
-            connectionsCombo.setSelectedItem(connection);
-        } else connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
-        sender = new DefaultStatementExecutor(connection, true);
         tableName.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent event) {
@@ -237,49 +192,24 @@ public class CreateIndexPanel extends JPanel {
             }
         });
 
-        this.setLayout(new GridBagLayout());
+        main_panel.setLayout(new GridBagLayout());
 
-        JPanel firstPanel = new JPanel(new GridBagLayout());
-
-        JLabel connLabel = new JLabel("Connection");
-        firstPanel.add(connLabel, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        firstPanel.add(connectionsCombo, new GridBagConstraints(1, 0,
-                3, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
         JLabel tableLabel = new JLabel("Table");
-        firstPanel.add(tableLabel, new GridBagConstraints(0, 1,
+        main_panel.add(tableLabel, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
-        firstPanel.add(tableName, new GridBagConstraints(1, 1,
-                3, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        JLabel nameLabel = new JLabel("Name");
-        firstPanel.add(nameLabel, new GridBagConstraints(0, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        firstPanel.add(nameText, new GridBagConstraints(1, 2,
-                3, 1, 1, 0,
+        main_panel.add(tableName, new GridBagConstraints(1, 0,
+                1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
         JLabel sortLabel = new JLabel("Sorting");
-        firstPanel.add(sortLabel, new GridBagConstraints(0, 3,
+        main_panel.add(sortLabel, new GridBagConstraints(0, 1,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
-        firstPanel.add(sortingBox, new GridBagConstraints(1, 3,
-                3, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        this.add(firstPanel, new GridBagConstraints(0, 0,
-                4, 4, 1, 0,
+        main_panel.add(sortingBox, new GridBagConstraints(1, 1,
+                1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
@@ -300,14 +230,9 @@ public class CreateIndexPanel extends JPanel {
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        this.add(checksPanel, new GridBagConstraints(0, 4,
-                4, 1, 0, 0,
+        main_panel.add(checksPanel, new GridBagConstraints(0, 2,
+                2, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        this.add(tabbedPane, new GridBagConstraints(0, 5,
-                4, 1, 1, 1,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
                 0, 0));
         tabbedPane.add("Fields", fieldsPanel);
         fieldsPanel.setLayout(new BorderLayout());
@@ -315,20 +240,6 @@ public class CreateIndexPanel extends JPanel {
         tabbedPane.add("Description", descriptionPanel);
         descriptionPanel.setLayout(new BorderLayout());
         descriptionPanel.add(description);
-        JPanel okCancelPanel = new JPanel(new GridBagLayout());
-        okCancelPanel.add(okButton, new GridBagConstraints(0, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        okCancelPanel.add(cancelButton, new GridBagConstraints(1, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        this.add(okCancelPanel, new GridBagConstraints(3, 6,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
     }
 
     boolean free_sender = true;
@@ -393,17 +304,17 @@ public class CreateIndexPanel extends JPanel {
                 if(activeBox.isSelected())
                     act = "ACTIVE";
                 else act = "INACTIVE";
-                query = "ALTER INDEX "+nameText.getText()+" "+act+";";
+                query = "ALTER INDEX "+nameField.getText()+" "+act+";";
             }
         } else {
             if(editing)
-                query="DROP INDEX "+nameText.getText()+";";
+                query="DROP INDEX "+nameField.getText()+";";
             query += "CREATE ";
             if (uniqueBox.isSelected())
                 query += "UNIQUE ";
             if (sortingBox.getSelectedIndex() == 1)
                 query += "DESCENDING ";
-            query += "INDEX " + nameText.getText() +
+            query += "INDEX " + nameField.getText() +
                     " ON " + tableName.getSelectedItem() + " ";
             if (computedBox.isSelected()) {
                 query += "COMPUTED BY (" + computedPanel.getSQLText() + ");";
@@ -424,14 +335,11 @@ public class CreateIndexPanel extends JPanel {
                 query += fieldss + ");";
             }
             if(!activeBox.isSelected())
-                query+= "ALTER INDEX "+nameText.getText()+" INACTIVE;";
+                query+= "ALTER INDEX "+nameField.getText()+" INACTIVE;";
         }
         if (!MiscUtils.isNull(description.getTextAreaComponent().getText()))
-            query += "COMMENT ON INDEX " + nameText.getText() + " IS '" + description.getTextAreaComponent().getText() + "'";
-        ExecuteQueryDialog eqd = new ExecuteQueryDialog(CREATE_TITLE, query, connection, true);
-        eqd.display();
-        if (eqd.getCommit())
-            parent.finished();
+            query += "COMMENT ON INDEX " + nameField.getText() + " IS '" + description.getTextAreaComponent().getText() + "'";
+        displayExecuteQueryDialog(query,";");
 
     }
 

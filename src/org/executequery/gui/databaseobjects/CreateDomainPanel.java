@@ -2,10 +2,8 @@ package org.executequery.gui.databaseobjects;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.ActionContainer;
-import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.SelectTypePanel;
 import org.executequery.gui.text.SQLTextPane;
@@ -19,11 +17,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.sql.SQLException;
 
-public class CreateDomainPanel extends JPanel implements KeyListener {
-    private JLabel fieldLabel;
-    private JTabbedPane tabPane;
+public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyListener {
     private JScrollPane scrollDefaultValue;
     private JScrollPane scrollCheck;
     private JScrollPane scrollDescription;
@@ -35,58 +30,32 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
     private JPanel defaultValuePanel;
     private JPanel checkPanel;
     private JPanel descriptionPanel;
-    private JPanel upPanel;
     private JPanel sqlPanel;
     private SelectTypePanel selectTypePanel;
     private JCheckBox notNullBox;
-    private JButton okButton;
-    private JButton cancelButton;
-    private JTextField fieldNameField;
 
     public static final String CREATE_TITLE = "Create Domain";
     public static final String EDIT_TITLE = "Edit Domain";
 
-    DatabaseConnection databaseConnection;
     ColumnData columnData;
-    ActionContainer parent;
     MetaDataValues metaData;
-    boolean editing;
     String domain;
 
     public CreateDomainPanel(DatabaseConnection connection, ActionContainer parent, String domain) {
-        databaseConnection = connection;
-        this.parent = parent;
-        this.domain = domain;
-        metaData = new MetaDataValues(databaseConnection, true);
-        columnData = new ColumnData(databaseConnection);
-        editing = domain != null;
-        init();
-        if (editing) {
-            try {
-                init_edited();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
+        super(connection,parent,domain);
     }
 
     public CreateDomainPanel(DatabaseConnection connection, ActionContainer parent) {
         this(connection, parent, null);
     }
 
-    void init() {
-        upPanel = new JPanel();
+    protected void init() {
         defaultValuePanel = new JPanel();
         checkPanel = new JPanel();
         descriptionPanel = new JPanel();
         sqlPanel = new JPanel();
         selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(), metaData.getIntDataTypesArray(), columnData);
-        tabPane = new JTabbedPane();
-        fieldLabel = new JLabel("Name:");
-        fieldNameField = new JTextField(15);
         notNullBox = new JCheckBox("Not Null");
-        okButton = new JButton("OK");
-        cancelButton = new JButton("Cancel");
         scrollDefaultValue = new JScrollPane();
         scrollCheck = new JScrollPane();
         scrollDescription = new JScrollPane();
@@ -104,8 +73,6 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
 
         scrollSQL.setViewportView(sqlTextPane);
 
-        fieldNameField.addKeyListener(this);
-
         notNullBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -114,11 +81,11 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
             }
         });
         columnData.setNotNull(notNullBox.isSelected());
-        tabPane.addChangeListener(new ChangeListener() {
+        tabbedPane.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent changeEvent) {
                 selectTypePanel.refreshColumn();
-                if (tabPane.getSelectedComponent() == sqlPanel) {
+                if (tabbedPane.getSelectedComponent() == sqlPanel) {
                     generateSQL();
                 }
             }
@@ -130,12 +97,7 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
         okButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                if (tabPane.getSelectedComponent() != sqlPanel)
-                    generateSQL();
-                ExecuteQueryDialog eqd = new ExecuteQueryDialog("Add Domain", sqlTextPane.getText(), databaseConnection, true);
-                eqd.display();
-                if (eqd.getCommit())
-                    parent.finished();
+
             }
         });
 
@@ -147,24 +109,13 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
         });
 
 
-        this.setLayout(new GridBagLayout());
-        upPanel.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 1, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(5, 5, 2, 2), 0, 0);
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        upPanel.add(fieldLabel, gbc);
-        gbc.gridx++;
-        gbc.gridy = 0;
-        gbc.weightx = 0.1;
-        upPanel.add(fieldNameField, gbc);
-        gbc.gridx++;
-        gbc.gridy = 0;
-        gbc.weightx = 0.5;
-        upPanel.add(notNullBox, gbc);
-        gbc.gridy = 0;
-        gbc.gridx = 0;
-        gbc.weightx = 0;
-        gbc.weighty = 0;
+        main_panel.setLayout(new GridBagLayout());
+
+
+        main_panel.add(notNullBox, new GridBagConstraints(0, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
         defaultValuePanel.setLayout(new GridBagLayout());
         checkPanel.setLayout(new GridBagLayout());
         descriptionPanel.setLayout(new GridBagLayout());
@@ -174,38 +125,14 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
         checkPanel.add(scrollCheck, gbcFull);
         descriptionPanel.add(scrollDescription, gbcFull);
         sqlPanel.add(scrollSQL, gbcFull);
-        tabPane.add("Type", selectTypePanel);
-        tabPane.add("Default Value", defaultValuePanel);
-        tabPane.add("Check", checkPanel);
-        tabPane.add("Description", descriptionPanel);
-        tabPane.add("SQL", sqlPanel);
-        tabPane.setPreferredSize(new Dimension(700, 400));
-        gbc.gridy = 0;
-        gbc.gridx = 0;
-        gbc.gridwidth = 3;
-        gbc.weightx = 1;
-        gbc.weighty = 0;
-        gbc.insets = new Insets(0, 0, 0, 0);
-        gbc.fill = GridBagConstraints.BOTH;
-        this.add(upPanel, gbc);
-        gbc.gridy++;
-        gbc.weighty = 1;
-        this.add(tabPane, gbc);
-        gbc.gridy++;
-        gbc.gridwidth = 1;
-        gbc.weightx = 1;
-        gbc.weighty = 0;
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        this.add(new JPanel(), gbc);
-        gbc.weightx = 0.1;
-        gbc.gridx++;
-        this.add(okButton, gbc);
-        gbc.gridx++;
-        this.add(cancelButton, gbc);
+        tabbedPane.add("Type", selectTypePanel);
+        tabbedPane.add("Default Value", defaultValuePanel);
+        tabbedPane.add("Check", checkPanel);
+        tabbedPane.add("Description", descriptionPanel);
+        tabbedPane.add("SQL", sqlPanel);
     }
 
-    void init_edited() throws SQLException {
+    protected void init_edited()  {
         columnData.setColumnName(domain);
         columnData.setDomain(domain);
         columnData.setDescription(columnData.getDomainDescription());
@@ -215,17 +142,41 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
         descriptionTextPane.setText(columnData.getDescription());
         checkTextPane.setText(columnData.getCheck());
         defaultValueTextPane.setText(columnData.getDefaultValue());
-        fieldNameField.setText(columnData.getColumnName());
+        nameField.setText(columnData.getColumnName());
         notNullBox.setSelected(columnData.isRequired());
-        if (getVersion() < 3)
+        if (getDatabaseVersion() < 3)
             notNullBox.setEnabled(false);
         selectTypePanel.refresh();
         columnData.makeCopy();
     }
 
-    int getVersion() throws SQLException {
-        DatabaseHost host = new DefaultDatabaseHost(databaseConnection);
-        return host.getDatabaseMetaData().getDatabaseMajorVersion();
+    @Override
+    public void create_object() {
+        if (tabbedPane.getSelectedComponent() != sqlPanel)
+            generateSQL();
+        displayExecuteQueryDialog(sqlTextPane.getText(),";");
+    }
+
+    @Override
+    public String getCreateTitle() {
+        return CREATE_TITLE;
+    }
+
+    @Override
+    public String getEditTitle() {
+        return EDIT_TITLE;
+    }
+
+    @Override
+    public String getTypeObject() {
+        return NamedObject.META_TYPES[NamedObject.DOMAIN];
+    }
+
+    @Override
+    public void setDatabaseObject(Object databaseObject) {
+        this.domain = (String)databaseObject;
+        metaData = new MetaDataValues(connection, true);
+        columnData = new ColumnData(connection);
     }
 
     @Override
@@ -247,14 +198,15 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
             columnData.setCheck(checkTextPane.getText());
         } else if (keyEvent.getSource() == descriptionTextPane) {
             columnData.setDescription(descriptionTextPane.getText());
-        } else if (keyEvent.getSource() == fieldNameField) {
-            columnData.setColumnName(fieldNameField.getText());
+        } else if (keyEvent.getSource() == nameField) {
+            columnData.setColumnName(nameField.getText());
         }
 
     }
 
     void generateSQL() {
         StringBuffer sb = new StringBuffer();
+        columnData.setColumnName(nameField.getText());
         sb.setLength(0);
         if (editing) {
             if (columnData.isChanged()) {

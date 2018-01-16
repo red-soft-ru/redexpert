@@ -5,6 +5,7 @@ import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.components.BottomButtonPanel;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
@@ -40,40 +41,19 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
      */
     public static final String FRAME_ICON = "NewProcedure16.png";
 
-    /**
-     * the parent container
-     */
-    private ActionContainer parent;
+
 
     /**
      * <p> Constructs a new instance.
      */
-    public CreateProcedurePanel(ActionContainer parent) {
-        super();
-        this.parent = parent;
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        setFocusComponent();
-    }
 
     public CreateProcedurePanel(DatabaseConnection dc, ActionContainer parent) {
-        this(parent);
-        connectionsCombo.setSelectedItem(dc);
+        this(dc,parent,null);
+
     }
 
     public CreateProcedurePanel(DatabaseConnection connection, ActionContainer parent, String procedure) {
-        super(procedure);
-        connectionsCombo.setSelectedItem(connection);
-        this.parent = parent;
-        try {
-            initEditing();
-            alterInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        super(connection,parent,procedure);
         setFocusComponent();
     }
 
@@ -175,11 +155,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
     private void createProcedure() {
         try {
             String querys = getSQLText();
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog("Creating or altering procedure", querys, getSelectedConnection(), true, "^");
-            eqd.display();
-            boolean commit = eqd.getCommit();
-            if (commit)
-                parent.finished();
+            displayExecuteQueryDialog(querys,"^");
 
         } catch (Exception exc) {
             GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc);
@@ -191,4 +167,33 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
         return TITLE;
     }
 
+    @Override
+    protected void init_edited() {
+        super.initEditing();
+    }
+
+    @Override
+    public void create_object() {
+        createProcedure();
+    }
+
+    @Override
+    public String getCreateTitle() {
+        return TITLE;
+    }
+
+    @Override
+    public String getEditTitle() {
+        return EDIT_TITLE;
+    }
+
+    @Override
+    public String getTypeObject() {
+        return NamedObject.META_TYPES[NamedObject.PROCEDURE];
+    }
+
+    @Override
+    public void setDatabaseObject(Object databaseObject) {
+        procedure = (String)databaseObject;
+    }
 }

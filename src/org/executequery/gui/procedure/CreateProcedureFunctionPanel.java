@@ -12,9 +12,11 @@ import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.PooledDatabaseMetaData;
+import org.executequery.gui.ActionContainer;
 import org.executequery.gui.FocusComponentPanel;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.databaseobjects.AbstractCreateObjectPanel;
 import org.executequery.gui.table.*;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
@@ -45,26 +47,12 @@ import java.util.regex.Pattern;
 /**
  * @author vasiliy
  */
-public abstract class CreateProcedureFunctionPanel extends JPanel
+public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectPanel
         implements FocusComponentPanel,
         ItemListener,
         TextEditorContainer {
 
-    private String procedure;
-    /**
-     * The procedure name field
-     */
-    protected JTextField nameField;
-
-    /**
-     * The connection combo selection
-     */
-    protected JComboBox connectionsCombo;
-
-    /**
-     * the schema combo box model
-     */
-    protected DynamicComboBoxModel connectionsModel;
+    protected String procedure;
 
     /**
      * The input parameters for procedure
@@ -90,11 +78,6 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
      * The text pane showing SQL generated
      */
     protected SimpleSqlTextPanel outSqlText;
-
-    /**
-     * The tabbed pane containing parameters
-     */
-    private JTabbedPane procedureTabs;
 
     /**
      * The tabbed pane containing parameters
@@ -135,23 +118,12 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     /**
      * <p> Constructs a new instance.
      */
-    public CreateProcedureFunctionPanel() {
-        super(new BorderLayout());
 
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+    public CreateProcedureFunctionPanel(DatabaseConnection dc, ActionContainer dialog,String procedure) {
+        super(dc,dialog,procedure);
     }
 
-    public CreateProcedureFunctionPanel(String procedure) {
-        this();
-        this.procedure = procedure;
-    }
-
-    public void initEditing() throws Exception {
+    public void initEditing() {
         nameField.setText(this.procedure);
         nameField.setEnabled(false);
         loadParameters();
@@ -428,22 +400,11 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         }
     }
 
-    private void init() throws Exception {
+    protected void init()  {
 
-        nameField = WidgetFactory.createTextField();
         //initialise the schema label
         metaData = new MetaDataValues(true);
 
-        // combo boxes
-        Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
-        connectionsModel = new DynamicComboBoxModel(connections);
-        connectionsCombo = WidgetFactory.createComboBox(connectionsModel);
-        connectionsCombo.addItemListener(this);
-
-        // create tab pane
-        procedureTabs = new JTabbedPane();
-
-        // create tab pane
         parametersTabs = new JTabbedPane();
         // create the column definition panel
         // and add this to the tabbed pane
@@ -476,9 +437,6 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.NORTHWEST;
-
-        WidgetFactory.addLabelFieldPair(mainPanel, "Connection:", connectionsCombo, gbc);
-        WidgetFactory.addLabelFieldPair(mainPanel, "Procedure Name:", nameField, gbc);
 
         JPanel topPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbcTop = new GridBagConstraints(0, 0,
@@ -522,9 +480,9 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
 
         descriptionPanel.add(descriptionArea, gbc1);
 
-        procedureTabs.insertTab("Edit", null, containerPanel, null, 0);
+        tabbedPane.insertTab("Edit", null, containerPanel, null, 0);
 
-        procedureTabs.insertTab("Description", null, descriptionPanel, null, 1);
+        tabbedPane.insertTab("Description", null, descriptionPanel, null, 1);
 
         ddlTextPanel = new SimpleSqlTextPanel();
 
@@ -540,14 +498,9 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         gbc2.insets.bottom = 5;
 
         ddlPanel.add(ddlTextPanel, gbc2);
-        procedureTabs.insertTab("DDL", null, ddlPanel, null, 2);
+        tabbedPane.insertTab("DDL", null, ddlPanel, null, 2);
 
-        mainPanel.add(procedureTabs, new GridBagConstraints(0, 2,
-                2, 1, 1, 1,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        procedureTabs.addChangeListener(new ChangeListener() {
+        tabbedPane.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent changeEvent) {
                 generateScript();
@@ -555,16 +508,11 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         });
 
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        add(mainPanel, BorderLayout.CENTER);
+
 
         sqlBuffer = new StringBuffer(CreateTableSQLSyntax.CREATE_TABLE);
 
         // check initial values for possible value inits
-        if (connections == null || connections.isEmpty()) {
-            connectionsCombo.setEnabled(false);
-        } else {
-            DatabaseConnection connection =
-                    (DatabaseConnection) connections.elementAt(0);
             metaData.setDatabaseConnection(connection);
             inputParametersPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
             inputParametersPanel.setDomains(getDomains());
@@ -578,7 +526,7 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
             variablesPanel.setDomains(getDomains());
             variablesPanel.setDatabaseConnection(connection);
             //metaData
-        }
+
 
     }
 
@@ -913,7 +861,7 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     }
 
     public String getSQLText() {
-        if (procedureTabs.getSelectedComponent() != ddlPanel)
+        if (tabbedPane.getSelectedComponent() != ddlPanel)
             generateScript();
         return ddlTextPanel.getSQLText();
     }

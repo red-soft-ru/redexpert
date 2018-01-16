@@ -105,38 +105,39 @@ public class SelectTypePanel extends JPanel {
         });
 
         this.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 0.01, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 0, 0);
-        this.add(typeLabel, gbc);
-        gbc.gridy++;
-        gbc.weighty = 0.01;
-        this.add(sizeLabel, gbc);
-        gbc.gridy++;
-        this.add(scaleLabel, gbc);
-        gbc.gridy++;
-        this.add(subtypeLabel, gbc);
-        gbc.gridy++;
-        gbc.weighty = 1;
-        this.add(encodingLabel, gbc);
-        gbc.gridy = 0;
-        gbc.gridx++;
-        gbc.weightx = 0.3;
-        gbc.weighty = 0;
-        this.add(typeBox, gbc);
-        gbc.gridy++;
-        this.add(sizeField, gbc);
-        gbc.gridy++;
-        this.add(scaleField, gbc);
-        gbc.gridy++;
-        this.add(subtypeField, gbc);
-        gbc.gridy++;
-        gbc.weighty = 1;
-        this.add(encodingBox, gbc);
-        gbc.weighty = 0;
-        gbc.gridy = 0;
-        gbc.gridx++;
-        gbc.weightx = 1;
-        gbc.gridheight = 4;
-        this.add(new JPanel(), gbc);
+        this.add(typeLabel, new GridBagConstraints(0, 0, 1, 1,
+                0, 0, GridBagConstraints.NORTH,
+                GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
+        this.add(sizeLabel, new GridBagConstraints(0, 1, 1, 1,
+                0, 0, GridBagConstraints.NORTH,
+                GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
+        this.add(scaleLabel, new GridBagConstraints(0, 2, 1, 1,
+                0, 0, GridBagConstraints.NORTH,
+                GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
+        this.add(subtypeLabel, new GridBagConstraints(0, 3, 1, 1,
+                0, 0, GridBagConstraints.NORTH,
+                GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
+        this.add(encodingLabel, new GridBagConstraints(0, 4, 1, 1,
+                0, 0, GridBagConstraints.NORTH,
+                GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
+        this.add(typeBox, new GridBagConstraints(1, 0, 1, 1,
+                1, 0, GridBagConstraints.NORTH,
+                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 0, 0));
+        this.add(sizeField, new GridBagConstraints(1, 1, 1, 1,
+                1, 0, GridBagConstraints.NORTH,
+                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 0, 0));
+        this.add(scaleField, new GridBagConstraints(1, 2, 1, 1,
+                1, 0, GridBagConstraints.NORTH,
+                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 0, 0));
+        this.add(subtypeField, new GridBagConstraints(1, 3, 1, 1,
+                1, 0, GridBagConstraints.NORTH,
+                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 0, 0));
+        this.add(encodingBox, new GridBagConstraints(1, 4, 1, 1,
+                1, 0, GridBagConstraints.NORTH,
+                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 0, 0));
+        this.add(new JPanel(), new GridBagConstraints(1, 4, 1, 1,
+                1, 1, GridBagConstraints.NORTH,
+                GridBagConstraints.BOTH, new Insets(1, 1, 1, 1), 0, 0));
     }
 
     void refreshType() {

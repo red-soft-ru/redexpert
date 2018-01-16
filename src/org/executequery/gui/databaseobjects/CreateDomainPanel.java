@@ -75,15 +75,15 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
     }
 
     void init() {
-        upPanel = new JPanel();
-        defaultValuePanel = new JPanel();
-        checkPanel = new JPanel();
-        descriptionPanel = new JPanel();
-        sqlPanel = new JPanel();
+        upPanel = new JPanel(new GridBagLayout());
+        defaultValuePanel = new JPanel(new GridBagLayout());
+        checkPanel = new JPanel(new GridBagLayout());
+        descriptionPanel = new JPanel(new GridBagLayout());
+        sqlPanel = new JPanel(new GridBagLayout());
         selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(), metaData.getIntDataTypesArray(), columnData);
         tabPane = new JTabbedPane();
         fieldLabel = new JLabel("Name:");
-        fieldNameField = new JTextField(15);
+        fieldNameField = new JTextField();
         notNullBox = new JCheckBox("Not Null");
         okButton = new JButton("OK");
         cancelButton = new JButton("Cancel");
@@ -148,61 +148,54 @@ public class CreateDomainPanel extends JPanel implements KeyListener {
 
 
         this.setLayout(new GridBagLayout());
-        upPanel.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 1, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(5, 5, 2, 2), 0, 0);
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        upPanel.add(fieldLabel, gbc);
-        gbc.gridx++;
-        gbc.gridy = 0;
-        gbc.weightx = 0.1;
-        upPanel.add(fieldNameField, gbc);
-        gbc.gridx++;
-        gbc.gridy = 0;
-        gbc.weightx = 0.5;
-        upPanel.add(notNullBox, gbc);
-        gbc.gridy = 0;
-        gbc.gridx = 0;
-        gbc.weightx = 0;
-        gbc.weighty = 0;
-        defaultValuePanel.setLayout(new GridBagLayout());
-        checkPanel.setLayout(new GridBagLayout());
-        descriptionPanel.setLayout(new GridBagLayout());
-        sqlPanel.setLayout(new GridBagLayout());
-        GridBagConstraints gbcFull = new GridBagConstraints(0, 0, 1, 1, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0);
-        defaultValuePanel.add(scrollDefaultValue, gbcFull);
-        checkPanel.add(scrollCheck, gbcFull);
-        descriptionPanel.add(scrollDescription, gbcFull);
-        sqlPanel.add(scrollSQL, gbcFull);
+        upPanel.add(fieldLabel, new GridBagConstraints(0, 0, 1, 1,
+                0, 0, GridBagConstraints.NORTHWEST,
+                GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
+        upPanel.add(fieldNameField, new GridBagConstraints(1, 0, 1, 1,
+                1, 0, GridBagConstraints.NORTHWEST,
+                GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+        upPanel.add(notNullBox, new GridBagConstraints(2, 0, 0, 1,
+                0, 0, GridBagConstraints.NORTHWEST,
+                GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
+
+        this.add(upPanel, new GridBagConstraints(0, 0, 3, 1,
+                1, 0, GridBagConstraints.NORTHWEST,
+                GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+
+        defaultValuePanel.add(scrollDefaultValue, new GridBagConstraints(0, 0, 1, 1,
+                1, 1, GridBagConstraints.NORTHWEST,
+                GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+        checkPanel.add(scrollCheck, new GridBagConstraints(0, 0, 1, 1,
+                1, 1, GridBagConstraints.NORTHWEST,
+                GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+        descriptionPanel.add(scrollDescription, new GridBagConstraints(0, 0, 1, 1,
+                1, 1, GridBagConstraints.NORTHWEST,
+                GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+        sqlPanel.add(scrollSQL, new GridBagConstraints(0, 0, 1, 1,
+                1, 1, GridBagConstraints.NORTHWEST,
+                GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
         tabPane.add("Type", selectTypePanel);
         tabPane.add("Default Value", defaultValuePanel);
         tabPane.add("Check", checkPanel);
         tabPane.add("Description", descriptionPanel);
         tabPane.add("SQL", sqlPanel);
-        tabPane.setPreferredSize(new Dimension(700, 400));
-        gbc.gridy = 0;
-        gbc.gridx = 0;
-        gbc.gridwidth = 3;
-        gbc.weightx = 1;
-        gbc.weighty = 0;
-        gbc.insets = new Insets(0, 0, 0, 0);
-        gbc.fill = GridBagConstraints.BOTH;
-        this.add(upPanel, gbc);
-        gbc.gridy++;
-        gbc.weighty = 1;
-        this.add(tabPane, gbc);
-        gbc.gridy++;
-        gbc.gridwidth = 1;
-        gbc.weightx = 1;
-        gbc.weighty = 0;
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        this.add(new JPanel(), gbc);
-        gbc.weightx = 0.1;
-        gbc.gridx++;
-        this.add(okButton, gbc);
-        gbc.gridx++;
-        this.add(cancelButton, gbc);
+
+        this.add(tabPane, new GridBagConstraints(0, 1, 3, 1,
+                1, 1, GridBagConstraints.NORTHWEST,
+                GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+
+        JPanel okCancelPanel = new JPanel(new GridBagLayout());
+        okCancelPanel.add(okButton, new GridBagConstraints(0, 0,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        okCancelPanel.add(cancelButton, new GridBagConstraints(1, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        this.add(okCancelPanel, new GridBagConstraints(2, 3, 0, 1,
+                0, 0, GridBagConstraints.EAST,
+                GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
     }
 
     void init_edited() throws SQLException {

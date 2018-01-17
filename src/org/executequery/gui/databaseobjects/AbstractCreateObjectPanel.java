@@ -55,14 +55,14 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         nameField.setText("NEW_" + getTypeObject());
         tabbedPane = new JTabbedPane();
         tabbedPane.setPreferredSize(new Dimension(700, 400));
-        okButton = new JButton("OK");
+        okButton = new JButton(Bundles.getCommon("ok.button"));
         okButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 create_object();
             }
         });
-        cancelButton = new JButton("Cancel");
+        cancelButton = new JButton(Bundles.getCommon("cancel.button"));
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -88,7 +88,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         this.setLayout(new GridBagLayout());
         sender = new DefaultStatementExecutor(connection, true);
         first_panel = new JPanel(new GridBagLayout());
-        JLabel connLabel = new JLabel("Connection");
+        JLabel connLabel = new JLabel(Bundles.getCommon("connection"));
         first_panel.add(connLabel, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -97,7 +97,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        JLabel nameLabel = new JLabel("Name");
+        JLabel nameLabel = new JLabel(Bundles.getCommon("name"));
         first_panel.add(nameLabel, new GridBagConstraints(0, 1,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),

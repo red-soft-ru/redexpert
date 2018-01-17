@@ -128,28 +128,27 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
     protected void init() {
         if (getDatabaseVersion() > 2)
-            typeTriggerCombo = new JComboBox(new String[]{"Table trigger", "Database trigger", "DDL trigger"});
-        else typeTriggerCombo = new JComboBox(new String[]{"Table trigger", "Database trigger"});
-        positionLabel = new JLabel("Position");
+            typeTriggerCombo = new JComboBox(new String[]{bundleString("table-trigger"), bundleString("database-trigger"), bundleString("DDL-trigger")});
+        else
+            typeTriggerCombo = new JComboBox(new String[]{bundleString("table-trigger"), bundleString("database-trigger")});
+        positionLabel = new JLabel(bundleString("position"));
         descriptionText = new SimpleTextArea();
         SpinnerModel model = new SpinnerNumberModel(0, 0, Short.MAX_VALUE, 1);
         positionField = new JSpinner(model);
         positionField.setValue(0);
-        activeBox = new JCheckBox("Active");
+        activeBox = new JCheckBox(bundlesString("active"));
         databaseTriggerPanel = new JPanel();
         actionCombo = new JComboBox(new String[]{"CONNECT", "DISCONNECT", "TRANSACTION START", "TRANSACTION COMMIT", "TRANSACTION ROLLBACK"});
-        actionLabel = new JLabel("Event");
+        actionLabel = new JLabel(bundleString("event"));
         tableTriggerPanel = new JPanel();
         typeTableTriggerCombo = new JComboBox(new String[]{"BEFORE", "AFTER"});
         insertBox = new JCheckBox("INSERT");
         updateBox = new JCheckBox("UPDATE");
         deleteBox = new JCheckBox("DELETE");
-        labelTable = new JLabel("Table");
-        beforeAfterlabel = new JLabel("Before/After");
+        labelTable = new JLabel(bundlesString("table"));
+        beforeAfterlabel = new JLabel(bundleString("before-after"));
         tablesCombo = new JComboBox(getTables());
         sqlBodyText = new SimpleSqlTextPanel();
-        okButton = new JButton("OK");
-        cancelButton = new JButton("Cancel");
         ddlTriggerPanel = new JPanel(new GridBagLayout());
         scrolDDL = new JScrollPane(ddlTriggerPanel);
         scrolDDL.setMinimumSize(new Dimension(100, 200));
@@ -214,8 +213,8 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        tabbedPane.add("SQL Body", sqlBodyText);
-        tabbedPane.add("Description", descriptionText);
+        tabbedPane.add(bundlesString("SQL"), sqlBodyText);
+        tabbedPane.add(bundlesString("description"), descriptionText);
 
         GridBagConstraints gbc = new GridBagConstraints();
         databaseTriggerPanel.setLayout(new GridBagLayout());

@@ -90,7 +90,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             computedBox.setSelected(true);
             computedPanel.setSQLText(databaseIndex.getExpression());
             tabbedPane.remove(0);
-            tabbedPane.insertTab("Computed", null, computedPanel, null, 0);
+            tabbedPane.insertTab(bundlesString("computed"), null, computedPanel, null, 0);
             tabbedPane.setSelectedIndex(0);
         }
         uniqueBox.setSelected(databaseIndex.isUnique());
@@ -129,10 +129,10 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         fieldsPanel = new JPanel();
         descriptionPanel = new JPanel();
         tableName = new JComboBox(new Vector());
-        sortingBox = new JComboBox(new String[]{"ASCENDING", "DESCENDING"});
-        uniqueBox = new JCheckBox("Unique");
-        computedBox = new JCheckBox("Computed");
-        activeBox = new JCheckBox("Active");
+        sortingBox = new JComboBox(new String[]{bundleString("ascending"), bundleString("descending")});
+        uniqueBox = new JCheckBox(bundleString("unique"));
+        computedBox = new JCheckBox(bundlesString("computed"));
+        activeBox = new JCheckBox(bundlesString("active"));
         fields = new JList<>();
         fields.setModel(new DefaultListModel<>());
         scrollList = new JScrollPane(fields);
@@ -144,10 +144,10 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             public void actionPerformed(ActionEvent actionEvent) {
                 if (computedBox.isSelected()) {
                     tabbedPane.remove(0);
-                    tabbedPane.insertTab("Computed", null, computedPanel, null, 0);
+                    tabbedPane.insertTab(bundlesString("computed"), null, computedPanel, null, 0);
                 } else {
                     tabbedPane.remove(0);
-                    tabbedPane.insertTab("Fields", null, fieldsPanel, null, 0);
+                    tabbedPane.insertTab(bundleString("fields"), null, fieldsPanel, null, 0);
                 }
                 tabbedPane.setSelectedIndex(0);
                 edited = true;
@@ -194,7 +194,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
         main_panel.setLayout(new GridBagLayout());
 
-        JLabel tableLabel = new JLabel("Table");
+        JLabel tableLabel = new JLabel(bundlesString("table"));
         main_panel.add(tableLabel, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -203,7 +203,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        JLabel sortLabel = new JLabel("Sorting");
+        JLabel sortLabel = new JLabel(bundleString("sorting"));
         main_panel.add(sortLabel, new GridBagConstraints(0, 1,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -234,10 +234,10 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                 2, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
-        tabbedPane.add("Fields", fieldsPanel);
+        tabbedPane.add(bundleString("fields"), fieldsPanel);
         fieldsPanel.setLayout(new BorderLayout());
         fieldsPanel.add(scrollList);
-        tabbedPane.add("Description", descriptionPanel);
+        tabbedPane.add(bundlesString("description"), descriptionPanel);
         descriptionPanel.setLayout(new BorderLayout());
         descriptionPanel.add(description);
     }

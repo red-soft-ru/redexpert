@@ -7,6 +7,7 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.SelectTypePanel;
 import org.executequery.gui.text.SQLTextPane;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -125,11 +126,11 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         checkPanel.add(scrollCheck, gbcFull);
         descriptionPanel.add(scrollDescription, gbcFull);
         sqlPanel.add(scrollSQL, gbcFull);
-        tabbedPane.add("Type", selectTypePanel);
-        tabbedPane.add("Default Value", defaultValuePanel);
-        tabbedPane.add("Check", checkPanel);
-        tabbedPane.add("Description", descriptionPanel);
-        tabbedPane.add("SQL", sqlPanel);
+        tabbedPane.add(bundlesString("type"), selectTypePanel);
+        tabbedPane.add(bundlesString("default-value"), defaultValuePanel);
+        tabbedPane.add(bundlesString("check"), checkPanel);
+        tabbedPane.add(bundlesString("description"), descriptionPanel);
+        tabbedPane.add(bundlesString("SQL"), sqlPanel);
     }
 
     protected void init_edited() {

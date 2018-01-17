@@ -63,8 +63,8 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
         });
 
         //create location elements
-        tabbedPane.add("SQL Body", sqlTextPanel);
-        tabbedPane.add("Description", descriptionTextArea);
+        tabbedPane.add(bundlesString("SQL"), sqlTextPanel);
+        tabbedPane.add(bundlesString("description"), descriptionTextArea);
 
 
         Action autoCompletePopupAction = autoCompletePopup.getPopupAction();

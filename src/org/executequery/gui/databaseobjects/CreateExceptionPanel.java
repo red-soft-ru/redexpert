@@ -54,8 +54,8 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
     protected void init() {
         descriptionPanel = new SimpleTextArea();
         textExceptionPanel = new SimpleTextArea();
-        tabbedPane.add("Text Exception", textExceptionPanel);
-        tabbedPane.add("Description", descriptionPanel);
+        tabbedPane.add(bundlesString("text"), textExceptionPanel);
+        tabbedPane.add(bundlesString("description"), descriptionPanel);
 
     }
 

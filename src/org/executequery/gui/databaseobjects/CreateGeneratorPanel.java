@@ -86,7 +86,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
         this.description = new SimpleTextArea();
 
         main_panel.setLayout(new GridBagLayout());
-        JLabel startLabel = new JLabel("Start Value");
+        JLabel startLabel = new JLabel(bundleString("start-value"));
         main_panel.add(startLabel, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
@@ -96,7 +96,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        labelIncrement = new JLabel("Increment");
+        labelIncrement = new JLabel(bundleString("increment"));
         main_panel.add(labelIncrement, new GridBagConstraints(0, 1,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
@@ -105,7 +105,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        tabbedPane.add("Description", description);
+        tabbedPane.add(bundlesString("description"), description);
         if (getDatabaseVersion() < 3) {
             labelIncrement.setVisible(false);
             incrementText.setVisible(false);

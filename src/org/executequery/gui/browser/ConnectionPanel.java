@@ -389,32 +389,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
         bgbc.weightx = 0.1;
         basicPanel.add(passwordOptionsPanel, bgbc);
 
-        JLabel charsetLabel = new DefaultFieldLabel(bundleString("CharacterSet"));
-        bgbc.gridy = 2;
-        bgbc.gridx = 0;
-        bgbc.gridwidth = 1;
-        bgbc.weightx = 0;
-        basicPanel.add(charsetLabel, bgbc);
-
-        bgbc.gridx = 1;
-        bgbc.gridwidth = 1;
-        bgbc.insets.left = 5;
-        bgbc.weightx = 0.25;
-        basicPanel.add(charsetsCombo, bgbc);
-
-        JLabel roleLabel = new DefaultFieldLabel(bundleString("Role"));
-        bgbc.gridy = 2;
-        bgbc.gridx = 2;
-        bgbc.gridwidth = 1;
-        bgbc.weightx = 0;
-        basicPanel.add(roleLabel, bgbc);
-
-        bgbc.gridx = 3;
-        bgbc.gridwidth = 2;
-        bgbc.insets.left = 5;
-        bgbc.weightx = 0.5;
-        basicPanel.add(roleField, bgbc);
-
         addLabelFieldPair(mainPanel, bundleString("ConnectionParameters"),
                 methodCombo, bundleString("ConnectionParameters.tool-tip"), gbc);
 
@@ -501,6 +475,31 @@ public class ConnectionPanel extends AbstractConnectionPanel
         sgbc.gridx = 0;
         sgbc.gridwidth = GridBagConstraints.REMAINDER;
         standardPanel.add(basicPanel, sgbc);
+
+        JLabel charsetLabel = new DefaultFieldLabel(bundleString("CharacterSet"));
+        sgbc.gridy++;
+        sgbc.gridx = 0;
+        sgbc.gridwidth = 1;
+        sgbc.weightx = 0;
+        standardPanel.add(charsetLabel, sgbc);
+
+        sgbc.gridx = 1;
+        sgbc.gridwidth = 1;
+        sgbc.insets.left = 5;
+        sgbc.weightx = 0.25;
+        standardPanel.add(charsetsCombo, sgbc);
+
+        JLabel roleLabel = new DefaultFieldLabel(bundleString("Role"));
+        sgbc.gridx = 2;
+        sgbc.gridwidth = 1;
+        sgbc.weightx = 0;
+        standardPanel.add(roleLabel, sgbc);
+
+        sgbc.gridx = 3;
+        sgbc.gridwidth = 2;
+        sgbc.insets.left = 5;
+        sgbc.weightx = 0.5;
+        standardPanel.add(roleField, sgbc);
 
         gbc.gridy++;
         gbc.gridx = 0;

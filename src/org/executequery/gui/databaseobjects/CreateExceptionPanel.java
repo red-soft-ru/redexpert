@@ -19,7 +19,7 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
     public static final String ALTER_TITLE = "Edit Exception";
 
     public CreateExceptionPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseException exception) {
-        super(dc,dialog,exception);
+        super(dc, dialog, exception);
     }
 
     public CreateExceptionPanel(DatabaseConnection dc, ActionContainer dialog) {
@@ -48,7 +48,7 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
 
     @Override
     public void setDatabaseObject(Object databaseObject) {
-        this.exception = (DefaultDatabaseException)databaseObject;
+        this.exception = (DefaultDatabaseException) databaseObject;
     }
 
     protected void init() {
@@ -69,7 +69,7 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
     void generateScript() {
         String query = "CREATE OR ALTER EXCEPTION " + nameField.getText() + " '" + textExceptionPanel.getTextAreaComponent().getText() + "'^";
         query += "COMMENT ON EXCEPTION " + nameField.getText() + " IS '" + descriptionPanel.getTextAreaComponent().getText() + "'";
-        displayExecuteQueryDialog(query,"^");
+        displayExecuteQueryDialog(query, "^");
     }
 
 

@@ -119,8 +119,8 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
      * <p> Constructs a new instance.
      */
 
-    public CreateProcedureFunctionPanel(DatabaseConnection dc, ActionContainer dialog,String procedure) {
-        super(dc,dialog,procedure);
+    public CreateProcedureFunctionPanel(DatabaseConnection dc, ActionContainer dialog, String procedure) {
+        super(dc, dialog, procedure);
     }
 
     public void initEditing() {
@@ -130,7 +130,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         loadVariables();
     }
 
-    boolean containsType (String type, String[] array) {
+    boolean containsType(String type, String[] array) {
         for (String arrayType :
                 array) {
             if (arrayType.toUpperCase().contains(type.toUpperCase()))
@@ -177,7 +177,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                 if (resultSet.next())
                     descriptionArea.getTextAreaComponent().setText(resultSet.getString(1));
             } finally {
-               releaseResources(resultSet);
+                releaseResources(resultSet);
             }
 
         } catch (IllegalAccessException e) {
@@ -219,7 +219,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                     // Now create matcher object.
                     Matcher m = r.matcher(varString);
                     int matchesCount = 0;
-                    while (m.find( )) {
+                    while (m.find()) {
                         if (matchesCount == 0) { // find name
                             variable.setName(m.group(0));
                             varString = varString.replace(m.group(0), "");
@@ -256,7 +256,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                             r = Pattern.compile(pattern);
                             m = r.matcher(varString);
                             matchesCount = 0;
-                            while (m.find( )) {
+                            while (m.find()) {
                                 if (matchesCount == 0) { // subtype
                                     variable.setSubtype(Integer.valueOf(m.group(0)));
                                     varString = varString.replace(m.group(0), "");
@@ -400,7 +400,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         }
     }
 
-    protected void init()  {
+    protected void init() {
 
         //initialise the schema label
         metaData = new MetaDataValues(true);
@@ -513,19 +513,19 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         sqlBuffer = new StringBuffer(CreateTableSQLSyntax.CREATE_TABLE);
 
         // check initial values for possible value inits
-            metaData.setDatabaseConnection(connection);
-            inputParametersPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
-            inputParametersPanel.setDomains(getDomains());
-            inputParametersPanel.setDatabaseConnection(connection);
+        metaData.setDatabaseConnection(connection);
+        inputParametersPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+        inputParametersPanel.setDomains(getDomains());
+        inputParametersPanel.setDatabaseConnection(connection);
 
-            outputParametersPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
-            outputParametersPanel.setDomains(getDomains());
-            outputParametersPanel.setDatabaseConnection(connection);
+        outputParametersPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+        outputParametersPanel.setDomains(getDomains());
+        outputParametersPanel.setDatabaseConnection(connection);
 
-            variablesPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
-            variablesPanel.setDomains(getDomains());
-            variablesPanel.setDatabaseConnection(connection);
-            //metaData
+        variablesPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+        variablesPanel.setDomains(getDomains());
+        variablesPanel.setDatabaseConnection(connection);
+        //metaData
 
 
     }
@@ -543,7 +543,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                 sb.append(cd.getDomain());
             }
             sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
-            if (cd.getTypeParameter()!=ColumnData.OUTPUT_PARAMETER&&!MiscUtils.isNull(cd.getDefaultValue())) {
+            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue())) {
                 String value = "";
                 boolean str = false;
                 int sqlType = cd.getSQLType();
@@ -587,7 +587,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         sqlText.append("\n");
         for (int i = 0, k = tableVector.size(); i < k; i++) {
             ColumnData cd = tableVector.elementAt(i);
-            if(!MiscUtils.isNull(cd.getColumnName())) {
+            if (!MiscUtils.isNull(cd.getColumnName())) {
                 if (variable)
                     sqlText.append("DECLARE VARIABLE ");
                 sqlText.append(formattedParameter(cd));
@@ -615,7 +615,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         sb.append(formattedParameters(inputParametersPanel._model.getTableVector(), false));
         sb.append(")\n");
         String output = formattedParameters(outputParametersPanel._model.getTableVector(), false);
-        if(!MiscUtils.isNull(output.trim())) {
+        if (!MiscUtils.isNull(output.trim())) {
             sb.append("returns (");
             sb.append(output);
             sb.append(")\n");

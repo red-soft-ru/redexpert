@@ -37,7 +37,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
     }
 
     public CreateGeneratorPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseSequence generator) {
-        super(dc,dialog,generator);
+        super(dc, dialog, generator);
     }
 
     protected void init_edited() {
@@ -105,7 +105,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        tabbedPane.add("Description",description);
+        tabbedPane.add("Description", description);
         if (getDatabaseVersion() < 3) {
             labelIncrement.setVisible(false);
             incrementText.setVisible(false);

@@ -21,8 +21,7 @@ import java.awt.event.ActionListener;
 import java.util.Vector;
 
 /**
- *
- * @author   Vasiliy Yashkov
+ * @author Vasiliy Yashkov
  */
 public class CreateProcedurePanel extends CreateProcedureFunctionPanel
         implements ActionListener,
@@ -42,18 +41,17 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
     public static final String FRAME_ICON = "NewProcedure16.png";
 
 
-
     /**
      * <p> Constructs a new instance.
      */
 
     public CreateProcedurePanel(DatabaseConnection dc, ActionContainer parent) {
-        this(dc,parent,null);
+        this(dc, parent, null);
 
     }
 
     public CreateProcedurePanel(DatabaseConnection connection, ActionContainer parent, String procedure) {
-        super(connection,parent,procedure);
+        super(connection, parent, procedure);
         setFocusComponent();
     }
 
@@ -155,7 +153,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
     private void createProcedure() {
         try {
             String querys = getSQLText();
-            displayExecuteQueryDialog(querys,"^");
+            displayExecuteQueryDialog(querys, "^");
 
         } catch (Exception exc) {
             GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc);
@@ -194,6 +192,6 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
 
     @Override
     public void setDatabaseObject(Object databaseObject) {
-        procedure = (String)databaseObject;
+        procedure = (String) databaseObject;
     }
 }

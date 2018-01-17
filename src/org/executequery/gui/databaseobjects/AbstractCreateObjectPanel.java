@@ -35,15 +35,14 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
     protected DefaultStatementExecutor sender;
     protected JPanel okCancelPanel;
 
-    public AbstractCreateObjectPanel(DatabaseConnection dc, ActionContainer dialog, Object databaseObject)
-    {
+    public AbstractCreateObjectPanel(DatabaseConnection dc, ActionContainer dialog, Object databaseObject) {
         parent = dialog;
         connection = dc;
         initComponents();
         setDatabaseObject(databaseObject);
         init();
-        editing = databaseObject!=null;
-        if(editing)
+        editing = databaseObject != null;
+        if (editing)
             try {
                 init_edited();
             } catch (Exception e) {
@@ -51,10 +50,9 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
             }
     }
 
-    private void initComponents()
-    {
+    private void initComponents() {
         nameField = new JTextField();
-        nameField.setText("NEW_"+getTypeObject());
+        nameField.setText("NEW_" + getTypeObject());
         tabbedPane = new JTabbedPane();
         tabbedPane.setPreferredSize(new Dimension(700, 400));
         okButton = new JButton("OK");
@@ -108,7 +106,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel=new JPanel();
+        main_panel = new JPanel();
         okCancelPanel = new JPanel(new GridBagLayout());
         okCancelPanel.add(okButton, new GridBagConstraints(0, 0,
                 1, 1, 1, 0,
@@ -118,46 +116,53 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
-        this.add(first_panel,new GridBagConstraints(0, 0,
+        this.add(first_panel, new GridBagConstraints(0, 0,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0),
                 0, 0));
-        this.add(main_panel,new GridBagConstraints(0, 1,
+        this.add(main_panel, new GridBagConstraints(0, 1,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0),
                 0, 0));
-        this.add(tabbedPane,new GridBagConstraints(0, 2,
-            1, 1, 1, 1,
-            GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0),
-            0, 0));
-        this.add(okCancelPanel,new GridBagConstraints(0, 3,
+        this.add(tabbedPane, new GridBagConstraints(0, 2,
+                1, 1, 1, 1,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0),
+                0, 0));
+        this.add(okCancelPanel, new GridBagConstraints(0, 3,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0),
                 0, 0));
 
     }
+
     protected abstract void init();
+
     protected abstract void init_edited();
+
     public abstract void create_object();
+
     public abstract String getCreateTitle();
+
     public abstract String getEditTitle();
+
     public abstract String getTypeObject();
+
     public abstract void setDatabaseObject(Object databaseObject);
-    public String bundleString(String key)
-    {
+
+    public String bundleString(String key) {
         return Bundles.get(getClass(), key);
     }
-    public String bundlesString(String key)
-    {
+
+    public String bundlesString(String key) {
         return Bundles.get(AbstractCreateObjectPanel.class, key);
     }
-    protected void displayExecuteQueryDialog(String query,String delimiter)
-    {
+
+    protected void displayExecuteQueryDialog(String query, String delimiter) {
         String titleDialog;
-        if(editing)
-            titleDialog=getEditTitle();
+        if (editing)
+            titleDialog = getEditTitle();
         else titleDialog = getCreateTitle();
-        ExecuteQueryDialog eqd = new ExecuteQueryDialog(titleDialog, query, connection, true,delimiter);
+        ExecuteQueryDialog eqd = new ExecuteQueryDialog(titleDialog, query, connection, true, delimiter);
         eqd.display();
         if (eqd.getCommit())
             parent.finished();

@@ -33,7 +33,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     }
 
     public CreateViewPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseView view) {
-        super(dc,dialog,view);
+        super(dc, dialog, view);
     }
 
     protected void init() {
@@ -63,8 +63,8 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
         });
 
         //create location elements
-        tabbedPane.add("SQL Body",sqlTextPanel);
-        tabbedPane.add("Description",descriptionTextArea);
+        tabbedPane.add("SQL Body", sqlTextPanel);
+        tabbedPane.add("Description", descriptionTextArea);
 
 
         Action autoCompletePopupAction = autoCompletePopup.getPopupAction();
@@ -85,11 +85,11 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     public void create_object() {
         String searchS = " view ";
         String query = sqlTextPanel.getSQLText().trim();
-        int indexStart = query.indexOf(searchS)+searchS.length();
-        int indexFinish =query.indexOf(" ",indexStart);
-        query = query.substring(0,indexStart)+nameField.getText()+query.substring(indexFinish)+"^";
-        query+= "COMMENT ON VIEW "+nameField.getText()+" IS '"+descriptionTextArea.getTextAreaComponent().getText()+"'";
-        displayExecuteQueryDialog(query,"^");
+        int indexStart = query.indexOf(searchS) + searchS.length();
+        int indexFinish = query.indexOf(" ", indexStart);
+        query = query.substring(0, indexStart) + nameField.getText() + query.substring(indexFinish) + "^";
+        query += "COMMENT ON VIEW " + nameField.getText() + " IS '" + descriptionTextArea.getTextAreaComponent().getText() + "'";
+        displayExecuteQueryDialog(query, "^");
     }
 
     @Override

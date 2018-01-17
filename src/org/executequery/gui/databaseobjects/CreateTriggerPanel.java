@@ -123,7 +123,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     }
 
     public CreateTriggerPanel(DatabaseConnection dc, ActionContainer parent, DefaultDatabaseTrigger trigger) {
-        super(dc,parent,trigger);
+        super(dc, parent, trigger);
     }
 
     protected void init() {
@@ -209,13 +209,13 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         gbcTop.fill = GridBagConstraints.BOTH;
         topPanel.add(ddlTableTriggerPanel, gbcTop);
 
-        main_panel.add(topPanel,new GridBagConstraints(0, 1,
+        main_panel.add(topPanel, new GridBagConstraints(0, 1,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        tabbedPane.add("SQL Body",sqlBodyText);
-        tabbedPane.add("Description",descriptionText);
+        tabbedPane.add("SQL Body", sqlBodyText);
+        tabbedPane.add("Description", descriptionText);
 
         GridBagConstraints gbc = new GridBagConstraints();
         databaseTriggerPanel.setLayout(new GridBagLayout());
@@ -227,7 +227,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
-        gbc.insets = new Insets(5,5,5,5);
+        gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.NORTHEAST;
         databaseTriggerPanel.add(actionLabel, gbc);
         tableTriggerPanel.add(labelTable, gbc);
@@ -469,9 +469,9 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
             }
         }
         query += "POSITION " + positionField.getValue() + "\n";
-        query += sqlBodyText.getSQLText()+"^";
-        query += "COMMENT ON TRIGGER "+nameField.getText()+" IS '"+descriptionText.getTextAreaComponent().getText()+"'^";
-        displayExecuteQueryDialog(query,"^");
+        query += sqlBodyText.getSQLText() + "^";
+        query += "COMMENT ON TRIGGER " + nameField.getText() + " IS '" + descriptionText.getTextAreaComponent().getText() + "'^";
+        displayExecuteQueryDialog(query, "^");
     }
 
 }

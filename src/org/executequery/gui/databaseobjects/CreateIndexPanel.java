@@ -57,13 +57,13 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
     }
 
     public CreateIndexPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseIndex index) {
-        super(dc,dialog,index);
+        super(dc, dialog, index);
         edited = false;
     }
 
     protected void init_edited() {
         nameField.setText(databaseIndex.getName().trim());
-        DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseIndex.getHost(),null,null, NamedObject.META_TYPES[NamedObject.INDEX]);
+        DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseIndex.getHost(), null, null, NamedObject.META_TYPES[NamedObject.INDEX]);
         databaseIndex = metaTag.getIndexFromName(databaseIndex.getName());
         databaseIndex.loadColumns();
         nameField.setEnabled(false);
@@ -301,14 +301,14 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         if (editing && !edited) {
             if (activeBox.isSelected() != databaseIndex.isActive()) {
                 String act;
-                if(activeBox.isSelected())
+                if (activeBox.isSelected())
                     act = "ACTIVE";
                 else act = "INACTIVE";
-                query = "ALTER INDEX "+nameField.getText()+" "+act+";";
+                query = "ALTER INDEX " + nameField.getText() + " " + act + ";";
             }
         } else {
-            if(editing)
-                query="DROP INDEX "+nameField.getText()+";";
+            if (editing)
+                query = "DROP INDEX " + nameField.getText() + ";";
             query += "CREATE ";
             if (uniqueBox.isSelected())
                 query += "UNIQUE ";
@@ -334,12 +334,12 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                 }
                 query += fieldss + ");";
             }
-            if(!activeBox.isSelected())
-                query+= "ALTER INDEX "+nameField.getText()+" INACTIVE;";
+            if (!activeBox.isSelected())
+                query += "ALTER INDEX " + nameField.getText() + " INACTIVE;";
         }
         if (!MiscUtils.isNull(description.getTextAreaComponent().getText()))
             query += "COMMENT ON INDEX " + nameField.getText() + " IS '" + description.getTextAreaComponent().getText() + "'";
-        displayExecuteQueryDialog(query,";");
+        displayExecuteQueryDialog(query, ";");
 
     }
 

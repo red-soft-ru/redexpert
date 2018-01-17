@@ -42,7 +42,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     String domain;
 
     public CreateDomainPanel(DatabaseConnection connection, ActionContainer parent, String domain) {
-        super(connection,parent,domain);
+        super(connection, parent, domain);
     }
 
     public CreateDomainPanel(DatabaseConnection connection, ActionContainer parent) {
@@ -132,7 +132,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         tabbedPane.add("SQL", sqlPanel);
     }
 
-    protected void init_edited()  {
+    protected void init_edited() {
         columnData.setColumnName(domain);
         columnData.setDomain(domain);
         columnData.setDescription(columnData.getDomainDescription());
@@ -154,7 +154,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     public void create_object() {
         if (tabbedPane.getSelectedComponent() != sqlPanel)
             generateSQL();
-        displayExecuteQueryDialog(sqlTextPane.getText(),";");
+        displayExecuteQueryDialog(sqlTextPane.getText(), ";");
     }
 
     @Override
@@ -174,7 +174,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
 
     @Override
     public void setDatabaseObject(Object databaseObject) {
-        this.domain = (String)databaseObject;
+        this.domain = (String) databaseObject;
         metaData = new MetaDataValues(connection, true);
         columnData = new ColumnData(connection);
     }

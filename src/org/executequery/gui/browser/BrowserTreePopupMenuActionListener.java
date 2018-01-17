@@ -207,6 +207,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     }
                     break;
                 case NamedObject.TRIGGER:
+                case NamedObject.SYSTEM_DATABASE_TRIGGER:
                     if (GUIUtilities.isDialogOpen(CreateTriggerPanel.CREATE_TITLE)) {
 
                         GUIUtilities.setSelectedDialog(CreateTriggerPanel.CREATE_TITLE);
@@ -297,7 +298,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             GUIUtilities.showWaitCursor();
                             BaseDialog dialog =
                                     new BaseDialog(CreateGeneratorPanel.ALTER_TITLE, false);
-                            CreateGeneratorPanel panel = new CreateGeneratorPanel(currentSelection, dialog,(DefaultDatabaseSequence)node.getDatabaseObject());
+                            CreateGeneratorPanel panel = new CreateGeneratorPanel(currentSelection, dialog, (DefaultDatabaseSequence) node.getDatabaseObject());
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());
@@ -356,7 +357,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             GUIUtilities.showWaitCursor();
 
                             BaseDialog dialog = new BaseDialog(CreateTriggerPanel.EDIT_TITLE, false);
-                            CreateTriggerPanel panel = new CreateTriggerPanel(currentSelection, dialog,  (DefaultDatabaseTrigger) node.getDatabaseObject());
+                            CreateTriggerPanel panel = new CreateTriggerPanel(currentSelection, dialog, (DefaultDatabaseTrigger) node.getDatabaseObject());
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());
@@ -375,7 +376,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             GUIUtilities.showWaitCursor();
                             BaseDialog dialog =
                                     new BaseDialog(CreateExceptionPanel.ALTER_TITLE, false);
-                            CreateExceptionPanel panel = new CreateExceptionPanel(currentSelection, dialog,(DefaultDatabaseException)node.getDatabaseObject());
+                            CreateExceptionPanel panel = new CreateExceptionPanel(currentSelection, dialog, (DefaultDatabaseException) node.getDatabaseObject());
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());
@@ -394,7 +395,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             GUIUtilities.showWaitCursor();
                             BaseDialog dialog =
                                     new BaseDialog(CreateIndexPanel.ALTER_TITLE, false);
-                            CreateIndexPanel panel = new CreateIndexPanel(currentSelection, dialog,(DefaultDatabaseIndex) node.getDatabaseObject());
+                            CreateIndexPanel panel = new CreateIndexPanel(currentSelection, dialog, (DefaultDatabaseIndex) node.getDatabaseObject());
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());

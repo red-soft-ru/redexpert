@@ -111,22 +111,15 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     void checkRelease() {
         try {
+            updateLoader = new UpdateLoader("");
+            Log.info("Checking for new version update from https://reddatabase.ru ...");
 
-            Log.info("Checking for new version update from https://github.com/redsoftbiz/executequery/releases ...");
-
-            version = getVersionInfo();
+            version = new ApplicationVersion(updateLoader.getJsonPropertyFromUrl(UserProperties.getInstance().getStringProperty("reddatabase.check.url"), "version"));
 
             if (isNewVersion(version)) {
-
                 logNewVersonInfo();
                 setNotifierInStatusBar();
-
-                String binaryZip = getBinaryUrl();
-                if (!binaryZip.isEmpty()) {
-                    updateLoader = new UpdateLoader("");
-                    updateLoader.setBinaryZipUrl(binaryZip);
-                    setDownloadNotifierInStatusBar();
-                }
+                setDownloadNotifierInStatusBar();
 
             } else {
 
@@ -136,6 +129,8 @@ public class CheckForUpdateNotifier implements Interruptible {
         } catch (ApplicationException e) {
 
             Log.warning("Error checking for update: " + e.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

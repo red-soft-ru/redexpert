@@ -82,14 +82,18 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     public Connection getConnection(String username, String password) throws SQLException {
 
         Properties advancedProperties = buildAdvancedProperties();
-        if (StringUtils.isNotBlank(username)) {
+        // TODO check it after add multi factor authentication
+        if (!advancedProperties.containsKey("useGSSAuth") &&
+                !advancedProperties.containsKey("useMultifactorAuth")) {
+            if (StringUtils.isNotBlank(username)) {
 
-            advancedProperties.put("user", username);
-        }
+                advancedProperties.put("user", username);
+            }
 
-        if (StringUtils.isNotBlank(password)) {
+            if (StringUtils.isNotBlank(password)) {
 
-            advancedProperties.put("password", password);
+                advancedProperties.put("password", password);
+            }
         }
 
         if (driver != null) {

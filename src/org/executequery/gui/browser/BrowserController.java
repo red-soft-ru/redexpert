@@ -38,7 +38,6 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -353,7 +352,7 @@ public class BrowserController {
                                 getFormObjectView(MetaKeyPanel.NAME);
                     }
 
-                    metaKeyPanel.setValues((NamedObject) databaseObject);
+                    metaKeyPanel.setValues(databaseObject);
                     return metaKeyPanel;
 
                 case NamedObject.FUNCTION: // Internal function of Red Database 3+
@@ -514,7 +513,7 @@ public class BrowserController {
                     } else {
                         panel = (SimpleMetaDataPanel) viewPanel.getFormObjectView(SimpleMetaDataPanel.NAME);
                     }
-                    panel.setValues((NamedObject) databaseObject);
+                    panel.setValues(databaseObject);
                     return panel;
 
                 default:

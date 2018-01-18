@@ -1,32 +1,19 @@
 package org.executequery.gui.databaseobjects;
 
-import org.executequery.components.SplitPaneFactory;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.MetaDataValues;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
-import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
-import org.executequery.gui.ExecuteQueryDialog;
-import org.executequery.gui.WidgetFactory;
-import org.executequery.gui.browser.BrowserConstants;
-import org.executequery.gui.browser.comparer.Trigger;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.log.Log;
-import org.underworldlabs.swing.DynamicComboBoxModel;
-import org.underworldlabs.swing.NumberTextField;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,64 +22,10 @@ import java.util.Vector;
 
 public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
-    private JComboBox typeTriggerCombo;
+    public static final String CREATE_TITLE = "Create Trigger";
 
     //common components for table and database trigger
-
-    private JSpinner positionField;
-
-    private JCheckBox activeBox;
-
-    private JLabel positionLabel;
-
-    private SimpleSqlTextPanel sqlBodyText;
-
-    private SimpleTextArea descriptionText;
-
-    //components for database trigger
-
-    private JPanel databaseTriggerPanel;
-
-    private JComboBox actionCombo;
-
-    private JLabel actionLabel;
-
-    //components for table trigger
-
-    private JLabel labelTable;
-
-    private JPanel tableTriggerPanel;
-
-    private JLabel beforeAfterlabel;
-
-    private JComboBox typeTableTriggerCombo;
-
-    private JCheckBox insertBox;
-
-    private JCheckBox deleteBox;
-
-    private JCheckBox updateBox;
-
-    //components for ddl trigger
-
-    private JPanel ddlTriggerPanel;
-
-    private JPanel ddlTableTriggerPanel;
-
-    private List<JCheckBox> ddlCheckBoxes;
-
-    private JScrollPane scrolDDL;
-
-    private JCheckBox anyDdlBox;
-
-    /**
-     * The table combo selection
-     */
-    private JComboBox tablesCombo;
-
-
-    DefaultDatabaseTrigger trigger;
-
+    public static final String EDIT_TITLE = "Edit Trigger";
     static String[] meta_types = {"FUNCTION",
             "INDEX",
             "PROCEDURE",
@@ -109,10 +42,38 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
             "CHARACTER SET",
             "MAPPING",
             "ROLE"};
+    DefaultDatabaseTrigger trigger;
+    private JComboBox typeTriggerCombo;
+    private JSpinner positionField;
 
-    public static final String CREATE_TITLE = "Create Trigger";
+    //components for database trigger
+    private JCheckBox activeBox;
+    private JLabel positionLabel;
+    private SimpleSqlTextPanel sqlBodyText;
 
-    public static final String EDIT_TITLE = "Edit Trigger";
+    //components for table trigger
+    private SimpleTextArea descriptionText;
+    private JPanel databaseTriggerPanel;
+    private JComboBox actionCombo;
+    private JLabel actionLabel;
+    private JLabel labelTable;
+    private JPanel tableTriggerPanel;
+    private JLabel beforeAfterlabel;
+
+    //components for ddl trigger
+    private JComboBox typeTableTriggerCombo;
+    private JCheckBox insertBox;
+    private JCheckBox deleteBox;
+    private JCheckBox updateBox;
+    private JPanel ddlTriggerPanel;
+    private JPanel ddlTableTriggerPanel;
+    private List<JCheckBox> ddlCheckBoxes;
+    private JScrollPane scrolDDL;
+    private JCheckBox anyDdlBox;
+    /**
+     * The table combo selection
+     */
+    private JComboBox tablesCombo;
 
     /**
      * The constructor

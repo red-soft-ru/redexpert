@@ -11,7 +11,6 @@ import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
 import org.executequery.gui.ActionContainer;
-import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.procedure.CreateProcedureFunctionPanel;
 import org.underworldlabs.jdbc.DataSourceException;
 
@@ -58,7 +57,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
     /**
      * <p>Initializes the state of this instance.
      */
-    private void jbInit() throws Exception {
+    private void jbInit() {
 
         addButtonsPanel(new BottomButtonPanel(
                 this, "Create", "create-procedure", parent.isDialog()));
@@ -66,7 +65,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
         EventMediator.registerListener(this);
     }
 
-    private void alterInit() throws Exception {
+    private void alterInit() {
 
         addButtonsPanel(new BottomButtonPanel(
                 this, "Alter", "create-procedure", parent.isDialog()));

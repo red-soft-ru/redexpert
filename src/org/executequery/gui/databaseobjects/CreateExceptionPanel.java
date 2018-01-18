@@ -8,15 +8,11 @@ import org.executequery.gui.text.SimpleTextArea;
 
 public class CreateExceptionPanel extends AbstractCreateObjectPanel {
 
-    private SimpleTextArea textExceptionPanel;
-
-    private SimpleTextArea descriptionPanel;
-
-    private DefaultDatabaseException exception;
-
     public static final String CREATE_TITLE = "Create Exception";
-
     public static final String ALTER_TITLE = "Edit Exception";
+    private SimpleTextArea textExceptionPanel;
+    private SimpleTextArea descriptionPanel;
+    private DefaultDatabaseException exception;
 
     public CreateExceptionPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseException exception) {
         super(dc, dialog, exception);

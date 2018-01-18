@@ -18,6 +18,10 @@ import java.util.Map;
  */
 public class WindowAddUser extends javax.swing.JPanel {
 
+    UserManagerPanel ump;
+    int version;
+    IFBUser user;
+    boolean edit;
     private javax.swing.JButton cancelButton;
     private javax.swing.JPasswordField confirmField;
     private javax.swing.JTextArea descriptionField;
@@ -48,12 +52,6 @@ public class WindowAddUser extends javax.swing.JPanel {
     private JCheckBox activeBox;
     private JButton addTag;
     private JButton deleteTag;
-
-    UserManagerPanel ump;
-
-    int version;
-    IFBUser user;
-    boolean edit;
 
     /**
      * Creates new form WindowAddUser
@@ -433,7 +431,7 @@ public class WindowAddUser extends javax.swing.JPanel {
                 ump.userAdd.setDescription(descriptionField.getText().trim());
                 Map<String, String> tags = new HashMap<>();
                 for (int i = 0; i < tagTable.getRowCount(); i++) {
-                    tags.put((String) ((DefaultTableModel) tagTable.getModel()).getValueAt(i, 0), (String) ((DefaultTableModel) tagTable.getModel()).getValueAt(i, 1));
+                    tags.put((String) tagTable.getModel().getValueAt(i, 0), (String) tagTable.getModel().getValueAt(i, 1));
                 }
                 ump.userAdd.setTags(tags);
                 if (edit) {

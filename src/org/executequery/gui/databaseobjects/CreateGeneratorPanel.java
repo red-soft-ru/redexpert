@@ -18,19 +18,13 @@ import java.sql.SQLException;
 
 public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
 
-    NumberTextField startValueText;
-
-    NumberTextField incrementText;
-
-    SimpleTextArea description;
-
-    JLabel labelIncrement;
-
-    DefaultDatabaseSequence generator;
-
     public static final String CREATE_TITLE = "Create Sequence";
-
     public static final String ALTER_TITLE = "Alter Sequence";
+    NumberTextField startValueText;
+    NumberTextField incrementText;
+    SimpleTextArea description;
+    JLabel labelIncrement;
+    DefaultDatabaseSequence generator;
 
     public CreateGeneratorPanel(DatabaseConnection dc, ActionContainer dialog) {
         this(dc, dialog, null);

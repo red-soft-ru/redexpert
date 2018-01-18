@@ -7,7 +7,6 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.SelectTypePanel;
 import org.executequery.gui.text.SQLTextPane;
-import org.executequery.localization.Bundles;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -20,6 +19,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyListener {
+    public static final String CREATE_TITLE = "Create Domain";
+    public static final String EDIT_TITLE = "Edit Domain";
+    ColumnData columnData;
+    MetaDataValues metaData;
+    String domain;
     private JScrollPane scrollDefaultValue;
     private JScrollPane scrollCheck;
     private JScrollPane scrollDescription;
@@ -34,13 +38,6 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     private JPanel sqlPanel;
     private SelectTypePanel selectTypePanel;
     private JCheckBox notNullBox;
-
-    public static final String CREATE_TITLE = "Create Domain";
-    public static final String EDIT_TITLE = "Edit Domain";
-
-    ColumnData columnData;
-    MetaDataValues metaData;
-    String domain;
 
     public CreateDomainPanel(DatabaseConnection connection, ActionContainer parent, String domain) {
         super(connection, parent, domain);

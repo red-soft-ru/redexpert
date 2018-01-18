@@ -17,40 +17,27 @@ import java.awt.event.*;
 import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Vector;
 import java.util.List;
+import java.util.Vector;
 
 public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
-    JComboBox tableName;
-
-    JList<CheckListItem> fields;
-
-    JPanel fieldsPanel;
-
-    JPanel descriptionPanel;
-
-    SimpleTextArea description;
-
-    SimpleSqlTextPanel computedPanel;
-
-    JScrollPane scrollList;
-
-    JComboBox sortingBox;
-
-    JCheckBox uniqueBox;
-
-    JCheckBox computedBox;
-
-    JCheckBox activeBox;
-
-    DefaultDatabaseIndex databaseIndex;
-
-    boolean edited;
-
     public static final String CREATE_TITLE = "Create Index";
-
     public static final String ALTER_TITLE = "Alter Index";
+    JComboBox tableName;
+    JList<CheckListItem> fields;
+    JPanel fieldsPanel;
+    JPanel descriptionPanel;
+    SimpleTextArea description;
+    SimpleSqlTextPanel computedPanel;
+    JScrollPane scrollList;
+    JComboBox sortingBox;
+    JCheckBox uniqueBox;
+    JCheckBox computedBox;
+    JCheckBox activeBox;
+    DefaultDatabaseIndex databaseIndex;
+    boolean edited;
+    boolean free_sender = true;
 
     public CreateIndexPanel(DatabaseConnection dc, ActionContainer dialog) {
         this(dc, dialog, null);
@@ -79,7 +66,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         if (databaseIndex.getExpression() == null) {
             for (int i = 0; i < databaseIndex.getIndexColumns().size(); i++) {
                 DefaultDatabaseIndex.DatabaseIndexColumn column = databaseIndex.getIndexColumns().get(i);
-                for (int g = 0; g < ((DefaultListModel<CheckListItem>) fields.getModel()).getSize(); g++) {
+                for (int g = 0; g < fields.getModel().getSize(); g++) {
                     CheckListItem item = ((DefaultListModel<CheckListItem>) fields.getModel()).elementAt(g);
                     if (column.getFieldName().trim().equals(item.label))
                         item.setSelected(true);
@@ -123,7 +110,6 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
     public void setDatabaseObject(Object databaseObject) {
         databaseIndex = (DefaultDatabaseIndex) databaseObject;
     }
-
 
     protected void init() {
         fieldsPanel = new JPanel();
@@ -241,8 +227,6 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         descriptionPanel.setLayout(new BorderLayout());
         descriptionPanel.add(description);
     }
-
-    boolean free_sender = true;
 
     void updateListTables() {
         try {

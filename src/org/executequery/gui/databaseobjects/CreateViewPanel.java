@@ -1,23 +1,19 @@
 package org.executequery.gui.databaseobjects;
 
-import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseView;
-import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
-import org.executequery.gui.ExecuteQueryDialog;
-import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.editor.autocomplete.DefaultAutoCompletePopupProvider;
-import org.executequery.gui.text.SQLTextPane;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
-import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.GUIUtils;
 
 import javax.swing.*;
-import java.awt.event.*;
-import java.util.Vector;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
 public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusListener {
     public static final String TITLE = "Create View";

@@ -75,34 +75,20 @@ import java.util.Timer;
 public class TableDataTab extends JPanel
         implements ResultSetTableContainer, TableModelListener, UserPreferenceListener {
 
-    private ResultSetTableModel tableModel;
-
-    private ResultSetTable table;
-
-    private JScrollPane scroller;
-
-    private DatabaseObject databaseObject;
-
-    private boolean executing = false;
-
-    private SwingWorker worker;
-
-    private boolean cancelled;
-
-    private GridBagConstraints scrollerConstraints;
-
-    private GridBagConstraints errorLabelConstraints;
-
-    private GridBagConstraints rowCountPanelConstraints;
-
-    private GridBagConstraints canEditTableNoteConstraints;
-
-    private DisabledField rowCountField;
-
-    private JPanel rowCountPanel;
-
     private final boolean displayRowCount;
-
+    private ResultSetTableModel tableModel;
+    private ResultSetTable table;
+    private JScrollPane scroller;
+    private DatabaseObject databaseObject;
+    private boolean executing = false;
+    private SwingWorker worker;
+    private boolean cancelled;
+    private GridBagConstraints scrollerConstraints;
+    private GridBagConstraints errorLabelConstraints;
+    private GridBagConstraints rowCountPanelConstraints;
+    private GridBagConstraints canEditTableNoteConstraints;
+    private DisabledField rowCountField;
+    private JPanel rowCountPanel;
     private List<TableDataChange> tableDataChanges;
 
     private JPanel canEditTableNotePanel;
@@ -122,6 +108,7 @@ public class TableDataTab extends JPanel
     private List<String> foreignKeyColumns = new ArrayList<String>(0);
 
     private List<org.executequery.databaseobjects.impl.ColumnConstraint> foreigns;
+    private Timer timer;
 
     public TableDataTab(boolean displayRowCount) {
 
@@ -139,7 +126,7 @@ public class TableDataTab extends JPanel
 
     }
 
-    private void init() throws Exception {
+    private void init() {
 
         if (displayRowCount) {
 
@@ -225,8 +212,6 @@ public class TableDataTab extends JPanel
 
         return panel;
     }
-
-    private Timer timer;
 
     public void loadDataForTable(final DatabaseObject databaseObject) {
 

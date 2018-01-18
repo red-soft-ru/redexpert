@@ -50,6 +50,7 @@ import org.underworldlabs.util.MiscUtils;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -171,6 +172,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private JComboBox charsetsCombo;
     private JTextField roleField;
 
+    private JTextField certificateFileField;
+
     private JComboBox authCombo;
     private JComboBox methodCombo;
 
@@ -181,6 +184,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     JPanel basicPanel;
     JPanel standardPanel;
+    JPanel multifactorPanel;
     JPanel jdbcUrlPanel;
 
     // -------------------------------
@@ -249,14 +253,20 @@ public class ConnectionPanel extends AbstractConnectionPanel
         List<String> auth = new ArrayList<>();
         auth.add(bundleString("BasicAu"));
         auth.add("GSS");
+        auth.add("Multifactor");
         authCombo = new JComboBox(auth.toArray());
         authCombo.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 Object selectedItem = e.getItem();
                 if (selectedItem.toString().equalsIgnoreCase(bundleString("BasicAu"))) {
                     basicPanel.setVisible(true);
+                    multifactorPanel.setVisible(false);
                 } else if (selectedItem.toString().equalsIgnoreCase("gss")) {
                     basicPanel.setVisible(false);
+                    multifactorPanel.setVisible(false);
+                } else if (selectedItem.toString().equalsIgnoreCase("multifactor")) {
+                    basicPanel.setVisible(true);
+                    multifactorPanel.setVisible(true);
                 }
             }
         });
@@ -290,6 +300,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
         userField = createTextField();
         urlField = createMatchedWidthTextField();
 
+        certificateFileField = createMatchedWidthTextField();
+
         nameField.addFocusListener(new ConnectionNameFieldListener(this));
 
         savePwdCheck = ActionUtilities.createCheckBox(bundleString("StorePassword"), "setStorePassword");
@@ -322,12 +334,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         addDriverFields(mainPanel, gbc);
 
-        gbc.insets.bottom = 5;
         addLabelFieldPair(mainPanel, bundleString("nameField"),
                 nameField, bundleString("nameField.tool-tip"), gbc);
-
-//        addLabelFieldPair(mainPanel, "Authentication:",
-//                authCombo, "Available authentications", gbc);
 
         gbc.gridy++;
         gbc.gridx = 0;
@@ -347,7 +355,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         basicPanel.add(userLabel, bgbc);
 
         bgbc.gridx = 1;
-        bgbc.insets.left = 5;
+        bgbc.insets.left = 0;
         bgbc.weightx = 0.25;
         basicPanel.add(userField, bgbc);
 
@@ -379,13 +387,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
                         new ComponentToolTipPair(encryptPwdCheck, bundleString("EncryptPassword.tool-tip")),
                         new ComponentToolTipPair(showPassword, bundleString("ShowPassword.tool-tip"))});
 
-//        gbc.gridy++;
-//        gbc.gridx = 1;
-//        gbc.weightx = 1.0;
-//        gbc.gridwidth = GridBagConstraints.REMAINDER;
         bgbc.gridx = 3;
         bgbc.gridy = 1;
         bgbc.insets.left = 5;
+        bgbc.insets.right = 0;
         bgbc.weightx = 0.1;
         basicPanel.add(passwordOptionsPanel, bgbc);
 
@@ -445,19 +450,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
         selectFilePanel.add(sourceField, BorderLayout.CENTER);
         selectFilePanel.add(openFile, BorderLayout.LINE_END);
 
-//        addLabelFieldPair(mainPanel, "Data Source:",
-//                selectFilePanel, "Data source name", gbc);
-
-//        addLabelFieldPair(mainPanel, "Character Set:",
-//                charsetsCombo, "Default character set for this connection", gbc);
-
         sgbc.gridx = 5;
         sgbc.insets.left = 5;
         sgbc.weightx = 0.25;
         standardPanel.add(selectFilePanel, sgbc);
 
-//        addLabelFieldPair(mainPanel, "Authentication:",
-//                authCombo, "Available authentications", gbc);
         JLabel authLabel = new DefaultFieldLabel(bundleString("Authentication"));
         sgbc.gridy = 1;
         sgbc.gridx = 0;
@@ -473,8 +470,58 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         sgbc.gridy++;
         sgbc.gridx = 0;
+        sgbc.insets.left = 0;
+        sgbc.insets.right = 0;
         sgbc.gridwidth = GridBagConstraints.REMAINDER;
         standardPanel.add(basicPanel, sgbc);
+
+        multifactorPanel = new JPanel(new GridBagLayout());
+        multifactorPanel.setVisible(false);
+        GridBagConstraints mCons = new GridBagConstraints();
+        JLabel certLabel = new DefaultFieldLabel("Certificate file (X.509 format):");
+        mCons.gridy = 0;
+        mCons.gridx = 0;
+        mCons.insets = new Insets(0, 0, 5, 5);
+        multifactorPanel.add(certLabel, mCons);
+
+        mCons.gridx = 1;
+        mCons.gridwidth = 1;
+        mCons.insets.left = 5;
+        mCons.weightx = 1;
+        mCons.fill = GridBagConstraints.HORIZONTAL;
+        multifactorPanel.add(certificateFileField, mCons);
+
+        FileChooserDialog fileChooser = new FileChooserDialog();
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        fileChooser.addChoosableFileFilter(
+                new FileNameExtensionFilter("Certificate file (X.509)", "cer"));
+
+        JButton openCertFile = new JButton("Choose file");
+        openCertFile.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int returnVal = fileChooser.showOpenDialog(openCertFile);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+                    certificateFileField.setText(file.getAbsolutePath());
+                }
+            }
+        });
+
+        mCons.gridx = 2;
+        mCons.gridwidth = 1;
+        mCons.insets.left = 5;
+        mCons.weightx = 0;
+        mCons.fill = GridBagConstraints.NONE;
+        multifactorPanel.add(openCertFile, mCons);
+
+        sgbc.gridy++;
+        sgbc.gridx = 0;
+        sgbc.gridwidth = 0;
+        sgbc.weightx = 0;
+        sgbc.insets.left = 5;
+        standardPanel.add(multifactorPanel, sgbc);
 
         JLabel charsetLabel = new DefaultFieldLabel(bundleString("CharacterSet"));
         sgbc.gridy++;
@@ -504,15 +551,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.insets.top = 10;
+        gbc.insets.right = 5;
 
-//        gbc.gridwidth = GridBagConstraints.REMAINDER;
         mainPanel.add(standardPanel, gbc);
-
-//        addLabelFieldPair(mainPanel, "Host Name:",
-//                hostField, "Server host name or IP address", gbc);
-
-//        addLabelFieldPair(mainPanel, "Port:",
-//                portField, "Database port number", gbc);
 
         jdbcUrlPanel = new JPanel(new GridBagLayout());
         GridBagConstraints jgbc = new GridBagConstraints();
@@ -531,14 +572,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
         jgbc.weightx = 1.0;
         jdbcUrlPanel.add(urlField, jgbc);
 
-//        addLabelFieldPair(mainPanel, "JDBC URL:",
-//                urlField, "The full JDBC URL for this connection (optional)", gbc);
-
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.insets.top = 10;
-
-//        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.insets.right = 5;
         mainPanel.add(jdbcUrlPanel, gbc);
         jdbcUrlPanel.setVisible(false);
 
@@ -1127,9 +1164,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
             if (!MiscUtils.isNull(key) && !MiscUtils.isNull(value)) {
 
-                if (key.equalsIgnoreCase("lc_ctype") || key.equalsIgnoreCase("useGSSAuth")
-                        || key.equalsIgnoreCase("roleName"))
-                    /*&& !charsetsCombo.getSelectedItem().toString().equals("NONE")*/
+                if (key.equalsIgnoreCase("lc_ctype")
+                        || key.equalsIgnoreCase("useGSSAuth")
+                        || key.equalsIgnoreCase("roleName")
+                        || key.equalsIgnoreCase("isc_dpb_trusted_auth")
+                        || key.equalsIgnoreCase("isc_dpb_multi_factor_auth")
+                        || key.equalsIgnoreCase("isc_dpb_certificate"))
                     continue;
                 properties.setProperty(key, value);
             }
@@ -1144,6 +1184,14 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         if (!properties.containsKey("roleName") && !roleField.getText().isEmpty())
             properties.setProperty("roleName", roleField.getText());
+
+        if (!properties.containsKey("isc_dpb_trusted_auth")
+                && !properties.containsKey("isc_dpb_multi_factor_auth")) {
+            properties.setProperty("isc_dpb_trusted_auth", "1");
+            properties.setProperty("isc_dpb_multi_factor_auth", "1");
+        }
+        if (!certificateFileField.getText().isEmpty())
+            properties.setProperty("isc_dpb_certificate", certificateFileField.getText());
 
         String name = ManagementFactory.getRuntimeMXBean().getName();
         String pid = name.split("@")[0];
@@ -1177,7 +1225,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
                     && !name.equalsIgnoreCase("useGSSAuth")
                     && !name.equalsIgnoreCase("process_id")
                     && !name.equalsIgnoreCase("process_name")
-                    && !name.equalsIgnoreCase("roleName")) {
+                    && !name.equalsIgnoreCase("roleName")
+                    && !name.equalsIgnoreCase("isc_dpb_trusted_auth")
+                    && !name.equalsIgnoreCase("isc_dpb_multi_factor_auth")
+                    && !name.equalsIgnoreCase("isc_dpb_certificate")) {
                 advancedProperties[count][0] = name;
                 advancedProperties[count][1] = properties.getProperty(name);
                 count++;

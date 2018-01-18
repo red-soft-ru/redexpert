@@ -20,6 +20,7 @@
 
 package org.executequery.datasource;
 
+import biz.redsoft.IFBCryptoPluginInit;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.ExecuteQuery;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -32,7 +33,10 @@ import org.underworldlabs.util.SystemProperties;
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.Iterator;
 import java.util.Properties;
@@ -82,9 +86,10 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     public Connection getConnection(String username, String password) throws SQLException {
 
         Properties advancedProperties = buildAdvancedProperties();
-        // TODO check it after add multi factor authentication
-        if (!advancedProperties.containsKey("useGSSAuth") &&
-                !advancedProperties.containsKey("useMultifactorAuth")) {
+
+        // in the case of multifactor authentication, the user name and
+        // password may not be specify, if a certificate is specify
+        if (!advancedProperties.containsKey("useGSSAuth")) {
             if (StringUtils.isNotBlank(username)) {
 
                 advancedProperties.put("user", username);
@@ -93,6 +98,32 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
             if (StringUtils.isNotBlank(password)) {
 
                 advancedProperties.put("password", password);
+            }
+        }
+        // in multifactor authentication case, need to load firebird
+        // plugin to initialize crypto plugin, otherwise get an error message
+        if (advancedProperties.containsKey("isc_dpb_trusted_auth")
+                && advancedProperties.containsKey("isc_dpb_multi_factor_auth")) {
+            URL[] urls = new URL[0];
+            Class clazzdb = null;
+            Object odb = null;
+            try {
+                urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;./lib/jaybird-cryptoapi.jar");
+                ClassLoader cl = new URLClassLoader(urls, driver.getClass().getClassLoader());
+                clazzdb = cl.loadClass("biz.redsoft.FBCryptoPluginInitImpl");
+                odb = clazzdb.newInstance();
+                IFBCryptoPluginInit cryptoPlugin = (IFBCryptoPluginInit) odb;
+                cryptoPlugin.init();
+            } catch (ClassNotFoundException e) {
+                throw new SQLException("Class not found: " + e.getMessage());
+            } catch (IllegalAccessException e) {
+                throw new SQLException(e.getMessage());
+            } catch (InstantiationException e) {
+                throw new SQLException(e.getMessage());
+            } catch (MalformedURLException e) {
+                throw new SQLException(e.getMessage());
+            } catch (Exception e) {
+                throw new SQLException(e.getMessage());
             }
         }
 

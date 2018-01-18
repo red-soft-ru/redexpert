@@ -10,20 +10,16 @@ import org.executequery.gui.text.SQLTextPane;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyListener {
     public static final String CREATE_TITLE = "Create Domain";
     public static final String EDIT_TITLE = "Edit Domain";
-    ColumnData columnData;
-    MetaDataValues metaData;
-    String domain;
+    private ColumnData columnData;
+    private MetaDataValues metaData;
+    private String domain;
     private JScrollPane scrollDefaultValue;
     private JScrollPane scrollCheck;
     private JScrollPane scrollDescription;
@@ -71,47 +67,24 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
 
         scrollSQL.setViewportView(sqlTextPane);
 
-        notNullBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-
-                columnData.setNotNull(notNullBox.isSelected());
-            }
-        });
+        notNullBox.addActionListener(actionEvent -> columnData.setNotNull(notNullBox.isSelected()));
         columnData.setNotNull(notNullBox.isSelected());
-        tabbedPane.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent changeEvent) {
-                selectTypePanel.refreshColumn();
-                if (tabbedPane.getSelectedComponent() == sqlPanel) {
-                    generateSQL();
-                }
+        tabbedPane.addChangeListener(changeEvent -> {
+            selectTypePanel.refreshColumn();
+            if (tabbedPane.getSelectedComponent() == sqlPanel) {
+                generateSQL();
             }
         });
         defaultValueTextPane.addKeyListener(this);
         checkTextPane.addKeyListener(this);
         descriptionTextPane.addKeyListener(this);
 
-        okButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-
-            }
-        });
-
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                parent.finished();
-            }
-        });
-
 
         main_panel.setLayout(new GridBagLayout());
 
 
         main_panel.add(notNullBox, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
+                1, 1, 1, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
         defaultValuePanel.setLayout(new GridBagLayout());
@@ -202,8 +175,8 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
 
     }
 
-    void generateSQL() {
-        StringBuffer sb = new StringBuffer();
+    private void generateSQL() {
+        StringBuilder sb = new StringBuilder();
         columnData.setColumnName(nameField.getText());
         sb.setLength(0);
         if (editing) {
@@ -260,11 +233,11 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         } else {
             sb.append("CREATE DOMAIN ").append(columnData.getColumnName()).append(" as ").append(columnData.getFormattedDataType()).append("\n");
             if (!MiscUtils.isNull(columnData.getDefaultValue())) {
-                sb.append(" DEFAULT " + MiscUtils.formattedSQLValue(columnData.getDefaultValue(), columnData.getSQLType()));
+                sb.append(" DEFAULT ").append(MiscUtils.formattedSQLValue(columnData.getDefaultValue(), columnData.getSQLType()));
             }
             sb.append(columnData.isRequired() ? " NOT NULL" : "");
             if (!MiscUtils.isNull(columnData.getCheck())) {
-                sb.append(" CHECK ( " + columnData.getCheck() + ")");
+                sb.append(" CHECK ( ").append(columnData.getCheck()).append(")");
             }
             sb.append(";");
             if (!MiscUtils.isNull(columnData.getDescription())) {

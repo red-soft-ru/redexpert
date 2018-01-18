@@ -13,27 +13,24 @@ import org.underworldlabs.swing.DynamicComboBoxModel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.sql.SQLException;
 import java.util.Vector;
 
 public abstract class AbstractCreateObjectPanel extends JPanel {
-    protected JPanel first_panel;
+    private JPanel first_panel;
     protected JPanel main_panel;
     protected JTabbedPane tabbedPane;
-    protected JButton okButton;
-    protected JButton cancelButton;
+    private JButton okButton;
+    private JButton cancelButton;
     protected DatabaseConnection connection;
     protected JComboBox connectionsCombo;
-    protected DynamicComboBoxModel connectionsModel;
+    private DynamicComboBoxModel connectionsModel;
     protected boolean editing;
     protected ActionContainer parent;
     protected JTextField nameField;
     protected DefaultStatementExecutor sender;
-    protected JPanel okCancelPanel;
+    private JPanel okCancelPanel;
 
     public AbstractCreateObjectPanel(DatabaseConnection dc, ActionContainer dialog, Object databaseObject) {
         parent = dialog;
@@ -56,31 +53,18 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         tabbedPane = new JTabbedPane();
         tabbedPane.setPreferredSize(new Dimension(700, 400));
         okButton = new JButton(Bundles.getCommon("ok.button"));
-        okButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                create_object();
-            }
-        });
+        okButton.addActionListener(actionEvent -> create_object());
         cancelButton = new JButton(Bundles.getCommon("cancel.button"));
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                parent.finished();
-            }
-        });
+        cancelButton.addActionListener(actionEvent -> parent.finished());
         Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
         connectionsModel = new DynamicComboBoxModel(connections);
         connectionsCombo = WidgetFactory.createComboBox(connectionsModel);
-        connectionsCombo.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent event) {
-                if (event.getStateChange() == ItemEvent.DESELECTED) {
-                    return;
-                }
-                connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
-                sender.setDatabaseConnection(connection);
+        connectionsCombo.addItemListener(event -> {
+            if (event.getStateChange() == ItemEvent.DESELECTED) {
+                return;
             }
+            connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
+            sender.setDatabaseConnection(connection);
         });
         if (connection != null) {
             connectionsCombo.setSelectedItem(connection);

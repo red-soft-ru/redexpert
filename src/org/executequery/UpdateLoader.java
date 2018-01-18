@@ -2,9 +2,15 @@ package org.executequery;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.executequery.gui.LoginPasswordDialog;
 import org.executequery.log.Log;
+import org.executequery.util.UserProperties;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,6 +21,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -160,6 +168,84 @@ public class UpdateLoader extends JFrame {
         return new JSONObject(text);
     }
 
+    JSONObject getJsonObject(String Url, Map<String, String> headers) throws IOException {
+
+        String text = "";
+        HttpClient client = new HttpClient();
+        GetMethod get = new GetMethod(Url);
+        for (String key : headers.keySet()) {
+            get.addRequestHeader(key, headers.get(key));
+        }
+        client.executeMethod(get);
+        BufferedReader br = new BufferedReader(
+                new InputStreamReader(get.getResponseBodyAsStream()));
+
+        String inputLine;
+
+
+        while ((inputLine = br.readLine()) != null) {
+            text += inputLine + "\n";
+        }
+
+        br.close();
+
+
+        return new JSONObject(text);
+    }
+
+    JSONObject postJsonObject(String Url, Map<String, String> parameters) throws IOException {
+
+        String text = "";
+        HttpClient client = new HttpClient();
+        PostMethod get = new PostMethod(Url);
+        for (String key : parameters.keySet()) {
+            get.addParameter(key, parameters.get(key));
+        }
+        client.executeMethod(get);
+
+        BufferedReader br = new BufferedReader(
+                new InputStreamReader(get.getResponseBodyAsStream()));
+
+        String inputLine;
+
+
+        while ((inputLine = br.readLine()) != null) {
+            text += inputLine + "\n";
+        }
+
+        br.close();
+
+
+        return new JSONObject(text);
+    }
+
+    JSONArray getJsonArray(String Url, Map<String, String> headers) throws IOException {
+        URL url;
+        String text = "";
+
+        HttpClient client = new HttpClient();
+        //HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        GetMethod get = new GetMethod(Url);
+        for (String key : headers.keySet()) {
+            get.addRequestHeader(key, headers.get(key));
+        }
+        client.executeMethod(get);
+
+        BufferedReader br = new BufferedReader(
+                new InputStreamReader(get.getResponseBodyAsStream()));
+
+        String inputLine;
+
+
+        while ((inputLine = br.readLine()) != null) {
+            text += inputLine + "\n";
+        }
+
+        br.close();
+
+        return new JSONArray(text);
+    }
+
     JSONArray getJsonArray(String Url) throws IOException {
         URL url;
         String text = "";
@@ -184,6 +270,7 @@ public class UpdateLoader extends JFrame {
         return new JSONArray(text);
     }
 
+
     JSONObject getJsonObjectFromArray(JSONArray mas, String key, String value) {
         for (int i = 0; i < mas.length(); i++) {
             String prop = mas.getJSONObject(i).getString(key);
@@ -199,9 +286,19 @@ public class UpdateLoader extends JFrame {
         return getJsonObject(Url).getString(key);
     }
 
+    String getJsonPropertyFromUrl(String Url, String key, Map<String, String> headers) throws IOException {
+
+        return getJsonObject(Url, headers).getString(key);
+    }
+
+    String postJsonPropertyFromUrl(String Url, String key, Map<String, String> parameters) throws IOException {
+
+        return postJsonObject(Url, parameters).getString(key);
+    }
+
     void update(boolean unstable) {
+        this.setTitle("Updating");
         if (unstable) {
-            this.setTitle("Updating");
             outText.setText("Contacting Download Server...");
             try {
 
@@ -210,18 +307,57 @@ public class UpdateLoader extends JFrame {
                         "artifact_id",
                         "red_expert:red_expert:" + version + ":zip:bin");
                 downloadLink = "http://builds.red-soft.biz/" + obj.getString("file");
+                download();
             } catch (Exception e) {
                 Log.error(e.getMessage());
             }
         } else {
-            this.setTitle("Updating from " + repo);
             outText.setText("Contacting Download Server...");
-            if (!repo.isEmpty())
+            if (!repo.isEmpty()) {
                 this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
-            else
-                this.downloadLink = binaryZipUrl;
+                download();
+            } else {
+                if (MiscUtils.isNull(SystemProperties.getStringProperty("user", "reddatabase.token"))) {
+                    getToken();
+                }
+                String token = SystemProperties.getStringProperty("user", "reddatabase.token");
+                if (!MiscUtils.isNull(token)) {
+                    try {
+                        //изменить эту строку в соответствии с форматом имени файла на сайте
+                        String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename");
+                        Map<String, String> heads = new HashMap<>();
+                        heads.put("Authorization", "Token " + token);
+                        String url = getJsonObjectFromArray(getJsonArray(UserProperties.getInstance().getStringProperty("reddatabase.get-files.url") + version,
+                                heads), "filename", filename).getString("url");
+                        downloadLink = getJsonPropertyFromUrl(url + "genlink/", "link", heads);
+                        download();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
-        download();
+
+    }
+
+    private void getToken() {
+        LoginPasswordDialog dialog = new LoginPasswordDialog("Autorisation", "To continue the update you need to enter\nyour login and password from the site reddatabase.ru");
+        dialog.display();
+        Map<String, String> params = new HashMap<>();
+        params.put("username", dialog.getUsername());
+        params.put("password", dialog.getPassword());
+        try {
+            String token = postJsonPropertyFromUrl(UserProperties.getInstance().getStringProperty("reddatabase.get-token.url"), "token", params);
+            if (token != null) {
+                SystemProperties.setProperty("user", "reddatabase.token", token);
+                UserPreferencesManager.fireUserPreferencesChanged();
+            }
+        } catch (JSONException e) {
+            if (GUIUtilities.displayConfirmCancelDialog("Unknown Login or Password. Try again?") == JOptionPane.YES_OPTION)
+                getToken();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 

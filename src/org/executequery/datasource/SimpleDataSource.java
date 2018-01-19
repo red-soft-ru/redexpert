@@ -60,6 +60,8 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     private final String url;
     private final DatabaseConnection databaseConnection;
 
+    IFBCryptoPluginInit cryptoPlugin = null;
+
     public SimpleDataSource(DatabaseConnection databaseConnection) {
 
         this.databaseConnection = databaseConnection;
@@ -103,7 +105,8 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         // in multifactor authentication case, need to load firebird
         // plugin to initialize crypto plugin, otherwise get an error message
         if (advancedProperties.containsKey("isc_dpb_trusted_auth")
-                && advancedProperties.containsKey("isc_dpb_multi_factor_auth")) {
+                && advancedProperties.containsKey("isc_dpb_multi_factor_auth")
+                && cryptoPlugin == null) {
             URL[] urls = new URL[0];
             Class clazzdb = null;
             Object odb = null;
@@ -112,7 +115,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                 ClassLoader cl = new URLClassLoader(urls, driver.getClass().getClassLoader());
                 clazzdb = cl.loadClass("biz.redsoft.FBCryptoPluginInitImpl");
                 odb = clazzdb.newInstance();
-                IFBCryptoPluginInit cryptoPlugin = (IFBCryptoPluginInit) odb;
+                cryptoPlugin = (IFBCryptoPluginInit) odb;
                 cryptoPlugin.init();
             } catch (ClassNotFoundException e) {
                 throw new SQLException("Class not found: " + e.getMessage());

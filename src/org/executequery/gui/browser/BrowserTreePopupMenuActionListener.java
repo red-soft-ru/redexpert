@@ -49,6 +49,7 @@ import org.underworldlabs.swing.actions.ReflectiveAction;
 import javax.swing.*;
 import javax.swing.tree.TreePath;
 import java.awt.event.ActionEvent;
+import java.util.Objects;
 
 /**
  * @author Takis Diakoumis
@@ -90,7 +91,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             int type = node.getType();
             if (type == NamedObject.META_TAG)
                 for (int i = 0; i < NamedObject.META_TYPES.length; i++)
-                    if (NamedObject.META_TYPES[i] == node.getName()) {
+                    if (NamedObject.META_TYPES[i].equals(node.getName())) {
                         type = i;
                         break;
                     }
@@ -160,9 +161,6 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());
-                            //Icon icon=null;
-                            //GUIUtilities.addCentralPane(CreateViewPanel.TITLE,icon,new CreateViewPanel(currentSelection),
-                            //        null,true);
                         } finally {
                             GUIUtilities.showNormalCursor();
                         }
@@ -264,6 +262,25 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         }
                     }
                     break;
+                case NamedObject.FUNCTION:
+                    if (GUIUtilities.isDialogOpen(CreateFunctionPanel.CREATE_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateFunctionPanel.CREATE_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateFunctionPanel.CREATE_TITLE, false);
+                            CreateFunctionPanel panel = new CreateFunctionPanel(currentSelection, dialog);
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
                 default:
                     GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
                     break;
@@ -279,7 +296,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             int type = node.getType();
             if (type == NamedObject.META_TAG)
                 for (int i = 0; i < NamedObject.META_TYPES.length; i++)
-                    if (NamedObject.META_TYPES[i] == node.getName()) {
+                    if (Objects.equals(NamedObject.META_TYPES[i], node.getName())) {
                         type = i;
                         break;
                     }
@@ -585,7 +602,9 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
             }
 
-            dialog.addDisplayComponent(panel);
+            if (dialog != null) {
+                dialog.addDisplayComponent(panel);
+            }
             dialog.display();
         } finally {
             GUIUtilities.showNormalCursor();

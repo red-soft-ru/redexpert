@@ -72,6 +72,10 @@ public interface DatabaseConnection extends Serializable {
 
     public void setRole(String role);
 
+    public String getCertificate();
+
+    public void setCertificate(String certificate);
+
     public String getAuthMethod();
 
     public void setAuthMethod(String method);

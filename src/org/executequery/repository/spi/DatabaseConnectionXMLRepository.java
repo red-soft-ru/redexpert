@@ -219,6 +219,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
     private static final String PORT = "port";
     private static final String CHARSET = "charset";
     private static final String ROLE = "role";
+    private static final String CERTIFICATE = "certificate";
     private static final String AUTH_METHOD = "authmethod";
     private static final String CONNECTION_METHOD = "connectionmethod";
     private static final String URL = "url";
@@ -342,6 +343,10 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
             } else if (localNameIsKey(localName, ROLE)) {
 
                 databaseConnection.setRole(contentsAsString);
+
+            } else if (localNameIsKey(localName, CERTIFICATE)) {
+
+                databaseConnection.setCertificate(contentsAsString);
 
             } else if (localNameIsKey(localName, AUTH_METHOD)) {
 
@@ -569,6 +574,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                 writeXML(PORT, connection.getPort(), INDENT_TWO);
                 writeXML(CHARSET, connection.getCharset(), INDENT_TWO);
                 writeXML(ROLE, connection.getRole(), INDENT_TWO);
+                writeXML(CERTIFICATE, connection.getCertificate(), INDENT_TWO);
                 writeXML(AUTH_METHOD, connection.getAuthMethod(), INDENT_TWO);
                 writeXML(CONNECTION_METHOD, connection.getConnectionMethod(), INDENT_TWO);
                 writeXML(URL, connection.getURL(), INDENT_TWO);

@@ -132,6 +132,11 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     private String role;
 
+    /**
+     * the path to certificate for multifactor authentication
+     */
+    private String certificate;
+
     private String authMethod;
 
     private String connectionMethod;
@@ -278,6 +283,14 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getCertificate() {
+        return certificate == null ? Constants.EMPTY : certificate;
+    }
+
+    public void setCertificate(String certificate) {
+        this.certificate = certificate;
     }
 
     public String getConnectionMethod() {

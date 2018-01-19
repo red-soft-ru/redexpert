@@ -1432,6 +1432,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         nameField.setText(databaseConnection.getName());
         charsetsCombo.setSelectedItem(databaseConnection.getCharset());
         roleField.setText(databaseConnection.getRole());
+        certificateFileField.setText(databaseConnection.getCertificate());
         authCombo.setSelectedItem(databaseConnection.getAuthMethod());
         methodCombo.setSelectedItem(databaseConnection.getConnectionMethod());
 
@@ -1475,6 +1476,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         databaseConnection.setSourceName(path);
         databaseConnection.setURL(urlField.getText());
         databaseConnection.setRole(roleField.getText());
+        databaseConnection.setCertificate(certificateFileField.getText());
         databaseConnection.setCharset(charsetsCombo.getSelectedItem().toString());
         databaseConnection.setAuthMethod(authCombo.getSelectedItem().toString());
         databaseConnection.setConnectionMethod(methodCombo.getSelectedItem().toString());

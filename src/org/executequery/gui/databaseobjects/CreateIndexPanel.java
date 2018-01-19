@@ -13,7 +13,9 @@ import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -24,20 +26,20 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
     public static final String CREATE_TITLE = "Create Index";
     public static final String ALTER_TITLE = "Alter Index";
-    JComboBox tableName;
-    JList<CheckListItem> fields;
-    JPanel fieldsPanel;
-    JPanel descriptionPanel;
-    SimpleTextArea description;
-    SimpleSqlTextPanel computedPanel;
-    JScrollPane scrollList;
-    JComboBox sortingBox;
-    JCheckBox uniqueBox;
-    JCheckBox computedBox;
-    JCheckBox activeBox;
-    DefaultDatabaseIndex databaseIndex;
-    boolean edited;
-    boolean free_sender = true;
+    private JComboBox tableName;
+    private JList<CheckListItem> fields;
+    private JPanel fieldsPanel;
+    private JPanel descriptionPanel;
+    private SimpleTextArea description;
+    private SimpleSqlTextPanel computedPanel;
+    private JScrollPane scrollList;
+    private JComboBox sortingBox;
+    private JCheckBox uniqueBox;
+    private JCheckBox computedBox;
+    private JCheckBox activeBox;
+    private DefaultDatabaseIndex databaseIndex;
+    private boolean edited;
+    private boolean free_sender = true;
 
     public CreateIndexPanel(DatabaseConnection dc, ActionContainer dialog) {
         this(dc, dialog, null);
@@ -111,6 +113,11 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         databaseIndex = (DefaultDatabaseIndex) databaseObject;
     }
 
+    @Override
+    public void setParameters(Object[] params) {
+
+    }
+
     protected void init() {
         fieldsPanel = new JPanel();
         descriptionPanel = new JPanel();
@@ -125,20 +132,17 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         this.description = new SimpleTextArea();
         computedPanel = new SimpleSqlTextPanel();
 
-        computedBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                if (computedBox.isSelected()) {
-                    tabbedPane.remove(0);
-                    tabbedPane.insertTab(bundlesString("computed"), null, computedPanel, null, 0);
-                } else {
-                    tabbedPane.remove(0);
-                    tabbedPane.insertTab(bundleString("fields"), null, fieldsPanel, null, 0);
-                }
-                tabbedPane.setSelectedIndex(0);
-                edited = true;
-
+        computedBox.addActionListener(actionEvent -> {
+            if (computedBox.isSelected()) {
+                tabbedPane.remove(0);
+                tabbedPane.insertTab(bundlesString("computed"), null, computedPanel, null, 0);
+            } else {
+                tabbedPane.remove(0);
+                tabbedPane.insertTab(bundleString("fields"), null, fieldsPanel, null, 0);
             }
+            tabbedPane.setSelectedIndex(0);
+            edited = true;
+
         });
 
         fields.setCellRenderer(new CheckListRenderer());
@@ -156,26 +160,20 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                 edited = true;
             }
         });
-        tableName.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent event) {
-                if (event.getStateChange() == ItemEvent.DESELECTED) {
-                    return;
-                }
-
-                updateListFields();
-
+        tableName.addItemListener(event -> {
+            if (event.getStateChange() == ItemEvent.DESELECTED) {
+                return;
             }
+
+            updateListFields();
+
         });
         updateListTables();
-        sortingBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent event) {
-                if (event.getStateChange() == ItemEvent.DESELECTED) {
-                    return;
-                }
-                edited = true;
+        sortingBox.addItemListener(event -> {
+            if (event.getStateChange() == ItemEvent.DESELECTED) {
+                return;
             }
+            edited = true;
         });
 
         main_panel.setLayout(new GridBagLayout());
@@ -228,7 +226,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         descriptionPanel.add(description);
     }
 
-    void updateListTables() {
+    private void updateListTables() {
         try {
             String query = "select rdb$relation_name\n" +
                     "from rdb$relations\n" +
@@ -250,7 +248,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
     }
 
-    void updateListFields() {
+    private void updateListFields() {
         if (tableName.getSelectedItem() != null && free_sender)
             try {
                 String query = "select  RRF.RDB$FIELD_NAME, RRF.RDB$FIELD_SOURCE,RRF.RDB$FIELD_POSITION from rdb$relation_fields RRF\n" +
@@ -280,7 +278,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
     }
 
-    void createIndex() {
+    private void createIndex() {
         String query = "";
         if (editing && !edited) {
             if (activeBox.isSelected() != databaseIndex.isActive()) {
@@ -305,15 +303,15 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             } else {
                 query += "(";
                 DefaultListModel model = ((DefaultListModel) fields.getModel());
-                String fieldss = "";
+                StringBuilder fieldss = new StringBuilder();
                 boolean first = true;
                 for (int i = 0; i < model.getSize(); i++) {
                     CheckListItem item = (CheckListItem) model.elementAt(i);
                     if (item.isSelected) {
                         if (!first)
-                            fieldss += ",";
+                            fieldss.append(",");
                         first = false;
-                        fieldss += item.label;
+                        fieldss.append(item.label);
                     }
                 }
                 query += fieldss + ");";
@@ -322,7 +320,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                 query += "ALTER INDEX " + nameField.getText() + " INACTIVE;";
         }
         if (!MiscUtils.isNull(description.getTextAreaComponent().getText()))
-            query += "COMMENT ON INDEX " + nameField.getText() + " IS '" + description.getTextAreaComponent().getText() + "'";
+            query += new StringBuilder().append("COMMENT ON INDEX ").append(nameField.getText()).append(" IS '").append(description.getTextAreaComponent().getText()).append("'").toString();
         displayExecuteQueryDialog(query, ";");
 
     }

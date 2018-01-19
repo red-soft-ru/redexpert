@@ -1,14 +1,13 @@
-package org.executequery.gui.table;
+package org.executequery.gui.datatype;
 
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.FileUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.Types;
@@ -28,18 +27,21 @@ public class SelectTypePanel extends JPanel {
     private NumberTextField sizeField;
     private NumberTextField scaleField;
     private NumberTextField subtypeField;
+    private boolean display_typeof;
 
-    String[] dataTypes;
-    int[] intDataTypes;
-    KeyListener keyListener;
-    ColumnData cd;
-    boolean refreshing = false;
-    List<String> charsets;
-    Map<Integer, String> types;
+    private String[] dataTypes;
+    private int[] intDataTypes;
+    private KeyListener keyListener;
+    private ColumnData cd;
+    private boolean refreshing = false;
+    private List<String> charsets;
+    private Map<Integer, String> types;
+    private TypeOfPanel typeOfPanel;
 
-    public SelectTypePanel(String[] types, int[] intTypes, ColumnData cd) {
+    public SelectTypePanel(String[] types, int[] intTypes, ColumnData cd, boolean display_typeof) {
         this.dataTypes = types;
         this.intDataTypes = intTypes;
+        this.display_typeof = display_typeof;
         sortTypes();
         removeDuplicates();
         this.cd = cd;
@@ -47,7 +49,7 @@ public class SelectTypePanel extends JPanel {
         init();
     }
 
-    void init() {
+    private void init() {
         typeLabel = new JLabel("Type");
         sizeLabel = new JLabel("Size");
         scaleLabel = new JLabel("Scale");
@@ -58,7 +60,8 @@ public class SelectTypePanel extends JPanel {
         sizeField = new NumberTextField();
         scaleField = new NumberTextField();
         subtypeField = new NumberTextField();
-
+        typeOfPanel = new TypeOfPanel(cd);
+        typeOfPanel.setVisible(display_typeof);
         keyListener = new KeyListener() {
             @Override
             public void keyTyped(KeyEvent keyEvent) {
@@ -86,23 +89,13 @@ public class SelectTypePanel extends JPanel {
         };
 
 
-        typeBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                refreshType();
-            }
-        });
+        typeBox.addActionListener(actionEvent -> refreshType());
 
         typeBox.setModel(new DefaultComboBoxModel(dataTypes));
         typeBox.setSelectedIndex(0);
 
         encodingBox.setModel(new DefaultComboBoxModel(charsets.toArray(new String[charsets.size()])));
-        encodingBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                cd.setCharset((String) encodingBox.getSelectedItem());
-            }
-        });
+        encodingBox.addActionListener(actionEvent -> cd.setCharset((String) encodingBox.getSelectedItem()));
 
         this.setLayout(new GridBagLayout());
         this.add(typeLabel, new GridBagConstraints(0, 0, 1, 1,
@@ -135,12 +128,12 @@ public class SelectTypePanel extends JPanel {
         this.add(encodingBox, new GridBagConstraints(1, 4, 1, 1,
                 1, 0, GridBagConstraints.NORTH,
                 GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 0, 0));
-        this.add(new JPanel(), new GridBagConstraints(1, 4, 1, 1,
+        this.add(typeOfPanel, new GridBagConstraints(0, 4, 2, 1,
                 1, 1, GridBagConstraints.NORTH,
                 GridBagConstraints.BOTH, new Insets(1, 1, 1, 1), 0, 0));
     }
 
-    void refreshType() {
+    private void refreshType() {
         int index = typeBox.getSelectedIndex();
         cd.setColumnType(dataTypes[index]);
         cd.setSQLType(intDataTypes[index]);
@@ -174,7 +167,7 @@ public class SelectTypePanel extends JPanel {
         cd.setColumnSubtype(subtypeField.getValue());
     }
 
-    void setSizeVisible(boolean flag) {
+    private void setSizeVisible(boolean flag) {
         sizeField.setEnabled(flag);
         //sizeLabel.setEnabled(flag);
         if (flag)
@@ -185,7 +178,7 @@ public class SelectTypePanel extends JPanel {
         cd.setColumnSize(sizeField.getValue());
     }
 
-    void setScaleVisible(boolean flag) {
+    private void setScaleVisible(boolean flag) {
         scaleField.setEnabled(flag);
         //scaleLabel.setVisible(flag);
         if (flag) {
@@ -196,7 +189,7 @@ public class SelectTypePanel extends JPanel {
         cd.setColumnScale(scaleField.getValue());
     }
 
-    void setSubtypeVisible(boolean flag) {
+    private void setSubtypeVisible(boolean flag) {
         subtypeField.setEnabled(flag);
         if (flag) {
             subtypeField.setValue(1);
@@ -206,14 +199,14 @@ public class SelectTypePanel extends JPanel {
         cd.setColumnSubtype(subtypeField.getValue());
     }
 
-    void setEncodingVisible(boolean flag) {
+    private void setEncodingVisible(boolean flag) {
         encodingBox.setEnabled(flag);
         if (refreshing)
             encodingBox.setSelectedItem(cd.getCharset());
         cd.setCharset((String) encodingBox.getSelectedItem());
     }
 
-    void removeDuplicates() {
+    private void removeDuplicates() {
         if (types == null)
             types = new HashMap<>();
         else types.clear();
@@ -234,7 +227,7 @@ public class SelectTypePanel extends JPanel {
         this.intDataTypes = newIntTypes.stream().mapToInt(Integer::intValue).toArray();
     }
 
-    void sortTypes() {
+    private void sortTypes() {
         if (dataTypes != null) {
             for (int i = 0; i < dataTypes.length; i++) {
                 for (int g = 0; g < dataTypes.length - 1; g++) {
@@ -260,7 +253,7 @@ public class SelectTypePanel extends JPanel {
         refreshing = false;
     }
 
-    String getStringType(int x) {
+    private String getStringType(int x) {
         try {
             return types.get(x);
         } catch (Exception e) {
@@ -272,7 +265,7 @@ public class SelectTypePanel extends JPanel {
     private void loadCharsets() {
         try {
             if (charsets == null)
-                charsets = new ArrayList<String>();
+                charsets = new ArrayList<>();
             else
                 charsets.clear();
 
@@ -287,7 +280,6 @@ public class SelectTypePanel extends JPanel {
 
         } catch (Exception e) {
             Log.error("Error getting charsets for SelectTypePanel:", e);
-            return;
         }
     }
 }

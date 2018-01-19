@@ -12,8 +12,6 @@ import org.executequery.log.Log;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -42,7 +40,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
             "CHARACTER SET",
             "MAPPING",
             "ROLE"};
-    DefaultDatabaseTrigger trigger;
+    private DefaultDatabaseTrigger trigger;
     private JComboBox typeTriggerCombo;
     private JSpinner positionField;
 
@@ -123,19 +121,9 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
                 "end");
 
 
-        typeTriggerCombo.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                changeTypeTrigger();
-            }
-        });
+        typeTriggerCombo.addActionListener(actionEvent -> changeTypeTrigger());
 
-        anyDdlBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                changeAnyDdlBox();
-            }
-        });
+        anyDdlBox.addActionListener(actionEvent -> changeAnyDdlBox());
 
         main_panel.setLayout(new GridBagLayout());
         JPanel commonPanel = new JPanel(new GridBagLayout());
@@ -271,7 +259,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
     }
 
-    void changeAnyDdlBox() {
+    private void changeAnyDdlBox() {
         boolean selected = anyDdlBox.isSelected();
         for (JCheckBox checkBox : ddlCheckBoxes) {
             checkBox.setSelected(selected);
@@ -350,12 +338,17 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         trigger = (DefaultDatabaseTrigger) databaseObject;
     }
 
+    @Override
+    public void setParameters(Object[] params) {
+
+    }
+
     int getVersion() throws SQLException {
         DatabaseHost host = new DefaultDatabaseHost(connection);
         return host.getDatabaseMetaData().getDatabaseMajorVersion();
     }
 
-    void changeTypeTrigger() {
+    private void changeTypeTrigger() {
         boolean dbtrigger = typeTriggerCombo.getSelectedIndex() == 1;
         boolean tabletrigger = typeTriggerCombo.getSelectedIndex() == 0;
         databaseTriggerPanel.setVisible(dbtrigger);
@@ -381,57 +374,57 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         }
     }
 
-    void generateScript() {
-        String query = "CREATE OR ALTER TRIGGER " + nameField.getText();
+    private void generateScript() {
+        StringBuilder query = new StringBuilder("CREATE OR ALTER TRIGGER " + nameField.getText());
         if (typeTriggerCombo.getSelectedIndex() == 0)
-            query += " FOR " + tablesCombo.getSelectedItem();
-        query += "\n";
+            query.append(" FOR ").append(tablesCombo.getSelectedItem());
+        query.append("\n");
         if (activeBox.isSelected())
-            query += "ACTIVE ";
-        else query += "INACTIVE ";
+            query.append("ACTIVE ");
+        else query.append("INACTIVE ");
         if (typeTriggerCombo.getSelectedIndex() == 0) {
-            query += typeTableTriggerCombo.getSelectedItem() + " ";
+            query.append(typeTableTriggerCombo.getSelectedItem()).append(" ");
             boolean first = true;
             if (insertBox.isSelected()) {
                 first = false;
-                query += "INSERT ";
+                query.append("INSERT ");
             }
             if (updateBox.isSelected()) {
                 if (!first)
-                    query += "OR ";
+                    query.append("OR ");
                 first = false;
-                query += "UPDATE ";
+                query.append("UPDATE ");
             }
             if (deleteBox.isSelected()) {
                 if (!first)
-                    query += "OR ";
-                query += "DELETE ";
+                    query.append("OR ");
+                query.append("DELETE ");
             }
 
         } else {
             if (typeTriggerCombo.getSelectedIndex() == 1)
-                query += "ON " + actionCombo.getSelectedItem() + " ";
+                query.append("ON ").append(actionCombo.getSelectedItem()).append(" ");
             else {
-                query += typeTableTriggerCombo.getSelectedItem() + " ";
+                query.append(typeTableTriggerCombo.getSelectedItem()).append(" ");
                 boolean first = true;
                 if (anyDdlBox.isSelected()) {
-                    query += anyDdlBox.getText() + " ";
+                    query.append(anyDdlBox.getText()).append(" ");
                 } else {
                     for (JCheckBox checkBox : ddlCheckBoxes) {
                         if (checkBox.isSelected()) {
                             if (!first)
-                                query += "OR ";
-                            query += checkBox.getText() + " ";
+                                query.append("OR ");
+                            query.append(checkBox.getText()).append(" ");
                             first = false;
                         }
                     }
                 }
             }
         }
-        query += "POSITION " + positionField.getValue() + "\n";
-        query += sqlBodyText.getSQLText() + "^";
-        query += "COMMENT ON TRIGGER " + nameField.getText() + " IS '" + descriptionText.getTextAreaComponent().getText() + "'^";
-        displayExecuteQueryDialog(query, "^");
+        query.append("POSITION ").append(positionField.getValue()).append("\n");
+        query.append(sqlBodyText.getSQLText()).append("^");
+        query.append("COMMENT ON TRIGGER ").append(nameField.getText()).append(" IS '").append(descriptionText.getTextAreaComponent().getText()).append("'^");
+        displayExecuteQueryDialog(query.toString(), "^");
     }
 
 }

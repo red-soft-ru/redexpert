@@ -5,7 +5,7 @@ import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
-import org.executequery.gui.table.SelectTypePanel;
+import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.text.SQLTextPane;
 import org.underworldlabs.util.MiscUtils;
 
@@ -48,7 +48,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         checkPanel = new JPanel();
         descriptionPanel = new JPanel();
         sqlPanel = new JPanel();
-        selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(), metaData.getIntDataTypesArray(), columnData);
+        selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(), metaData.getIntDataTypesArray(), columnData, false);
         notNullBox = new JCheckBox("Not Null");
         scrollDefaultValue = new JScrollPane();
         scrollCheck = new JScrollPane();
@@ -148,6 +148,11 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         this.domain = (String) databaseObject;
         metaData = new MetaDataValues(connection, true);
         columnData = new ColumnData(connection);
+    }
+
+    @Override
+    public void setParameters(Object[] params) {
+
     }
 
     @Override

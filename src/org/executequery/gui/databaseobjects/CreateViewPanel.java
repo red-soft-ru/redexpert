@@ -13,16 +13,15 @@ import javax.swing.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 
 public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusListener {
     public static final String TITLE = "Create View";
     public static final String EDIT_TITLE = "Alter View";
     private static final String AUTO_COMPLETE_POPUP_ACTION_KEY = "autoCompletePopupActionKey";
-    SimpleSqlTextPanel sqlTextPanel;
-    SimpleTextArea descriptionTextArea;
-    DefaultAutoCompletePopupProvider autoCompletePopup;
-    DefaultDatabaseView view;
+    private SimpleSqlTextPanel sqlTextPanel;
+    private SimpleTextArea descriptionTextArea;
+    private DefaultAutoCompletePopupProvider autoCompletePopup;
+    private DefaultDatabaseView view;
 
     public CreateViewPanel(DatabaseConnection dc, ActionContainer dialog) {
         this(dc, dialog, null);
@@ -48,14 +47,11 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
         }
         sqlTextPanel.setSQLText(sql);
 
-        connectionsCombo.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent event) {
-                if (event.getStateChange() == ItemEvent.DESELECTED) {
-                    return;
-                }
-                autoCompletePopup.connectionChanged((DatabaseConnection) connectionsCombo.getSelectedItem());
+        connectionsCombo.addItemListener(event -> {
+            if (event.getStateChange() == ItemEvent.DESELECTED) {
+                return;
             }
+            autoCompletePopup.connectionChanged((DatabaseConnection) connectionsCombo.getSelectedItem());
         });
 
         //create location elements
@@ -106,6 +102,11 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     @Override
     public void setDatabaseObject(Object databaseObject) {
         view = (DefaultDatabaseView) databaseObject;
+    }
+
+    @Override
+    public void setParameters(Object[] params) {
+
     }
 
     @Override

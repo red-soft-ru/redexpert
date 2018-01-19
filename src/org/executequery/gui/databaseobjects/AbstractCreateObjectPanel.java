@@ -33,10 +33,16 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
     private JPanel okCancelPanel;
 
     public AbstractCreateObjectPanel(DatabaseConnection dc, ActionContainer dialog, Object databaseObject) {
+        this(dc, dialog, databaseObject, null);
+    }
+
+    public AbstractCreateObjectPanel(DatabaseConnection dc, ActionContainer dialog, Object databaseObject, Object[] params) {
         parent = dialog;
         connection = dc;
         initComponents();
         setDatabaseObject(databaseObject);
+        if (params != null)
+            setParameters(params);
         init();
         editing = databaseObject != null;
         if (editing)
@@ -119,6 +125,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
 
     }
 
+
     protected abstract void init();
 
     protected abstract void init_edited();
@@ -132,6 +139,8 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
     public abstract String getTypeObject();
 
     public abstract void setDatabaseObject(Object databaseObject);
+
+    public abstract void setParameters(Object[] params);
 
     public String bundleString(String key) {
         return Bundles.get(getClass(), key);

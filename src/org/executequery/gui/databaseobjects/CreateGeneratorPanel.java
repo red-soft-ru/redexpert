@@ -20,11 +20,11 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
 
     public static final String CREATE_TITLE = "Create Sequence";
     public static final String ALTER_TITLE = "Alter Sequence";
-    NumberTextField startValueText;
-    NumberTextField incrementText;
-    SimpleTextArea description;
-    JLabel labelIncrement;
-    DefaultDatabaseSequence generator;
+    private NumberTextField startValueText;
+    private NumberTextField incrementText;
+    private SimpleTextArea description;
+    private JLabel labelIncrement;
+    private DefaultDatabaseSequence generator;
 
     public CreateGeneratorPanel(DatabaseConnection dc, ActionContainer dialog) {
         this(dc, dialog, null);
@@ -72,6 +72,11 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
         generator = (DefaultDatabaseSequence) databaseObject;
     }
 
+    @Override
+    public void setParameters(Object[] params) {
+
+    }
+
     protected void init() {
         startValueText = new NumberTextField();
         startValueText.setValue(0);
@@ -112,7 +117,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
         return host.getDatabaseMetaData().getDatabaseMajorVersion();
     }
 
-    void createGenerator() throws SQLException {
+    private void createGenerator() throws SQLException {
         if (!MiscUtils.isNull(nameField.getText().trim())) {
             String query;
             if (getVersion() == 3) {

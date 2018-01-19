@@ -47,6 +47,11 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
         this.exception = (DefaultDatabaseException) databaseObject;
     }
 
+    @Override
+    public void setParameters(Object[] params) {
+
+    }
+
     protected void init() {
         descriptionPanel = new SimpleTextArea();
         textExceptionPanel = new SimpleTextArea();

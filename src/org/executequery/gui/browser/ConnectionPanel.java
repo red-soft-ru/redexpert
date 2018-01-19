@@ -422,14 +422,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         sgbc.gridx = 3;
         sgbc.insets.left = 5;
-        sgbc.weightx = 0.1;
+        sgbc.weightx = 0.05;
         standardPanel.add(portField, sgbc);
-
-        JLabel dataSourceLabel = new DefaultFieldLabel(bundleString("sourceField"));
-        sgbc.gridx = 4;
-        sgbc.insets.left = 5;
-        sgbc.weightx = 0;
-        standardPanel.add(dataSourceLabel, sgbc);
 
         JButton openFile = new JButton(bundleString("ChooseFile"));
         openFile.addActionListener(new ActionListener() {
@@ -447,12 +441,14 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         JPanel selectFilePanel = new JPanel(new BorderLayout());
 
+        JLabel dataSourceLabel = new DefaultFieldLabel(bundleString("sourceField"));
+        selectFilePanel.add(dataSourceLabel, BorderLayout.LINE_START);
         selectFilePanel.add(sourceField, BorderLayout.CENTER);
         selectFilePanel.add(openFile, BorderLayout.LINE_END);
 
-        sgbc.gridx = 5;
+        sgbc.gridx = 4;
         sgbc.insets.left = 5;
-        sgbc.weightx = 0.25;
+        sgbc.weightx = 0.95;
         standardPanel.add(selectFilePanel, sgbc);
 
         JLabel authLabel = new DefaultFieldLabel(bundleString("Authentication"));

@@ -1186,11 +1186,13 @@ public class ConnectionPanel extends AbstractConnectionPanel
             properties.setProperty("roleName", roleField.getText());
 
         if (!properties.containsKey("isc_dpb_trusted_auth")
-                && !properties.containsKey("isc_dpb_multi_factor_auth")) {
+                && !properties.containsKey("isc_dpb_multi_factor_auth")
+                && authCombo.getSelectedItem().toString().equalsIgnoreCase("multifactor")) {
             properties.setProperty("isc_dpb_trusted_auth", "1");
             properties.setProperty("isc_dpb_multi_factor_auth", "1");
         }
-        if (!certificateFileField.getText().isEmpty())
+        if (!certificateFileField.getText().isEmpty()
+                && authCombo.getSelectedItem().toString().equalsIgnoreCase("multifactor"))
             properties.setProperty("isc_dpb_certificate", certificateFileField.getText());
 
         String name = ManagementFactory.getRuntimeMXBean().getName();

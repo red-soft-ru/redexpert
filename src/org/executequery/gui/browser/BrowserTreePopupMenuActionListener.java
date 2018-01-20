@@ -26,10 +26,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.impl.DefaultDatabaseException;
-import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
-import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
-import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
+import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.CreateTablePanel;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -424,6 +421,25 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 default:
                     GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
                     break;
+                case NamedObject.FUNCTION:
+                    if (GUIUtilities.isDialogOpen(CreateFunctionPanel.EDIT_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateFunctionPanel.EDIT_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+
+                            BaseDialog dialog = new BaseDialog(CreateFunctionPanel.EDIT_TITLE, false);
+                            CreateFunctionPanel panel = new CreateFunctionPanel(currentSelection, dialog, node.getName().trim(), (DefaultDatabaseFunction) node.getDatabaseObject());
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
             }
         }
 
@@ -605,7 +621,9 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             if (dialog != null) {
                 dialog.addDisplayComponent(panel);
             }
-            dialog.display();
+            if (dialog != null) {
+                dialog.display();
+            }
         } finally {
             GUIUtilities.showNormalCursor();
         }

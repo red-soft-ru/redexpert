@@ -32,7 +32,10 @@ public class TypeOfPanel extends JPanel {
         columnsModel = new DynamicComboBoxModel();
         columnBox = new JComboBox(columnsModel);
         columnBox.setEnabled(false);
-        columnBox.addActionListener(actionEvent -> columnData.setColumnTable(getColumn()));
+        columnBox.addActionListener(actionEvent ->
+                columnData.setColumnTable(getColumn()));
+        if (tableModel.getSize() > 0)
+            tablesBox.setSelectedIndex(0);
         typeOfBox = new JCheckBox("Type Of");
         typeOfBox.addActionListener(actionEvent -> {
             columnData.setType_of(typeOfBox.isSelected());
@@ -63,6 +66,14 @@ public class TypeOfPanel extends JPanel {
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
+        typeOfBox.setSelected(columnData.isType_of());
+        columnData.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+        if (columnData.isType_of()) {
+            tablesBox.setSelectedItem(columnData.getTable());
+            columnBox.setSelectedItem(columnData.getColumnTable());
+            tablesBox.setEnabled(columnData.isType_of());
+            columnBox.setEnabled(columnData.isType_of());
+        }
 
     }
 

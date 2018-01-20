@@ -105,7 +105,11 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
      */
 
     public CreateProcedureFunctionPanel(DatabaseConnection dc, ActionContainer dialog, String procedure) {
-        super(dc, dialog, procedure);
+        this(dc, dialog, procedure, null);
+    }
+
+    public CreateProcedureFunctionPanel(DatabaseConnection dc, ActionContainer dialog, String procedure, Object[] params) {
+        super(dc, dialog, procedure, params);
     }
 
     public void initEditing() {
@@ -138,7 +142,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
     }
 
     private void loadVariables() {
-        variablesPanel.deleteEmptyRow(); // remove first empty row
+        // remove first empty row
 
         String fullProcedureBody = getFullSourceBody();
 
@@ -146,10 +150,11 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
             fullProcedureBody = fullProcedureBody.toUpperCase();
             sqlBodyText.setSQLText(fullProcedureBody.substring(fullProcedureBody.indexOf("BEGIN")));
 
-            if (!fullProcedureBody.contains("DECLARE")) // no variables
+            if (!fullProcedureBody.contains("DECLARE"))// no variables
                 return;
             String declaredVariables = fullProcedureBody.substring(fullProcedureBody.indexOf("DECLARE"), fullProcedureBody.indexOf("BEGIN"));
             if (!declaredVariables.isEmpty()) {
+                variablesPanel.deleteEmptyRow();
                 String[] split = declaredVariables.split("\r\n");
                 for (String varString :
                         split) {
@@ -198,56 +203,65 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                             type = m.group(0);
                         }
                         // need to find blob subtype
-                        if (type.equals("BLOB")) {
-                            pattern = "(-?[0-9]\\d*(\\.\\d+)?)";
-                            r = Pattern.compile(pattern);
-                            m = r.matcher(varString);
-                            matchesCount = 0;
-                            while (m.find()) {
-                                if (matchesCount == 0) { // subtype
-                                    variable.setSubtype(Integer.valueOf(m.group(0)));
-                                    varString = varString.replace(m.group(0), "");
-                                } else if (matchesCount == 1) { // segment size
-                                    variable.setSize(Integer.valueOf(m.group(0)));
-                                    varString = varString.replace(m.group(0), "");
+                        switch (type) {
+                            case "BLOB":
+                                pattern = "(-?[0-9]\\d*(\\.\\d+)?)";
+                                r = Pattern.compile(pattern);
+                                m = r.matcher(varString);
+                                matchesCount = 0;
+                                while (m.find()) {
+                                    if (matchesCount == 0) { // subtype
+                                        variable.setSubtype(Integer.valueOf(m.group(0)));
+                                        varString = varString.replace(m.group(0), "");
+                                    } else if (matchesCount == 1) { // segment size
+                                        variable.setSize(Integer.valueOf(m.group(0)));
+                                        varString = varString.replace(m.group(0), "");
+                                    }
+                                    matchesCount++;
                                 }
-                                matchesCount++;
-                            }
 
-                            if (varString.contains("BINARY")) {
-                                variable.setSize(variable.getSubtype());
-                                variable.setSubtype(0);
-                            } else if (varString.contains("TEXT")) {
-                                variable.setSize(variable.getSubtype());
-                                variable.setSubtype(1);
-                            }
+                                if (varString.contains("BINARY")) {
+                                    variable.setSize(variable.getSubtype());
+                                    variable.setSubtype(0);
+                                } else if (varString.contains("TEXT")) {
+                                    variable.setSize(variable.getSubtype());
+                                    variable.setSubtype(1);
+                                }
 
-                            if (variable.getSubtype() < 0)
-                                type = "BLOB SUB_TYPE <0";
-                            else if (variable.getSubtype() == 0)
-                                type = "BLOB SUB_TYPE 0";
-                            else
-                                type = "BLOB SUB_TYPE 1";
+                                if (variable.getSubtype() < 0)
+                                    type = "BLOB SUB_TYPE <0";
+                                else if (variable.getSubtype() == 0)
+                                    type = "BLOB SUB_TYPE 0";
+                                else
+                                    type = "BLOB SUB_TYPE 1";
 
 
-                        } else {
-                            pattern = "(?<=\\()\\d+(?:\\.\\d+)?(?=\\))"; // pattern for size of varchar and etc.
-                            r = Pattern.compile(pattern);
-                            m = r.matcher(varString);
-                            if (m.find())
-                                variable.setSize(Integer.valueOf(m.group(0)));
+                                break;
+                            case "TYPE":
 
-                            pattern = "(?<=\\()\\d+(?:\\.\\d+)?(?=,)"; // pattern for size of decimal and etc.
-                            r = Pattern.compile(pattern);
-                            m = r.matcher(varString);
-                            if (m.find())
-                                variable.setSize(Integer.valueOf(m.group(0)));
+                                break;
+                            default:
+                                pattern = "(?<=\\()\\d+(?:\\.\\d+)?(?=\\))"; // pattern for size of varchar and etc.
 
-                            pattern = "(?<=,)\\d+(?:\\.\\d+)?(?=\\))"; // pattern for scale of decimal and etc.
-                            r = Pattern.compile(pattern);
-                            m = r.matcher(varString);
-                            if (m.find())
-                                variable.setScale(Integer.valueOf(m.group(0)));
+                                r = Pattern.compile(pattern);
+                                m = r.matcher(varString);
+                                if (m.find())
+                                    variable.setSize(Integer.valueOf(m.group(0)));
+
+                                pattern = "(?<=\\()\\d+(?:\\.\\d+)?(?=,)"; // pattern for size of decimal and etc.
+
+                                r = Pattern.compile(pattern);
+                                m = r.matcher(varString);
+                                if (m.find())
+                                    variable.setSize(Integer.valueOf(m.group(0)));
+
+                                pattern = "(?<=,)\\d+(?:\\.\\d+)?(?=\\))"; // pattern for scale of decimal and etc.
+
+                                r = Pattern.compile(pattern);
+                                m = r.matcher(varString);
+                                if (m.find())
+                                    variable.setScale(Integer.valueOf(m.group(0)));
+                                break;
                         }
 
                         pattern = "/\\*(.*?)\\*/"; // pattern for comment

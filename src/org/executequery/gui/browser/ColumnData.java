@@ -690,7 +690,7 @@ public class ColumnData implements Serializable {
             if (type == Types.BLOB || type == Types.LONGVARCHAR
                     || type == Types.LONGVARBINARY)
                 sb.append(" segment size ").append(getColumnSize());
-            else if (getColumnSize() > 0 && !isDateDataType()
+            else if (isEditSize() && getColumnSize() > 0 && !isDateDataType()
                     && !isNonPrecisionType()) {
                 sb.append("(");
                 sb.append(getColumnSize());
@@ -706,6 +706,14 @@ public class ColumnData implements Serializable {
             }
         }
         return sb.toString();
+    }
+
+    public boolean isEditSize() {
+        return getColumnType() != null && (getSQLType() == Types.NUMERIC || getSQLType() == Types.CHAR || getSQLType() == Types.VARCHAR
+                || getSQLType() == Types.DECIMAL || getSQLType() == Types.BLOB || getSQLType() == Types.LONGVARCHAR
+                || getSQLType() == Types.LONGVARBINARY
+                || getColumnType().toUpperCase().equals("VARCHAR")
+                || getColumnType().toUpperCase().equals("CHAR"));
     }
 
     public void setCheck(String Check) {

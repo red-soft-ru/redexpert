@@ -3,6 +3,7 @@ package org.executequery.gui.procedure;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowsingCellEditor;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.FunctionParameter;
 import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
@@ -599,6 +600,44 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         if (table.isEditing()) {
             table.removeEditor();
         }
+    }
+
+    public void addRow(FunctionParameter parameter) {
+        table.editingStopped(null);
+        if (table.isEditing()) {
+            table.removeEditor();
+        }
+
+//        if (parameter.getSqlType().toLowerCase().equals("BLOB SUB_TYPE 0"))
+//            parameter.setSqlType("BLOB SUB_TYPE BINARY");
+//        else if (parameter.getSqlType().toLowerCase().equals("BLOB SUB_TYPE 1"))
+//            parameter.setSqlType("BLOB SUB_TYPE TEXT");
+
+        ColumnData cd = new ColumnData(true, dc);
+        cd.setColumnName(parameter.getName());
+        cd.setDomain(parameter.getDomain());
+        cd.setColumnSubtype(parameter.getSubType());
+        cd.setSQLType(parameter.getDataType());
+        cd.setColumnSize(parameter.getSize());
+        cd.setColumnType(parameter.getSqlType());
+        cd.setColumnScale(parameter.getScale());
+        cd.setColumnRequired(parameter.getNullable());
+        cd.setCharset(parameter.getEncoding());
+        cd.setDescription(parameter.getDescription());
+        cd.setType_of(parameter.isType_of());
+        cd.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+        cd.setTable(parameter.getRelation_name());
+        cd.setColumnTable(parameter.getField_name());
+
+        for (int i = 0; i < dataTypes.length; i++) {
+            if (dataTypes[i].toLowerCase().equals(parameter.getSqlType().toLowerCase()))
+                cd.setSQLType(intDataTypes[i]);
+        }
+
+        addRow(cd);
+        table.setEditingRow(tableVector.size() - 1);
+        _model.fireTableRowsUpdated(tableVector.size() - 1, tableVector.size() - 1);
+        addColumnLines(-1);
     }
 
     /**

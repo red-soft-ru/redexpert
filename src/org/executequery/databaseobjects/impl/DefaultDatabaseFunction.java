@@ -85,13 +85,13 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     /**
      * Adds the specified values as a single parameter to this object.
      */
-    public FunctionParameter addFunctionParameter(String name, int dataType, int size, int precision, int scale, int subType, int position) {
+    public FunctionParameter addFunctionParameter(String name, int dataType, int size, int precision, int scale, int subType, int position, int type_of, String relation, String field) {
         if (parameters == null) {
 
             parameters = new ArrayList<FunctionParameter>();
         }
 
-        FunctionParameter parameter = new FunctionParameter(name, dataType, size, precision, scale, subType, position);
+        FunctionParameter parameter = new FunctionParameter(name, dataType, size, precision, scale, subType, position, type_of, relation, field);
         parameters.add(parameter);
 
         return parameter;
@@ -124,7 +124,10 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                         rs.getInt(18),
                         rs.getInt(8),
                         rs.getInt(9),
-                        rs.getInt(14)
+                        rs.getInt(14),
+                        rs.getInt("AM"),
+                        rs.getString("RN"),
+                        rs.getString("FN")
                         ));
                 if (functionSourceCode == null || functionSourceCode.isEmpty())
                     functionSourceCode = rs.getString(2);
@@ -150,7 +153,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         if (parameters == null) {
             getFunctionParameters();
         }
-        return (FunctionParameter[]) parameters.toArray(new
+        return parameters.toArray(new
                 FunctionParameter[parameters.size()]);
     }
 
@@ -182,12 +185,12 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 "fa.rdb$description,\n" +
                 "fa.rdb$default_source,\n" +
                 "fs.rdb$field_precision,\n" +
-                "fa.rdb$argument_mechanism,\n" +
+                "fa.rdb$argument_mechanism as AM,\n" +
                 "fa.rdb$field_source,\n" +
                 "fs.rdb$default_source,\n" +
                 "fa.rdb$null_flag,\n" +
-                "fa.rdb$relation_name,\n" +
-                "fa.rdb$field_name,\n" +
+                "fa.rdb$relation_name as RN,\n" +
+                "fa.rdb$field_name as FN,\n" +
                 "co2.rdb$collation_name,\n" +
                 "cr.rdb$default_collate_name,\n" +
                 "fnc.rdb$return_argument,\n" +

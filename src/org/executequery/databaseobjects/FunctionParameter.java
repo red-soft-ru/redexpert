@@ -34,24 +34,38 @@ public class FunctionParameter {
     private int size;
     private int scale;
     private int subType;
+    private int nullable;
+    private String domain;
+    private String encoding;
+    private String description;
     private String value;
+    private boolean type_of;
+    private String relation_name;
+    private String field_name;
 
     private static final String RESULT_STORE = "< Result Store >";
     private static final String RETURN_VALUE = "< Return Value >";
     private static final String UNKNOWN = "< Unknown >";
 
-    public FunctionParameter(String name, int dataType, int size, int precision, int scale, int subType, int position) {
+    public FunctionParameter(String name, int dataType, int size, int precision, int scale, int subType, int position, int type_of, String relation_name, String field_name) {
         this.name = name;
         if (this.name == null)
             this.type = DatabaseMetaData.procedureColumnReturn;
-        else
+        else {
             this.type = DatabaseMetaData.procedureColumnIn;
+            this.name = name.trim();
+        }
         this.dataType = dataType;
         this.scale = scale;
         this.subType = subType;
         this.size = precision == 0 ? size : precision;
         this.sqlType = getTypeWithSize(dataType, subType, this.size, scale);
         this.position = position;
+        this.type_of = (type_of == 1);
+        if (relation_name != null)
+            this.relation_name = relation_name.trim();
+        if (field_name != null)
+            this.field_name = field_name.trim();
     }
 
     private String getTypeWithSize(int sqlType, int sqlSubtype, int sqlSize, int sqlScale) {
@@ -183,6 +197,74 @@ public class FunctionParameter {
         }
 
         return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
+    }
+
+    public String getEncoding() {
+        return encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
+
+    public int getNullable() {
+        return nullable;
+    }
+
+    public void setNullable(int nullable) {
+        this.nullable = nullable;
+    }
+
+    public boolean isType_of() {
+        return type_of;
+    }
+
+    public void setType_of(boolean type_of) {
+        this.type_of = type_of;
+    }
+
+    public String getRelation_name() {
+        return relation_name;
+    }
+
+    public void setRelation_name(String relation_name) {
+        this.relation_name = relation_name;
+    }
+
+    public String getField_name() {
+        return field_name;
+    }
+
+    public void setField_name(String field_name) {
+        this.field_name = field_name;
+    }
+
+    public int getSubType() {
+        return subType;
+    }
+
+    public void setSubType(int subType) {
+        this.subType = subType;
+    }
+
+    public int getScale() {
+        return scale;
     }
 
     public String toString() {

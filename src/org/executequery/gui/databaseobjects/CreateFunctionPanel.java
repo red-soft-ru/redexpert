@@ -2,10 +2,9 @@ package org.executequery.gui.databaseobjects;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.FunctionParameter;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.ProcedureParameter;
-import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
+import org.executequery.databaseobjects.impl.DefaultDatabaseFunction;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.datatype.DomainPanel;
@@ -17,7 +16,6 @@ import javax.swing.*;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -31,6 +29,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     private DomainPanel domainPanel;
     private JTabbedPane returnTypeTabPane;
     private ColumnData returnType;
+    private DefaultDatabaseFunction function;
 
 
     /**
@@ -40,11 +39,12 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
      * @param dialog
      * @param procedure
      */
-    public CreateFunctionPanel(DatabaseConnection dc, ActionContainer dialog, String procedure) {
-        super(dc, dialog, procedure);
+    public CreateFunctionPanel(DatabaseConnection dc, ActionContainer dialog, String procedure, DefaultDatabaseFunction databaseFunction) {
+        super(dc, dialog, procedure, new Object[]{databaseFunction});
         parametersTabs.remove(outputParametersPanel);
-        returnType = new ColumnData(connection);
         selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(), metaData.getIntDataTypesArray(), returnType, true);
+        returnType.setDomain(returnType.getDomain());
+        selectTypePanel.refresh();
         domainPanel = new DomainPanel(returnType, returnType.getDomain());
         returnTypeTabPane = new JTabbedPane();
         returnTypeTabPane.add("Domain", domainPanel);
@@ -53,7 +53,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     }
 
     public CreateFunctionPanel(DatabaseConnection dc, ActionContainer dialog) {
-        this(dc, dialog, null);
+        this(dc, dialog, null, null);
     }
 
     @Override
@@ -79,31 +79,24 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         return res;
     }
 
+    public static String getQueryForGetFunctionArguments(String function) {
+        return "select cast(PP.RDB$FUNCTION_NAME as varchar(63)) as PROCEDURE_NAME,cast(PP.RDB$ARGUMENT_NAME as varchar(63)) as COLUMN_NAME,PP.RDB$FIELD_TYPE as COLUMN_TYPE,\n" +
+                "F.RDB$FIELD_TYPE as FIELD_TYPE,F.RDB$FIELD_SUB_TYPE as FIELD_SUB_TYPE,F.RDB$FIELD_PRECISION as FIELD_PRECISION,F.RDB$FIELD_SCALE as FIELD_SCALE,\n" +
+                "F.RDB$FIELD_LENGTH as FIELD_LENGTH,F.RDB$NULL_FLAG as NULL_FLAG,PP.RDB$DESCRIPTION as REMARKS,F.RDB$CHARACTER_LENGTH AS CHAR_LEN,\n" +
+                "PP.RDB$ARGUMENT_POSITION AS PARAMETER_NUMBER,F.RDB$CHARACTER_SET_ID\n" +
+                "from RDB$FUNCTION_ARGUMENTS PP,RDB$FIELDS F\n" +
+                "where PP.RDB$FUNCTION_NAME = '" + function + "' AND PP.RDB$FIELD_SOURCE = F.RDB$FIELD_NAME order by PP.RDB$FUNCTION_NAME,PP.RDB$FIELD_TYPE desc,PP.RDB$ARGUMENT_POSITION";
+    }
+
     @Override
     protected void loadParameters() {
         {
-            inputParametersPanel.deleteEmptyRow(); // remove first empty row
-            DatabaseHost host = null;
+            // remove first empty row
             try {
-                host = new DatabaseObjectFactoryImpl().createDatabaseHost(connection);
-                DatabaseMetaData dmd = host.getDatabaseMetaData();
-                List<ProcedureParameter> parameters = new ArrayList<>();
-                ResultSet rs = dmd.getFunctionColumns(null, null, this.procedure, null);
-
-                while (rs.next()) {
-                    ProcedureParameter procedureParameter = new ProcedureParameter(rs.getString(4),
-                            rs.getInt(5),
-                            rs.getInt(6),
-                            rs.getString(7),
-                            rs.getInt(8),
-                            0/*rs.getInt(12)*/);
-                    procedureParameter.setScale(rs.getInt(10));
-                    parameters.add(procedureParameter);
-                }
-
-                releaseResources(rs);
-
-                for (ProcedureParameter pp :
+                List<FunctionParameter> parameters = function.getFunctionParameters();
+                if (parameters.size() > 1)
+                    inputParametersPanel.deleteEmptyRow();
+                for (FunctionParameter pp :
                         parameters) {
 
                     ResultSet resultSet = sender.getResultSet("select\n" +
@@ -121,10 +114,10 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                             "and  pp.rdb$field_source = f.rdb$field_name").getResultSet();
                     try {
                         if (resultSet.next()) {
-                            pp.setSubtype(resultSet.getInt(1));
-                            int size = resultSet.getInt(2);
+                            pp.setSubType(resultSet.getInt(1));
+                            /*int size = resultSet.getInt(2);
                             if (size != 0)
-                                pp.setSize(size);
+                                pp.setSize(size);*/
                             pp.setNullable(resultSet.getInt(4) == 1 ? 0 : 1);
                             String domain = resultSet.getString(3);
                             if (!domain.contains("RDB$"))
@@ -142,9 +135,6 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-            } finally {
-                if (host != null)
-                    host.close();
             }
         }
 
@@ -256,17 +246,28 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         procedure = (String) databaseObject;
         returnType = new ColumnData(connection);
         if (procedure != null) {
-            String query = "SELECT RDB$FUNCTION_ARGUMENTS.RDB$FIELD_SOURCE " +
-                    "FROM RDB$FUNCTIONS LEFT JOIN RDB$FUNCTION_ARGUMENTS ON \n" +
-                    "RDB$FUNCTIONS.RDB$RETURN_ARGUMENT = RDB$FUNCTION_ARGUMENTS.RDB$ARGUMENT_POSITION" +
-                    " WHERE RDB$FUNCTIONS.RDB$FUNCTION_NAME = '" + procedure + "'";
+            String query = "SELECT RDB$FUNCTION_ARGUMENTS.RDB$FIELD_SOURCE,\n" +
+                    " RDB$FUNCTION_ARGUMENTS.RDB$ARGUMENT_MECHANISM,\n" +
+                    "  RDB$FUNCTION_ARGUMENTS.RDB$RELATION_NAME,\n" +
+                    "  RDB$FUNCTION_ARGUMENTS.RDB$FIELD_NAME\n" +
+                    "  FROM RDB$FUNCTIONS LEFT JOIN RDB$FUNCTION_ARGUMENTS ON \n" +
+                    "  RDB$FUNCTIONS.RDB$FUNCTION_NAME = RDB$FUNCTION_ARGUMENTS.RDB$FUNCTION_NAME AND\n" +
+                    "RDB$FUNCTIONS.RDB$RETURN_ARGUMENT = RDB$FUNCTION_ARGUMENTS.RDB$ARGUMENT_POSITION WHERE RDB$FUNCTIONS.RDB$FUNCTION_NAME = '" + procedure + "'";
             try {
                 ResultSet rs = sender.getResultSet(query).getResultSet();
                 String domain = null;
-                if (rs.next())
+                String table = null;
+                String column = null;
+                if (rs.next()) {
                     domain = rs.getString(1).trim();
+                    returnType.setType_of(rs.getInt(2) == 1);
+                    table = rs.getString(3);
+                    column = rs.getString(4);
+                }
                 sender.releaseResources();
                 returnType.setDomain(domain);
+                returnType.setTable(table);
+                returnType.setColumnTable(column);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -275,6 +276,6 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
 
     @Override
     public void setParameters(Object[] params) {
-
+        function = (DefaultDatabaseFunction) params[0];
     }
 }

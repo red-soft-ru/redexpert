@@ -39,6 +39,10 @@ public class ProcedureParameter {
     private int nullable;
     private String domain;
     private String description;
+    private boolean typeOf;
+    private String relation_name;
+    private String field_name;
+    private int typeOfFrom;
 
     private static final String RESULT_STORE = "< Result Store >";
     private static final String RETURN_VALUE = "< Return Value >";
@@ -166,6 +170,38 @@ public class ProcedureParameter {
 
     public String getDescription() {
         return description;
+    }
+
+    public boolean isTypeOf() {
+        return typeOf;
+    }
+
+    public void setTypeOf(boolean typeOf) {
+        this.typeOf = typeOf;
+    }
+
+    public String getRelation_name() {
+        return relation_name;
+    }
+
+    public void setRelation_name(String relation_name) {
+        this.relation_name = relation_name;
+    }
+
+    public String getField_name() {
+        return field_name;
+    }
+
+    public void setField_name(String field_name) {
+        this.field_name = field_name;
+    }
+
+    public void setTypeOfFrom(int typeOfFrom) {
+        this.typeOfFrom = typeOfFrom;
+    }
+
+    public int getTypeOfFrom() {
+        return typeOfFrom;
     }
 }
 

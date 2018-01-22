@@ -42,6 +42,7 @@ public class FunctionParameter {
     private boolean type_of;
     private String relation_name;
     private String field_name;
+    private int typeOfFrom;
 
     private static final String RESULT_STORE = "< Result Store >";
     private static final String RETURN_VALUE = "< Return Value >";
@@ -269,5 +270,13 @@ public class FunctionParameter {
 
     public String toString() {
         return getName();
+    }
+
+    public void setTypeOfFrom(int typeOfFrom) {
+        this.typeOfFrom = typeOfFrom;
+    }
+
+    public int getTypeOfFrom() {
+        return typeOfFrom;
     }
 }

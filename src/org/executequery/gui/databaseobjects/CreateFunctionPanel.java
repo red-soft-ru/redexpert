@@ -105,7 +105,10 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                             "pp.rdb$field_source as field_source,\n" +
                             "pp.rdb$null_flag as null_flag,\n" +
                             "cs.rdb$character_set_name as character_set,\n" +
-                            "pp.rdb$description as description\n" +
+                            "pp.rdb$description as description,\n" +
+                            "pp.rdb$argument_mechanism as mechanism,\n" +
+                            "pp.rdb$field_name as field_name,\n" +
+                            "pp.rdb$relation_name as relation_name \n" +
                             "from rdb$function_arguments pp,\n" +
                             "rdb$fields f\n" +
                             "left join rdb$character_sets cs on cs.rdb$character_set_id = f.rdb$character_set_id\n" +
@@ -126,6 +129,18 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                             if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
                                 pp.setEncoding(characterSet.trim());
                             pp.setDescription(resultSet.getString(6));
+                            if (resultSet.getInt(7) == 1) {
+                                pp.setType_of(true);
+                                pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_DOMAIN);
+                                String fieldName = resultSet.getString(8);
+                                String relationName = resultSet.getString(9);
+                                if (fieldName != null && !fieldName.isEmpty()
+                                        && relationName != null && !relationName.isEmpty()) {
+                                    pp.setField_name(fieldName.trim());
+                                    pp.setRelation_name(relationName.trim());
+                                    pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+                                }
+                            }
                         }
                     } finally {
                         releaseResources(resultSet);
@@ -265,9 +280,14 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                     column = rs.getString(4);
                 }
                 sender.releaseResources();
-                returnType.setDomain(domain);
-                returnType.setTable(table);
-                returnType.setColumnTable(column);
+                if (domain != null)
+                    returnType.setDomain(domain.trim());
+                if (table != null)
+                    returnType.setTable(table.trim());
+                if (column != null)
+                    returnType.setColumnTable(column.trim());
+                if (returnType.getTable() != null && returnType.getColumnTable() != null)
+                    returnType.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
             } catch (SQLException e) {
                 e.printStackTrace();
             }

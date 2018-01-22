@@ -15,11 +15,11 @@ public class TypeOfPanel extends JPanel {
     private JCheckBox typeOfBox;
 
     public TypeOfPanel(ColumnData cd) {
-        columnData = cd;
-        init();
+        columnData = new ColumnData(cd.getDatabaseConnection());
+        init(cd);
     }
 
-    private void init() {
+    private void init(ColumnData cd) {
         tableModel = new DynamicComboBoxModel();
         tableModel.setElements(columnData.getTables());
         tablesBox = new JComboBox(tableModel);
@@ -66,13 +66,13 @@ public class TypeOfPanel extends JPanel {
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        typeOfBox.setSelected(columnData.isType_of());
-        columnData.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
-        if (columnData.isType_of()) {
-            tablesBox.setSelectedItem(columnData.getTable());
-            columnBox.setSelectedItem(columnData.getColumnTable());
-            tablesBox.setEnabled(columnData.isType_of());
-            columnBox.setEnabled(columnData.isType_of());
+        typeOfBox.setSelected(cd.isType_of());
+        columnData.setTypeOfFrom(cd.getTypeOfFrom());
+        if (cd.isType_of()) {
+            tablesBox.setSelectedItem(cd.getTable());
+            columnBox.setSelectedItem(cd.getColumnTable());
+            tablesBox.setEnabled(cd.isType_of());
+            columnBox.setEnabled(cd.isType_of());
         }
 
     }

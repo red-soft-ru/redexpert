@@ -238,6 +238,31 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
                                 break;
                             case "TYPE":
+                                variable.setTypeOf(true);
+
+                                varString = varString.replace("TYPE OF", "");
+                                varString = varString.replace("COLUMN", "");
+                                pattern = "([A-z])\\w+(\\.\\w+)|(([A-z])\\w+)"; // to find type of
+
+                                // Create a Pattern object
+                                r = Pattern.compile(pattern);
+
+                                // Now create matcher object.
+                                m = r.matcher(varString);
+
+                                String fieldName = "";
+                                if (m.find()) {
+                                    fieldName = m.group(0);
+                                }
+
+                                if (fieldName.contains(".")){
+                                    variable.setRelation_name(fieldName.substring(0, fieldName.lastIndexOf('.')));
+                                    variable.setField_name(fieldName.substring(fieldName.lastIndexOf('.') + 1, fieldName.length()));
+                                    variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+                                } else {
+                                    variable.setDomain(fieldName);
+                                    variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_DOMAIN);
+                                }
 
                                 break;
                             default:
@@ -424,7 +449,10 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                     sb.append(cd.getFormattedDataType());
                 }
             } else {
-                sb.append(cd.getDomain());
+                if (cd.isType_of())
+                    sb.append(cd.getFormattedDataType());
+                else
+                    sb.append(cd.getDomain());
             }
             sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
             if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue())) {

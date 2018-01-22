@@ -625,7 +625,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         cd.setCharset(parameter.getEncoding());
         cd.setDescription(parameter.getDescription());
         cd.setType_of(parameter.isType_of());
-        cd.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+        cd.setTypeOfFrom(parameter.getTypeOfFrom());
         cd.setTable(parameter.getRelation_name());
         cd.setColumnTable(parameter.getField_name());
 
@@ -665,6 +665,11 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         cd.setColumnRequired(parameter.getNullable());
         cd.setCharset(parameter.getEncoding());
         cd.setDescription(parameter.getDescription());
+        cd.setType_of(parameter.isTypeOf());
+        cd.setTypeOfFrom(parameter.getTypeOfFrom());
+        cd.setTable(parameter.getRelation_name());
+        cd.setColumnTable(parameter.getField_name());
+
 
         for (int i = 0; i < dataTypes.length; i++) {
             if (dataTypes[i].toLowerCase().equals(parameter.getSqlType().toLowerCase()))

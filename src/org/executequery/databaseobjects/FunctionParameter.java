@@ -1,5 +1,7 @@
 package org.executequery.databaseobjects;
 
+import org.executequery.gui.browser.ColumnData;
+
 import java.sql.DatabaseMetaData;
 
 /**
@@ -67,6 +69,8 @@ public class FunctionParameter {
             this.relation_name = relation_name.trim();
         if (field_name != null)
             this.field_name = field_name.trim();
+        if (this.relation_name != null && this.field_name != null)
+            this.typeOfFrom = ColumnData.TYPE_OF_FROM_COLUMN;
     }
 
     private String getTypeWithSize(int sqlType, int sqlSubtype, int sqlSize, int sqlScale) {

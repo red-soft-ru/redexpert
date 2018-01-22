@@ -23,6 +23,7 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseFunction;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.FunctionParameter;
+import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.*;
@@ -117,8 +118,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
             rs = getFunctionArguments(getName());
 
             while (rs.next()) {
-
-                parameters.add(new FunctionParameter(rs.getString(4),
+                FunctionParameter fp = new FunctionParameter(rs.getString(4),
                         rs.getInt(6),
                         rs.getInt(7),
                         rs.getInt(18),
@@ -128,7 +128,12 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                         rs.getInt("AM"),
                         rs.getString("RN"),
                         rs.getString("FN")
-                        ));
+                );
+                String domain = rs.getString("FS");
+                if (domain != null)
+                    fp.setDomain(domain.trim());
+                fp.setNullable(rs.getInt("null_flag"));
+                parameters.add(fp);
                 if (functionSourceCode == null || functionSourceCode.isEmpty())
                     functionSourceCode = rs.getString(2);
             }
@@ -186,9 +191,9 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 "fa.rdb$default_source,\n" +
                 "fs.rdb$field_precision,\n" +
                 "fa.rdb$argument_mechanism as AM,\n" +
-                "fa.rdb$field_source,\n" +
+                "fa.rdb$field_source as FS,\n" +
                 "fs.rdb$default_source,\n" +
-                "fa.rdb$null_flag,\n" +
+                "fa.rdb$null_flag as null_flag,\n" +
                 "fa.rdb$relation_name as RN,\n" +
                 "fa.rdb$field_name as FN,\n" +
                 "co2.rdb$collation_name,\n" +
@@ -237,30 +242,72 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 sbInput.append("\t");
                 sbInput.append(parameter.getName());
                 sbInput.append(" ");
-                sbInput.append(parameter.getSqlType());
-                if (parameter.getDataType() == Types.CHAR
-                        || parameter.getDataType() == Types.VARCHAR
-                        || parameter.getDataType() == Types.NVARCHAR
-                        || parameter.getDataType() == Types.VARBINARY) {
-                    sbInput.append("(");
-                    sbInput.append(parameter.getSize());
-                    sbInput.append("),\n");
+                if (parameter.isType_of()) {
+                    sbInput.append(" type of ");
+                    if (parameter.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
+                        sbInput.append(parameter.getDomain());
+                    else {
+                        sbInput.append("column ");
+                        sbInput.append(parameter.getRelation_name());
+                        sbInput.append(".");
+                        sbInput.append(parameter.getField_name());
+                    }
+                    if (parameter.getNullable() == 1)
+                        sbInput.append(" not null,\n");
+                    else
+                        sbInput.append(",\n");
                 } else {
-                    sbInput.append(",\n");
+                    if (parameter.getDomain() != null) {
+                        sbInput.append(parameter.getDomain());
+                    } else {
+                        sbInput.append(parameter.getSqlType());
+                        if (parameter.getDataType() == Types.CHAR
+                                || parameter.getDataType() == Types.VARCHAR
+                                || parameter.getDataType() == Types.NVARCHAR
+                                || parameter.getDataType() == Types.VARBINARY) {
+                            sbInput.append("(");
+                            sbInput.append(parameter.getSize());
+                            sbInput.append(")");
+                        }
+                    }
+                    if (parameter.getNullable() == 1)
+                        sbInput.append(" not null,\n");
+                    else
+                        sbInput.append(",\n");
                 }
             } else if (parameter.getType() == DatabaseMetaData.procedureColumnReturn) {
-                sbOutput.append("\t");
                 sbOutput.append(" ");
-                sbOutput.append(parameter.getSqlType());
-                if (parameter.getDataType() == Types.CHAR
-                        || parameter.getDataType() == Types.VARCHAR
-                        || parameter.getDataType() == Types.NVARCHAR
-                        || parameter.getDataType() == Types.VARBINARY) {
-
-                    sbOutput.append(parameter.getSize());
-                    sbOutput.append("\n");
+                if (parameter.isType_of()) {
+                    sbOutput.append("type of ");
+                    if (parameter.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
+                        sbOutput.append(parameter.getDomain());
+                    else {
+                        sbOutput.append("column ");
+                        sbOutput.append(parameter.getRelation_name());
+                        sbOutput.append(".");
+                        sbOutput.append(parameter.getField_name());
+                    }
+                    if (parameter.getNullable() == 1)
+                        sbOutput.append(" not null,\n");
+                    else
+                        sbOutput.append(",\n");
                 } else {
-                    sbOutput.append(",\n");
+                    if (parameter.getDomain() != null) {
+                        sbOutput.append(parameter.getDomain());
+                    } else {
+                        sbOutput.append(parameter.getSqlType());
+                        if (parameter.getDataType() == Types.CHAR
+                                || parameter.getDataType() == Types.VARCHAR
+                                || parameter.getDataType() == Types.NVARCHAR
+                                || parameter.getDataType() == Types.VARBINARY) {
+
+                            sbOutput.append(parameter.getSize());
+                        }
+                    }
+                    if (parameter.getNullable() == 1)
+                        sbOutput.append(" not null,\n");
+                    else
+                        sbOutput.append(",\n");
                 }
             }
         }

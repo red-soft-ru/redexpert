@@ -964,7 +964,7 @@ public class QueryDispatcher {
 
     private void setOutputMessage(final int type, final String text) {
 
-        setOutputMessage(type, text, true);
+        setOutputMessage(type, text, false);
     }
 
     private void setOutputMessage(final int type, final String text, final boolean selectTab) {

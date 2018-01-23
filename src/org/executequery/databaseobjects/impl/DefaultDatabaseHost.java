@@ -41,8 +41,6 @@ import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.*;
 
-import static org.executequery.databaseobjects.impl.DefaultDatabaseDomain.getDataTypeName;
-
 /**
  * Default database host object implementation.
  *
@@ -852,7 +850,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             column.setColumnSubtype(fieldSubType);
             column.setColumnScale(fieldScale);
             column.setName(rs.getString("FIELD_NAME").trim());
-            column.setTypeName(getDataTypeName(fieldType, fieldSubType, fieldScale));
+            column.setTypeName(DatabaseTypeConverter.getDataTypeName(fieldType, fieldSubType, fieldScale));
 
             switch (dataType) {
                 case Types.DECIMAL:

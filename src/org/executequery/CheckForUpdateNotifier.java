@@ -97,24 +97,28 @@ public class CheckForUpdateNotifier implements Interruptible {
                 try {
                     checkUnstable();
                 } catch (Exception e) {
-                    Log.error("No access:" + e.getMessage());
-                    checkRelease();
+                    //Log.error("No access:" + e.getMessage());
+                    checkRelease(unstable);
+                    unstable = false;
 
                 }
 
-            } else checkRelease();
+            } else checkRelease(unstable);
 
 
         }
 
     }
 
-    void checkRelease() {
+    void checkRelease(boolean unstable) {
         try {
             updateLoader = new UpdateLoader("");
             Log.info("Checking for new version update from https://reddatabase.ru ...");
-
-            version = new ApplicationVersion(updateLoader.getJsonPropertyFromUrl(UserProperties.getInstance().getStringProperty("reddatabase.check.url"), "version"));
+            String url;
+            if (unstable)
+                url = UserProperties.getInstance().getStringProperty("reddatabase.check.rc.url");
+            else url = UserProperties.getInstance().getStringProperty("reddatabase.check.url");
+            version = new ApplicationVersion(updateLoader.getJsonPropertyFromUrl(url, "version"));
 
             if (isNewVersion(version)) {
                 logNewVersonInfo();

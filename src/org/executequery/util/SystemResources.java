@@ -302,38 +302,51 @@ public class SystemResources {
             // if an old conf dir exists, move relevant
             // files to the new build number dir
 
-            if (copyOldFiles && oldConfDir.exists())
-                if (GUIUtilities.displayConfirmCancelDialog("The settings of the previous version of RedExpert were found. Apply these settings in this version?") == JOptionPane.YES_OPTION) {
+            if (copyOldFiles && oldConfDir.exists()) {
+                int option = GUIUtilities.displayConfirmCancelDialog("The settings of the previous version of RedExpert were found.\n" +
+                        "Apply these settings in this version?");
+                switch (option) {
+                    case JOptionPane.YES_OPTION:
 
-                String oldFromPath = oldConfDir.getAbsolutePath();
-                    checkUserProperties("jdbcdrivers-default.xml", oldConfDir, "id");
-                String[] oldFiles = {"eq.shortcuts.properties",
-                        "eq.user.properties",
-                        "jdbcdrivers.xml",
-                        "connection-folders.xml",
-                        "lookandfeel.xml",
-                        "toolbars.xml",
-                        "querybookmarks.xml",
-                        "print.setup",
-                        "savedconnections.xml",
-                        "sql.user.keywords",
-                        "ConnectionHistory.xml"
-                };
 
-                File file = null;
-                // move the above files to the new build dir
-                for (int i = 0; i < oldFiles.length; i++) {
+                        String oldFromPath = oldConfDir.getAbsolutePath();
+                        checkUserProperties("jdbcdrivers-default.xml", oldConfDir, "id");
+                        String[] oldFiles = {"eq.shortcuts.properties",
+                                "eq.user.properties",
+                                "jdbcdrivers.xml",
+                                "connection-folders.xml",
+                                "lookandfeel.xml",
+                                "toolbars.xml",
+                                "querybookmarks.xml",
+                                "print.setup",
+                                "savedconnections.xml",
+                                "sql.user.keywords",
+                                "ConnectionHistory.xml"
+                        };
 
-                    file = new File(oldFromPath, oldFiles[i]);
-                    if (file.exists()) {
-                        String path1 = file.getAbsolutePath();
-                        file = new File(confDir, oldFiles[i]);
-                        String path2 = file.getAbsolutePath();
-                        FileUtils.copyFile(path1, path2);
-                    }
+                        File file = null;
+                        // move the above files to the new build dir
+                        for (int i = 0; i < oldFiles.length; i++) {
 
+                            file = new File(oldFromPath, oldFiles[i]);
+                            if (file.exists()) {
+                                String path1 = file.getAbsolutePath();
+                                file = new File(confDir, oldFiles[i]);
+                                String path2 = file.getAbsolutePath();
+                                FileUtils.copyFile(path1, path2);
+                            }
+
+                        }
+
+
+                        break;
+                    case JOptionPane.CANCEL_OPTION:
+                        confDir.deleteOnExit();
+                        System.exit(0);
+                        break;
+                    default:
+                        break;
                 }
-
             }
 
             if (!logsDir.exists()) {

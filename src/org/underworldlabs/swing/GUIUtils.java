@@ -351,7 +351,16 @@ public class GUIUtils {
                         optionType, UIManager.getIcon(icon));
                 pane.setWantsInput(wantsInput);
 
-                JDialog dialog = pane.createDialog(parent, title);
+                JDialog dialog = null;
+                JFrame frame = null;
+                if (parent == null) {
+                    frame = new JFrame("My dialog asks....");
+                    frame.setUndecorated( true );
+                    frame.setVisible( true );
+                    frame.setLocationRelativeTo( null );
+                    dialog = pane.createDialog(frame, title);
+                } else
+                    dialog = pane.createDialog(parent, title);
 
                 if (message instanceof DialogMessageContent) {
 
@@ -361,6 +370,8 @@ public class GUIUtils {
                 dialog.setLocation(getPointToCenter(parent, dialog.getSize()));
                 dialog.setVisible(true);
                 dialog.dispose();
+                if (frame != null)
+                    frame.dispose();
 
                 if (wantsInput) {
                     dialogReturnValue = pane.getInputValue();

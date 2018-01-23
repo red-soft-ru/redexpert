@@ -61,6 +61,10 @@ public class ColumnData implements Serializable {
 
     public static final int VARIABLE = 2;
 
+    public static final int TYPE_OF_FROM_DOMAIN = 0;
+
+    public static final int TYPE_OF_FROM_COLUMN = 1;
+
     /**
      * the catalog for this column
      */
@@ -148,53 +152,116 @@ public class ColumnData implements Serializable {
      */
     private boolean markedDeleted;
 
+    /**
+     * Using domain for column
+     */
     private String domain;
 
+    /**
+     * Domain type
+     */
     private int domainType;
 
+    /**
+     * Domain size
+     */
     private int domainSize = -1;
 
+    /**
+     * Domain scale
+     */
     private int domainScale = -1;
 
+    /**
+     * Domain sub type
+     */
     private int domainSubType;
 
+    /**
+     * Domain character set
+     */
     private String domainCharset;
 
+    /**
+     * Domain checking string
+     */
     private String domainCheck;
 
+    /**
+     * Domain description
+     */
     private String domainDescription;
 
+    /**
+     * Whether this domain is null or not
+     */
     private boolean domainNotNull;
 
+    /**
+     * Default value for domain
+     */
     private String domainDefault;
 
+    /**
+     * Check string
+     */
     private String check;
 
+    /**
+     * Description for column
+     */
     private String description;
 
+    /**
+     * Whether this column is computed
+     */
     private String computedBy;
 
+    /**
+     * Whether this domain is computed
+     */
     private String domainComputedBy;
 
+    /**
+     * Auto increment panel
+     */
     Autoincrement ai;
 
+    /**
+     * Current database connection
+     */
     DatabaseConnection dc;
 
+    /**
+     * Current character set
+     */
     private String charset;
 
+    /**
+     * Copy of current column
+     */
     ColumnData copy;
 
+    /**
+     * Whether column parameter is in or out
+     */
     int typeParameter;
 
-    public static final int TYPE_OF_FROM_DOMAIN = 0;
-    public static final int TYPE_OF_FROM_COLUMN = 1;
-    boolean type_of;
+    /**
+     * Whether column is instance of
+     */
+    boolean typeOf;
+
+    /**
+     * Whether column is type of domain or column
+     */
+    int typeOfFrom;
+
     String table;
     List<String> tables;
     String columnTable;
     List<String> columns;
     DefaultStatementExecutor executor;
-    int typeOfFrom;
 
     public ColumnData(DatabaseConnection databaseConnection) {
         primaryKey = false;
@@ -211,12 +278,12 @@ public class ColumnData implements Serializable {
         try {
             ResultSet rs = executor.getResultSet(query).getResultSet();
             while (rs.next()) {
-                tables.add(rs.getString(1).trim());
+                String tableName = rs.getString(1);
+                if (tableName != null)
+                    tables.add(tableName.trim());
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } catch (NullPointerException e) {
-            Log.debug("In Column Data Empty table name");
         } finally {
             executor.releaseResources();
         }
@@ -238,14 +305,7 @@ public class ColumnData implements Serializable {
     }
 
     public ColumnConstraint[] getColumnConstraintsArray() {
-        int v_size = columnConstraints.size();
-        ColumnConstraint[] cca = new ColumnConstraint[v_size];
-
-        for (int i = 0; i < v_size; i++) {
-            cca[i] = columnConstraints.get(i);
-        }
-
-        return cca;
+        return columnConstraints.toArray(new ColumnConstraint[columnConstraints.size()]);
     }
 
     public Vector<ColumnConstraint> getColumnConstraintsVector() {
@@ -327,7 +387,7 @@ public class ColumnData implements Serializable {
         defaultValue = cd.getDefaultValue();
         table = cd.getTable();
         columnTable = cd.getColumnTable();
-        type_of = cd.isType_of();
+        typeOf = cd.isTypeOf();
 
         Vector<ColumnConstraint> constraints = cd.getColumnConstraintsVector();
         if (constraints != null) {
@@ -508,10 +568,21 @@ public class ColumnData implements Serializable {
     }
 
     private void getDomainInfo() {
-        String query = "SELECT F.RDB$FIELD_TYPE,F.RDB$FIELD_LENGTH,F.RDB$FIELD_SCALE,F.RDB$FIELD_SUB_TYPE,C.RDB$CHARACTER_SET_NAME," +
-                "F.RDB$VALIDATION_SOURCE,F.RDB$DESCRIPTION,F.RDB$NULL_FLAG,F.RDB$DEFAULT_SOURCE,F.RDB$FIELD_PRECISION,F.RDB$COMPUTED_SOURCE\n" +
-                "FROM RDB$FIELDS AS F LEFT JOIN RDB$CHARACTER_SETS AS C ON F.RDB$CHARACTER_SET_ID = C.RDB$CHARACTER_SET_ID" +
-                "\nWHERE RDB$FIELD_NAME='" +
+        String query = "SELECT " +
+                "F.RDB$FIELD_TYPE,\n" +
+                "F.RDB$FIELD_LENGTH,\n" +
+                "F.RDB$FIELD_SCALE,\n" +
+                "F.RDB$FIELD_SUB_TYPE,\n" +
+                "C.RDB$CHARACTER_SET_NAME,\n" +
+                "F.RDB$VALIDATION_SOURCE,\n" +
+                "F.RDB$DESCRIPTION,\n" +
+                "F.RDB$NULL_FLAG,\n" +
+                "F.RDB$DEFAULT_SOURCE,\n" +
+                "F.RDB$FIELD_PRECISION,\n" +
+                "F.RDB$COMPUTED_SOURCE\n" +
+                "FROM RDB$FIELDS AS F \n" +
+                "LEFT JOIN RDB$CHARACTER_SETS AS C ON F.RDB$CHARACTER_SET_ID = C.RDB$CHARACTER_SET_ID\n" +
+                "WHERE RDB$FIELD_NAME='" +
                 domain.trim() + "'";
         try {
             ResultSet rs = executor.execute(QueryTypes.SELECT, query).getResultSet();
@@ -529,7 +600,7 @@ public class ColumnData implements Serializable {
                 domainDefault = rs.getString(9);
                 domainComputedBy = rs.getString(11);
             }
-            domainType = getSqlTypeFromRDBtype(domainType, domainSubType);
+            domainType = getSqlTypeFromRDBType(domainType, domainSubType);
             sqlType = domainType;
             columnSize = domainSize;
             columnScale = domainScale;
@@ -585,7 +656,7 @@ public class ColumnData implements Serializable {
     }
 
 
-    public static int getSqlTypeFromRDBtype(int type, int subtype) {
+    public static int getSqlTypeFromRDBType(int type, int subtype) {
         switch (type) {
             case 7:
                 switch (subtype) {
@@ -660,7 +731,7 @@ public class ColumnData implements Serializable {
      */
     public String getFormattedDataType() {
 
-        if (type_of) {
+        if (typeOf) {
             if (getTypeOfFrom() == TYPE_OF_FROM_DOMAIN) {
                 return "TYPE OF " + domain;
             } else return "TYPE OF COLUMN " + table + "." + columnTable;
@@ -861,12 +932,12 @@ public class ColumnData implements Serializable {
         return domainComputedBy;
     }
 
-    public boolean isType_of() {
-        return type_of;
+    public boolean isTypeOf() {
+        return typeOf;
     }
 
-    public void setType_of(boolean type_of) {
-        this.type_of = type_of;
+    public void setTypeOf(boolean typeOf) {
+        this.typeOf = typeOf;
     }
 
     public void setTable(String table) {

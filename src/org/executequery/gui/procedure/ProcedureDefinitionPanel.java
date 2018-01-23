@@ -624,10 +624,10 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         cd.setColumnRequired(parameter.getNullable());
         cd.setCharset(parameter.getEncoding());
         cd.setDescription(parameter.getDescription());
-        cd.setType_of(parameter.isType_of());
+        cd.setTypeOf(parameter.isTypeOf());
         cd.setTypeOfFrom(parameter.getTypeOfFrom());
-        cd.setTable(parameter.getRelation_name());
-        cd.setColumnTable(parameter.getField_name());
+        cd.setTable(parameter.getRelationName());
+        cd.setColumnTable(parameter.getFieldName());
 
         for (int i = 0; i < dataTypes.length; i++) {
             if (dataTypes[i].toLowerCase().equals(parameter.getSqlType().toLowerCase()))
@@ -665,10 +665,10 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         cd.setColumnRequired(parameter.getNullable());
         cd.setCharset(parameter.getEncoding());
         cd.setDescription(parameter.getDescription());
-        cd.setType_of(parameter.isTypeOf());
+        cd.setTypeOf(parameter.isTypeOf());
         cd.setTypeOfFrom(parameter.getTypeOfFrom());
-        cd.setTable(parameter.getRelation_name());
-        cd.setColumnTable(parameter.getField_name());
+        cd.setTable(parameter.getRelationName());
+        cd.setColumnTable(parameter.getFieldName());
 
 
         for (int i = 0; i < dataTypes.length; i++) {
@@ -924,7 +924,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                     return cd.getColumnType();
 
                 case TYPE_OF_COLUMN:
-                    return cd.isType_of();
+                    return cd.isTypeOf();
 
                 case DOMAIN_COLUMN:
                     return cd.getDomain();
@@ -1040,7 +1040,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
                     }
                     break;
                 case TYPE_OF_COLUMN:
-                    cd.setType_of((Boolean) value);
+                    cd.setTypeOf((Boolean) value);
                     break;
                 case DOMAIN_COLUMN:
                     if (value.getClass() == String.class) {
@@ -1122,7 +1122,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
         boolean isEditTableAndColumn(int row) {
             ColumnData cd = tableVector.elementAt(row);
-            return cd.isType_of();
+            return cd.isTypeOf();
         }
 
         public boolean isCellEditable(int row, int col) {

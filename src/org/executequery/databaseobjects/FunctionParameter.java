@@ -41,16 +41,17 @@ public class FunctionParameter {
     private String encoding;
     private String description;
     private String value;
-    private boolean type_of;
-    private String relation_name;
-    private String field_name;
+    private boolean typeOf;
+    private String relationName;
+    private String fieldName;
     private int typeOfFrom;
 
     private static final String RESULT_STORE = "< Result Store >";
     private static final String RETURN_VALUE = "< Return Value >";
     private static final String UNKNOWN = "< Unknown >";
 
-    public FunctionParameter(String name, int dataType, int size, int precision, int scale, int subType, int position, int type_of, String relation_name, String field_name) {
+    public FunctionParameter(String name, int dataType, int size, int precision, int scale,
+                             int subType, int position, int typeOf, String relationName, String fieldName) {
         this.name = name;
         if (this.name == null)
             this.type = DatabaseMetaData.procedureColumnReturn;
@@ -64,12 +65,12 @@ public class FunctionParameter {
         this.size = precision == 0 ? size : precision;
         this.sqlType = getTypeWithSize(dataType, subType, this.size, scale);
         this.position = position;
-        this.type_of = (type_of == 1);
-        if (relation_name != null)
-            this.relation_name = relation_name.trim();
-        if (field_name != null)
-            this.field_name = field_name.trim();
-        if (this.relation_name != null && this.field_name != null)
+        this.typeOf = (typeOf == 1);
+        if (relationName != null)
+            this.relationName = relationName.trim();
+        if (fieldName != null)
+            this.fieldName = fieldName.trim();
+        if (this.relationName != null && this.fieldName != null)
             this.typeOfFrom = ColumnData.TYPE_OF_FROM_COLUMN;
     }
 
@@ -236,28 +237,28 @@ public class FunctionParameter {
         this.nullable = nullable;
     }
 
-    public boolean isType_of() {
-        return type_of;
+    public boolean isTypeOf() {
+        return typeOf;
     }
 
-    public void setType_of(boolean type_of) {
-        this.type_of = type_of;
+    public void setTypeOf(boolean typeOf) {
+        this.typeOf = typeOf;
     }
 
-    public String getRelation_name() {
-        return relation_name;
+    public String getRelationName() {
+        return relationName;
     }
 
-    public void setRelation_name(String relation_name) {
-        this.relation_name = relation_name;
+    public void setRelationName(String relationName) {
+        this.relationName = relationName;
     }
 
-    public String getField_name() {
-        return field_name;
+    public String getFieldName() {
+        return fieldName;
     }
 
-    public void setField_name(String field_name) {
-        this.field_name = field_name;
+    public void setFieldName(String fieldName) {
+        this.fieldName = fieldName;
     }
 
     public int getSubType() {

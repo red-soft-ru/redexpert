@@ -39,10 +39,12 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
      * @param dialog
      * @param procedure
      */
-    public CreateFunctionPanel(DatabaseConnection dc, ActionContainer dialog, String procedure, DefaultDatabaseFunction databaseFunction) {
+    public CreateFunctionPanel(DatabaseConnection dc, ActionContainer dialog,
+                               String procedure, DefaultDatabaseFunction databaseFunction) {
         super(dc, dialog, procedure, new Object[]{databaseFunction});
         parametersTabs.remove(outputParametersPanel);
-        selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(), metaData.getIntDataTypesArray(), returnType, true);
+        selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(),
+                metaData.getIntDataTypesArray(), returnType, true);
         returnType.setDomain(returnType.getDomain());
         selectTypePanel.refresh();
         domainPanel = new DomainPanel(returnType, returnType.getDomain());
@@ -130,14 +132,14 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                                 pp.setEncoding(characterSet.trim());
                             pp.setDescription(resultSet.getString(6));
                             if (resultSet.getInt(7) == 1) {
-                                pp.setType_of(true);
+                                pp.setTypeOf(true);
                                 pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_DOMAIN);
                                 String fieldName = resultSet.getString(8);
                                 String relationName = resultSet.getString(9);
                                 if (fieldName != null && !fieldName.isEmpty()
                                         && relationName != null && !relationName.isEmpty()) {
-                                    pp.setField_name(fieldName.trim());
-                                    pp.setRelation_name(relationName.trim());
+                                    pp.setFieldName(fieldName.trim());
+                                    pp.setRelationName(relationName.trim());
                                     pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
                                 }
                             }
@@ -262,12 +264,13 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         returnType = new ColumnData(connection);
         if (procedure != null) {
             String query = "SELECT RDB$FUNCTION_ARGUMENTS.RDB$FIELD_SOURCE,\n" +
-                    " RDB$FUNCTION_ARGUMENTS.RDB$ARGUMENT_MECHANISM,\n" +
-                    "  RDB$FUNCTION_ARGUMENTS.RDB$RELATION_NAME,\n" +
-                    "  RDB$FUNCTION_ARGUMENTS.RDB$FIELD_NAME\n" +
-                    "  FROM RDB$FUNCTIONS LEFT JOIN RDB$FUNCTION_ARGUMENTS ON \n" +
-                    "  RDB$FUNCTIONS.RDB$FUNCTION_NAME = RDB$FUNCTION_ARGUMENTS.RDB$FUNCTION_NAME AND\n" +
-                    "RDB$FUNCTIONS.RDB$RETURN_ARGUMENT = RDB$FUNCTION_ARGUMENTS.RDB$ARGUMENT_POSITION WHERE RDB$FUNCTIONS.RDB$FUNCTION_NAME = '" + procedure + "'";
+                    "RDB$FUNCTION_ARGUMENTS.RDB$ARGUMENT_MECHANISM,\n" +
+                    "RDB$FUNCTION_ARGUMENTS.RDB$RELATION_NAME,\n" +
+                    "RDB$FUNCTION_ARGUMENTS.RDB$FIELD_NAME\n" +
+                    "FROM RDB$FUNCTIONS LEFT JOIN RDB$FUNCTION_ARGUMENTS ON \n" +
+                    "RDB$FUNCTIONS.RDB$FUNCTION_NAME = RDB$FUNCTION_ARGUMENTS.RDB$FUNCTION_NAME AND\n" +
+                    "RDB$FUNCTIONS.RDB$RETURN_ARGUMENT = RDB$FUNCTION_ARGUMENTS.RDB$ARGUMENT_POSITION \n" +
+                    "WHERE RDB$FUNCTIONS.RDB$FUNCTION_NAME = '" + procedure + "'";
             try {
                 ResultSet rs = sender.getResultSet(query).getResultSet();
                 String domain = null;
@@ -275,7 +278,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                 String column = null;
                 if (rs.next()) {
                     domain = rs.getString(1).trim();
-                    returnType.setType_of(rs.getInt(2) == 1);
+                    returnType.setTypeOf(rs.getInt(2) == 1);
                     table = rs.getString(3);
                     column = rs.getString(4);
                 }

@@ -104,9 +104,9 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                         sbInput.append(parameter.getDomain());
                     else {
                         sbInput.append("column ");
-                        sbInput.append(parameter.getRelation_name());
+                        sbInput.append(parameter.getRelationName());
                         sbInput.append(".");
-                        sbInput.append(parameter.getField_name());
+                        sbInput.append(parameter.getFieldName());
                     }
                 } else {
                     if (parameter.getDomain() != null) {
@@ -144,9 +144,9 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                         sbOutput.append(parameter.getDomain());
                     else {
                         sbOutput.append("column ");
-                        sbOutput.append(parameter.getRelation_name());
+                        sbOutput.append(parameter.getRelationName());
                         sbOutput.append(".");
-                        sbOutput.append(parameter.getField_name());
+                        sbOutput.append(parameter.getFieldName());
                     }
                 } else {
                     if (parameter.getDomain() != null) {

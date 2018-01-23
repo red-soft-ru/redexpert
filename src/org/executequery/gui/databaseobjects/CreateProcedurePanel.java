@@ -184,8 +184,8 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
                                 String relationName = resultSet.getString(9);
                                 if (fieldName != null && !fieldName.isEmpty()
                                         && relationName != null && !relationName.isEmpty()) {
-                                    pp.setField_name(fieldName.trim());
-                                    pp.setRelation_name(relationName.trim());
+                                    pp.setFieldName(fieldName.trim());
+                                    pp.setRelationName(relationName.trim());
                                     pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
                                 }
                             }

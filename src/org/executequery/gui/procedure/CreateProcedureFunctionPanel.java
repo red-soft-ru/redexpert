@@ -256,8 +256,8 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                                 }
 
                                 if (fieldName.contains(".")){
-                                    variable.setRelation_name(fieldName.substring(0, fieldName.lastIndexOf('.')));
-                                    variable.setField_name(fieldName.substring(fieldName.lastIndexOf('.') + 1, fieldName.length()));
+                                    variable.setRelationName(fieldName.substring(0, fieldName.lastIndexOf('.')));
+                                    variable.setFieldName(fieldName.substring(fieldName.lastIndexOf('.') + 1, fieldName.length()));
                                     variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
                                 } else {
                                     variable.setDomain(fieldName);
@@ -445,11 +445,11 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                 append(" ");
         if (MiscUtils.isNull(cd.getComputedBy())) {
             if (MiscUtils.isNull(cd.getDomain())) {
-                if (cd.getColumnType() != null || cd.isType_of()) {
+                if (cd.getColumnType() != null || cd.isTypeOf()) {
                     sb.append(cd.getFormattedDataType());
                 }
             } else {
-                if (cd.isType_of())
+                if (cd.isTypeOf())
                     sb.append(cd.getFormattedDataType());
                 else
                     sb.append(cd.getDomain());

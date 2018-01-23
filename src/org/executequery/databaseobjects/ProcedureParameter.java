@@ -40,8 +40,8 @@ public class ProcedureParameter {
     private String domain;
     private String description;
     private boolean typeOf;
-    private String relation_name;
-    private String field_name;
+    private String relationName;
+    private String fieldName;
     private int typeOfFrom;
 
     private static final String RESULT_STORE = "< Result Store >";
@@ -180,20 +180,20 @@ public class ProcedureParameter {
         this.typeOf = typeOf;
     }
 
-    public String getRelation_name() {
-        return relation_name;
+    public String getRelationName() {
+        return relationName;
     }
 
-    public void setRelation_name(String relation_name) {
-        this.relation_name = relation_name;
+    public void setRelationName(String relationName) {
+        this.relationName = relationName;
     }
 
-    public String getField_name() {
-        return field_name;
+    public String getFieldName() {
+        return fieldName;
     }
 
-    public void setField_name(String field_name) {
-        this.field_name = field_name;
+    public void setFieldName(String fieldName) {
+        this.fieldName = fieldName;
     }
 
     public void setTypeOfFrom(int typeOfFrom) {

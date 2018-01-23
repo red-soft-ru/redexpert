@@ -38,10 +38,10 @@ public class TypeOfPanel extends JPanel {
             tablesBox.setSelectedIndex(0);
         typeOfBox = new JCheckBox("Type Of");
         typeOfBox.addActionListener(actionEvent -> {
-            columnData.setType_of(typeOfBox.isSelected());
-            tablesBox.setEnabled(columnData.isType_of());
-            columnBox.setEnabled(columnData.isType_of());
-            if (columnData.isType_of())
+            columnData.setTypeOf(typeOfBox.isSelected());
+            tablesBox.setEnabled(columnData.isTypeOf());
+            columnBox.setEnabled(columnData.isTypeOf());
+            if (columnData.isTypeOf())
                 columnData.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
         });
 
@@ -66,13 +66,13 @@ public class TypeOfPanel extends JPanel {
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        typeOfBox.setSelected(cd.isType_of());
+        typeOfBox.setSelected(cd.isTypeOf());
         columnData.setTypeOfFrom(cd.getTypeOfFrom());
-        if (cd.isType_of()) {
+        if (cd.isTypeOf()) {
             tablesBox.setSelectedItem(cd.getTable());
             columnBox.setSelectedItem(cd.getColumnTable());
-            tablesBox.setEnabled(cd.isType_of());
-            columnBox.setEnabled(cd.isType_of());
+            tablesBox.setEnabled(cd.isTypeOf());
+            columnBox.setEnabled(cd.isTypeOf());
         }
 
     }

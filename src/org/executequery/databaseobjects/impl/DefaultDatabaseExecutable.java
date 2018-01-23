@@ -22,7 +22,6 @@ package org.executequery.databaseobjects.impl;
 
 import biz.redsoft.IFBDatabaseMetadata;
 import org.executequery.databaseobjects.*;
-import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledDatabaseMetaData;
 import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -199,7 +198,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
                 ProcedureParameter pp = new ProcedureParameter(rs.getString(4).trim(),
                         rs.getInt(5) == 0 ? DatabaseMetaData.procedureColumnIn : DatabaseMetaData.procedureColumnOut,
-                        ColumnData.getSqlTypeFromRDBtype(rs.getInt(7), rs.getInt(10)),
+                        ColumnData.getSqlTypeFromRDBType(rs.getInt(7), rs.getInt(10)),
                         DefaultDatabaseDomain.getDataTypeName(rs.getInt(7), rs.getInt(10), rs.getInt(9)),
                         rs.getInt(8),
                         rs.getInt("null_flag"));
@@ -217,12 +216,12 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 pp.setTypeOf(rs.getInt("AM") == 1);
                 String relationName = rs.getString("RN");
                 if (relationName != null)
-                    pp.setRelation_name(relationName.trim());
+                    pp.setRelationName(relationName.trim());
                 String fieldName = rs.getString("FN");
                 if (fieldName != null)
-                    pp.setField_name(fieldName.trim());
+                    pp.setFieldName(fieldName.trim());
 
-                if (pp.getRelation_name() != null && pp.getField_name() != null)
+                if (pp.getRelationName() != null && pp.getFieldName() != null)
                     pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
 
                 parameters.add(pp);

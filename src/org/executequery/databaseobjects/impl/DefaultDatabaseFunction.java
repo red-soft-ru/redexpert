@@ -242,15 +242,15 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 sbInput.append("\t");
                 sbInput.append(parameter.getName());
                 sbInput.append(" ");
-                if (parameter.isType_of()) {
+                if (parameter.isTypeOf()) {
                     sbInput.append(" type of ");
                     if (parameter.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
                         sbInput.append(parameter.getDomain());
                     else {
                         sbInput.append("column ");
-                        sbInput.append(parameter.getRelation_name());
+                        sbInput.append(parameter.getRelationName());
                         sbInput.append(".");
-                        sbInput.append(parameter.getField_name());
+                        sbInput.append(parameter.getFieldName());
                     }
                     if (parameter.getNullable() == 1)
                         sbInput.append(" not null,\n");
@@ -277,15 +277,15 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 }
             } else if (parameter.getType() == DatabaseMetaData.procedureColumnReturn) {
                 sbOutput.append(" ");
-                if (parameter.isType_of()) {
+                if (parameter.isTypeOf()) {
                     sbOutput.append("type of ");
                     if (parameter.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
                         sbOutput.append(parameter.getDomain());
                     else {
                         sbOutput.append("column ");
-                        sbOutput.append(parameter.getRelation_name());
+                        sbOutput.append(parameter.getRelationName());
                         sbOutput.append(".");
-                        sbOutput.append(parameter.getField_name());
+                        sbOutput.append(parameter.getFieldName());
                     }
                     if (parameter.getNullable() == 1)
                         sbOutput.append(" not null,\n");

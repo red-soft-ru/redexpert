@@ -585,7 +585,7 @@ public class ColumnData implements Serializable {
     }
 
 
-    public int getSqlTypeFromRDBtype(int type, int subtype) {
+    public static int getSqlTypeFromRDBtype(int type, int subtype) {
         switch (type) {
             case 7:
                 switch (subtype) {

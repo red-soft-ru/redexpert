@@ -23,6 +23,7 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.gui.browser.ColumnData;
 
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
@@ -97,66 +98,82 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                 sbInput.append("\t");
                 sbInput.append(parameter.getName());
                 sbInput.append(" ");
-                if (parameter.getSqlType().contains("SUB_TYPE")) {
-                    sbInput.append(parameter.getSqlType().replace("<0", String.valueOf(parameter.getSubtype())));
-                    sbInput.append(" segment size ");
-                    sbInput.append(parameter.getSize());
-                    if (parameter.getNullable() == 1)
-                        sbInput.append(" not null ");
-                    sbInput.append(",\n");
+                if (parameter.isTypeOf()) {
+                    sbInput.append(" type of ");
+                    if (parameter.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
+                        sbInput.append(parameter.getDomain());
+                    else {
+                        sbInput.append("column ");
+                        sbInput.append(parameter.getRelation_name());
+                        sbInput.append(".");
+                        sbInput.append(parameter.getField_name());
+                    }
                 } else {
-                    sbInput.append(parameter.getSqlType());
-
-                    if (parameter.getDataType() == Types.CHAR
-                            || parameter.getDataType() == Types.VARCHAR
-                            || parameter.getDataType() == Types.NVARCHAR
-                            || parameter.getDataType() == Types.VARBINARY) {
-                        sbInput.append("(");
-                        sbInput.append(parameter.getSize());
-                        sbInput.append(")");
-                        if (parameter.getNullable() == 1)
-                            sbInput.append(" not null,\n");
-                        else
-                            sbInput.append(",\n");
+                    if (parameter.getDomain() != null) {
+                        sbInput.append(parameter.getDomain());
                     } else {
-                        if (parameter.getNullable() == 1)
-                            sbInput.append(" not null,\n");
-                        else
-                            sbInput.append(",\n");
+                        if (parameter.getSqlType().contains("SUB_TYPE")) {
+                            sbInput.append(parameter.getSqlType().replace("<0", String.valueOf(parameter.getSubtype())));
+                            sbInput.append(" segment size ");
+                            sbInput.append(parameter.getSize());
+                        } else {
+                            sbInput.append(parameter.getSqlType());
+
+                            if (parameter.getDataType() == Types.CHAR
+                                    || parameter.getDataType() == Types.BINARY
+                                    || parameter.getDataType() == Types.VARCHAR
+                                    || parameter.getDataType() == Types.NVARCHAR
+                                    || parameter.getDataType() == Types.VARBINARY) {
+                                sbInput.append("(");
+                                sbInput.append(parameter.getSize());
+                                sbInput.append(")");
+                            }
+                        }
                     }
                 }
+                if (parameter.getNullable() == 1)
+                    sbInput.append(" not null ");
+                sbInput.append(",\n");
             } else if (parameter.getType() == DatabaseMetaData.procedureColumnOut) {
                 sbOutput.append("\t");
                 sbOutput.append(parameter.getName());
                 sbOutput.append(" ");
-                if (parameter.getSqlType().contains("SUB_TYPE")) {
-                    sbOutput.append(parameter.getSqlType().replace("<0", String.valueOf(parameter.getSubtype())));
-                    sbOutput.append(" segment size ");
-                    sbOutput.append(parameter.getSize());
-                    if (parameter.getNullable() == 1)
-                        sbOutput.append(" not null ");
-                    sbOutput.append(",\n");
+                if (parameter.isTypeOf()) {
+                    sbOutput.append("type of ");
+                    if (parameter.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
+                        sbOutput.append(parameter.getDomain());
+                    else {
+                        sbOutput.append("column ");
+                        sbOutput.append(parameter.getRelation_name());
+                        sbOutput.append(".");
+                        sbOutput.append(parameter.getField_name());
+                    }
                 } else {
-                    sbOutput.append(parameter.getSqlType());
-
-                    if (parameter.getDataType() == Types.CHAR
-                            || parameter.getDataType() == Types.VARCHAR
-                            || parameter.getDataType() == Types.NVARCHAR
-                            || parameter.getDataType() == Types.VARBINARY) {
-                        sbOutput.append("(");
-                        sbOutput.append(parameter.getSize());
-                        sbOutput.append(")");
-                        if (parameter.getNullable() == 1)
-                            sbOutput.append(" not null,\n");
-                        else
-                            sbOutput.append(",\n");
+                    if (parameter.getDomain() != null) {
+                        sbOutput.append(parameter.getDomain());
                     } else {
-                        if (parameter.getNullable() == 1)
-                            sbOutput.append(" not null,\n");
-                        else
-                            sbOutput.append(",\n");
+                        if (parameter.getSqlType().contains("SUB_TYPE")) {
+                            sbOutput.append(parameter.getSqlType().replace("<0", String.valueOf(parameter.getSubtype())));
+                            sbOutput.append(" segment size ");
+                            sbOutput.append(parameter.getSize());
+                        } else {
+                            sbOutput.append(parameter.getSqlType());
+
+                            if (parameter.getDataType() == Types.CHAR
+                                    || parameter.getDataType() == Types.BINARY
+                                    || parameter.getDataType() == Types.VARCHAR
+                                    || parameter.getDataType() == Types.NVARCHAR
+                                    || parameter.getDataType() == Types.VARBINARY) {
+                                sbOutput.append("(");
+                                sbOutput.append(parameter.getSize());
+                                sbOutput.append(")");
+                            }
+                        }
                     }
                 }
+                if (parameter.getNullable() == 1)
+                    sbOutput.append(" not null ");
+                sbOutput.append(",\n");
             }
         }
 

@@ -517,7 +517,7 @@ public class SystemResources {
             String filename = oldHomeDirectory + fileSeparator + resourceName.replace("-default", "");
             XMLFile xmlDefaultFile = new XMLFile(defaultfilename);
             XMLFile xmlFile = new XMLFile(filename);
-            if(xmlFile==null)
+            if (xmlFile == null)
                 return;
             Node rootDefault = xmlDefaultFile.getRootNode();
             Node root = xmlFile.getRootNode();

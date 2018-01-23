@@ -24,11 +24,14 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.ApplicationContext;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.io.XMLFile;
 import org.executequery.log.Log;
 import org.executequery.repository.LogRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.swing.*;
 import java.io.File;
@@ -222,6 +225,7 @@ public class SystemResources {
         File equeryDir = new File(eqUserHomeDir);
         File confDir = new File(userSettingsDirectoryForCurrentBuild());
         File logsDir = new File(userLogsPath());
+        File newDefaultDir = null;
 
         try {
             // whether the equery base dir exists
@@ -298,19 +302,23 @@ public class SystemResources {
             // if an old conf dir exists, move relevant
             // files to the new build number dir
 
-            if (copyOldFiles && oldConfDir.exists()) {
+            if (copyOldFiles && oldConfDir.exists())
+                if (GUIUtilities.displayConfirmCancelDialog("The settings of the previous version of RedExpert were found. Apply these settings in this version?") == JOptionPane.YES_OPTION) {
 
                 String oldFromPath = oldConfDir.getAbsolutePath();
+                    checkUserProperties("jdbcdrivers-default.xml", oldConfDir, "id");
                 String[] oldFiles = {"eq.shortcuts.properties",
                         "eq.user.properties",
                         "jdbcdrivers.xml",
                         "connection-folders.xml",
                         "lookandfeel.xml",
-                        //"toolbars.xml",
+                        "toolbars.xml",
                         "querybookmarks.xml",
                         "print.setup",
                         "savedconnections.xml",
-                        "sql.user.keywords"};
+                        "sql.user.keywords",
+                        "ConnectionHistory.xml"
+                };
 
                 File file = null;
                 // move the above files to the new build dir
@@ -499,6 +507,45 @@ public class SystemResources {
             return false;
         }
 
+    }
+
+    private static void checkUserProperties(String resourceName, File oldHomeDirectory, String key) {
+        String fileSeparator = System.getProperty("file.separator");
+        String defaultfilename = oldHomeDirectory + fileSeparator + resourceName;
+        try {
+            FileUtils.copyResource("org/executequery/" + resourceName, defaultfilename);
+            String filename = oldHomeDirectory + fileSeparator + resourceName.replace("-default", "");
+            XMLFile xmlDefaultFile = new XMLFile(defaultfilename);
+            XMLFile xmlFile = new XMLFile(filename);
+            Node rootDefault = xmlDefaultFile.getRootNode();
+            Node root = xmlFile.getRootNode();
+            if (XMLFile.equals(root, rootDefault))
+                return;
+            NodeList nodesdefault = rootDefault.getChildNodes();
+            for (int i = 0; i < nodesdefault.getLength(); i++) {
+                try {
+                    Node nodeDefault = nodesdefault.item(i);
+                    if (nodeDefault.getNodeType() != Node.TEXT_NODE) {
+                        String value = XMLFile.getStringValue(key, nodeDefault);
+                        Node node = XMLFile.getNodeFromNodes(key, value, root);
+                        if (node == null)
+                            XMLFile.appendChild(nodeDefault, root);
+                        else if (!XMLFile.equals(node, nodeDefault)) {
+                            XMLFile.replaceChild(nodeDefault, node, root);
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            File file = new File(filename);
+            if (file.exists())
+                FileUtils.copyFile(filename, filename.replace(".xml", "-old.xml"));
+            xmlFile.save(filename);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static boolean create(File directory) {

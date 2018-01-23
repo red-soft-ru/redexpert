@@ -49,7 +49,10 @@ public class XMLFile {
             for (int g = 0; g < child.getLength(); g++) {
                 if (child.item(g).getNodeType() != Node.TEXT_NODE) {
                     String nodeName = child.item(g).getNodeName();
-                    String textContect = child.item(g).getChildNodes().item(0).getTextContent();
+                    Node item = child.item(g).getChildNodes().item(0);
+                    if (item == null)
+                        continue;
+                    String textContect = item.getTextContent();
                     if (nodeName.equals(key) && textContect.equals(value))
                         return childNodes.item(i);
                 }

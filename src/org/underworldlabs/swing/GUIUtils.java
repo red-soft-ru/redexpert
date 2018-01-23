@@ -20,6 +20,7 @@
 
 package org.underworldlabs.swing;
 
+import org.executequery.GUIUtilities;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.util.SwingWorker;
 
@@ -351,7 +352,17 @@ public class GUIUtils {
                         optionType, UIManager.getIcon(icon));
                 pane.setWantsInput(wantsInput);
 
-                JDialog dialog = pane.createDialog(parent, title);
+                JDialog dialog = null;
+                JFrame frame = null;
+                if (parent == null) {
+                    frame = new JFrame("My dialog asks....");
+                    frame.setUndecorated( true );
+                    frame.setIconImage(GUIUtilities.loadIcon("ApplicationIcon48.png", true).getImage());
+                    frame.setVisible( true );
+                    frame.setLocationRelativeTo( null );
+                    dialog = pane.createDialog(frame, title);
+                } else
+                    dialog = pane.createDialog(parent, title);
 
                 if (message instanceof DialogMessageContent) {
 
@@ -361,6 +372,8 @@ public class GUIUtils {
                 dialog.setLocation(getPointToCenter(parent, dialog.getSize()));
                 dialog.setVisible(true);
                 dialog.dispose();
+                if (frame != null)
+                    frame.dispose();
 
                 if (wantsInput) {
                     dialogReturnValue = pane.getInputValue();

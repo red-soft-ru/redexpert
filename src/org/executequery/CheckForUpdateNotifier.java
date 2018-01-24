@@ -38,6 +38,7 @@ import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,7 +61,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     private boolean monitorProgress;
 
-    UpdateLoader updateLoader = null;
+    private UpdateLoader updateLoader = null;
 
     public void startupCheckForUpdate() {
 
@@ -79,7 +80,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         worker.start();
     }
 
-    boolean unstable = false;
+    private boolean unstable = false;
 
     private void startupCheck() {
 
@@ -103,14 +104,14 @@ public class CheckForUpdateNotifier implements Interruptible {
 
                 }
 
-            } else checkRelease(unstable);
+            } else checkRelease(false);
 
 
         }
 
     }
 
-    void checkRelease(boolean unstable) {
+    private void checkRelease(boolean unstable) {
         try {
             updateLoader = new UpdateLoader("");
             Log.info("Checking for new version update from https://reddatabase.ru ...");
@@ -131,14 +132,15 @@ public class CheckForUpdateNotifier implements Interruptible {
             }
 
         } catch (ApplicationException e) {
-
             Log.warning("Error checking for update: " + e.getMessage());
+        } catch (UnknownHostException e) {
+            Log.error("There is no internet connection. Please check for updates later");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    void checkUnstable() throws IOException {
+    private void checkUnstable() throws IOException {
         updateLoader = new UpdateLoader("");
         version = new ApplicationVersion(updateLoader.getJsonPropertyFromUrl("http://builds.red-soft.biz/api/builds/latest/?project=red_expert&branch=master", "version"), null);
         if (isNewVersion(version)) {
@@ -152,7 +154,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         }
     }
 
-    void checkFromRepo(String repo) {
+    private void checkFromRepo(String repo) {
         Log.info("Checking for new version update from " + repo + " ...");
 
         // updating from repository to latest version
@@ -451,12 +453,8 @@ public class CheckForUpdateNotifier implements Interruptible {
             closeProgressDialog();
 
             final String finalReleaseNotes = releaseNotes;
-            GUIUtils.invokeAndWait(new Runnable() {
-                public void run() {
-                    new InformationDialog("Latest Version Info",
-                            finalReleaseNotes, InformationDialog.TEXT_CONTENT_VALUE);
-                }
-            });
+            GUIUtils.invokeAndWait(() -> new InformationDialog("Latest Version Info",
+                    finalReleaseNotes, InformationDialog.TEXT_CONTENT_VALUE));
 
             return Constants.WORKER_SUCCESS;
 
@@ -475,19 +473,15 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     private void createProgressDialogForReleaseNotesLoad() {
 
-        GUIUtils.invokeLater(new Runnable() {
+        GUIUtils.invokeLater(() -> {
 
-            public void run() {
+            progressDialog = new InterruptibleProgressDialog(
+                    GUIUtilities.getParentFrame(),
+                    "Check for update",
+                    "Retrieving new version release notes from https://github.com/redsoftbiz/executequery/releases/latest",
+                    CheckForUpdateNotifier.this);
 
-                progressDialog = new InterruptibleProgressDialog(
-                        GUIUtilities.getParentFrame(),
-                        "Check for update",
-                        "Retrieving new version release notes from https://github.com/redsoftbiz/executequery/releases/latest",
-                        CheckForUpdateNotifier.this);
-
-                progressDialog.run();
-            }
-
+            progressDialog.run();
         });
     }
 
@@ -529,14 +523,12 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         if (progressDialog != null) {
 
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    if (progressDialog.isVisible()) {
+            SwingUtilities.invokeLater(() -> {
+                if (progressDialog.isVisible()) {
 
-                        progressDialog.dispose();
-                    }
-                    progressDialog = null;
+                    progressDialog.dispose();
                 }
+                progressDialog = null;
             });
 
         }

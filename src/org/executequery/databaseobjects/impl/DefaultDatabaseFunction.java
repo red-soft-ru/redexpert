@@ -22,6 +22,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseFunction;
 import org.executequery.databaseobjects.DatabaseMetaTag;
+import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.FunctionParameter;
 import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -119,7 +120,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
             while (rs.next()) {
                 FunctionParameter fp = new FunctionParameter(rs.getString(4),
-                        rs.getInt(6),
+                        ColumnData.getSqlTypeFromRDBType(rs.getInt(6), rs.getInt(9)),
                         rs.getInt(7),
                         rs.getInt(18),
                         rs.getInt(8),
@@ -130,9 +131,16 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                         rs.getString("FN")
                 );
                 String domain = rs.getString("FS");
-                if (domain != null)
+                if (domain != null && !domain.startsWith("RDB$"))
                     fp.setDomain(domain.trim());
                 fp.setNullable(rs.getInt("null_flag"));
+                if (fp.getDataType() == Types.LONGVARBINARY ||
+                        fp.getDataType() == Types.LONGVARCHAR ||
+                        fp.getDataType() == Types.BLOB) {
+                    fp.setSize(rs.getInt("segment_length"));
+                }
+                fp.setSqlType(DatabaseTypeConverter.getTypeWithSize(rs.getInt(6), fp.getDataType(),
+                        fp.getSize(), fp.getScale()));
                 parameters.add(fp);
                 if (functionSourceCode == null || functionSourceCode.isEmpty())
                     functionSourceCode = rs.getString(2);
@@ -181,7 +189,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 "fs.rdb$field_length,\n" +
                 "fs.rdb$field_scale,\n" +
                 "fs.rdb$field_sub_type,\n" +
-                "fs.rdb$segment_length,\n" +
+                "fs.rdb$segment_length as segment_length,\n" +
                 "fs.rdb$dimensions,\n" +
                 "cr.rdb$character_set_name,\n" +
                 "co.rdb$collation_name,\n" +
@@ -260,14 +268,20 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                     if (parameter.getDomain() != null) {
                         sbInput.append(parameter.getDomain());
                     } else {
-                        sbInput.append(parameter.getSqlType());
-                        if (parameter.getDataType() == Types.CHAR
-                                || parameter.getDataType() == Types.VARCHAR
-                                || parameter.getDataType() == Types.NVARCHAR
-                                || parameter.getDataType() == Types.VARBINARY) {
-                            sbInput.append("(");
+                        if (parameter.getSqlType().contains("SUB_TYPE")) {
+                            sbInput.append(parameter.getSqlType().replace("<0", String.valueOf(parameter.getSubType())));
+                            sbInput.append(" segment size ");
                             sbInput.append(parameter.getSize());
-                            sbInput.append(")");
+                        } else {
+                            sbInput.append(parameter.getSqlType());
+                            if (parameter.getDataType() == Types.CHAR
+                                    || parameter.getDataType() == Types.VARCHAR
+                                    || parameter.getDataType() == Types.NVARCHAR
+                                    || parameter.getDataType() == Types.VARBINARY) {
+                                sbInput.append("(");
+                                sbInput.append(parameter.getSize());
+                                sbInput.append(")");
+                            }
                         }
                     }
                     if (parameter.getNullable() == 1)
@@ -295,13 +309,19 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                     if (parameter.getDomain() != null) {
                         sbOutput.append(parameter.getDomain());
                     } else {
-                        sbOutput.append(parameter.getSqlType());
-                        if (parameter.getDataType() == Types.CHAR
-                                || parameter.getDataType() == Types.VARCHAR
-                                || parameter.getDataType() == Types.NVARCHAR
-                                || parameter.getDataType() == Types.VARBINARY) {
-
+                        if (parameter.getSqlType().contains("SUB_TYPE")) {
+                            sbOutput.append(parameter.getSqlType().replace("<0", String.valueOf(parameter.getSubType())));
+                            sbOutput.append(" segment size ");
                             sbOutput.append(parameter.getSize());
+                        } else {
+                            sbOutput.append(parameter.getSqlType());
+                            if (parameter.getDataType() == Types.CHAR
+                                    || parameter.getDataType() == Types.VARCHAR
+                                    || parameter.getDataType() == Types.NVARCHAR
+                                    || parameter.getDataType() == Types.VARBINARY) {
+
+                                sbOutput.append(parameter.getSize());
+                            }
                         }
                     }
                     if (parameter.getNullable() == 1)

@@ -44,7 +44,6 @@ public class FunctionParameter {
         this.scale = scale;
         this.subType = subType;
         this.size = precision == 0 ? size : precision;
-        this.sqlType = DatabaseTypeConverter.getTypeWithSize(dataType, subType, this.size, scale);
         this.position = position;
         this.typeOf = (typeOf == 1);
         if (relationName != null)

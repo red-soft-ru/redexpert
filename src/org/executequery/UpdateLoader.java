@@ -17,12 +17,12 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -41,7 +41,7 @@ public class UpdateLoader extends JFrame {
         return repo;
     }
 
-    private String repo = null;
+    private String repo;
     private String version = null;
     private String downloadLink;
 
@@ -92,7 +92,7 @@ public class UpdateLoader extends JFrame {
 
             }
         }
-        if (res != "0.0")
+        if (!Objects.equals(res, "0.0"))
             return res;
         else
             return null;
@@ -147,7 +147,7 @@ public class UpdateLoader extends JFrame {
 
     JSONObject getJsonObject(String Url) throws IOException {
 
-        String text = "";
+        StringBuilder text = new StringBuilder();
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(Url);
         client.executeMethod(get);
@@ -159,18 +159,18 @@ public class UpdateLoader extends JFrame {
 
 
         while ((inputLine = br.readLine()) != null) {
-            text += inputLine + "\n";
+            text.append(inputLine).append("\n");
         }
 
         br.close();
 
 
-        return new JSONObject(text);
+        return new JSONObject(text.toString());
     }
 
     JSONObject getJsonObject(String Url, Map<String, String> headers) throws IOException {
 
-        String text = "";
+        StringBuilder text = new StringBuilder();
         HttpClient client = new HttpClient();
         GetMethod get = new GetMethod(Url);
         for (String key : headers.keySet()) {
@@ -184,18 +184,18 @@ public class UpdateLoader extends JFrame {
 
 
         while ((inputLine = br.readLine()) != null) {
-            text += inputLine + "\n";
+            text.append(inputLine).append("\n");
         }
 
         br.close();
 
 
-        return new JSONObject(text);
+        return new JSONObject(text.toString());
     }
 
     JSONObject postJsonObject(String Url, Map<String, String> parameters) throws IOException {
 
-        String text = "";
+        StringBuilder text = new StringBuilder();
         HttpClient client = new HttpClient();
         PostMethod get = new PostMethod(Url);
         for (String key : parameters.keySet()) {
@@ -210,18 +210,18 @@ public class UpdateLoader extends JFrame {
 
 
         while ((inputLine = br.readLine()) != null) {
-            text += inputLine + "\n";
+            text.append(inputLine).append("\n");
         }
 
         br.close();
 
 
-        return new JSONObject(text);
+        return new JSONObject(text.toString());
     }
 
     JSONArray getJsonArray(String Url, Map<String, String> headers) throws IOException {
         URL url;
-        String text = "";
+        StringBuilder text = new StringBuilder();
 
         HttpClient client = new HttpClient();
         //HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -238,17 +238,17 @@ public class UpdateLoader extends JFrame {
 
 
         while ((inputLine = br.readLine()) != null) {
-            text += inputLine + "\n";
+            text.append(inputLine).append("\n");
         }
 
         br.close();
 
-        return new JSONArray(text);
+        return new JSONArray(text.toString());
     }
 
     JSONArray getJsonArray(String Url) throws IOException {
         URL url;
-        String text = "";
+        StringBuilder text = new StringBuilder();
 
         HttpClient client = new HttpClient();
         //HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -262,12 +262,12 @@ public class UpdateLoader extends JFrame {
 
 
         while ((inputLine = br.readLine()) != null) {
-            text += inputLine + "\n";
+            text.append(inputLine).append("\n");
         }
 
         br.close();
 
-        return new JSONArray(text);
+        return new JSONArray(text.toString());
     }
 
 
@@ -324,7 +324,7 @@ public class UpdateLoader extends JFrame {
                 if (!MiscUtils.isNull(token)) {
                     try {
                         //изменить эту строку в соответствии с форматом имени файла на сайте
-                        String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename");
+                        String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version + ".zip";
                         Map<String, String> heads = new HashMap<>();
                         heads.put("Authorization", "Token " + token);
                         String url = getJsonObjectFromArray(getJsonArray(UserProperties.getInstance().getStringProperty("reddatabase.get-files.url") + version,
@@ -363,22 +363,20 @@ public class UpdateLoader extends JFrame {
 
     private void download() {
         worker = new Thread(
-                new Runnable() {
-                    public void run() {
-                        try {
-                            downloadFile(downloadLink);
-                            unzip();
-                            File aNew = new File("");
-                            boolean mkdir = aNew.mkdir();
-                            copyFiles(new File(root), aNew.getAbsolutePath());
-                            cleanup();
-                            restartButton.setEnabled(true);
-                            outText.setText(outText.getText() + "\nUpdate Finished!");
-                            cancelButton.setText("Restart later");
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                            JOptionPane.showMessageDialog(null, "An error occurred while preforming update!");
-                        }
+                () -> {
+                    try {
+                        downloadFile(downloadLink);
+                        unzip();
+                        File aNew = new File("");
+                        boolean mkdir = aNew.mkdir();
+                        copyFiles(new File(root), aNew.getAbsolutePath());
+                        cleanup();
+                        restartButton.setEnabled(true);
+                        outText.setText(outText.getText() + "\nUpdate Finished!");
+                        cancelButton.setText("Restart later");
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "An error occurred while preforming update!");
                     }
                 });
         worker.start();
@@ -406,31 +404,35 @@ public class UpdateLoader extends JFrame {
 
     private void remove(File f) {
         File[] files = f.listFiles();
-        for (File ff : files) {
-            if (ff.isDirectory()) {
-                remove(ff);
-                ff.delete();
-            } else {
-                ff.delete();
+        if (files != null) {
+            for (File ff : files) {
+                if (ff.isDirectory()) {
+                    remove(ff);
+                    ff.delete();
+                } else {
+                    ff.delete();
+                }
             }
         }
     }
 
     private void copyFiles(File f, String dir) {
         File[] files = f.listFiles();
-        for (File ff : files) {
-            if (ff.isDirectory()) {
-                new File(dir + "/" + ff.getName()).mkdir();
-                copyFiles(ff, dir + "/" + ff.getName());
-            } else {
-                try {
-                    copy(ff.getAbsolutePath(), dir + "/" + ff.getName());
-                } catch (IOException e) {
-                    outText.setText(outText.getText() + "\n Copying error. " +
-                            e.getMessage());
+        if (files != null) {
+            for (File ff : files) {
+                if (ff.isDirectory()) {
+                    new File(dir + "/" + ff.getName()).mkdir();
+                    copyFiles(ff, dir + "/" + ff.getName());
+                } else {
+                    try {
+                        copy(ff.getAbsolutePath(), dir + "/" + ff.getName());
+                    } catch (IOException e) {
+                        outText.setText(outText.getText() + "\n Copying error. " +
+                                e.getMessage());
+                    }
                 }
-            }
 
+            }
         }
     }
 
@@ -455,7 +457,7 @@ public class UpdateLoader extends JFrame {
     private void unzip() {
         int BUFFER = 2048;
         BufferedOutputStream dest = null;
-        BufferedInputStream is = null;
+        BufferedInputStream is;
         ZipEntry entry;
         try {
             ZipFile zipfile = new ZipFile("update.zip");
@@ -488,8 +490,10 @@ public class UpdateLoader extends JFrame {
                         outText.setText(outText.getText() + "\nExtracting " + entry + "error." +
                                 ex.getMessage());
                     }
-                    dest.flush();
-                    dest.close();
+                    if (dest != null) {
+                        dest.flush();
+                        dest.close();
+                    }
                     is.close();
                 }
             }
@@ -499,7 +503,7 @@ public class UpdateLoader extends JFrame {
         }
     }
 
-    private void downloadFile(String link) throws MalformedURLException, IOException {
+    private void downloadFile(String link) throws IOException {
         URL url = new URL(link);
         URLConnection conn = url.openConnection();
         InputStream is = conn.getInputStream();
@@ -507,7 +511,7 @@ public class UpdateLoader extends JFrame {
         outText.setText(outText.getText() + "\n" + "Downloding file...\nUpdate Size(compressed): " + max + " Bytes");
         BufferedOutputStream fOut = new BufferedOutputStream(new FileOutputStream(new File("update.zip")));
         byte[] buffer = new byte[32 * 1024];
-        int bytesRead = 0;
+        int bytesRead;
         int in = 0;
         while ((bytesRead = is.read(buffer)) != -1) {
             in += bytesRead;

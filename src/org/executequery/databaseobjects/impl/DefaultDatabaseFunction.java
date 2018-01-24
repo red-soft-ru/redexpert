@@ -139,6 +139,9 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                         fp.getDataType() == Types.BLOB) {
                     fp.setSize(rs.getInt("segment_length"));
                 }
+                String characterSet = rs.getString("character_set_name");
+                if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
+                    fp.setEncoding(characterSet.trim());
                 fp.setSqlType(DatabaseTypeConverter.getTypeWithSize(rs.getInt(6), fp.getDataType(),
                         fp.getSize(), fp.getScale()));
                 parameters.add(fp);
@@ -191,7 +194,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 "fs.rdb$field_sub_type,\n" +
                 "fs.rdb$segment_length as segment_length,\n" +
                 "fs.rdb$dimensions,\n" +
-                "cr.rdb$character_set_name,\n" +
+                "cr.rdb$character_set_name as character_set_name,\n" +
                 "co.rdb$collation_name,\n" +
                 "fa.rdb$argument_position,\n" +
                 "fs.rdb$character_length,\n" +
@@ -284,6 +287,10 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                             }
                         }
                     }
+                    if (parameter.getEncoding() != null) {
+                        sbInput.append(" character set ");
+                        sbInput.append(parameter.getEncoding());
+                    }
                     if (parameter.getNullable() == 1)
                         sbInput.append(" not null,\n");
                     else
@@ -323,6 +330,10 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                                 sbOutput.append(parameter.getSize());
                             }
                         }
+                    }
+                    if (parameter.getEncoding() != null) {
+                        sbOutput.append(" character set ");
+                        sbOutput.append(parameter.getEncoding());
                     }
                     if (parameter.getNullable() == 1)
                         sbOutput.append(" not null,\n");

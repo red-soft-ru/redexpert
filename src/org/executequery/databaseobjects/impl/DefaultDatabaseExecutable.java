@@ -223,6 +223,9 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
                 if (pp.getRelationName() != null && pp.getFieldName() != null)
                     pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+                String characterSet = rs.getString("character_set_name");
+                if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
+                    pp.setEncoding(characterSet.trim());
 
                 parameters.add(pp);
             }
@@ -262,7 +265,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 "fs.rdb$field_sub_type, \n" +
                 "fs.rdb$segment_length as segment_length, \n" +
                 "fs.rdb$dimensions, \n" +
-                "cr.rdb$character_set_name, \n" +
+                "cr.rdb$character_set_name as character_set_name, \n" +
                 "co.rdb$collation_name, \n" +
                 "pp.rdb$parameter_number,\n" +
                 "fs.rdb$character_length, \n" +

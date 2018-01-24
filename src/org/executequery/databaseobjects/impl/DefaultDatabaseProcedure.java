@@ -131,6 +131,10 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                         }
                     }
                 }
+                if (parameter.getEncoding() != null) {
+                    sbInput.append(" character set ");
+                    sbInput.append(parameter.getEncoding());
+                }
                 if (parameter.getNullable() == 1)
                     sbInput.append(" not null ");
                 sbInput.append(",\n");
@@ -170,6 +174,10 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                             }
                         }
                     }
+                }
+                if (parameter.getEncoding() != null) {
+                    sbOutput.append(" character set ");
+                    sbOutput.append(parameter.getEncoding());
                 }
                 if (parameter.getNullable() == 1)
                     sbOutput.append(" not null ");

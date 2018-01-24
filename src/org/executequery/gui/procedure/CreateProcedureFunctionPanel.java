@@ -155,7 +155,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
             String declaredVariables = fullProcedureBody.substring(fullProcedureBody.indexOf("DECLARE"), fullProcedureBody.indexOf("BEGIN"));
             if (!declaredVariables.isEmpty()) {
                 variablesPanel.deleteEmptyRow();
-                String[] split = declaredVariables.split("\r\n");
+                String[] split = declaredVariables.split("\n");
                 for (String varString :
                         split) {
 
@@ -205,10 +205,17 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                         // need to find blob subtype
                         switch (type) {
                             case "BLOB":
+                                matchesCount = 0;
+                                if (varString.contains("BLOB SUB_TYPE TEXT")) {
+                                    matchesCount = 1;
+                                    variable.setSubtype(1);
+                                } else if (varString.contains("BLOB SUB_TYPE BINARY")) {
+                                    matchesCount = 1;
+                                    variable.setSubtype(1);
+                                }
                                 pattern = "(-?[0-9]\\d*(\\.\\d+)?)";
                                 r = Pattern.compile(pattern);
                                 m = r.matcher(varString);
-                                matchesCount = 0;
                                 while (m.find()) {
                                     if (matchesCount == 0) { // subtype
                                         variable.setSubtype(Integer.valueOf(m.group(0)));
@@ -218,14 +225,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                                         varString = varString.replace(m.group(0), "");
                                     }
                                     matchesCount++;
-                                }
-
-                                if (varString.contains("BINARY")) {
-                                    variable.setSize(variable.getSubtype());
-                                    variable.setSubtype(0);
-                                } else if (varString.contains("TEXT")) {
-                                    variable.setSize(variable.getSubtype());
-                                    variable.setSubtype(1);
                                 }
 
                                 if (variable.getSubtype() < 0)
@@ -300,6 +299,17 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                         }
                         variable.setSqlType(type);
 
+                    }
+
+                    if (varString.contains("CHARACTER SET")) {
+                        pattern = "(CHARACTER\\sSET)\\s*([A-Z]\\w+)"; // pattern for encoding
+                        r = Pattern.compile(pattern);
+                        m = r.matcher(varString);
+                        if (m.find()) {
+                            String encoding = m.group(2);
+
+                            variable.setEncoding(encoding);
+                        }
                     }
 
                     if (varString.contains("NOT NULL"))

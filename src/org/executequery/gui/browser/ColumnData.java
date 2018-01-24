@@ -277,7 +277,7 @@ public class ColumnData implements Serializable {
         String query = "SELECT RDB$RELATION_NAME FROM RDB$RELATIONS ORDER BY 1";
         try {
             ResultSet rs = executor.getResultSet(query).getResultSet();
-            while (rs.next()) {
+            while (rs != null && rs.next()) {
                 String tableName = rs.getString(1);
                 if (tableName != null)
                     tables.add(tableName.trim());

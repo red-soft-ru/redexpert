@@ -207,25 +207,25 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                                 matchesCount = 0;
                                 if (varString.contains("BLOB SUB_TYPE TEXT")) {
                                     matchesCount = 1;
-                                    variable.setSubtype(1);
+                                    variable.setSubType(1);
                                 } else if (varString.contains("BLOB SUB_TYPE BINARY")) {
                                     matchesCount = 1;
-                                    variable.setSubtype(1);
+                                    variable.setSubType(1);
                                 }
                                 pattern = "(-?[0-9]\\d*(\\.\\d+)?)";
                                 r = Pattern.compile(pattern);
                                 m = r.matcher(varString);
                                 while (m.find()) {
                                     if (matchesCount == 0)  // subtype
-                                        variable.setSubtype(Integer.valueOf(m.group(0)));
+                                        variable.setSubType(Integer.valueOf(m.group(0)));
                                     else if (matchesCount == 1) // segment size
                                         variable.setSize(Integer.valueOf(m.group(0)));
                                     matchesCount++;
                                 }
 
-                                if (variable.getSubtype() < 0)
+                                if (variable.getSubType() < 0)
                                     type = "BLOB SUB_TYPE <0";
-                                else if (variable.getSubtype() == 0)
+                                else if (variable.getSubType() == 0)
                                     type = "BLOB SUB_TYPE BINARY";
                                 else
                                     type = "BLOB SUB_TYPE TEXT";

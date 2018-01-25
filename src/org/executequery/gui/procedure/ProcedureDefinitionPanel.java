@@ -3,8 +3,7 @@ package org.executequery.gui.procedure;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowsingCellEditor;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.FunctionArgument;
-import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.Parameter;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
@@ -283,6 +282,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
             tcm.getColumn(TYPE_COLUMN).setCellEditor(dataTypeCell);
             tcm.getColumn(ENCODING_COLUMN).setCellEditor(charsetCellEditor);
             tcm.getColumn(TABLE_COLUMN).setCellEditor(tableCellEditor);
+            tcm.getColumn(DEFAULT_COLUMN).setCellEditor(defaultValueStrEditor);
 
             // create the key listener to notify changes
             KeyAdapter valueKeyListener = new KeyAdapter() {
@@ -602,62 +602,22 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         }
     }
 
-    public void addRow(FunctionArgument argument) {
-        table.editingStopped(null);
-        if (table.isEditing()) {
-            table.removeEditor();
-        }
 
-//        if (argument.getSqlType().toLowerCase().equals("BLOB SUB_TYPE 0"))
-//            argument.setSqlType("BLOB SUB_TYPE BINARY");
-//        else if (argument.getSqlType().toLowerCase().equals("BLOB SUB_TYPE 1"))
-//            argument.setSqlType("BLOB SUB_TYPE TEXT");
-
-        ColumnData cd = new ColumnData(true, dc);
-        cd.setColumnName(argument.getName());
-        cd.setDomain(argument.getDomain());
-        cd.setColumnSubtype(argument.getSubType());
-        cd.setSQLType(argument.getDataType());
-        cd.setColumnSize(argument.getSize());
-        cd.setColumnType(argument.getSqlType());
-        cd.setColumnScale(argument.getScale());
-        cd.setColumnRequired(argument.getNullable());
-        cd.setCharset(argument.getEncoding());
-        cd.setDescription(argument.getDescription());
-        cd.setTypeOf(argument.isTypeOf());
-        cd.setTypeOfFrom(argument.getTypeOfFrom());
-        cd.setTable(argument.getRelationName());
-        cd.setColumnTable(argument.getFieldName());
-
-        for (int i = 0; i < dataTypes.length; i++) {
-            if (dataTypes[i].toLowerCase().equals(argument.getSqlType().toLowerCase()))
-                cd.setSQLType(intDataTypes[i]);
-        }
-
-        addRow(cd);
-        table.setEditingRow(tableVector.size() - 1);
-        _model.fireTableRowsUpdated(tableVector.size() - 1, tableVector.size() - 1);
-        addColumnLines(-1);
-    }
 
     /**
      * Adding new row
      */
-    public void addRow(ProcedureParameter parameter) {
+    public void addRow(Parameter parameter) {
         table.editingStopped(null);
         if (table.isEditing()) {
             table.removeEditor();
         }
 
-//        if (parameter.getSqlType().toLowerCase().equals("BLOB SUB_TYPE 0"))
-//            parameter.setSqlType("BLOB SUB_TYPE BINARY");
-//        else if (parameter.getSqlType().toLowerCase().equals("BLOB SUB_TYPE 1"))
-//            parameter.setSqlType("BLOB SUB_TYPE TEXT");
 
         ColumnData cd = new ColumnData(true, dc);
         cd.setColumnName(parameter.getName());
         cd.setDomain(parameter.getDomain());
-        cd.setColumnSubtype(parameter.getSubtype());
+        cd.setColumnSubtype(parameter.getSubType());
         cd.setSQLType(parameter.getDataType());
         cd.setColumnSize(parameter.getSize());
         cd.setColumnType(parameter.getSqlType());
@@ -669,6 +629,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         cd.setTypeOfFrom(parameter.getTypeOfFrom());
         cd.setTable(parameter.getRelationName());
         cd.setColumnTable(parameter.getFieldName());
+        cd.setDefaultValue(parameter.getDefaultValue(), true);
 
 
         for (int i = 0; i < dataTypes.length; i++) {

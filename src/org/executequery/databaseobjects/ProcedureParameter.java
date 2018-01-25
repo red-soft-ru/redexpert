@@ -20,33 +20,12 @@
 
 package org.executequery.databaseobjects;
 
-import java.sql.DatabaseMetaData;
-
 /**
  * @author Takis Diakoumis
  */
-public class ProcedureParameter {
+public class ProcedureParameter extends Parameter {
 
-    private String name;
-    private int type;
-    private int dataType;
-    private String sqlType;
-    private int size;
-    private int scale;
-    private String encoding;
-    private String value;
-    private int subtype;
-    private int nullable;
-    private String domain;
-    private String description;
-    private boolean typeOf;
-    private String relationName;
-    private String fieldName;
-    private int typeOfFrom;
 
-    private static final String RESULT_STORE = "< Result Store >";
-    private static final String RETURN_VALUE = "< Return Value >";
-    private static final String UNKNOWN = "< Unknown >";
 
     public ProcedureParameter(String name, int type, int dataType,
                               String sqlType, int size, int nullable) {
@@ -58,154 +37,6 @@ public class ProcedureParameter {
         this.nullable = nullable;
     }
 
-    public void setDataType(int dataType) {
-        this.dataType = dataType;
-    }
-
-    public int getDataType() {
-        return dataType;
-    }
-
-    public void setSize(int size) {
-        this.size = size;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public void setSqlType(String sqlType) {
-        this.sqlType = sqlType;
-        if (dataType == 0) {
-            dataType = DatabaseTypeConverter.getSQLDataTypeFromName(sqlType);
-        }
-    }
-
-    public String getSqlType() {
-        return sqlType;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
-
-    public int getType() {
-        return type;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-
-        if (name == null) {
-
-            if (type == DatabaseMetaData.procedureColumnResult)
-                return RESULT_STORE;
-
-            else if (type == DatabaseMetaData.procedureColumnReturn)
-                return RETURN_VALUE;
-
-            else
-                return UNKNOWN;
-
-        }
-
-        return name;
-    }
-
-    public int getSubtype() {
-        return subtype;
-    }
-
-    public void setSubtype(int subtype) {
-        this.subtype = subtype;
-    }
-
-    public String toString() {
-        return getName();
-    }
-
-    public void setNullable(int nullable) {
-        this.nullable = nullable;
-    }
-
-    public int getScale() {
-        return scale;
-    }
-
-    public void setScale(int scale) {
-        this.scale = scale;
-    }
-
-    public String getEncoding() {
-        return encoding;
-    }
-
-    public void setEncoding(String encoding) {
-        this.encoding = encoding;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
-
-    public int getNullable() {
-        return nullable;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public boolean isTypeOf() {
-        return typeOf;
-    }
-
-    public void setTypeOf(boolean typeOf) {
-        this.typeOf = typeOf;
-    }
-
-    public String getRelationName() {
-        return relationName;
-    }
-
-    public void setRelationName(String relationName) {
-        this.relationName = relationName;
-    }
-
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    public void setFieldName(String fieldName) {
-        this.fieldName = fieldName;
-    }
-
-    public void setTypeOfFrom(int typeOfFrom) {
-        this.typeOfFrom = typeOfFrom;
-    }
-
-    public int getTypeOfFrom() {
-        return typeOfFrom;
-    }
 }
 
 

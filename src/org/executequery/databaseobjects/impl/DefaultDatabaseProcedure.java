@@ -113,7 +113,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                         sbInput.append(parameter.getDomain());
                     } else {
                         if (parameter.getSqlType().contains("SUB_TYPE")) {
-                            sbInput.append(parameter.getSqlType().replace("<0", String.valueOf(parameter.getSubtype())));
+                            sbInput.append(parameter.getSqlType().replace("<0", String.valueOf(parameter.getSubType())));
                             sbInput.append(" segment size ");
                             sbInput.append(parameter.getSize());
                         } else {
@@ -157,7 +157,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                         sbOutput.append(parameter.getDomain());
                     } else {
                         if (parameter.getSqlType().contains("SUB_TYPE")) {
-                            sbOutput.append(parameter.getSqlType().replace("<0", String.valueOf(parameter.getSubtype())));
+                            sbOutput.append(parameter.getSqlType().replace("<0", String.valueOf(parameter.getSubType())));
                             sbOutput.append(" segment size ");
                             sbOutput.append(parameter.getSize());
                         } else {

@@ -614,14 +614,7 @@ public class ColumnData implements Serializable {
                     domainCheck = domainCheck.substring(1, domainCheck.length() - 1);
                 }
             }
-            if (!MiscUtils.isNull(domainDefault)) {
-                domainDefault = domainDefault.trim();
-                if (domainDefault.toUpperCase().startsWith("DEFAULT"))
-                    domainDefault = domainDefault.substring(7).trim();
-                if (domainDefault.startsWith("'") && domainDefault.endsWith("'")) {
-                    domainDefault = domainDefault.substring(1, domainDefault.length() - 1);
-                }
-            }
+            domainDefault = processedDefaultValue(domainDefault);
             if (MiscUtils.isNull(domainCharset)) {
                 domainCharset = CreateTableSQLSyntax.NONE;
             } else domainCharset = domainCharset.trim();
@@ -895,6 +888,25 @@ public class ColumnData implements Serializable {
         } finally {
             executor.releaseResources();
         }
+    }
+
+    public void setDefaultValue(String defaultValue, boolean needProcessing) {
+        if (needProcessing) {
+            defaultValue = processedDefaultValue(defaultValue);
+        }
+        setDefaultValue(defaultValue);
+    }
+
+    private String processedDefaultValue(String defaultValue) {
+        if (!MiscUtils.isNull(defaultValue)) {
+            defaultValue = defaultValue.trim();
+            if (defaultValue.toUpperCase().startsWith("DEFAULT"))
+                defaultValue = defaultValue.substring(7).trim();
+            if (defaultValue.startsWith("'") && defaultValue.endsWith("'")) {
+                defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
+            }
+        }
+        return defaultValue;
     }
 
     public String getTable() {

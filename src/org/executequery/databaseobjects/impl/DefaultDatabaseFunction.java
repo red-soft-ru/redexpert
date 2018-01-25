@@ -128,6 +128,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
                     fp.setEncoding(characterSet.trim());
                 fp.setSqlType(DatabaseTypeConverter.getDataTypeName(rs.getInt(6), fp.getSubType(), fp.getScale()));
+                fp.setDefaultValue(rs.getString("DEFAULT_SOURCE"));
                 arguments.add(fp);
                 if (functionSourceCode == null || functionSourceCode.isEmpty())
                     functionSourceCode = rs.getString(2);
@@ -183,7 +184,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 "fa.rdb$argument_position,\n" +
                 "fs.rdb$character_length,\n" +
                 "fa.rdb$description,\n" +
-                "fa.rdb$default_source,\n" +
+                "fa.rdb$default_source as DEFAULT_SOURCE,\n" +
                 "fs.rdb$field_precision,\n" +
                 "fa.rdb$argument_mechanism as AM,\n" +
                 "fa.rdb$field_source as FS,\n" +

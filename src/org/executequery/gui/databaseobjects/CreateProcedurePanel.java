@@ -30,7 +30,6 @@ import java.net.URLClassLoader;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -123,8 +122,6 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
             outputParametersPanel.deleteEmptyRow(); // remove first empty row
             DatabaseHost host = null;
             try {
-                DatabaseConnection connection =
-                        (DatabaseConnection) connectionsCombo.getSelectedItem();
                 host = new DatabaseObjectFactoryImpl().createDatabaseHost(connection);
                 DatabaseMetaData dmd = host.getDatabaseMetaData();
                 List<ProcedureParameter> parameters = new ArrayList<>();
@@ -146,8 +143,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
 
                 for (ProcedureParameter pp :
                         parameters) {
-                    Statement statement = dmd.getConnection().createStatement();
-                    ResultSet resultSet = statement.executeQuery("select\n" +
+                    ResultSet resultSet = sender.getResultSet("select\n" +
                             "f.rdb$field_sub_type as field_subtype,\n" +
                             "f.rdb$segment_length as segment_length,\n" +
                             "pp.rdb$field_source as field_source,\n" +
@@ -156,16 +152,17 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
                             "pp.rdb$description as description,\n" +
                             "pp.rdb$parameter_mechanism as mechanism,\n" +
                             "pp.rdb$field_name as field_name,\n" +
-                            "pp.rdb$relation_name as relation_name \n" +
+                            "pp.rdb$relation_name as relation_name,\n" +
+                            "pp.rdb$default_source as default_source\n" +
                             "from rdb$procedure_parameters pp,\n" +
                             "rdb$fields f\n" +
                             "left join rdb$character_sets cs on cs.rdb$character_set_id = f.rdb$character_set_id\n" +
                             "where pp.rdb$parameter_name = '" + pp.getName() + "'\n" +
                             "and pp.rdb$procedure_name = '" + this.procedure + "'\n" +
-                            "and  pp.rdb$field_source = f.rdb$field_name");
+                            "and  pp.rdb$field_source = f.rdb$field_name").getResultSet();
                     try {
                         if (resultSet.next()) {
-                            pp.setSubtype(resultSet.getInt(1));
+                            pp.setSubType(resultSet.getInt(1));
                             int size = resultSet.getInt(2);
                             if (size != 0)
                                 pp.setSize(size);
@@ -189,10 +186,11 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
                                     pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
                                 }
                             }
+                            pp.setDefaultValue(resultSet.getString("default_source"));
 
                         }
                     } finally {
-                        releaseResources(resultSet);
+                        sender.releaseResources();
                     }
                     if (pp.getType() == DatabaseMetaData.procedureColumnIn)
                         inputParametersPanel.addRow(pp);

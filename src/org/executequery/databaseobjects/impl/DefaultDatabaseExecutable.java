@@ -206,7 +206,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 if (pp.getDataType() == Types.LONGVARBINARY ||
                         pp.getDataType() == Types.LONGVARCHAR ||
                         pp.getDataType() == Types.BLOB) {
-                    pp.setSubtype(rs.getInt(10));
+                    pp.setSubType(rs.getInt(10));
                     pp.setSize(rs.getInt("segment_length"));
                 }
 

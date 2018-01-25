@@ -4,7 +4,6 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.QueryTypes;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.FocusComponentPanel;
@@ -75,7 +74,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
     /**
      * The buffer off all SQL generated
      */
-    protected StringBuffer sqlBuffer;
+    private StringBuffer sqlBuffer;
 
     //    private CreateTableToolBar tools;
 
@@ -87,12 +86,12 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
     /**
      * The base panel
      */
-    protected JPanel containerPanel;
+    private JPanel containerPanel;
 
     protected JPanel descriptionPanel;
     protected SimpleTextArea descriptionArea;
 
-    protected JPanel ddlPanel;
+    private JPanel ddlPanel;
     protected SimpleSqlTextPanel ddlTextPanel;
 
     /**
@@ -112,7 +111,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         super(dc, dialog, procedure, params);
     }
 
-    public void initEditing() {
+    protected void initEditing() {
         nameField.setText(this.procedure);
         nameField.setEnabled(false);
         loadParameters();
@@ -120,7 +119,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         loadDescription();
     }
 
-    boolean containsType(String type, String[] array) {
+    private boolean containsType(String type, String[] array) {
         for (String arrayType :
                 array) {
             if (arrayType.toUpperCase().contains(type.toUpperCase()))
@@ -227,15 +226,15 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                                 if (variable.getSubtype() < 0)
                                     type = "BLOB SUB_TYPE <0";
                                 else if (variable.getSubtype() == 0)
-                                    type = "BLOB SUB_TYPE 0";
+                                    type = "BLOB SUB_TYPE BINARY";
                                 else
-                                    type = "BLOB SUB_TYPE 1";
+                                    type = "BLOB SUB_TYPE TEXT";
 
 
                                 break;
                             case "TYPE":
                                 variable.setTypeOf(true);
-
+                                type = "TYPE OF";
                                 varString = varString.replace("TYPE OF", "");
                                 varString = varString.replace("COLUMN", "");
                                 pattern = "([A-z])\\w+(\\.\\w+)|(([A-z])\\w+)"; // to find type of
@@ -501,7 +500,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         return sb.toString();
     }
 
-    public String formattedParameters(Vector<ColumnData> tableVector, boolean variable) {
+    protected String formattedParameters(Vector<ColumnData> tableVector, boolean variable) {
         StringBuilder sqlText = new StringBuilder();
         sqlText.append("\n");
         for (int i = 0, k = tableVector.size(); i < k; i++) {
@@ -529,7 +528,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
     protected abstract void generateScript();
 
     String[] getDomains() {
-        DefaultStatementExecutor executor = new DefaultStatementExecutor(getSelectedConnection(), true);
         java.util.List<String> domains = new ArrayList<>();
         try {
             String query = "select " +
@@ -537,11 +535,11 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                     "where RDB$FIELD_NAME not like 'RDB$%'\n" +
                     "and RDB$FIELD_NAME not like 'MON$%'\n" +
                     "order by RDB$FIELD_NAME";
-            ResultSet rs = executor.execute(QueryTypes.SELECT, query).getResultSet();
+            ResultSet rs = sender.execute(QueryTypes.SELECT, query).getResultSet();
             while (rs.next()) {
                 domains.add(rs.getString(1).trim());
             }
-            executor.releaseResources();
+            sender.releaseResources();
             return domains.toArray(new String[domains.size()]);
         } catch (Exception e) {
             Log.error("Error loading domains:" + e.getMessage());
@@ -550,35 +548,23 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
     }
 
     String[] getGenerators() {
-        DefaultStatementExecutor executor = new DefaultStatementExecutor(getSelectedConnection(), true);
         List<String> domains = new ArrayList<>();
         try {
             String query = "select " +
                     "RDB$GENERATOR_NAME FROM RDB$GENERATORS " +
                     "where RDB$SYSTEM_FLAG = 0 " +
                     "order by 1";
-            ResultSet rs = executor.execute(QueryTypes.SELECT, query).getResultSet();
+            ResultSet rs = sender.execute(QueryTypes.SELECT, query).getResultSet();
             while (rs.next()) {
                 domains.add(rs.getString(1).trim());
             }
-            executor.releaseResources();
+            sender.releaseResources();
             return domains.toArray(new String[domains.size()]);
         } catch (Exception e) {
             Log.error("Error loading generators:" + e.getMessage());
             return null;
         }
     }
-
-    /**
-     * Returns the selected connection from the panel's
-     * connections combo selection box.
-     *
-     * @return the selected connection properties object
-     */
-    public DatabaseConnection getSelectedConnection() {
-        return (DatabaseConnection) connectionsCombo.getSelectedItem();
-    }
-
     /**
      * Returns the procedure name field.
      */
@@ -665,7 +651,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         });
     }
 
-    public void setFocusComponent() {
+    protected void setFocusComponent() {
         nameField.requestFocusInWindow();
         nameField.selectAll();
     }

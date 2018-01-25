@@ -89,7 +89,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
                     (DatabaseConnection) connectionsCombo.getSelectedItem();
             host = new DatabaseObjectFactoryImpl().createDatabaseHost(connection);
             DatabaseMetaData dmd = host.getDatabaseMetaData();
-            List<ProcedureParameter> parameters = new ArrayList<ProcedureParameter>();
+            List<ProcedureParameter> parameters = new ArrayList<>();
 
 
             PooledDatabaseMetaData poolMetaData = (PooledDatabaseMetaData) dmd;
@@ -371,8 +371,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
      */
     public void actionPerformed(ActionEvent e) {
 
-        DatabaseConnection dc = getSelectedConnection();
-        if (dc == null) {
+        if (connection == null) {
             GUIUtilities.displayErrorMessage(
                     "No database connection is available.");
             return;

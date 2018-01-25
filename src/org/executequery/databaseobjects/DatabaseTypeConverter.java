@@ -1,5 +1,7 @@
 package org.executequery.databaseobjects;
 
+import java.sql.Types;
+
 public class DatabaseTypeConverter {
 
     private static final int SUBTYPE_NUMERIC = 1;
@@ -130,9 +132,9 @@ public class DatabaseTypeConverter {
                     // TODO Include actual subtype?
                     return "BLOB SUB_TYPE <0";
                 else if (sqlsubtype == 0)
-                    return "BLOB SUB_TYPE 0";
+                    return "BLOB SUB_TYPE BINARY";
                 else if (sqlsubtype == 1)
-                    return "BLOB SUB_TYPE 1";
+                    return "BLOB SUB_TYPE TEXT";
                 else
                     return "BLOB SUB_TYPE " + sqlsubtype;
             case quad_type:
@@ -141,6 +143,47 @@ public class DatabaseTypeConverter {
                 return "BOOLEAN";
             default:
                 return "NULL";
+        }
+    }
+
+    public static int getSQLDataTypeFromName(String databaseType) {
+        switch (databaseType.trim().toUpperCase()) {
+            case "BIGINT":
+                return Types.BIGINT;
+            case "BLOB SUB_TYPE BINARY":
+                return Types.LONGVARBINARY;
+            case "VARCHAR":
+                return Types.VARCHAR;
+            case "CHAR":
+                return Types.CHAR;
+            case "BLOB SUB_TYPE TEXT":
+                return Types.LONGVARCHAR;
+            case "NUMERIC":
+                return Types.NUMERIC;
+            case "DECIMAL":
+                return Types.DECIMAL;
+            case "INTEGER":
+                return Types.INTEGER;
+            case "SMALLINT":
+                return Types.SMALLINT;
+            case "FLOAT":
+                return Types.FLOAT;
+            case "DOUBLE PRECISION":
+                return Types.DOUBLE;
+            case "BOOLEAN":
+                return Types.BOOLEAN;
+            case "DATE":
+                return Types.DATE;
+            case "TIME":
+                return Types.TIME;
+            case "TIMESTAMP":
+                return Types.TIMESTAMP;
+            case "ARRAY":
+                return Types.OTHER;
+            case "BLOB SUB_TYPE <0":
+                return Types.BLOB;
+            default:
+                return 0;
         }
     }
 }

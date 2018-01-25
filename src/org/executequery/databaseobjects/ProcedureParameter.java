@@ -76,6 +76,9 @@ public class ProcedureParameter {
 
     public void setSqlType(String sqlType) {
         this.sqlType = sqlType;
+        if (dataType == 0) {
+            dataType = DatabaseTypeConverter.getSQLDataTypeFromName(sqlType);
+        }
     }
 
     public String getSqlType() {

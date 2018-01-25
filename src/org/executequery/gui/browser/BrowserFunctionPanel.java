@@ -1,8 +1,7 @@
 package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
-import org.executequery.databaseobjects.DatabaseExecutable;
-import org.executequery.databaseobjects.FunctionParameter;
+import org.executequery.databaseobjects.FunctionArgument;
 import org.executequery.databaseobjects.impl.DefaultDatabaseFunction;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
@@ -182,7 +181,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
 
         try {
             funcNameField.setText(defaultDatabaseFunction.getName());
-            model.setValues(defaultDatabaseFunction.getFunctionParametersArray());
+            model.setValues(defaultDatabaseFunction.getFunctionArgumentsArray());
             sourceTextPane.setText(defaultDatabaseFunction.getFunctionSourceCode());
             createSqlPane.setText(defaultDatabaseFunction.getCreateSQLText());
 
@@ -255,12 +254,12 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
         private String OUT = "OUT";
 
         private String[] columns = Bundles.getCommons(new String[]{"parameter", "data-type", "mode"});
-        private FunctionParameter[] funcParams;
+        private FunctionArgument[] funcParams;
 
         public FunctionTableModel() {
         }
 
-        public FunctionTableModel(FunctionParameter[] _funcParams) {
+        public FunctionTableModel(FunctionArgument[] _funcParams) {
             funcParams = _funcParams;
         }
 
@@ -276,7 +275,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
             return columns.length;
         }
 
-        public void setValues(FunctionParameter[] _funcParams) {
+        public void setValues(FunctionArgument[] _funcParams) {
 
             if (_funcParams == funcParams)
                 return;
@@ -287,7 +286,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
         }
 
         public Object getValueAt(int row, int col) {
-            FunctionParameter param = funcParams[row];
+            FunctionArgument param = funcParams[row];
 
             switch (col) {
 
@@ -334,7 +333,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
         }
 
         public void setValueAt(Object value, int row, int col) {
-            FunctionParameter param = funcParams[row];
+            FunctionArgument param = funcParams[row];
 
             switch (col) {
 

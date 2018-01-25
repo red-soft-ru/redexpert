@@ -33,7 +33,10 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -43,6 +46,23 @@ import java.util.Vector;
  */
 public class UserManagerPanel extends JPanel {
 
+    public static final String TITLE = Bundles.get(UserManagerPanel.class, "UserManager");
+    public static final String FRAME_ICON = "user_manager_16.png";
+    public IFBUserManager userManager;
+    public BrowserController controller;
+    public IFBUser userAdd;
+    public DatabaseConnection dbc;
+    boolean execute_w;
+    boolean enableElements;
+    Icon gr, no, adm;
+    Connection con;
+    List<DatabaseConnection> listConnections;
+    Map<String, IFBUser> users;
+    Vector<String> user_names;
+    Vector<String> role_names;
+    ResultSet result;
+    int version;
+    Action act;
     private JButton addUserButton;
     private JButton addRoleButton;
     private JButton adminButton;
@@ -70,31 +90,6 @@ public class UserManagerPanel extends JPanel {
     private JTable rolesTable;
     private JProgressBar jProgressBar1;
     private JButton cancelButton;
-    boolean execute_w;
-    boolean enableElements;
-    Icon gr, no, adm;
-    Connection con;
-    public static final String TITLE = Bundles.get(UserManagerPanel.class, "UserManager");
-    public static final String FRAME_ICON = "user_manager_16.png";
-    public IFBUserManager userManager;
-    public BrowserController controller;
-    List<DatabaseConnection> listConnections;
-    Map<String, IFBUser> users;
-    Vector<String> user_names;
-    Vector<String> role_names;
-    public IFBUser userAdd;
-    ResultSet result;
-    int version;
-    public DatabaseConnection dbc;
-
-    enum Action {
-        REFRESH,
-        GET_USERS,
-        GET_ROLES,
-        GET_MEMBERSHIP
-    }
-
-    Action act;
 
     /**
      * Creates new form UserManagerPanel
@@ -506,7 +501,6 @@ public class UserManagerPanel extends JPanel {
         }
     }
 
-
     private void databaseBoxActionPerformed(java.awt.event.ActionEvent evt) {
 
         if (execute_w) {
@@ -616,7 +610,7 @@ public class UserManagerPanel extends JPanel {
     void deleteRoleButtonActionPerformed(java.awt.event.ActionEvent evt) {
         int ind = rolesTable.getSelectedRow();
         if (ind >= 0) {
-            String role = (String) ((RoleTableModel) rolesTable.getModel()).getValueAt(ind, 0);
+            String role = (String) rolesTable.getModel().getValueAt(ind, 0);
             if (GUIUtilities.displayConfirmDialog(bundleString("message.confirm-delete-role") + role + "?") == 0)
                 try {
                     Statement state = con.createStatement();
@@ -635,7 +629,7 @@ public class UserManagerPanel extends JPanel {
         int row = membershipTable.getSelectedRow();
         int col = membershipTable.getSelectedColumn();
         if (enableElements) if (col >= 0) {
-            if (((Icon) membershipTable.getValueAt(row, col)).equals(adm)) {
+            if (membershipTable.getValueAt(row, col).equals(adm)) {
                 revoke_grant(row, col);
             }
             grant_to(row, col);
@@ -665,9 +659,9 @@ public class UserManagerPanel extends JPanel {
             int row = membershipTable.getSelectedRow();
             int col = membershipTable.getSelectedColumn();
             if (enableElements) if (col >= 0) {
-                if (((Icon) membershipTable.getValueAt(row, col)).equals(gr)) {
+                if (membershipTable.getValueAt(row, col).equals(gr)) {
                     grant_with_admin(row, col);
-                } else if (((Icon) membershipTable.getValueAt(row, col)).equals(adm)) {
+                } else if (membershipTable.getValueAt(row, col).equals(adm)) {
                     revoke_grant(row, col);
                 } else {
                     grant_to(row, col);
@@ -980,6 +974,13 @@ public class UserManagerPanel extends JPanel {
     void isClose() {
         if (GUIUtilities.getCentralPane(TITLE) == null)
             setEnableElements(true);
+    }
+
+    enum Action {
+        REFRESH,
+        GET_USERS,
+        GET_ROLES,
+        GET_MEMBERSHIP
     }
 }
 

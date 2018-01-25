@@ -23,22 +23,34 @@ import java.util.Vector;
 public class BrowserRolePanel extends AbstractFormObjectViewPanel {
     public static final String NAME = "BrowserRolePanel";
     public BrowserController controller;
+    public JProgressBar progBar;
     Action act;
     StatementExecutor querySender;
-
-    enum Action {
-        NO_ALL_GRANTS_TO_OBJECT,
-        ALL_GRANTS_TO_OBJECT,
-        ALL_GRANTS_TO_OBJECT_WITH_GRANT_OPTION,
-        NO_GRANT_TO_ALL_OBJECTS,
-        GRANT_TO_ALL_OBJECTS,
-        GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION,
-        NO_ALL_GRANTS_TO_ALL_OBJECTS,
-        ALL_GRANTS_TO_ALL_OBJECTS,
-        ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION,
-        CREATE_TABLE
-
-    }
+    //Connection con;
+    Statement state;
+    ResultSet rs;
+    Boolean enableGrant;
+    Vector<String> roles;
+    String grants = "SUDIXR";
+    String[] headers = {"Object", "Select", "Update", "Delete", "Insert", "Execute", "References"};
+    Vector<String> relName;
+    Vector<String> relType;
+    Icon gr, no, adm;
+    JButton cancelWait;
+    private javax.swing.JButton noAllGrantsButton;
+    private javax.swing.JComboBox<String> objectBox;
+    private javax.swing.JButton allAdminOptionButton;
+    private javax.swing.JButton allGrantsButton;
+    private javax.swing.JButton allRolesNoGrantButton;
+    private javax.swing.JButton allUsersAdminOptionButton;
+    private javax.swing.JButton allUsersGrantButton;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JTable rolesTable;
+    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JScrollPane jScrollPane1;
 
     public BrowserRolePanel(BrowserController contr) {   //super();
         controller = contr;
@@ -69,11 +81,6 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
         }
         create_roles_list(ddr.getName());
     }
-
-    //Connection con;
-    Statement state;
-    ResultSet rs;
-    Boolean enableGrant;
 
     void initComponents() {
         try {
@@ -276,8 +283,6 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
 //create_table();
     }
 
-    Vector<String> roles;
-
     void create_roles_list() {
         try {
             //Statement st = con.createStatement();
@@ -321,12 +326,6 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
         }
         enableGrant = true;
     }
-
-    String grants = "SUDIXR";
-    String[] headers = {"Object", "Select", "Update", "Delete", "Insert", "Execute", "References"};
-    Vector<String> relName;
-    Vector<String> relType;
-    Icon gr, no, adm;
 
     void create_table() {
         setEnableGrant(false);
@@ -426,7 +425,7 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
 
                             rolesTable.setValueAt(gr, i, ind + 1);
                         } else
-                            ((RoleTableModel) rolesTable.getModel()).setValueAt(adm, i, ind + 1);
+                            rolesTable.getModel().setValueAt(adm, i, ind + 1);
 
                     }
                     querySender.releaseResources();
@@ -489,7 +488,7 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
                     }
                     break;
                 case 1:
-                    if (((Icon) rolesTable.getValueAt(row, col)).equals(adm)) {
+                    if (rolesTable.getValueAt(row, col).equals(adm)) {
                         try {
 
                             //Statement st = con.createStatement();
@@ -712,13 +711,13 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
                 int row = rolesTable.getSelectedRow();
                 int col = rolesTable.getSelectedColumn();
                 if (col > 0) {
-                    if (((Icon) rolesTable.getValueAt(row, col)).equals(gr)) {
+                    if (rolesTable.getValueAt(row, col).equals(gr)) {
 
 
                         grant_on_role(2, row, col);
 
 
-                    } else if (((Icon) rolesTable.getValueAt(row, col)).equals(adm)) {
+                    } else if (rolesTable.getValueAt(row, col).equals(adm)) {
 
                         grant_on_role(0, row, col);
 
@@ -731,24 +730,6 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
                 }
             }
     }
-
-    private javax.swing.JButton noAllGrantsButton;
-    private javax.swing.JComboBox<String> objectBox;
-    private javax.swing.JButton allAdminOptionButton;
-    private javax.swing.JButton allGrantsButton;
-    private javax.swing.JButton allRolesNoGrantButton;
-    private javax.swing.JButton allUsersAdminOptionButton;
-    private javax.swing.JButton allUsersGrantButton;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JTable rolesTable;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JScrollPane jScrollPane1;
-    JButton cancelWait;
-
-    public JProgressBar progBar;
 
     void setEnableGrant(boolean enable) {
         enableGrant = enable;
@@ -861,6 +842,20 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
     @Override
     public String getLayoutName() {
         return NAME;
+    }
+
+    enum Action {
+        NO_ALL_GRANTS_TO_OBJECT,
+        ALL_GRANTS_TO_OBJECT,
+        ALL_GRANTS_TO_OBJECT_WITH_GRANT_OPTION,
+        NO_GRANT_TO_ALL_OBJECTS,
+        GRANT_TO_ALL_OBJECTS,
+        GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION,
+        NO_ALL_GRANTS_TO_ALL_OBJECTS,
+        ALL_GRANTS_TO_ALL_OBJECTS,
+        ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION,
+        CREATE_TABLE
+
     }
 }
 

@@ -22,7 +22,9 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseFunction;
 import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.FunctionParameter;
+import org.executequery.databaseobjects.DatabaseTypeConverter;
+import org.executequery.databaseobjects.FunctionArgument;
+import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.*;
@@ -38,9 +40,9 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         implements DatabaseFunction {
 
     /**
-     * function parameters
+     * function arguments
      */
-    private ArrayList<FunctionParameter> parameters;
+    private ArrayList<FunctionArgument> arguments;
 
     /**
      * function sql
@@ -73,64 +75,66 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     }
 
     /**
-     * Indicates whether this executable object has any parameters.
+     * Indicates whether this executable object has any arguments.
      *
      * @return true | false
      */
     public boolean hasParameters() {
-        List<FunctionParameter> _parameters = getFunctionParameters();
-        return _parameters != null && !_parameters.isEmpty();
+        List<FunctionArgument> arguments = getFunctionArguments();
+        return arguments != null && !arguments.isEmpty();
     }
 
     /**
-     * Adds the specified values as a single parameter to this object.
+     * Returns this object's arguments.
      */
-    public FunctionParameter addFunctionParameter(String name, int dataType, int size, int precision, int scale, int subType, int position) {
-        if (parameters == null) {
+    public List<FunctionArgument> getFunctionArguments() throws DataSourceException {
 
-            parameters = new ArrayList<FunctionParameter>();
-        }
+        if (!isMarkedForReload() && arguments != null) {
 
-        FunctionParameter parameter = new FunctionParameter(name, dataType, size, precision, scale, subType, position);
-        parameters.add(parameter);
-
-        return parameter;
-    }
-
-    /**
-     * Returns this object's parameters.
-     */
-    public List<FunctionParameter> getFunctionParameters() throws DataSourceException {
-
-        if (!isMarkedForReload() && parameters != null) {
-
-            return parameters;
+            return arguments;
         }
 
         ResultSet rs = null;
         try {
 
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-            parameters = new ArrayList<FunctionParameter>();
+            arguments = new ArrayList<>();
 
 
             rs = getFunctionArguments(getName());
 
             while (rs.next()) {
-
-                parameters.add(new FunctionParameter(rs.getString(4),
-                        rs.getInt(6),
+                FunctionArgument fp = new FunctionArgument(rs.getString(4),
+                        DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(6), rs.getInt(9)),
                         rs.getInt(7),
                         rs.getInt(18),
                         rs.getInt(8),
                         rs.getInt(9),
-                        rs.getInt(14)
-                        ));
+                        rs.getInt(14),
+                        rs.getInt("AM"),
+                        rs.getString("RN"),
+                        rs.getString("FN")
+                );
+                String domain = rs.getString("FS");
+                if (domain != null && !domain.startsWith("RDB$"))
+                    fp.setDomain(domain.trim());
+                fp.setNullable(rs.getInt("null_flag"));
+                if (fp.getDataType() == Types.LONGVARBINARY ||
+                        fp.getDataType() == Types.LONGVARCHAR ||
+                        fp.getDataType() == Types.BLOB) {
+                    fp.setSize(rs.getInt("segment_length"));
+                }
+                String characterSet = rs.getString("character_set_name");
+                if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
+                    fp.setEncoding(characterSet.trim());
+                fp.setSqlType(DatabaseTypeConverter.getDataTypeName(rs.getInt(6), fp.getSubType(), fp.getScale()));
+                fp.setDefaultValue(rs.getString("DEFAULT_SOURCE"));
+                arguments.add(fp);
                 if (functionSourceCode == null || functionSourceCode.isEmpty())
                     functionSourceCode = rs.getString(2);
             }
 
-            return parameters;
+            return arguments;
 
         } catch (SQLException e) {
 
@@ -144,14 +148,14 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     }
 
     /**
-     * Returns this object's parameters as an array.
+     * Returns this object's arguments as an array.
      */
-    public FunctionParameter[] getFunctionParametersArray() throws DataSourceException {
-        if (parameters == null) {
-            getFunctionParameters();
+    public FunctionArgument[] getFunctionArgumentsArray() throws DataSourceException {
+        if (arguments == null) {
+            getFunctionArguments();
         }
-        return (FunctionParameter[]) parameters.toArray(new
-                FunctionParameter[parameters.size()]);
+        return arguments.toArray(new
+                FunctionArgument[arguments.size()]);
     }
 
     /**
@@ -173,21 +177,21 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 "fs.rdb$field_length,\n" +
                 "fs.rdb$field_scale,\n" +
                 "fs.rdb$field_sub_type,\n" +
-                "fs.rdb$segment_length,\n" +
+                "fs.rdb$segment_length as segment_length,\n" +
                 "fs.rdb$dimensions,\n" +
-                "cr.rdb$character_set_name,\n" +
+                "cr.rdb$character_set_name as character_set_name,\n" +
                 "co.rdb$collation_name,\n" +
                 "fa.rdb$argument_position,\n" +
                 "fs.rdb$character_length,\n" +
                 "fa.rdb$description,\n" +
-                "fa.rdb$default_source,\n" +
+                "fa.rdb$default_source as DEFAULT_SOURCE,\n" +
                 "fs.rdb$field_precision,\n" +
-                "fa.rdb$argument_mechanism,\n" +
-                "fa.rdb$field_source,\n" +
+                "fa.rdb$argument_mechanism as AM,\n" +
+                "fa.rdb$field_source as FS,\n" +
                 "fs.rdb$default_source,\n" +
-                "fa.rdb$null_flag,\n" +
-                "fa.rdb$relation_name,\n" +
-                "fa.rdb$field_name,\n" +
+                "fa.rdb$null_flag as null_flag,\n" +
+                "fa.rdb$relation_name as RN,\n" +
+                "fa.rdb$field_name as FN,\n" +
                 "co2.rdb$collation_name,\n" +
                 "cr.rdb$default_collate_name,\n" +
                 "fnc.rdb$return_argument,\n" +
@@ -227,37 +231,99 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
         sbInput.append("( \n");
         
-        List<FunctionParameter> parameters = getFunctionParameters();
+        List<FunctionArgument> arguments = getFunctionArguments();
 
-        for (FunctionParameter parameter : parameters) {
-            if (parameter.getType() == DatabaseMetaData.procedureColumnIn) {
+        for (FunctionArgument argument : arguments) {
+            if (argument.getType() == DatabaseMetaData.procedureColumnIn) {
                 sbInput.append("\t");
-                sbInput.append(parameter.getName());
+                sbInput.append(argument.getName());
                 sbInput.append(" ");
-                sbInput.append(parameter.getSqlType());
-                if (parameter.getDataType() == Types.CHAR
-                        || parameter.getDataType() == Types.VARCHAR
-                        || parameter.getDataType() == Types.NVARCHAR
-                        || parameter.getDataType() == Types.VARBINARY) {
-                    sbInput.append("(");
-                    sbInput.append(parameter.getSize());
-                    sbInput.append("),\n");
+                if (argument.isTypeOf()) {
+                    sbInput.append(" type of ");
+                    if (argument.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
+                        sbInput.append(argument.getDomain());
+                    else {
+                        sbInput.append("column ");
+                        sbInput.append(argument.getRelationName());
+                        sbInput.append(".");
+                        sbInput.append(argument.getFieldName());
+                    }
+                    if (argument.getNullable() == 1)
+                        sbInput.append(" not null,\n");
+                    else
+                        sbInput.append(",\n");
                 } else {
-                    sbInput.append(",\n");
+                    if (argument.getDomain() != null) {
+                        sbInput.append(argument.getDomain());
+                    } else {
+                        if (argument.getSqlType().contains("SUB_TYPE")) {
+                            sbInput.append(argument.getSqlType().replace("<0", String.valueOf(argument.getSubType())));
+                            sbInput.append(" segment size ");
+                            sbInput.append(argument.getSize());
+                        } else {
+                            sbInput.append(argument.getSqlType());
+                            if (argument.getDataType() == Types.CHAR
+                                    || argument.getDataType() == Types.VARCHAR
+                                    || argument.getDataType() == Types.NVARCHAR
+                                    || argument.getDataType() == Types.VARBINARY) {
+                                sbInput.append("(");
+                                sbInput.append(argument.getSize());
+                                sbInput.append(")");
+                            }
+                        }
+                    }
+                    if (argument.getEncoding() != null) {
+                        sbInput.append(" character set ");
+                        sbInput.append(argument.getEncoding());
+                    }
+                    if (argument.getNullable() == 1)
+                        sbInput.append(" not null,\n");
+                    else
+                        sbInput.append(",\n");
                 }
-            } else if (parameter.getType() == DatabaseMetaData.procedureColumnReturn) {
-                sbOutput.append("\t");
+            } else if (argument.getType() == DatabaseMetaData.procedureColumnReturn) {
                 sbOutput.append(" ");
-                sbOutput.append(parameter.getSqlType());
-                if (parameter.getDataType() == Types.CHAR
-                        || parameter.getDataType() == Types.VARCHAR
-                        || parameter.getDataType() == Types.NVARCHAR
-                        || parameter.getDataType() == Types.VARBINARY) {
-
-                    sbOutput.append(parameter.getSize());
-                    sbOutput.append("\n");
+                if (argument.isTypeOf()) {
+                    sbOutput.append("type of ");
+                    if (argument.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
+                        sbOutput.append(argument.getDomain());
+                    else {
+                        sbOutput.append("column ");
+                        sbOutput.append(argument.getRelationName());
+                        sbOutput.append(".");
+                        sbOutput.append(argument.getFieldName());
+                    }
+                    if (argument.getNullable() == 1)
+                        sbOutput.append(" not null,\n");
+                    else
+                        sbOutput.append(",\n");
                 } else {
-                    sbOutput.append(",\n");
+                    if (argument.getDomain() != null) {
+                        sbOutput.append(argument.getDomain());
+                    } else {
+                        if (argument.getSqlType().contains("SUB_TYPE")) {
+                            sbOutput.append(argument.getSqlType().replace("<0", String.valueOf(argument.getSubType())));
+                            sbOutput.append(" segment size ");
+                            sbOutput.append(argument.getSize());
+                        } else {
+                            sbOutput.append(argument.getSqlType());
+                            if (argument.getDataType() == Types.CHAR
+                                    || argument.getDataType() == Types.VARCHAR
+                                    || argument.getDataType() == Types.NVARCHAR
+                                    || argument.getDataType() == Types.VARBINARY) {
+
+                                sbOutput.append(argument.getSize());
+                            }
+                        }
+                    }
+                    if (argument.getEncoding() != null) {
+                        sbOutput.append(" character set ");
+                        sbOutput.append(argument.getEncoding());
+                    }
+                    if (argument.getNullable() == 1)
+                        sbOutput.append(" not null,\n");
+                    else
+                        sbOutput.append(",\n");
                 }
             }
         }

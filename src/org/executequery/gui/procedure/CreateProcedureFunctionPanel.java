@@ -1,70 +1,45 @@
 package org.executequery.gui.procedure;
 
-import biz.redsoft.IFBDatabaseMetadata;
 import org.executequery.GUIUtilities;
-import org.executequery.components.SplitPaneFactory;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.QueryTypes;
-import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.ProcedureParameter;
-import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
-import org.executequery.datasource.ConnectionManager;
-import org.executequery.datasource.PooledDatabaseMetaData;
+import org.executequery.gui.ActionContainer;
 import org.executequery.gui.FocusComponentPanel;
-import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ColumnData;
-import org.executequery.gui.table.*;
+import org.executequery.gui.databaseobjects.AbstractCreateObjectPanel;
+import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * @author vasiliy
  */
-public abstract class CreateProcedureFunctionPanel extends JPanel
+public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectPanel
         implements FocusComponentPanel,
         ItemListener,
         TextEditorContainer {
 
-    private String procedure;
-    /**
-     * The procedure name field
-     */
-    protected JTextField nameField;
-
-    /**
-     * The connection combo selection
-     */
-    protected JComboBox connectionsCombo;
-
-    /**
-     * the schema combo box model
-     */
-    protected DynamicComboBoxModel connectionsModel;
+    protected String procedure;
 
     /**
      * The input parameters for procedure
@@ -94,22 +69,14 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     /**
      * The tabbed pane containing parameters
      */
-    private JTabbedPane procedureTabs;
-
-    /**
-     * The tabbed pane containing parameters
-     */
-    private JTabbedPane parametersTabs;
+    protected JTabbedPane parametersTabs;
 
     /**
      * The buffer off all SQL generated
      */
-    protected StringBuffer sqlBuffer;
+    private StringBuffer sqlBuffer;
 
-    /**
-     * The tool bar
-     */
-//    private CreateTableToolBar tools;
+    //    private CreateTableToolBar tools;
 
     /**
      * Utility to retrieve database meta data
@@ -119,12 +86,12 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     /**
      * The base panel
      */
-    protected JPanel containerPanel;
+    private JPanel containerPanel;
 
     protected JPanel descriptionPanel;
     protected SimpleTextArea descriptionArea;
 
-    protected JPanel ddlPanel;
+    private JPanel ddlPanel;
     protected SimpleSqlTextPanel ddlTextPanel;
 
     /**
@@ -135,30 +102,24 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     /**
      * <p> Constructs a new instance.
      */
-    public CreateProcedureFunctionPanel() {
-        super(new BorderLayout());
 
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+    public CreateProcedureFunctionPanel(DatabaseConnection dc, ActionContainer dialog, String procedure) {
+        this(dc, dialog, procedure, null);
     }
 
-    public CreateProcedureFunctionPanel(String procedure) {
-        this();
-        this.procedure = procedure;
+    public CreateProcedureFunctionPanel(DatabaseConnection dc, ActionContainer dialog, String procedure, Object[] params) {
+        super(dc, dialog, procedure, params);
     }
 
-    public void initEditing() throws Exception {
+    protected void initEditing() {
         nameField.setText(this.procedure);
         nameField.setEnabled(false);
         loadParameters();
         loadVariables();
+        loadDescription();
     }
 
-    boolean containsType (String type, String[] array) {
+    private boolean containsType(String type, String[] array) {
         for (String arrayType :
                 array) {
             if (arrayType.toUpperCase().contains(type.toUpperCase()))
@@ -167,71 +128,33 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         return false;
     }
 
-    private void loadVariables() {
-        variablesPanel.deleteEmptyRow(); // remove first empty row
-
-        String fullProcedureBody = null;
-        DatabaseHost host = null;
-        Statement statement = null;
-        ResultSet resultSet = null;
+    private void loadDescription() {
         try {
-            DatabaseConnection connection =
-                    (DatabaseConnection) connectionsCombo.getSelectedItem();
-            host = new DatabaseObjectFactoryImpl().createDatabaseHost(connection);
-            DatabaseMetaData dmd = host.getDatabaseMetaData();
-            List<ProcedureParameter> parameters = new ArrayList<ProcedureParameter>();
-
-
-            PooledDatabaseMetaData poolMetaData = (PooledDatabaseMetaData) dmd;
-            DatabaseMetaData dMetaData = poolMetaData.getInner();
-            URL[] urls = new URL[0];
-            Class clazzdb = null;
-            Object odb = null;
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-            ClassLoader cl = new URLClassLoader(urls, dMetaData.getClass().getClassLoader());
-            clazzdb = cl.loadClass("biz.redsoft.FBDatabaseMetadataImpl");
-            odb = clazzdb.newInstance();
-            IFBDatabaseMetadata db = (IFBDatabaseMetadata) odb;
-
-            fullProcedureBody = db.getProcedureSourceCode(dMetaData, this.procedure);
-            try {
-                statement = dMetaData.getConnection().createStatement();
-                resultSet = statement.executeQuery("select\n" +
-                        "p.rdb$description \n" +
-                        "from rdb$procedures p\n" +
-                        "where p.rdb$procedure_name = '" +
-                        this.procedure +
-                        "'");
-                if (resultSet.next())
-                    descriptionArea.getTextAreaComponent().setText(resultSet.getString(1));
-            } finally {
-               releaseResources(resultSet);
-            }
-
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            ResultSet resultSet = sender.getResultSet(queryGetDescription()).getResultSet();
+            if (resultSet.next())
+                descriptionArea.getTextAreaComponent().setText(resultSet.getString(1));
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            if (host != null)
-                host.close();
+            sender.releaseResources();
         }
+    }
+
+    private void loadVariables() {
+        // remove first empty row
+
+        String fullProcedureBody = getFullSourceBody();
 
         if (fullProcedureBody != null && !fullProcedureBody.isEmpty()) {
             fullProcedureBody = fullProcedureBody.toUpperCase();
             sqlBodyText.setSQLText(fullProcedureBody.substring(fullProcedureBody.indexOf("BEGIN")));
 
-            if (fullProcedureBody.indexOf("DECLARE") == -1) // no variables
+            if (!fullProcedureBody.contains("DECLARE"))// no variables
                 return;
             String declaredVariables = fullProcedureBody.substring(fullProcedureBody.indexOf("DECLARE"), fullProcedureBody.indexOf("BEGIN"));
-            if (declaredVariables != null && !declaredVariables.isEmpty()) {
-                String[] split = declaredVariables.split("\r\n");
+            if (!declaredVariables.isEmpty()) {
+                variablesPanel.deleteEmptyRow();
+                String[] split = declaredVariables.split("\n");
                 for (String varString :
                         split) {
 
@@ -247,7 +170,7 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
                     // Now create matcher object.
                     Matcher m = r.matcher(varString);
                     int matchesCount = 0;
-                    while (m.find( )) {
+                    while (m.find()) {
                         if (matchesCount == 0) { // find name
                             variable.setName(m.group(0));
                             varString = varString.replace(m.group(0), "");
@@ -279,59 +202,89 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
                             type = m.group(0);
                         }
                         // need to find blob subtype
-                        if (type.equals("BLOB")) {
-                            pattern = "(-?[0-9]\\d*(\\.\\d+)?)";
-                            r = Pattern.compile(pattern);
-                            m = r.matcher(varString);
-                            matchesCount = 0;
-                            while (m.find( )) {
-                                if (matchesCount == 0) { // subtype
-                                    variable.setSubtype(Integer.valueOf(m.group(0)));
-                                    varString = varString.replace(m.group(0), "");
-                                } else if (matchesCount == 1) { // segment size
-                                    variable.setSize(Integer.valueOf(m.group(0)));
-                                    varString = varString.replace(m.group(0), "");
+                        switch (type) {
+                            case "BLOB":
+                                matchesCount = 0;
+                                if (varString.contains("BLOB SUB_TYPE TEXT")) {
+                                    matchesCount = 1;
+                                    variable.setSubType(1);
+                                } else if (varString.contains("BLOB SUB_TYPE BINARY")) {
+                                    matchesCount = 1;
+                                    variable.setSubType(1);
                                 }
-                                matchesCount++;
-                            }
+                                pattern = "(-?[0-9]\\d*(\\.\\d+)?)";
+                                r = Pattern.compile(pattern);
+                                m = r.matcher(varString);
+                                while (m.find()) {
+                                    if (matchesCount == 0)  // subtype
+                                        variable.setSubType(Integer.valueOf(m.group(0)));
+                                    else if (matchesCount == 1) // segment size
+                                        variable.setSize(Integer.valueOf(m.group(0)));
+                                    matchesCount++;
+                                }
 
-                            if (varString.contains("BINARY")) {
-                                variable.setSize(variable.getSubtype());
-                                variable.setSubtype(0);
-                            } else if (varString.contains("TEXT")) {
-                                variable.setSize(variable.getSubtype());
-                                variable.setSubtype(1);
-                            }
-
-                            if (variable.getSubtype() < 0)
-                                type = "BLOB SUB_TYPE <0";
-                            else if (variable.getSubtype() == 0)
-                                type = "BLOB SUB_TYPE 0";
-                            else
-                                type = "BLOB SUB_TYPE 1";
+                                if (variable.getSubType() < 0)
+                                    type = "BLOB SUB_TYPE <0";
+                                else if (variable.getSubType() == 0)
+                                    type = "BLOB SUB_TYPE BINARY";
+                                else
+                                    type = "BLOB SUB_TYPE TEXT";
 
 
-                        } else {
-                            pattern = "(?<=\\()\\d+(?:\\.\\d+)?(?=\\))"; // pattern for size of varchar and etc.
-                            r = Pattern.compile(pattern);
-                            m = r.matcher(varString);
-                            if (m.find())
-                                variable.setSize(Integer.valueOf(m.group(0)));
+                                break;
+                            case "TYPE":
+                                variable.setTypeOf(true);
+                                type = "TYPE OF";
+                                varString = varString.replace("TYPE OF", "");
+                                varString = varString.replace("COLUMN", "");
+                                pattern = "([A-z])\\w+(\\.\\w+)|(([A-z])\\w+)"; // to find type of
 
-                            pattern = "(?<=\\()\\d+(?:\\.\\d+)?(?=\\,)"; // pattern for size of decimal and etc.
-                            r = Pattern.compile(pattern);
-                            m = r.matcher(varString);
-                            if (m.find())
-                                variable.setSize(Integer.valueOf(m.group(0)));
+                                // Create a Pattern object
+                                r = Pattern.compile(pattern);
 
-                            pattern = "(?<=\\,)\\d+(?:\\.\\d+)?(?=\\))"; // pattern for scale of decimal and etc.
-                            r = Pattern.compile(pattern);
-                            m = r.matcher(varString);
-                            if (m.find())
-                                variable.setScale(Integer.valueOf(m.group(0)));
+                                // Now create matcher object.
+                                m = r.matcher(varString);
+
+                                String fieldName = "";
+                                if (m.find()) {
+                                    fieldName = m.group(0);
+                                }
+
+                                if (fieldName.contains(".")){
+                                    variable.setRelationName(fieldName.substring(0, fieldName.lastIndexOf('.')));
+                                    variable.setFieldName(fieldName.substring(fieldName.lastIndexOf('.') + 1, fieldName.length()));
+                                    variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+                                } else {
+                                    variable.setDomain(fieldName);
+                                    variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_DOMAIN);
+                                }
+
+                                break;
+                            default:
+                                pattern = "(?<=\\()\\d+(?:\\.\\d+)?(?=\\))"; // pattern for size of varchar and etc.
+
+                                r = Pattern.compile(pattern);
+                                m = r.matcher(varString);
+                                if (m.find())
+                                    variable.setSize(Integer.valueOf(m.group(0)));
+
+                                pattern = "(?<=\\()\\d+(?:\\.\\d+)?(?=,)"; // pattern for size of decimal and etc.
+
+                                r = Pattern.compile(pattern);
+                                m = r.matcher(varString);
+                                if (m.find())
+                                    variable.setSize(Integer.valueOf(m.group(0)));
+
+                                pattern = "(?<=,)\\d+(?:\\.\\d+)?(?=\\))"; // pattern for scale of decimal and etc.
+
+                                r = Pattern.compile(pattern);
+                                m = r.matcher(varString);
+                                if (m.find())
+                                    variable.setScale(Integer.valueOf(m.group(0)));
+                                break;
                         }
 
-                        pattern = "\\/\\*(.*?)\\*\\/"; // pattern for comment
+                        pattern = "/\\*(.*?)\\*/"; // pattern for comment
                         r = Pattern.compile(pattern);
                         m = r.matcher(varString);
                         if (m.find()) {
@@ -342,6 +295,17 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
                         }
                         variable.setSqlType(type);
 
+                    }
+
+                    if (varString.contains("CHARACTER SET")) {
+                        pattern = "(CHARACTER\\sSET)\\s*([A-Z]\\w+)"; // pattern for encoding
+                        r = Pattern.compile(pattern);
+                        m = r.matcher(varString);
+                        if (m.find()) {
+                            String encoding = m.group(2);
+
+                            variable.setEncoding(encoding);
+                        }
                     }
 
                     if (varString.contains("NOT NULL"))
@@ -355,95 +319,17 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         }
     }
 
-    private void loadParameters() {
-        inputParametersPanel.deleteEmptyRow(); // remove first empty row
-        outputParametersPanel.deleteEmptyRow(); // remove first empty row
-        DatabaseHost host = null;
-        try {
-            DatabaseConnection connection =
-                    (DatabaseConnection) connectionsCombo.getSelectedItem();
-            host = new DatabaseObjectFactoryImpl().createDatabaseHost(connection);
-            DatabaseMetaData dmd = host.getDatabaseMetaData();
-            List<ProcedureParameter> parameters = new ArrayList<ProcedureParameter>();
+    protected abstract String queryGetDescription();
 
-            ResultSet rs = dmd.getProcedureColumns(null, null, this.procedure, null);
+    protected abstract String getFullSourceBody();
 
-            while (rs.next()) {
-                ProcedureParameter procedureParameter = new ProcedureParameter(rs.getString(4),
-                        rs.getInt(5),
-                        rs.getInt(6),
-                        rs.getString(7),
-                        rs.getInt(8),
-                        0/*rs.getInt(12)*/);
-                procedureParameter.setScale(rs.getInt(10));
-                parameters.add(procedureParameter);
-            }
+    protected abstract void loadParameters();
 
-            releaseResources(rs);
+    protected void init() {
 
-            for (ProcedureParameter pp :
-                    parameters) {
-                Statement statement = dmd.getConnection().createStatement();
-                ResultSet resultSet = statement.executeQuery("select\n" +
-                        "f.rdb$field_sub_type as field_subtype,\n" +
-                        "f.rdb$segment_length as segment_length,\n" +
-                        "pp.rdb$field_source as field_source,\n" +
-                        "pp.rdb$null_flag as null_flag,\n" +
-                        "cs.rdb$character_set_name as character_set,\n" +
-                        "pp.rdb$description as description\n" +
-                        "from rdb$procedure_parameters pp,\n" +
-                        "rdb$fields f\n" +
-                        "left join rdb$character_sets cs on cs.rdb$character_set_id = f.rdb$character_set_id\n" +
-                        "where pp.rdb$parameter_name = '" + pp.getName() + "'\n" +
-                        "and pp.rdb$procedure_name = '" + this.procedure + "'\n" +
-                        "and  pp.rdb$field_source = f.rdb$field_name");
-                try {
-                    if (resultSet.next()) {
-                        pp.setSubtype(resultSet.getInt(1));
-                        int size = resultSet.getInt(2);
-                        if (size != 0)
-                            pp.setSize(size);
-                        pp.setNullable(resultSet.getInt(4) == 1 ? 0 : 1);
-                        String domain = resultSet.getString(3);
-                        if (!domain.contains("RDB$"))
-                            pp.setDomain(domain.trim());
-                        String characterSet = resultSet.getString(5);
-                        if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
-                            pp.setEncoding(characterSet.trim());
-                        pp.setDescription(resultSet.getString(6));
-                    }
-                } finally {
-                    releaseResources(resultSet);
-                }
-                if (pp.getType() == DatabaseMetaData.procedureColumnIn)
-                    inputParametersPanel.addRow(pp);
-                else if (pp.getType() == DatabaseMetaData.procedureColumnOut)
-                    outputParametersPanel.addRow(pp);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (host != null)
-                host.close();
-        }
-    }
-
-    private void init() throws Exception {
-
-        nameField = WidgetFactory.createTextField();
         //initialise the schema label
         metaData = new MetaDataValues(true);
 
-        // combo boxes
-        Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
-        connectionsModel = new DynamicComboBoxModel(connections);
-        connectionsCombo = WidgetFactory.createComboBox(connectionsModel);
-        connectionsCombo.addItemListener(this);
-
-        // create tab pane
-        procedureTabs = new JTabbedPane();
-
-        // create tab pane
         parametersTabs = new JTabbedPane();
         // create the column definition panel
         // and add this to the tabbed pane
@@ -457,11 +343,8 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         parametersTabs.add("Variables", variablesPanel);
 
         sqlBodyText = new SimpleSqlTextPanel();
-        sqlBodyText.appendSQLText("begin\n" +
-                "  /* Procedure Text */\n" +
-                "  suspend;\n" +
-                "end");
-        sqlBodyText.setBorder(BorderFactory.createTitledBorder("Procedure body"));
+        sqlBodyText.appendSQLText(getEmptySqlBody());
+        sqlBodyText.setBorder(BorderFactory.createTitledBorder(getTypeObject() + " body"));
 
         outSqlText = new SimpleSqlTextPanel();
 
@@ -473,12 +356,6 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         descriptionPanel = new JPanel(new GridBagLayout());
 
         ddlPanel = new JPanel(new GridBagLayout());
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-
-        WidgetFactory.addLabelFieldPair(mainPanel, "Connection:", connectionsCombo, gbc);
-        WidgetFactory.addLabelFieldPair(mainPanel, "Procedure Name:", nameField, gbc);
 
         JPanel topPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbcTop = new GridBagConstraints(0, 0,
@@ -498,7 +375,7 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         splitPane.setTopComponent(topPanel);
         splitPane.setBottomComponent(bottomPanel);
         splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-        splitPane.setDividerLocation(0.3);
+        splitPane.setDividerLocation(0.6);
         splitPane.setDividerSize(5);
 
         containerPanel.add(splitPane,
@@ -522,9 +399,9 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
 
         descriptionPanel.add(descriptionArea, gbc1);
 
-        procedureTabs.insertTab("Edit", null, containerPanel, null, 0);
+        tabbedPane.insertTab("Edit", null, containerPanel, null, 0);
 
-        procedureTabs.insertTab("Description", null, descriptionPanel, null, 1);
+        tabbedPane.insertTab("Description", null, descriptionPanel, null, 1);
 
         ddlTextPanel = new SimpleSqlTextPanel();
 
@@ -540,62 +417,52 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         gbc2.insets.bottom = 5;
 
         ddlPanel.add(ddlTextPanel, gbc2);
-        procedureTabs.insertTab("DDL", null, ddlPanel, null, 2);
+        tabbedPane.insertTab("DDL", null, ddlPanel, null, 2);
 
-        mainPanel.add(procedureTabs, new GridBagConstraints(0, 2,
-                2, 1, 1, 1,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        procedureTabs.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent changeEvent) {
-                generateScript();
-            }
-        });
+        tabbedPane.addChangeListener(changeEvent -> generateScript());
 
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        add(mainPanel, BorderLayout.CENTER);
+
 
         sqlBuffer = new StringBuffer(CreateTableSQLSyntax.CREATE_TABLE);
 
         // check initial values for possible value inits
-        if (connections == null || connections.isEmpty()) {
-            connectionsCombo.setEnabled(false);
-        } else {
-            DatabaseConnection connection =
-                    (DatabaseConnection) connections.elementAt(0);
-            metaData.setDatabaseConnection(connection);
-            inputParametersPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
-            inputParametersPanel.setDomains(getDomains());
-            inputParametersPanel.setDatabaseConnection(connection);
+        metaData.setDatabaseConnection(connection);
+        inputParametersPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+        inputParametersPanel.setDomains(getDomains());
+        inputParametersPanel.setDatabaseConnection(connection);
 
-            outputParametersPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
-            outputParametersPanel.setDomains(getDomains());
-            outputParametersPanel.setDatabaseConnection(connection);
+        outputParametersPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+        outputParametersPanel.setDomains(getDomains());
+        outputParametersPanel.setDatabaseConnection(connection);
 
-            variablesPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
-            variablesPanel.setDomains(getDomains());
-            variablesPanel.setDatabaseConnection(connection);
-            //metaData
-        }
+        variablesPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+        variablesPanel.setDomains(getDomains());
+        variablesPanel.setDatabaseConnection(connection);
+        //metaData
+
 
     }
 
-    String formattedParameter(ColumnData cd) {
-        StringBuffer sb = new StringBuffer();
+    protected abstract String getEmptySqlBody();
+
+    private String formattedParameter(ColumnData cd) {
+        StringBuilder sb = new StringBuilder();
         sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnName()).
                 append(" ");
         if (MiscUtils.isNull(cd.getComputedBy())) {
             if (MiscUtils.isNull(cd.getDomain())) {
-                if (cd.getColumnType() != null) {
+                if (cd.getColumnType() != null || cd.isTypeOf()) {
                     sb.append(cd.getFormattedDataType());
                 }
             } else {
-                sb.append(cd.getDomain());
+                if (cd.isTypeOf())
+                    sb.append(cd.getFormattedDataType());
+                else
+                    sb.append(cd.getDomain());
             }
             sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
-            if (cd.getTypeParameter()!=ColumnData.OUTPUT_PARAMETER&&!MiscUtils.isNull(cd.getDefaultValue())) {
+            if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue())) {
                 String value = "";
                 boolean str = false;
                 int sqlType = cd.getSQLType();
@@ -623,23 +490,23 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
                 if (str) {
                     value += "'";
                 }
-                sb.append(" DEFAULT " + value);
+                sb.append(" DEFAULT ").append(value);
             }
             if (!MiscUtils.isNull(cd.getCheck())) {
-                sb.append(" CHECK ( " + cd.getCheck() + ")");
+                sb.append(" CHECK ( ").append(cd.getCheck()).append(")");
             }
         } else {
-            sb.append("COMPUTED BY ( " + cd.getComputedBy() + ")");
+            sb.append("COMPUTED BY ( ").append(cd.getComputedBy()).append(")");
         }
         return sb.toString();
     }
 
-    public String formattedParameters(Vector<ColumnData> tableVector, boolean variable) {
-        StringBuffer sqlText = new StringBuffer();
+    protected String formattedParameters(Vector<ColumnData> tableVector, boolean variable) {
+        StringBuilder sqlText = new StringBuilder();
         sqlText.append("\n");
         for (int i = 0, k = tableVector.size(); i < k; i++) {
             ColumnData cd = tableVector.elementAt(i);
-            if(!MiscUtils.isNull(cd.getColumnName())) {
+            if (!MiscUtils.isNull(cd.getColumnName())) {
                 if (variable)
                     sqlText.append("DECLARE VARIABLE ");
                 sqlText.append(formattedParameter(cd));
@@ -659,73 +526,9 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         return sqlText.toString();
     }
 
-    void generateScript() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("create or alter procedure ");
-        sb.append(nameField.getText());
-        sb.append(" (");
-        sb.append(formattedParameters(inputParametersPanel._model.getTableVector(), false));
-        sb.append(")\n");
-        String output = formattedParameters(outputParametersPanel._model.getTableVector(), false);
-        if(!MiscUtils.isNull(output.trim())) {
-            sb.append("returns (");
-            sb.append(output);
-            sb.append(")\n");
-        }
-        sb.append("as");
-        sb.append(formattedParameters(variablesPanel._model.getTableVector(), true));
-        sb.append(sqlBodyText.getSQLText());
-        sb.append("^\n");
-
-        sb.append("\n");
-
-        // add procedure description
-        String text = descriptionArea.getTextAreaComponent().getText();
-        if (text != null && !text.isEmpty()) {
-            sb.append("\n");
-            sb.append("COMMENT ON PROCEDURE ");
-            sb.append(nameField.getText());
-            sb.append(" IS '");
-            sb.append(text);
-            sb.append("'");
-            sb.append("^\n");
-        }
-
-        for (ColumnData cd :
-                inputParametersPanel._model.getTableVector()) {
-            String cdText = cd.getDescription();
-            if (cdText != null && !cdText.isEmpty()) {
-                sb.append("\n");
-                sb.append("COMMENT ON PARAMETER ");
-                sb.append(nameField.getText()).append(".");
-                sb.append(cd.getColumnName());
-                sb.append(" IS '");
-                sb.append(cdText);
-                sb.append("'\n");
-                sb.append("^\n");
-            }
-        }
-
-        for (ColumnData cd :
-                outputParametersPanel._model.getTableVector()) {
-            String cdText = cd.getDescription();
-            if (cdText != null && !cdText.isEmpty()) {
-                sb.append("\n");
-                sb.append("COMMENT ON PARAMETER ");
-                sb.append(nameField.getText()).append(".");
-                sb.append(cd.getColumnName());
-                sb.append(" IS '");
-                sb.append(cdText);
-                sb.append("'\n");
-                sb.append("^\n");
-            }
-        }
-
-        ddlTextPanel.setSQLText(sb.toString());
-    }
+    protected abstract void generateScript();
 
     String[] getDomains() {
-        DefaultStatementExecutor executor = new DefaultStatementExecutor(getSelectedConnection(), true);
         java.util.List<String> domains = new ArrayList<>();
         try {
             String query = "select " +
@@ -733,11 +536,11 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
                     "where RDB$FIELD_NAME not like 'RDB$%'\n" +
                     "and RDB$FIELD_NAME not like 'MON$%'\n" +
                     "order by RDB$FIELD_NAME";
-            ResultSet rs = executor.execute(QueryTypes.SELECT, query).getResultSet();
+            ResultSet rs = sender.execute(QueryTypes.SELECT, query).getResultSet();
             while (rs.next()) {
                 domains.add(rs.getString(1).trim());
             }
-            executor.releaseResources();
+            sender.releaseResources();
             return domains.toArray(new String[domains.size()]);
         } catch (Exception e) {
             Log.error("Error loading domains:" + e.getMessage());
@@ -746,35 +549,23 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     }
 
     String[] getGenerators() {
-        DefaultStatementExecutor executor = new DefaultStatementExecutor(getSelectedConnection(), true);
         List<String> domains = new ArrayList<>();
         try {
             String query = "select " +
                     "RDB$GENERATOR_NAME FROM RDB$GENERATORS " +
                     "where RDB$SYSTEM_FLAG = 0 " +
                     "order by 1";
-            ResultSet rs = executor.execute(QueryTypes.SELECT, query).getResultSet();
+            ResultSet rs = sender.execute(QueryTypes.SELECT, query).getResultSet();
             while (rs.next()) {
                 domains.add(rs.getString(1).trim());
             }
-            executor.releaseResources();
+            sender.releaseResources();
             return domains.toArray(new String[domains.size()]);
         } catch (Exception e) {
             Log.error("Error loading generators:" + e.getMessage());
             return null;
         }
     }
-
-    /**
-     * Returns the selected connection from the panel's
-     * connections combo selection box.
-     *
-     * @return the selected connection properties object
-     */
-    public DatabaseConnection getSelectedConnection() {
-        return (DatabaseConnection) connectionsCombo.getSelectedItem();
-    }
-
     /**
      * Returns the procedure name field.
      */
@@ -794,16 +585,14 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
         }
 
         final Object source = event.getSource();
-        GUIUtils.startWorker(new Runnable() {
-            public void run() {
-                try {
-                    setInProcess(true);
-                    if (source == connectionsCombo) {
-                        connectionChanged();
-                    }
-                } finally {
-                    setInProcess(false);
+        GUIUtils.startWorker(() -> {
+            try {
+                setInProcess(true);
+                if (source == connectionsCombo) {
+                    connectionChanged();
                 }
+            } finally {
+                setInProcess(false);
             }
         });
     }
@@ -851,21 +640,19 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     }
 
     private void populateDataTypes(final String[] dataTypes, final int[] intDataTypes) {
-        GUIUtils.invokeAndWait(new Runnable() {
-            public void run() {
-                inputParametersPanel.setDataTypes(dataTypes, intDataTypes);
-                inputParametersPanel.setDomains(getDomains());
+        GUIUtils.invokeAndWait(() -> {
+            inputParametersPanel.setDataTypes(dataTypes, intDataTypes);
+            inputParametersPanel.setDomains(getDomains());
 
-                outputParametersPanel.setDataTypes(dataTypes, intDataTypes);
-                outputParametersPanel.setDomains(getDomains());
+            outputParametersPanel.setDataTypes(dataTypes, intDataTypes);
+            outputParametersPanel.setDomains(getDomains());
 
-                variablesPanel.setDataTypes(dataTypes, intDataTypes);
-                variablesPanel.setDomains(getDomains());
-            }
+            variablesPanel.setDataTypes(dataTypes, intDataTypes);
+            variablesPanel.setDomains(getDomains());
         });
     }
 
-    public void setFocusComponent() {
+    protected void setFocusComponent() {
         nameField.requestFocusInWindow();
         nameField.selectAll();
     }
@@ -913,7 +700,7 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
     }
 
     public String getSQLText() {
-        if (procedureTabs.getSelectedComponent() != ddlPanel)
+        if (tabbedPane.getSelectedComponent() != ddlPanel)
             generateScript();
         return ddlTextPanel.getSQLText();
     }
@@ -957,12 +744,12 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
 
         ColumnData[] cda = inputParametersPanel.getTableColumnData();
 
-        for (int i = 0; i < cda.length; i++) {
+        for (ColumnData aCda : cda) {
 
             // reset the keys
-            cda[i].setPrimaryKey(false);
-            cda[i].setForeignKey(false);
-            cda[i].resetConstraints();
+            aCda.setPrimaryKey(false);
+            aCda.setForeignKey(false);
+            aCda.resetConstraints();
         }
 
         return cda;
@@ -1021,7 +808,7 @@ public abstract class CreateProcedureFunctionPanel extends JPanel
 
     }
 
-    void releaseResources(ResultSet rs) {
+    protected void releaseResources(ResultSet rs) {
         try {
             if (rs == null)
                 return;

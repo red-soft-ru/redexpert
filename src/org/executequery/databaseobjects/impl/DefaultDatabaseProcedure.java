@@ -24,6 +24,7 @@ import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.gui.browser.ColumnData;
+import org.underworldlabs.util.MiscUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
@@ -137,6 +138,8 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                 }
                 if (parameter.getNullable() == 1)
                     sbInput.append(" not null ");
+                if (!MiscUtils.isNull(parameter.getDefaultValue()))
+                    sbInput.append(parameter.getDefaultValue());
                 sbInput.append(",\n");
             } else if (parameter.getType() == DatabaseMetaData.procedureColumnOut) {
                 sbOutput.append("\t");

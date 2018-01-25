@@ -226,6 +226,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 String characterSet = rs.getString("character_set_name");
                 if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
                     pp.setEncoding(characterSet.trim());
+                pp.setDefaultValue(rs.getString("default_source"));
 
                 parameters.add(pp);
             }
@@ -270,7 +271,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 "pp.rdb$parameter_number,\n" +
                 "fs.rdb$character_length, \n" +
                 "pp.rdb$description,\n" +
-                "pp.rdb$default_source,\n" +
+                "pp.rdb$default_source as default_source,\n" +
                 "fs.rdb$field_precision, \n" +
                 "pp.rdb$parameter_mechanism as AM,\n" +
                 "pp.rdb$field_source as FS,\n" +

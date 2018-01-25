@@ -324,6 +324,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
     protected abstract String getFullSourceBody();
 
     protected abstract void loadParameters();
+
     protected void init() {
 
         //initialise the schema label

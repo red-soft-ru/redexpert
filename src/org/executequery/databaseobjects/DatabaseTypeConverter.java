@@ -186,4 +186,71 @@ public class DatabaseTypeConverter {
                 return 0;
         }
     }
+
+    public static int getSqlTypeFromRDBType(int type, int subtype) {
+        switch (type) {
+            case 7:
+                switch (subtype) {
+                    case 1:
+                        return Types.NUMERIC;
+                    case 2:
+                        return Types.DECIMAL;
+                    default:
+                        return Types.SMALLINT;
+                }
+            case 8:
+                switch (subtype) {
+                    case 1:
+                        return Types.NUMERIC;
+                    case 2:
+                        return Types.DECIMAL;
+                    default:
+                        return Types.INTEGER;
+                }
+            case 10:
+                return Types.FLOAT;
+            case 12:
+                return Types.DATE;
+            case 13:
+                return Types.TIME;
+            case 14:
+                switch (subtype) {
+                    case 0:
+                        return Types.BINARY;
+                    case 1:
+                        return Types.CHAR;
+                }
+            case 16:
+                switch (subtype) {
+                    case 1:
+                        return Types.NUMERIC;
+                    case 2:
+                        return Types.DECIMAL;
+                    default:
+                        return Types.BIGINT;
+                }
+            case 27:
+                return Types.DOUBLE;
+            case 35:
+                return Types.TIMESTAMP;
+            case 37:
+                switch (subtype) {
+                    case 0:
+                        return Types.VARBINARY;
+                    case 1:
+                        return Types.VARCHAR;
+                }
+            case 261:
+                switch (subtype) {
+                    case 1:
+                        return Types.LONGVARCHAR;
+                    case 2:
+                        return Types.LONGVARBINARY;
+                    default:
+                        return Types.BLOB;
+                }
+            default:
+                return 0;
+        }
+    }
 }

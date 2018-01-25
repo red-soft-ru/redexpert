@@ -23,7 +23,7 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseFunction;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
-import org.executequery.databaseobjects.FunctionParameter;
+import org.executequery.databaseobjects.FunctionArgument;
 import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.jdbc.DataSourceException;
 
@@ -40,9 +40,9 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         implements DatabaseFunction {
 
     /**
-     * function parameters
+     * function arguments
      */
-    private ArrayList<FunctionParameter> parameters;
+    private ArrayList<FunctionArgument> arguments;
 
     /**
      * function sql
@@ -75,52 +75,37 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     }
 
     /**
-     * Indicates whether this executable object has any parameters.
+     * Indicates whether this executable object has any arguments.
      *
      * @return true | false
      */
     public boolean hasParameters() {
-        List<FunctionParameter> _parameters = getFunctionParameters();
-        return _parameters != null && !_parameters.isEmpty();
+        List<FunctionArgument> arguments = getFunctionArguments();
+        return arguments != null && !arguments.isEmpty();
     }
 
     /**
-     * Adds the specified values as a single parameter to this object.
+     * Returns this object's arguments.
      */
-    public FunctionParameter addFunctionParameter(String name, int dataType, int size, int precision, int scale, int subType, int position, int type_of, String relation, String field) {
-        if (parameters == null) {
+    public List<FunctionArgument> getFunctionArguments() throws DataSourceException {
 
-            parameters = new ArrayList<>();
-        }
+        if (!isMarkedForReload() && arguments != null) {
 
-        FunctionParameter parameter = new FunctionParameter(name, dataType, size, precision, scale, subType, position, type_of, relation, field);
-        parameters.add(parameter);
-
-        return parameter;
-    }
-
-    /**
-     * Returns this object's parameters.
-     */
-    public List<FunctionParameter> getFunctionParameters() throws DataSourceException {
-
-        if (!isMarkedForReload() && parameters != null) {
-
-            return parameters;
+            return arguments;
         }
 
         ResultSet rs = null;
         try {
 
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-            parameters = new ArrayList<>();
+            arguments = new ArrayList<>();
 
 
             rs = getFunctionArguments(getName());
 
             while (rs.next()) {
-                FunctionParameter fp = new FunctionParameter(rs.getString(4),
-                        ColumnData.getSqlTypeFromRDBType(rs.getInt(6), rs.getInt(9)),
+                FunctionArgument fp = new FunctionArgument(rs.getString(4),
+                        DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(6), rs.getInt(9)),
                         rs.getInt(7),
                         rs.getInt(18),
                         rs.getInt(8),
@@ -143,12 +128,12 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
                     fp.setEncoding(characterSet.trim());
                 fp.setSqlType(DatabaseTypeConverter.getDataTypeName(rs.getInt(6), fp.getSubType(), fp.getScale()));
-                parameters.add(fp);
+                arguments.add(fp);
                 if (functionSourceCode == null || functionSourceCode.isEmpty())
                     functionSourceCode = rs.getString(2);
             }
 
-            return parameters;
+            return arguments;
 
         } catch (SQLException e) {
 
@@ -162,14 +147,14 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     }
 
     /**
-     * Returns this object's parameters as an array.
+     * Returns this object's arguments as an array.
      */
-    public FunctionParameter[] getFunctionParametersArray() throws DataSourceException {
-        if (parameters == null) {
-            getFunctionParameters();
+    public FunctionArgument[] getFunctionArgumentsArray() throws DataSourceException {
+        if (arguments == null) {
+            getFunctionArguments();
         }
-        return parameters.toArray(new
-                FunctionParameter[parameters.size()]);
+        return arguments.toArray(new
+                FunctionArgument[arguments.size()]);
     }
 
     /**
@@ -245,96 +230,96 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
         sbInput.append("( \n");
         
-        List<FunctionParameter> parameters = getFunctionParameters();
+        List<FunctionArgument> arguments = getFunctionArguments();
 
-        for (FunctionParameter parameter : parameters) {
-            if (parameter.getType() == DatabaseMetaData.procedureColumnIn) {
+        for (FunctionArgument argument : arguments) {
+            if (argument.getType() == DatabaseMetaData.procedureColumnIn) {
                 sbInput.append("\t");
-                sbInput.append(parameter.getName());
+                sbInput.append(argument.getName());
                 sbInput.append(" ");
-                if (parameter.isTypeOf()) {
+                if (argument.isTypeOf()) {
                     sbInput.append(" type of ");
-                    if (parameter.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
-                        sbInput.append(parameter.getDomain());
+                    if (argument.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
+                        sbInput.append(argument.getDomain());
                     else {
                         sbInput.append("column ");
-                        sbInput.append(parameter.getRelationName());
+                        sbInput.append(argument.getRelationName());
                         sbInput.append(".");
-                        sbInput.append(parameter.getFieldName());
+                        sbInput.append(argument.getFieldName());
                     }
-                    if (parameter.getNullable() == 1)
+                    if (argument.getNullable() == 1)
                         sbInput.append(" not null,\n");
                     else
                         sbInput.append(",\n");
                 } else {
-                    if (parameter.getDomain() != null) {
-                        sbInput.append(parameter.getDomain());
+                    if (argument.getDomain() != null) {
+                        sbInput.append(argument.getDomain());
                     } else {
-                        if (parameter.getSqlType().contains("SUB_TYPE")) {
-                            sbInput.append(parameter.getSqlType().replace("<0", String.valueOf(parameter.getSubType())));
+                        if (argument.getSqlType().contains("SUB_TYPE")) {
+                            sbInput.append(argument.getSqlType().replace("<0", String.valueOf(argument.getSubType())));
                             sbInput.append(" segment size ");
-                            sbInput.append(parameter.getSize());
+                            sbInput.append(argument.getSize());
                         } else {
-                            sbInput.append(parameter.getSqlType());
-                            if (parameter.getDataType() == Types.CHAR
-                                    || parameter.getDataType() == Types.VARCHAR
-                                    || parameter.getDataType() == Types.NVARCHAR
-                                    || parameter.getDataType() == Types.VARBINARY) {
+                            sbInput.append(argument.getSqlType());
+                            if (argument.getDataType() == Types.CHAR
+                                    || argument.getDataType() == Types.VARCHAR
+                                    || argument.getDataType() == Types.NVARCHAR
+                                    || argument.getDataType() == Types.VARBINARY) {
                                 sbInput.append("(");
-                                sbInput.append(parameter.getSize());
+                                sbInput.append(argument.getSize());
                                 sbInput.append(")");
                             }
                         }
                     }
-                    if (parameter.getEncoding() != null) {
+                    if (argument.getEncoding() != null) {
                         sbInput.append(" character set ");
-                        sbInput.append(parameter.getEncoding());
+                        sbInput.append(argument.getEncoding());
                     }
-                    if (parameter.getNullable() == 1)
+                    if (argument.getNullable() == 1)
                         sbInput.append(" not null,\n");
                     else
                         sbInput.append(",\n");
                 }
-            } else if (parameter.getType() == DatabaseMetaData.procedureColumnReturn) {
+            } else if (argument.getType() == DatabaseMetaData.procedureColumnReturn) {
                 sbOutput.append(" ");
-                if (parameter.isTypeOf()) {
+                if (argument.isTypeOf()) {
                     sbOutput.append("type of ");
-                    if (parameter.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
-                        sbOutput.append(parameter.getDomain());
+                    if (argument.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
+                        sbOutput.append(argument.getDomain());
                     else {
                         sbOutput.append("column ");
-                        sbOutput.append(parameter.getRelationName());
+                        sbOutput.append(argument.getRelationName());
                         sbOutput.append(".");
-                        sbOutput.append(parameter.getFieldName());
+                        sbOutput.append(argument.getFieldName());
                     }
-                    if (parameter.getNullable() == 1)
+                    if (argument.getNullable() == 1)
                         sbOutput.append(" not null,\n");
                     else
                         sbOutput.append(",\n");
                 } else {
-                    if (parameter.getDomain() != null) {
-                        sbOutput.append(parameter.getDomain());
+                    if (argument.getDomain() != null) {
+                        sbOutput.append(argument.getDomain());
                     } else {
-                        if (parameter.getSqlType().contains("SUB_TYPE")) {
-                            sbOutput.append(parameter.getSqlType().replace("<0", String.valueOf(parameter.getSubType())));
+                        if (argument.getSqlType().contains("SUB_TYPE")) {
+                            sbOutput.append(argument.getSqlType().replace("<0", String.valueOf(argument.getSubType())));
                             sbOutput.append(" segment size ");
-                            sbOutput.append(parameter.getSize());
+                            sbOutput.append(argument.getSize());
                         } else {
-                            sbOutput.append(parameter.getSqlType());
-                            if (parameter.getDataType() == Types.CHAR
-                                    || parameter.getDataType() == Types.VARCHAR
-                                    || parameter.getDataType() == Types.NVARCHAR
-                                    || parameter.getDataType() == Types.VARBINARY) {
+                            sbOutput.append(argument.getSqlType());
+                            if (argument.getDataType() == Types.CHAR
+                                    || argument.getDataType() == Types.VARCHAR
+                                    || argument.getDataType() == Types.NVARCHAR
+                                    || argument.getDataType() == Types.VARBINARY) {
 
-                                sbOutput.append(parameter.getSize());
+                                sbOutput.append(argument.getSize());
                             }
                         }
                     }
-                    if (parameter.getEncoding() != null) {
+                    if (argument.getEncoding() != null) {
                         sbOutput.append(" character set ");
-                        sbOutput.append(parameter.getEncoding());
+                        sbOutput.append(argument.getEncoding());
                     }
-                    if (parameter.getNullable() == 1)
+                    if (argument.getNullable() == 1)
                         sbOutput.append(" not null,\n");
                     else
                         sbOutput.append(",\n");

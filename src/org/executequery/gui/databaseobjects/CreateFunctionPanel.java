@@ -2,7 +2,7 @@ package org.executequery.gui.databaseobjects;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.FunctionParameter;
+import org.executequery.databaseobjects.FunctionArgument;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseFunction;
 import org.executequery.gui.ActionContainer;
@@ -43,6 +43,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                                String procedure, DefaultDatabaseFunction databaseFunction) {
         super(dc, dialog, procedure, new Object[]{databaseFunction});
         parametersTabs.remove(outputParametersPanel);
+        parametersTabs.setTitleAt(0, "Arguments");
         selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(),
                 metaData.getIntDataTypesArray(), returnType, true);
         returnType.setDomain(returnType.getDomain());
@@ -95,10 +96,10 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         {
             // remove first empty row
             try {
-                List<FunctionParameter> parameters = function.getFunctionParameters();
+                List<FunctionArgument> parameters = function.getFunctionArguments();
                 if (parameters.size() > 1)
                     inputParametersPanel.deleteEmptyRow();
-                for (FunctionParameter pp :
+                for (FunctionArgument pp :
                         parameters) {
 
                     ResultSet resultSet = sender.getResultSet("select\n" +

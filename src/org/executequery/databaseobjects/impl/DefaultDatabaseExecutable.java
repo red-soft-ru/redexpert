@@ -198,7 +198,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
                 ProcedureParameter pp = new ProcedureParameter(rs.getString(4).trim(),
                         rs.getInt(5) == 0 ? DatabaseMetaData.procedureColumnIn : DatabaseMetaData.procedureColumnOut,
-                        ColumnData.getSqlTypeFromRDBType(rs.getInt(7), rs.getInt(10)),
+                        DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(7), rs.getInt(10)),
                         DatabaseTypeConverter.getDataTypeName(rs.getInt(7), rs.getInt(10), rs.getInt(9)),
                         rs.getInt(8),
                         rs.getInt("null_flag"));

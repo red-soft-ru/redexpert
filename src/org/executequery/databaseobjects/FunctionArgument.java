@@ -7,7 +7,7 @@ import java.sql.DatabaseMetaData;
 /**
  * @author vasiliy
  */
-public class FunctionParameter {
+public class FunctionArgument {
 
     private String name;
     private int type; // in or out
@@ -31,8 +31,8 @@ public class FunctionParameter {
     private static final String RETURN_VALUE = "< Return Value >";
     private static final String UNKNOWN = "< Unknown >";
 
-    public FunctionParameter(String name, int dataType, int size, int precision, int scale,
-                             int subType, int position, int typeOf, String relationName, String fieldName) {
+    public FunctionArgument(String name, int dataType, int size, int precision, int scale,
+                            int subType, int position, int typeOf, String relationName, String fieldName) {
         this.name = name;
         if (this.name == null)
             this.type = DatabaseMetaData.procedureColumnReturn;

@@ -275,19 +275,6 @@ public class ColumnData implements Serializable {
         executor = new DefaultStatementExecutor(dc, true);
         tables = new ArrayList<>();
         columns = new ArrayList<>();
-        String query = "SELECT RDB$RELATION_NAME FROM RDB$RELATIONS ORDER BY 1";
-        try {
-            ResultSet rs = executor.getResultSet(query).getResultSet();
-            while (rs != null && rs.next()) {
-                String tableName = rs.getString(1);
-                if (tableName != null)
-                    tables.add(tableName.trim());
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            executor.releaseResources();
-        }
     }
 
     public ColumnData(DatabaseConnection databaseConnection, DatabaseColumn databaseColumn) {
@@ -914,7 +901,7 @@ public class ColumnData implements Serializable {
     }
 
     public void setTable(int tableIndex) {
-        setTable(tables.get(tableIndex));
+        setTable(getTables().get(tableIndex));
     }
 
     public String getColumnTable() {
@@ -930,6 +917,21 @@ public class ColumnData implements Serializable {
     }
 
     public List<String> getTables() {
+        if (tables.isEmpty()) {
+            String query = "SELECT RDB$RELATION_NAME FROM RDB$RELATIONS ORDER BY 1";
+            try {
+                ResultSet rs = executor.getResultSet(query).getResultSet();
+                while (rs != null && rs.next()) {
+                    String tableName = rs.getString(1);
+                    if (tableName != null)
+                        tables.add(tableName.trim());
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                executor.releaseResources();
+            }
+        }
         return tables;
     }
 

@@ -769,14 +769,18 @@ public class PooledConnection implements Connection {
             try {
                 mutex.acquire();
                 StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+                Log.debug("---------------------------------Start a connection lock. Stack:----------------------------------\n\n\n");
                 for (int i = 0; i < stack.length; i++)
                     Log.debug(stack[stack.length - 1 - i]);
+                Log.debug("---------------------------------Connection is locked.----------------------------------\n\n\n");
             } catch (InterruptedException e) {
                 throw new SQLException(e);
             }
         }
-        else
+        else {
             mutex.release();
+            Log.debug("---------------------------------Connection is released.----------------------------------\n\n\n");
+        }
 
     }
 }

@@ -90,7 +90,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     public FunctionParameter addFunctionParameter(String name, int dataType, int size, int precision, int scale, int subType, int position, int type_of, String relation, String field) {
         if (parameters == null) {
 
-            parameters = new ArrayList<FunctionParameter>();
+            parameters = new ArrayList<>();
         }
 
         FunctionParameter parameter = new FunctionParameter(name, dataType, size, precision, scale, subType, position, type_of, relation, field);
@@ -113,7 +113,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         try {
 
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-            parameters = new ArrayList<FunctionParameter>();
+            parameters = new ArrayList<>();
 
 
             rs = getFunctionArguments(getName());
@@ -142,8 +142,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                 String characterSet = rs.getString("character_set_name");
                 if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
                     fp.setEncoding(characterSet.trim());
-                fp.setSqlType(DatabaseTypeConverter.getTypeWithSize(rs.getInt(6), fp.getDataType(),
-                        fp.getSize(), fp.getScale()));
+                fp.setSqlType(DatabaseTypeConverter.getDataTypeName(rs.getInt(6), fp.getSubType(), fp.getScale()));
                 parameters.add(fp);
                 if (functionSourceCode == null || functionSourceCode.isEmpty())
                     functionSourceCode = rs.getString(2);

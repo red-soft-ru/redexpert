@@ -26,10 +26,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.impl.DefaultDatabaseException;
-import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
-import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
-import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
+import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.CreateTablePanel;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -49,6 +46,7 @@ import org.underworldlabs.swing.actions.ReflectiveAction;
 import javax.swing.*;
 import javax.swing.tree.TreePath;
 import java.awt.event.ActionEvent;
+import java.util.Objects;
 
 /**
  * @author Takis Diakoumis
@@ -90,7 +88,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             int type = node.getType();
             if (type == NamedObject.META_TAG)
                 for (int i = 0; i < NamedObject.META_TYPES.length; i++)
-                    if (NamedObject.META_TYPES[i] == node.getName()) {
+                    if (NamedObject.META_TYPES[i].equals(node.getName())) {
                         type = i;
                         break;
                     }
@@ -160,9 +158,6 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());
-                            //Icon icon=null;
-                            //GUIUtilities.addCentralPane(CreateViewPanel.TITLE,icon,new CreateViewPanel(currentSelection),
-                            //        null,true);
                         } finally {
                             GUIUtilities.showNormalCursor();
                         }
@@ -207,6 +202,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     }
                     break;
                 case NamedObject.TRIGGER:
+                case NamedObject.SYSTEM_DATABASE_TRIGGER:
                     if (GUIUtilities.isDialogOpen(CreateTriggerPanel.CREATE_TITLE)) {
 
                         GUIUtilities.setSelectedDialog(CreateTriggerPanel.CREATE_TITLE);
@@ -263,6 +259,25 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         }
                     }
                     break;
+                case NamedObject.FUNCTION:
+                    if (GUIUtilities.isDialogOpen(CreateFunctionPanel.CREATE_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateFunctionPanel.CREATE_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateFunctionPanel.CREATE_TITLE, false);
+                            CreateFunctionPanel panel = new CreateFunctionPanel(currentSelection, dialog);
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
                 default:
                     GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
                     break;
@@ -278,7 +293,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             int type = node.getType();
             if (type == NamedObject.META_TAG)
                 for (int i = 0; i < NamedObject.META_TYPES.length; i++)
-                    if (NamedObject.META_TYPES[i] == node.getName()) {
+                    if (Objects.equals(NamedObject.META_TYPES[i], node.getName())) {
                         type = i;
                         break;
                     }
@@ -297,7 +312,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             GUIUtilities.showWaitCursor();
                             BaseDialog dialog =
                                     new BaseDialog(CreateGeneratorPanel.ALTER_TITLE, false);
-                            CreateGeneratorPanel panel = new CreateGeneratorPanel(currentSelection, dialog,(DefaultDatabaseSequence)node.getDatabaseObject());
+                            CreateGeneratorPanel panel = new CreateGeneratorPanel(currentSelection, dialog, (DefaultDatabaseSequence) node.getDatabaseObject());
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());
@@ -356,7 +371,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             GUIUtilities.showWaitCursor();
 
                             BaseDialog dialog = new BaseDialog(CreateTriggerPanel.EDIT_TITLE, false);
-                            CreateTriggerPanel panel = new CreateTriggerPanel(currentSelection, dialog,  (DefaultDatabaseTrigger) node.getDatabaseObject());
+                            CreateTriggerPanel panel = new CreateTriggerPanel(currentSelection, dialog, (DefaultDatabaseTrigger) node.getDatabaseObject());
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());
@@ -375,7 +390,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             GUIUtilities.showWaitCursor();
                             BaseDialog dialog =
                                     new BaseDialog(CreateExceptionPanel.ALTER_TITLE, false);
-                            CreateExceptionPanel panel = new CreateExceptionPanel(currentSelection, dialog,(DefaultDatabaseException)node.getDatabaseObject());
+                            CreateExceptionPanel panel = new CreateExceptionPanel(currentSelection, dialog, (DefaultDatabaseException) node.getDatabaseObject());
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());
@@ -394,7 +409,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             GUIUtilities.showWaitCursor();
                             BaseDialog dialog =
                                     new BaseDialog(CreateIndexPanel.ALTER_TITLE, false);
-                            CreateIndexPanel panel = new CreateIndexPanel(currentSelection, dialog,(DefaultDatabaseIndex) node.getDatabaseObject());
+                            CreateIndexPanel panel = new CreateIndexPanel(currentSelection, dialog, (DefaultDatabaseIndex) node.getDatabaseObject());
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());
@@ -405,6 +420,25 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     break;
                 default:
                     GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
+                    break;
+                case NamedObject.FUNCTION:
+                    if (GUIUtilities.isDialogOpen(CreateFunctionPanel.EDIT_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateFunctionPanel.EDIT_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+
+                            BaseDialog dialog = new BaseDialog(CreateFunctionPanel.EDIT_TITLE, false);
+                            CreateFunctionPanel panel = new CreateFunctionPanel(currentSelection, dialog, node.getName().trim(), (DefaultDatabaseFunction) node.getDatabaseObject());
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
                     break;
             }
         }
@@ -584,8 +618,12 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
             }
 
-            dialog.addDisplayComponent(panel);
-            dialog.display();
+            if (dialog != null) {
+                dialog.addDisplayComponent(panel);
+            }
+            if (dialog != null) {
+                dialog.display();
+            }
         } finally {
             GUIUtilities.showNormalCursor();
         }

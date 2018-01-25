@@ -21,19 +21,24 @@
 package org.executequery.gui.browser;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.gui.table.Autoincrement;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.log.Log;
+import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.util.MiscUtils;
 
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -56,6 +61,10 @@ public class ColumnData implements Serializable {
     public static final int OUTPUT_PARAMETER = 1;
 
     public static final int VARIABLE = 2;
+
+    public static final int TYPE_OF_FROM_DOMAIN = 0;
+
+    public static final int TYPE_OF_FROM_COLUMN = 1;
 
     /**
      * the catalog for this column
@@ -144,43 +153,116 @@ public class ColumnData implements Serializable {
      */
     private boolean markedDeleted;
 
+    /**
+     * Using domain for column
+     */
     private String domain;
 
+    /**
+     * Domain type
+     */
     private int domainType;
 
+    /**
+     * Domain size
+     */
     private int domainSize = -1;
 
+    /**
+     * Domain scale
+     */
     private int domainScale = -1;
 
+    /**
+     * Domain sub type
+     */
     private int domainSubType;
 
+    /**
+     * Domain character set
+     */
     private String domainCharset;
 
+    /**
+     * Domain checking string
+     */
     private String domainCheck;
 
+    /**
+     * Domain description
+     */
     private String domainDescription;
 
+    /**
+     * Whether this domain is null or not
+     */
     private boolean domainNotNull;
 
+    /**
+     * Default value for domain
+     */
     private String domainDefault;
 
+    /**
+     * Check string
+     */
     private String check;
 
+    /**
+     * Description for column
+     */
     private String description;
 
+    /**
+     * Whether this column is computed
+     */
     private String computedBy;
 
+    /**
+     * Whether this domain is computed
+     */
     private String domainComputedBy;
 
+    /**
+     * Auto increment panel
+     */
     Autoincrement ai;
 
+    /**
+     * Current database connection
+     */
     DatabaseConnection dc;
 
+    /**
+     * Current character set
+     */
     private String charset;
 
+    /**
+     * Copy of current column
+     */
     ColumnData copy;
 
+    /**
+     * Whether column parameter is in or out
+     */
     int typeParameter;
+
+    /**
+     * Whether column is instance of
+     */
+    boolean typeOf;
+
+    /**
+     * Whether column is type of domain or column
+     */
+    int typeOfFrom;
+
+    String table;
+    List<String> tables;
+    String columnTable;
+    List<String> columns;
+    DefaultStatementExecutor executor;
 
     public ColumnData(DatabaseConnection databaseConnection) {
         primaryKey = false;
@@ -190,6 +272,22 @@ public class ColumnData implements Serializable {
         dc = databaseConnection;
         ai = new Autoincrement();
         setCharset(CreateTableSQLSyntax.NONE);
+        executor = new DefaultStatementExecutor(dc, true);
+        tables = new ArrayList<>();
+        columns = new ArrayList<>();
+        String query = "SELECT RDB$RELATION_NAME FROM RDB$RELATIONS ORDER BY 1";
+        try {
+            ResultSet rs = executor.getResultSet(query).getResultSet();
+            while (rs != null && rs.next()) {
+                String tableName = rs.getString(1);
+                if (tableName != null)
+                    tables.add(tableName.trim());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            executor.releaseResources();
+        }
     }
 
     public ColumnData(DatabaseConnection databaseConnection, DatabaseColumn databaseColumn) {
@@ -208,14 +306,7 @@ public class ColumnData implements Serializable {
     }
 
     public ColumnConstraint[] getColumnConstraintsArray() {
-        int v_size = columnConstraints.size();
-        ColumnConstraint[] cca = new ColumnConstraint[v_size];
-
-        for (int i = 0; i < v_size; i++) {
-            cca[i] = columnConstraints.get(i);
-        }
-
-        return cca;
+        return columnConstraints.toArray(new ColumnConstraint[columnConstraints.size()]);
     }
 
     public Vector<ColumnConstraint> getColumnConstraintsVector() {
@@ -295,6 +386,9 @@ public class ColumnData implements Serializable {
         check = cd.getCheck();
         computedBy = cd.getComputedBy();
         defaultValue = cd.getDefaultValue();
+        table = cd.getTable();
+        columnTable = cd.getColumnTable();
+        typeOf = cd.isTypeOf();
 
         Vector<ColumnConstraint> constraints = cd.getColumnConstraintsVector();
         if (constraints != null) {
@@ -475,12 +569,22 @@ public class ColumnData implements Serializable {
     }
 
     private void getDomainInfo() {
-        String query = "SELECT F.RDB$FIELD_TYPE,F.RDB$FIELD_LENGTH,F.RDB$FIELD_SCALE,F.RDB$FIELD_SUB_TYPE,C.RDB$CHARACTER_SET_NAME," +
-                "F.RDB$VALIDATION_SOURCE,F.RDB$DESCRIPTION,F.RDB$NULL_FLAG,F.RDB$DEFAULT_SOURCE,F.RDB$FIELD_PRECISION,F.RDB$COMPUTED_SOURCE\n" +
-                "FROM RDB$FIELDS AS F LEFT JOIN RDB$CHARACTER_SETS AS C ON F.RDB$CHARACTER_SET_ID = C.RDB$CHARACTER_SET_ID" +
-                "\nWHERE RDB$FIELD_NAME='" +
+        String query = "SELECT " +
+                "F.RDB$FIELD_TYPE,\n" +
+                "F.RDB$FIELD_LENGTH,\n" +
+                "F.RDB$FIELD_SCALE,\n" +
+                "F.RDB$FIELD_SUB_TYPE,\n" +
+                "C.RDB$CHARACTER_SET_NAME,\n" +
+                "F.RDB$VALIDATION_SOURCE,\n" +
+                "F.RDB$DESCRIPTION,\n" +
+                "F.RDB$NULL_FLAG,\n" +
+                "F.RDB$DEFAULT_SOURCE,\n" +
+                "F.RDB$FIELD_PRECISION,\n" +
+                "F.RDB$COMPUTED_SOURCE\n" +
+                "FROM RDB$FIELDS AS F \n" +
+                "LEFT JOIN RDB$CHARACTER_SETS AS C ON F.RDB$CHARACTER_SET_ID = C.RDB$CHARACTER_SET_ID\n" +
+                "WHERE RDB$FIELD_NAME='" +
                 domain.trim() + "'";
-        DefaultStatementExecutor executor = new DefaultStatementExecutor(dc, true);
         try {
             ResultSet rs = executor.execute(QueryTypes.SELECT, query).getResultSet();
             if (rs.next()) {
@@ -497,7 +601,7 @@ public class ColumnData implements Serializable {
                 domainDefault = rs.getString(9);
                 domainComputedBy = rs.getString(11);
             }
-            domainType = getSqlTypeFromRDBtype(domainType, domainSubType);
+            domainType = DatabaseTypeConverter.getSqlTypeFromRDBType(domainType, domainSubType);
             sqlType = domainType;
             columnSize = domainSize;
             columnScale = domainScale;
@@ -510,22 +614,13 @@ public class ColumnData implements Serializable {
                     domainCheck = domainCheck.substring(1, domainCheck.length() - 1);
                 }
             }
-            if (!MiscUtils.isNull(domainDefault)) {
-                domainDefault = domainDefault.trim();
-                if (domainDefault.toUpperCase().startsWith("DEFAULT"))
-                    domainDefault = domainDefault.substring(7).trim();
-                if (domainDefault.startsWith("'") && domainDefault.endsWith("'")) {
-                    domainDefault = domainDefault.substring(1, domainDefault.length() - 1);
-                }
-            }
+            domainDefault = processedDefaultValue(domainDefault);
             if (MiscUtils.isNull(domainCharset)) {
                 domainCharset = CreateTableSQLSyntax.NONE;
             } else domainCharset = domainCharset.trim();
             setCharset(domainCharset);
 
-        } catch (SQLException e) {
-            Log.debug("Error get ColumnData get Domain:", e);
-        } catch (NullPointerException e) {
+        } catch (SQLException | NullPointerException e) {
             Log.debug("Error get ColumnData get Domain:", e);
         } catch (Exception e) {
             Log.error("Error get ColumnData get Domain:", e);
@@ -541,6 +636,7 @@ public class ColumnData implements Serializable {
 
     public void setDatabaseConnection(DatabaseConnection databaseConnection) {
         dc = databaseConnection;
+        executor.setDatabaseConnection(dc);
     }
 
     public DatabaseConnection getDatabaseConnection() {
@@ -553,74 +649,6 @@ public class ColumnData implements Serializable {
                 sqlType == Types.NCLOB;
     }
 
-
-    public int getSqlTypeFromRDBtype(int type, int subtype) {
-        switch (type) {
-            case 7:
-                switch (subtype) {
-                    case 1:
-                        return Types.NUMERIC;
-                    case 2:
-                        return Types.DECIMAL;
-                    default:
-                        return Types.SMALLINT;
-                }
-            case 8:
-                switch (subtype) {
-                    case 1:
-                        return Types.NUMERIC;
-                    case 2:
-                        return Types.DECIMAL;
-                    default:
-                        return Types.INTEGER;
-                }
-            case 10:
-                return Types.FLOAT;
-            case 12:
-                return Types.DATE;
-            case 13:
-                return Types.TIME;
-            case 14:
-                switch (subtype) {
-                    case 0:
-                        return Types.BINARY;
-                    case 1:
-                        return Types.CHAR;
-                }
-            case 16:
-                switch (subtype) {
-                    case 1:
-                        return Types.NUMERIC;
-                    case 2:
-                        return Types.DECIMAL;
-                    default:
-                        return Types.BIGINT;
-                }
-            case 27:
-                return Types.DOUBLE;
-            case 35:
-                return Types.TIMESTAMP;
-            case 37:
-                switch (subtype) {
-                    case 0:
-                        return Types.VARBINARY;
-                    case 1:
-                        return Types.VARCHAR;
-                }
-            case 261:
-                switch (subtype) {
-                    case 1:
-                        return Types.LONGVARCHAR;
-                    case 2:
-                        return Types.LONGVARBINARY;
-                    default:
-                        return Types.BLOB;
-                }
-            default:
-                return 0;
-        }
-    }
-
     /**
      * Returns a formatted string representation of the
      * column's data type and size - eg. VARCHAR(10).
@@ -629,6 +657,11 @@ public class ColumnData implements Serializable {
      */
     public String getFormattedDataType() {
 
+        if (typeOf) {
+            if (getTypeOfFrom() == TYPE_OF_FROM_DOMAIN) {
+                return "TYPE OF " + domain;
+            } else return "TYPE OF COLUMN " + table + "." + columnTable;
+        }
         String typeString = getColumnType();
         if (StringUtils.isBlank(typeString)) {
 
@@ -654,7 +687,7 @@ public class ColumnData implements Serializable {
             if (type == Types.BLOB || type == Types.LONGVARCHAR
                     || type == Types.LONGVARBINARY)
                 sb.append(" segment size ").append(getColumnSize());
-            else if (getColumnSize() > 0 && !isDateDataType()
+            else if (isEditSize() && getColumnSize() > 0 && !isDateDataType()
                     && !isNonPrecisionType()) {
                 sb.append("(");
                 sb.append(getColumnSize());
@@ -670,6 +703,14 @@ public class ColumnData implements Serializable {
             }
         }
         return sb.toString();
+    }
+
+    public boolean isEditSize() {
+        return getColumnType() != null && (getSQLType() == Types.NUMERIC || getSQLType() == Types.CHAR || getSQLType() == Types.VARCHAR
+                || getSQLType() == Types.DECIMAL || getSQLType() == Types.BLOB || getSQLType() == Types.LONGVARCHAR
+                || getSQLType() == Types.LONGVARBINARY
+                || getColumnType().toUpperCase().equals("VARCHAR")
+                || getColumnType().toUpperCase().equals("CHAR"));
     }
 
     public void setCheck(String Check) {
@@ -751,10 +792,7 @@ public class ColumnData implements Serializable {
     }
 
     public boolean isNameChanged() {
-        if (!hasCopy()) {
-            return false;
-        }
-        return !getColumnName().equals(copy.getColumnName());
+        return hasCopy() && !getColumnName().equals(copy.getColumnName());
     }
 
     public boolean isDefaultChanged() {
@@ -762,11 +800,7 @@ public class ColumnData implements Serializable {
             return false;
         }
         if (MiscUtils.isNull(copy.getDefaultValue())) {
-            if (MiscUtils.isNull(getDefaultValue())) {
-                return false;
-            } else {
-                return true;
-            }
+            return !MiscUtils.isNull(getDefaultValue());
         } else {
             if (MiscUtils.isNull(getDefaultValue()))
                 return true;
@@ -779,11 +813,7 @@ public class ColumnData implements Serializable {
             return false;
         }
         if (MiscUtils.isNull(copy.getCheck())) {
-            if (MiscUtils.isNull(getCheck())) {
-                return false;
-            } else {
-                return true;
-            }
+            return !MiscUtils.isNull(getCheck());
         } else {
             if (MiscUtils.isNull(getCheck()))
                 return true;
@@ -792,10 +822,7 @@ public class ColumnData implements Serializable {
     }
 
     public boolean isTypeChanged() {
-        if (!hasCopy()) {
-            return false;
-        }
-        return !getColumnType().equals(copy.getColumnType()) || getColumnSize() != copy.getColumnSize() || getColumnScale() != copy.getColumnScale() || getCharset() != copy.getCharset();
+        return hasCopy() && (!getColumnType().equals(copy.getColumnType()) || getColumnSize() != copy.getColumnSize() || getColumnScale() != copy.getColumnScale() || getCharset() != copy.getCharset());
     }
 
     public boolean isDescriptionChanged() {
@@ -803,11 +830,7 @@ public class ColumnData implements Serializable {
             return false;
         }
         if (MiscUtils.isNull(copy.getDescription())) {
-            if (MiscUtils.isNull(getDescription())) {
-                return false;
-            } else {
-                return true;
-            }
+            return !MiscUtils.isNull(getDescription());
         } else {
             if (MiscUtils.isNull(getDescription()))
                 return true;
@@ -816,15 +839,11 @@ public class ColumnData implements Serializable {
     }
 
     public boolean isRequiredChanged() {
-        if (!hasCopy())
-            return false;
-        return (isRequired() != copy.isRequired());
+        return hasCopy() && (isRequired() != copy.isRequired());
     }
 
     public boolean isChanged() {
-        if (!hasCopy())
-            return false;
-        return isCheckChanged() || isDefaultChanged() || isNameChanged() || isDescriptionChanged() || isTypeChanged();
+        return hasCopy() && (isCheckChanged() || isDefaultChanged() || isNameChanged() || isDescriptionChanged() || isTypeChanged());
     }
 
     public void setTypeParameter(int typeParameter) {
@@ -837,6 +856,89 @@ public class ColumnData implements Serializable {
 
     public String getDomainComputedBy() {
         return domainComputedBy;
+    }
+
+    public boolean isTypeOf() {
+        return typeOf;
+    }
+
+    public void setTypeOf(boolean typeOf) {
+        this.typeOf = typeOf;
+    }
+
+    public void setTable(String table) {
+        this.table = table;
+        columns.clear();
+        String query = "SELECT RDB$FIELD_NAME FROM RDB$RELATION_FIELDS WHERE RDB$RELATION_NAME ='" + table + "'";
+        SqlStatementResult result = null;
+        try {
+            result = executor.getResultSet(query);
+            ResultSet rs = result.getResultSet();
+            while (rs.next()) {
+                columns.add(rs.getString(1).trim());
+            }
+            if (!columns.isEmpty())
+                setColumnTable(columns.get(0));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            if (result != null) {
+                GUIUtilities.displayErrorMessage(result.getMessage());
+            }
+        } finally {
+            executor.releaseResources();
+        }
+    }
+
+    public void setDefaultValue(String defaultValue, boolean needProcessing) {
+        if (needProcessing) {
+            defaultValue = processedDefaultValue(defaultValue);
+        }
+        setDefaultValue(defaultValue);
+    }
+
+    private String processedDefaultValue(String defaultValue) {
+        if (!MiscUtils.isNull(defaultValue)) {
+            defaultValue = defaultValue.trim();
+            if (defaultValue.toUpperCase().startsWith("DEFAULT"))
+                defaultValue = defaultValue.substring(7).trim();
+            if (defaultValue.startsWith("'") && defaultValue.endsWith("'")) {
+                defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
+            }
+        }
+        return defaultValue;
+    }
+
+    public String getTable() {
+        return table;
+    }
+
+    public void setTable(int tableIndex) {
+        setTable(tables.get(tableIndex));
+    }
+
+    public String getColumnTable() {
+        return columnTable;
+    }
+
+    public void setColumnTable(String columnTable) {
+        this.columnTable = columnTable;
+    }
+
+    public List<String> getColumns() {
+        return columns;
+    }
+
+    public List<String> getTables() {
+        return tables;
+    }
+
+    public int getTypeOfFrom() {
+        return typeOfFrom;
+    }
+
+    public void setTypeOfFrom(int typeOfFrom) {
+        this.typeOfFrom = typeOfFrom;
     }
 }
 

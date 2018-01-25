@@ -22,8 +22,8 @@ package org.executequery.databaseobjects.impl;
 
 import biz.redsoft.IFBDatabaseMetadata;
 import org.executequery.databaseobjects.*;
-import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledDatabaseMetaData;
+import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
@@ -192,39 +192,42 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
             }
 
-            rs = dmd.getProcedureColumns(_catalog, _schema, getName(), null);
+            rs = getProcedureParameters(getName());
 
             while (rs.next()) {
 
-                parameters.add(new ProcedureParameter(rs.getString(4),
-                        rs.getInt(5),
-                        rs.getInt(6),
-                        rs.getString(7),
+                ProcedureParameter pp = new ProcedureParameter(rs.getString(4).trim(),
+                        rs.getInt(5) == 0 ? DatabaseMetaData.procedureColumnIn : DatabaseMetaData.procedureColumnOut,
+                        DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(7), rs.getInt(10)),
+                        DatabaseTypeConverter.getDataTypeName(rs.getInt(7), rs.getInt(10), rs.getInt(9)),
                         rs.getInt(8),
-                        rs.getInt(12)));
-            }
+                        rs.getInt("null_flag"));
 
-
-            for (ProcedureParameter pp :
-                    parameters) {
                 if (pp.getDataType() == Types.LONGVARBINARY ||
                         pp.getDataType() == Types.LONGVARCHAR ||
                         pp.getDataType() == Types.BLOB) {
-                    Statement statement = dmd.getConnection().createStatement();
-                    ResultSet resultSet = statement.executeQuery("select\n" +
-                            "f.rdb$field_sub_type as field_subtype,\n" +
-                            "f.rdb$segment_length as segment_length\n" +
-                            "from rdb$procedure_parameters pp,\n" +
-                            "rdb$fields f\n" +
-                            "where pp.rdb$parameter_name = '" + pp.getName() + "'\n" +
-                            "and pp.rdb$procedure_name = '" + getName() + "'\n" +
-                            "and  pp.rdb$field_source = f.rdb$field_name");
-                    if (resultSet.next()) {
-                        pp.setSubtype(resultSet.getInt(1));
-                        pp.setSize(resultSet.getInt(2));
-                        releaseResources(resultSet);
-                    }
+                    pp.setSubType(rs.getInt(10));
+                    pp.setSize(rs.getInt("segment_length"));
                 }
+
+                String domain = rs.getString(6);
+                if (domain != null && !domain.startsWith("RDB$"))
+                    pp.setDomain(domain.trim());
+                pp.setTypeOf(rs.getInt("AM") == 1);
+                String relationName = rs.getString("RN");
+                if (relationName != null)
+                    pp.setRelationName(relationName.trim());
+                String fieldName = rs.getString("FN");
+                if (fieldName != null)
+                    pp.setFieldName(fieldName.trim());
+
+                if (pp.getRelationName() != null && pp.getFieldName() != null)
+                    pp.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+                String characterSet = rs.getString("character_set_name");
+                if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
+                    pp.setEncoding(characterSet.trim());
+
+                parameters.add(pp);
             }
 
             return parameters;
@@ -240,7 +243,58 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         }
     }
 
+    /**
+     * Returns the procedure parameters.
+     *
+     * @return the result set
+     */
+    private ResultSet getProcedureParameters(String name) throws SQLException {
 
+        Connection connection = this.getMetaTagParent().getHost().getConnection();
+        Statement statement = connection.createStatement();
+
+        String sql = "select prc.rdb$procedure_name,\n" +
+                "prc.rdb$procedure_source,\n" +
+                "prc.rdb$description, \n" +
+                "pp.rdb$parameter_name,\n" +
+                "pp.rdb$parameter_type,\n" +
+                "fs.rdb$field_name, \n" +
+                "fs.rdb$field_type, \n" +
+                "fs.rdb$field_length, \n" +
+                "fs.rdb$field_scale, \n" +
+                "fs.rdb$field_sub_type, \n" +
+                "fs.rdb$segment_length as segment_length, \n" +
+                "fs.rdb$dimensions, \n" +
+                "cr.rdb$character_set_name as character_set_name, \n" +
+                "co.rdb$collation_name, \n" +
+                "pp.rdb$parameter_number,\n" +
+                "fs.rdb$character_length, \n" +
+                "pp.rdb$description,\n" +
+                "pp.rdb$default_source,\n" +
+                "fs.rdb$field_precision, \n" +
+                "pp.rdb$parameter_mechanism as AM,\n" +
+                "pp.rdb$field_source as FS,\n" +
+                "fs.rdb$default_source, \n" +
+                "pp.rdb$null_flag as null_flag,\n" +
+                "pp.rdb$relation_name as RN,\n" +
+                "pp.rdb$field_name as FN,\n" +
+                "co2.rdb$collation_name, \n" +
+                "cr.rdb$default_collate_name, \n" +
+                "prc.rdb$engine_name, \n" +
+                "prc.rdb$entrypoint \n" +
+                "from rdb$procedures prc\n" +
+                "left join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
+                "and (pp.rdb$package_name is null)\n" +
+                "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
+                "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
+                "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
+                "left join rdb$collations co2 on ((pp.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
+                "where prc.rdb$procedure_name = '" + name + "'\n" +
+                "and (prc.rdb$package_name is null) \n" +
+                "order by pp.rdb$parameter_number";
+
+        return statement.executeQuery(sql);
+    }
 
     /**
      * Returns the database object type.

@@ -41,6 +41,30 @@ import java.util.Vector;
  */
 public class GrantManagerPanel extends JPanel {
 
+    public static final String TITLE = Bundles.get(GrantManagerPanel.class, "GrantManager");
+    public static final String FRAME_ICON = "grant_manager_16.png";
+    public DatabaseConnection dbc;
+    boolean connected;
+    List<DatabaseConnection> listConnections;
+    Connection con;
+    DefaultListModel userlistModel;
+    boolean enabled_dBox;
+    boolean enableElements;
+    Vector<String> relName;
+    Vector<String> relType;
+    Vector<Boolean> relSystem;
+    Vector<Boolean> relGranted;
+    String grants = "SUDIXRGA";
+    String[] headers = {bundleString("Object"), "Select", "Update", "Delete", "Insert", "Execute", "References", "Usage"};
+    String[] headers2 = {bundleString("Field"), bundleString("Type"), "Update", "References"};
+    Icon gr, no, adm;
+    Action act;
+    Vector<String> fieldName;
+    Vector<String> fieldType;
+    int obj_index;
+    StatementExecutor querySender;
+    int col_execute = 5;
+    int col_usage = 7;
     private JButton cancelButton;
     private JPanel interruptPanel;
     private JComboBox<String> databaseBox;
@@ -80,43 +104,6 @@ public class GrantManagerPanel extends JPanel {
     private JPanel upPanel;
     private JComboBox<String> usersBox;
     private JList<String> userList;
-    boolean connected;
-    public DatabaseConnection dbc;
-    public static final String TITLE = Bundles.get(GrantManagerPanel.class, "GrantManager");
-    public static final String FRAME_ICON = "grant_manager_16.png";
-    List<DatabaseConnection> listConnections;
-    Connection con;
-    DefaultListModel userlistModel;
-    boolean enabled_dBox;
-    boolean enableElements;
-    Vector<String> relName;
-    Vector<String> relType;
-    Vector<Boolean> relSystem;
-    Vector<Boolean> relGranted;
-    String grants = "SUDIXRGA";
-    String[] headers = {bundleString("Object"), "Select", "Update", "Delete", "Insert", "Execute", "References", "Usage"};
-    String[] headers2 = {bundleString("Field"), bundleString("Type"), "Update", "References"};
-    Icon gr, no, adm;
-    Action act;
-    Vector<String> fieldName;
-    Vector<String> fieldType;
-    int obj_index;
-    StatementExecutor querySender;
-    int col_execute = 5;
-    int col_usage = 7;
-
-    enum Action {
-        NO_ALL_GRANTS_TO_OBJECT,
-        ALL_GRANTS_TO_OBJECT,
-        ALL_GRANTS_TO_OBJECT_WITH_GRANT_OPTION,
-        NO_GRANT_TO_ALL_OBJECTS,
-        GRANT_TO_ALL_OBJECTS,
-        GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION,
-        NO_ALL_GRANTS_TO_ALL_OBJECTS,
-        ALL_GRANTS_TO_ALL_OBJECTS,
-        ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION,
-        CREATE_TABLE
-    }
 
     /**
      * Creates new form GrantManagerPanel
@@ -570,9 +557,9 @@ public class GrantManagerPanel extends JPanel {
             if (evt.getClickCount() > 1) {
                 int col = tablePrivileges.getSelectedColumn();
                 if (col > 0) {
-                    if (((Icon) tablePrivileges.getValueAt(row, col)).equals(gr)) {
+                    if (tablePrivileges.getValueAt(row, col).equals(gr)) {
                         grant_on_role(2, row, col);
-                    } else if (((Icon) tablePrivileges.getValueAt(row, col)).equals(adm)) {
+                    } else if (tablePrivileges.getValueAt(row, col).equals(adm)) {
                         grant_on_role(0, row, col);
                     } else {
                         grant_on_role(1, row, col);
@@ -592,9 +579,9 @@ public class GrantManagerPanel extends JPanel {
             if (evt.getClickCount() > 1) {
                 int col = jTable2.getSelectedColumn();
                 if (col > 1) {
-                    if (((Icon) jTable2.getValueAt(row2, col)).equals(gr)) {
+                    if (jTable2.getValueAt(row2, col).equals(gr)) {
                         grant_on_role(2, row, col, row2);
-                    } else if (((Icon) jTable2.getValueAt(row2, col)).equals(adm)) {
+                    } else if (jTable2.getValueAt(row2, col).equals(adm)) {
                         grant_on_role(0, row, col, row2);
                     } else {
                         grant_on_role(1, row, col, row2);
@@ -924,12 +911,12 @@ public class GrantManagerPanel extends JPanel {
                         if (rs1.getObject(2).equals(0)) {
                             jTable2.setValueAt(gr, i, 2);
                         } else
-                            ((RoleTableModel) jTable2.getModel()).setValueAt(adm, i, 2);
+                            jTable2.getModel().setValueAt(adm, i, 2);
                     if (ind == 5)
                         if (rs1.getObject(2).equals(0)) {
                             jTable2.setValueAt(gr, i, 3);
                         } else
-                            ((RoleTableModel) jTable2.getModel()).setValueAt(adm, i, 3);
+                            jTable2.getModel().setValueAt(adm, i, 3);
 
                 }
                 rs1.close();
@@ -1209,7 +1196,6 @@ public class GrantManagerPanel extends JPanel {
         grant_all_query(query, adm, row, 2);
     }
 
-
     void revoke(int row, int col) {
         if (col > 0 && col < headers.length && col != col_execute && col != col_usage) {
             String query = "REVOKE " + headers[col] + " ON \"" + relName.elementAt(row)
@@ -1399,5 +1385,18 @@ public class GrantManagerPanel extends JPanel {
                 key[i] = bundleString(key[i]);
         }
         return key;
+    }
+
+    enum Action {
+        NO_ALL_GRANTS_TO_OBJECT,
+        ALL_GRANTS_TO_OBJECT,
+        ALL_GRANTS_TO_OBJECT_WITH_GRANT_OPTION,
+        NO_GRANT_TO_ALL_OBJECTS,
+        GRANT_TO_ALL_OBJECTS,
+        GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION,
+        NO_ALL_GRANTS_TO_ALL_OBJECTS,
+        ALL_GRANTS_TO_ALL_OBJECTS,
+        ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION,
+        CREATE_TABLE
     }
 }

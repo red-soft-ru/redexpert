@@ -3,6 +3,7 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
+import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.datasource.ConnectionManager;
 import org.underworldlabs.jdbc.DataSourceException;
 
@@ -18,25 +19,6 @@ import java.util.List;
  */
 public class DefaultDatabaseDomain extends DefaultDatabaseExecutable
         implements DatabaseProcedure {
-
-    private static final int SUBTYPE_NUMERIC = 1;
-    private static final int SUBTYPE_DECIMAL = 2;
-
-    private static final int smallint_type = 7;
-    private static final int integer_type = 8;
-    private static final int quad_type = 9;
-    private static final int float_type = 10;
-    private static final int d_float_type = 11;
-    private static final int date_type = 12;
-    private static final int time_type = 13;
-    private static final int char_type = 14;
-    private static final int int64_type = 16;
-    private static final int double_type = 27;
-    private static final int timestamp_type = 35;
-    private static final int varchar_type = 37;
-    //  private static final int cstring_type = 40;
-    private static final int blob_type = 261;
-    private static final short boolean_type = 23;
 
     int sqlType, sqlSubtype, sqlSize, sqlScale;
 
@@ -129,7 +111,7 @@ public class DefaultDatabaseDomain extends DefaultDatabaseExecutable
                     column.setSchemaName(_schema);
                     column.setName(rs.getString(1));
                     column.setTypeInt(rs.getInt(2));
-                    column.setTypeName(getDataTypeName(rs.getInt(2), rs.getInt(3), rs.getInt(5)));
+                    column.setTypeName(DatabaseTypeConverter.getDataTypeName(rs.getInt(2), rs.getInt(3), rs.getInt(5)));
                     column.setColumnSize(rs.getInt(6));
                     if (rs.getInt(4) != 0)
                         column.setColumnSize(rs.getInt(4));
@@ -169,131 +151,8 @@ public class DefaultDatabaseDomain extends DefaultDatabaseExecutable
         sb.append(getName());
         sb.append("\n");
         sb.append("\t as \n\t");
-        sb.append(getTypeWithSize(sqlType, sqlSubtype, sqlSize, sqlScale));
+        sb.append(DatabaseTypeConverter.getTypeWithSize(sqlType, sqlSubtype, sqlSize, sqlScale));
         sb.append(";");
         return sb.toString();
-    }
-
-    private String getTypeWithSize(int sqltype, int sqlsubtype, int sqlsize, int sqlscale) {
-        switch (sqltype) {
-            case smallint_type:
-                if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
-                    return "NUMERIC(" + sqlSize + "," + Math.abs(sqlscale) + ")";
-                else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL(" + sqlSize + "," + Math.abs(sqlscale) + ")";
-                else
-                    return "SMALLINT";
-            case integer_type:
-                if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
-                    return "NUMERIC(" + sqlSize + "," + Math.abs(sqlscale) + ")";
-                else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL(" + sqlSize + "," + Math.abs(sqlscale) + ")";
-                else
-                    return "INTEGER";
-            case double_type:
-            case d_float_type:
-                if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
-                    return "NUMERIC(" + sqlSize + "," + Math.abs(sqlscale) + ")";
-                else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL(" + sqlSize + "," + Math.abs(sqlscale) + ")";
-                else
-                    return "DOUBLE PRECISION";
-            case float_type:
-                return "FLOAT";
-            case char_type:
-                return "CHAR(" + sqlsize + ")";
-            case varchar_type:
-                return "VARCHAR(" + sqlsize + ")";
-            case timestamp_type:
-                return "TIMESTAMP";
-            case time_type:
-                return "TIME";
-            case date_type:
-                return "DATE";
-            case int64_type:
-                if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
-                    return "NUMERIC(" + sqlSize + "," + Math.abs(sqlscale) + ")";
-                else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL(" + sqlSize + "," + Math.abs(sqlscale) + ")";
-                else
-                    return "BIGINT";
-            case blob_type:
-                if (sqlsubtype < 0)
-                    return "BLOB SUB_TYPE <0";
-                else if (sqlsubtype == 0)
-                    return "BLOB SUB_TYPE 0";
-                else if (sqlsubtype == 1)
-                    return "BLOB SUB_TYPE 1";
-                else
-                    return "BLOB SUB_TYPE " + sqlsubtype;
-            case quad_type:
-                return "ARRAY";
-            case boolean_type:
-                return "BOOLEAN";
-            default:
-                return "NULL";
-        }
-    }
-
-    public static String getDataTypeName(int sqltype, int sqlsubtype, int sqlscale) {
-        switch (sqltype) {
-            case smallint_type:
-                if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
-                    return "NUMERIC";
-                else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL";
-                else
-                    return "SMALLINT";
-            case integer_type:
-                if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
-                    return "NUMERIC";
-                else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL";
-                else
-                    return "INTEGER";
-            case double_type:
-            case d_float_type:
-                if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
-                    return "NUMERIC";
-                else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL";
-                else
-                    return "DOUBLE PRECISION";
-            case float_type:
-                return "FLOAT";
-            case char_type:
-                return "CHAR";
-            case varchar_type:
-                return "VARCHAR";
-            case timestamp_type:
-                return "TIMESTAMP";
-            case time_type:
-                return "TIME";
-            case date_type:
-                return "DATE";
-            case int64_type:
-                if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
-                    return "NUMERIC";
-                else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL";
-                else
-                    return "BIGINT";
-            case blob_type:
-                if (sqlsubtype < 0)
-                    // TODO Include actual subtype?
-                    return "BLOB SUB_TYPE <0";
-                else if (sqlsubtype == 0)
-                    return "BLOB SUB_TYPE 0";
-                else if (sqlsubtype == 1)
-                    return "BLOB SUB_TYPE 1";
-                else
-                    return "BLOB SUB_TYPE " + sqlsubtype;
-            case quad_type:
-                return "ARRAY";
-            case boolean_type:
-                return "BOOLEAN";
-            default:
-                return "NULL";
-        }
     }
 }

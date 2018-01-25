@@ -217,13 +217,10 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                                 r = Pattern.compile(pattern);
                                 m = r.matcher(varString);
                                 while (m.find()) {
-                                    if (matchesCount == 0) { // subtype
+                                    if (matchesCount == 0)  // subtype
                                         variable.setSubtype(Integer.valueOf(m.group(0)));
-                                        varString = varString.replace(m.group(0), "");
-                                    } else if (matchesCount == 1) { // segment size
+                                    else if (matchesCount == 1) // segment size
                                         variable.setSize(Integer.valueOf(m.group(0)));
-                                        varString = varString.replace(m.group(0), "");
-                                    }
                                     matchesCount++;
                                 }
 

@@ -26,6 +26,7 @@ import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.FunctionArgument;
 import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -246,11 +247,12 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                         sbInput.append("column ");
                         sbInput.append(argument.getRelationName());
                         sbInput.append(".");
-                        sbInput.append(argument.getFieldName());
+                        sbInput.append(argument.getFieldName()).append(" ");
                     }
                     if (argument.getNullable() == 1)
-                        sbInput.append(" not null,\n");
-                    else
+                        sbInput.append(" not null ");
+                    if (!MiscUtils.isNull(argument.getDefaultValue()))
+                        sbInput.append(argument.getDefaultValue());
                         sbInput.append(",\n");
                 } else {
                     if (argument.getDomain() != null) {
@@ -277,9 +279,10 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                         sbInput.append(argument.getEncoding());
                     }
                     if (argument.getNullable() == 1)
-                        sbInput.append(" not null,\n");
-                    else
-                        sbInput.append(",\n");
+                        sbInput.append(" not null ");
+                    if (!MiscUtils.isNull(argument.getDefaultValue()))
+                        sbInput.append(argument.getDefaultValue());
+                    sbInput.append(",\n");
                 }
             } else if (argument.getType() == DatabaseMetaData.procedureColumnReturn) {
                 sbOutput.append(" ");

@@ -253,7 +253,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                         sbInput.append(" not null ");
                     if (!MiscUtils.isNull(argument.getDefaultValue()))
                         sbInput.append(argument.getDefaultValue());
-                        sbInput.append(",\n");
+                    sbInput.append(",\n");
                 } else {
                     if (argument.getDomain() != null) {
                         sbInput.append(argument.getDomain());
@@ -276,12 +276,12 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                     }
                     if (argument.getEncoding() != null) {
                         sbInput.append(" character set ");
-                        sbInput.append(argument.getEncoding());
+                        sbInput.append(argument.getEncoding()).append(" ");
                     }
                     if (argument.getNullable() == 1)
                         sbInput.append(" not null ");
                     if (!MiscUtils.isNull(argument.getDefaultValue()))
-                        sbInput.append(argument.getDefaultValue());
+                        sbInput.append(" ").append(argument.getDefaultValue());
                     sbInput.append(",\n");
                 }
             } else if (argument.getType() == DatabaseMetaData.procedureColumnReturn) {

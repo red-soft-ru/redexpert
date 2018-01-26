@@ -134,12 +134,12 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
                 }
                 if (parameter.getEncoding() != null) {
                     sbInput.append(" character set ");
-                    sbInput.append(parameter.getEncoding());
+                    sbInput.append(parameter.getEncoding()).append(" ");
                 }
                 if (parameter.getNullable() == 1)
                     sbInput.append(" not null ");
                 if (!MiscUtils.isNull(parameter.getDefaultValue()))
-                    sbInput.append(parameter.getDefaultValue());
+                    sbInput.append(" ").append(parameter.getDefaultValue());
                 sbInput.append(",\n");
             } else if (parameter.getType() == DatabaseMetaData.procedureColumnOut) {
                 sbOutput.append("\t");

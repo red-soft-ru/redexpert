@@ -1,7 +1,6 @@
 package org.executequery.gui.databaseobjects;
 
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
@@ -18,7 +17,6 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     public static final String CREATE_TITLE = "Create Domain";
     public static final String EDIT_TITLE = "Edit Domain";
     private ColumnData columnData;
-    private MetaDataValues metaData;
     private String domain;
     private JScrollPane scrollDefaultValue;
     private JScrollPane scrollCheck;
@@ -146,7 +144,6 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     @Override
     public void setDatabaseObject(Object databaseObject) {
         this.domain = (String) databaseObject;
-        metaData = new MetaDataValues(connection, true);
         columnData = new ColumnData(connection);
     }
 

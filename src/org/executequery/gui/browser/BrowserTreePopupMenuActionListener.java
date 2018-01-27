@@ -278,6 +278,25 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         }
                     }
                     break;
+                case NamedObject.UDF:
+                    if (GUIUtilities.isDialogOpen(CreateUDFPanel.CREATE_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateUDFPanel.CREATE_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateUDFPanel.CREATE_TITLE, false);
+                            CreateUDFPanel panel = new CreateUDFPanel(currentSelection, dialog);
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
                 default:
                     GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
                     break;

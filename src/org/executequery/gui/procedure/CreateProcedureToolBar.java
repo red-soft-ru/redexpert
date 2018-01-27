@@ -21,7 +21,6 @@
 package org.executequery.gui.procedure;
 
 import org.executequery.GUIUtilities;
-import org.executequery.gui.table.TableFunction;
 import org.underworldlabs.swing.actions.ActionUtilities;
 
 import javax.swing.*;
@@ -44,7 +43,7 @@ public class CreateProcedureToolBar extends JPanel
                                 implements ActionListener {
 
     /** The parent panel where this tool bar will be attached */
-    private ProcedureDefinitionPanel parent;
+    private DefinitionPanel parent;
 
     /** The insert row (column) after button */
     private JButton insertAfterButton;
@@ -64,11 +63,11 @@ public class CreateProcedureToolBar extends JPanel
     /** Whether the move buttons are available */
     private boolean canMove;
 
-    public CreateProcedureToolBar(ProcedureDefinitionPanel parent) {
+    public CreateProcedureToolBar(DefinitionPanel parent) {
         this(parent, true);
     }
 
-    public CreateProcedureToolBar(ProcedureDefinitionPanel parent, boolean canMove) {
+    public CreateProcedureToolBar(DefinitionPanel parent, boolean canMove) {
         super();
         setLayout(new GridBagLayout());
         this.parent = parent;
@@ -133,7 +132,7 @@ public class CreateProcedureToolBar extends JPanel
     /** <p>Enables/disables as specified the buttons
      *  insert before, move up and move down.
      *
-     *  @param <code>true</code> to enable these buttons
+     *  @param enable <code>true</code> to enable these buttons
      *         <code>false</code> to disable these buttons
      */
     public void enableButtons(boolean enable) {
@@ -148,7 +147,7 @@ public class CreateProcedureToolBar extends JPanel
     /** <p>Determines which button was selected and
      *  calls the relevant method to execute that action.
      *
-     *  @param the event initiating this action
+     *  @param e the event initiating this action
      */
     public void actionPerformed(ActionEvent e) {
         Object button = e.getSource();

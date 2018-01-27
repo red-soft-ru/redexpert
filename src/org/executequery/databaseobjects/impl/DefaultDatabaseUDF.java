@@ -21,6 +21,17 @@ import java.util.Set;
 
 public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         implements DatabaseProcedure {
+    public static final String[] mechanisms = {"BY VALUE", "BY REFERENCE", "BY DESCRIPTOR", "by BLOB descriptor"};
+    public static final int BY_VALUE = 0;
+    public static final int BY_REFERENCE = 1;
+    public static final int BY_DESCRIPTOR = 2;
+    public static final int BY_BLOB_DESCRIPTOR = 3;
+
+    public static String getMechanism(int mechanism) {
+        if (mechanism >= 0 && mechanism < mechanisms.length)
+            return mechanisms[mechanism];
+        else return "";
+    }
 
     public static class UDFTableModel implements TableModel {
 
@@ -124,21 +135,6 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
             this.fieldStringType = DatabaseTypeConverter.getTypeWithSize(fieldType, fieldSubType, fieldLength, fieldScale);
             this.fieldPrecision = fieldPrecision;
             this.stringMechanism = getMechanism(this.mechanism);
-        }
-
-        private String getMechanism(int mechanism) {
-            switch (mechanism) {
-                case 0:
-                    return "BY VALUE";
-                case 1:
-                    return "BY REFERENCE";
-                case 2:
-                    return "BY DESCRIPTOR";
-                case 3:
-                    return "by BLOB descriptor";
-                default:
-                    return "";
-            }
         }
 
         public String getFieldStringType() {

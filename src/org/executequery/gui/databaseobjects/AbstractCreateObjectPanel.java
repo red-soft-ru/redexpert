@@ -1,6 +1,7 @@
 package org.executequery.gui.databaseobjects;
 
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
@@ -31,6 +32,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
     protected JTextField nameField;
     protected DefaultStatementExecutor sender;
     private JPanel okCancelPanel;
+    protected MetaDataValues metaData;
 
     public AbstractCreateObjectPanel(DatabaseConnection dc, ActionContainer dialog, Object databaseObject) {
         this(dc, dialog, databaseObject, null);
@@ -71,12 +73,14 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
             }
             connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
             sender.setDatabaseConnection(connection);
+            metaData.setDatabaseConnection(connection);
         });
         if (connection != null) {
             connectionsCombo.setSelectedItem(connection);
         } else connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
         this.setLayout(new GridBagLayout());
         sender = new DefaultStatementExecutor(connection, true);
+        metaData = new MetaDataValues(connection, true);
         first_panel = new JPanel(new GridBagLayout());
         JLabel connLabel = new JLabel(Bundles.getCommon("connection"));
         first_panel.add(connLabel, new GridBagConstraints(0, 0,

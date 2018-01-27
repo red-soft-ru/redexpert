@@ -87,7 +87,7 @@ public interface NamedObject extends java.io.Serializable {
             "GLOBAL TEMPORARY",
             "DOMAIN",
             "EXCEPTION",
-            "UDF",
+            "EXTERNAL FUNCTION",
             "SYSTEM FUNCTIONS",
             "SYSTEM_STRING_FUNCTIONS",
             "SYSTEM_NUMERIC_FUNCTIONS",

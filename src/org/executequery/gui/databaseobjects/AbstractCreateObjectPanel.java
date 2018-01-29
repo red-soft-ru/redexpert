@@ -1,5 +1,6 @@
 package org.executequery.gui.databaseobjects;
 
+import org.executequery.components.BottomButtonPanel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
@@ -14,6 +15,7 @@ import org.underworldlabs.swing.DynamicComboBoxModel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.sql.SQLException;
 import java.util.Vector;
@@ -31,7 +33,6 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
     protected ActionContainer parent;
     protected JTextField nameField;
     protected DefaultStatementExecutor sender;
-    private JPanel okCancelPanel;
     protected MetaDataValues metaData;
 
     public AbstractCreateObjectPanel(DatabaseConnection dc, ActionContainer dialog, Object databaseObject) {
@@ -78,7 +79,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         if (connection != null) {
             connectionsCombo.setSelectedItem(connection);
         } else connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
-        this.setLayout(new GridBagLayout());
+        this.setLayout(new BorderLayout());
         sender = new DefaultStatementExecutor(connection, true);
         metaData = new MetaDataValues(connection, true);
         first_panel = new JPanel(new GridBagLayout());
@@ -101,31 +102,33 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
         main_panel = new JPanel();
-        okCancelPanel = new JPanel(new GridBagLayout());
-        okCancelPanel.add(okButton, new GridBagConstraints(0, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        okCancelPanel.add(cancelButton, new GridBagConstraints(1, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        this.add(first_panel, new GridBagConstraints(0, 0,
+
+        BottomButtonPanel bottomButtonPanel = new BottomButtonPanel(parent.isDialog());
+        bottomButtonPanel.setOkButtonAction(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                create_object();
+            }
+        });
+        bottomButtonPanel.setOkButtonText("OK");
+
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(BorderFactory.createEtchedBorder());
+        panel.add(first_panel, new GridBagConstraints(0, 0,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0),
                 0, 0));
-        this.add(main_panel, new GridBagConstraints(0, 1,
+        panel.add(main_panel, new GridBagConstraints(0, 1,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0),
                 0, 0));
-        this.add(tabbedPane, new GridBagConstraints(0, 2,
+        panel.add(tabbedPane, new GridBagConstraints(0, 2,
                 1, 1, 1, 1,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0),
                 0, 0));
-        this.add(okCancelPanel, new GridBagConstraints(0, 3,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0),
-                0, 0));
+
+        this.add(panel, BorderLayout.CENTER);
+        this.add(bottomButtonPanel, BorderLayout.SOUTH);
 
     }
 

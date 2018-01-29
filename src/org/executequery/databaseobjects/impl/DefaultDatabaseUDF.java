@@ -27,10 +27,15 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
     public static final int BY_DESCRIPTOR = 2;
     public static final int BY_BLOB_DESCRIPTOR = 3;
 
-    public static String getMechanism(int mechanism) {
+    // TODO why so many methods??? WHY???
+    public static String getStringMechanismFromInt(int mechanism) {
         if (mechanism >= 0 && mechanism < mechanisms.length)
             return mechanisms[mechanism];
-        else return "";
+        else if (mechanism == -1) {
+            return mechanisms[1];
+        }
+        else
+            return "";
     }
 
     public static class UDFTableModel implements TableModel {
@@ -70,6 +75,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 case 5:
                     return "Return Mechanism";
                 case 6:
+                    return "Free it";
+                case 7:
                     return "Description";
             }
             return "";
@@ -95,6 +102,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 case 5:
                     return udf.getReturnMechanism();
                 case 6:
+                    return udf.getFreeIt();
+                case 7:
                     return udf.getRemarks();
             }
             return "";
@@ -134,7 +143,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
             this.mechanism = mechanism;
             this.fieldStringType = DatabaseTypeConverter.getTypeWithSize(fieldType, fieldSubType, fieldLength, fieldScale);
             this.fieldPrecision = fieldPrecision;
-            this.stringMechanism = getMechanism(this.mechanism);
+            this.stringMechanism = getStringMechanismFromInt(this.mechanism);
         }
 
         public String getFieldStringType() {
@@ -143,6 +152,10 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
 
         public String getStringMechanism() {
             return stringMechanism;
+        }
+
+        public int getMechanism() {
+            return this.mechanism;
         }
     }
 
@@ -153,6 +166,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
     private String returnMechanism = "";
     private String returns = "";
     private String inputParameters = "";
+    private Boolean freeIt = false;
 
 
     List<UDFParameter> parameters = new ArrayList<>();
@@ -196,6 +210,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         ResultSet rs = null;
 
         parameters.clear();
+        inputParameters = "";
 
         try {
             statement = this.getHost().getConnection().createStatement();
@@ -211,25 +226,39 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
 
             releaseResources(rs);
 
-            if (returnArg != 0)
+            if (returnArg != 0) {
                 returnMechanism = parameters.get(returnArg - 1).getStringMechanism();
-            else
+                if (parameters.get(returnArg - 1).getMechanism() == -1)
+                    this.freeIt = true;
+            } else {
                 returnMechanism = parameters.get(0).getStringMechanism();
+                if (parameters.get(0).getMechanism() == -1)
+                    this.freeIt = true;
+            }
 
             for (int i = 0; i < parameters.size(); i++) {
                 if (returnArg == 0 && i == 0)
                     continue;
-                inputParameters += parameters.get(i).getFieldStringType() + " "
-                        + parameters.get(i).getStringMechanism() + ", ";
+                inputParameters += parameters.get(i).getFieldStringType();
+                if (parameters.get(i).getMechanism() != BY_REFERENCE &&
+                        parameters.get(i).getMechanism() != BY_VALUE) {
+                    inputParameters += " " + parameters.get(i).getStringMechanism();
+                }
+                inputParameters += ", ";
             }
             if (!inputParameters.isEmpty())
                 inputParameters = inputParameters.substring(0, inputParameters.length() - 2);
 
             if (returnArg != 0)
                 returns = "Parameter " + returnArg;
-            else
-                returns = parameters.get(0).getFieldStringType() + " " +
-                        parameters.get(0).getStringMechanism();
+            else {
+                returns = parameters.get(0).getFieldStringType();
+                if (parameters.get(0).getMechanism() != BY_REFERENCE &&
+                        parameters.get(0).getMechanism() != -1) {
+                    returns += " ";
+                    returns += parameters.get(0).getStringMechanism();
+                }
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -289,6 +318,10 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         return UDF;
     }
 
+    public Boolean getFreeIt() {
+        return this.freeIt;
+    }
+
     public String getCreateSQLText() {
         StringBuilder sb = new StringBuilder();
         sb.append("DECLARE EXTERNAL FUNCTION ");
@@ -298,18 +331,29 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         for (int i = 0; i < parameters.size(); i++) {
             if (returnArg == 0 && i == 0)
                 continue;
-            args += "\t" + parameters.get(i).getFieldStringType() + " " +
-                    parameters.get(i).getStringMechanism() + ",\n";
+            args += "\t" + parameters.get(i).getFieldStringType();
+            if (parameters.get(i).getMechanism() != BY_VALUE &&
+                    parameters.get(i).getMechanism() != BY_REFERENCE)
+                args += " " + parameters.get(i).getStringMechanism();
+            args += ",\n";
         }
         if (!args.isEmpty())
             args = args.substring(0, args.length() - 2);
         sb.append(args);
         sb.append("\n");
         sb.append("RETURNS\n");
-        if (returnArg == 0)
-            sb.append(parameters.get(0).getFieldStringType() + " " + parameters.get(0).getStringMechanism());
+        if (returnArg == 0) {
+            sb.append(parameters.get(0).getFieldStringType());
+            if (parameters.get(0).getMechanism() != BY_REFERENCE &&
+                    parameters.get(0).getMechanism() != -1) {
+                sb.append(" ");
+                sb.append(parameters.get(0).getStringMechanism());
+            }
+        }
         else
             sb.append("PARAMETER " + returnArg);
+        if (this.freeIt)
+            sb.append(" FREE_IT ");
         sb.append("\n");
         sb.append("ENTRY_POINT '");
         sb.append(getEntryPoint().trim());

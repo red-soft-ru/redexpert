@@ -78,10 +78,10 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         descriptionTextPane.addKeyListener(this);
 
 
-        main_panel.setLayout(new GridBagLayout());
+        centralPanel.setLayout(new GridBagLayout());
 
 
-        main_panel.add(notNullBox, new GridBagConstraints(0, 0,
+        centralPanel.add(notNullBox, new GridBagConstraints(0, 0,
                 1, 1, 1, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -101,7 +101,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         tabbedPane.add(bundlesString("SQL"), sqlPanel);
     }
 
-    protected void init_edited() {
+    protected void initEdited() {
         columnData.setColumnName(domain);
         columnData.setDomain(domain);
         columnData.setDescription(columnData.getDomainDescription());
@@ -120,7 +120,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
     }
 
     @Override
-    public void create_object() {
+    public void createObject() {
         if (tabbedPane.getSelectedComponent() != sqlPanel)
             generateSQL();
         displayExecuteQueryDialog(sqlTextPane.getText(), ";");

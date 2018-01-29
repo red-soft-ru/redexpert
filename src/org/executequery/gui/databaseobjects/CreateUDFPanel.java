@@ -69,56 +69,56 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
 
         tabbedPane.insertTab("Input Parameters", null, parametersPanel, null, 0);
         tabbedPane.add("Description", descriptionPanel);
-        main_panel.setLayout(new GridBagLayout());
-        main_panel.add(new JLabel("Module Name"), new GridBagConstraints(0, 0,
+        centralPanel.setLayout(new GridBagLayout());
+        centralPanel.add(new JLabel("Module Name"), new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(nameModuleField, new GridBagConstraints(1, 0,
+        centralPanel.add(nameModuleField, new GridBagConstraints(1, 0,
                 5, 1, 1, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(new JLabel("Entry Point"), new GridBagConstraints(0, 1,
+        centralPanel.add(new JLabel("Entry Point"), new GridBagConstraints(0, 1,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(entryPointField, new GridBagConstraints(1, 1,
+        centralPanel.add(entryPointField, new GridBagConstraints(1, 1,
                 5, 1, 1, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(new JLabel("Mechanism"), new GridBagConstraints(0, 2,
+        centralPanel.add(new JLabel("Mechanism"), new GridBagConstraints(0, 2,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(mechanismBox, new GridBagConstraints(1, 2,
+        centralPanel.add(mechanismBox, new GridBagConstraints(1, 2,
                 5, 1, 1, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(parameterBox, new GridBagConstraints(0, 3,
+        centralPanel.add(parameterBox, new GridBagConstraints(0, 3,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(new JLabel("Position"), new GridBagConstraints(1, 3,
+        centralPanel.add(new JLabel("Position"), new GridBagConstraints(1, 3,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(parameterNumberField, new GridBagConstraints(2, 3,
+        centralPanel.add(parameterNumberField, new GridBagConstraints(2, 3,
                 1, 1, 1, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(cstringBox, new GridBagConstraints(3, 3,
+        centralPanel.add(cstringBox, new GridBagConstraints(3, 3,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(new JLabel("Max Count Characters"), new GridBagConstraints(4, 3,
+        centralPanel.add(new JLabel("Max Count Characters"), new GridBagConstraints(4, 3,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(cstringLengthField, new GridBagConstraints(5, 3,
+        centralPanel.add(cstringLengthField, new GridBagConstraints(5, 3,
                 1, 1, 1, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(freeItBox, new GridBagConstraints(0, 4,
+        centralPanel.add(freeItBox, new GridBagConstraints(0, 4,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -129,12 +129,12 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
     }
 
     @Override
-    protected void init_edited() {
+    protected void initEdited() {
 
     }
 
     @Override
-    public void create_object() {
+    public void createObject() {
         StringBuilder sb = new StringBuilder();
         sb.append("DECLARE EXTERNAL FUNCTION ").append(nameField.getText()).append("\n");
         Vector<ColumnData> params = parametersPanel.getTableColumnDataVector();

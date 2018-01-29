@@ -21,8 +21,8 @@ import java.sql.SQLException;
 import java.util.Vector;
 
 public abstract class AbstractCreateObjectPanel extends JPanel {
-    private JPanel first_panel;
-    protected JPanel main_panel;
+    private JPanel topPanel;
+    protected JPanel centralPanel;
     protected JTabbedPane tabbedPane;
     private JButton okButton;
     private JButton cancelButton;
@@ -50,7 +50,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         editing = databaseObject != null;
         if (editing)
             try {
-                init_edited();
+                initEdited();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -62,7 +62,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         tabbedPane = new JTabbedPane();
         tabbedPane.setPreferredSize(new Dimension(700, 400));
         okButton = new JButton(Bundles.getCommon("ok.button"));
-        okButton.addActionListener(actionEvent -> create_object());
+        okButton.addActionListener(actionEvent -> createObject());
         cancelButton = new JButton(Bundles.getCommon("cancel.button"));
         cancelButton.addActionListener(actionEvent -> parent.finished());
         Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
@@ -82,43 +82,43 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         this.setLayout(new BorderLayout());
         sender = new DefaultStatementExecutor(connection, true);
         metaData = new MetaDataValues(connection, true);
-        first_panel = new JPanel(new GridBagLayout());
+        topPanel = new JPanel(new GridBagLayout());
         JLabel connLabel = new JLabel(Bundles.getCommon("connection"));
-        first_panel.add(connLabel, new GridBagConstraints(0, 0,
+        topPanel.add(connLabel, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
-        first_panel.add(connectionsCombo, new GridBagConstraints(1, 0,
+        topPanel.add(connectionsCombo, new GridBagConstraints(1, 0,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
         JLabel nameLabel = new JLabel(Bundles.getCommon("name"));
-        first_panel.add(nameLabel, new GridBagConstraints(0, 1,
+        topPanel.add(nameLabel, new GridBagConstraints(0, 1,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
-        first_panel.add(nameField, new GridBagConstraints(1, 1,
+        topPanel.add(nameField, new GridBagConstraints(1, 1,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel = new JPanel();
+        centralPanel = new JPanel();
 
         BottomButtonPanel bottomButtonPanel = new BottomButtonPanel(parent.isDialog());
         bottomButtonPanel.setOkButtonAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                create_object();
+                createObject();
             }
         });
         bottomButtonPanel.setOkButtonText("OK");
 
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createEtchedBorder());
-        panel.add(first_panel, new GridBagConstraints(0, 0,
+        panel.add(topPanel, new GridBagConstraints(0, 0,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0),
                 0, 0));
-        panel.add(main_panel, new GridBagConstraints(0, 1,
+        panel.add(centralPanel, new GridBagConstraints(0, 1,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0),
                 0, 0));
@@ -135,9 +135,9 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
 
     protected abstract void init();
 
-    protected abstract void init_edited();
+    protected abstract void initEdited();
 
-    public abstract void create_object();
+    public abstract void createObject();
 
     public abstract String getCreateTitle();
 

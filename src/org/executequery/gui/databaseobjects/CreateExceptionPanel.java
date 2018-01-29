@@ -23,7 +23,7 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
     }
 
     @Override
-    public void create_object() {
+    public void createObject() {
         generateScript();
     }
 
@@ -60,7 +60,7 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
 
     }
 
-    protected void init_edited() {
+    protected void initEdited() {
         nameField.setText(exception.getName().trim());
         nameField.setEnabled(false);
         textExceptionPanel.getTextAreaComponent().setText(exception.getExceptionText());

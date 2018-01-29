@@ -393,12 +393,12 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
     }
 
     @Override
-    protected void init_edited() {
+    protected void initEdited() {
         super.initEditing();
     }
 
     @Override
-    public void create_object() {
+    public void createObject() {
         createProcedure();
     }
 

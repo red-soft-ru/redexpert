@@ -68,13 +68,13 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     }
 
     @Override
-    protected void init_edited() {
+    protected void initEdited() {
         nameField.setText(view.getName());
         descriptionTextArea.getTextAreaComponent().setText(view.getRemarks());
     }
 
     @Override
-    public void create_object() {
+    public void createObject() {
         String searchS = " view ";
         String query = sqlTextPanel.getSQLText().trim();
         int indexStart = query.indexOf(searchS) + searchS.length();

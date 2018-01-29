@@ -1539,9 +1539,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getUDFResultSet() throws Exception {
 
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
-
         ResultSet resultSet = null;
 
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();

@@ -1,6 +1,8 @@
 package org.executequery.gui.databaseobjects;
 
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.DatabaseTypeConverter;
+import org.executequery.databaseobjects.impl.DefaultDatabaseUDF;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.datatype.SelectTypePanel;
@@ -14,10 +16,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Vector;
 
+import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.BY_DESCRIPTOR;
+import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.BY_VALUE;
+
 public class CreateUDFPanel extends AbstractCreateObjectPanel {
 
-    public static final String CREATE_TITLE = "CREATE UDF";
-    public static final String ALTER_TITLE = "ALTER UDF";
+    public static final String CREATE_TITLE = "Create UDF";
+    public static final String EDIT_TITLE = "Edit UDF";
     SimpleTextArea descriptionPanel;
     JTextField nameModuleField;
     JTextField entryPointField;
@@ -31,6 +36,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
     UDFDefinitionPanel parametersPanel;
     SelectTypePanel selectTypePanel;
     ColumnData returnsType;
+    DefaultDatabaseUDF editedUDF;
 
     public CreateUDFPanel(DatabaseConnection dc, ActionContainer dialog) {
         this(dc, dialog, null);
@@ -57,6 +63,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         cstringLengthField.setValue(0);
         parametersPanel = new UDFDefinitionPanel();
         parametersPanel.setDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
+        returnsType = new ColumnData(connection);
         selectTypePanel = new SelectTypePanel(metaData.getDataTypesArray(), metaData.getIntDataTypesArray(), returnsType, false);
 
         parameterBox.addActionListener(actionEvent -> {
@@ -130,13 +137,71 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
 
     @Override
     protected void initEdited() {
+        if (editedUDF == null)
+            return;
+        editedUDF.loadParameters();
+        nameField.setText(editedUDF.getName());
+        nameField.setEnabled(false);
+        freeItBox.setSelected(editedUDF.getFreeIt());
+        nameModuleField.setText(editedUDF.getModuleName());
+        entryPointField.setText(editedUDF.getEntryPoint());
+        descriptionPanel.getTextAreaComponent().setText(editedUDF.getDescription());
 
+        String returnMechanism = editedUDF.getReturnMechanism();
+        int returnArg = editedUDF.getReturnArg();
+        String returns = editedUDF.getReturns();
+
+        if (returnArg != 0) {
+            parameterBox.setSelected(true);
+            parameterNumberField.setText(String.valueOf(returnArg));
+            parameterBoxChanged();
+        } else {
+            DefaultDatabaseUDF.UDFParameter udfParameter = editedUDF.getUDFParameters().get(0);
+            if (udfParameter.getFieldType() == 40) {// check for cstring type
+                cstringBox.setSelected(true);
+                cstringLengthField.setText(String.valueOf(udfParameter.getFieldLenght()));
+                cstringBoxChanged();
+            } else {
+                returnsType.setColumnSize(udfParameter.getFieldLenght());
+                returnsType.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(udfParameter.getFieldType(),
+                        udfParameter.getFieldSubType()));
+                returnsType.setColumnSubtype(udfParameter.getFieldSubType());
+                returnsType.setColumnScale(udfParameter.getFieldScale());
+                returnsType.setColumnType(udfParameter.getFieldStringType());
+
+                selectTypePanel.setColumnData(returnsType);
+                selectTypePanel.refresh();
+
+                if (udfParameter.getMechanism() == BY_DESCRIPTOR)
+                    mechanismBox.setSelectedIndex(1);
+                else if (udfParameter.getMechanism() == BY_VALUE)
+                    mechanismBox.setSelectedIndex(0);
+            }
+        }
+
+        // remove first empty row
+        parametersPanel.removeRow(0);
+        for (DefaultDatabaseUDF.UDFParameter parameter :
+                editedUDF.getUDFParameters()){
+            if (parameter.getArgPosition() == 0)
+                continue;
+            ColumnData cd = new ColumnData(connection);
+            cd.setColumnSubtype(parameter.getFieldSubType());
+            cd.setColumnSize(parameter.getFieldLenght());
+            cd.setColumnType(DatabaseTypeConverter.getDataTypeName(parameter.getFieldType(),
+                    parameter.getFieldSubType(), parameter.getFieldScale()));
+            cd.setMechanism(parameter.getStringMechanism());
+            cd.setCstring(parameter.isCString());
+            cd.setColumnRequired(parameter.isNotNull() ? 0 : 1);
+            parametersPanel.addRow(cd);
+        }
     }
 
     @Override
     public void createObject() {
         StringBuilder sb = new StringBuilder();
-        sb.append("DECLARE EXTERNAL FUNCTION ").append(nameField.getText()).append("\n");
+        sb.append("DROP EXTERNAL FUNCTION ").append("\"").append(nameField.getText()).append("\"").append(";\n");
+        sb.append("DECLARE EXTERNAL FUNCTION ").append("\"").append(nameField.getText()).append("\"").append("\n");
         Vector<ColumnData> params = parametersPanel.getTableColumnDataVector();
         for (int i = 0; i < params.size(); i++) {
             ColumnData param = params.elementAt(i);
@@ -144,11 +209,14 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                 sb.append("CSTRING (").append(param.getColumnSize()).append(") ");
             else {
                 sb.append(param.getFormattedDataType()).append(" ");
-                if (!MiscUtils.isNull(param.getMechanism()))
+                if (!MiscUtils.isNull(param.getMechanism()) &&
+                        param.getColumnRequired() == 1 &&
+                        !param.getMechanism().contains("BY VALUE") &&
+                        !param.getMechanism().contains("BY REFERENCE"))
                     sb.append(param.getMechanism()).append(" ");
             }
             if (param.isRequired())
-                sb.append("NULL ");
+                sb.append(" NULL ");
             if (i < params.size() - 1)
                 sb.append(",");
             sb.append("\n");
@@ -165,8 +233,10 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
             sb.append("FREE_IT\n");
         sb.append("ENTRY_POINT '").append(entryPointField.getText()).append("'\n");
         sb.append("MODULE_NAME '").append(nameModuleField.getText()).append("';\n");
-        sb.append("COMMENT ON EXTERNAL FUNCTION ").append(nameField.getText()).append(" IS '")
-                .append(descriptionPanel.getTextAreaComponent().getText()).append("'");
+        sb.append("COMMENT ON EXTERNAL FUNCTION \"").append(nameField.getText()).append("\" IS '");
+        String text = descriptionPanel.getTextAreaComponent().getText();
+        text = text.replace("'", "''");
+        sb.append(text).append("'");
         displayExecuteQueryDialog(sb.toString(), ";");
     }
 
@@ -177,7 +247,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
 
     @Override
     public String getEditTitle() {
-        return ALTER_TITLE;
+        return EDIT_TITLE;
     }
 
     @Override
@@ -187,7 +257,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
 
     @Override
     public void setDatabaseObject(Object databaseObject) {
-        returnsType = new ColumnData(connection);
+        editedUDF = (DefaultDatabaseUDF) databaseObject;
     }
 
     @Override

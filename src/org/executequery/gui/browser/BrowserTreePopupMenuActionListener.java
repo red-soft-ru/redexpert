@@ -437,9 +437,6 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         }
                     }
                     break;
-                default:
-                    GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
-                    break;
                 case NamedObject.FUNCTION:
                     if (GUIUtilities.isDialogOpen(CreateFunctionPanel.EDIT_TITLE)) {
 
@@ -458,6 +455,28 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             GUIUtilities.showNormalCursor();
                         }
                     }
+                    break;
+                case NamedObject.UDF:
+                    if (GUIUtilities.isDialogOpen(CreateUDFPanel.EDIT_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateUDFPanel.EDIT_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+
+                            BaseDialog dialog = new BaseDialog(CreateUDFPanel.EDIT_TITLE, false);
+                            CreateUDFPanel panel = new CreateUDFPanel(currentSelection, dialog, node.getDatabaseObject());
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
+                default:
+                    GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
                     break;
             }
         }

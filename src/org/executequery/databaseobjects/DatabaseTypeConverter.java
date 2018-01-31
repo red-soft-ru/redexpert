@@ -19,7 +19,7 @@ public class DatabaseTypeConverter {
     private static final int double_type = 27;
     private static final int timestamp_type = 35;
     private static final int varchar_type = 37;
-    //  private static final int cstring_type = 40;
+    private static final int cstring_type = 40;
     private static final int blob_type = 261;
     private static final short boolean_type = 23;
 
@@ -79,6 +79,8 @@ public class DatabaseTypeConverter {
                 return "ARRAY";
             case boolean_type:
                 return "BOOLEAN";
+            case cstring_type:
+                return "CSTRING(" + sqlSize + ")";
             default:
                 return "NULL";
         }
@@ -141,6 +143,8 @@ public class DatabaseTypeConverter {
                 return "ARRAY";
             case boolean_type:
                 return "BOOLEAN";
+            case cstring_type:
+                return "CSTRING";
             default:
                 return "NULL";
         }

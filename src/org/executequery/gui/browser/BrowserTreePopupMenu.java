@@ -201,7 +201,7 @@ class BrowserTreePopupMenu extends JPopupMenu {
                     if (createObjectEnabled) {
                         String str = "";
                         if (type == NamedObject.META_TAG)
-                            str = node.getName();
+                            str = node.getMetaDataKey();
                         else
                             str = NamedObject.META_TYPES[node.getType()];
                         createObject.setText(bundleString("create") + " " + str);

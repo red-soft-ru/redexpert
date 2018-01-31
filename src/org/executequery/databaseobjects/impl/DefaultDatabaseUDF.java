@@ -4,7 +4,6 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
-import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -22,7 +21,7 @@ import java.util.Set;
 
 public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         implements DatabaseProcedure {
-    public static final String[] mechanisms = {"BY VALUE", "BY REFERENCE", "BY DESCRIPTOR", "by BLOB descriptor"};
+    public static final String[] mechanisms = {"BY VALUE", "BY REFERENCE", "BY DESCRIPTOR", "BY BLOB DESCRIPTOR"};
     public static final int BY_VALUE = 0;
     public static final int BY_REFERENCE = 1;
     public static final int BY_DESCRIPTOR = 2;
@@ -149,6 +148,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
             this.fieldLenght = fieldLength;
             this.fieldSubType = fieldSubType;
             this.fieldStringType = DatabaseTypeConverter.getTypeWithSize(fieldType, fieldSubType, fieldLength, fieldScale);
+            if (this.fieldStringType.contains("BLOB"))
+                this.fieldStringType = "BLOB";
             this.fieldPrecision = fieldPrecision;
             this.stringMechanism = getStringMechanismFromInt(this.mechanism);
             if (this.fieldType == 40)
@@ -403,10 +404,13 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 continue;
             args += "\t" + parameters.get(i).getFieldStringType();
             if (parameters.get(i).getMechanism() != BY_VALUE &&
-                    parameters.get(i).getMechanism() != BY_REFERENCE &&
-                    parameters.get(i).isNotNull())
-                args += " " + parameters.get(i).getStringMechanism();
-            if (!parameters.get(i).isNotNull())
+                    parameters.get(i).getMechanism() != BY_REFERENCE
+                    ) {
+                if (parameters.get(i).isNotNull() || parameters.get(i).getMechanism() == BY_DESCRIPTOR)
+                        args += " " + parameters.get(i).getStringMechanism();
+            }
+            if (!parameters.get(i).isNotNull() && parameters.get(i).getMechanism() != BY_DESCRIPTOR &&
+                    returnArg - 1 != i)
                 args += " " + "NULL";
             args += ",\n";
         }

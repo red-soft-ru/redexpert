@@ -14,6 +14,7 @@ import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.sql.Types;
 import java.util.Vector;
 
 import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.BY_DESCRIPTOR;
@@ -184,6 +185,8 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
             if (parameter.getArgPosition() == 0)
                 continue;
             ColumnData cd = new ColumnData(connection);
+            cd.setSQLType(DatabaseTypeConverter.getSqlTypeFromRDBType(parameter.getFieldType(),
+                    parameter.getFieldSubType()));
             cd.setColumnSubtype(parameter.getFieldSubType());
             cd.setColumnSize(parameter.getFieldLenght());
             cd.setColumnType(DatabaseTypeConverter.getDataTypeName(parameter.getFieldType(),
@@ -207,14 +210,20 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
             if (param.isCstring())
                 sb.append("CSTRING (").append(param.getColumnSize()).append(") ");
             else {
-                sb.append(param.getFormattedDataType()).append(" ");
+                if (param.getSQLType() == Types.BLOB ||
+                        param.getSQLType() == Types.LONGVARBINARY ||
+                        param.getSQLType() == Types.LONGVARCHAR)
+                    sb.append("BLOB").append(" ");
+                else
+                    sb.append(param.getFormattedDataType()).append(" ");
                 if (!MiscUtils.isNull(param.getMechanism()) &&
                         param.getColumnRequired() == 1 &&
                         !param.getMechanism().contains("BY VALUE") &&
-                        !param.getMechanism().contains("BY REFERENCE"))
+                        !param.getMechanism().contains("BY REFERENCE") &&
+                        !param.getMechanism().contains("BY BLOB DESCRIPTOR"))
                     sb.append(param.getMechanism()).append(" ");
             }
-            if (param.isRequired())
+            if (param.isRequired() && !param.getMechanism().contains("BY BLOB DESCRIPTOR"))
                 sb.append(" NULL ");
             if (i < params.size() - 1)
                 sb.append(",");
@@ -226,16 +235,23 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         } else if (parameterBox.isSelected()) {
             sb.append("PARAMETER ").append(parameterNumberField.getValue()).append("\n");
         } else {
-            sb.append(returnsType.getFormattedDataType()).append(" ").append(mechanismBox.getSelectedItem()).append("\n");
+            if (returnsType.getSQLType() == Types.BLOB ||
+                    returnsType.getSQLType() == Types.LONGVARBINARY ||
+                    returnsType.getSQLType() == Types.LONGVARCHAR)
+                sb.append("BLOB").append(" ").append(mechanismBox.getSelectedItem()).append("\n");
+            else
+                sb.append(returnsType.getFormattedDataType()).append(" ").append(mechanismBox.getSelectedItem()).append("\n");
         }
         if (freeItBox.isSelected())
             sb.append("FREE_IT\n");
         sb.append("ENTRY_POINT '").append(entryPointField.getText()).append("'\n");
         sb.append("MODULE_NAME '").append(nameModuleField.getText()).append("';\n");
-        sb.append("COMMENT ON EXTERNAL FUNCTION \"").append(nameField.getText()).append("\" IS '");
         String text = descriptionPanel.getTextAreaComponent().getText();
-        text = text.replace("'", "''");
-        sb.append(text).append("'");
+        if (!MiscUtils.isNull(text) && !text.trim().isEmpty()) {
+            sb.append("COMMENT ON EXTERNAL FUNCTION \"").append(nameField.getText()).append("\" IS '");
+            text = text.replace("'", "''");
+            sb.append(text).append("'");
+        }
         displayExecuteQueryDialog(sb.toString(), ";");
     }
 

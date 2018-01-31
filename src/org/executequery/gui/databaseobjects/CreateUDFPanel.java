@@ -132,13 +132,13 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         parameterBoxChanged();
         cstringBoxChanged();
 
-
     }
 
     @Override
     protected void initEdited() {
         if (editedUDF == null)
             return;
+        
         editedUDF.loadParameters();
         nameField.setText(editedUDF.getName());
         nameField.setEnabled(false);
@@ -147,9 +147,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         entryPointField.setText(editedUDF.getEntryPoint());
         descriptionPanel.getTextAreaComponent().setText(editedUDF.getDescription());
 
-        String returnMechanism = editedUDF.getReturnMechanism();
         int returnArg = editedUDF.getReturnArg();
-        String returns = editedUDF.getReturns();
 
         if (returnArg != 0) {
             parameterBox.setSelected(true);

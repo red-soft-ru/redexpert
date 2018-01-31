@@ -50,8 +50,9 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
 
     @Override
     protected void initEdited() {
-        headerPanel.setSQLText(databasePackage.getHeaderSource());
-        bodyPanel.setSQLText(databasePackage.getBodySource());
+        nameField.setText(databasePackage.getName().trim());
+        headerPanel.setSQLText(replaceName(databasePackage.getHeaderSource()));
+        bodyPanel.setSQLText(replaceName(databasePackage.getBodySource()));
         descriptionPanel.getTextAreaComponent().setText(databasePackage.getDescription());
     }
 
@@ -90,5 +91,14 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
     @Override
     public void setParameters(Object[] params) {
 
+    }
+
+    private String replaceName(String source) {
+        source = source.trim();
+        source = source.replace(" " + nameField.getText() + " ", " " + replacing_name + "\n");
+        source = source.replace(" " + nameField.getText() + "\n", " " + replacing_name + "\n");
+        source = source.replace("\n" + nameField.getText() + "\n", " " + replacing_name + "\n");
+        source = source.replace("\n" + nameField.getText() + " ", " " + replacing_name + "\n");
+        return source;
     }
 }

@@ -198,7 +198,8 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
     @Override
     public void createObject() {
         StringBuilder sb = new StringBuilder();
-        sb.append("DROP EXTERNAL FUNCTION ").append("\"").append(nameField.getText()).append("\"").append(";\n");
+        if (editing)
+            sb.append("DROP EXTERNAL FUNCTION ").append("\"").append(nameField.getText()).append("\"").append(";\n");
         sb.append("DECLARE EXTERNAL FUNCTION ").append("\"").append(nameField.getText()).append("\"").append("\n");
         Vector<ColumnData> params = parametersPanel.getTableColumnDataVector();
         for (int i = 0; i < params.size(); i++) {

@@ -88,7 +88,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             int type = node.getType();
             if (type == NamedObject.META_TAG)
                 for (int i = 0; i < NamedObject.META_TYPES.length; i++)
-                    if (NamedObject.META_TYPES[i].equals(node.getName())) {
+                    if (NamedObject.META_TYPES[i].equals(node.getMetaDataKey())) {
                         type = i;
                         break;
                     }

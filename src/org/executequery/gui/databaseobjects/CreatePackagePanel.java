@@ -2,6 +2,7 @@ package org.executequery.gui.databaseobjects;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabasePackage;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
@@ -14,12 +15,13 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
     private SimpleSqlTextPanel headerPanel;
     private SimpleSqlTextPanel bodyPanel;
     private SimpleTextArea descriptionPanel;
+    private DefaultDatabasePackage databasePackage;
 
     public CreatePackagePanel(DatabaseConnection dc, ActionContainer dialog) {
         this(dc, dialog, null);
     }
 
-    public CreatePackagePanel(DatabaseConnection dc, ActionContainer dialog, Object databaseObject) {
+    public CreatePackagePanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabasePackage databaseObject) {
         super(dc, dialog, databaseObject);
     }
 
@@ -48,7 +50,9 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
 
     @Override
     protected void initEdited() {
-
+        headerPanel.setSQLText(databasePackage.getHeaderSource());
+        bodyPanel.setSQLText(databasePackage.getBodySource());
+        descriptionPanel.getTextAreaComponent().setText(databasePackage.getDescription());
     }
 
     @Override
@@ -80,7 +84,7 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
 
     @Override
     public void setDatabaseObject(Object databaseObject) {
-
+        databasePackage = (DefaultDatabasePackage) databaseObject;
     }
 
     @Override

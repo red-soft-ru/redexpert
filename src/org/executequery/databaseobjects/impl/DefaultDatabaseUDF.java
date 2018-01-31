@@ -26,6 +26,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
     public static final int BY_REFERENCE = 1;
     public static final int BY_DESCRIPTOR = 2;
     public static final int BY_BLOB_DESCRIPTOR = 3;
+    public static final int BY_SCALAR_ARRAY_DESCRIPTOR = 4;
+    public static final int BY_REFERENCE_WITH_NULL = 5;
 
     // TODO why so many methods??? WHY???
     public static String getStringMechanismFromInt(int mechanism) {
@@ -143,6 +145,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                      int fieldPrecision) {
             this.argPosition = argPosition;
             this.mechanism = mechanism;
+            if (this.mechanism == BY_REFERENCE_WITH_NULL)
+                this.notNull = false;
             this.fieldType = fieldType;
             this.fieldScale = fieldScale;
             this.fieldLenght = fieldLength;
@@ -277,7 +281,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                         rs.getInt(7), rs.getInt(8), rs.getInt(9),
                         rs.getInt(10), rs.getInt(11), rs.getInt(15));
                 int nullFlag = rs.getInt("null_flag");
-                udfParameter.setNotNull(nullFlag == 0 ? false : true);
+                if (rs.getInt(7) != BY_REFERENCE_WITH_NULL) // already setup
+                    udfParameter.setNotNull(nullFlag == 0 ? false : true);
                 udfParameter.setEncoding(rs.getString("character_set_name"));
                 parameters.add(udfParameter);
             }
@@ -410,7 +415,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                         args += " " + parameters.get(i).getStringMechanism();
             }
             if (!parameters.get(i).isNotNull() && parameters.get(i).getMechanism() != BY_DESCRIPTOR &&
-                    returnArg - 1 != i)
+                    parameters.get(i).getMechanism() != BY_REFERENCE && returnArg - 1 != i)
                 args += " " + "NULL";
             args += ",\n";
         }

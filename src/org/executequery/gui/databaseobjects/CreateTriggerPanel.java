@@ -125,7 +125,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
         anyDdlBox.addActionListener(actionEvent -> changeAnyDdlBox());
 
-        main_panel.setLayout(new GridBagLayout());
+        centralPanel.setLayout(new GridBagLayout());
         JPanel commonPanel = new JPanel(new GridBagLayout());
         commonPanel.add(typeTriggerCombo, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
@@ -143,7 +143,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(commonPanel, new GridBagConstraints(0, 0,
+        centralPanel.add(commonPanel, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -157,7 +157,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         gbcTop.fill = GridBagConstraints.BOTH;
         topPanel.add(ddlTableTriggerPanel, gbcTop);
 
-        main_panel.add(topPanel, new GridBagConstraints(0, 1,
+        centralPanel.add(topPanel, new GridBagConstraints(0, 1,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -267,7 +267,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         }
     }
 
-    protected void init_edited() {
+    protected void initEdited() {
         typeTriggerCombo.setSelectedIndex(trigger.getIntTriggerType());
         typeTriggerCombo.setEnabled(false);
         nameField.setText(trigger.getName());
@@ -314,7 +314,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     }
 
     @Override
-    public void create_object() {
+    public void createObject() {
         generateScript();
     }
 

@@ -27,7 +27,7 @@ public class SelectTypePanel extends JPanel {
     private NumberTextField sizeField;
     private NumberTextField scaleField;
     private NumberTextField subtypeField;
-    private boolean display_typeof;
+    private boolean displayTypeOf;
 
     private String[] dataTypes;
     private int[] intDataTypes;
@@ -38,10 +38,10 @@ public class SelectTypePanel extends JPanel {
     private Map<Integer, String> types;
     private TypeOfPanel typeOfPanel;
 
-    public SelectTypePanel(String[] types, int[] intTypes, ColumnData cd, boolean display_typeof) {
+    public SelectTypePanel(String[] types, int[] intTypes, ColumnData cd, boolean displayTypeOf) {
         this.dataTypes = types;
         this.intDataTypes = intTypes;
-        this.display_typeof = display_typeof;
+        this.displayTypeOf = displayTypeOf;
         sortTypes();
         removeDuplicates();
         this.cd = cd;
@@ -61,7 +61,7 @@ public class SelectTypePanel extends JPanel {
         scaleField = new NumberTextField();
         subtypeField = new NumberTextField();
         typeOfPanel = new TypeOfPanel(cd);
-        typeOfPanel.setVisible(display_typeof);
+        typeOfPanel.setVisible(displayTypeOf);
         keyListener = new KeyListener() {
             @Override
             public void keyTyped(KeyEvent keyEvent) {
@@ -131,6 +131,10 @@ public class SelectTypePanel extends JPanel {
         this.add(typeOfPanel, new GridBagConstraints(0, 4, 2, 1,
                 1, 1, GridBagConstraints.NORTH,
                 GridBagConstraints.BOTH, new Insets(1, 1, 1, 1), 0, 0));
+        // empty panel for stretch
+        this.add(new JPanel(), new GridBagConstraints(0, 5, 2, 1,
+                1, 1, GridBagConstraints.NORTH,
+                GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
     }
 
     private void refreshType() {
@@ -281,5 +285,9 @@ public class SelectTypePanel extends JPanel {
         } catch (Exception e) {
             Log.error("Error getting charsets for SelectTypePanel:", e);
         }
+    }
+
+    public void setColumnData(ColumnData columnData) {
+        this.cd = columnData;
     }
 }

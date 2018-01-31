@@ -33,7 +33,7 @@ import java.util.Vector;
  * @author vasiliy
  */
 public abstract class ProcedureDefinitionPanel extends JPanel
-        implements TableModelListener {
+        implements TableModelListener, DefinitionPanel {
 
     /**
      * The table containing all column descriptions

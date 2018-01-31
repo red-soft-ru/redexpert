@@ -187,7 +187,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                     setIcon(icons.get(BrowserConstants.EXCEPTION_IMAGE));
                     break;
                 }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("udf") == 0) {
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("external function") == 0) {
                     setIcon(icons.get(BrowserConstants.UDF_IMAGE));
                     break;
                 }

@@ -24,11 +24,11 @@ import biz.redsoft.IFBDatabaseConnection;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.*;
@@ -1182,11 +1182,18 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             List<NamedObject> list = new ArrayList<NamedObject>();
             while (rs.next()) {
 
-                DefaultDatabaseUDF udf = new DefaultDatabaseUDF(this, rs.getString(1), this.getHost());
+                DefaultDatabaseUDF udf = new DefaultDatabaseUDF(this,
+                        rs.getString(1).trim(),
+                        this.getHost());
                 udf.setRemarks(rs.getString(2));
-                udf.setModuleName(rs.getString(3));
-                udf.setEntryPoint(rs.getString(4));
+                String moduleName = rs.getString(3);
+                if (!MiscUtils.isNull(moduleName))
+                    udf.setModuleName(moduleName.trim());
+                String entryPoint = rs.getString(4);
+                if (!MiscUtils.isNull(entryPoint))
+                    udf.setEntryPoint(entryPoint.trim());
                 udf.setReturnArg(rs.getInt(5));
+                udf.setDescription(rs.getString("description"));
                 list.add(udf);
             }
 
@@ -1539,9 +1546,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getUDFResultSet() throws Exception {
 
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
-
         ResultSet resultSet = null;
 
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
@@ -1563,7 +1567,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         "RDB$DESCRIPTION,\n" +
                         "RDB$MODULE_NAME,\n" +
                         "RDB$ENTRYPOINT,\n" +
-                        "RDB$RETURN_ARGUMENT\n" +
+                        "RDB$RETURN_ARGUMENT,\n" +
+                        "RDB$DESCRIPTION as description\n" +
                         "from RDB$FUNCTIONS\n" +
                         "order by RDB$FUNCTION_NAME");
                 break;
@@ -1573,7 +1578,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         "RDB$DESCRIPTION,\n" +
                         "RDB$MODULE_NAME,\n" +
                         "RDB$ENTRYPOINT,\n" +
-                        "RDB$RETURN_ARGUMENT\n" +
+                        "RDB$RETURN_ARGUMENT,\n" +
+                        "RDB$DESCRIPTION as description\n" +
                         "from RDB$FUNCTIONS\n" +
                         "where RDB$LEGACY_FLAG = 1\n" +
                         "order by RDB$FUNCTION_NAME");
@@ -1845,7 +1851,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
      * @return the object name
      */
     public String getName() {
-        return getMetaDataKey();
+        return Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[getSubType()]);
     }
 
     /**

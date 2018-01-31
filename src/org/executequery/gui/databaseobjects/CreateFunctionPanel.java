@@ -19,8 +19,12 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Vector;
 
+/**
+ * Panel for creating and editing function
+ *
+ * @since rdb3
+ */
 public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
-
 
     public static final String CREATE_TITLE = "Create Function";
     public static final String EDIT_TITLE = "Edit Function";
@@ -30,7 +34,6 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     private JTabbedPane returnTypeTabPane;
     private ColumnData returnType;
     private DefaultDatabaseFunction function;
-
 
     /**
      * <p> Constructs a new instance.
@@ -82,13 +85,23 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         return res;
     }
 
-    public static String getQueryForGetFunctionArguments(String function) {
-        return "select cast(PP.RDB$FUNCTION_NAME as varchar(63)) as PROCEDURE_NAME,cast(PP.RDB$ARGUMENT_NAME as varchar(63)) as COLUMN_NAME,PP.RDB$FIELD_TYPE as COLUMN_TYPE,\n" +
-                "F.RDB$FIELD_TYPE as FIELD_TYPE,F.RDB$FIELD_SUB_TYPE as FIELD_SUB_TYPE,F.RDB$FIELD_PRECISION as FIELD_PRECISION,F.RDB$FIELD_SCALE as FIELD_SCALE,\n" +
-                "F.RDB$FIELD_LENGTH as FIELD_LENGTH,F.RDB$NULL_FLAG as NULL_FLAG,PP.RDB$DESCRIPTION as REMARKS,F.RDB$CHARACTER_LENGTH AS CHAR_LEN,\n" +
-                "PP.RDB$ARGUMENT_POSITION AS PARAMETER_NUMBER,F.RDB$CHARACTER_SET_ID\n" +
+    public static String getQueryFunctionArguments(String function) {
+        return "select cast(PP.RDB$FUNCTION_NAME as varchar(63)) as PROCEDURE_NAME,\n" +
+                "cast(PP.RDB$ARGUMENT_NAME as varchar(63)) as COLUMN_NAME,\n" +
+                "PP.RDB$FIELD_TYPE as COLUMN_TYPE,\n" +
+                "F.RDB$FIELD_TYPE as FIELD_TYPE,\n" +
+                "F.RDB$FIELD_SUB_TYPE as FIELD_SUB_TYPE,\n" +
+                "F.RDB$FIELD_PRECISION as FIELD_PRECISION,\n" +
+                "F.RDB$FIELD_SCALE as FIELD_SCALE,\n" +
+                "F.RDB$FIELD_LENGTH as FIELD_LENGTH,\n" +
+                "F.RDB$NULL_FLAG as NULL_FLAG,\n" +
+                "PP.RDB$DESCRIPTION as REMARKS,\n" +
+                "F.RDB$CHARACTER_LENGTH AS CHAR_LEN,\n" +
+                "PP.RDB$ARGUMENT_POSITION AS PARAMETER_NUMBER,\n" +
+                "F.RDB$CHARACTER_SET_ID\n" +
                 "from RDB$FUNCTION_ARGUMENTS PP,RDB$FIELDS F\n" +
-                "where PP.RDB$FUNCTION_NAME = '" + function + "' AND PP.RDB$FIELD_SOURCE = F.RDB$FIELD_NAME order by PP.RDB$FUNCTION_NAME,PP.RDB$FIELD_TYPE desc,PP.RDB$ARGUMENT_POSITION";
+                "where PP.RDB$FUNCTION_NAME = '" + function + "' AND PP.RDB$FIELD_SOURCE = F.RDB$FIELD_NAME\n" +
+                " order by PP.RDB$FUNCTION_NAME, PP.RDB$FIELD_TYPE desc, PP.RDB$ARGUMENT_POSITION";
     }
 
     @Override
@@ -210,7 +223,6 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
             }
         }
 
-
         ddlTextPanel.setSQLText(sb.toString());
     }
 
@@ -228,12 +240,12 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     }
 
     @Override
-    protected void init_edited() {
+    protected void initEdited() {
         super.initEditing();
     }
 
     @Override
-    public void create_object() {
+    public void createObject() {
         try {
             String querys = getSQLText();
             displayExecuteQueryDialog(querys, "^");

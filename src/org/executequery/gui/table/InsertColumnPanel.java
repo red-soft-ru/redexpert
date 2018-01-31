@@ -113,20 +113,20 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         checkPanel.addKeyListener(this);
         computedPanel.addKeyListener(this);
         descriptionPanel.addKeyListener(this);
-        main_panel.setLayout(new GridBagLayout());
-        main_panel.add(tableLabel, new GridBagConstraints(0, 0,
+        centralPanel.setLayout(new GridBagLayout());
+        centralPanel.add(tableLabel, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(tableNameField, new GridBagConstraints(1, 0,
+        centralPanel.add(tableNameField, new GridBagConstraints(1, 0,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(notNullBox, new GridBagConstraints(0, 1,
+        centralPanel.add(notNullBox, new GridBagConstraints(0, 1,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(primaryBox, new GridBagConstraints(1, 1,
+        centralPanel.add(primaryBox, new GridBagConstraints(1, 1,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -144,7 +144,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
     }
 
     @Override
-    protected void init_edited() {
+    protected void initEdited() {
         try {
             init_edited_elements();
         } catch (Exception e) {
@@ -153,7 +153,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
     }
 
     @Override
-    public void create_object() {
+    public void createObject() {
         if (tabbedPane.getSelectedComponent() != sqlPanel)
             generateSQL();
         ExecuteQueryDialog eqd = new ExecuteQueryDialog("Add Column", sqlPanel.getSQLText(), connection, true, "^");

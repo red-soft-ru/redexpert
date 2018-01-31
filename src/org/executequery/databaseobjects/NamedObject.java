@@ -100,6 +100,30 @@ public interface NamedObject extends java.io.Serializable {
             "DATABASE TRIGGER",
             "PACKAGE",
             "ROLE"};
+    String[] META_TYPES_FOR_BUNDLE = {"FUNCTION",
+            "INDEX",
+            "PROCEDURE",
+            "SEQUENCE",
+            "SYNONYM",
+            "TABLE",
+            "TRIGGER",
+            "VIEW",
+            "GLOBAL_TEMPORARY",
+            "DOMAIN",
+            "EXCEPTION",
+            "EXTERNAL_FUNCTION",
+            "SYSTEM_FUNCTIONS",
+            "SYSTEM_STRING_FUNCTIONS",
+            "SYSTEM_NUMERIC_FUNCTIONS",
+            "SYSTEM_DATE_TIME_FUNCTIONS",
+            "SYSTEM_VIEW",
+            "SYSTEM_TABLE",
+            "SYSTEM_DOMAIN",
+            "SYSTEM_INDEX",
+            "SYSTEM_TRIGGER",
+            "DATABASE_TRIGGER",
+            "PACKAGE",
+            "ROLE"};
 
     /**
      * Marks this object as being 'reset', where for any loaded object

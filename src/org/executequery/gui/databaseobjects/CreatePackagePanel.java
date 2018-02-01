@@ -4,10 +4,14 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabasePackage;
 import org.executequery.gui.ActionContainer;
+import org.executequery.gui.text.SQLTextPane;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 
-public class CreatePackagePanel extends AbstractCreateObjectPanel {
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
+public class CreatePackagePanel extends AbstractCreateObjectPanel implements KeyListener {
 
     public static final String CREATE_TITLE = "Create package";
     public static final String ALTER_TITLE = "Alter package";
@@ -25,28 +29,7 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
         super(dc, dialog, databaseObject);
     }
 
-    @Override
-    protected void init() {
-        headerPanel = new SimpleSqlTextPanel();
-        bodyPanel = new SimpleSqlTextPanel();
-        descriptionPanel = new SimpleTextArea();
-        tabbedPane.add("Header", headerPanel);
-        tabbedPane.add("Body", bodyPanel);
-        tabbedPane.add("Description", descriptionPanel);
-        String headerText = "create or alter package " + replacing_name + "\n" +
-                "as\n" +
-                "begin\n" +
-                " \n" +
-                "end";
-        headerPanel.setSQLText(headerText);
-        String bodyText = "recreate package body " + replacing_name + "\n" +
-                "as\n" +
-                "begin\n" +
-                " \n" +
-                "end";
-        bodyPanel.setSQLText(bodyText);
-
-    }
+    String notChangedText;
 
     @Override
     protected void initEdited() {
@@ -100,5 +83,49 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
         source = source.replace("\n" + nameField.getText() + "\n", " " + replacing_name + "\n");
         source = source.replace("\n" + nameField.getText() + " ", " " + replacing_name + "\n");
         return source;
+    }
+
+    @Override
+    protected void init() {
+        headerPanel = new SimpleSqlTextPanel();
+        headerPanel.getTextPane().addKeyListener(this);
+        bodyPanel = new SimpleSqlTextPanel();
+        bodyPanel.getTextPane().addKeyListener(this);
+        descriptionPanel = new SimpleTextArea();
+        tabbedPane.add("Header", headerPanel);
+        tabbedPane.add("Body", bodyPanel);
+        tabbedPane.add("Description", descriptionPanel);
+        String headerText = "create or alter package " + replacing_name + "\n" +
+                "as\n" +
+                "begin\n" +
+                " \n" +
+                "end";
+        headerPanel.setSQLText(headerText);
+        String bodyText = "recreate package body " + replacing_name + "\n" +
+                "as\n" +
+                "begin\n" +
+                " \n" +
+                "end";
+        bodyPanel.setSQLText(bodyText);
+
+    }
+
+    @Override
+    public void keyTyped(KeyEvent keyEvent) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent keyEvent) {
+        SQLTextPane textPane = (SQLTextPane) keyEvent.getSource();
+        notChangedText = textPane.getText();
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent keyEvent) {
+        SQLTextPane textPane = (SQLTextPane) keyEvent.getSource();
+        if (!textPane.getText().contains(" " + replacing_name + "\n"))
+            textPane.setText(notChangedText);
     }
 }

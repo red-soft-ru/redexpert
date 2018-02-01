@@ -2,6 +2,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.sql.SQLFormatter;
 import org.executequery.sql.StatementGenerator;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -14,25 +15,18 @@ import java.sql.Statement;
 /**
  * Created by vasiliy on 25.01.17.
  */
-public class DefaultTemporaryDatabaseTable extends DefaultDatabaseObject {
+public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
-    private DefaultDatabaseTable defaultDatabaseTable;
 
     public DefaultTemporaryDatabaseTable(DatabaseObject object) {
 
-        this(object.getHost());
+        super(object, NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]);
 
-        setCatalogName(object.getCatalogName());
-        setSchemaName(object.getSchemaName());
-        setName(object.getName());
-        setRemarks(object.getRemarks());
-
-        defaultDatabaseTable = new DefaultDatabaseTable(object);
     }
 
     public DefaultTemporaryDatabaseTable(DatabaseHost host) {
 
-        super(host, "GLOBAL TEMPORARY");
+        super(host, NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]);
     }
 
     public String getCreateSQLText() throws DataSourceException {
@@ -42,10 +36,10 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseObject {
         Statement statement = null;
         int type = -1;
         try {
-            statement = defaultDatabaseTable.getHost().getConnection().createStatement();
+            statement = getHost().getConnection().createStatement();
 
             ResultSet resultSet = statement.executeQuery("Select RDB$RELATION_TYPE FROM RDB$RELATIONS R \n" +
-                    "WHERE R.RDB$RELATION_NAME = '" + defaultDatabaseTable.getName() + "'");
+                    "WHERE R.RDB$RELATION_NAME = '" + getName() + "'");
 
             resultSet.next();
             type = resultSet.getInt(1);
@@ -57,7 +51,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseObject {
         }
 
         String createStatement =
-                statementGenerator.createTableWithConstraints(databaseProductName, defaultDatabaseTable);
+                statementGenerator.createTableWithConstraints(databaseProductName, this);
 
         createStatement = formatSqlText(createStatement);
 
@@ -73,7 +67,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseObject {
         StringBuilder sb = new StringBuilder();
         sb.append(createStatement);
         sb.append("\n\n");
-        sb.append(statementGenerator.tableConstraintsAsAlter(databaseProductName, defaultDatabaseTable));
+        sb.append(statementGenerator.tableConstraintsAsAlter(databaseProductName, this));
 
         return sb.toString();
     }
@@ -81,6 +75,19 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseObject {
     private String formatSqlText(String text) {
 
         return new SQLFormatter(text).format();
+    }
+
+    public int getType() {
+        return GLOBAL_TEMPORARY;
+    }
+
+    /**
+     * Returns the meta data key name of this object.
+     *
+     * @return the meta data key name.
+     */
+    public String getMetaDataKey() {
+        return NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY];
     }
 
     @Override

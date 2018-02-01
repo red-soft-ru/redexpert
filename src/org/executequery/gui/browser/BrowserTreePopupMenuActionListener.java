@@ -28,7 +28,6 @@ import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.BaseDialog;
-import org.executequery.gui.CreateTablePanel;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.managment.WindowAddRole;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
@@ -73,7 +72,12 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     public void deleteObject(ActionEvent e) {
         if (currentPath != null && currentSelection != null) {
             DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
-            String query = "DROP " + NamedObject.META_TYPES[node.getType()] + " " + node.getName();
+            String type;
+            if (node.getType() == NamedObject.GLOBAL_TEMPORARY)
+                type = NamedObject.META_TYPES[NamedObject.TABLE];
+            else
+                type = NamedObject.META_TYPES[node.getType()];
+            String query = "DROP " + type + " " + node.getName();
             ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, currentSelection, true);
             eqd.display();
             if (eqd.getCommit())
@@ -103,7 +107,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             GUIUtilities.showWaitCursor();
                             BaseDialog dialog =
                                     new BaseDialog(CreateTablePanel.TITLE, false);
-                            CreateTablePanel panel = new CreateTablePanel(currentSelection, dialog);
+                            CreateTablePanel panel = new CreateTablePanel(currentSelection, dialog, false);
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());
@@ -328,6 +332,25 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             BaseDialog dialog =
                                     new BaseDialog(CreatePackagePanel.CREATE_TITLE, false);
                             CreatePackagePanel panel = new CreatePackagePanel(currentSelection, dialog);
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
+                case NamedObject.GLOBAL_TEMPORARY:
+                    if (GUIUtilities.isDialogOpen(CreateTablePanel.TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateTablePanel.TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateTablePanel.TITLE, false);
+                            CreateTablePanel panel = new CreateTablePanel(currentSelection, dialog, true);
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());

@@ -110,6 +110,8 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
 
     }
 
+    boolean released = true;
+
     @Override
     public void keyTyped(KeyEvent keyEvent) {
 
@@ -118,7 +120,11 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
     @Override
     public void keyPressed(KeyEvent keyEvent) {
         SQLTextPane textPane = (SQLTextPane) keyEvent.getSource();
-        notChangedText = textPane.getText();
+        if (released) {
+            notChangedText = textPane.getText();
+            released = false;
+        }
+
 
     }
 
@@ -127,5 +133,6 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
         SQLTextPane textPane = (SQLTextPane) keyEvent.getSource();
         if (!textPane.getText().contains(" " + replacing_name + "\n"))
             textPane.setText(notChangedText);
+        released = true;
     }
 }

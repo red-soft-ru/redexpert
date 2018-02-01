@@ -187,7 +187,7 @@ public final class DerivedQuery {
             type = QueryTypes.CREATE_TRIGGER;
 
         } else if (query.indexOf("CREATE ") == 0 && (query.indexOf("PROCEDURE ") != -1 ||
-                query.indexOf("PACKAGE ") != -1)) {
+                query.indexOf("PACKAGE ") == -1)) {
 
             type = QueryTypes.CREATE_PROCEDURE;
 

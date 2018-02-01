@@ -7,7 +7,6 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.gui.ActionContainer;
-import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.databaseobjects.AbstractCreateObjectPanel;
 import org.executequery.gui.datatype.DomainPanel;
@@ -45,11 +44,8 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
     ColumnData columnData;
     DatabaseTable table;
     StringBuffer sb;
-    MetaDataValues metaData;
-    ActionContainer parent;
     DatabaseColumn columnEdited;
     DatabaseTableColumn column;
-    boolean editing;
     LiquibaseStatementGenerator statementGenerator;
     private SimpleSqlTextPanel descriptionPanel;
     private SimpleSqlTextPanel sqlPanel;
@@ -156,10 +152,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
     public void createObject() {
         if (tabbedPane.getSelectedComponent() != sqlPanel)
             generateSQL();
-        ExecuteQueryDialog eqd = new ExecuteQueryDialog("Add Column", sqlPanel.getSQLText(), connection, true, "^");
-        eqd.display();
-        if (eqd.getCommit())
-            parent.finished();
+        displayExecuteQueryDialog(sqlPanel.getSQLText(), "^");
     }
 
     @Override

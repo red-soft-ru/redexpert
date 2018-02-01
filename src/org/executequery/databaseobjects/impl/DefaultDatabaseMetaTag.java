@@ -257,7 +257,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         try {
 
-            if (StringUtils.equalsIgnoreCase(getName(), procedureTerm())) {
+            if (StringUtils.equalsIgnoreCase(getMetaDataKey(), procedureTerm())) {
 
                 // check what the term is - proc or function
                 if (type == FUNCTION) {
@@ -419,7 +419,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 if (isFunctionOrProcedure()) {
 
-                    if (StringUtils.equalsIgnoreCase(getName(), procedureTerm())) {
+                    if (StringUtils.equalsIgnoreCase(getMetaDataKey(), procedureTerm())) {
 
                         if (type == FUNCTION) {
 

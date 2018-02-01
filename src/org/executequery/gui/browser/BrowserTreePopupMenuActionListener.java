@@ -317,9 +317,29 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         }
                     }
                     break;
+                case NamedObject.PACKAGE:
+                    if (GUIUtilities.isDialogOpen(CreatePackagePanel.CREATE_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreatePackagePanel.CREATE_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreatePackagePanel.CREATE_TITLE, false);
+                            CreatePackagePanel panel = new CreatePackagePanel(currentSelection, dialog);
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
                 default:
                     GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
                     break;
+
 
             }
         }
@@ -508,6 +528,25 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
                             BaseDialog dialog = new BaseDialog(CreateUDFPanel.EDIT_TITLE, false);
                             CreateUDFPanel panel = new CreateUDFPanel(currentSelection, dialog, node.getDatabaseObject());
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
+                case NamedObject.PACKAGE:
+                    if (GUIUtilities.isDialogOpen(CreatePackagePanel.ALTER_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreatePackagePanel.ALTER_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+
+                            BaseDialog dialog = new BaseDialog(CreatePackagePanel.ALTER_TITLE, false);
+                            CreatePackagePanel panel = new CreatePackagePanel(currentSelection, dialog, (DefaultDatabasePackage) node.getDatabaseObject());
                             dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                             treePanel.reloadPath(currentPath.getParentPath());

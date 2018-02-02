@@ -287,6 +287,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
             }
             sqlPanel.setSQLText(sb.toString());
         } else {
+            columnData.setColumnName(nameField.getText());
             sb.append("ALTER TABLE ").append(table.getName()).append("\nADD ").append(columnData.getColumnName()).append("\n");
             if (MiscUtils.isNull(columnData.getComputedBy())) {
                 if (MiscUtils.isNull(columnData.getDomain())) {

@@ -50,7 +50,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         edited = false;
     }
 
-    protected void init_edited() {
+    protected void initEdited() {
         nameField.setText(databaseIndex.getName().trim());
         DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseIndex.getHost(), null, null, NamedObject.META_TYPES[NamedObject.INDEX]);
         databaseIndex = metaTag.getIndexFromName(databaseIndex.getName());
@@ -89,7 +89,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
     }
 
     @Override
-    public void create_object() {
+    public void createObject() {
         createIndex();
     }
 
@@ -176,23 +176,23 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             edited = true;
         });
 
-        main_panel.setLayout(new GridBagLayout());
+        centralPanel.setLayout(new GridBagLayout());
 
         JLabel tableLabel = new JLabel(bundlesString("table"));
-        main_panel.add(tableLabel, new GridBagConstraints(0, 0,
+        centralPanel.add(tableLabel, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(tableName, new GridBagConstraints(1, 0,
+        centralPanel.add(tableName, new GridBagConstraints(1, 0,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
         JLabel sortLabel = new JLabel(bundleString("sorting"));
-        main_panel.add(sortLabel, new GridBagConstraints(0, 1,
+        centralPanel.add(sortLabel, new GridBagConstraints(0, 1,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(sortingBox, new GridBagConstraints(1, 1,
+        centralPanel.add(sortingBox, new GridBagConstraints(1, 1,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -214,7 +214,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        main_panel.add(checksPanel, new GridBagConstraints(0, 2,
+        centralPanel.add(checksPanel, new GridBagConstraints(0, 2,
                 2, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));

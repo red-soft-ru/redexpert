@@ -67,6 +67,8 @@ public class CreateDatabasePanel extends ActionPanel
 
     private static final String CREATE_ACTION_COMMAND = "create";
 
+    protected GradientLabel gradientLabel;
+
     private java.util.List<String> charsets;
 
     private JComboBox driverCombo;
@@ -143,6 +145,11 @@ public class CreateDatabasePanel extends ActionPanel
     }
 
     private void init() {
+
+        gradientLabel = new GradientLabel();
+        gradientLabel.setText("Create Database");
+
+        add(gradientLabel, BorderLayout.NORTH);
 
         pageSizes = new ArrayList<>();
         pageSizes.add("4096");

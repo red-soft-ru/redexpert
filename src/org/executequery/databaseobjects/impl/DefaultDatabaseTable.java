@@ -76,12 +76,26 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     setRemarks(object.getRemarks());
   }
 
+    public DefaultDatabaseTable(DatabaseObject object, String metaDataKey) {
+
+        this(object.getHost(), metaDataKey);
+
+        setCatalogName(object.getCatalogName());
+        setSchemaName(object.getSchemaName());
+        setName(object.getName());
+        setRemarks(object.getRemarks());
+    }
+
   /**
    * Creates a new instance of DatabaseTable
    */
   public DefaultDatabaseTable(DatabaseHost host) {
     super(host, "TABLE");
   }
+
+    public DefaultDatabaseTable(DatabaseHost host, String metaDataKey) {
+        super(host, metaDataKey);
+    }
 
   /**
    * Propagates the call to getColumns().

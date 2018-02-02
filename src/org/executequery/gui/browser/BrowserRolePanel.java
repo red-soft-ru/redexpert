@@ -14,7 +14,6 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.print.Printable;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.Vector;
 
 /**
@@ -26,9 +25,6 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
     public JProgressBar progBar;
     Action act;
     StatementExecutor querySender;
-    //Connection con;
-    Statement state;
-    ResultSet rs;
     Boolean enableGrant;
     Vector<String> roles;
     String grants = "SUDIXR";
@@ -64,17 +60,9 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
     }
 
     void setValues(DefaultDatabaseRole ddr, BrowserController contr) {
-
-
-        /*if (con!=null)
-        {
-            ConnectionManager.close(controller.getDatabaseConnection(),con);
-        }*/
         controller = contr;
-        // ConnectionManager.
         try {
-            //con = ConnectionManager.getConnection(controller.getDatabaseConnection());
-            querySender = new DefaultStatementExecutor(controller.getDatabaseConnection(), true);
+            querySender = new DefaultStatementExecutor(ddr.getMetaTagParent().getHost().getDatabaseConnection(), true);
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
 
@@ -84,7 +72,6 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
 
     void initComponents() {
         try {
-            //con = ConnectionManager.getConnection(controller.getDatabaseConnection());
             querySender = new DefaultStatementExecutor(controller.getDatabaseConnection(), true);
         } catch (Exception e) {
 
@@ -341,7 +328,7 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
             if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 1) {
                 //state = con.createStatement();
                 String query = "Select RDB$RELATION_NAME from RDB$RELATIONS WHERE RDB$RELATION_TYPE != 1";
-                rs = querySender.execute(query, true).getResultSet();
+                ResultSet rs = querySender.execute(query, true).getResultSet();
                 while (rs.next()) {
                     String name = rs.getString(1);
                     if (jCheckBox1.isSelected()) {
@@ -361,7 +348,7 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
             if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 3) {
                 //state = con.createStatement();
                 String query = "Select DISTINCT RDB$VIEW_NAME from RDB$VIEW_RELATIONS";
-                rs = querySender.execute(query, true).getResultSet();
+                ResultSet rs = querySender.execute(query, true).getResultSet();
                 while (rs.next()) {
                     String name = rs.getString(1);
                     if (jCheckBox1.isSelected()) {
@@ -381,7 +368,7 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
             if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 2) {
                 //state = con.createStatement();
                 String query = "Select RDB$PROCEDURE_NAME from RDB$PROCEDURES";
-                rs = querySender.execute(query, true).getResultSet();
+                ResultSet rs = querySender.execute(query, true).getResultSet();
                 while (rs.next()) {
                     String name = rs.getString(1);
                     if (jCheckBox1.isSelected()) {

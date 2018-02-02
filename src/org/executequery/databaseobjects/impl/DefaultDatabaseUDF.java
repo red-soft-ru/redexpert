@@ -21,6 +21,24 @@ import java.util.Set;
 
 public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         implements DatabaseProcedure {
+    public static final String[] mechanisms = {"BY VALUE", "BY REFERENCE", "BY DESCRIPTOR", "BY BLOB DESCRIPTOR"};
+    public static final int BY_VALUE = 0;
+    public static final int BY_REFERENCE = 1;
+    public static final int BY_DESCRIPTOR = 2;
+    public static final int BY_BLOB_DESCRIPTOR = 3;
+    public static final int BY_SCALAR_ARRAY_DESCRIPTOR = 4;
+    public static final int BY_REFERENCE_WITH_NULL = 5;
+
+    // TODO why so many methods??? WHY???
+    public static String getStringMechanismFromInt(int mechanism) {
+        if (mechanism >= 0 && mechanism < mechanisms.length)
+            return mechanisms[mechanism];
+        else if (mechanism == -1) {
+            return mechanisms[1];
+        }
+        else
+            return "";
+    }
 
     public static class UDFTableModel implements TableModel {
 
@@ -59,6 +77,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 case 5:
                     return "Return Mechanism";
                 case 6:
+                    return "Free it";
+                case 7:
                     return "Description";
             }
             return "";
@@ -84,6 +104,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 case 5:
                     return udf.getReturnMechanism();
                 case 6:
+                    return udf.getFreeIt();
+                case 7:
                     return udf.getRemarks();
             }
             return "";
@@ -103,7 +125,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
 
     }
 
-    private class UDFParameter {
+    public class UDFParameter {
         private int argPosition;
         private int mechanism;
         private int fieldType;
@@ -111,9 +133,11 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         private int fieldLenght;
         private int fieldSubType;
         private int fieldPrecision;
-
+        private String encoding;
         private String fieldStringType;
         private String stringMechanism;
+        private boolean notNull;
+        private boolean isCString;
 
         UDFParameter(int argPosition, int mechanism,
                      int fieldType, int fieldScale,
@@ -121,24 +145,19 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                      int fieldPrecision) {
             this.argPosition = argPosition;
             this.mechanism = mechanism;
+            if (this.mechanism == BY_REFERENCE_WITH_NULL)
+                this.notNull = false;
+            this.fieldType = fieldType;
+            this.fieldScale = fieldScale;
+            this.fieldLenght = fieldLength;
+            this.fieldSubType = fieldSubType;
             this.fieldStringType = DatabaseTypeConverter.getTypeWithSize(fieldType, fieldSubType, fieldLength, fieldScale);
+            if (this.fieldStringType.contains("BLOB"))
+                this.fieldStringType = "BLOB";
             this.fieldPrecision = fieldPrecision;
-            this.stringMechanism = getMechanism(this.mechanism);
-        }
-
-        private String getMechanism(int mechanism) {
-            switch (mechanism) {
-                case 0:
-                    return "BY VALUE";
-                case 1:
-                    return "BY REFERENCE";
-                case 2:
-                    return "BY DESCRIPTOR";
-                case 3:
-                    return "by BLOB descriptor";
-                default:
-                    return "";
-            }
+            this.stringMechanism = getStringMechanismFromInt(this.mechanism);
+            if (this.fieldType == 40)
+                isCString = true;
         }
 
         public String getFieldStringType() {
@@ -147,6 +166,54 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
 
         public String getStringMechanism() {
             return stringMechanism;
+        }
+
+        public int getMechanism() {
+            return this.mechanism;
+        }
+
+        public int getArgPosition() {
+            return this.argPosition;
+        }
+
+        public int getFieldType() {
+            return this.fieldType;
+        }
+
+        public int getFieldLenght() {
+            return this.fieldLenght;
+        }
+
+        public int getFieldSubType() {
+            return this.fieldSubType;
+        }
+
+        public int getFieldScale() {
+            return this.fieldScale;
+        }
+
+        public int getFieldPrecision() {
+            return this.fieldPrecision;
+        }
+
+        public boolean isNotNull() {
+            return notNull;
+        }
+
+        public void setNotNull(boolean notNull) {
+            this.notNull = notNull;
+        }
+
+        public boolean isCString() {
+            return this.isCString;
+        }
+
+        public void setEncoding(String encoding) {
+            this.encoding = encoding;
+        }
+
+        public String getEncoding() {
+            return encoding;
         }
     }
 
@@ -157,7 +224,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
     private String returnMechanism = "";
     private String returns = "";
     private String inputParameters = "";
-
+    private Boolean freeIt = false;
+    private String description;
 
     List<UDFParameter> parameters = new ArrayList<>();
 
@@ -187,8 +255,9 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 "fa.rdb$field_scale,\n" +
                 "fa.rdb$field_length,\n" +
                 "fa.rdb$field_sub_type,\n" +
+                "fa.rdb$null_flag as null_flag,\n" +
                 "c.rdb$bytes_per_character,\n" +
-                "c.rdb$character_set_name,\n" +
+                "c.rdb$character_set_name as character_set_name,\n" +
                 "fa.rdb$field_precision\n" +
                 "from rdb$functions f\n" +
                 "left join rdb$function_arguments fa on f.rdb$function_name = fa.rdb$function_name\n" +
@@ -200,6 +269,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         ResultSet rs = null;
 
         parameters.clear();
+        inputParameters = "";
 
         try {
             statement = this.getHost().getConnection().createStatement();
@@ -209,31 +279,49 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
             while (rs.next()) {
                 UDFParameter udfParameter = new UDFParameter(rs.getInt(6),
                         rs.getInt(7), rs.getInt(8), rs.getInt(9),
-                        rs.getInt(10), rs.getInt(11), rs.getInt(14));
+                        rs.getInt(10), rs.getInt(11), rs.getInt(15));
+                int nullFlag = rs.getInt("null_flag");
+                if (rs.getInt(7) != BY_REFERENCE_WITH_NULL) // already setup
+                    udfParameter.setNotNull(nullFlag == 0 ? false : true);
+                udfParameter.setEncoding(rs.getString("character_set_name"));
                 parameters.add(udfParameter);
             }
 
             releaseResources(rs);
 
-            if (returnArg != 0)
+            if (returnArg != 0) {
                 returnMechanism = parameters.get(returnArg - 1).getStringMechanism();
-            else
+                if (parameters.get(returnArg - 1).getMechanism() == -1)
+                    this.freeIt = true;
+            } else {
                 returnMechanism = parameters.get(0).getStringMechanism();
+                if (parameters.get(0).getMechanism() == -1)
+                    this.freeIt = true;
+            }
 
             for (int i = 0; i < parameters.size(); i++) {
                 if (returnArg == 0 && i == 0)
                     continue;
-                inputParameters += parameters.get(i).getFieldStringType() + " "
-                        + parameters.get(i).getStringMechanism() + ", ";
+                inputParameters += parameters.get(i).getFieldStringType();
+                if (parameters.get(i).getMechanism() != BY_REFERENCE &&
+                        parameters.get(i).getMechanism() != BY_VALUE) {
+                    inputParameters += " " + parameters.get(i).getStringMechanism();
+                }
+                inputParameters += ", ";
             }
             if (!inputParameters.isEmpty())
                 inputParameters = inputParameters.substring(0, inputParameters.length() - 2);
 
             if (returnArg != 0)
                 returns = "Parameter " + returnArg;
-            else
-                returns = parameters.get(0).getFieldStringType() + " " +
-                        parameters.get(0).getStringMechanism();
+            else {
+                returns = parameters.get(0).getFieldStringType();
+                if (parameters.get(0).getMechanism() != BY_REFERENCE &&
+                        parameters.get(0).getMechanism() != -1) {
+                    returns += " ";
+                    returns += parameters.get(0).getStringMechanism();
+                }
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -289,8 +377,25 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         return inputParameters;
     }
 
+    public List<UDFParameter> getUDFParameters() {
+        return this.parameters;
+    }
+
     public int getType() {
         return UDF;
+    }
+
+    public Boolean getFreeIt() {
+        return this.freeIt;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getCreateSQLText() {
@@ -302,18 +407,35 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         for (int i = 0; i < parameters.size(); i++) {
             if (returnArg == 0 && i == 0)
                 continue;
-            args += "\t" + parameters.get(i).getFieldStringType() + " " +
-                    parameters.get(i).getStringMechanism() + ",\n";
+            args += "\t" + parameters.get(i).getFieldStringType();
+            if (parameters.get(i).getMechanism() != BY_VALUE &&
+                    parameters.get(i).getMechanism() != BY_REFERENCE
+                    ) {
+                if (parameters.get(i).isNotNull() || parameters.get(i).getMechanism() == BY_DESCRIPTOR)
+                        args += " " + parameters.get(i).getStringMechanism();
+            }
+            if (!parameters.get(i).isNotNull() && parameters.get(i).getMechanism() != BY_DESCRIPTOR &&
+                    parameters.get(i).getMechanism() != BY_REFERENCE && returnArg - 1 != i)
+                args += " " + "NULL";
+            args += ",\n";
         }
         if (!args.isEmpty())
             args = args.substring(0, args.length() - 2);
         sb.append(args);
         sb.append("\n");
         sb.append("RETURNS\n");
-        if (returnArg == 0)
-            sb.append(parameters.get(0).getFieldStringType() + " " + parameters.get(0).getStringMechanism());
+        if (returnArg == 0) {
+            sb.append(parameters.get(0).getFieldStringType());
+            if (parameters.get(0).getMechanism() != BY_REFERENCE &&
+                    parameters.get(0).getMechanism() != -1) {
+                sb.append(" ");
+                sb.append(parameters.get(0).getStringMechanism());
+            }
+        }
         else
             sb.append("PARAMETER " + returnArg);
+        if (this.freeIt)
+            sb.append(" FREE_IT ");
         sb.append("\n");
         sb.append("ENTRY_POINT '");
         sb.append(getEntryPoint().trim());

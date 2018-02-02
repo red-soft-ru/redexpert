@@ -70,7 +70,17 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
         JPanel descPanel = new JPanel(new GridBagLayout());
 
         model = new DefaultDatabaseUDF.UDFTableModel(udfs);
-        table = new JTable(model);
+        table = new JTable(model) {
+            @Override
+            public Class getColumnClass(int column) {
+                switch (column) {
+                    case 6:
+                        return Boolean.class;
+                    default:
+                        return String.class;
+                }
+            }
+        };
 
         descPanel.add(
                 new JScrollPane(table),

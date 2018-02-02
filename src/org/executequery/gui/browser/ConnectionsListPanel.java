@@ -125,10 +125,13 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         gbc.insets.top = 0;
         gbc.fill = GridBagConstraints.NONE;
         panel.add(new JLabel(bundleString("label2")), gbc);
-        gbc.gridx = 1;
-        gbc.insets.left = 0;
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.insets.left = 10;
         gbc.insets.bottom = 0;
+        gbc.anchor = GridBagConstraints.WEST;
         panel.add(button, gbc);
+        gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.insets.left = 10;

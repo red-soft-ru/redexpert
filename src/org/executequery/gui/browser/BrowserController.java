@@ -383,6 +383,7 @@ public class BrowserController {
 
                 case NamedObject.TRIGGER:
                 case NamedObject.SYSTEM_TRIGGER:
+                case NamedObject.SYSTEM_DATABASE_TRIGGER:
                     BrowserTriggerPanel triggerPanel = null;
                     if (!viewPanel.containsPanel(BrowserTriggerPanel.NAME)) {
                         triggerPanel = new BrowserTriggerPanel(this);
@@ -486,10 +487,10 @@ public class BrowserController {
                     return browserIndexPanel;
 
                 case NamedObject.TABLE:
+                case NamedObject.GLOBAL_TEMPORARY:
                     BrowserTableEditingPanel editingPanel = viewPanel.getEditingPanel();
                     editingPanel.setValues((DatabaseTable) databaseObject);
                     return editingPanel;
-
                 case NamedObject.TABLE_COLUMN:
                     TableColumnPanel columnPanel = null;
                     if (!viewPanel.containsPanel(TableColumnPanel.NAME)) {

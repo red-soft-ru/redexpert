@@ -258,6 +258,10 @@ public class ColumnData implements Serializable {
      */
     int typeOfFrom;
 
+    String mechanism;
+
+    boolean cstring;
+
     String table;
     List<String> tables;
     String columnTable;
@@ -941,6 +945,22 @@ public class ColumnData implements Serializable {
 
     public void setTypeOfFrom(int typeOfFrom) {
         this.typeOfFrom = typeOfFrom;
+    }
+
+    public String getMechanism() {
+        return mechanism;
+    }
+
+    public void setMechanism(String mechanism) {
+        this.mechanism = mechanism;
+    }
+
+    public boolean isCstring() {
+        return cstring;
+    }
+
+    public void setCstring(boolean cstring) {
+        this.cstring = cstring;
     }
 }
 

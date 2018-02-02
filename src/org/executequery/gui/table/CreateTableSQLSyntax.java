@@ -46,6 +46,11 @@ public interface CreateTableSQLSyntax {
     String CREATE_TABLE = "CREATE TABLE ";
 
     /**
+     * The literal 'CREATE GLOBAL TEMPORARY TABLE '
+     */
+    String CREATE_GLOBAL_TEMPORARY_TABLE = "CREATE GLOBAL TEMPORARY TABLE ";
+
+    /**
      * The literal ' NOT NULL'
      */
     String NOT_NULL = " NOT NULL";

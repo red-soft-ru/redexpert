@@ -9,6 +9,7 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.log.Log;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,6 +41,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
             "CHARACTER SET",
             "MAPPING",
             "ROLE"};
+    private int triggerType;
     private DefaultDatabaseTrigger trigger;
     private JComboBox typeTriggerCombo;
     private JSpinner positionField;
@@ -77,19 +79,31 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
      * The constructor
      */
 
-    public CreateTriggerPanel(DatabaseConnection dc, ActionContainer parent) {
-        this(dc, parent, null);
+    public CreateTriggerPanel(DatabaseConnection dc, ActionContainer parent, int triggerType) {
+        this(dc, parent, null, triggerType);
     }
 
-    public CreateTriggerPanel(DatabaseConnection dc, ActionContainer parent, DefaultDatabaseTrigger trigger) {
-        super(dc, parent, trigger);
+    public CreateTriggerPanel(DatabaseConnection dc, ActionContainer parent, DefaultDatabaseTrigger trigger,
+                              int triggerType) {
+        super(dc, parent, trigger, new Object[] {triggerType});
     }
 
     protected void init() {
-        if (getDatabaseVersion() > 2)
-            typeTriggerCombo = new JComboBox(new String[]{bundleString("table-trigger"), bundleString("database-trigger"), bundleString("DDL-trigger")});
-        else
-            typeTriggerCombo = new JComboBox(new String[]{bundleString("table-trigger"), bundleString("database-trigger")});
+        if (getDatabaseVersion() > 2) {
+            if (this.triggerType == NamedObject.TRIGGER)
+                typeTriggerCombo = new JComboBox(new String[]{bundleString("table-trigger")});
+            else if (this.triggerType == NamedObject.SYSTEM_DATABASE_TRIGGER)
+                typeTriggerCombo = new JComboBox(new String[]{bundleString("database-trigger"), bundleString("DDL-trigger")});
+            else
+                typeTriggerCombo = new JComboBox(new String[]{bundleString("table-trigger"), bundleString("database-trigger"), bundleString("DDL-trigger")});
+        } else {
+            if (this.triggerType == NamedObject.TRIGGER)
+                typeTriggerCombo = new JComboBox(new String[]{bundleString("table-trigger")});
+            else if (this.triggerType == NamedObject.SYSTEM_DATABASE_TRIGGER)
+                typeTriggerCombo = new JComboBox(new String[]{bundleString("database-trigger")});
+            else
+                typeTriggerCombo = new JComboBox(new String[]{bundleString("table-trigger"), bundleString("database-trigger")});
+        }
         positionLabel = new JLabel(bundleString("position"));
         descriptionText = new SimpleTextArea();
         SpinnerModel model = new SpinnerNumberModel(0, 0, Short.MAX_VALUE, 1);
@@ -125,7 +139,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
         anyDdlBox.addActionListener(actionEvent -> changeAnyDdlBox());
 
-        main_panel.setLayout(new GridBagLayout());
+        centralPanel.setLayout(new GridBagLayout());
         JPanel commonPanel = new JPanel(new GridBagLayout());
         commonPanel.add(typeTriggerCombo, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
@@ -143,7 +157,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(commonPanel, new GridBagConstraints(0, 0,
+        centralPanel.add(commonPanel, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -157,7 +171,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         gbcTop.fill = GridBagConstraints.BOTH;
         topPanel.add(ddlTableTriggerPanel, gbcTop);
 
-        main_panel.add(topPanel, new GridBagConstraints(0, 1,
+        centralPanel.add(topPanel, new GridBagConstraints(0, 1,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -267,8 +281,11 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         }
     }
 
-    protected void init_edited() {
-        typeTriggerCombo.setSelectedIndex(trigger.getIntTriggerType());
+    protected void initEdited() {
+        int intTriggerType = trigger.getIntTriggerType();
+        if (this.triggerType == NamedObject.SYSTEM_DATABASE_TRIGGER)
+            intTriggerType--;
+        typeTriggerCombo.setSelectedIndex(intTriggerType);
         typeTriggerCombo.setEnabled(false);
         nameField.setText(trigger.getName());
         nameField.setEnabled(false);
@@ -314,7 +331,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     }
 
     @Override
-    public void create_object() {
+    public void createObject() {
         generateScript();
     }
 
@@ -340,7 +357,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
     @Override
     public void setParameters(Object[] params) {
-
+        this.triggerType = (int)params[0];
     }
 
     int getVersion() throws SQLException {
@@ -351,6 +368,10 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     private void changeTypeTrigger() {
         boolean dbtrigger = typeTriggerCombo.getSelectedIndex() == 1;
         boolean tabletrigger = typeTriggerCombo.getSelectedIndex() == 0;
+        if (this.triggerType == NamedObject.SYSTEM_DATABASE_TRIGGER) {
+            tabletrigger = false;
+            dbtrigger = typeTriggerCombo.getSelectedIndex() == 0;
+        }
         databaseTriggerPanel.setVisible(dbtrigger);
         ddlTableTriggerPanel.setVisible(!dbtrigger);
         tableTriggerPanel.setVisible(tabletrigger);
@@ -376,13 +397,16 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
     private void generateScript() {
         StringBuilder query = new StringBuilder("CREATE OR ALTER TRIGGER " + nameField.getText());
-        if (typeTriggerCombo.getSelectedIndex() == 0)
+        int selectedIndex = typeTriggerCombo.getSelectedIndex();
+        if (triggerType == NamedObject.SYSTEM_DATABASE_TRIGGER)
+            selectedIndex++;
+        if (selectedIndex == 0)
             query.append(" FOR ").append(tablesCombo.getSelectedItem());
         query.append("\n");
         if (activeBox.isSelected())
             query.append("ACTIVE ");
         else query.append("INACTIVE ");
-        if (typeTriggerCombo.getSelectedIndex() == 0) {
+        if (selectedIndex == 0) {
             query.append(typeTableTriggerCombo.getSelectedItem()).append(" ");
             boolean first = true;
             if (insertBox.isSelected()) {
@@ -402,7 +426,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
             }
 
         } else {
-            if (typeTriggerCombo.getSelectedIndex() == 1)
+            if (selectedIndex == 1)
                 query.append("ON ").append(actionCombo.getSelectedItem()).append(" ");
             else {
                 query.append(typeTableTriggerCombo.getSelectedItem()).append(" ");
@@ -423,7 +447,11 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         }
         query.append("POSITION ").append(positionField.getValue()).append("\n");
         query.append(sqlBodyText.getSQLText()).append("^");
-        query.append("COMMENT ON TRIGGER ").append(nameField.getText()).append(" IS '").append(descriptionText.getTextAreaComponent().getText()).append("'^");
+        String comment = descriptionText.getTextAreaComponent().getText();
+        if (!MiscUtils.isNull(comment) && !comment.trim().isEmpty()) {
+            comment = comment.replace("'", "''");
+            query.append("COMMENT ON TRIGGER ").append(nameField.getText()).append(" IS '").append(comment).append("'^");
+        }
         displayExecuteQueryDialog(query.toString(), "^");
     }
 

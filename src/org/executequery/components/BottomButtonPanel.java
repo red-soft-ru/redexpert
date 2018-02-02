@@ -184,6 +184,13 @@ public class BottomButtonPanel extends JPanel {
         return Bundles.get("common.help.button");
     }
 
+    public void setHelpButtonVisible(boolean visible) {
+        helpButton.setVisible(visible);
+    }
+
+    public void setCancelButtonAction(AbstractAction a) {
+        cancelButton.setAction(a);
+    }
 }
 
 

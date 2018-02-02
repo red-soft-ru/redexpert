@@ -156,7 +156,9 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
      * @return the object type
      */
     public int getType() {
-        return TRIGGER;
+        if (getParent().getMetaDataKey() == META_TYPES[6])
+            return TRIGGER;
+        return SYSTEM_DATABASE_TRIGGER;
     }
 
     /**
@@ -165,7 +167,9 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
      * @return the meta data key name.
      */
     public String getMetaDataKey() {
-        return META_TYPES[TRIGGER];
+        if (getParent().getMetaDataKey() == META_TYPES[6])
+            return META_TYPES[TRIGGER];
+        return META_TYPES[SYSTEM_DATABASE_TRIGGER];
     }
 
     public String getTriggerSourceCode() {

@@ -18,7 +18,7 @@
  *
  */
 
-package org.executequery.gui;
+package org.executequery.gui.databaseobjects;
 
 import org.executequery.ActiveComponent;
 import org.executequery.EventMediator;
@@ -29,6 +29,8 @@ import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
+import org.executequery.gui.ActionContainer;
+import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.table.CreateTableFunctionPanel;
 import org.underworldlabs.jdbc.DataSourceException;
 
@@ -65,8 +67,8 @@ public class CreateTablePanel extends CreateTableFunctionPanel
     /**
      * <p> Constructs a new instance.
      */
-    public CreateTablePanel(ActionContainer parent) {
-        super();
+    public CreateTablePanel(ActionContainer parent, boolean temporary) {
+        super(temporary);
         this.parent = parent;
         try {
             jbInit();
@@ -76,8 +78,8 @@ public class CreateTablePanel extends CreateTableFunctionPanel
         setFocusComponent();
     }
 
-    public CreateTablePanel(DatabaseConnection dc, ActionContainer parent) {
-        this(parent);
+    public CreateTablePanel(DatabaseConnection dc, ActionContainer parent, boolean temporary) {
+        this(parent, temporary);
         connectionsCombo.setSelectedItem(dc);
     }
 

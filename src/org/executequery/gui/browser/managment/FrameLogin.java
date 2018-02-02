@@ -1,165 +1,124 @@
 package org.executequery.gui.browser.managment;
 
+import org.executequery.components.BottomButtonPanel;
 import org.executequery.gui.browser.UserManagerPanel;
 import org.executequery.localization.Bundles;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 
 /**
  * Created by mikhan808 on 05.06.2017.
  */
 public class FrameLogin extends JFrame {
 
-    UserManagerPanel ump;
-    private JLabel Password_label;
-    private JTextField Role_Field;
-    private JLabel Role_Label;
-    private JTextField Username_field;
-    private JLabel Username_label;
-    private JButton buttonOK;
-    private JPasswordField jPasswordField1;
-    private JPasswordField passw_field;
+    UserManagerPanel userManagerPanel;
+    private JLabel passwordLabel;
+    private JTextField roleField;
+    private JLabel roleLabel;
+    private JTextField usernameField;
+    private JLabel usernameLabel;
+    private JPasswordField passwordField;
+    FrameLogin frameLogin;
 
     /**
      * Creates new form NewJFrame
      */
-    public FrameLogin(UserManagerPanel u) {
+    public FrameLogin(UserManagerPanel userManagerPanel) {
         initComponents();
-        setResizable(false);
-        ump = u;
+        this.userManagerPanel = userManagerPanel;
+        this.setSize(800, this.getHeight());
     }
 
-    public FrameLogin(UserManagerPanel u, String user) {
-        this(u);
-        Username_field.setText(user);
-
-    }
-
-    public FrameLogin(UserManagerPanel u, String user, String passw) {
-        this(u, user);
-        passw_field.setText(passw);
+    public FrameLogin(UserManagerPanel userManagerPanel, String user) {
+        this(userManagerPanel);
+        usernameField.setText(user);
 
     }
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-         */
-        try {
-            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(FrameLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(FrameLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(FrameLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(FrameLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new JFrame().setVisible(true);
-            }
-
-        });
+    public FrameLogin(UserManagerPanel userManagerPanel, String user, String password) {
+        this(userManagerPanel, user);
+        passwordField.setText(password);
     }
 
     private void initComponents() {
+        frameLogin = this;
+        passwordField = new JPasswordField();
+        usernameField = new JTextField();
+        roleField = new JTextField();
+        usernameLabel = new JLabel();
+        passwordLabel = new JLabel();
+        roleLabel = new JLabel();
 
-        jPasswordField1 = new JPasswordField();
-        Username_field = new JTextField();
-        passw_field = new JPasswordField();
-        Role_Field = new JTextField();
-        buttonOK = new JButton();
-        Username_label = new JLabel();
-        Password_label = new JLabel();
-        Role_Label = new JLabel();
-
-        jPasswordField1.setText("jPasswordField1");
+        passwordField.setText("passwordField");
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        Role_Field.setHorizontalAlignment(JTextField.TRAILING);
-        Role_Field.setToolTipText("");
+        usernameLabel.setText(bundleString("UserName"));
+        passwordLabel.setText(bundleString("Password"));
+        roleLabel.setText(bundleString("Role"));
 
-        buttonOK.setText("OK");
-        buttonOK.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonOKActionPerformed(evt);
-            }
-        });
-
-        Username_label.setText(bundleString("UserName"));
-
-        Password_label.setText(bundleString("Password"));
-        Password_label.setToolTipText("");
-
-        Role_Label.setText(bundleString("Role"));
         this.addWindowListener(new FrameListener(this));
 
-
-        GroupLayout layout = new GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addComponent(Username_field, GroupLayout.PREFERRED_SIZE, 130, GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(Username_label))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addComponent(passw_field, GroupLayout.PREFERRED_SIZE, 129, GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(Password_label))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addComponent(Role_Field)
-                                        .addGroup(layout.createSequentialGroup()
-                                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                        .addComponent(Role_Label)
-                                                        .addComponent(buttonOK))
-                                                .addGap(0, 30, Short.MAX_VALUE)))
-                                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                        .addComponent(Username_label)
-                                        .addComponent(Password_label)
-                                        .addComponent(Role_Label))
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                        .addComponent(Username_field, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(passw_field, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(Role_Field, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                .addGap(18, 18, 18)
-                                .addComponent(buttonOK)
-                                .addContainerGap(22, Short.MAX_VALUE))
-        );
+        this.setLayout(new BorderLayout());
+        BottomButtonPanel bottomButtonPanel = new BottomButtonPanel(true);
+        bottomButtonPanel.setOkButtonAction(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                okAction();
+            }
+        });
+        bottomButtonPanel.setOkButtonText(Bundles.getCommon("ok.button"));
+        bottomButtonPanel.setCancelButtonAction(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frameLogin.dispose();
+            }
+        });
+        bottomButtonPanel.setCancelButtonText(Bundles.getCommon("cancel.button"));
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(BorderFactory.createEtchedBorder());
+        panel.add(usernameLabel, new GridBagConstraints(0, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 0, 5),
+                0, 0));
+        panel.add(usernameField, new GridBagConstraints(1, 0,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 0, 5),
+                0, 0));
+        panel.add(passwordLabel, new GridBagConstraints(2, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 0, 5),
+                0, 0));
+        panel.add(passwordField, new GridBagConstraints(3, 0,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 0, 5),
+                0, 0));
+        panel.add(roleLabel, new GridBagConstraints(4, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 0, 5),
+                0, 0));
+        panel.add(roleField, new GridBagConstraints(5, 0,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 0, 5),
+                0, 0));
+        // add empty panel for stretch
+        panel.add(new JPanel(), new GridBagConstraints(0, 1,
+                6, 1, 1, 1,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0),
+                0, 0));
+        this.add(panel, BorderLayout.CENTER);
+        this.add(bottomButtonPanel, BorderLayout.SOUTH);
 
         pack();
     }
 
-    private void buttonOKActionPerformed(java.awt.event.ActionEvent evt) {
-        ump.userManager.setUser(Username_field.getText());
-        ump.userManager.setPassword(new String(passw_field.getPassword()));
+    private void okAction() {
+        userManagerPanel.userManager.setUser(usernameField.getText());
+        userManagerPanel.userManager.setPassword(new String(passwordField.getPassword()));
         try {
-            ump.refresh();
+            userManagerPanel.refresh();
         } catch (Exception e) {
             e.printStackTrace();
         }

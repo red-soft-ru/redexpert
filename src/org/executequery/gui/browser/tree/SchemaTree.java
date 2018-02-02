@@ -172,7 +172,10 @@ public class SchemaTree extends DynamicTree
     @Override
     public void mouseClicked(MouseEvent mouseEvent) {
         if (mouseEvent.getClickCount() > 1) {
-            DatabaseObjectNode node = (DatabaseObjectNode) getSelectionPath().getLastPathComponent();
+            TreePath selectionPath = getSelectionPath();
+            if (selectionPath == null)
+                return;
+            DatabaseObjectNode node = (DatabaseObjectNode) selectionPath.getLastPathComponent();
             if (!node.isRoot())
                 panel.valueChanged(node);
         }

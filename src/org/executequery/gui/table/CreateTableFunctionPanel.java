@@ -43,9 +43,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -129,12 +127,15 @@ public abstract class CreateTableFunctionPanel extends JPanel
      */
     protected JPanel mainPanel;
 
+    boolean temporary;
+    private JComboBox typeTemporaryBox;
+
     /**
      * <p> Constructs a new instance.
      */
-    public CreateTableFunctionPanel() {
+    public CreateTableFunctionPanel(boolean temporary) {
         super(new BorderLayout());
-
+        this.temporary = temporary;
         try {
             init();
         } catch (Exception e) {
@@ -170,6 +171,13 @@ public abstract class CreateTableFunctionPanel extends JPanel
         JPanel constraintsPanel = new JPanel(new GridBagLayout());
         consPanel = new NewTableConstraintsPanel(this);
         consPanel.setData(new Vector(0), true);
+        typeTemporaryBox = new JComboBox(new DefaultComboBoxModel(new String[]{"DELETE ROWS", "PRESERVE ROWS"}));
+        typeTemporaryBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                setSQLText();
+            }
+        });
 
         constraintsPanel.add(consPanel, new GridBagConstraints(
                 1, 1, 1, 1, 1.0, 1.0,
@@ -191,6 +199,8 @@ public abstract class CreateTableFunctionPanel extends JPanel
         WidgetFactory.addLabelFieldPair(mainPanel, "Connection:", connectionsCombo, gbc);
         WidgetFactory.addLabelFieldPair(mainPanel, "Schema:", schemaCombo, gbc);
         WidgetFactory.addLabelFieldPair(mainPanel, "Table Name:", nameField, gbc);
+        if (temporary)
+            WidgetFactory.addLabelFieldPair(mainPanel, "Type Temporary Table:", typeTemporaryBox, gbc);
 
         JPanel definitionPanel = new JPanel(new GridBagLayout());
         gbc.gridwidth = 1;
@@ -476,7 +486,10 @@ public abstract class CreateTableFunctionPanel extends JPanel
 
     public void setSQLText() {
         sqlBuffer.setLength(0);
-        sqlBuffer.append(CreateTableSQLSyntax.CREATE_TABLE);
+        if (temporary)
+            sqlBuffer.append(CreateTableSQLSyntax.CREATE_GLOBAL_TEMPORARY_TABLE);
+        else
+            sqlBuffer.append(CreateTableSQLSyntax.CREATE_TABLE);
 
         // check for a valid schema name
         if (schemaModel.getSize() > 0) {
@@ -494,15 +507,20 @@ public abstract class CreateTableFunctionPanel extends JPanel
                 append(tablePanel.getSQLText()).
                 append(consPanel.getSQLText());
 
-        sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE).
-                append(CreateTableSQLSyntax.SEMI_COLON);
+        sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE);
+        if (temporary)
+            sqlBuffer.append("\nON COMMIT ").append(typeTemporaryBox.getSelectedItem());
+        sqlBuffer.append(CreateTableSQLSyntax.SEMI_COLON);
 
         setSQLText(sqlBuffer.toString());
     }
 
     public void setSQLText(String values, int type) {
         sqlBuffer.setLength(0);
-        sqlBuffer.append(CreateTableSQLSyntax.CREATE_TABLE);
+        if (temporary)
+            sqlBuffer.append(CreateTableSQLSyntax.CREATE_GLOBAL_TEMPORARY_TABLE);
+        else
+            sqlBuffer.append(CreateTableSQLSyntax.CREATE_TABLE);
         StringBuffer primary = new StringBuffer(50);
         primary.setLength(0);
         primary.append(",\nCONSTRAINT PK_");
@@ -546,8 +564,10 @@ public abstract class CreateTableFunctionPanel extends JPanel
             sqlBuffer.append(values);
         }
 
-        sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE).
-                append(CreateTableSQLSyntax.SEMI_COLON);
+        sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE);
+        if (temporary)
+            sqlBuffer.append("\nON COMMIT ").append(typeTemporaryBox.getSelectedItem());
+        sqlBuffer.append(CreateTableSQLSyntax.SEMI_COLON);
         sqlBuffer.append("\n").append(description);
         sqlBuffer.append(tablePanel.getAutoincrementSQLText().replace(TableDefinitionPanel.SUBSTITUTE_NAME, nameField.getText()));
         setSQLText(sqlBuffer.toString());

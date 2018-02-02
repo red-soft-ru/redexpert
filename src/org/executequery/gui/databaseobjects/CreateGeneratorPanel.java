@@ -34,7 +34,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
         super(dc, dialog, generator);
     }
 
-    protected void init_edited() {
+    protected void initEdited() {
         nameField.setText(generator.getName().trim());
         nameField.setEnabled(false);
         startValueText.setLongValue(generator.getSequenceValue());
@@ -44,7 +44,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
     }
 
     @Override
-    public void create_object() {
+    public void createObject() {
         try {
             createGenerator();
         } catch (SQLException e) {
@@ -84,23 +84,23 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
         incrementText.setValue(1);
         this.description = new SimpleTextArea();
 
-        main_panel.setLayout(new GridBagLayout());
+        centralPanel.setLayout(new GridBagLayout());
         JLabel startLabel = new JLabel(bundleString("start-value"));
-        main_panel.add(startLabel, new GridBagConstraints(0, 0,
+        centralPanel.add(startLabel, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(startValueText, new GridBagConstraints(1, 0,
+        centralPanel.add(startValueText, new GridBagConstraints(1, 0,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
         labelIncrement = new JLabel(bundleString("increment"));
-        main_panel.add(labelIncrement, new GridBagConstraints(0, 1,
+        centralPanel.add(labelIncrement, new GridBagConstraints(0, 1,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        main_panel.add(incrementText, new GridBagConstraints(1, 1,
+        centralPanel.add(incrementText, new GridBagConstraints(1, 1,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));

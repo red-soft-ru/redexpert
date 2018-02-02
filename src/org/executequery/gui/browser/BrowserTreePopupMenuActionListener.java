@@ -405,6 +405,23 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     }
                     break;
                 case NamedObject.VIEW:
+                    if (GUIUtilities.isDialogOpen(CreateViewPanel.EDIT_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateViewPanel.EDIT_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateViewPanel.EDIT_TITLE, false);
+                            CreateViewPanel panel = new CreateViewPanel(currentSelection, dialog, (DefaultDatabaseView) node.getDatabaseObject());
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
+                            dialog.display();
+                            treePanel.reloadPath(currentPath.getParentPath());
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
                     break;
                 case NamedObject.PROCEDURE:
                     if (GUIUtilities.isDialogOpen(CreateProcedurePanel.EDIT_TITLE)) {

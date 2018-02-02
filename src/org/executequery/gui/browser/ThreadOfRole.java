@@ -4,16 +4,18 @@ package org.executequery.gui.browser;
  * Created by mikhan808 on 05.06.2017.
  */
 public class ThreadOfRole implements Runnable {
-    public ThreadOfRole(BrowserRolePanel Brp) {
-        super();
-        brp = Brp;
-    }
 
-    BrowserRolePanel brp;
+    private BrowserRolePanel browserRolePanel;
+
+    public ThreadOfRole(BrowserRolePanel browserRolePanel) {
+
+        super();
+        this.browserRolePanel = browserRolePanel;
+    }
 
     @Override
     public void run() {
 
-        brp.run();
+        browserRolePanel.run();
     }
 }

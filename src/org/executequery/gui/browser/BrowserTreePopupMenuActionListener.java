@@ -384,6 +384,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 case NamedObject.GLOBAL_TEMPORARY:
                 case NamedObject.ROLE:
                     treePanel.valueChanged(node, currentSelection);
+                    break;
                 case NamedObject.SEQUENCE:
                     if (GUIUtilities.isDialogOpen(CreateGeneratorPanel.ALTER_TITLE)) {
 

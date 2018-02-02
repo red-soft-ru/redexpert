@@ -487,10 +487,10 @@ public class BrowserController {
                     return browserIndexPanel;
 
                 case NamedObject.TABLE:
+                case NamedObject.GLOBAL_TEMPORARY:
                     BrowserTableEditingPanel editingPanel = viewPanel.getEditingPanel();
                     editingPanel.setValues((DatabaseTable) databaseObject);
                     return editingPanel;
-
                 case NamedObject.TABLE_COLUMN:
                     TableColumnPanel columnPanel = null;
                     if (!viewPanel.containsPanel(TableColumnPanel.NAME)) {

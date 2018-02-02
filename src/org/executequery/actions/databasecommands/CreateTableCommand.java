@@ -23,7 +23,7 @@ package org.executequery.actions.databasecommands;
 import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.BaseDialog;
-import org.executequery.gui.CreateTablePanel;
+import org.executequery.gui.databaseobjects.CreateTablePanel;
 import org.underworldlabs.swing.actions.BaseCommand;
 
 import java.awt.event.ActionEvent;
@@ -60,7 +60,7 @@ public class CreateTableCommand extends OpenFrameCommand
                 GUIUtilities.showWaitCursor();
                 BaseDialog dialog =
                         createDialog(CreateTablePanel.TITLE, false);
-                CreateTablePanel panel = new CreateTablePanel(dialog);
+                CreateTablePanel panel = new CreateTablePanel(dialog, false);
                 dialog.addDisplayComponentWithEmptyBorder(panel);
                 dialog.display();
             } finally {

@@ -130,7 +130,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
         gbc.insets.left = 7;
         btnPanel.add(cancelButton, gbc);
 
-        createPanel = new CreateTablePanel();
+        createPanel = new CreateTablePanel(false);
         createPanel.addButtonsPanel(btnPanel);
         createPanel.setPreferredSize(new Dimension(700, 550));
         c.add(createPanel, BorderLayout.CENTER);
@@ -186,8 +186,8 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
 
     class CreateTablePanel extends CreateTableFunctionPanel {
 
-        public CreateTablePanel() {
-            super();
+        public CreateTablePanel(boolean temporary) {
+            super(temporary);
         }
 
         public void addButtonsPanel(JPanel buttonsPanel) {

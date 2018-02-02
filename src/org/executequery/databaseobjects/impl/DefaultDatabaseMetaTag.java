@@ -1711,7 +1711,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     "rdb$description\n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is null \n" +
-                    "and (rdb$system_flag is null or rdb$system_flag = 0) \n" +
+                    "and (rdb$system_flag is null or rdb$system_flag = 0) and rdb$relation_type=0 or rdb$relation_type=2\n" +
                     "order by rdb$relation_name");
         } else if (metaDataKey.equals("SYSTEM TABLE")) {
             resultSet = statement.executeQuery("select rdb$relation_name, \n" +

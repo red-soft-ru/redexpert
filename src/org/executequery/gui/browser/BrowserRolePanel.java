@@ -1,90 +1,118 @@
 package org.executequery.gui.browser;
 
-//import com.sun.glass.ui.Application;
-
+import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
+import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.impl.DefaultDatabaseRole;
+import org.executequery.event.ApplicationEvent;
+import org.executequery.event.ConnectionEvent;
+import org.executequery.event.ConnectionListener;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.log.Log;
+import org.underworldlabs.swing.GUIUtils;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.print.Printable;
 import java.sql.ResultSet;
+import java.time.LocalTime;
 import java.util.Vector;
 
 /**
  * Created by mikhan808 on 02.04.2017.
  */
-public class BrowserRolePanel extends AbstractFormObjectViewPanel {
-    public static final String NAME = "BrowserRolePanel";
-    public BrowserController controller;
-    public JProgressBar progBar;
-    Action act;
-    StatementExecutor querySender;
-    Boolean enableGrant;
-    Vector<String> roles;
-    String grants = "SUDIXR";
-    String[] headers = {"Object", "Select", "Update", "Delete", "Insert", "Execute", "References"};
-    Vector<String> relName;
-    Vector<String> relType;
-    Icon gr, no, adm;
-    JButton cancelWait;
-    private javax.swing.JButton noAllGrantsButton;
-    private javax.swing.JComboBox<String> objectBox;
-    private javax.swing.JButton allAdminOptionButton;
-    private javax.swing.JButton allGrantsButton;
-    private javax.swing.JButton allRolesNoGrantButton;
-    private javax.swing.JButton allUsersAdminOptionButton;
-    private javax.swing.JButton allUsersGrantButton;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JTable rolesTable;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JScrollPane jScrollPane1;
+public class BrowserRolePanel extends AbstractFormObjectViewPanel implements ConnectionListener {
 
-    public BrowserRolePanel(BrowserController contr) {   //super();
-        controller = contr;
-        gr = GUIUtilities.loadIcon(BrowserConstants.GRANT_IMAGE);
-        no = GUIUtilities.loadIcon(BrowserConstants.NO_GRANT_IMAGE);
-        adm = GUIUtilities.loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
+    public BrowserRolePanel(BrowserController browserController) {
+        controller = browserController;
+        grantIcon = GUIUtilities.loadIcon(BrowserConstants.GRANT_IMAGE);
+        noGrantIcon = GUIUtilities.loadIcon(BrowserConstants.NO_GRANT_IMAGE);
+        adminIcon = GUIUtilities.loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
         enableGrant = true;
+        EventMediator.registerListener(this);
         initComponents();
+    }
 
+    @Override
+    public void connected(ConnectionEvent connectionEvent) {
 
     }
 
-    void setValues(DefaultDatabaseRole ddr, BrowserController contr) {
-        controller = contr;
+    @Override
+    public void disconnected(ConnectionEvent connectionEvent) {
+        cleanup();
+    }
+
+    enum Action {
+        NO_ALL_GRANTS_TO_OBJECT,
+        ALL_GRANTS_TO_OBJECT,
+        ALL_GRANTS_TO_OBJECT_WITH_GRANT_OPTION,
+        NO_GRANT_TO_ALL_OBJECTS,
+        GRANT_TO_ALL_OBJECTS,
+        GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION,
+        NO_ALL_GRANTS_TO_ALL_OBJECTS,
+        ALL_GRANTS_TO_ALL_OBJECTS,
+        ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION,
+        CREATE_TABLE
+    }
+
+    public static final String NAME = "BrowserRolePanel";
+    public BrowserController controller;
+    public JProgressBar progressBar;
+
+    private Action action;
+    private StatementExecutor querySender;
+    private boolean enableGrant;
+    private Vector<String> roles;
+    private String grants = "SUDIXR";
+    private String[] headers = {"Object", "Select", "Update", "Delete", "Insert", "Execute", "References"};
+    private Vector<String> relationNames;
+    private Vector<String> relationTypes;
+    private Icon grantIcon, noGrantIcon, adminIcon;
+    private JButton cancelWait;
+    private JButton noAllGrantsButton;
+    private JComboBox<String> objectBox;
+    private JButton allAdminOptionButton;
+    private JButton allGrantsButton;
+    private JButton allRolesNoGrantButton;
+    private JButton allUsersAdminOptionButton;
+    private JButton allUsersGrantButton;
+    private JButton grantAllToAllButton;
+    private JButton grantAllToAllWithGrantButton;
+    private JButton revokeAllFromAllButton;
+    private JTable rolesTable;
+    private JComboBox<String> rolesListCombo;
+    private JCheckBox showSysTablesCheckBox;
+    private JScrollPane jScrollPane1;
+
+    @Override
+    public boolean canHandleEvent(ApplicationEvent event) {
+        return false;
+    }
+
+    void setValues(DefaultDatabaseRole ddr, BrowserController browserController) {
+        controller = browserController;
         try {
             querySender = new DefaultStatementExecutor(ddr.getMetaTagParent().getHost().getDatabaseConnection(), true);
         } catch (Exception e) {
             GUIUtilities.displayErrorMessage(e.getMessage());
-
         }
-        create_roles_list(ddr.getName());
+        createRolesList(ddr.getName());
     }
 
     void initComponents() {
-        try {
-            querySender = new DefaultStatementExecutor(controller.getDatabaseConnection(), true);
-        } catch (Exception e) {
-
-
-        }
-
         jScrollPane1 = new javax.swing.JScrollPane();
         rolesTable = new javax.swing.JTable();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jCheckBox1 = new javax.swing.JCheckBox();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        rolesListCombo = new javax.swing.JComboBox<>();
+        showSysTablesCheckBox = new javax.swing.JCheckBox();
+        grantAllToAllButton = new javax.swing.JButton();
+        grantAllToAllWithGrantButton = new javax.swing.JButton();
+        revokeAllFromAllButton = new javax.swing.JButton();
         objectBox = new javax.swing.JComboBox<>();
         allUsersGrantButton = new javax.swing.JButton();
         allUsersAdminOptionButton = new javax.swing.JButton();
@@ -93,117 +121,65 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
         allAdminOptionButton = new javax.swing.JButton();
         noAllGrantsButton = new javax.swing.JButton();
         cancelWait = new JButton();
-        progBar = new JProgressBar();
-        BrowserTableCellRenderer bctr = new BrowserTableCellRenderer();
-        rolesTable.setDefaultRenderer(Object.class, bctr);
+        progressBar = new JProgressBar();
+        BrowserTableCellRenderer cellRenderer = new BrowserTableCellRenderer();
+        rolesTable.setDefaultRenderer(Object.class, cellRenderer);
         jScrollPane1.setViewportView(rolesTable);
-        rolesTable.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jTable1MouseClicked(evt);
-            }
+        rolesTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                rolesTableMouseClicked(e);
+        }
         });
 
-        //create_roles_list();
-        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jComboBox1ActionPerformed(evt);
-            }
-        });
-        jComboBox1.setToolTipText("List of roles");
-        progBar.setMinimum(0);
-        jCheckBox1.setText("Show system tables");
-        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox1ActionPerformed(evt);
-            }
-        });
+        rolesListCombo.addActionListener(e -> rolesListAction());
+        rolesListCombo.setToolTipText("List of roles");
+        progressBar.setMinimum(0);
+        showSysTablesCheckBox.setText("Show system tables");
+        showSysTablesCheckBox.addActionListener(e -> showSysTablesAction());
 
-        jButton1.setIcon(GUIUtilities.loadIcon("grant_all.png"));
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-        jButton1.setToolTipText("GRANT ALL TO ALL");
+        grantAllToAllButton.setIcon(GUIUtilities.loadIcon("grant_all.png"));
+        grantAllToAllButton.addActionListener(e -> grantAllToAll());
+        grantAllToAllButton.setToolTipText("GRANT ALL TO ALL");
 
-        jButton2.setIcon(GUIUtilities.loadIcon("admin_option_all.png"));
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-        jButton2.setToolTipText("GRANT ALL TO ALL WITH GRANT_OPTION");
+        grantAllToAllWithGrantButton.setIcon(GUIUtilities.loadIcon("admin_option_all.png"));
+        grantAllToAllWithGrantButton.addActionListener(e -> grantAllToAllWithGrant());
+        grantAllToAllWithGrantButton.setToolTipText("GRANT ALL TO ALL WITH GRANT_OPTION");
 
-        jButton3.setIcon(GUIUtilities.loadIcon("no_grant_all.png"));
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
-        jButton3.setToolTipText("REVOKE ALL FROM ALL");
+        revokeAllFromAllButton.setIcon(GUIUtilities.loadIcon("no_grant_all.png"));
+        revokeAllFromAllButton.addActionListener(e -> revokeAllFromAll());
+        revokeAllFromAllButton.setToolTipText("REVOKE ALL FROM ALL");
 
         objectBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[]{"All objects", "Tables", "Procedures", "Views"}));
-        objectBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                objectBoxActionPerformed(evt);
-            }
-        });
+        objectBox.addActionListener(e -> objectBoxAction());
         objectBox.setToolTipText("Select type of objects");
 
         allUsersGrantButton.setIcon(GUIUtilities.loadIcon("grant_vertical.png"));
-        allUsersGrantButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                allUsersGrantButtonActionPerformed(evt);
-            }
-        });
+        allUsersGrantButton.addActionListener(e -> allUsersGrantButtonAction());
         allUsersGrantButton.setToolTipText("GRANT TO ALL OBJECTS");
 
         allUsersAdminOptionButton.setIcon(GUIUtilities.loadIcon("admin_option_vertical.png"));
-        allUsersAdminOptionButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                allUsersAdminOptionButtonActionPerformed(evt);
-            }
-        });
+        allUsersAdminOptionButton.addActionListener(e -> allUsersAdminOptionAction());
         allAdminOptionButton.setToolTipText("GRANT TO ALL OBJECTS WITH GRANT OPTION");
 
         allRolesNoGrantButton.setIcon(GUIUtilities.loadIcon("no_grant_vertical.png"));
-        allRolesNoGrantButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                allRolesNoGrantButtonActionPerformed(evt);
-            }
-        });
+        allRolesNoGrantButton.addActionListener(e -> allRolesNoGrantAction());
         allRolesNoGrantButton.setToolTipText("REVOKE FROM ALL OBJECTS");
 
         allGrantsButton.setIcon(GUIUtilities.loadIcon("grant_gorisont.png"));
-        allGrantsButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                allGrantsButtonActionPerformed(evt);
-            }
-        });
+        allGrantsButton.addActionListener(e -> allGrantsButtonAction());
         allGrantsButton.setToolTipText("ALL GRANTS TO OBJECT");
 
         allAdminOptionButton.setIcon(GUIUtilities.loadIcon("admin_option_gorisont.png"));
-        allAdminOptionButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                allAdminOptionButtonActionPerformed(evt);
-            }
-        });
+        allAdminOptionButton.addActionListener(e -> allAdminOptionButtonAction());
         allAdminOptionButton.setToolTipText("ALL GRANTS TO OBJECT WITH GRANT OPTION");
 
         noAllGrantsButton.setIcon(GUIUtilities.loadIcon("no_grant_gorisont.png"));
-        noAllGrantsButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                noAllGrantsButtonActionPerformed(evt);
-            }
-        });
+        noAllGrantsButton.addActionListener(e -> noAllGrantsButtonAction());
         noAllGrantsButton.setToolTipText("REVOKE ALL FROM OBJECT");
 
         cancelWait.setText("Cancel waiting fill");
-        cancelWait.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelWaitActionPerformed(evt);
-            }
-        });
+        cancelWait.addActionListener(e -> cancelWaitAction());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -213,11 +189,11 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
                                 .addGap(18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addGroup(layout.createSequentialGroup()
-                                                .addComponent(jCheckBox1)
+                                                .addComponent(showSysTablesCheckBox)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(progBar))
+                                                .addComponent(progressBar))
                                         .addGroup(layout.createSequentialGroup()
-                                                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(rolesListCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(objectBox, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -227,11 +203,11 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(noAllGrantsButton)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(jButton1)
+                                                .addComponent(grantAllToAllButton)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(jButton2)
+                                                .addComponent(grantAllToAllWithGrantButton)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(jButton3)
+                                                .addComponent(revokeAllFromAllButton)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(allUsersGrantButton)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -248,326 +224,321 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
                         .addGroup(layout.createSequentialGroup()
                                 .addGap(10)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(rolesListCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(objectBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(allGrantsButton)
                                         .addComponent(allAdminOptionButton)
                                         .addComponent(noAllGrantsButton)
-                                        .addComponent(jButton1)
-                                        .addComponent(jButton2)
-                                        .addComponent(jButton3)
+                                        .addComponent(grantAllToAllButton)
+                                        .addComponent(grantAllToAllWithGrantButton)
+                                        .addComponent(revokeAllFromAllButton)
                                         .addComponent(allUsersGrantButton)
                                         .addComponent(allUsersAdminOptionButton)
                                         .addComponent(allRolesNoGrantButton)
                                         .addComponent(cancelWait))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jCheckBox1)
-                                        .addComponent(progBar))
+                                        .addComponent(showSysTablesCheckBox)
+                                        .addComponent(progressBar))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE))
         );
-//create_table();
     }
 
-    void create_roles_list() {
+    void createRolesList() {
         try {
-            //Statement st = con.createStatement();
             String query = "SELECT RDB$ROLE_NAME FROM RDB$ROLES";
-            ResultSet result = querySender.execute(query, true).getResultSet();
+            ResultSet result = querySender.getResultSet(query).getResultSet();
             roles = new Vector<>();
             while (result.next()) {
                 String role = result.getString(1);
                 roles.add(role);
-
-
             }
             querySender.releaseResources();
-            jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(roles));
-            jComboBox1.setSelectedIndex(0);
+            rolesListCombo.setModel(new javax.swing.DefaultComboBoxModel<>(roles));
+            rolesListCombo.setSelectedIndex(0);
 
         } catch (Exception e) {
-            GUIUtilities.displayErrorMessage(e.getMessage());
+            e.printStackTrace();
+        } finally {
+            querySender.releaseResources();
         }
     }
 
-    void create_roles_list(String selectedRole) {
+    void createRolesList(String selectedRole) {
         enableGrant = false;
         try {
             //Statement st = con.createStatement();
-            String query = "SELECT RDB$ROLE_NAME FROM RDB$ROLES";
-            ResultSet result = querySender.execute(query, true).getResultSet();
+            String query = "SELECT RDB$ROLE_NAME FROM RDB$ROLES ORDER BY 1";
+            ResultSet result = querySender.getResultSet(query).getResultSet();
             roles = new Vector<>();
             while (result.next()) {
                 String role = result.getString(1);
                 roles.add(role);
-
-
             }
             querySender.releaseResources();
-            jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(roles));
-            jComboBox1.setSelectedItem(selectedRole);
+            rolesListCombo.setModel(new javax.swing.DefaultComboBoxModel<>(roles));
+            rolesListCombo.setSelectedItem(selectedRole);
 
         } catch (Exception e) {
-            GUIUtilities.displayErrorMessage(e.getMessage());
+            e.printStackTrace();
+        } finally {
+            querySender.releaseResources();
         }
         enableGrant = true;
     }
 
-    void create_table() {
+    void createTable() {
         setEnableGrant(false);
-        relName = new Vector<>();
-        relType = new Vector<>();
-        rolesTable.setModel(new RoleTableModel
-
-
-                (headers, 0));
-        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer();
-
+        relationNames = new Vector<>();
+        relationTypes = new Vector<>();
+        rolesTable.setModel(new RoleTableModel(headers, 0));
         try {
             if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 1) {
-                //state = con.createStatement();
-                String query = "Select RDB$RELATION_NAME from RDB$RELATIONS WHERE RDB$RELATION_TYPE != 1";
-                ResultSet rs = querySender.execute(query, true).getResultSet();
+                String query = "Select RDB$RELATION_NAME from RDB$RELATIONS WHERE RDB$RELATION_TYPE != 1 ORDER BY 1";
+                ResultSet rs = querySender.getResultSet(query).getResultSet();
                 while (rs.next()) {
                     String name = rs.getString(1);
-                    if (jCheckBox1.isSelected()) {
-                        relName.add(name);
-                        relType.add(objectBox.getItemAt(1));
+                    if (showSysTablesCheckBox.isSelected()) {
+                        relationNames.add(name);
+                        relationTypes.add(objectBox.getItemAt(1));
                     } else {
                         if (!name.contains("$")) {
-                            relName.add(name);
-                            relType.add(objectBox.getItemAt(1));
+                            relationNames.add(name);
+                            relationTypes.add(objectBox.getItemAt(1));
                         }
                     }
-
-
                 }
                 querySender.releaseResources();
             }
             if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 3) {
-                //state = con.createStatement();
-                String query = "Select DISTINCT RDB$VIEW_NAME from RDB$VIEW_RELATIONS";
-                ResultSet rs = querySender.execute(query, true).getResultSet();
+                String query = "Select DISTINCT RDB$VIEW_NAME from RDB$VIEW_RELATIONS ORDER BY 1";
+                ResultSet rs = querySender.getResultSet(query).getResultSet();
                 while (rs.next()) {
                     String name = rs.getString(1);
-                    if (jCheckBox1.isSelected()) {
-                        relName.add(name);
-                        relType.add(objectBox.getItemAt(3));
+                    if (showSysTablesCheckBox.isSelected()) {
+                        relationNames.add(name);
+                        relationTypes.add(objectBox.getItemAt(3));
                     } else {
                         if (!name.contains("$")) {
-                            relName.add(name);
-                            relType.add(objectBox.getItemAt(3));
+                            relationNames.add(name);
+                            relationTypes.add(objectBox.getItemAt(3));
                         }
                     }
-
-
                 }
                 querySender.releaseResources();
             }
             if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 2) {
-                //state = con.createStatement();
-                String query = "Select RDB$PROCEDURE_NAME from RDB$PROCEDURES";
-                ResultSet rs = querySender.execute(query, true).getResultSet();
+                String query = "Select RDB$PROCEDURE_NAME from RDB$PROCEDURES ORDER BY 1";
+                ResultSet rs = querySender.getResultSet(query).getResultSet();
                 while (rs.next()) {
                     String name = rs.getString(1);
-                    if (jCheckBox1.isSelected()) {
-                        relName.add(name);
-                        relType.add(objectBox.getItemAt(2));
+                    if (showSysTablesCheckBox.isSelected()) {
+                        relationNames.add(name);
+                        relationTypes.add(objectBox.getItemAt(2));
                     } else {
                         if (!name.contains("$")) {
-                            relName.add(name);
-                            relType.add(objectBox.getItemAt(2));
+                            relationNames.add(name);
+                            relationTypes.add(objectBox.getItemAt(2));
                         }
                     }
-
-
                 }
                 querySender.releaseResources();
             }
-            progBar.setMaximum(relName.size());
-            for (int i = 0; i < relName.size() && !enableGrant; i++) {
-                progBar.setValue(i);
+            progressBar.setMaximum(relationNames.size());
+            for (int i = 0; i < relationNames.size() && !enableGrant; i++) {
+                progressBar.setValue(i);
+                String s = "";
                 try {
-
-
-                    //Statement st = con.createStatement();
-                    String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
-                            "where (rdb$grant_option is not null) and (rdb$Relation_name='" + relName.elementAt(i) + "') and (rdb$user='" + jComboBox1.getSelectedItem() + "')";
-                    ResultSet rs1 = querySender.execute(s, true).getResultSet();
+                    s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
+                            "where (rdb$grant_option is not null) and (rdb$Relation_name='" + relationNames.elementAt(i) + "') and (rdb$user='" + rolesListCombo.getSelectedItem() + "')";
+                    ResultSet resultSet = querySender.getResultSet(s).getResultSet();
                     Vector<Object> roleData = new Vector<Object>();
 
-                    roleData.add(relName.elementAt(i));
+                    roleData.add(relationNames.elementAt(i));
                     for (int k = 0; k < 6; k++)
-                        roleData.add(no);
+                        roleData.add(noGrantIcon);
                     ((RoleTableModel) rolesTable.getModel()).addRow(roleData);
-                    //rolesTable.setDefaultRenderer(ImageIcon.class,renderer);
 
-                    while (rs1.next()) {
-                        String grant = rs1.getString(1);
+                    while (resultSet.next()) {
+                        String grant = resultSet.getString(1);
                         grant = grant.substring(0, 1);
                         int ind = grants.indexOf(grant);
-                        if (rs1.getObject(2).equals(0)) {
-
-
-                            rolesTable.setValueAt(gr, i, ind + 1);
+                        if (resultSet.getObject(2).equals(0)) {
+                            rolesTable.setValueAt(grantIcon, i, ind + 1);
                         } else
-                            rolesTable.getModel().setValueAt(adm, i, ind + 1);
-
+                            rolesTable.getModel().setValueAt(adminIcon, i, ind + 1);
                     }
                     querySender.releaseResources();
-                    //((RoleTableModel) rolesTable.getModel()).addRow(roleData);
-                    //((RoleTableModel) rolesTable.getModel())
-
-
                 } catch (Exception e) {
-                    GUIUtilities.displayErrorMessage(e.getMessage());
+                    if (querySender.getDatabaseConnection().isConnected()) {
+                        GUIUtils.startWorker(new Runnable() {
+                            @Override
+                            public void run() {
+                                GUIUtilities.displayInformationMessage(LocalTime.now());
+                            }
+                        });
+                        Log.error("SQL:" + s);
+                        e.printStackTrace();
+                    }
+                } finally {
+                    querySender.releaseResources();
                 }
             }
         } catch (Exception e) {
-
-            GUIUtilities.displayErrorMessage(e.getMessage());
+            e.printStackTrace();
+        } finally {
+            querySender.releaseResources();
         }
         setEnableGrant(true);
-        progBar.setValue(0);
+        progressBar.setValue(0);
     }
 
-    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {
-        act = Action.CREATE_TABLE;
+    private void rolesListAction() {
+        action = Action.CREATE_TABLE;
         setEnableGrant(false);
         Runnable r = new ThreadOfRole(this);
         Thread t = new Thread(r);
         t.start();
     }
 
-    private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
-        act = Action.CREATE_TABLE;
+    private void showSysTablesAction() {
+        action = Action.CREATE_TABLE;
         setEnableGrant(false);
         Runnable r = new ThreadOfRole(this);
         Thread t = new Thread(r);
         t.start();
     }
 
-    void grant_on_role(int grantt, int row, int col) {
-        if (row < rolesTable.getRowCount())
-            switch (grantt) {
+    void grantOnRole(int grant, int row, int col) {
+        if (row < rolesTable.getRowCount()) {
+            switch (grant) {
                 case 0:
                     try {
-
-                        //Statement st = con.createStatement();
-                        if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
+                        if (!relationTypes.elementAt(row).equals(objectBox.getItemAt(2))) {
                             if (!headers[col].equals("Execute")) {
-                                String query = "REVOKE " + headers[col] + " ON \"" + relName.elementAt(row) + "\" FROM \"" + jComboBox1.getSelectedItem() + "\";";
-                                querySender.execute(query, true);
-                                rolesTable.setValueAt(no, row, col);
+                                String query = "REVOKE " + headers[col] + " ON \"" + relationNames.elementAt(row) + "\" FROM \"" + rolesListCombo.getSelectedItem() + "\";";
+                                querySender.execute(QueryTypes.REVOKE, query);
+                                querySender.execute(QueryTypes.COMMIT, null);
+                                rolesTable.setValueAt(noGrantIcon, row, col);
                                 querySender.releaseResources();
                             }
                         } else if (headers[col].equals("Execute")) {
-                            String query = "REVOKE " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" FROM \"" + jComboBox1.getSelectedItem() + "\";";
-                            querySender.execute(query, true);
-                            rolesTable.setValueAt(no, row, col);
+                            String query = "REVOKE " + headers[col] + " ON PROCEDURE \"" + relationNames.elementAt(row) + "\" FROM \"" + rolesListCombo.getSelectedItem() + "\";";
+                            querySender.execute(QueryTypes.REVOKE, query);
+                            querySender.execute(QueryTypes.COMMIT, null);
+                            rolesTable.setValueAt(noGrantIcon, row, col);
                             querySender.releaseResources();
                         }
 
                     } catch (Exception e) {
-                        GUIUtilities.displayErrorMessage(e.getMessage());
+                        e.printStackTrace();
+                    } finally {
+                        querySender.releaseResources();
                     }
                     break;
                 case 1:
-                    if (rolesTable.getValueAt(row, col).equals(adm)) {
+                    if (rolesTable.getValueAt(row, col).equals(adminIcon)) {
                         try {
-
-                            //Statement st = con.createStatement();
-                            if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
+                            if (!relationTypes.elementAt(row).equals(objectBox.getItemAt(2))) {
                                 if (!headers[col].equals("Execute")) {
-                                    String query = "REVOKE " + headers[col] + " ON \"" + relName.elementAt(row) + "\" FROM \"" + jComboBox1.getSelectedItem() + "\";";
-                                    querySender.execute(query, true);
-                                    rolesTable.setValueAt(no, row, col);
+                                    String query = "REVOKE " + headers[col] + " ON \"" + relationNames.elementAt(row) + "\" FROM \"" + rolesListCombo.getSelectedItem() + "\";";
+                                    querySender.execute(QueryTypes.REVOKE, query);
+                                    querySender.execute(QueryTypes.COMMIT, null);
+                                    rolesTable.setValueAt(noGrantIcon, row, col);
                                     querySender.releaseResources();
                                 }
                             } else if (headers[col].equals("Execute")) {
-                                String query = "REVOKE " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" FROM \"" + jComboBox1.getSelectedItem() + "\";";
-                                querySender.execute(query, true);
-                                rolesTable.setValueAt(no, row, col);
+                                String query = "REVOKE " + headers[col] + " ON PROCEDURE \"" + relationNames.elementAt(row) + "\" FROM \"" + rolesListCombo.getSelectedItem() + "\";";
+                                querySender.execute(QueryTypes.REVOKE, query);
+                                querySender.execute(QueryTypes.COMMIT, null);
+                                rolesTable.setValueAt(noGrantIcon, row, col);
                                 querySender.releaseResources();
                             }
 
                         } catch (Exception e) {
-                            GUIUtilities.displayErrorMessage(e.getMessage());
+                            e.printStackTrace();
+                        } finally {
+                            querySender.releaseResources();
                         }
 
                         try {
-
-                            //Statement st = con.createStatement();
-                            if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
+                            if (!relationTypes.elementAt(row).equals(objectBox.getItemAt(2))) {
                                 if (!headers[col].equals("Execute")) {
-                                    String query = "GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";";
-                                    querySender.execute(query, true);
+                                    String query = "GRANT " + headers[col] + " ON \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\";";
+                                    querySender.execute(QueryTypes.GRANT, query);
+                                    querySender.execute(QueryTypes.COMMIT, null);
                                     querySender.releaseResources();
-                                    rolesTable.setValueAt(gr, row, col);
+                                    rolesTable.setValueAt(grantIcon, row, col);
                                 }
                             } else if (headers[col].equals("Execute")) {
-                                String query = "GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";";
-                                querySender.execute(query, true);
+                                String query = "GRANT " + headers[col] + " ON PROCEDURE \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\";";
+                                querySender.execute(QueryTypes.GRANT, query);
+                                querySender.execute(QueryTypes.COMMIT, null);
                                 querySender.releaseResources();
-                                rolesTable.setValueAt(gr, row, col);
+                                rolesTable.setValueAt(grantIcon, row, col);
                             }
 
                         } catch (Exception e) {
-                            GUIUtilities.displayErrorMessage(e.getMessage());
+                            e.printStackTrace();
+                        } finally {
+                            querySender.releaseResources();
                         }
 
                     } else
                         try {
-
-                            //Statement st = con.createStatement();
-                            if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
+                            if (!relationTypes.elementAt(row).equals(objectBox.getItemAt(2))) {
                                 if (!headers[col].equals("Execute")) {
-                                    String query = "GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";";
-                                    querySender.execute(query, true);
+                                    String query = "GRANT " + headers[col] + " ON \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\";";
+                                    querySender.execute(QueryTypes.GRANT, query);
+                                    querySender.execute(QueryTypes.COMMIT, null);
                                     querySender.releaseResources();
-                                    rolesTable.setValueAt(gr, row, col);
+                                    rolesTable.setValueAt(grantIcon, row, col);
                                 }
                             } else if (headers[col].equals("Execute")) {
-                                String query = "GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\";";
-                                querySender.execute(query, true);
+                                String query = "GRANT " + headers[col] + " ON PROCEDURE \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\";";
+                                querySender.execute(QueryTypes.GRANT, query);
+                                querySender.execute(QueryTypes.COMMIT, null);
                                 querySender.releaseResources();
-                                rolesTable.setValueAt(gr, row, col);
+                                rolesTable.setValueAt(grantIcon, row, col);
                             }
                         } catch (Exception e) {
-                            GUIUtilities.displayErrorMessage(e.getMessage());
+                            e.printStackTrace();
+                        } finally {
+                            querySender.releaseResources();
                         }
                     break;
                 case 2:
                     try {
-
-                        //Statement st = con.createStatement();
-                        if (!relType.elementAt(row).equals(objectBox.getItemAt(2))) {
+                        if (!relationTypes.elementAt(row).equals(objectBox.getItemAt(2))) {
                             if (!headers[col].equals("Execute")) {
-                                String query = "GRANT " + headers[col] + " ON \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\" WITH GRANT OPTION;";
-                                querySender.execute(query, true);
+                                String query = "GRANT " + headers[col] + " ON \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\" WITH GRANT OPTION;";
+                                querySender.execute(QueryTypes.GRANT, query);
+                                querySender.execute(QueryTypes.COMMIT, null);
                                 querySender.releaseResources();
-                                rolesTable.setValueAt(adm, row, col);
+                                rolesTable.setValueAt(adminIcon, row, col);
                             }
                         } else if (headers[col].equals("Execute")) {
-                            String query = "GRANT " + headers[col] + " ON PROCEDURE \"" + relName.elementAt(row) + "\" TO \"" + jComboBox1.getSelectedItem() + "\" WITH GRANT OPTION;";
-                            querySender.execute(query, true);
+                            String query = "GRANT " + headers[col] + " ON PROCEDURE \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\" WITH GRANT OPTION;";
+                            querySender.execute(QueryTypes.GRANT, query);
+                            querySender.execute(QueryTypes.COMMIT, null);
                             querySender.releaseResources();
-                            rolesTable.setValueAt(adm, row, col);
+                            rolesTable.setValueAt(adminIcon, row, col);
                         }
 
                     } catch (Exception e) {
-                        GUIUtilities.displayErrorMessage(e.getMessage());
+                        e.printStackTrace();
+                    } finally {
+                        querySender.releaseResources();
                     }
                     break;
             }
+        }
     }
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
+    private void grantAllToAll() {
         if (enableGrant) {
-            act = Action.ALL_GRANTS_TO_ALL_OBJECTS;
+            action = Action.ALL_GRANTS_TO_ALL_OBJECTS;
             setEnableGrant(false);
             Runnable r = new ThreadOfRole(this);
             Thread t = new Thread(r);
@@ -575,157 +546,120 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
         } else {
             GUIUtilities.displayInformationMessage("Please wait");
         }
-        //create_table();
     }
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
-
-        act = Action.ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION;
+    private void grantAllToAllWithGrant() {
+        action = Action.ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION;
         setEnableGrant(false);
         Runnable r = new ThreadOfRole(this);
         Thread t = new Thread(r);
         t.start();
-
-
-        //create_table();
     }
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
-        act = Action.NO_ALL_GRANTS_TO_ALL_OBJECTS;
+    private void revokeAllFromAll() {
+        action = Action.NO_ALL_GRANTS_TO_ALL_OBJECTS;
         setEnableGrant(false);
         Runnable r = new ThreadOfRole(this);
         Thread t = new Thread(r);
         t.start();
-
-        //create_table();
     }
 
-    private void allGrantsButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
+    private void allGrantsButtonAction() {
         if (enableGrant) {
             int row = rolesTable.getSelectedRow();
             if (row >= 0) {
                 for (int col = 1; col < headers.length; col++) {
-                    grant_on_role(1, row, col);
+                    grantOnRole(1, row, col);
                 }
-                //create_table();
             }
         } else {
             GUIUtilities.displayInformationMessage("Please wait");
         }
     }
 
-    private void allAdminOptionButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
+    private void allAdminOptionButtonAction() {
         if (enableGrant) {
             int row = rolesTable.getSelectedRow();
             if (row >= 0) {
                 for (int col = 1; col < headers.length; col++) {
-                    grant_on_role(2, row, col);
+                    grantOnRole(2, row, col);
                 }
-                //create_table();
             }
         } else {
             GUIUtilities.displayInformationMessage("Please wait");
         }
     }
 
-    private void noAllGrantsButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
+    private void noAllGrantsButtonAction() {
         if (enableGrant) {
             int row = rolesTable.getSelectedRow();
             if (row >= 0) {
                 for (int col = 1; col < headers.length; col++) {
-                    grant_on_role(0, row, col);
+                    grantOnRole(0, row, col);
                 }
-                //create_table();
             }
         } else {
             GUIUtilities.displayInformationMessage("Please wait");
         }
-
     }
 
-    private void allUsersGrantButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
-        act = Action.GRANT_TO_ALL_OBJECTS;
-        setEnableGrant(false);
-        Runnable r = new ThreadOfRole(this);
-        Thread t = new Thread(r);
-        t.start();
-
-
-    }
-
-    private void allUsersAdminOptionButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
-        act = Action.GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION;
-        setEnableGrant(false);
-        Runnable r = new ThreadOfRole(this);
-        Thread t = new Thread(r);
-        t.start();
-
-        //create_table();
-    }
-
-    private void allRolesNoGrantButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
-        act = Action.NO_GRANT_TO_ALL_OBJECTS;
-        setEnableGrant(false);
-        Runnable r = new ThreadOfRole(this);
-        Thread t = new Thread(r);
-        t.start();
-
-
-        //create_table();
-    }
-
-    private void objectBoxActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
-        act = Action.CREATE_TABLE;
+    private void allUsersGrantButtonAction() {
+        action = Action.GRANT_TO_ALL_OBJECTS;
         setEnableGrant(false);
         Runnable r = new ThreadOfRole(this);
         Thread t = new Thread(r);
         t.start();
     }
 
-    private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {
-        // TODO add your handling code here:
-        if (enableGrant)
-            if (evt.getClickCount() > 1) {
+    private void allUsersAdminOptionAction() {
+        action = Action.GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION;
+        setEnableGrant(false);
+        Runnable r = new ThreadOfRole(this);
+        Thread t = new Thread(r);
+        t.start();
+    }
+
+    private void allRolesNoGrantAction() {
+        action = Action.NO_GRANT_TO_ALL_OBJECTS;
+        setEnableGrant(false);
+        Runnable r = new ThreadOfRole(this);
+        Thread t = new Thread(r);
+        t.start();
+    }
+
+    private void objectBoxAction() {
+        action = Action.CREATE_TABLE;
+        setEnableGrant(false);
+        Runnable r = new ThreadOfRole(this);
+        Thread t = new Thread(r);
+        t.start();
+    }
+
+    private void rolesTableMouseClicked(MouseEvent e) {
+        if (enableGrant) {
+            if (e.getClickCount() > 1) {
                 int row = rolesTable.getSelectedRow();
                 int col = rolesTable.getSelectedColumn();
                 if (col > 0) {
-                    if (rolesTable.getValueAt(row, col).equals(gr)) {
-
-
-                        grant_on_role(2, row, col);
-
-
-                    } else if (rolesTable.getValueAt(row, col).equals(adm)) {
-
-                        grant_on_role(0, row, col);
-
-                    } else {
-
-                        grant_on_role(1, row, col);
-
-                    }
-                    //create_table();
+                    if (rolesTable.getValueAt(row, col).equals(grantIcon))
+                        grantOnRole(2, row, col);
+                    else if (rolesTable.getValueAt(row, col).equals(adminIcon))
+                        grantOnRole(0, row, col);
+                    else
+                        grantOnRole(1, row, col);
                 }
             }
+        }
     }
 
     void setEnableGrant(boolean enable) {
         enableGrant = enable;
-        jComboBox1.setEnabled(enable);
+        rolesListCombo.setEnabled(enable);
         objectBox.setEnabled(enable);
-        jCheckBox1.setEnabled(enable);
-        jButton1.setEnabled(enable);
-        jButton2.setEnabled(enable);
-        jButton3.setEnabled(enable);
+        showSysTablesCheckBox.setEnabled(enable);
+        grantAllToAllButton.setEnabled(enable);
+        grantAllToAllWithGrantButton.setEnabled(enable);
+        revokeAllFromAllButton.setEnabled(enable);
         noAllGrantsButton.setEnabled(enable);
         allAdminOptionButton.setEnabled(enable);
         allGrantsButton.setEnabled(enable);
@@ -733,91 +667,93 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
         allUsersAdminOptionButton.setEnabled(enable);
         allUsersGrantButton.setEnabled(enable);
         cancelWait.setVisible(!enable);
-        progBar.setVisible(!enable);
+        progressBar.setVisible(!enable);
         if (enable)
-            progBar.setValue(0);
+            progressBar.setValue(0);
     }
 
     public void run() {
-        int col;
-        switch (act) {
+        int column;
+        switch (action) {
             case CREATE_TABLE:
-                create_table();
+                createTable();
                 break;
             case ALL_GRANTS_TO_ALL_OBJECTS: {
-                progBar.setMaximum(relName.size());
-                for (int row = 0; row < relName.size() && !enableGrant; row++) {
-                    progBar.setValue(row);
-                    for (col = 1; col < headers.length; col++)
-                        grant_on_role(1, row, col);
+                progressBar.setMaximum(relationNames.size());
+                for (int row = 0; row < relationNames.size() && !enableGrant; row++) {
+                    progressBar.setValue(row);
+                    for (column = 1; column < headers.length; column++)
+                        grantOnRole(1, row, column);
                 }
-                progBar.setValue(0);
+                progressBar.setValue(0);
                 setEnableGrant(true);
             }
             break;
             case ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION:
-                progBar.setMaximum(relName.size());
-                for (int row = 0; row < relName.size() && !enableGrant; row++) {
-                    progBar.setValue(row);
-                    for (col = 1; col < headers.length; col++)
-                        grant_on_role(2, row, col);
+                progressBar.setMaximum(relationNames.size());
+                for (int row = 0; row < relationNames.size() && !enableGrant; row++) {
+                    progressBar.setValue(row);
+                    for (column = 1; column < headers.length; column++)
+                        grantOnRole(2, row, column);
                 }
-                progBar.setValue(0);
+                progressBar.setValue(0);
                 setEnableGrant(true);
                 break;
             case NO_ALL_GRANTS_TO_ALL_OBJECTS:
-                progBar.setMaximum(relName.size());
-                for (int row = 0; row < relName.size() && !enableGrant; row++) {
-                    progBar.setValue(row);
-                    for (col = 1; col < headers.length; col++)
-                        grant_on_role(0, row, col);
+                progressBar.setMaximum(relationNames.size());
+                for (int row = 0; row < relationNames.size() && !enableGrant; row++) {
+                    progressBar.setValue(row);
+                    for (column = 1; column < headers.length; column++)
+                        grantOnRole(0, row, column);
                 }
-                progBar.setValue(0);
+                progressBar.setValue(0);
                 setEnableGrant(true);
                 break;
             case GRANT_TO_ALL_OBJECTS:
-                col = rolesTable.getSelectedColumn();
-                progBar.setMaximum(relName.size());
-                if (col > 0)
-                    for (int row = 0; row < relName.size() && !enableGrant; row++) {
-                        progBar.setValue(row);
-                        grant_on_role(1, row, col);
+                column = rolesTable.getSelectedColumn();
+                progressBar.setMaximum(relationNames.size());
+                if (column > 0)
+                    for (int row = 0; row < relationNames.size() && !enableGrant; row++) {
+                        progressBar.setValue(row);
+                        grantOnRole(1, row, column);
                     }
-                progBar.setValue(0);
+                progressBar.setValue(0);
                 setEnableGrant(true);
                 break;
             case GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION:
-                col = rolesTable.getSelectedColumn();
-                progBar.setMaximum(relName.size());
-                if (col > 0)
-                    for (int row = 0; row < relName.size() && !enableGrant; row++) {
-                        progBar.setValue(row);
-                        grant_on_role(2, row, col);
+                column = rolesTable.getSelectedColumn();
+                progressBar.setMaximum(relationNames.size());
+                if (column > 0)
+                    for (int row = 0; row < relationNames.size() && !enableGrant; row++) {
+                        progressBar.setValue(row);
+                        grantOnRole(2, row, column);
                     }
-                progBar.setValue(0);
+                progressBar.setValue(0);
                 setEnableGrant(true);
                 break;
             case NO_GRANT_TO_ALL_OBJECTS:
-                col = rolesTable.getSelectedColumn();
-                progBar.setMaximum(relName.size());
-                if (col > 0)
-                    for (int row = 0; row < relName.size() && !enableGrant; row++) {
-                        progBar.setValue(row);
-                        grant_on_role(0, row, col);
+                column = rolesTable.getSelectedColumn();
+                progressBar.setMaximum(relationNames.size());
+                if (column > 0)
+                    for (int row = 0; row < relationNames.size() && !enableGrant; row++) {
+                        progressBar.setValue(row);
+                        grantOnRole(0, row, column);
                     }
-                progBar.setValue(0);
+                progressBar.setValue(0);
                 setEnableGrant(true);
                 break;
         }
     }
 
-    void cancelWaitActionPerformed(java.awt.event.ActionEvent evt) {
+    void cancelWaitAction() {
         setEnableGrant(true);
     }
 
     @Override
     public void cleanup() {
         setEnableGrant(true);
+        EventMediator.deregisterListener(this);
+
 
     }
 
@@ -829,20 +765,6 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
     @Override
     public String getLayoutName() {
         return NAME;
-    }
-
-    enum Action {
-        NO_ALL_GRANTS_TO_OBJECT,
-        ALL_GRANTS_TO_OBJECT,
-        ALL_GRANTS_TO_OBJECT_WITH_GRANT_OPTION,
-        NO_GRANT_TO_ALL_OBJECTS,
-        GRANT_TO_ALL_OBJECTS,
-        GRANT_TO_ALL_OBJECTS_WITH_GRANT_OPTION,
-        NO_ALL_GRANTS_TO_ALL_OBJECTS,
-        ALL_GRANTS_TO_ALL_OBJECTS,
-        ALL_GRANTS_TO_ALL_OBJECTS_WITH_GRANT_OPTION,
-        CREATE_TABLE
-
     }
 }
 

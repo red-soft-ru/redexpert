@@ -4,6 +4,7 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -243,7 +244,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         setHost(host);
     }
 
-    public void loadParameters() {
+    public void loadParameters() throws SQLException {
         String sqlQuery = "select f.rdb$function_name,\n" +
                 "f.rdb$module_name,\n" +
                 "f.rdb$entrypoint,\n" +
@@ -255,11 +256,12 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 "fa.rdb$field_scale,\n" +
                 "fa.rdb$field_length,\n" +
                 "fa.rdb$field_sub_type,\n" +
-                "fa.rdb$null_flag as null_flag,\n" +
                 "c.rdb$bytes_per_character,\n" +
                 "c.rdb$character_set_name as character_set_name,\n" +
-                "fa.rdb$field_precision\n" +
-                "from rdb$functions f\n" +
+                "fa.rdb$field_precision\n";
+                if (getHost().getDatabaseMetaData().getDatabaseMajorVersion() >= 3)
+                    sqlQuery += ",fa.rdb$null_flag as null_flag\n";
+                sqlQuery += "from rdb$functions f\n" +
                 "left join rdb$function_arguments fa on f.rdb$function_name = fa.rdb$function_name\n" +
                 "left join rdb$character_sets c on fa.rdb$character_set_id = c.rdb$character_set_id\n" +
                 "where (f.rdb$function_name = '" + getName() + "')\n" +
@@ -279,8 +281,10 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
             while (rs.next()) {
                 UDFParameter udfParameter = new UDFParameter(rs.getInt(6),
                         rs.getInt(7), rs.getInt(8), rs.getInt(9),
-                        rs.getInt(10), rs.getInt(11), rs.getInt(15));
-                int nullFlag = rs.getInt("null_flag");
+                        rs.getInt(10), rs.getInt(11), rs.getInt(14));
+                int nullFlag = 0;
+                if (getHost().getDatabaseMetaData().getDatabaseMajorVersion() >= 3)
+                    nullFlag = rs.getInt("null_flag");
                 if (rs.getInt(7) != BY_REFERENCE_WITH_NULL) // already setup
                     udfParameter.setNotNull(nullFlag == 0 ? false : true);
                 udfParameter.setEncoding(rs.getString("character_set_name"));
@@ -438,9 +442,11 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
             sb.append(" FREE_IT ");
         sb.append("\n");
         sb.append("ENTRY_POINT '");
-        sb.append(getEntryPoint().trim());
+        if (!MiscUtils.isNull(getEntryPoint()))
+            sb.append(getEntryPoint());
         sb.append("' MODULE_NAME '");
-        sb.append(getModuleName().trim());
+        if (!MiscUtils.isNull(getModuleName()))
+            sb.append(getModuleName());
         sb.append("';");
         return sb.toString();
     }

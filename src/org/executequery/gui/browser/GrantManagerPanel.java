@@ -442,7 +442,7 @@ public class GrantManagerPanel extends JPanel {
     private void databaseBoxActionPerformed(java.awt.event.ActionEvent evt) {
         if (enabled_dBox) {
             querySender = new DefaultStatementExecutor(listConnections.get(databaseBox.getSelectedIndex()), true);
-            querySender.setCommitMode(true);
+            querySender.setCommitMode(false);
             dbc = listConnections.get(databaseBox.getSelectedIndex());
             con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
             load_userList();
@@ -1119,7 +1119,8 @@ public class GrantManagerPanel extends JPanel {
 
     void grant_query(String query, Icon icon, int row, int col, JTable t) {
         try {
-            querySender.execute(QueryTypes.GRANT, query, -1);
+            querySender.execute(QueryTypes.GRANT, query);
+            querySender.execute(QueryTypes.COMMIT, null);
             t.setValueAt(icon, row, col);
             querySender.releaseResources();
         } catch (NullPointerException e) {
@@ -1155,6 +1156,7 @@ public class GrantManagerPanel extends JPanel {
             for (int i = 1; i < headers.length; i++)
                 if (i != col_execute && i != col_usage)
                     tablePrivileges.setValueAt(icon, row, i);
+            querySender.execute(QueryTypes.COMMIT, null);
             querySender.releaseResources();
         } catch (Exception e) {
             Log.error(e.getMessage());

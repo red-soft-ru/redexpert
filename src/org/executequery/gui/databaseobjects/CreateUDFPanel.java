@@ -14,6 +14,7 @@ import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Vector;
 
@@ -139,8 +140,12 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
     protected void initEdited() {
         if (editedUDF == null)
             return;
-        
-        editedUDF.loadParameters();
+
+        try {
+            editedUDF.loadParameters();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         nameField.setText(editedUDF.getName());
         nameField.setEnabled(false);
         freeItBox.setSelected(editedUDF.getFreeIt());

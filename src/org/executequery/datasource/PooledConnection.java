@@ -380,7 +380,9 @@ public class PooledConnection implements Connection {
     public void setAutoCommit(boolean autoCommit) throws SQLException {
         checkOpen();
         try {
+            lock(true);
             realConnection.setAutoCommit(autoCommit);
+            lock(false);
         } catch (SQLException e) {
             handleException(e);
         }

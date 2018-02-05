@@ -254,7 +254,9 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         Connection connection = this.getMetaTagParent().getHost().getConnection();
         Statement statement = connection.createStatement();
 
-        String sql = "select prc.rdb$procedure_name,\n" +
+        String sql;
+        if (getDatabaseVersion() >= 3)
+            sql = "select prc.rdb$procedure_name,\n" +
                 "prc.rdb$procedure_source,\n" +
                 "prc.rdb$description, \n" +
                 "pp.rdb$parameter_name,\n" +
@@ -293,7 +295,42 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 "where prc.rdb$procedure_name = '" + name + "'\n" +
                 "and (prc.rdb$package_name is null) \n" +
                 "order by pp.rdb$parameter_number";
-
+        else
+            sql = "select prc.rdb$procedure_name,\n" +
+                    "prc.rdb$procedure_source,\n" +
+                    "prc.rdb$description, \n" +
+                    "pp.rdb$parameter_name,\n" +
+                    "pp.rdb$parameter_type,\n" +
+                    "fs.rdb$field_name, \n" +
+                    "fs.rdb$field_type, \n" +
+                    "fs.rdb$field_length, \n" +
+                    "fs.rdb$field_scale, \n" +
+                    "fs.rdb$field_sub_type, \n" +
+                    "fs.rdb$segment_length as segment_length, \n" +
+                    "fs.rdb$dimensions, \n" +
+                    "cr.rdb$character_set_name as character_set_name, \n" +
+                    "co.rdb$collation_name, \n" +
+                    "pp.rdb$parameter_number,\n" +
+                    "fs.rdb$character_length, \n" +
+                    "pp.rdb$description,\n" +
+                    "pp.rdb$default_source as default_source,\n" +
+                    "fs.rdb$field_precision, \n" +
+                    "pp.rdb$parameter_mechanism as AM,\n" +
+                    "pp.rdb$field_source as FS,\n" +
+                    "fs.rdb$default_source, \n" +
+                    "pp.rdb$null_flag as null_flag,\n" +
+                    "pp.rdb$relation_name as RN,\n" +
+                    "pp.rdb$field_name as FN,\n" +
+                    "co2.rdb$collation_name, \n" +
+                    "cr.rdb$default_collate_name \n" +
+                    "from rdb$procedures prc\n" +
+                    "left join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
+                    "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
+                    "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
+                    "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
+                    "left join rdb$collations co2 on ((pp.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
+                    "where prc.rdb$procedure_name = '" + name + "'\n" +
+                    "order by pp.rdb$parameter_number";
         return statement.executeQuery(sql);
     }
 

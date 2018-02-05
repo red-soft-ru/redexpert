@@ -24,6 +24,7 @@ import biz.redsoft.IFBDatabaseConnection;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
+import org.executequery.datasource.PooledResultSet;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -918,7 +919,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
             rs = getProceduresResultSet();
             List<NamedObject> list = new ArrayList<NamedObject>();
-            if (rs.unwrap(ResultSet.class).getClass().getName().contains("FBResultSet")) {
+            if (((PooledResultSet) rs).getResultSet().unwrap(ResultSet.class).getClass().getName().contains("FBResultSet")) {
                 while (rs.next()) {
 
                     DefaultDatabaseProcedure procedure = new DefaultDatabaseProcedure(this, rs.getString(1));

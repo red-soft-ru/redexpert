@@ -23,7 +23,6 @@ package org.executequery.gui.browser;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
@@ -577,7 +576,7 @@ public class ColumnData implements Serializable {
                 "WHERE RDB$FIELD_NAME='" +
                 domain.trim() + "'";
         try {
-            ResultSet rs = executor.execute(QueryTypes.SELECT, query).getResultSet();
+            ResultSet rs = executor.getResultSet(query).getResultSet();
             if (rs.next()) {
                 domainType = rs.getInt(1);
                 domainSize = rs.getInt(2);
@@ -612,7 +611,7 @@ public class ColumnData implements Serializable {
             setCharset(domainCharset);
 
         } catch (SQLException | NullPointerException e) {
-            Log.debug("Error get ColumnData get Domain:", e);
+            Log.error("Error get ColumnData get Domain:", e);
         } catch (Exception e) {
             Log.error("Error get ColumnData get Domain:", e);
         } finally {

@@ -1,25 +1,52 @@
 package org.executequery.gui.browser;
 
+import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
+import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.impl.DefaultDatabaseRole;
+import org.executequery.event.ApplicationEvent;
+import org.executequery.event.ConnectionEvent;
+import org.executequery.event.ConnectionListener;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.log.Log;
+import org.underworldlabs.swing.GUIUtils;
 
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.print.Printable;
 import java.sql.ResultSet;
+import java.time.LocalTime;
 import java.util.Vector;
 
 /**
  * Created by mikhan808 on 02.04.2017.
  */
-public class BrowserRolePanel extends AbstractFormObjectViewPanel {
+public class BrowserRolePanel extends AbstractFormObjectViewPanel implements ConnectionListener {
+
+    public BrowserRolePanel(BrowserController browserController) {
+        controller = browserController;
+        grantIcon = GUIUtilities.loadIcon(BrowserConstants.GRANT_IMAGE);
+        noGrantIcon = GUIUtilities.loadIcon(BrowserConstants.NO_GRANT_IMAGE);
+        adminIcon = GUIUtilities.loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
+        enableGrant = true;
+        EventMediator.registerListener(this);
+        initComponents();
+    }
+
+    @Override
+    public void connected(ConnectionEvent connectionEvent) {
+
+    }
+
+    @Override
+    public void disconnected(ConnectionEvent connectionEvent) {
+        cleanup();
+    }
 
     enum Action {
         NO_ALL_GRANTS_TO_OBJECT,
@@ -63,13 +90,9 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
     private JCheckBox showSysTablesCheckBox;
     private JScrollPane jScrollPane1;
 
-    public BrowserRolePanel(BrowserController browserController) {
-        controller = browserController;
-        grantIcon = GUIUtilities.loadIcon(BrowserConstants.GRANT_IMAGE);
-        noGrantIcon = GUIUtilities.loadIcon(BrowserConstants.NO_GRANT_IMAGE);
-        adminIcon = GUIUtilities.loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
-        enableGrant = true;
-        initComponents();
+    @Override
+    public boolean canHandleEvent(ApplicationEvent event) {
+        return false;
     }
 
     void setValues(DefaultDatabaseRole ddr, BrowserController browserController) {
@@ -83,12 +106,6 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
     }
 
     void initComponents() {
-        try {
-            querySender = new DefaultStatementExecutor(controller.getDatabaseConnection(), true);
-        } catch (Exception e) {
-            Log.error(e);
-        }
-
         jScrollPane1 = new javax.swing.JScrollPane();
         rolesTable = new javax.swing.JTable();
         rolesListCombo = new javax.swing.JComboBox<>();
@@ -231,7 +248,7 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
     void createRolesList() {
         try {
             String query = "SELECT RDB$ROLE_NAME FROM RDB$ROLES";
-            ResultSet result = querySender.execute(query, true).getResultSet();
+            ResultSet result = querySender.getResultSet(query).getResultSet();
             roles = new Vector<>();
             while (result.next()) {
                 String role = result.getString(1);
@@ -242,15 +259,18 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
             rolesListCombo.setSelectedIndex(0);
 
         } catch (Exception e) {
-            GUIUtilities.displayErrorMessage(e.getMessage());
+            e.printStackTrace();
+        } finally {
+            querySender.releaseResources();
         }
     }
 
     void createRolesList(String selectedRole) {
         enableGrant = false;
         try {
-            String query = "SELECT RDB$ROLE_NAME FROM RDB$ROLES";
-            ResultSet result = querySender.execute(query, true).getResultSet();
+            //Statement st = con.createStatement();
+            String query = "SELECT RDB$ROLE_NAME FROM RDB$ROLES ORDER BY 1";
+            ResultSet result = querySender.getResultSet(query).getResultSet();
             roles = new Vector<>();
             while (result.next()) {
                 String role = result.getString(1);
@@ -261,7 +281,9 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
             rolesListCombo.setSelectedItem(selectedRole);
 
         } catch (Exception e) {
-            GUIUtilities.displayErrorMessage(e.getMessage());
+            e.printStackTrace();
+        } finally {
+            querySender.releaseResources();
         }
         enableGrant = true;
     }
@@ -273,8 +295,8 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
         rolesTable.setModel(new RoleTableModel(headers, 0));
         try {
             if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 1) {
-                String query = "Select RDB$RELATION_NAME from RDB$RELATIONS WHERE RDB$RELATION_TYPE != 1";
-                ResultSet rs = querySender.execute(query, true).getResultSet();
+                String query = "Select RDB$RELATION_NAME from RDB$RELATIONS WHERE RDB$RELATION_TYPE != 1 ORDER BY 1";
+                ResultSet rs = querySender.getResultSet(query).getResultSet();
                 while (rs.next()) {
                     String name = rs.getString(1);
                     if (showSysTablesCheckBox.isSelected()) {
@@ -290,8 +312,8 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
                 querySender.releaseResources();
             }
             if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 3) {
-                String query = "Select DISTINCT RDB$VIEW_NAME from RDB$VIEW_RELATIONS";
-                ResultSet rs = querySender.execute(query, true).getResultSet();
+                String query = "Select DISTINCT RDB$VIEW_NAME from RDB$VIEW_RELATIONS ORDER BY 1";
+                ResultSet rs = querySender.getResultSet(query).getResultSet();
                 while (rs.next()) {
                     String name = rs.getString(1);
                     if (showSysTablesCheckBox.isSelected()) {
@@ -307,8 +329,8 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
                 querySender.releaseResources();
             }
             if (objectBox.getSelectedIndex() == 0 || objectBox.getSelectedIndex() == 2) {
-                String query = "Select RDB$PROCEDURE_NAME from RDB$PROCEDURES";
-                ResultSet rs = querySender.execute(query, true).getResultSet();
+                String query = "Select RDB$PROCEDURE_NAME from RDB$PROCEDURES ORDER BY 1";
+                ResultSet rs = querySender.getResultSet(query).getResultSet();
                 while (rs.next()) {
                     String name = rs.getString(1);
                     if (showSysTablesCheckBox.isSelected()) {
@@ -326,10 +348,11 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
             progressBar.setMaximum(relationNames.size());
             for (int i = 0; i < relationNames.size() && !enableGrant; i++) {
                 progressBar.setValue(i);
+                String s = "";
                 try {
-                    String s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
+                    s = "select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION from RDB$USER_PRIVILEGES\n" +
                             "where (rdb$grant_option is not null) and (rdb$Relation_name='" + relationNames.elementAt(i) + "') and (rdb$user='" + rolesListCombo.getSelectedItem() + "')";
-                    ResultSet resultSet = querySender.execute(s, true).getResultSet();
+                    ResultSet resultSet = querySender.getResultSet(s).getResultSet();
                     Vector<Object> roleData = new Vector<Object>();
 
                     roleData.add(relationNames.elementAt(i));
@@ -348,12 +371,24 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
                     }
                     querySender.releaseResources();
                 } catch (Exception e) {
-                    GUIUtilities.displayErrorMessage(e.getMessage());
+                    if (querySender.getDatabaseConnection().isConnected()) {
+                        GUIUtils.startWorker(new Runnable() {
+                            @Override
+                            public void run() {
+                                GUIUtilities.displayInformationMessage(LocalTime.now());
+                            }
+                        });
+                        Log.error("SQL:" + s);
+                        e.printStackTrace();
+                    }
+                } finally {
+                    querySender.releaseResources();
                 }
             }
         } catch (Exception e) {
-
-            GUIUtilities.displayErrorMessage(e.getMessage());
+            e.printStackTrace();
+        } finally {
+            querySender.releaseResources();
         }
         setEnableGrant(true);
         progressBar.setValue(0);
@@ -383,19 +418,23 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
                         if (!relationTypes.elementAt(row).equals(objectBox.getItemAt(2))) {
                             if (!headers[col].equals("Execute")) {
                                 String query = "REVOKE " + headers[col] + " ON \"" + relationNames.elementAt(row) + "\" FROM \"" + rolesListCombo.getSelectedItem() + "\";";
-                                querySender.execute(query, true);
+                                querySender.execute(QueryTypes.REVOKE, query);
+                                querySender.execute(QueryTypes.COMMIT, null);
                                 rolesTable.setValueAt(noGrantIcon, row, col);
                                 querySender.releaseResources();
                             }
                         } else if (headers[col].equals("Execute")) {
                             String query = "REVOKE " + headers[col] + " ON PROCEDURE \"" + relationNames.elementAt(row) + "\" FROM \"" + rolesListCombo.getSelectedItem() + "\";";
-                            querySender.execute(query, true);
+                            querySender.execute(QueryTypes.REVOKE, query);
+                            querySender.execute(QueryTypes.COMMIT, null);
                             rolesTable.setValueAt(noGrantIcon, row, col);
                             querySender.releaseResources();
                         }
 
                     } catch (Exception e) {
-                        GUIUtilities.displayErrorMessage(e.getMessage());
+                        e.printStackTrace();
+                    } finally {
+                        querySender.releaseResources();
                     }
                     break;
                 case 1:
@@ -404,38 +443,46 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
                             if (!relationTypes.elementAt(row).equals(objectBox.getItemAt(2))) {
                                 if (!headers[col].equals("Execute")) {
                                     String query = "REVOKE " + headers[col] + " ON \"" + relationNames.elementAt(row) + "\" FROM \"" + rolesListCombo.getSelectedItem() + "\";";
-                                    querySender.execute(query, true);
+                                    querySender.execute(QueryTypes.REVOKE, query);
+                                    querySender.execute(QueryTypes.COMMIT, null);
                                     rolesTable.setValueAt(noGrantIcon, row, col);
                                     querySender.releaseResources();
                                 }
                             } else if (headers[col].equals("Execute")) {
                                 String query = "REVOKE " + headers[col] + " ON PROCEDURE \"" + relationNames.elementAt(row) + "\" FROM \"" + rolesListCombo.getSelectedItem() + "\";";
-                                querySender.execute(query, true);
+                                querySender.execute(QueryTypes.REVOKE, query);
+                                querySender.execute(QueryTypes.COMMIT, null);
                                 rolesTable.setValueAt(noGrantIcon, row, col);
                                 querySender.releaseResources();
                             }
 
                         } catch (Exception e) {
-                            GUIUtilities.displayErrorMessage(e.getMessage());
+                            e.printStackTrace();
+                        } finally {
+                            querySender.releaseResources();
                         }
 
                         try {
                             if (!relationTypes.elementAt(row).equals(objectBox.getItemAt(2))) {
                                 if (!headers[col].equals("Execute")) {
                                     String query = "GRANT " + headers[col] + " ON \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\";";
-                                    querySender.execute(query, true);
+                                    querySender.execute(QueryTypes.GRANT, query);
+                                    querySender.execute(QueryTypes.COMMIT, null);
                                     querySender.releaseResources();
                                     rolesTable.setValueAt(grantIcon, row, col);
                                 }
                             } else if (headers[col].equals("Execute")) {
                                 String query = "GRANT " + headers[col] + " ON PROCEDURE \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\";";
-                                querySender.execute(query, true);
+                                querySender.execute(QueryTypes.GRANT, query);
+                                querySender.execute(QueryTypes.COMMIT, null);
                                 querySender.releaseResources();
                                 rolesTable.setValueAt(grantIcon, row, col);
                             }
 
                         } catch (Exception e) {
-                            GUIUtilities.displayErrorMessage(e.getMessage());
+                            e.printStackTrace();
+                        } finally {
+                            querySender.releaseResources();
                         }
 
                     } else
@@ -443,18 +490,22 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
                             if (!relationTypes.elementAt(row).equals(objectBox.getItemAt(2))) {
                                 if (!headers[col].equals("Execute")) {
                                     String query = "GRANT " + headers[col] + " ON \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\";";
-                                    querySender.execute(query, true);
+                                    querySender.execute(QueryTypes.GRANT, query);
+                                    querySender.execute(QueryTypes.COMMIT, null);
                                     querySender.releaseResources();
                                     rolesTable.setValueAt(grantIcon, row, col);
                                 }
                             } else if (headers[col].equals("Execute")) {
                                 String query = "GRANT " + headers[col] + " ON PROCEDURE \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\";";
-                                querySender.execute(query, true);
+                                querySender.execute(QueryTypes.GRANT, query);
+                                querySender.execute(QueryTypes.COMMIT, null);
                                 querySender.releaseResources();
                                 rolesTable.setValueAt(grantIcon, row, col);
                             }
                         } catch (Exception e) {
-                            GUIUtilities.displayErrorMessage(e.getMessage());
+                            e.printStackTrace();
+                        } finally {
+                            querySender.releaseResources();
                         }
                     break;
                 case 2:
@@ -462,19 +513,23 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
                         if (!relationTypes.elementAt(row).equals(objectBox.getItemAt(2))) {
                             if (!headers[col].equals("Execute")) {
                                 String query = "GRANT " + headers[col] + " ON \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\" WITH GRANT OPTION;";
-                                querySender.execute(query, true);
+                                querySender.execute(QueryTypes.GRANT, query);
+                                querySender.execute(QueryTypes.COMMIT, null);
                                 querySender.releaseResources();
                                 rolesTable.setValueAt(adminIcon, row, col);
                             }
                         } else if (headers[col].equals("Execute")) {
                             String query = "GRANT " + headers[col] + " ON PROCEDURE \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\" WITH GRANT OPTION;";
-                            querySender.execute(query, true);
+                            querySender.execute(QueryTypes.GRANT, query);
+                            querySender.execute(QueryTypes.COMMIT, null);
                             querySender.releaseResources();
                             rolesTable.setValueAt(adminIcon, row, col);
                         }
 
                     } catch (Exception e) {
-                        GUIUtilities.displayErrorMessage(e.getMessage());
+                        e.printStackTrace();
+                    } finally {
+                        querySender.releaseResources();
                     }
                     break;
             }
@@ -697,6 +752,8 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel {
     @Override
     public void cleanup() {
         setEnableGrant(true);
+        EventMediator.deregisterListener(this);
+
 
     }
 

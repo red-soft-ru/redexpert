@@ -1385,7 +1385,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     "rdb$procedure_outputs as procedure_type \n" +
                     "from rdb$procedures \n" +
                     "order by procedure_name";
-            Statement statement = realConnection.createStatement();
+            Statement statement = dmd.getConnection().createStatement();
             ResultSet rs = statement.executeQuery(sql);
             return rs;
         } else { // Another database

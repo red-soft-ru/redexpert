@@ -158,7 +158,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         try {
             sequenceNameField.setText(sequence.getName());
             valueField.setText(String.valueOf(sequence.getSequenceValue()));
-            descriptionPane.setText(sequence.getDescription());
+            descriptionPane.setText(sequence.getRemarks());
             sqlPane.setText(sequence.getCreateSQLText() +
                     "\n\n" +
                     sequence.getAlterSQLText());

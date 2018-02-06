@@ -1068,6 +1068,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             while (rs.next()) {
 
                 DefaultDatabaseSequence sequence = new DefaultDatabaseSequence(this, rs.getString(1));
+                sequence.setRemarks(rs.getString(3));
                 list.add(sequence);
             }
 

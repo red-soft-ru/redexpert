@@ -40,7 +40,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
         startValueText.setLongValue(generator.getSequenceValue());
         if (getDatabaseVersion() >= 3)
             incrementText.setValue(generator.getIncrement());
-        description.getTextAreaComponent().setText(generator.getDescription());
+        description.getTextAreaComponent().setText(generator.getRemarks());
     }
 
     @Override

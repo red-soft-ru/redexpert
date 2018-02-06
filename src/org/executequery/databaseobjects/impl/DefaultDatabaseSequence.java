@@ -105,53 +105,6 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
         }
     }
 
-    @Override
-    public String getDescription() {
-
-        Statement statement = null;
-
-        if (!isMarkedForReload() && description != null) {
-
-            return description;
-        }
-
-        try {
-
-            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-
-            String _catalog = getCatalogName();
-            String _schema = getSchemaName();
-
-            if (ConnectionManager.realConnection(dmd).getClass().getName().contains("FBConnection")) {
-
-                statement = dmd.getConnection().createStatement();
-                ResultSet rs = statement.executeQuery("select r.rdb$description\n" +
-                        "from rdb$generators r\n" +
-                        "where\n" +
-                        "trim(r.rdb$generator_name)='" + getName() + "'");
-
-                if (rs.next())
-                    description = rs.getString(1);
-            }
-
-            return description;
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-
-        } finally {
-            if (statement != null)
-                try {
-                    if (!statement.isClosed())
-                        statement.close();
-                } catch (SQLException e) {
-                    Log.error("Error close statement in method getDescription in class DefaultDatabaseSequence", e);
-                }
-            setMarkedForReload(false);
-        }
-    }
-
     public int getIncrement() {
 
         Statement statement = null;

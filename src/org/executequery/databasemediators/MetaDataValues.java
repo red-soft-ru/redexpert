@@ -1385,7 +1385,7 @@ public class MetaDataValues implements ConnectionListener {
 
             }
 
-            rs.close();
+            releaseResources(rs);
 
             if (!valueFound) {
                 _schema = schema;
@@ -1399,8 +1399,6 @@ public class MetaDataValues implements ConnectionListener {
             while (rs.next()) {
                 v.add(rs.getString(3));
             }
-
-            rs.close();
             return v;
         } catch (SQLException e) {
             throw new DataSourceException(e);

@@ -46,8 +46,8 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         setDatabaseObject(databaseObject);
         if (params != null)
             setParameters(params);
-        init();
         editing = databaseObject != null;
+        init();
         if (editing)
             try {
                 initEdited();

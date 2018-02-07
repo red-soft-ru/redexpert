@@ -15,7 +15,7 @@
             mnemonic="N"
             small-icon="/org/executequery/icons/New16.png"
             large-icon="/org/executequery/icons/New24.png"
-            accel-key="control N"
+            accel-key="shift F12"
             accel-editable="true"
             description="Open a New Editor"
             execute-class="org.executequery.actions.filecommands.NewCommand"/>
@@ -25,7 +25,7 @@
             mnemonic="O"
             small-icon="/org/executequery/icons/Open16.png"
             large-icon="/org/executequery/icons/Open24.png"
-            accel-key="control O"
+            accel-key="control L"
             accel-editable="true"
             execute-class="org.executequery.actions.filecommands.OpenCommand"/>
 
@@ -37,19 +37,19 @@
 
     <action id="close-selected-tab-2"
             name="Close Selected Tab"
-            accel-key="control F4"
+            accel-key="control W"
             description="Closes the selected central tab component"
             execute-class="org.executequery.actions.CloseSelectedCentralPaneCommand"/>
 
     <action id="select-next-tab"
             name="Select Next Tab"
-            accel-key="control F6"
+            accel-key="alt RIGHT"
             accel-editable="false"
             execute-class="org.executequery.actions.windowcommands.SelectNextTabAction"/>
 
     <action id="select-previous-tab"
             name="Select Previous Tab"
-            accel-key="control shift F6"
+            accel-key="alt LEFT"
             accel-editable="false"
             execute-class="org.executequery.actions.windowcommands.SelectPreviousTabAction"/>
 
@@ -322,7 +322,7 @@
 
     <action id="execute-command"
             name="Execute"
-            accel-key="F5"
+            accel-key="F9"
             accel-editable="true"
             small-icon="/org/executequery/icons/Execute16.png"
             large-icon="/org/executequery/icons/Execute24.png"

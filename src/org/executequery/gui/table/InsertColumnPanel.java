@@ -1,6 +1,5 @@
 package org.executequery.gui.table;
 
-import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
@@ -105,10 +104,10 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
             }
         });
 
-        defaultValuePanel.addKeyListener(this);
-        checkPanel.addKeyListener(this);
-        computedPanel.addKeyListener(this);
-        descriptionPanel.addKeyListener(this);
+        defaultValuePanel.getTextAreaComponent().addKeyListener(this);
+        checkPanel.getTextPane().addKeyListener(this);
+        computedPanel.getTextPane().addKeyListener(this);
+        descriptionPanel.getTextPane().addKeyListener(this);
         centralPanel.setLayout(new GridBagLayout());
         centralPanel.add(tableLabel, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
@@ -180,8 +179,6 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
     @Override
     public void setParameters(Object[] params) {
         this.table = (DatabaseTable) params[0];
-        metaData = new MetaDataValues(true);
-        metaData.setDatabaseConnection(connection);
         columnData = new ColumnData(connection);
         sb = new StringBuffer(200);
         this.column = new DatabaseTableColumn(table, columnEdited);
@@ -194,6 +191,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         columnData.setColumnSize(column.getColumnSize());
         columnData.setColumnScale(column.getColumnScale());
         columnData.setColumnSubtype(column.getColumnSubtype());
+        columnData.setDomain(column.getDomain());
         selectTypePanel.refresh();
         nameField.setText(columnEdited.getName());
         notNullBox.setSelected(columnEdited.isRequired());
@@ -222,21 +220,21 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
 
     @Override
     public void keyReleased(KeyEvent keyEvent) {
-        if (keyEvent.getSource() == defaultValuePanel) {
+        if (keyEvent.getSource() == defaultValuePanel.getTextAreaComponent()) {
             columnData.setDefaultValue(defaultValuePanel.getTextAreaComponent().getText());
             if (editing) {
                 column.makeCopy();
                 column.setDefaultValue(defaultValuePanel.getTextAreaComponent().getText());
             }
-        } else if (keyEvent.getSource() == checkPanel) {
+        } else if (keyEvent.getSource() == checkPanel.getTextPane()) {
             columnData.setCheck(checkPanel.getSQLText());
-        } else if (keyEvent.getSource() == computedPanel) {
+        } else if (keyEvent.getSource() == computedPanel.getTextPane()) {
             columnData.setComputedBy(computedPanel.getSQLText());
             if (editing) {
                 column.makeCopy();
                 column.setComputedSource(computedPanel.getSQLText());
             }
-        } else if (keyEvent.getSource() == descriptionPanel) {
+        } else if (keyEvent.getSource() == descriptionPanel.getTextPane()) {
             columnData.setDescription(descriptionPanel.getSQLText());
             if (editing) {
                 column.makeCopy();

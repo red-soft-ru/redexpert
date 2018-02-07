@@ -55,7 +55,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         entryPointField = new JTextField();
         mechanismModel = new DynamicComboBoxModel();
         mechanismBox = new JComboBox(mechanismModel);
-        mechanismModel.setElements(new String[]{"BY VALUE", "BY DESCRIPTOR"});
+        mechanismModel.setElements(new String[]{"BY REFERENCE", "BY VALUE", "BY DESCRIPTOR",});
         freeItBox = new JCheckBox("FREE IT");
         parameterBox = new JCheckBox("Parameter");
         cstringBox = new JCheckBox("CSTRING");
@@ -177,9 +177,10 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                 selectTypePanel.refresh();
 
                 if (udfParameter.getMechanism() == BY_DESCRIPTOR)
-                    mechanismBox.setSelectedIndex(1);
+                    mechanismBox.setSelectedIndex(2);
                 else if (udfParameter.getMechanism() == BY_VALUE)
-                    mechanismBox.setSelectedIndex(0);
+                    mechanismBox.setSelectedIndex(1);
+                else mechanismBox.setSelectedIndex(0);
             }
         }
 
@@ -244,8 +245,12 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                     returnsType.getSQLType() == Types.LONGVARBINARY ||
                     returnsType.getSQLType() == Types.LONGVARCHAR)
                 sb.append("BLOB").append(" ").append(mechanismBox.getSelectedItem()).append("\n");
-            else
-                sb.append(returnsType.getFormattedDataType()).append(" ").append(mechanismBox.getSelectedItem()).append("\n");
+            else {
+                sb.append(returnsType.getFormattedDataType());
+                if (mechanismBox.getSelectedIndex() != 0)
+                    sb.append(" ").append(mechanismBox.getSelectedItem());
+                sb.append("\n");
+            }
         }
         if (freeItBox.isSelected())
             sb.append("FREE_IT\n");

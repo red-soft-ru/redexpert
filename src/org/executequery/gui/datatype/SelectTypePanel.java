@@ -97,6 +97,10 @@ public class SelectTypePanel extends JPanel {
         encodingBox.setModel(new DefaultComboBoxModel(charsets.toArray(new String[charsets.size()])));
         encodingBox.addActionListener(actionEvent -> cd.setCharset((String) encodingBox.getSelectedItem()));
 
+        sizeField.addKeyListener(keyListener);
+        scaleField.addKeyListener(keyListener);
+        subtypeField.addKeyListener(keyListener);
+
         this.setLayout(new GridBagLayout());
         this.add(typeLabel, new GridBagConstraints(0, 0, 1, 1,
                 0, 0, GridBagConstraints.NORTH,

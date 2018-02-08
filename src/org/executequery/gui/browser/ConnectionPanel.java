@@ -37,6 +37,7 @@ import org.executequery.gui.DefaultTable;
 import org.executequery.gui.FormPanelButton;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.drivers.DialogDriverPanel;
+import org.executequery.gui.editor.TransactionIsolationCombobox;
 import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
@@ -179,7 +180,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     private JLabel statusLabel;
 
-    private JComboBox txCombo;
+    private TransactionIsolationCombobox txCombo;
     private JButton txApplyButton;
 
     JPanel basicPanel;
@@ -645,13 +646,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         txApplyButton.setEnabled(false);
         txApplyButton.addActionListener(this);
 
-        // add a dummy select value to the tx levels
-        String[] txLevels = new String[Constants.TRANSACTION_LEVELS.length + 1];
-        txLevels[0] = bundleString("DatabaseDefault");
-        for (int i = 1; i < txLevels.length; i++) {
-            txLevels[i] = Constants.TRANSACTION_LEVELS[i - 1];
-        }
-        txCombo = WidgetFactory.createComboBox(txLevels);
+        txCombo = new TransactionIsolationCombobox();
 
         JPanel advTxPanel = new JPanel(new GridBagLayout());
         advTxPanel.setBorder(BorderFactory.createTitledBorder(bundleString("TransactionIsolation")));
@@ -1318,37 +1313,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
      */
     private void getTransactionIsolationLevel() {
 
-        int index = txCombo.getSelectedIndex();
-        if (index == 0) {
-
-            databaseConnection.setTransactionIsolation(-1);
-            return;
-        }
-
-        int isolationLevel = isolationLevelFromSelection(index);
+        int isolationLevel = txCombo.getSelectedLevel();
         databaseConnection.setTransactionIsolation(isolationLevel);
-    }
-
-    private int isolationLevelFromSelection(int index) {
-        int isolationLevel = -1;
-        switch (index) {
-            case 1:
-                isolationLevel = Connection.TRANSACTION_NONE;
-                break;
-            case 2:
-                isolationLevel = Connection.TRANSACTION_READ_UNCOMMITTED;
-                break;
-            case 3:
-                isolationLevel = Connection.TRANSACTION_READ_COMMITTED;
-                break;
-            case 4:
-                isolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
-                break;
-            case 5:
-                isolationLevel = Connection.TRANSACTION_SERIALIZABLE;
-                break;
-        }
-        return isolationLevel;
     }
 
     /**
@@ -1356,26 +1322,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
      * based on the tx level in the connection object.
      */
     private void setTransactionIsolationLevel() {
-        int index = 0;
         int isolationLevel = databaseConnection.getTransactionIsolation();
-        switch (isolationLevel) {
-            case Connection.TRANSACTION_NONE:
-                index = 1;
-                break;
-            case Connection.TRANSACTION_READ_UNCOMMITTED:
-                index = 2;
-                break;
-            case Connection.TRANSACTION_READ_COMMITTED:
-                index = 3;
-                break;
-            case Connection.TRANSACTION_REPEATABLE_READ:
-                index = 4;
-                break;
-            case Connection.TRANSACTION_SERIALIZABLE:
-                index = 5;
-                break;
-        }
-        txCombo.setSelectedIndex(index);
+        txCombo.setSelectedLevel(isolationLevel);
     }
 
     /**

@@ -123,6 +123,10 @@ public interface StatementExecutor {
 
     SqlStatementResult getResultSet(String query, int fetchSize) throws SQLException;
 
+    int getTil();
+
+    void setTil(int til);
+
 }
 
 

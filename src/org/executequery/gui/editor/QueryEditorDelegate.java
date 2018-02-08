@@ -138,6 +138,16 @@ public class QueryEditorDelegate implements QueryDelegate {
         executeQuery(queryEditor.getSelectedConnection(), query, executeAsBlock);
     }
 
+    @Override
+    public int getTil() {
+        return dispatcher.getTil();
+    }
+
+    @Override
+    public void setTil(int til) {
+        dispatcher.setTil(til);
+    }
+
     public void executeQuery(DatabaseConnection selectedConnection,
                              String query, boolean executeAsBlock) {
 

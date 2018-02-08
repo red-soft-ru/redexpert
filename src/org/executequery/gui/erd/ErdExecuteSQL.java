@@ -180,7 +180,7 @@ public class ErdExecuteSQL extends ErdPrintableDialog
      * Propagates the call to setOutputMessage(type, text) -
      * the selectTab is effectively ignored.
      *
-     * @param the error message to display
+     * @param type and other the error message to display
      */
     public void setOutputMessage(int type, String text, boolean selectTab) {
         setOutputMessage(type, text);
@@ -266,6 +266,16 @@ public class ErdExecuteSQL extends ErdPrintableDialog
     }
 
     public void executeQuery(String query, boolean executeAsBlock) {
+    }
+
+    @Override
+    public int getTil() {
+        return queryAnalyser.getTil();
+    }
+
+    @Override
+    public void setTil(int til) {
+        queryAnalyser.setTil(til);
     }
 
     public void setResultSet(ResultSet rs, String query) throws SQLException {

@@ -101,6 +101,10 @@ public class DefaultStatementExecutor implements StatementExecutor {
      */
     private DatabaseConnection databaseConnection;
 
+    private int connectionTil;
+
+    private int til;
+
     public DefaultStatementExecutor() {
         this(null, false);
     }
@@ -131,6 +135,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
         this.databaseConnection = databaseConnection;
         maxUseCount = ConnectionManager.getMaxUseCount();
         statementResult = new SqlStatementResult();
+        til = -1;
     }
 
     /**
@@ -303,7 +308,10 @@ public class DefaultStatementExecutor implements StatementExecutor {
             statementResult.setMessage("Connection closed.");
             return false;
         }
-
+        if (til != -1) {
+            connectionTil = conn.getTransactionIsolation();
+            conn.setTransactionIsolation(til);
+        }
         return true;
     }
 
@@ -1507,14 +1515,15 @@ public class DefaultStatementExecutor implements StatementExecutor {
                     stmnt.close();
             }
             stmnt = null;
+            if (conn != null) {
+                conn.setTransactionIsolation(connectionTil);
 
-            if (!keepAlive) {
-
-                if (conn != null) {
+                if (!keepAlive) {
 
                     conn.close();
+
+                    conn = null;
                 }
-                conn = null;
 
             }
 
@@ -1551,6 +1560,14 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
     public Connection getConnection() {
         return conn;
+    }
+
+    public int getTil() {
+        return til;
+    }
+
+    public void setTil(int til) {
+        this.til = til;
     }
 }
 

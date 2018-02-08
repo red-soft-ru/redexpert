@@ -98,6 +98,8 @@ public class QueryDispatcher {
 
     private boolean waiting;
 
+    private int til;
+
     // ------------------------------------------------
     // static string outputs
     // ------------------------------------------------
@@ -115,6 +117,8 @@ public class QueryDispatcher {
     public QueryDispatcher(QueryDelegate runner) {
         try {
             this.delegate = runner;
+
+            til = -1;
 
             querySender = new DefaultStatementExecutor(null, true);
 
@@ -235,6 +239,8 @@ public class QueryDispatcher {
 
             querySender.setDatabaseConnection(dc);
         }
+
+        querySender.setTil(til);
 
         statementCancelled = false;
 
@@ -1143,6 +1149,13 @@ public class QueryDispatcher {
         return false;
     }
 
+    public int getTil() {
+        return til;
+    }
+
+    public void setTil(int til) {
+        this.til = til;
+    }
 }
 
 

@@ -32,7 +32,7 @@ public interface QueryDelegate {
      * Notifies the runner that the commit mode has changed
      * to that specified.
      *
-     * @param the commit mode
+     * @param autoCommit the commit mode
      */
     void commitModeChanged(boolean autoCommit);
 
@@ -142,6 +142,10 @@ public interface QueryDelegate {
      * @param whether to execute ALL query text as one statement
      */
     void executeQuery(String query, boolean executeAsBlock);
+
+    int getTil();
+
+    void setTil(int til);
 
 }
 

@@ -170,8 +170,6 @@ public class Procedure {
                     IOparam.outputParameters.add(line);
                 }
             }
-
-            rs.close();
             con.releaseResources();
 
         } catch (java.sql.SQLException e) {

@@ -152,6 +152,8 @@ public class QueryEditor extends DefaultTabView
 
     private List<ConnectionChangeListener> connectionChangeListeners;
 
+    private TransactionIsolationCombobox txBox;
+
     /**
      * Constructs a new instance.
      */
@@ -254,6 +256,13 @@ public class QueryEditor extends DefaultTabView
         Vector<DatabaseConnection> connections =
                 ConnectionManager.getActiveConnections();
         connectionsCombo = new OpenConnectionsComboBox(this, connections);
+        txBox = new TransactionIsolationCombobox();
+        txBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                delegate.setTil(txBox.getSelectedLevel());
+            }
+        });
 
         maxRowCountCheckBox = new JCheckBox();
         maxRowCountCheckBox.setToolTipText("Enable/disable max records");
@@ -289,6 +298,20 @@ public class QueryEditor extends DefaultTabView
         gbc.insets.left = 0;
         gbc.insets.right = 0;
         toolsPanel.add(connectionsCombo, gbc);
+        gbc.gridx++;
+        gbc.weightx = 0;
+        gbc.gridwidth = 1;
+        gbc.insets.top = 7;
+        gbc.insets.left = 5;
+        gbc.insets.right = 10;
+        toolsPanel.add(createLabel("Transaction Isolation Level:", 'T'), gbc);
+        gbc.gridx++;
+        gbc.weightx = 1.0;
+        gbc.insets.top = 2;
+        gbc.insets.bottom = 2;
+        gbc.insets.left = 0;
+        gbc.insets.right = 0;
+        toolsPanel.add(txBox, gbc);
 
         gbc.gridx++;
         gbc.weightx = 0;

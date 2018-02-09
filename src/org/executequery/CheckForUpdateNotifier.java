@@ -143,7 +143,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     private void checkUnstable() throws IOException {
         updateLoader = new UpdateLoader("");
-        version = new ApplicationVersion(updateLoader.getJsonPropertyFromUrl("http://builds.red-soft.biz/api/builds/latest/?project=red_expert&branch=" + SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "branch"), "version"), null);
+        version = new ApplicationVersion(updateLoader.getJsonPropertyFromUrl("http://builds.red-soft.biz/api/builds/latest/?project=red_expert_1&branch=" + SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "branch"), "version"), null);
         if (isNewVersion(version)) {
 
             updateLoader.setVersion(version.getVersion());

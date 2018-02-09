@@ -39,6 +39,7 @@ import org.underworldlabs.util.SystemProperties;
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.regex.Matcher;
@@ -195,6 +196,47 @@ public class CheckForUpdateNotifier implements Interruptible {
         Log.info("The application needs to be updated");
     }
 
+    void displayDialogDownload(MouseListener listener) {
+        int yesNo = displayNewDownloadVersionMessage();
+        if (yesNo == JOptionPane.YES_OPTION) {
+
+            resetLabel(listener);
+
+            worker = new org.underworldlabs.swing.util.SwingWorker() {
+
+                public Object construct() {
+
+                    updateLoader.setVisible(true);
+                    updateLoader.update(releaseHub);
+
+                    return Constants.WORKER_SUCCESS;
+                }
+
+                public void finished() {
+
+//                        closeProgressDialog();
+//                        GUIUtilities.showNormalCursor();
+                }
+
+            };
+            worker.start();
+
+        }
+
+    }
+
+    private void resetLabel(MouseListener listener) {
+
+        JLabel label = getUpdateNotificationLabel();
+
+        label.setIcon(null);
+        label.setToolTipText(null);
+        if (listener != null)
+            label.removeMouseListener(listener);
+
+        statusBar().setThirdLabelText("");
+    }
+
     private void setNotifierInStatusBar() {
 
         JLabel label = getUpdateNotificationLabel();
@@ -263,49 +305,17 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     }
 
+    private String newDownloadVersionMessage(ApplicationVersion version) {
+        String repo = updateLoader.getRepo();
+        if (MiscUtils.isNull(repo))
+            if (releaseHub)
+                repo = "http://builds.red-soft.biz/release_hub/red_expert/";
+            else repo = "http://reddatabase.ru";
+        return "New version " + version.getVersion() +
+                " is available for download at " +
+                "<a style=\"color:#3F7ED3\" href=\"" + repo + "\">" + repo + "</a>." +
+                "\n\nDo you wish to download new version?";
 
-    public class DownloadNotificationLabelMouseAdapter extends MouseAdapter {
-        public void mouseReleased(MouseEvent e) {
-
-            int yesNo = displayNewDownloadVersionMessage();
-            if (yesNo == JOptionPane.YES_OPTION) {
-
-                resetLabel();
-
-                worker = new org.underworldlabs.swing.util.SwingWorker() {
-
-                    public Object construct() {
-
-                        updateLoader.setVisible(true);
-                        updateLoader.update(releaseHub);
-
-                        return Constants.WORKER_SUCCESS;
-                    }
-
-                    public void finished() {
-
-//                        closeProgressDialog();
-//                        GUIUtilities.showNormalCursor();
-                    }
-
-                };
-                worker.start();
-
-            }
-
-        }
-
-        private void resetLabel() {
-
-            JLabel label = getUpdateNotificationLabel();
-
-            label.setIcon(null);
-            label.setToolTipText(null);
-
-            label.removeMouseListener(this);
-
-            statusBar().setThirdLabelText("");
-        }
     }
 
     private int displayNewDownloadVersionMessage() {
@@ -314,11 +324,44 @@ public class CheckForUpdateNotifier implements Interruptible {
                 "Red Expert Update");
     }
 
-    private String newDownloadVersionMessage(ApplicationVersion version) {
-        return "New version " + version.getVersion() +
-                " is available for download at " +
-                "<a style=\"color:#3F7ED3\" href=\"" + updateLoader.getRepo() + "\">" + updateLoader.getRepo() + "</a>." +
-                "\n\nDo you wish to download new version?";
+    private Object doWork() {
+
+        try {
+
+            startupCheck();
+
+            if (isNewVersion(version)) {
+
+                logNewVersonInfo();
+
+                closeProgressDialog();
+
+                displayDialogDownload(null);
+
+            } else {
+
+                Log.info("Red Expert is up to date.");
+
+                if (monitorProgress) {
+
+                    closeProgressDialog();
+
+                    GUIUtilities.displayInformationMessage(noUpdateMessage());
+                }
+
+            }
+
+            return Constants.WORKER_SUCCESS;
+
+        } catch (ApplicationException e) {
+
+            if (monitorProgress) {
+
+                showExceptionErrorDialog(e);
+            }
+
+            return Constants.WORKER_FAIL;
+        }
 
     }
 
@@ -358,48 +401,12 @@ public class CheckForUpdateNotifier implements Interruptible {
                 this);
     }
 
-    private Object doWork() {
+    public class DownloadNotificationLabelMouseAdapter extends MouseAdapter {
+        public void mouseReleased(MouseEvent e) {
 
-        try {
-
-            version = getVersionInfo();
-
-            if (isNewVersion(version)) {
-
-                logNewVersonInfo();
-
-                closeProgressDialog();
-
-                int yesNo = displayNewVersionMessage();
-                if (yesNo == JOptionPane.YES_OPTION) {
-
-                    return displayReleaseNotes();
-                }
-
-            } else {
-
-                Log.info("Red Expert is up to date.");
-
-                if (monitorProgress) {
-
-                    closeProgressDialog();
-
-                    GUIUtilities.displayInformationMessage(noUpdateMessage());
-                }
-
-            }
-
-            return Constants.WORKER_SUCCESS;
-
-        } catch (ApplicationException e) {
-
-            if (monitorProgress) {
-
-                showExceptionErrorDialog(e);
-            }
-
-            return Constants.WORKER_FAIL;
+            displayDialogDownload(this);
         }
+
 
     }
 

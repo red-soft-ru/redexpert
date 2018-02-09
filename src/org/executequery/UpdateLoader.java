@@ -300,9 +300,9 @@ public class UpdateLoader extends JFrame {
         return postJsonObject(Url, parameters).getString(key);
     }
 
-    void update(boolean unstable) {
+    void update(boolean releaseHub) {
         this.setTitle("Updating");
-        if (unstable) {
+        if (releaseHub) {
             outText.setText("Contacting Download Server...");
             try {
 

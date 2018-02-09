@@ -83,6 +83,8 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     private boolean unstable = false;
 
+    private boolean releaseHub = false;
+
     private void startupCheck() {
 
 
@@ -95,24 +97,23 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         } else {
             unstable = UserProperties.getInstance().getBooleanProperty("startup.unstableversions.load");
-            if (unstable) {
+            releaseHub = UserProperties.getInstance().getBooleanProperty("releasehub");
+            if (releaseHub) {
                 try {
-                    checkUnstable();
+                    checkFromReleaseHub(unstable);
                 } catch (Exception e) {
                     //Log.error("No access:" + e.getMessage());
-                    checkRelease(unstable);
-                    unstable = false;
-
+                    checkFromReddatabase(unstable);
                 }
 
-            } else checkRelease(false);
+            } else checkFromReddatabase(unstable);
 
 
         }
 
     }
 
-    private void checkRelease(boolean unstable) {
+    private void checkFromReddatabase(boolean unstable) {
         try {
             updateLoader = new UpdateLoader("");
             Log.info("Checking for new version update from https://reddatabase.ru ...");
@@ -141,9 +142,12 @@ public class CheckForUpdateNotifier implements Interruptible {
         }
     }
 
-    private void checkUnstable() throws IOException {
+    private void checkFromReleaseHub(boolean unstable) throws IOException {
         updateLoader = new UpdateLoader("");
-        version = new ApplicationVersion(updateLoader.getJsonPropertyFromUrl("http://builds.red-soft.biz/api/builds/latest/?project=red_expert&branch=" + SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "branch"), "version"), null);
+        String url = "http://builds.red-soft.biz/api/builds/latest/?project=red_expert&branch=" + SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "branch");
+        if (!unstable)
+            url += "&stage=2";
+        version = new ApplicationVersion(updateLoader.getJsonPropertyFromUrl(url, "version"), null);
         if (isNewVersion(version)) {
 
             updateLoader.setVersion(version.getVersion());
@@ -266,7 +270,7 @@ public class CheckForUpdateNotifier implements Interruptible {
                     public Object construct() {
 
                         updateLoader.setVisible(true);
-                        updateLoader.update(unstable);
+                        updateLoader.update(releaseHub);
 
                         return Constants.WORKER_SUCCESS;
                     }

@@ -33,6 +33,7 @@ import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.InterruptibleProgressDialog;
 import org.underworldlabs.swing.util.Interruptible;
 import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -144,7 +145,13 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     private void checkFromReleaseHub(boolean unstable) throws IOException {
         updateLoader = new UpdateLoader("");
-        String url = "http://builds.red-soft.biz/api/builds/latest/?project=red_expert&branch=" + SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "branch");
+        boolean checkmajor = UserProperties.getInstance().getBooleanProperty("startup.majorversions.load");
+        String url;
+        String branch;
+        if (checkmajor && !MiscUtils.isNull(SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "branch.next.major.version")))
+            branch = SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "branch.next.major.version");
+        else branch = SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "branch");
+        url = "http://builds.red-soft.biz/api/builds/latest/?project=red_expert&branch=" + branch;
         if (!unstable)
             url += "&stage=2";
         version = new ApplicationVersion(updateLoader.getJsonPropertyFromUrl(url, "version"), null);

@@ -4,7 +4,7 @@ import ru.redsoft.jenkins.Pipeline;
 import ru.redsoft.jenkins.Git;
 import ru.redsoft.jenkins.ReleaseHub;
 
-String release_hub_project = 'red_expert'
+String release_hub_project = 'red_expert_1'
 String rev
 String version
 String vcs_url

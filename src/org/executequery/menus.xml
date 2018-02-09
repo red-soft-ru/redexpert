@@ -393,10 +393,10 @@
 
             <menu-item id="import-connections-command"
                        index="2"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"/>-->
+                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
             <menu-item id="separator"
-                       index="3"/>
+                       index="3"/>-->
 
         </menu>
 

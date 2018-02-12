@@ -308,9 +308,13 @@ public class DefaultStatementExecutor implements StatementExecutor {
             statementResult.setMessage("Connection closed.");
             return false;
         }
+        connectionTil = conn.getTransactionIsolation();
         if (til != -1) {
-            connectionTil = conn.getTransactionIsolation();
-            conn.setTransactionIsolation(til);
+            try {
+                conn.setTransactionIsolation(til);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         return true;
     }
@@ -1516,7 +1520,11 @@ public class DefaultStatementExecutor implements StatementExecutor {
             }
             stmnt = null;
             if (conn != null) {
-                conn.setTransactionIsolation(connectionTil);
+                try {
+                    conn.setTransactionIsolation(connectionTil);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
                 if (!keepAlive) {
 

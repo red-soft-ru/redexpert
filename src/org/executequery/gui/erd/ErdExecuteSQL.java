@@ -269,13 +269,13 @@ public class ErdExecuteSQL extends ErdPrintableDialog
     }
 
     @Override
-    public int getTil() {
-        return queryAnalyser.getTil();
+    public int getTransactionIsolation() {
+        return queryAnalyser.getTransactionIsolation();
     }
 
     @Override
-    public void setTil(int til) {
-        queryAnalyser.setTil(til);
+    public void setTransactionIsolation(int transactionLevel) {
+        queryAnalyser.setTransactionIsolation(transactionLevel);
     }
 
     public void setResultSet(ResultSet rs, String query) throws SQLException {

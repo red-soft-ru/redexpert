@@ -101,9 +101,15 @@ public class DefaultStatementExecutor implements StatementExecutor {
      */
     private DatabaseConnection databaseConnection;
 
-    private int connectionTil;
+    /**
+     * the transaction isolation level from connection
+     */
+    private int connectionIsolationLevel;
 
-    private int til;
+    /**
+     * the isolation level for transaction
+     */
+    private int transactionIsolation;
 
     public DefaultStatementExecutor() {
         this(null, false);
@@ -135,7 +141,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
         this.databaseConnection = databaseConnection;
         maxUseCount = ConnectionManager.getMaxUseCount();
         statementResult = new SqlStatementResult();
-        til = -1;
+        transactionIsolation = -1;
     }
 
     /**
@@ -308,10 +314,10 @@ public class DefaultStatementExecutor implements StatementExecutor {
             statementResult.setMessage("Connection closed.");
             return false;
         }
-        connectionTil = conn.getTransactionIsolation();
-        if (til != -1) {
+        connectionIsolationLevel = conn.getTransactionIsolation();
+        if (transactionIsolation != -1) {
             try {
-                conn.setTransactionIsolation(til);
+                conn.setTransactionIsolation(transactionIsolation);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1521,7 +1527,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
             stmnt = null;
             if (conn != null) {
                 try {
-                    conn.setTransactionIsolation(connectionTil);
+                    conn.setTransactionIsolation(connectionIsolationLevel);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -1570,12 +1576,12 @@ public class DefaultStatementExecutor implements StatementExecutor {
         return conn;
     }
 
-    public int getTil() {
-        return til;
+    public int getTransactionIsolation() {
+        return transactionIsolation;
     }
 
-    public void setTil(int til) {
-        this.til = til;
+    public void setTransactionIsolation(int transactionLevel) {
+        this.transactionIsolation = transactionLevel;
     }
 }
 

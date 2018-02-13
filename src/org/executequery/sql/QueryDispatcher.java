@@ -98,7 +98,10 @@ public class QueryDispatcher {
 
     private boolean waiting;
 
-    private int til;
+    /**
+     * Isolation level for query transaction
+     */
+    private int transactionLevel;
 
     // ------------------------------------------------
     // static string outputs
@@ -118,7 +121,7 @@ public class QueryDispatcher {
         try {
             this.delegate = runner;
 
-            til = -1;
+            transactionLevel = -1;
 
             querySender = new DefaultStatementExecutor(null, true);
 
@@ -240,7 +243,7 @@ public class QueryDispatcher {
             querySender.setDatabaseConnection(dc);
         }
 
-        querySender.setTil(til);
+        querySender.setTransactionIsolation(transactionLevel);
 
         statementCancelled = false;
 
@@ -1149,12 +1152,12 @@ public class QueryDispatcher {
         return false;
     }
 
-    public int getTil() {
-        return til;
+    public int getTransactionIsolation() {
+        return transactionLevel;
     }
 
-    public void setTil(int til) {
-        this.til = til;
+    public void setTransactionIsolation(int transactionLevel) {
+        this.transactionLevel = transactionLevel;
     }
 }
 

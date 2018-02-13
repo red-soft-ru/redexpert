@@ -260,7 +260,7 @@ public class QueryEditor extends DefaultTabView
         txBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                delegate.setTil(txBox.getSelectedLevel());
+                delegate.setTransactionIsolation(txBox.getSelectedLevel());
             }
         });
 

@@ -735,11 +735,17 @@
             large-icon="/org/executequery/icons/DatabaseConnect24.png"
             execute-class="org.executequery.actions.databasecommands.ConnectCommand"/>
 
-    <action id="import-connections-command"
+    <action id="import-connections-from-file-command"
             name="Import Connections"
             mnemonic="m"
             small-icon="/org/executequery/icons/ImportConnections16.png"
             execute-class="org.executequery.actions.databasecommands.ImportConnectionsCommand"/>
+
+    <action id="import-connections-from-DB-command"
+            name="Import Connections"
+            mnemonic="m"
+            small-icon="/org/executequery/icons/ImportConnections16.png"
+            execute-class="org.executequery.actions.databasecommands.ImportConnectionsFromDBCommand"/>
 
     <action id="export-connections-command"
             name="Export Connections"

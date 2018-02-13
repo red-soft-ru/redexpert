@@ -114,6 +114,7 @@ public class ConnectionsMenu extends MainMenu
 
             connectionMenuItemList.add(menuItem);
         }
+        addSeparator();
 
     }
 

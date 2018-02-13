@@ -356,7 +356,7 @@
                 <order>1000</order>
             </button>
 
-            <button id="47" action-id="import-connections-command">
+            <button id="47" action-id="import-connections-from-file-command">
                 <visible>false</visible>
                 <order>1000</order>
             </button>

@@ -44,7 +44,8 @@ public class BrowserTreeRootPopupMenu extends JPopupMenu {
 
         addSeparator();
         add(createMenuItem("export-connections-command"));
-        add(createMenuItem("import-connections-command"));
+        add(createMenuItem("import-connections-from-file-command"));
+        add(createMenuItem("import-connections-from-DB-command"));
     }
 
     private JMenuItem createMenuItem(String actionId) {

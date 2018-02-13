@@ -539,7 +539,8 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
         private void writeXMLRows(List<DatabaseConnection> connections)
                 throws SAXException {
 
-            for (DatabaseConnection connection : connections) {
+            for (int index = 0; index < connections.size(); index++) {
+                DatabaseConnection connection = connections.get(index);
 
                 handler().ignorableWhitespace(
                         INDENT_ONE.toCharArray(), 0, INDENT_ONE.length());

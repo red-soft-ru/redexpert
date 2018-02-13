@@ -87,7 +87,7 @@ public final class ConnectionManager {
         connectionPools.put(databaseConnection, pool);
         databaseConnection.setConnected(true);
 
-        Log.info("Data source " + databaseConnection.getName() + " initialised.");
+        Log.info("Data source " + databaseConnection.getName() + " initialized.");
     }
 
     /**

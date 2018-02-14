@@ -44,11 +44,11 @@ import java.util.Properties;
  */
 public class UserFeedbackRepositoryImpl implements UserFeedbackRepository {
 
-    private static final String FEEDBACK_POST_ADDRESS = "mikhail.kalyashin@red-soft.ru";
+    private static final String FEEDBACK_POST_ADDRESS = "rdb.support@red-soft.ru";
 
-    private static final String ADDRESS = "red-soft.biz";
+    private static final String ADDRESS = "red-soft.ru";
 
-    private static final String MAIL_SERVER = "mail.red-soft.biz";
+    private static final String MAIL_SERVER = "mail.red-soft.ru";
 
     public void postFeedback(UserFeedback userFeedback) throws RepositoryException {
 

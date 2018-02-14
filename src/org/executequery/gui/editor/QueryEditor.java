@@ -172,6 +172,9 @@ public class QueryEditor extends DefaultTabView
         this(text, null);
     }
 
+    DatabaseConnection oldConnection;
+    private int number = -1;
+
     /**
      * Creates a new query editor with the specified text content
      * and the specified absolute file path.
@@ -191,9 +194,13 @@ public class QueryEditor extends DefaultTabView
 
             e.printStackTrace();
         }
-
         scriptFile = new ScriptFile();
         scriptFile.setFileName(defaultScriptName());
+        if (absolutePath == null) {
+            QueryEditorHistory.checkAndCreateDir();
+            absolutePath = QueryEditorHistory.editorDirectory() + scriptFile.getFileName();
+        }
+        QueryEditorHistory.addEditor(getSelectedConnection().getName(), absolutePath, number);
         scriptFile.setAbsolutePath(absolutePath);
 
         if (text != null) {
@@ -207,8 +214,9 @@ public class QueryEditor extends DefaultTabView
     }
 
     private String defaultScriptName() {
+        number = QueryEditorHistory.getMinNumber();
         return DEFAULT_SCRIPT_PREFIX
-                + (editorCountSequence++) + DEFAULT_SCRIPT_SUFFIX;
+                + (number) + DEFAULT_SCRIPT_SUFFIX;
     }
 
     private void init() throws Exception {
@@ -256,6 +264,15 @@ public class QueryEditor extends DefaultTabView
         Vector<DatabaseConnection> connections =
                 ConnectionManager.getActiveConnections();
         connectionsCombo = new OpenConnectionsComboBox(this, connections);
+        connectionsCombo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                QueryEditorHistory.changedConnectionEditor(oldConnection.getName(), getSelectedConnection().getName(), scriptFile.getAbsolutePath());
+                oldConnection = getSelectedConnection();
+            }
+        });
+        oldConnection = (DatabaseConnection) connectionsCombo.getSelectedItem();
+
         txBox = new TransactionIsolationCombobox();
         txBox.addActionListener(new ActionListener() {
             @Override
@@ -992,11 +1009,23 @@ public class QueryEditor extends DefaultTabView
         }
 
         UserProperties properties = UserProperties.getInstance();
-        if (properties.getBooleanProperty("general.save.prompt") && contentChanged) {
+        if (properties.getBooleanProperty("general.save.prompt") && contentChanged && oldConnection.isConnected()) {
+
+            String oldPath = getAbsolutePath();
 
             if (!GUIUtilities.saveOpenChanges(this)) {
 
                 return false;
+            } else {
+                String newPath = getAbsolutePath();
+                if (!oldPath.equals(newPath))
+                    scriptFile.setAbsolutePath(oldPath);
+                QueryEditorHistory.removeEditor(oldConnection.getName(), getAbsolutePath());
+                if (QueryEditorHistory.isDefaultEditorDirectory(this)) {
+                    QueryEditorHistory.removeFile(oldPath);
+                }
+                scriptFile.setAbsolutePath(newPath);
+                QueryEditorHistory.addEditor(oldConnection.getName(), getAbsolutePath(), -1);
             }
 
         }
@@ -1012,6 +1041,8 @@ public class QueryEditor extends DefaultTabView
                             "be nothing, sometimes it helps to check the stack trace to see if anything " +
                             "peculiar happened.\n\nThe system returned:\n" + e.getMessage(), e);
         }
+
+        QueryEditorHistory.removeEditor(getSelectedConnection().getName(), scriptFile.getAbsolutePath());
 
         return true;
     }
@@ -1450,6 +1481,10 @@ public class QueryEditor extends DefaultTabView
         return SaveFunction.SAVE_COMPLETE;
     }
 
+    public String getAbsolutePath() {
+        return scriptFile.getAbsolutePath();
+    }
+
     // ---------------------------------------------
 
     /**
@@ -1481,6 +1516,10 @@ public class QueryEditor extends DefaultTabView
      */
     public void setContentChanged(boolean contentChanged) {
         this.contentChanged = contentChanged;
+        if (this.contentChanged == true) {
+            save(false);
+            this.contentChanged = true;
+        }
     }
 
     // ---------------------------------------------

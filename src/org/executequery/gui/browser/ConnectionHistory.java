@@ -1,8 +1,6 @@
 package org.executequery.gui.browser;
 
-import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
-import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
@@ -20,13 +18,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
 import java.util.*;
 
 public class ConnectionHistory extends AbstractXMLResourceReaderWriter<String[]> implements ConnectionListener {

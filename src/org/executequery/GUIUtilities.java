@@ -35,6 +35,7 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.managment.GrantManagerConnectionListener;
 import org.executequery.gui.drivers.DriversTreePanel;
 import org.executequery.gui.editor.QueryEditor;
+import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.jdbclogger.JdbcLoggerPanel;
 import org.executequery.gui.keywords.KeywordsDockedPanel;
 import org.executequery.gui.sqlstates.SQLStateCodesDockedPanel;
@@ -1676,8 +1677,12 @@ public final class GUIUtilities {
                 saveFunction.getDisplayName() + "?");
 
         if (result == JOptionPane.YES_OPTION) {
+            boolean saveAs = false;
+            if (saveFunction instanceof QueryEditor) {
+                saveAs = QueryEditorHistory.isDefaultEditorDirectory((QueryEditor) saveFunction);
+            }
 
-            if (saveFunction.save(false) != SaveFunction.SAVE_COMPLETE) {
+            if (saveFunction.save(saveAs) != SaveFunction.SAVE_COMPLETE) {
 
                 return false;
             }

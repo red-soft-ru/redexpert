@@ -635,7 +635,7 @@ public class SystemResources {
                 LogRepository.REPOSITORY_ID)).getLogFileDirectory();
     }
 
-    private static String userSettingsDirectoryForCurrentBuild() {
+    public static String userSettingsDirectoryForCurrentBuild() {
 
         UserSettingsProperties settings = new UserSettingsProperties();
         return settings.getUserSettingsDirectory();

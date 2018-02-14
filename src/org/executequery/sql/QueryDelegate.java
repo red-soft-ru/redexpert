@@ -143,9 +143,15 @@ public interface QueryDelegate {
      */
     void executeQuery(String query, boolean executeAsBlock);
 
-    int getTil();
+    /**
+     * Get current isolation level for transaction.
+     */
+    int getTransactionIsolation();
 
-    void setTil(int til);
+    /**
+     * Sets new transaction isolation level.
+     */
+    void setTransactionIsolation(int transactionLevel);
 
 }
 

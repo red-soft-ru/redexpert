@@ -139,13 +139,13 @@ public class QueryEditorDelegate implements QueryDelegate {
     }
 
     @Override
-    public int getTil() {
-        return dispatcher.getTil();
+    public int getTransactionIsolation() {
+        return dispatcher.getTransactionIsolation();
     }
 
     @Override
-    public void setTil(int til) {
-        dispatcher.setTil(til);
+    public void setTransactionIsolation(int transactionLevel) {
+        dispatcher.setTransactionIsolation(transactionLevel);
     }
 
     public void executeQuery(DatabaseConnection selectedConnection,

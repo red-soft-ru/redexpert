@@ -123,9 +123,9 @@ public interface StatementExecutor {
 
     SqlStatementResult getResultSet(String query, int fetchSize) throws SQLException;
 
-    int getTil();
+    int getTransactionIsolation();
 
-    void setTil(int til);
+    void setTransactionIsolation(int transactionLevel);
 
 }
 

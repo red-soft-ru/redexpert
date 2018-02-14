@@ -172,7 +172,9 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         basePanel.add(new JScrollPane(commentsField), gbc);
 
         JButton cancelButton = WidgetFactory.createButton(Bundles.get("common.cancel.button"));
+        cancelButton.setActionCommand("cancel");
         JButton sendButton = WidgetFactory.createButton(Bundles.get("common.send.button"));
+        sendButton.setActionCommand("Send");
 
         sendButton.addActionListener(this);
         cancelButton.addActionListener(this);

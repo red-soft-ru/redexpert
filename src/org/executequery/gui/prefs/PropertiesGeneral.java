@@ -110,6 +110,15 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
                 "Load unstable versions",
                 Boolean.valueOf(stringUserProperty(key))));
 
+        if (System.getProperty("os.name").equalsIgnoreCase("Linux")) {
+            key = "startup.create.desktop.entry";
+            list.add(new UserPreference(
+                    UserPreference.BOOLEAN_TYPE,
+                    key,
+                    "Create desktop link with restart",
+                    Boolean.valueOf(stringUserProperty(key))));
+        }
+
         key = "startup.majorversions.load";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,

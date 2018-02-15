@@ -14,7 +14,9 @@
         <includes>
           <include>red_expert.png</include>
           <include>red_expert.ico</include>
+          <include>redexpert.desktop</include>
           <include>RedExpert.*</include>
+          <include>createDesktopEntry.sh</include>
           <include>LICENSE.txt</include>
         </includes>
       </fileSet>
@@ -23,6 +25,7 @@
         <outputDirectory></outputDirectory>
         <includes>
           <include>RedExpert.*</include>
+          <include>createDesktopEntry.sh</include>
         </includes>
           <fileMode>0755</fileMode>
       </fileSet>

@@ -41,6 +41,7 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.List;
@@ -61,6 +62,8 @@ public class ApplicationLauncher {
             applySystemProperties();
             macSettings();
             x11Settings();
+
+            createDesktopEntry();
 
             boolean dirsCreated = SystemResources.createUserHomeDirSettings();
             aaFonts();
@@ -553,6 +556,21 @@ public class ApplicationLauncher {
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", ExecuteQueryFrame.TITLE);
         }
 
+    }
+
+    private void createDesktopEntry() {
+        String system = System.getProperty("os.name");
+        if (system.equalsIgnoreCase("Linux") && booleanUserProperty("startup.create.desktop.entry")) {
+            try {
+                userProperties().setBooleanProperty("startup.create.desktop.entry", false);
+                int result = GUIUtilities.displayConfirmDialog("Create desktop link?");
+                if (result == JOptionPane.YES_OPTION) {
+                    Runtime.getRuntime().exec("./createDesktopEntry.sh");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 

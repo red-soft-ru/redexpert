@@ -3,7 +3,7 @@ desktopsh="re.sh"
 
 if [ ! -f "$desktopsh" ]; then
     echo "#!/bin/sh
-builtin cd $PWD
+cd $PWD
 exec  ./RedExpert.sh &">>re.sh
 chmod 777 re.sh
 echo "Exec=\"$PWD/re.sh\" %f">>redexpert.desktop

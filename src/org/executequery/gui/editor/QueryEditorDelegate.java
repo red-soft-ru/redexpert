@@ -171,6 +171,26 @@ public class QueryEditorDelegate implements QueryDelegate {
 
     }
 
+    public void printExecutedPlan(DatabaseConnection selectedConnection,
+                                  String query) {
+
+        if (dispatcher.isExecuting()) {
+
+            return;
+        }
+
+        if (query == null) {
+
+            query = queryEditor.getEditorText();
+        }
+
+        if (StringUtils.isNotBlank(query)) {
+
+            dispatcher.printExecutedPlan(selectedConnection, query);
+        }
+
+    }
+
     public void executing() {
 
         queryEditor.executing();

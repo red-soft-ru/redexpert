@@ -1229,6 +1229,17 @@ public class QueryEditor extends DefaultTabView
         delegate.executeQuery(getSelectedConnection(), query, false);
     }
 
+    public void printExecutedPlan() {
+
+        preExecute();
+
+        String query = editorPanel.getQueryAreaText();
+
+        editorPanel.resetExecutingLine();
+
+        delegate.printExecutedPlan(getSelectedConnection(), query);
+    }
+
     public void executeSQLAtCursor() {
 
         preExecute();

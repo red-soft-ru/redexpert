@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.DatabaseExecutable;
 import org.executequery.sql.SqlStatementResult;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public interface StatementExecutor {
@@ -126,6 +127,8 @@ public interface StatementExecutor {
     int getTransactionIsolation();
 
     void setTransactionIsolation(int transactionLevel);
+
+    PreparedStatement getPreparedStatement(String query) throws SQLException;
 
 }
 

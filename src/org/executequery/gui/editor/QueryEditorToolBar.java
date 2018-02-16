@@ -92,6 +92,8 @@ class QueryEditorToolBar extends PanelToolBar {
 
     private static final String EXECUTE_COMMAND = "execute-command";
 
+    private static final String PRINT_PLAN_COMMAND = "print-plan-command";
+
     public static final String NAME = "Query Editor Tool Bar";
 
     /**
@@ -133,6 +135,9 @@ class QueryEditorToolBar extends PanelToolBar {
 
         addButton(createButton(EXECUTE_SELECTION_COMMAND,
                 "Execute the current text selection"));
+
+        addButton(createButton(PRINT_PLAN_COMMAND,
+                "Print plan for query"));
 
         addButton(createButton(EDITOR_STOP_COMMAND,
                 "Cancel Current Statement"));

@@ -1583,6 +1583,18 @@ public class DefaultStatementExecutor implements StatementExecutor {
     public void setTransactionIsolation(int transactionLevel) {
         this.transactionIsolation = transactionLevel;
     }
+
+    @Override
+    public PreparedStatement getPreparedStatement(String query) throws SQLException {
+        if (!prepared()) {
+
+            return null;
+        }
+
+        stmnt = conn.prepareStatement(query);
+
+        return (PreparedStatement) stmnt;
+    }
 }
 
 

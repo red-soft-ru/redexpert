@@ -3,10 +3,12 @@ package biz.redsoft;
 import org.firebirdsql.gds.ISCConstants;
 import org.firebirdsql.jdbc.FBConnection;
 import org.firebirdsql.jdbc.FBResultSet;
+import org.firebirdsql.jdbc.FBStatement;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Created by Vasiliy on 4/6/2017.
@@ -50,6 +52,12 @@ public class FBDatabasePerformanceImpl implements IFBDatabasePerformance {
     public String getLastExecutedPlan(ResultSet resultSet) throws SQLException {
         FBResultSet fbResultSet = (FBResultSet) resultSet;
         return fbResultSet.getExecutionPlan();
+    }
+
+    @Override
+    public String getLastExecutedPlan(Statement st) throws SQLException {
+        FBStatement fbStatement = (FBStatement) st;
+        return fbStatement.getLastExecutionPlan();
     }
 
 }

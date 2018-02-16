@@ -306,7 +306,7 @@ public class QueryDispatcher {
             Statement statement = querySender.getPreparedStatement(query);
             printPlan(statement);
         } catch (SQLException e) {
-            e.printStackTrace();
+            setOutputMessage(SqlMessages.ERROR_MESSAGE, e.getMessage());
         } finally {
             querySender.releaseResources();
         }

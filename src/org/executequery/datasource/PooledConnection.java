@@ -228,22 +228,46 @@ public class PooledConnection implements Connection {
 
     public Statement createStatement() throws SQLException {
         checkOpen();
+        Statement statement = null;
         lock(true);
-        return new PooledStatement(this, realConnection.createStatement());
+        try {
+            statement = realConnection.createStatement();
+            return new PooledStatement(this, statement);
+        } catch (SQLException e) {
+            if (statement == null)
+                lock(false);
+            throw e;
+        }
 
     }
 
     public Statement createStatement(int resultSetType, int resultSetConcurrency)
             throws SQLException {
         checkOpen();
+        Statement statement = null;
         lock(true);
-        return new PooledStatement(this, realConnection.createStatement(resultSetType, resultSetConcurrency));
+        try {
+            statement = realConnection.createStatement(resultSetType, resultSetConcurrency);
+            return new PooledStatement(this, statement);
+        } catch (SQLException e) {
+            if (statement == null)
+                lock(false);
+            throw e;
+        }
     }
 
     public PreparedStatement prepareStatement(String sql) throws SQLException {
         checkOpen();
+        PreparedStatement statement = null;
         lock(true);
-        return new PooledStatement(this, realConnection.prepareStatement(sql));
+        try {
+            statement = realConnection.prepareStatement(sql);
+            return new PooledStatement(this, statement);
+        } catch (SQLException e) {
+            if (statement == null)
+                lock(false);
+            throw e;
+        }
     }
 
     public PreparedStatement prepareStatement(String sql,
@@ -251,14 +275,30 @@ public class PooledConnection implements Connection {
                                               int resultSetConcurrency)
             throws SQLException {
         checkOpen();
+        PreparedStatement statement = null;
         lock(true);
-        return new PooledStatement(this, realConnection.prepareStatement(sql, resultSetType, resultSetConcurrency));
+        try {
+            statement = realConnection.prepareStatement(sql, resultSetType, resultSetConcurrency);
+            return new PooledStatement(this, statement);
+        } catch (SQLException e) {
+            if (statement == null)
+                lock(false);
+            throw e;
+        }
     }
 
     public CallableStatement prepareCall(String sql) throws SQLException {
         checkOpen();
+        CallableStatement statement = null;
         lock(true);
-        return new PooledStatement(this, realConnection.prepareCall(sql));
+        try {
+            statement = realConnection.prepareCall(sql);
+            return new PooledStatement(this, statement);
+        } catch (SQLException e) {
+            if (statement == null)
+                lock(false);
+            throw e;
+        }
     }
 
     public CallableStatement prepareCall(String sql,
@@ -266,8 +306,16 @@ public class PooledConnection implements Connection {
                                          int resultSetConcurrency)
             throws SQLException {
         checkOpen();
+        CallableStatement statement = null;
         lock(true);
-        return new PooledStatement(this, realConnection.prepareCall(sql, resultSetType, resultSetConcurrency));
+        try {
+            statement = realConnection.prepareCall(sql, resultSetType, resultSetConcurrency);
+            return new PooledStatement(this, statement);
+        } catch (SQLException e) {
+            if (statement == null)
+                lock(false);
+            throw e;
+        }
     }
 
     public void clearWarnings() throws SQLException {

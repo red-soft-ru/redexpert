@@ -38,6 +38,10 @@ public class PooledStatement implements CallableStatement {
         this.callableStatement = statement;
     }
 
+    public Statement getStatement() {
+        return statement;
+    }
+
     @Override
     public ResultSet executeQuery(String sql) throws SQLException {
         return new PooledResultSet(this, statement.executeQuery(sql));

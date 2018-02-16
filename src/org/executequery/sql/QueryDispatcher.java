@@ -31,6 +31,7 @@ import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.datasource.PooledResultSet;
+import org.executequery.datasource.PooledStatement;
 import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.executequery.util.ThreadWorker;
@@ -276,6 +277,39 @@ public class QueryDispatcher {
         delegate.executing();
         delegate.setStatusMessage(Constants.EMPTY);
         worker.start();
+    }
+
+    public void printExecutedPlan(DatabaseConnection dc,
+                                  final String query) {
+
+        if (!ConnectionManager.hasConnections()) {
+
+            setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Not Connected");
+            setStatusMessage(ERROR_EXECUTING);
+
+            return;
+        }
+
+        if (querySender == null) {
+
+            querySender = new DefaultStatementExecutor(null, true);
+        }
+
+        if (dc != null) {
+
+            querySender.setDatabaseConnection(dc);
+        }
+
+        querySender.setTransactionIsolation(transactionLevel);
+
+        try {
+            Statement statement = querySender.getPreparedStatement(query);
+            printPlan(statement);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            querySender.releaseResources();
+        }
     }
 
     /**
@@ -572,6 +606,7 @@ public class QueryDispatcher {
                     } else {
 
                         // Trying to get execution plan of firebird statement
+
                         printPlan(rset);
 
                         setResultSet(rset, query.getOriginalQuery());
@@ -815,6 +850,57 @@ public class QueryDispatcher {
                 try {
 
                     setOutputMessage(SqlMessages.PLAIN_MESSAGE, db.getLastExecutedPlan(resultSet));
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void printPlan(Statement st) {
+        try {
+            DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
+            DefaultDriverLoader driverLoader = new DefaultDriverLoader();
+            Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
+            DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
+            Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+
+            if (driver.getClass().getName().contains("FBDriver")) {
+                Statement realST = ((PooledStatement) st).getStatement();
+
+                Statement statement = null;
+                try {
+                    statement = realST.unwrap(Statement.class);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+                URL[] urls = new URL[0];
+                Class clazzdb = null;
+                Object odb = null;
+                try {
+                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                    ClassLoader cl = new URLClassLoader(urls, statement.getClass().getClassLoader());
+                    clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformanceImpl");
+                    odb = clazzdb.newInstance();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InstantiationException e) {
+                    e.printStackTrace();
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+
+                IFBDatabasePerformance db = (IFBDatabasePerformance) odb;
+                try {
+
+                    setOutputMessage(SqlMessages.PLAIN_MESSAGE, db.getLastExecutedPlan(statement));
 
                 } catch (SQLException e) {
                     e.printStackTrace();

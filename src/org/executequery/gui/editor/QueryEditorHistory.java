@@ -1,7 +1,9 @@
 package org.executequery.gui.editor;
 
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.util.SystemResources;
+import org.underworldlabs.util.FileUtils;
 
 import java.io.*;
 import java.util.*;
@@ -12,6 +14,8 @@ public class QueryEditorHistory {
     static QueryEditorHistory queryEditorHistory;
     private static Map<String, List<PathNumber>> editors;
     private static List<Integer> numbers;
+
+    public static final String NULL_CONNECTION = "null_connection";
 
     public static QueryEditorHistory getInstance() {
         if (queryEditorHistory == null)
@@ -220,6 +224,28 @@ public class QueryEditorHistory {
         File f = new File(path);
         if (f.exists())
             f.delete();
+    }
+
+    public static void restoreTabs(String connectionName) {
+        List<PathNumber> copy = new ArrayList<>();
+        copy.addAll(getEditors(connectionName));
+        for (int i = 0; i < copy.size(); i++) {
+            try {
+                removeEditor(connectionName, copy.get(i).path);
+                File file = new File(copy.get(i).path);
+                if (file.exists()) {
+                    String contents = FileUtils.loadFile(file);
+                    QueryEditor queryEditor = new QueryEditor(contents, copy.get(i).path);
+                    GUIUtilities.addCentralPane(QueryEditor.TITLE,
+                            QueryEditor.FRAME_ICON,
+                            queryEditor,
+                            null,
+                            true);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public static class PathNumber {

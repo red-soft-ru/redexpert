@@ -28,12 +28,9 @@ import org.executequery.event.ConnectionListener;
 import org.executequery.gui.ComponentPanel;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.editor.QueryEditorHistory;
-import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -66,25 +63,7 @@ public class OpenEditorConnectionListener implements ConnectionListener {
                 queryEditor.focusGained();
             }
         } else {
-            List<QueryEditorHistory.PathNumber> copy = new ArrayList<>();
-            copy.addAll(listEditors);
-            for (int i = 0; i < copy.size(); i++) {
-                try {
-                    QueryEditorHistory.removeEditor(connectionEvent.getDatabaseConnection().getName(), copy.get(i).path);
-                    File file = new File(copy.get(i).path);
-                    if (file.exists()) {
-                        String contents = FileUtils.loadFile(file);
-                        QueryEditor queryEditor = new QueryEditor(contents, copy.get(i).path);
-                        GUIUtilities.addCentralPane(QueryEditor.TITLE,
-                                QueryEditor.FRAME_ICON,
-                                queryEditor,
-                                null,
-                                true);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            QueryEditorHistory.restoreTabs(connectionEvent.getDatabaseConnection().getName());
         }
     }
 

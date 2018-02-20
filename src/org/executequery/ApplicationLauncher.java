@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.ExecuteQueryFrame;
+import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.menu.ExecuteQueryMenu;
 import org.executequery.log.Log;
 import org.executequery.plaf.LookAndFeelType;
@@ -205,6 +206,8 @@ public class ApplicationLauncher {
 
                 openStartupConnection();
             }
+
+            QueryEditorHistory.restoreTabs(QueryEditorHistory.NULL_CONNECTION);
 
             doCheckForUpdate();
 

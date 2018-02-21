@@ -47,6 +47,7 @@ import java.awt.*;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 import java.util.List;
 
@@ -656,7 +657,18 @@ public class CompareDataTypesPanel extends DefaultTabViewActionPanel
     private void releaseResources(ResultSet rs) {
         try {
             if (rs != null) {
-                rs.close();
+                Statement st = rs.getStatement();
+                releaseResources(st);
+            }
+        } catch (SQLException sqlExc) {
+        }
+    }
+
+    private void releaseResources(Statement st) {
+        try {
+            if (st != null) {
+                if (!st.isClosed())
+                    st.close();
             }
         } catch (SQLException sqlExc) {
         }

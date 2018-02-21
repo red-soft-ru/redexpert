@@ -79,6 +79,7 @@ public class QueryEditor extends DefaultTabView
 
     private static final String DEFAULT_SCRIPT_SUFFIX = ".sql";
 
+
     /**
      * editor open count for title numbering
      */
@@ -200,7 +201,11 @@ public class QueryEditor extends DefaultTabView
             QueryEditorHistory.checkAndCreateDir();
             absolutePath = QueryEditorHistory.editorDirectory() + scriptFile.getFileName();
         }
-        QueryEditorHistory.addEditor(getSelectedConnection().getName(), absolutePath, number);
+        String connectionName;
+        if (getSelectedConnection() != null)
+            connectionName = getSelectedConnection().getName();
+        else connectionName = QueryEditorHistory.NULL_CONNECTION;
+        QueryEditorHistory.addEditor(connectionName, absolutePath, number);
         scriptFile.setAbsolutePath(absolutePath);
 
         if (text != null) {
@@ -1009,7 +1014,8 @@ public class QueryEditor extends DefaultTabView
         }
 
         UserProperties properties = UserProperties.getInstance();
-        if (properties.getBooleanProperty("general.save.prompt") && contentChanged && oldConnection.isConnected()) {
+        boolean conFlag = oldConnection == null || oldConnection.isConnected();
+        if (properties.getBooleanProperty("general.save.prompt") && contentChanged && conFlag) {
 
             String oldPath = getAbsolutePath();
 
@@ -1018,14 +1024,18 @@ public class QueryEditor extends DefaultTabView
                 return false;
             } else {
                 String newPath = getAbsolutePath();
+                String connectionName;
+                if (oldConnection != null)
+                    connectionName = oldConnection.getName();
+                else connectionName = QueryEditorHistory.NULL_CONNECTION;
                 if (!oldPath.equals(newPath))
                     scriptFile.setAbsolutePath(oldPath);
-                QueryEditorHistory.removeEditor(oldConnection.getName(), getAbsolutePath());
+                QueryEditorHistory.removeEditor(connectionName, getAbsolutePath());
                 if (QueryEditorHistory.isDefaultEditorDirectory(this)) {
                     QueryEditorHistory.removeFile(oldPath);
                 }
                 scriptFile.setAbsolutePath(newPath);
-                QueryEditorHistory.addEditor(oldConnection.getName(), getAbsolutePath(), -1);
+                QueryEditorHistory.addEditor(connectionName, getAbsolutePath(), -1);
             }
 
         }
@@ -1041,8 +1051,11 @@ public class QueryEditor extends DefaultTabView
                             "be nothing, sometimes it helps to check the stack trace to see if anything " +
                             "peculiar happened.\n\nThe system returned:\n" + e.getMessage(), e);
         }
-
-        QueryEditorHistory.removeEditor(getSelectedConnection().getName(), scriptFile.getAbsolutePath());
+        String connectionName;
+        if (getSelectedConnection() != null)
+            connectionName = getSelectedConnection().getName();
+        else connectionName = QueryEditorHistory.NULL_CONNECTION;
+        QueryEditorHistory.removeEditor(connectionName, scriptFile.getAbsolutePath());
 
         return true;
     }
@@ -1151,10 +1164,7 @@ public class QueryEditor extends DefaultTabView
     public void executeSelection() {
 
         String query = editorPanel.getSelectedText();
-        if (query != null) {
-
-            executeSQLQuery(query);
-        }
+        executeSQLQuery(query);
 
     }
 

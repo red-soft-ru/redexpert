@@ -434,7 +434,7 @@ public class QueryDispatcher {
                     if (rset == null) {
 
                         setOutputMessage(SqlMessages.ERROR_MESSAGE,
-                                result.getErrorMessage());
+                                result.getErrorMessage(), true);
                         setStatusMessage(ERROR_EXECUTING);
 
                     } else {
@@ -449,7 +449,7 @@ public class QueryDispatcher {
                     if (updateCount == -1) {
 
                         setOutputMessage(SqlMessages.ERROR_MESSAGE,
-                                result.getErrorMessage());
+                                result.getErrorMessage(), true);
                         setStatusMessage(ERROR_EXECUTING);
 
                     } else {
@@ -600,7 +600,7 @@ public class QueryDispatcher {
                         printExecutionPlan(before, after);
 
                         setOutputMessage(SqlMessages.ERROR_MESSAGE,
-                                message);
+                                message, true);
                         setStatusMessage(ERROR_EXECUTING);
 
                     } else {
@@ -629,7 +629,7 @@ public class QueryDispatcher {
                             printExecutionPlan(before, after);
 
                             setOutputMessage(SqlMessages.ERROR_MESSAGE,
-                                    result.getErrorMessage());
+                                    result.getErrorMessage(), true);
                             setStatusMessage(ERROR_EXECUTING);
 
                         } else {
@@ -638,7 +638,7 @@ public class QueryDispatcher {
 
                                 printExecutionPlan(before, after);
 
-                                setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage());
+                                setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage(), true);
                             } else {
 
                                 type = result.getType();
@@ -664,7 +664,7 @@ public class QueryDispatcher {
 
                             printExecutionPlan(before, after);
 
-                            setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage());
+                            setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage(), true);
                             setStatusMessage(ERROR_EXECUTING);
 
                         } else {
@@ -725,7 +725,7 @@ public class QueryDispatcher {
 
             setOutputMessage(SqlMessages.ERROR_MESSAGE,
                     "Resources exhausted while executing query.\n" +
-                            "The query result set was too large to return.");
+                            "The query result set was too large to return.", true);
 
             setStatusMessage(ERROR_EXECUTING);
 

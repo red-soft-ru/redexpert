@@ -20,11 +20,13 @@
 
 package org.executequery.gui.erd;
 
+import org.executequery.GUIUtilities;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableFunctionPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -108,7 +110,9 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
         c.setLayout(new BorderLayout());
 
         JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
+        cancelButton.setActionCommand("Cancel");
         JButton okButton = new DefaultPanelButton(Bundles.get("common.create.button"));
+        okButton.setActionCommand("Create");
 
         ActionListener btnListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -143,8 +147,12 @@ public class ErdNewTableDialog extends ErdPrintableDialog {
         if (command.equals("Cancel")) {
             dispose();
         } else if (command.equals("Create")) {
-            createTable();
-            dispose();
+            if (MiscUtils.isNull(createPanel.getTableName())) {
+                GUIUtilities.displayErrorMessage("Table name can not be empty");
+            } else {
+                createTable();
+                dispose();
+            }
         }
     }
 

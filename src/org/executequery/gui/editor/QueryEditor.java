@@ -1164,10 +1164,7 @@ public class QueryEditor extends DefaultTabView
     public void executeSelection() {
 
         String query = editorPanel.getSelectedText();
-        if (query != null) {
-
-            executeSQLQuery(query);
-        }
+        executeSQLQuery(query);
 
     }
 

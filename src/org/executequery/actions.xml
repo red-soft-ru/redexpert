@@ -322,7 +322,7 @@
 
     <action id="execute-command"
             name="Execute"
-            accel-key="F9"
+            accel-key="control shift ENTER"
             accel-editable="true"
             small-icon="/org/executequery/icons/Execute16.png"
             large-icon="/org/executequery/icons/Execute24.png"
@@ -391,7 +391,7 @@
 
     <action id="execute-selection-command"
             name="Execute Selection"
-            accel-key="control shift ENTER"
+            accel-key="F9"
             accel-editable="true"
             small-icon="/org/executequery/icons/ExecuteSelection16.png"
             execute-class="org.executequery.actions.queryeditor.ExecuteSelectionCommand"/>

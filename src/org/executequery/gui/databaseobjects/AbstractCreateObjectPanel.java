@@ -10,10 +10,12 @@ import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 
 import javax.swing.*;
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
@@ -34,6 +36,9 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
     protected JTextField nameField;
     protected DefaultStatementExecutor sender;
     protected MetaDataValues metaData;
+    private ConnectionsTreePanel treePanel;
+    private TreePath currentPath;
+    private boolean commit;
 
     public AbstractCreateObjectPanel(DatabaseConnection dc, ActionContainer dialog, Object databaseObject) {
         this(dc, dialog, databaseObject, null);
@@ -42,6 +47,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
     public AbstractCreateObjectPanel(DatabaseConnection dc, ActionContainer dialog, Object databaseObject, Object[] params) {
         parent = dialog;
         connection = dc;
+        commit = false;
         initComponents();
         setDatabaseObject(databaseObject);
         if (params != null)
@@ -164,8 +170,18 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         else titleDialog = getCreateTitle();
         ExecuteQueryDialog eqd = new ExecuteQueryDialog(titleDialog, query, connection, true, delimiter);
         eqd.display();
-        if (eqd.getCommit())
+        if (eqd.getCommit()) {
+            commit = true;
+            if (editing) {
+                if (treePanel != null && currentPath != null)
+                    treePanel.reloadPath(currentPath.getParentPath());
+            }
             parent.finished();
+        }
+    }
+
+    public boolean isCommit() {
+        return commit;
     }
 
     protected int getDatabaseVersion() {
@@ -178,4 +194,19 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         }
     }
 
+    public ConnectionsTreePanel getTreePanel() {
+        return treePanel;
+    }
+
+    public void setTreePanel(ConnectionsTreePanel treePanel) {
+        this.treePanel = treePanel;
+    }
+
+    public TreePath getCurrentPath() {
+        return currentPath;
+    }
+
+    public void setCurrentPath(TreePath currentPath) {
+        this.currentPath = currentPath;
+    }
 }

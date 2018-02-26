@@ -22,6 +22,7 @@ package org.executequery.databasemediators.spi;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.ProcedureParameterSorter;
 import org.executequery.databasemediators.QueryTypes;
@@ -319,7 +320,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
             try {
                 conn.setTransactionIsolation(transactionIsolation);
             } catch (Exception e) {
-                e.printStackTrace();
+                GUIUtilities.displayExceptionErrorDialog("Error transaction isolation", e);
             }
         }
         return true;

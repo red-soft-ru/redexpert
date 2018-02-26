@@ -5,21 +5,22 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.editor.autocomplete.DefaultAutoCompletePopupProvider;
+import org.executequery.gui.text.SQLTextPane;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.underworldlabs.swing.GUIUtils;
 
 import javax.swing.*;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.ItemEvent;
+import java.awt.event.*;
 
-public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusListener {
+public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusListener, KeyListener {
     public static final String TITLE = "Create View";
     public static final String EDIT_TITLE = "Alter View";
     private static final String AUTO_COMPLETE_POPUP_ACTION_KEY = "autoCompletePopupActionKey";
     private SimpleSqlTextPanel sqlTextPanel;
     private SimpleTextArea descriptionTextArea;
+    private static final String replacing_name = "<name_view>";
+    String notChangedText;
     private DefaultAutoCompletePopupProvider autoCompletePopup;
     private DefaultDatabaseView view;
 
@@ -31,14 +32,23 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
         super(dc, dialog, view);
     }
 
+    boolean released = true;
+
+    @Override
+    protected void initEdited() {
+        nameField.setText(view.getName());
+        descriptionTextArea.getTextAreaComponent().setText(view.getRemarks());
+    }
+
     protected void init() {
         sqlTextPanel = new SimpleSqlTextPanel();
         sqlTextPanel.addFocusListener(this);
+        sqlTextPanel.getTextPane().addKeyListener(this);
         descriptionTextArea = new SimpleTextArea();
         this.autoCompletePopup = new DefaultAutoCompletePopupProvider(connection, sqlTextPanel.getTextPane());
         String sql;
         if (editing) {
-            sql = view.getCreateSQLText();
+            sql = replaceName(view.getCreateSQLText());
         } else {
             sql = "create view <view_name> ( _fields_ )\n" +
                     "as\n" +
@@ -65,23 +75,6 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
         sqlTextPanel.getTextPane().getInputMap().put((KeyStroke)
                         autoCompletePopupAction.getValue(Action.ACCELERATOR_KEY),
                 AUTO_COMPLETE_POPUP_ACTION_KEY);
-    }
-
-    @Override
-    protected void initEdited() {
-        nameField.setText(view.getName());
-        descriptionTextArea.getTextAreaComponent().setText(view.getRemarks());
-    }
-
-    @Override
-    public void createObject() {
-        String searchS = " view ";
-        String query = sqlTextPanel.getSQLText().trim();
-        int indexStart = query.indexOf(searchS) + searchS.length();
-        int indexFinish = query.indexOf(" ", indexStart);
-        query = query.substring(0, indexStart) + nameField.getText() + query.substring(indexFinish) + "^";
-        query += "COMMENT ON VIEW " + nameField.getText() + " IS '" + descriptionTextArea.getTextAreaComponent().getText() + "'";
-        displayExecuteQueryDialog(query, "^");
     }
 
     @Override
@@ -116,7 +109,48 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     }
 
     @Override
+    public void createObject() {
+        String query = sqlTextPanel.getSQLText().trim().replace(replacing_name, nameField.getText());
+        query = query + "^";
+        query += "COMMENT ON VIEW " + nameField.getText() + " IS '" + descriptionTextArea.getTextAreaComponent().getText() + "'";
+        displayExecuteQueryDialog(query, "^");
+    }
+
+    @Override
     public void focusLost(FocusEvent focusEvent) {
 
+    }
+
+    private String replaceName(String source) {
+        source = source.trim();
+        String name = view.getName().trim();
+        source = source.replace(" " + name + " ", " " + replacing_name + "\n");
+        source = source.replace(" " + name + "\n", " " + replacing_name + "\n");
+        source = source.replace("\n" + name + "\n", " " + replacing_name + "\n");
+        source = source.replace("\n" + name + " ", " " + replacing_name + "\n");
+        return source;
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        SQLTextPane textPane = (SQLTextPane) e.getSource();
+        if (released) {
+            notChangedText = textPane.getText();
+            released = false;
+        }
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        SQLTextPane textPane = (SQLTextPane) e.getSource();
+        if (!textPane.getText().contains(" " + replacing_name + "\n"))
+            textPane.setText(notChangedText);
+        released = true;
     }
 }

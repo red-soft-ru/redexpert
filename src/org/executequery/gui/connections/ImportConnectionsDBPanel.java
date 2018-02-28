@@ -71,42 +71,45 @@ public class ImportConnectionsDBPanel extends JPanel {
                         String prop = strs[i].substring(ind + 1);
                         properties.setProperty(key, prop);
                     }
-                    DatabaseConnection databaseConnection = databaseConnectionFactory().create(properties.getProperty("Alias"));
-                    ConnectionsTreePanel connectionsTreePanel = null;
-                    if (!connectionNameExists(databaseConnection.getName(), databaseConnection)) {
-                        try {
-                            connectionsTreePanel = (ConnectionsTreePanel) GUIUtilities.
-                                    getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                    String name = properties.getProperty("Alias");
+                    if (!MiscUtils.isNull(name)) {
+                        DatabaseConnection databaseConnection = databaseConnectionFactory().create(name);
+                        ConnectionsTreePanel connectionsTreePanel = null;
+                        if (!connectionNameExists(databaseConnection.getName(), databaseConnection)) {
+                            try {
+                                connectionsTreePanel = (ConnectionsTreePanel) GUIUtilities.
+                                        getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                            /***/
+                            databaseConnection.setUserName(properties.getProperty("UserName"));
+                            databaseConnection.setPassword(properties.getProperty("Password"));
+                            databaseConnection.setRole(properties.getProperty("Role"));
+                            databaseConnection.setCharset(properties.getProperty("Charset"));
+                            String s = properties.getProperty("DBName");
+                            databaseConnection.setSourceName(s);
+                            String host = properties.getProperty("SrvName");
+                            if (MiscUtils.isNull(host)) {
+                                databaseConnection.setHost("127.0.0.1");
+                                databaseConnection.setPort("3050");
+                            } else {
+                                String server = host.substring(0, host.length() - 5);
+                                String port = host.substring(host.length() - 5);
+                                databaseConnection.setHost(server);
+                                databaseConnection.setPort(port);
+                            }
+
+                            try {
+                                connectionsTreePanel.newConnection(databaseConnection);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
 
                         /***/
-                        databaseConnection.setUserName(properties.getProperty("UserName"));
-                        databaseConnection.setPassword(properties.getProperty("Password"));
-                        databaseConnection.setRole(properties.getProperty("Role"));
-                        databaseConnection.setCharset(properties.getProperty("Charset"));
-                        String s = properties.getProperty("DBName");
-                        databaseConnection.setSourceName(s);
-                        String host = properties.getProperty("SrvName");
-                        if (MiscUtils.isNull(host)) {
-                            databaseConnection.setHost("127.0.0.1");
-                            databaseConnection.setPort("3050");
-                        } else {
-                            String server = host.substring(0, host.length() - 5);
-                            String port = host.substring(host.length() - 5);
-                            databaseConnection.setHost(server);
-                            databaseConnection.setPort(port);
-                        }
-
-                        try {
-                            connectionsTreePanel.newConnection(databaseConnection);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
                     }
-
-                    /***/
 
                 }
             parent.finished();

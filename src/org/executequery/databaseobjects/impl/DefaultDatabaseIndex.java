@@ -1,5 +1,7 @@
 package org.executequery.databaseobjects.impl;
 
+import org.executequery.GUIUtilities;
+import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.log.Log;
 
 import javax.swing.event.TableModelListener;
@@ -15,7 +17,7 @@ import java.util.Set;
 /**
  * Created by vasiliy on 15.02.17.
  */
-public class DefaultDatabaseIndex extends DefaultDatabaseExecutable {
+public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     public static class DatabaseIndexColumn {
 
@@ -126,8 +128,8 @@ public class DefaultDatabaseIndex extends DefaultDatabaseExecutable {
     private String expression;
     private String constraint_type;
 
-    public DefaultDatabaseIndex(String name) {
-        setName(name);
+    public DefaultDatabaseIndex(DatabaseMetaTag metaTagParent, String name) {
+        super(metaTagParent, name);
     }
 
     public List<DatabaseIndexColumn> getIndexColumns() {
@@ -212,7 +214,6 @@ public class DefaultDatabaseIndex extends DefaultDatabaseExecutable {
                 } catch (SQLException e) {
                     Log.error("Error closing statement in method loadColumns of DefaultDatabaseIndex class", e);
                 }
-            setMarkedForReload(false);
         }
     }
 
@@ -240,11 +241,31 @@ public class DefaultDatabaseIndex extends DefaultDatabaseExecutable {
         return "";
     }
 
+    @Override
+    protected String queryForInfo() {
+        return null;
+    }
+
+    @Override
+    protected void setInfoFromResultSet(ResultSet rs) {
+
+    }
+
     public int getType() {
         return INDEX;
     }
 
     public String getMetaDataKey() {
         return META_TYPES[INDEX];
+    }
+
+    protected void getObjectInfo() {
+        try {
+            loadColumns();
+        } catch (Exception e) {
+            GUIUtilities.displayExceptionErrorDialog("Error loading info about Index", e);
+        } finally {
+            setMarkedForReload(false);
+        }
     }
 }

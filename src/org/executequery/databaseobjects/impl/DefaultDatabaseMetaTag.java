@@ -246,7 +246,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
             for (NamedObject i : children) {
 
-                ((DatabaseObject) i).setParent(this);
+                i.setParent(this);
             }
 
         }
@@ -962,7 +962,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             List<NamedObject> list = new ArrayList<NamedObject>();
             while (rs.next()) {
 
-                DefaultDatabaseIndex index = new DefaultDatabaseIndex(rs.getString(1).trim());
+                DefaultDatabaseIndex index = new DefaultDatabaseIndex(this, rs.getString(1).trim());
                 index.setTableName(rs.getString(2));
                 index.setIndexType(rs.getInt(4));
                 index.setActive(rs.getInt(6) != 1);
@@ -995,7 +995,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             rs = getIndexFromNameResultSet(name);
             while (rs.next()) {
 
-                index = new DefaultDatabaseIndex(rs.getString(1).trim());
+                index = new DefaultDatabaseIndex(this, rs.getString(1).trim());
                 index.setTableName(rs.getString(2));
                 index.setIndexType(rs.getInt(4));
                 index.setActive(rs.getInt(6) != 1);
@@ -1153,9 +1153,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             while (rs.next()) {
 
                 DefaultDatabaseException exception = new DefaultDatabaseException(this, rs.getString(1));
-                exception.setRemarks(rs.getString(4));
-                exception.setExceptionID(rs.getString(3));
-                exception.setExceptionText(rs.getString(2));
+                exception.setRemarks(rs.getString(2));
                 list.add(exception);
             }
 
@@ -1250,7 +1248,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             List<NamedObject> list = new ArrayList<NamedObject>();
             while (rs.next()) {
 
-                DefaultDatabaseIndex index = new DefaultDatabaseIndex(rs.getString(1).trim());
+                DefaultDatabaseIndex index = new DefaultDatabaseIndex(this, rs.getString(1).trim());
                 index.setTableName(rs.getString(2));
                 index.setIndexType(rs.getInt(4));
                 index.setActive(rs.getInt(6) != 1);
@@ -1537,8 +1535,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         Statement statement = dmd.getConnection().createStatement();
 
         ResultSet resultSet = statement.executeQuery("select RDB$EXCEPTION_NAME, " +
-                "RDB$MESSAGE, " +
-                "RDB$EXCEPTION_NUMBER, " +
                 "RDB$DESCRIPTION\n" +
                 "from RDB$EXCEPTIONS\n" +
                 "order by RDB$EXCEPTION_NAME");

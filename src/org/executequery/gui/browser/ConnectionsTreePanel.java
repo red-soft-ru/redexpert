@@ -1138,7 +1138,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     return (event instanceof ConnectionEvent)
         || (event instanceof UserPreferenceEvent)
         || (event instanceof ConnectionRepositoryEvent
-        && "connectionImported".equals(((ConnectionRepositoryEvent) event).getMethod()));
+            && "connectionImported".equals(event.getMethod()));
   }
 
   // ------------------------------------------
@@ -1401,8 +1401,10 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
 
   private synchronized void doNodeExpansion(DatabaseObjectNode node) {
     try {
-      node.populateChildren();
-      nodeStructureChanged(node);
+        if (node.getChildCount() == 0) {
+            node.populateChildren();
+            nodeStructureChanged(node);
+        }
     } catch (DataSourceException e) {
       controller.handleException(e);
     }

@@ -1,21 +1,28 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
-import org.executequery.databaseobjects.DatabaseProcedure;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * Created by vasiliy on 13.02.17.
  */
-public class DefaultDatabaseException extends DefaultDatabaseExecutable
-        implements DatabaseProcedure {
+public class DefaultDatabaseException extends AbstractDatabaseObject {
 
     private String exceptionID;
     private String exceptionText;
+
+    private static final String NAME = "FIELD_NAME";
+    private static final String EXCEPTION_TEXT = "EXCEPTION_TEXT";
+    private static final String ID = "ID";
+    private static final String DESCRIPTION = "DESCRIPTION";
 
     /**
      * Creates a new instance.
      */
     public DefaultDatabaseException() {
+        super((DatabaseMetaTag) null);
     }
 
     /**
@@ -23,6 +30,8 @@ public class DefaultDatabaseException extends DefaultDatabaseExecutable
      */
     public DefaultDatabaseException(DatabaseMetaTag metaTagParent, String name) {
         super(metaTagParent, name);
+
+
     }
 
     /**
@@ -30,6 +39,7 @@ public class DefaultDatabaseException extends DefaultDatabaseExecutable
      * the specified values.
      */
     public DefaultDatabaseException(String schema, String name) {
+        super((DatabaseMetaTag) null);
         setName(name);
         setSchemaName(schema);
     }
@@ -38,7 +48,13 @@ public class DefaultDatabaseException extends DefaultDatabaseExecutable
         return EXCEPTION;
     }
 
+    @Override
+    public String getMetaDataKey() {
+        return META_TYPES[EXCEPTION];
+    }
+
     public String getID() {
+        checkOnReload(exceptionID);
         return exceptionID;
     }
 
@@ -47,6 +63,7 @@ public class DefaultDatabaseException extends DefaultDatabaseExecutable
     }
 
     public String getExceptionText() {
+        checkOnReload(exceptionText);
         return exceptionText;
     }
 
@@ -64,5 +81,27 @@ public class DefaultDatabaseException extends DefaultDatabaseExecutable
         sb.append("';");
 
         return sb.toString();
+    }
+
+    @Override
+    protected String queryForInfo() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT\n")
+                .append("RDB$MESSAGE AS ").append(EXCEPTION_TEXT).append(",\n")
+                .append("RDB$EXCEPTION_NUMBER AS ").append(ID).append(",\n")
+                .append("F.RDB$DESCRIPTION AS ").append(DESCRIPTION).append(",\n")
+                .append("FROM RDB$EXCEPTIONS\n")
+                .append("WHERE\n")
+                .append("TRIM(RDB$EXCEPTION_NAME) = '").append(getName()).append("'");
+        return sb.toString();
+    }
+
+    @Override
+    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
+        if (rs.next()) {
+            setExceptionID(rs.getString(ID));
+            setExceptionText(rs.getString(EXCEPTION_TEXT));
+            setRemarks(rs.getString(DESCRIPTION));
+        }
     }
 }

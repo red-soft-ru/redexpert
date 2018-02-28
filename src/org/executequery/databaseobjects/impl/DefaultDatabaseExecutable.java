@@ -21,6 +21,7 @@
 package org.executequery.databaseobjects.impl;
 
 import biz.redsoft.IFBDatabaseMetadata;
+import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledDatabaseMetaData;
 import org.executequery.gui.browser.ColumnData;
@@ -41,11 +42,6 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         implements DatabaseExecutable {
 
     /**
-     * the meta tag parent object
-     */
-    private DatabaseMetaTag metaTagParent;
-
-    /**
      * proc parameters
      */
     private ArrayList<ProcedureParameter> parameters;
@@ -58,12 +54,11 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
     private String procedureSourceCode;
 
     public DefaultDatabaseExecutable() {
+        super((DatabaseMetaTag) null);
     }
 
     public DefaultDatabaseExecutable(DatabaseMetaTag metaTagParent, String name) {
-        this.metaTagParent = metaTagParent;
-        setName(name);
-
+        super(metaTagParent, name);
         if (metaTagParent.getCatalog() != null) {
             setCatalogName(metaTagParent.getCatalog().getName());
         }
@@ -71,6 +66,16 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         if (metaTagParent.getSchema() != null) {
             setSchemaName(metaTagParent.getSchema().getName());
         }
+
+    }
+
+    @Override
+    protected String queryForInfo() {
+        return null;
+    }
+
+    @Override
+    protected void setInfoFromResultSet(ResultSet rs) {
 
     }
 
@@ -107,7 +112,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         if (parameters == null) {
             getParameters();
         }
-        return (ProcedureParameter[]) parameters.toArray(new
+        return parameters.toArray(new
                 ProcedureParameter[parameters.size()]);
     }
 
@@ -155,11 +160,12 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
      */
     public List<ProcedureParameter> getParameters() throws DataSourceException {
 
-        if (!isMarkedForReload() && parameters != null) {
+        checkOnReload(parameters);
+        return parameters;
 
-            return parameters;
-        }
+    }
 
+    private void loadParameters() throws DataSourceException {
         ResultSet rs = null;
         try {
 
@@ -180,7 +186,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
             } else {
 
-                // check that the db supports catalog and 
+                // check that the db supports catalog and
                 // schema names for this call
                 if (!dmd.supportsCatalogsInProcedureCalls()) {
                     _catalog = null;
@@ -231,8 +237,6 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 parameters.add(pp);
             }
 
-            return parameters;
-
         } catch (SQLException e) {
 
             throw new DataSourceException(e);
@@ -240,7 +244,6 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         } finally {
 
             releaseResources(rs);
-            setMarkedForReload(false);
         }
     }
 
@@ -389,11 +392,12 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
     }
 
     public String getProcedureSourceCode() {
-        if (!isMarkedForReload() && procedureSourceCode != null) {
+        checkOnReload(procedureSourceCode);
+        return procedureSourceCode;
 
-            return procedureSourceCode;
-        }
+    }
 
+    private void loadProcedureSourceCode() {
         procedureSourceCode = "";
 
         try {
@@ -428,10 +432,18 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 }
             }
 
-            return procedureSourceCode;
-
         } finally {
 
+        }
+    }
+
+    protected void getObjectInfo() {
+        try {
+            loadParameters();
+            loadProcedureSourceCode();
+        } catch (Exception e) {
+            GUIUtilities.displayExceptionErrorDialog("Error loading info about Executable", e);
+        } finally {
             setMarkedForReload(false);
         }
     }

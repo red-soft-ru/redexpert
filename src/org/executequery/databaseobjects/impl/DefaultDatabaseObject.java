@@ -28,6 +28,7 @@ import org.executequery.sql.StatementGeneratorFactory;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,15 +46,25 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
      * Creates a new instance of DefaultDatabaseObject
      */
     public DefaultDatabaseObject(DatabaseHost host) {
-        setHost(host);
+        super(host);
     }
 
     /**
      * Creates a new instance of DefaultDatabaseObject
      */
     public DefaultDatabaseObject(DatabaseHost host, String metaDataKey) {
-        setHost(host);
+        super(host);
         this.metaDataKey = metaDataKey;
+    }
+
+    @Override
+    protected String queryForInfo() {
+        return null;
+    }
+
+    @Override
+    protected void setInfoFromResultSet(ResultSet rs) {
+
     }
 
     /**

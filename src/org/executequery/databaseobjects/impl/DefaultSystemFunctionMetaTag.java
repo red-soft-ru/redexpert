@@ -27,6 +27,7 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,21 +44,14 @@ public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
      * the system function type identifier
      */
     private int type;
-
-    /**
-     * the meta tag parent object
-     */
-    private DatabaseMetaTag metaTagParent;
-
     /**
      * Creates a new instance of DefaultSystemFunctionMetaTag
      */
     public DefaultSystemFunctionMetaTag(DatabaseMetaTag metaTagParent,
                                         int type,
                                         String name) {
-        this.metaTagParent = metaTagParent;
+        super(metaTagParent, name);
         this.type = type;
-        setName(name);
     }
 
     /**
@@ -124,6 +118,15 @@ public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
         return META_TYPES[getType()];
     }
 
+    @Override
+    protected String queryForInfo() {
+        return null;
+    }
+
+    @Override
+    protected void setInfoFromResultSet(ResultSet rs) {
+
+    }
 }
 
 

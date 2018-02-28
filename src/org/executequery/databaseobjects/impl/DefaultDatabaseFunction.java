@@ -20,6 +20,7 @@
 
 package org.executequery.databaseobjects.impl;
 
+import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseFunction;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
@@ -90,11 +91,11 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
      */
     public List<FunctionArgument> getFunctionArguments() throws DataSourceException {
 
-        if (!isMarkedForReload() && arguments != null) {
+        checkOnReload(arguments);
+        return arguments;
+    }
 
-            return arguments;
-        }
-
+    void loadFunctionArguments() {
         ResultSet rs = null;
         try {
 
@@ -135,8 +136,6 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
                     functionSourceCode = rs.getString(2);
             }
 
-            return arguments;
-
         } catch (SQLException e) {
 
             throw new DataSourceException(e);
@@ -144,10 +143,8 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         } finally {
 
             releaseResources(rs);
-            setMarkedForReload(false);
         }
     }
-
     /**
      * Returns this object's arguments as an array.
      */
@@ -364,6 +361,16 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
 
         return sb.toString();
+    }
+
+    protected void getObjectInfo() {
+        try {
+            loadFunctionArguments();
+        } catch (Exception e) {
+            GUIUtilities.displayExceptionErrorDialog("Error loading info about Function", e);
+        } finally {
+            setMarkedForReload(false);
+        }
     }
 }
 

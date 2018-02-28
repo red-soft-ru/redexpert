@@ -21,6 +21,8 @@
 package org.executequery.gui.browser;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.databaseobjects.NamedObject;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
 
 import javax.swing.*;
@@ -29,6 +31,7 @@ import javax.swing.text.Position;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -78,38 +81,37 @@ public class TreeFindAction extends FindAction<TreePath> {
 
         Matcher matcher = Pattern.compile(prefix).matcher("");
         List<TreePath> matchedPaths = new ArrayList<TreePath>();
-        for (int i = 1; i < tree.getRowCount(); i++) {
-
-            TreePath path = tree.getPathForRow(i);
-            String text = tree.convertValueToText(path.getLastPathComponent(),
-                    tree.isRowSelected(i), tree.isExpanded(i), true, i, false);
-
-            if (ignoreCase()) {
-
-                text = text.toUpperCase();
-            }
-
-//            if ((wildcardStart && text.contains(prefix)) || text.startsWith(prefix, 0)) {
-//
-//                matchedPaths.add(path);
-//            }
-
-            matcher.reset(text);
-            if (matcher.find()) {
-
-                matchedPaths.add(path);
-            }
-
-        }
+        findOnTree(tree.getPathForRow(0), matchedPaths, matcher);
 
         foundValues(matchedPaths);
 
         return !(matchedPaths.isEmpty());
     }
 
+    private void findOnTree(TreePath path, List<TreePath> matchedPaths, Matcher matcher) {
+        DatabaseObjectNode root = (DatabaseObjectNode) path.getLastPathComponent();
+        root.populateChildren();
+        Enumeration<DatabaseObjectNode> nodes = root.children();
+        while (nodes.hasMoreElements()) {
+            DatabaseObjectNode node = nodes.nextElement();
+            String text = node.getName();
+            if (ignoreCase()) {
+
+                text = text.toUpperCase();
+            }
+            matcher.reset(text);
+            if (matcher.find()) {
+
+                matchedPaths.add(path.pathByAddingChild(node));
+            }
+            if (node.getType() != NamedObject.SYSTEM_TABLE && node.getType() != NamedObject.TABLE && node.getType() != NamedObject.VIEW)
+                findOnTree(path.pathByAddingChild(node), matchedPaths, matcher);
+        }
+    }
+
     private void changeSelection(JTree tree, TreePath path) {
         tree.setSelectionPath(path);
-        tree.scrollPathToVisible(path);
+
     }
 
     public TreePath getNextMatch(JTree tree, String prefix, int startingRow,

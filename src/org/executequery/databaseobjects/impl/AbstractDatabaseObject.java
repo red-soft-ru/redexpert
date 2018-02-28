@@ -21,10 +21,10 @@
 package org.executequery.databaseobjects.impl;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseObject;
-import org.executequery.databaseobjects.TablePrivilege;
+import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databasemediators.spi.StatementExecutor;
+import org.executequery.databaseobjects.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.Log;
 
@@ -73,6 +73,25 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
      * statement object for open queries
      */
     private Statement statement;
+
+    protected StatementExecutor querySender;
+
+    protected DatabaseMetaTag metaTagParent;
+
+    public AbstractDatabaseObject(DatabaseHost host) {
+        setHost(host);
+        querySender = new DefaultStatementExecutor(host.getDatabaseConnection(), true);
+    }
+
+    public AbstractDatabaseObject(DatabaseMetaTag metaTagParent) {
+        this(metaTagParent.getHost());
+        this.metaTagParent = metaTagParent;
+    }
+
+    public AbstractDatabaseObject(DatabaseMetaTag metaTagParent, String name) {
+        this(metaTagParent);
+        setName(name);
+    }
 
     /**
      * Returns the catalog name parent to this database object.
@@ -550,6 +569,28 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         } catch (SQLException e) {
             e.printStackTrace();
             return 0;
+        }
+    }
+
+    protected abstract String queryForInfo();
+
+    protected abstract void setInfoFromResultSet(ResultSet rs) throws SQLException;
+
+    protected void getObjectInfo() {
+        try {
+            ResultSet rs = querySender.getResultSet(queryForInfo()).getResultSet();
+            setInfoFromResultSet(rs);
+        } catch (SQLException e) {
+            GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);
+        } finally {
+            querySender.releaseResources();
+            setMarkedForReload(false);
+        }
+    }
+
+    protected void checkOnReload(Object object) {
+        if (object == null || isMarkedForReload()) {
+            getObjectInfo();
         }
     }
 }

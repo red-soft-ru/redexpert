@@ -105,12 +105,8 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
     public boolean nameExists(DatabaseConnection exclude, String name) {
 
         DatabaseConnection connection = findByName(name);
-        if (connection != null && connection != exclude) {
+        return connection != null && connection != exclude;
 
-            return true;
-        }
-
-        return false;
     }
 
     public synchronized void save() {
@@ -158,7 +154,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
 
         try {
 
-            return (List<DatabaseConnection>) read(filePath, new DatabaseConnectionHandler());
+            return read(filePath, new DatabaseConnectionHandler());
 
         } catch (RepositoryException e) {
 
@@ -188,8 +184,8 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
 
     private boolean namesValid() {
 
-        for (DatabaseConnection connection : connections()) {
-
+        for (int i = 0; i < connections().size(); i++) {
+            DatabaseConnection connection = connections().get(i);
             if (nameExists(connection, connection.getName())) {
 
                 throw new RepositoryException(

@@ -85,6 +85,7 @@ public class ImportConnectionsDBPanel extends JPanel {
 
                             /***/
                             databaseConnection.setUserName(properties.getProperty("UserName"));
+                            databaseConnection.setPasswordStored(true);
                             databaseConnection.setPassword(properties.getProperty("Password"));
                             databaseConnection.setRole(properties.getProperty("Role"));
                             databaseConnection.setCharset(properties.getProperty("Charset"));
@@ -95,8 +96,16 @@ public class ImportConnectionsDBPanel extends JPanel {
                                 databaseConnection.setHost("127.0.0.1");
                                 databaseConnection.setPort("3050");
                             } else {
-                                String server = host.substring(0, host.length() - 5);
-                                String port = host.substring(host.length() - 5);
+                                String server;
+                                String port;
+                                if (host.contains("/")) {
+                                    String[] serverport = host.split("/");
+                                    server = serverport[0];
+                                    port = serverport[1];
+                                } else {
+                                    server = host;
+                                    port = "3050";
+                                }
                                 databaseConnection.setHost(server);
                                 databaseConnection.setPort(port);
                             }

@@ -774,6 +774,18 @@
             accel-editable="true"
             small-icon="/org/executequery/icons/ExportExcel16.png"
             execute-class="org.executequery.actions.toolscommands.ExportExcelCommand"/>
+  <action id="export-dbunit-command"
+          name="Export as DBUnit Dataset"
+          mnemonic="Q"
+          accel-editable="true"
+          small-icon="/org/executequery/icons/ExportXML16.png"
+          execute-class="org.executequery.actions.toolscommands.ExportDBUnitCommand"/>
+
+  <action id="insert-row-command"
+          name="Create a new table column after the current selection"
+          accel-editable="false"
+          small-icon="/org/executequery/icons/ColumnInsert16.png"
+          execute-class="org.executequery.actions.othercommands.InsertRowAfterCommand"/>
 
     <action id="export-sql-command"
             name="Export as SQL"

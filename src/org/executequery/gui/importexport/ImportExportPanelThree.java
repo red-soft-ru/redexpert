@@ -57,7 +57,7 @@ public class ImportExportPanelThree extends AbstractImportExportPanel {
     private void init() {
 
         table = new DefaultTable();
-        table.setRowHeight(23);
+        table.setRowHeight(28);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setColumnSelectionAllowed(false);
         table.getTableHeader().setReorderingAllowed(false);
@@ -83,6 +83,7 @@ public class ImportExportPanelThree extends AbstractImportExportPanel {
     private BrowseButtonEditor browseButtonCellEditor;
 
     private void prepareTable() {
+
         TableColumnModel tcm = table.getColumnModel();
         TableColumn col = tcm.getColumn(0);
         col.setPreferredWidth(140);

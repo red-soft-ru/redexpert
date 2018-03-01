@@ -233,9 +233,9 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
   @SuppressWarnings("unchecked")
   public void collapseAll() {
 
-    for (Enumeration<DefaultMutableTreeNode> i = tree.getRootNode().children(); i.hasMoreElements(); ) {
+    for (Enumeration<TreeNode> i = tree.getRootNode().children(); i.hasMoreElements();) {
 
-      DefaultMutableTreeNode node = i.nextElement();
+      DefaultMutableTreeNode node = (DefaultMutableTreeNode) i.nextElement();
       tree.collapsePath(new TreePath(node.getPath()));
     }
 
@@ -310,7 +310,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     tree.nodeStructureChanged(selectedNode);
 
     int count = 0;
-    for (Enumeration i = selectedNode.children(); i.hasMoreElements(); ) {
+    for (Enumeration i = selectedNode.children(); i.hasMoreElements();) {
 
       Object object = i.nextElement();
       if (object instanceof DatabaseHostNode) {
@@ -334,7 +334,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
       ConnectionsFolder folder = folderNode.getConnectionsFolder();
       folder.empty();
 
-      for (Enumeration<?> j = selectedNode.children(); j.hasMoreElements(); ) {
+      for (Enumeration<?> j = selectedNode.children(); j.hasMoreElements();) {
 
         Object object = j.nextElement();
         if (isADatabaseHostNode(object)) {
@@ -507,18 +507,18 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
 
     if (folder.getChildCount() > 0) {
 
-      for (Enumeration<DatabaseHostNode> i = folder.children(); i.hasMoreElements(); ) {
+      for (Enumeration<TreeNode> i = folder.children(); i.hasMoreElements();) {
 
-        connections.remove(i.nextElement().getDatabaseConnection());
+        connections.remove(((DatabaseHostNode) i.nextElement()).getDatabaseConnection());
       }
 
     }
 
-    ConnectionsFolder connectionsFolder = folder.getConnectionsFolder();
-    folders.remove(connectionsFolder);
-    tree.removeNode(folder);
-    connectionModified((DatabaseConnection) null);
-    folderRemoved(connectionsFolder);
+        ConnectionsFolder connectionsFolder = folder.getConnectionsFolder();
+        folders.remove(connectionsFolder);
+        tree.removeNode(folder);
+        connectionModified((DatabaseConnection) null);
+        folderRemoved(connectionsFolder);
   }
 
   /**

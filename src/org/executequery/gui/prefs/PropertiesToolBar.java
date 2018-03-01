@@ -182,7 +182,7 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setShowGrid(false);
-        table.setRowHeight(27);
+        table.setRowHeight(28);
         table.doLayout();
 
         TableColumnModel tcm = table.getColumnModel();

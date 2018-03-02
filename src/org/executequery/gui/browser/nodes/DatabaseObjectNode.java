@@ -27,7 +27,6 @@ import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -121,10 +120,7 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
      */
     public boolean isDroppable() {
         NamedObject namedObject = getDatabaseObject();
-        if (isDatabaseTable(namedObject)) {
-            return true;
-        }
-        return false;
+        return isDatabaseTable(namedObject);
     }
 
     /**
@@ -184,7 +180,7 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
 
                 for (int i = 0, n = children.size(); i < n; i++) {
 
-                    add((MutableTreeNode) children.get(i));
+                    add(children.get(i));
                 }
 
             }
@@ -290,7 +286,7 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
      * Propagates the call to the underlying database object.
      */
     public String getDisplayName() {
-        return databaseObject.getShortName();
+        return databaseObject.getShortName().trim();
     }
 
     /**
@@ -304,7 +300,7 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
      * Returns the display name.
      */
     public String toString() {
-        return getDisplayName();
+        return getDisplayName() + ":" + getMetaDataKey();
     }
 
     protected String bundleString(String key) {

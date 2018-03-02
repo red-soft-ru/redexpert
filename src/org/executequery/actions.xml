@@ -781,12 +781,6 @@
           small-icon="/org/executequery/icons/ExportXML16.png"
           execute-class="org.executequery.actions.toolscommands.ExportDBUnitCommand"/>
 
-  <action id="insert-row-command"
-          name="Create a new table column after the current selection"
-          accel-editable="false"
-          small-icon="/org/executequery/icons/ColumnInsert16.png"
-          execute-class="org.executequery.actions.othercommands.InsertRowAfterCommand"/>
-
     <action id="export-sql-command"
             name="Export as SQL"
             mnemonic="Q"

@@ -224,7 +224,7 @@ public class QueryEditor extends DefaultTabView
                 + (number) + DEFAULT_SCRIPT_SUFFIX;
     }
 
-    private void init() throws Exception {
+    private void init() {
 
         // construct the two query text area and results panels
         statusBar = new QueryEditorStatusBar();
@@ -756,7 +756,7 @@ public class QueryEditor extends DefaultTabView
      * @param the executed result set
      * @param the executed query of the result set
      */
-    public void setResultSet(ResultSet rset, String query) throws SQLException {
+    public void setResultSet(ResultSet rset, String query) {
 
         resultsPanel.setResultSet(rset, true, getMaxRecords(), query);
     }
@@ -1235,8 +1235,9 @@ public class QueryEditor extends DefaultTabView
         }
 
         editorPanel.resetExecutingLine();
+        boolean executeAsBlock = query.toLowerCase().startsWith("execute block");
 
-        delegate.executeQuery(getSelectedConnection(), query, false);
+        delegate.executeQuery(getSelectedConnection(), query, executeAsBlock);
     }
 
     public void printExecutedPlan() {

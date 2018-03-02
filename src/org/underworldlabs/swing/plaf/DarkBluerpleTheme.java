@@ -386,9 +386,9 @@ public class DarkBluerpleTheme extends DefaultMetalTheme {
                 "MenuItem.border", new org.underworldlabs.swing.plaf.SimpleMenuItemBorder(),
                 "CheckBoxMenuItem.border", new org.underworldlabs.swing.plaf.SimpleMenuItemBorder(),
                 "Menu.border", new org.underworldlabs.swing.plaf.SimpleMenuItemBorder(),
-                "PopupMenu.border", new org.underworldlabs.swing.plaf.SimpleMenuBorder(new ColorUIResource(39, 42, 44)),
-
-
+                "PopupMenu.border", new org.underworldlabs.swing.plaf.SimpleMenuBorder(new ColorUIResource(39,42,44)),
+//                "Menu.borderPainted", false,
+                
 //            "TabbedPane.borderHightlightColor", getSecondary1(),
 //            "TabbedPane.contentAreaColor", getSecondary3(),
                 "TabbedPane.contentBorderInsets", new Insets(2, 2, 3, 3),

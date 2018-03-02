@@ -273,6 +273,7 @@ class BrowserTreePopupMenu extends JPopupMenu {
         exportData = MenuItemFactory.createMenu(bundleString("ExportData"));
         exportData.add(createMenuItem(bundleString("exportSQL"), "exportSQL", listener));
         exportData.add(createMenuItem(bundleString("exportXml"), "exportXml", listener));
+        exportData.add(createMenuItem(bundleString("exportDbunit"), "exportDbunit", listener));
         exportData.add(createMenuItem(bundleString("exportDelimited"), "exportDelimited", listener));
         exportData.add(createMenuItem(bundleString("exportExcel"), "exportExcel", listener));
         add(exportData);

@@ -675,6 +675,18 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         importExportDialog(ImportExportDataProcess.EXPORT_DELIMITED);
     }
 
+    public void exportDbunit(ActionEvent e) {
+
+        NamedObject object = treePanel.getSelectedNamedObject();
+
+        if (object != null && (object instanceof DatabaseTable)) {
+
+            Action action = ActionBuilder.get("export-dbunit-command");
+            action.actionPerformed(new ActionEvent(object, e.getID(), e.getActionCommand()));
+        }
+
+    }
+
     public void exportSQL(ActionEvent e) {
 
         NamedObject object = treePanel.getSelectedNamedObject();

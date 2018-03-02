@@ -20,6 +20,12 @@
 
 package org.executequery.gui.browser.nodes;
 
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+
+import javax.swing.tree.TreeNode;
+
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.NamedObject;
@@ -48,9 +54,9 @@ public class ConnectionsFolderNode extends RootDatabaseObjectNode {
     public DatabaseObjectNode copy() {
 
         ConnectionsFolderNode copy = new ConnectionsFolderNode(connectionsFolder);
-        for (Enumeration<DatabaseObjectNode> i = children(); i.hasMoreElements(); ) {
-
-            copy.add(i.nextElement().copy());
+        for (Enumeration<TreeNode> i = children(); i.hasMoreElements();) {
+            
+            copy.add(((DatabaseObjectNode) i.nextElement()).copy());
         }
 
         return copy;
@@ -97,9 +103,9 @@ public class ConnectionsFolderNode extends RootDatabaseObjectNode {
     public List<DatabaseHost> getDatabaseHosts() {
 
         List<DatabaseHost> hosts = new ArrayList<DatabaseHost>(getChildCount());
-        for (Enumeration<DatabaseHostNode> i = children(); i.hasMoreElements(); ) {
-
-            DatabaseHostNode node = i.nextElement();
+        for (Enumeration<TreeNode> i = children(); i.hasMoreElements();) {
+            
+            DatabaseHostNode node = (DatabaseHostNode) i.nextElement();
             DatabaseHost host = (DatabaseHost) node.getDatabaseObject();
             hosts.add(host);
         }
@@ -111,20 +117,19 @@ public class ConnectionsFolderNode extends RootDatabaseObjectNode {
     public List<DatabaseHostNode> getDatabaseHostNodes() {
 
         List<DatabaseHostNode> nodes = new ArrayList<DatabaseHostNode>(getChildCount());
-        for (Enumeration<DatabaseHostNode> i = children(); i.hasMoreElements(); ) {
-
-            nodes.add(i.nextElement());
+        for (Enumeration<TreeNode> i = children(); i.hasMoreElements();) {
+            
+            nodes.add((DatabaseHostNode) i.nextElement());
         }
 
         return nodes;
     }
-
-    @SuppressWarnings("unchecked")
+    
     public DatabaseObjectNode getHostNode(DatabaseConnection dc) {
 
-        for (Enumeration<DatabaseHostNode> i = children(); i.hasMoreElements(); ) {
-
-            DatabaseHostNode node = i.nextElement();
+        for (Enumeration<TreeNode> i = children(); i.hasMoreElements();) {
+            
+            DatabaseHostNode node = (DatabaseHostNode) i.nextElement();
             if (((DatabaseHost) node.getDatabaseObject()).getDatabaseConnection() == dc) {
 
                 return node;

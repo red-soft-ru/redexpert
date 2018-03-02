@@ -172,7 +172,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
     private JTable createTableWithModel(TableModel tableModel) {
 
         JTable table = new JTable(tableModel);
-        table.setRowHeight(22);
+        table.setRowHeight(TABLE_ROW_HEIGHT);
         table.setCellSelectionEnabled(true);
         table.setColumnSelectionAllowed(false);
         table.setRowSelectionAllowed(false);

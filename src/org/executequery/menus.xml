@@ -515,6 +515,9 @@
             <menu-item id="export-excel-command"
                        class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
+              <menu-item id="export-excel-command"
+                         class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         </menu>
 
         <menu-item id="separator"/>-->

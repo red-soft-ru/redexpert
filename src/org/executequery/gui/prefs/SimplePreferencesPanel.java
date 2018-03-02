@@ -238,7 +238,7 @@ public class SimplePreferencesPanel extends JPanel
         }
 
         table.setGridColor(GRID_COLOR);
-        table.setRowHeight(22);
+        table.setRowHeight(AbstractPropertiesBasePanel.TABLE_ROW_HEIGHT);
         TableColumnModel tcm = table.getColumnModel();
 
         int secondColumnWidth = 200;

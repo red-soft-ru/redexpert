@@ -74,8 +74,8 @@ public class PropertiesEditorSyntax extends AbstractPropertiesBasePanel
         tcm.getColumn(0).setPreferredWidth(150);
         tcm.getColumn(1).setPreferredWidth(120);
         tcm.getColumn(2).setPreferredWidth(70);
-
-        table.setRowHeight(20);
+        
+        table.setRowHeight(TABLE_ROW_HEIGHT);
         table.setCellSelectionEnabled(true);
         table.setColumnSelectionAllowed(false);
         table.setRowSelectionAllowed(false);

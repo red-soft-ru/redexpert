@@ -400,6 +400,13 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
         }
         DefaultStatementExecutor executor = new DefaultStatementExecutor(getHost().getDatabaseConnection(), true);
+        boolean autoCommit = false;
+        try {
+          autoCommit = getHost().getConnection().getAutoCommit();
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+        executor.setCommitMode(true);
         SqlStatementResult result = null;
         try {
           String query = "SELECT DISTINCT C.RDB$CONSTRAINT_NAME,\n" +
@@ -420,6 +427,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
           Log.error("Error loading check-constraints:" + result.getErrorMessage(), e);
         } finally {
           executor.releaseResources();
+          executor.setCommitMode(autoCommit);
         }
         constraints.removeAll(Collections.singleton(null));
 

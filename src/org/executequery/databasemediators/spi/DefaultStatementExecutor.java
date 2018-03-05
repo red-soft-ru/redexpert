@@ -1527,11 +1527,6 @@ public class DefaultStatementExecutor implements StatementExecutor {
             }
             stmnt = null;
             if (conn != null) {
-                try {
-                    conn.setTransactionIsolation(connectionIsolationLevel);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
 
                 if (!keepAlive) {
 

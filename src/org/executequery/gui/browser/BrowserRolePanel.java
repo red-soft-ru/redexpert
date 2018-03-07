@@ -419,14 +419,14 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel implements Con
                             if (!headers[col].equals("Execute")) {
                                 String query = "REVOKE " + headers[col] + " ON \"" + relationNames.elementAt(row) + "\" FROM \"" + rolesListCombo.getSelectedItem() + "\";";
                                 querySender.execute(QueryTypes.REVOKE, query);
-                                querySender.execute(QueryTypes.COMMIT, null);
+                                querySender.execute(QueryTypes.COMMIT, (String) null);
                                 rolesTable.setValueAt(noGrantIcon, row, col);
                                 querySender.releaseResources();
                             }
                         } else if (headers[col].equals("Execute")) {
                             String query = "REVOKE " + headers[col] + " ON PROCEDURE \"" + relationNames.elementAt(row) + "\" FROM \"" + rolesListCombo.getSelectedItem() + "\";";
                             querySender.execute(QueryTypes.REVOKE, query);
-                            querySender.execute(QueryTypes.COMMIT, null);
+                            querySender.execute(QueryTypes.COMMIT, (String) null);
                             rolesTable.setValueAt(noGrantIcon, row, col);
                             querySender.releaseResources();
                         }
@@ -444,14 +444,14 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel implements Con
                                 if (!headers[col].equals("Execute")) {
                                     String query = "REVOKE " + headers[col] + " ON \"" + relationNames.elementAt(row) + "\" FROM \"" + rolesListCombo.getSelectedItem() + "\";";
                                     querySender.execute(QueryTypes.REVOKE, query);
-                                    querySender.execute(QueryTypes.COMMIT, null);
+                                    querySender.execute(QueryTypes.COMMIT, (String) null);
                                     rolesTable.setValueAt(noGrantIcon, row, col);
                                     querySender.releaseResources();
                                 }
                             } else if (headers[col].equals("Execute")) {
                                 String query = "REVOKE " + headers[col] + " ON PROCEDURE \"" + relationNames.elementAt(row) + "\" FROM \"" + rolesListCombo.getSelectedItem() + "\";";
                                 querySender.execute(QueryTypes.REVOKE, query);
-                                querySender.execute(QueryTypes.COMMIT, null);
+                                querySender.execute(QueryTypes.COMMIT, (String) null);
                                 rolesTable.setValueAt(noGrantIcon, row, col);
                                 querySender.releaseResources();
                             }
@@ -467,14 +467,14 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel implements Con
                                 if (!headers[col].equals("Execute")) {
                                     String query = "GRANT " + headers[col] + " ON \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\";";
                                     querySender.execute(QueryTypes.GRANT, query);
-                                    querySender.execute(QueryTypes.COMMIT, null);
+                                    querySender.execute(QueryTypes.COMMIT, (String) null);
                                     querySender.releaseResources();
                                     rolesTable.setValueAt(grantIcon, row, col);
                                 }
                             } else if (headers[col].equals("Execute")) {
                                 String query = "GRANT " + headers[col] + " ON PROCEDURE \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\";";
                                 querySender.execute(QueryTypes.GRANT, query);
-                                querySender.execute(QueryTypes.COMMIT, null);
+                                querySender.execute(QueryTypes.COMMIT, (String) null);
                                 querySender.releaseResources();
                                 rolesTable.setValueAt(grantIcon, row, col);
                             }
@@ -491,14 +491,14 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel implements Con
                                 if (!headers[col].equals("Execute")) {
                                     String query = "GRANT " + headers[col] + " ON \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\";";
                                     querySender.execute(QueryTypes.GRANT, query);
-                                    querySender.execute(QueryTypes.COMMIT, null);
+                                    querySender.execute(QueryTypes.COMMIT, (String) null);
                                     querySender.releaseResources();
                                     rolesTable.setValueAt(grantIcon, row, col);
                                 }
                             } else if (headers[col].equals("Execute")) {
                                 String query = "GRANT " + headers[col] + " ON PROCEDURE \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\";";
                                 querySender.execute(QueryTypes.GRANT, query);
-                                querySender.execute(QueryTypes.COMMIT, null);
+                                querySender.execute(QueryTypes.COMMIT, (String) null);
                                 querySender.releaseResources();
                                 rolesTable.setValueAt(grantIcon, row, col);
                             }
@@ -514,14 +514,14 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel implements Con
                             if (!headers[col].equals("Execute")) {
                                 String query = "GRANT " + headers[col] + " ON \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\" WITH GRANT OPTION;";
                                 querySender.execute(QueryTypes.GRANT, query);
-                                querySender.execute(QueryTypes.COMMIT, null);
+                                querySender.execute(QueryTypes.COMMIT, (String) null);
                                 querySender.releaseResources();
                                 rolesTable.setValueAt(adminIcon, row, col);
                             }
                         } else if (headers[col].equals("Execute")) {
                             String query = "GRANT " + headers[col] + " ON PROCEDURE \"" + relationNames.elementAt(row) + "\" TO \"" + rolesListCombo.getSelectedItem() + "\" WITH GRANT OPTION;";
                             querySender.execute(QueryTypes.GRANT, query);
-                            querySender.execute(QueryTypes.COMMIT, null);
+                            querySender.execute(QueryTypes.COMMIT, (String) null);
                             querySender.releaseResources();
                             rolesTable.setValueAt(adminIcon, row, col);
                         }

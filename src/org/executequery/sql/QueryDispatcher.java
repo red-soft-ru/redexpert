@@ -606,7 +606,7 @@ public class QueryDispatcher {
                             }
                             if (contains)
                                 params.add(old);
-                            else if (p.getText().contentEquals("\\?"))
+                            else if (!p.getText().contentEquals("\\?"))
                                 params.add(new Parameter(p.getText()));
                             else {
                                 params.add(new Parameter("\\?" + number[0]));
@@ -627,8 +627,10 @@ public class QueryDispatcher {
                     params.get(i).setType(pmd.getParameterType(i + 1));
                     params.get(i).setTypeName(pmd.getParameterTypeName(i + 1));
                 }
-                SelectParametersDialog spd = new SelectParametersDialog(displayParams);
-                spd.display();
+                if (!displayParams.isEmpty()) {
+                    SelectParametersDialog spd = new SelectParametersDialog(displayParams);
+                    spd.display();
+                }
                 for (int i = 0; i < params.size(); i++) {
                     if (params.get(i).isNull())
                         statement.setNull(i + 1, params.get(i).getType());
@@ -823,7 +825,7 @@ public class QueryDispatcher {
         // Trying to get execution plan of firebird statement
         DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
         DefaultDriverLoader driverLoader = new DefaultDriverLoader();
-        Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
+        Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
         DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
         Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
@@ -877,7 +879,7 @@ public class QueryDispatcher {
         try {
             DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
             DefaultDriverLoader driverLoader = new DefaultDriverLoader();
-            Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
+            Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
             DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
             Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
@@ -928,7 +930,7 @@ public class QueryDispatcher {
         try {
             DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
             DefaultDriverLoader driverLoader = new DefaultDriverLoader();
-            Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
+            Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
             DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
             Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 

@@ -1120,7 +1120,7 @@ public class GrantManagerPanel extends JPanel {
     void grant_query(String query, Icon icon, int row, int col, JTable t) {
         try {
             querySender.execute(QueryTypes.GRANT, query);
-            querySender.execute(QueryTypes.COMMIT, null);
+            querySender.execute(QueryTypes.COMMIT, (String) null);
             t.setValueAt(icon, row, col);
             querySender.releaseResources();
         } catch (NullPointerException e) {
@@ -1156,7 +1156,7 @@ public class GrantManagerPanel extends JPanel {
             for (int i = 1; i < headers.length; i++)
                 if (i != col_execute && i != col_usage)
                     tablePrivileges.setValueAt(icon, row, i);
-            querySender.execute(QueryTypes.COMMIT, null);
+            querySender.execute(QueryTypes.COMMIT, (String) null);
             querySender.releaseResources();
         } catch (Exception e) {
             Log.error(e.getMessage());

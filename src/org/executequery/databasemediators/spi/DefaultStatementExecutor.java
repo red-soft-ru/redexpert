@@ -32,6 +32,7 @@ import org.executequery.databaseobjects.DatabaseSource;
 import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.datasource.ConnectionManager;
+import org.executequery.gui.editor.autocomplete.Parameter;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -385,6 +386,44 @@ public class DefaultStatementExecutor implements StatementExecutor {
         }
 
         return statementResult;
+    }
+
+    @Override
+    public SqlStatementResult getResultSet(int fetchSize, PreparedStatement statement) throws SQLException {
+        stmnt = statement;
+        if (statement == null || statement.isClosed()) {
+            statementResult.setMessage("Statement closed");
+            return statementResult;
+        }
+
+        if (fetchSize != -1) {
+
+            stmnt.setFetchSize(fetchSize);
+        }
+
+        // mysql
+//        stmnt = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
+//        stmnt.setFetchSize(Integer.MIN_VALUE);
+
+        try {
+
+            ResultSet rs = statement.executeQuery();
+            statementResult.setResultSet(rs);
+
+            useCount++;
+
+        } catch (SQLException e) {
+
+            statementResult.setSqlException(e);
+            finished();
+        }
+
+        return statementResult;
+    }
+
+    @Override
+    public SqlStatementResult getResultSet(String query, int fetchSize, List<Parameter> params) {
+        return null;
     }
 
     /**
@@ -1016,6 +1055,11 @@ public class DefaultStatementExecutor implements StatementExecutor {
     }
 
     @Override
+    public SqlStatementResult execute(int type, PreparedStatement statement) throws SQLException {
+        return execute(type, statement, -1);
+    }
+
+    @Override
     public SqlStatementResult execute(int type, String query, int fetchSize) throws SQLException {
 
         statementResult.setType(type);
@@ -1072,9 +1116,66 @@ public class DefaultStatementExecutor implements StatementExecutor {
         return statementResult;
     }
 
+    @Override
+    public SqlStatementResult execute(int type, PreparedStatement statement, int fetchSize) throws SQLException {
+        statementResult.setType(type);
+
+        switch (type) {
+
+            case QueryTypes.SELECT:
+            case QueryTypes.EXPLAIN:
+                return getResultSet(fetchSize, statement);
+            case QueryTypes.INSERT:
+            case QueryTypes.UPDATE:
+            case QueryTypes.DELETE:
+            case QueryTypes.DROP_TABLE:
+            case QueryTypes.CREATE_TABLE:
+            case QueryTypes.ALTER_TABLE:
+            case QueryTypes.CREATE_SEQUENCE:
+            case QueryTypes.CREATE_FUNCTION:
+            case QueryTypes.CREATE_PROCEDURE:
+            case QueryTypes.GRANT:
+            case QueryTypes.CREATE_SYNONYM:
+            case QueryTypes.CREATE_ROLE:
+            case QueryTypes.REVOKE:
+            case QueryTypes.DROP_OBJECT:
+            case QueryTypes.COMMENT:
+            case QueryTypes.CREATE_TRIGGER:
+                return updateRecords(statement);
+
+            case QueryTypes.UNKNOWN:
+            case QueryTypes.SELECT_INTO:
+                return execute(statement);
+
+            /*case QueryTypes.EXECUTE:
+                //return execute(query);
+                return executeProcedure();*/
+
+            case QueryTypes.COMMIT:
+                return commitLast(true);
+
+            case QueryTypes.ROLLBACK:
+                return commitLast(false);
+
+            case QueryTypes.SHOW_TABLES:
+                return showTables();
+
+            /*
+            case CONNECT:
+                return establishConnection(query.toUpperCase());
+             */
+        }
+        return statementResult;
+    }
+
     private SqlStatementResult execute(String query) throws SQLException {
 
         return execute(query, true);
+    }
+
+    private SqlStatementResult execute(PreparedStatement statement) throws SQLException {
+
+        return execute(statement, true);
     }
 
     private SqlStatementResult showTables() throws SQLException {
@@ -1172,6 +1273,59 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
         return statementResult;
     }
+
+    @Override
+    public SqlStatementResult execute(PreparedStatement statement, boolean enableEscapes)
+            throws SQLException {
+
+        stmnt = statement;
+        if (statement == null || statement.isClosed()) {
+            statementResult.setMessage("Statement closed");
+            return statementResult;
+        }
+        boolean isResultSet = false;
+
+        try {
+
+            setStatementEscapeProcessing(stmnt, enableEscapes);
+            isResultSet = statement.execute();
+
+            if (isResultSet) {
+
+                ResultSet rs = stmnt.getResultSet();
+                statementResult.setResultSet(rs);
+
+            } else {
+
+                int updateCount = stmnt.getUpdateCount();
+                if (updateCount == -1) {
+
+                    updateCount = -10000;
+                }
+
+                statementResult.setUpdateCount(updateCount);
+            }
+
+            useCount++;
+            statementResult.setSqlWarning(stmnt.getWarnings());
+            return statementResult;
+
+        } catch (SQLException e) {
+
+            statementResult.setSqlException(e);
+
+        } finally {
+
+            if (!isResultSet) {
+
+                finished();
+            }
+
+        }
+
+        return statementResult;
+    }
+
 
     private void setStatementEscapeProcessing(Statement statement, boolean enableEscapes) {
 
@@ -1282,6 +1436,27 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
         return statementResult;
 
+    }
+
+    @Override
+    public SqlStatementResult updateRecords(PreparedStatement statement) throws SQLException {
+        stmnt = statement;
+        if (statement == null || statement.isClosed()) {
+            statementResult.setMessage("Statement closed");
+            return statementResult;
+        }
+
+        try {
+            int result = statement.executeUpdate();
+            statementResult.setUpdateCount(result);
+            useCount++;
+        } catch (SQLException e) {
+            statementResult.setSqlException(e);
+        } finally {
+            finished();
+        }
+
+        return statementResult;
     }
 
     /*
@@ -1428,7 +1603,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
      *
      * @param c connection to close
      */
-    private void closeConnection(Connection c) throws SQLException {
+    private void closeConnection(Connection c) {
         try {
             // if this not the connection assigned to this object
             if (c != null && c != conn) {
@@ -1476,7 +1651,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
      * Closes the database connection of this object.
      */
     @Override
-    public void closeConnection() throws SQLException {
+    public void closeConnection() {
         // if set to keep the connection open
         // for this instance - return
         if (keepAlive) {

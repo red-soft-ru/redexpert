@@ -7,10 +7,14 @@ import org.executequery.gui.editor.autocomplete.Parameter;
 import org.underworldlabs.swing.EQDateTimePicker;
 import org.underworldlabs.swing.EQTimePicker;
 import org.underworldlabs.swing.RDBCheckBox;
+import org.underworldlabs.swing.RDBFieldFileChooser;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,12 +74,6 @@ public class SelectParametersDialog extends BaseDialog {
                 1, 1, 0, 0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
-        JCheckBox nullBox = new JCheckBox("NULL");
-        nullBoxes.add(nullBox);
-        panel.add(nullBox, new GridBagConstraints(2, count,
-                1, 1, 0, 0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
         JComponent component;
         switch (parameter.getType()) {
             case Types.DATE:
@@ -90,12 +88,17 @@ public class SelectParametersDialog extends BaseDialog {
             case Types.BOOLEAN:
                 component = new RDBCheckBox();
                 break;
+            case Types.BINARY:
+            case Types.BLOB:
+            case Types.LONGVARBINARY:
+                component = new RDBFieldFileChooser();
+                break;
             default:
                 component = new JTextField(14);
                 break;
         }
         componentList.add(component);
-        panel.add(component, new GridBagConstraints(3, count,
+        panel.add(component, new GridBagConstraints(2, count,
                 1, 1, 1, 0,
                 GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -117,6 +120,18 @@ public class SelectParametersDialog extends BaseDialog {
                     break;
                 case Types.BOOLEAN:
                     parameter.setValue(((RDBCheckBox) component).getStringValue());
+                    break;
+                case Types.BINARY:
+                case Types.BLOB:
+                case Types.LONGVARBINARY:
+                    File file = ((RDBFieldFileChooser) component).getFile();
+                    if (file != null) {
+                        try {
+                            parameter.setValue(new FileInputStream(file));
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    } else parameter.setValue(null);
                     break;
                 default:
                     parameter.setValue(((JTextField) component).getText());

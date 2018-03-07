@@ -630,7 +630,10 @@ public class QueryDispatcher {
                 SelectParametersDialog spd = new SelectParametersDialog(displayParams);
                 spd.display();
                 for (int i = 0; i < params.size(); i++) {
-                    statement.setObject(i + 1, params.get(i).getValue());
+                    if (params.get(i).isNull())
+                        statement.setNull(i + 1, params.get(i).getType());
+                    else
+                        statement.setObject(i + 1, params.get(i).getValue());
                 }
                 SqlStatementResult result = querySender.execute(type, statement);
 

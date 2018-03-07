@@ -1,5 +1,9 @@
 package org.executequery.gui.editor.autocomplete;
 
+import org.underworldlabs.util.MiscUtils;
+
+import java.sql.Types;
+
 public class Parameter {
     int type;
     Object value;
@@ -38,12 +42,16 @@ public class Parameter {
         this.typeName = typeName;
     }
 
-    /*public void setFormattedParameter(PreparedStatement statement,int number)
+    public boolean isNull()
     {
         switch (type)
         {
-            case Types.BIGINT:
-                statement.setInt();
+            case Types.BINARY:
+            case Types.BLOB:
+            case Types.LONGVARBINARY:
+                return value == null;
+            default:
+                return MiscUtils.isNull((String) value);
         }
-    }*/
+    }
 }

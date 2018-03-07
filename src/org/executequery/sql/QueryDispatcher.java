@@ -606,10 +606,10 @@ public class QueryDispatcher {
                             }
                             if (contains)
                                 params.add(old);
-                            else if (p.getText() != "?")
+                            else if (p.getText().contentEquals("\\?"))
                                 params.add(new Parameter(p.getText()));
                             else {
-                                params.add(new Parameter("?" + number[0]));
+                                params.add(new Parameter("\\?" + number[0]));
                                 number[0]++;
                             }
                         }

@@ -655,7 +655,7 @@ public class BrowserController {
                         return;
                     }
                 }
-                querySender.execute(QueryTypes.COMMIT, null);
+                querySender.execute(QueryTypes.COMMIT, (String) null);
             } catch (SQLException e) {
                 GUIUtilities.displayExceptionErrorDialog(Bundles.get("common.error.apply-changes") + MiscUtils.formatSQLError(e), e);
                 treePanel.setNodeSelected(node);

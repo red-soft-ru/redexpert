@@ -22,11 +22,13 @@ package org.executequery.databasemediators.spi;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseExecutable;
+import org.executequery.gui.editor.autocomplete.Parameter;
 import org.executequery.sql.SqlStatementResult;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 
 public interface StatementExecutor {
 
@@ -52,9 +54,15 @@ public interface StatementExecutor {
 
     SqlStatementResult execute(int type, String query) throws SQLException;
 
+    SqlStatementResult execute(int type, PreparedStatement statement) throws SQLException;
+
     SqlStatementResult execute(int type, String query, int fetchSize) throws SQLException;
 
+    SqlStatementResult execute(int type, PreparedStatement statement, int fetchSize) throws SQLException;
+
     SqlStatementResult execute(String query, boolean enableEscapes) throws SQLException;
+
+    SqlStatementResult execute(PreparedStatement statement, boolean enableEscapes) throws SQLException;
 
     /**
      * Executes the specified query and returns 0 if this
@@ -80,6 +88,8 @@ public interface StatementExecutor {
      * @return the number of rows affected
      */
     SqlStatementResult updateRecords(String query) throws SQLException;
+
+    SqlStatementResult updateRecords(PreparedStatement statement) throws SQLException;
 
     /**
      * Destroys the open connection.
@@ -123,6 +133,10 @@ public interface StatementExecutor {
     Connection getConnection();
 
     SqlStatementResult getResultSet(String query, int fetchSize) throws SQLException;
+
+    SqlStatementResult getResultSet(int fetchSize, PreparedStatement statement) throws SQLException;
+
+    SqlStatementResult getResultSet(String query, int fetchSize, List<Parameter> params) throws SQLException;
 
     int getTransactionIsolation();
 

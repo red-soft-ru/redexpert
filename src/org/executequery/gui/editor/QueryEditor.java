@@ -39,6 +39,7 @@ import org.executequery.print.TablePrinter;
 import org.executequery.print.TextPrinter;
 import org.executequery.sql.TokenizingFormatter;
 import org.executequery.util.UserProperties;
+import org.underworldlabs.sqlParser.SqlParser;
 import org.underworldlabs.swing.DefaultTextField;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.MiscUtils;
@@ -1235,7 +1236,7 @@ public class QueryEditor extends DefaultTabView
         }
 
         editorPanel.resetExecutingLine();
-        boolean executeAsBlock = query.toLowerCase().startsWith("execute block");
+        boolean executeAsBlock = new SqlParser(query).isExecute_block();
 
         delegate.executeQuery(getSelectedConnection(), query, executeAsBlock);
     }

@@ -32,7 +32,7 @@ import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.datasource.PooledResultSet;
 import org.executequery.datasource.PooledStatement;
-import org.executequery.gui.editor.SelectParametersDialog;
+import org.executequery.gui.editor.InputParametersDialog;
 import org.executequery.gui.editor.autocomplete.Parameter;
 import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
@@ -586,7 +586,7 @@ public class QueryDispatcher {
                     params.get(i).setTypeName(pmd.getParameterTypeName(i + 1));
                 }
                 if (!displayParams.isEmpty()) {
-                    SelectParametersDialog spd = new SelectParametersDialog(displayParams);
+                    InputParametersDialog spd = new InputParametersDialog(displayParams);
                     spd.display();
                 }
                 for (int i = 0; i < params.size(); i++) {

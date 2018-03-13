@@ -141,8 +141,6 @@ public class SqlParser {
 
         }
         processedSql = processed.toString();
-
-
     }
 
     public boolean isExecuteBlock() {

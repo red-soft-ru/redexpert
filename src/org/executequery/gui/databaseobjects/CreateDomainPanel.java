@@ -77,9 +77,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         checkTextPane.addKeyListener(this);
         descriptionTextPane.addKeyListener(this);
 
-
         centralPanel.setLayout(new GridBagLayout());
-
 
         centralPanel.add(notNullBox, new GridBagConstraints(0, 0,
                 1, 1, 1, 0,

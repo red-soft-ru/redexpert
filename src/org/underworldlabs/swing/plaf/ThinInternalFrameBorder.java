@@ -35,19 +35,11 @@ import java.awt.*;
  *----------------------------------------------------------------------------------
  */
 
-/* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the
- *           release of version 3.0.0beta1 has meant a
- *           resetting of CVS revision numbers.
- * ----------------------------------------------------------
- */
-
 /**
  * @author Takis Diakoumis
  */
-public class ThinInternalFrameBorder extends AbstractBorder
-        implements UIResource {
-
+public class ThinInternalFrameBorder extends AbstractBorder implements UIResource {
+    
     private static final Insets insets = new Insets(3, 3, 3, 3);
 
     private static final int corner = 14;

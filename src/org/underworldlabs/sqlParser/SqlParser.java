@@ -1,5 +1,6 @@
 package org.underworldlabs.sqlParser;
 
+import org.executequery.GUIUtilities;
 import org.executequery.gui.editor.autocomplete.Parameter;
 
 import java.util.ArrayList;
@@ -34,117 +35,108 @@ public class SqlParser {
             Character nextChar = null;
             if (i + 1 < len - 1)
                 nextChar = sb.charAt(i + 1);
-            switch (state) {
-                case DEFAULT_STATE:
-                    switch (curChar) {
-                        case '\'':
-                        case '"':
-                            processed.append(curChar);
-                            state = QUOTE_STATE;
-                            openChar = curChar;
-                            first = false;
-                            break;
-                        case '-':
-                            if (nextChar == '-') {
-                                state = COMMENT_LINE_STATE;
-                            }
-                            processed.append(curChar);
-                            break;
-                        case '/':
-                            if (nextChar == '*') {
-                                state = COMMENT_MULTILINE_STATE;
-                            }
-                            processed.append(curChar);
-                            break;
-                        case '[':
-                            processed.append(curChar);
-                            state = ARRAY_STATE;
-                            first = false;
-                            break;
-                        case '?':
-                            Parameter p = new Parameter("№" + (displayParameters.size() + 1));
-                            parameters.add(p);
-                            displayParameters.add(p);
-                            processed.append(curChar);
-                            first = false;
-                            break;
-                        case ':':
-                            processed.append('?');
-                            state = PARAMETER_STATE;
-                            parameter.setLength(0);
-                            first = false;
-                            break;
-                        case 'e':
-                        case 'E':
-                            if (first) {
-                                state = EXECUTE_BLOCK;
-                            }
-                            processed.append(curChar);
-                            first = false;
-                            break;
-                        default:
-                            processed.append(curChar);
-                            first = false;
-                            break;
-                    }
-                    break;
-                case QUOTE_STATE:
-                    if (curChar == openChar)
-                        if (nextChar != openChar)
-                            state = DEFAULT_STATE;
-                    processed.append(curChar);
-                    break;
-                case COMMENT_LINE_STATE:
-                    if (curChar == '\n')
-                        state = DEFAULT_STATE;
-                    processed.append(curChar);
-                    break;
-                case COMMENT_MULTILINE_STATE:
-                    if (curChar == '*')
-                        if (nextChar == '/') {
-                            state = DEFAULT_STATE;
-                        }
-                    processed.append(curChar);
-                    break;
-                case ARRAY_STATE:
-                    if (Character.isDigit(curChar) || curChar == ':' || curChar == ' ' || curChar == ',' || curChar == '\t' || curChar == '\n' || curChar == '\r') {
-                        processed.append(curChar);
-                    } else {
-                        state = DEFAULT_STATE;
-                        processed.append(curChar);
-                    }
-                    break;
-                case PARAMETER_STATE:
-                    if (Character.isDigit(curChar) || Character.isAlphabetic(curChar) || curChar == '_' || curChar == '$')
-                        parameter.append(curChar);
-                    else {
-                        state = DEFAULT_STATE;
-                        String name = parameter.toString();
-                        boolean contains = false;
-                        Parameter old = null;
-                        for (int g = 0; g < parameters.size(); g++) {
-                            if (parameters.get(i).getName().contentEquals(name)) {
-                                contains = true;
-                                old = parameters.get(i);
+            try {
+                switch (state) {
+                    case DEFAULT_STATE:
+                        switch (curChar) {
+                            case '\'':
+                            case '"':
+                                processed.append(curChar);
+                                state = QUOTE_STATE;
+                                openChar = curChar;
+                                first = false;
                                 break;
+                            case '-':
+                                if (nextChar == '-') {
+                                    state = COMMENT_LINE_STATE;
+                                }
+                                processed.append(curChar);
+                                break;
+                            case '/':
+                                if (nextChar == '*') {
+                                    state = COMMENT_MULTILINE_STATE;
+                                }
+                                processed.append(curChar);
+                                break;
+                            case '[':
+                                processed.append(curChar);
+                                state = ARRAY_STATE;
+                                first = false;
+                                break;
+                            case '?':
+                                Parameter p = new Parameter("№" + (displayParameters.size() + 1));
+                                parameters.add(p);
+                                displayParameters.add(p);
+                                processed.append(curChar);
+                                first = false;
+                                break;
+                            case ':':
+                                processed.append('?');
+                                state = PARAMETER_STATE;
+                                parameter.setLength(0);
+                                first = false;
+                                break;
+                            case 'e':
+                            case 'E':
+                                if (first) {
+                                    state = EXECUTE_BLOCK;
+                                }
+                                processed.append(curChar);
+                                first = false;
+                                break;
+                            default:
+                                processed.append(curChar);
+                                first = false;
+                                break;
+                        }
+                        break;
+                    case QUOTE_STATE:
+                        if (curChar == openChar)
+                            if (nextChar != openChar)
+                                state = DEFAULT_STATE;
+                        processed.append(curChar);
+                        break;
+                    case COMMENT_LINE_STATE:
+                        if (curChar == '\n')
+                            state = DEFAULT_STATE;
+                        processed.append(curChar);
+                        break;
+                    case COMMENT_MULTILINE_STATE:
+                        if (curChar == '*')
+                            if (nextChar == '/') {
+                                state = DEFAULT_STATE;
                             }
+                        processed.append(curChar);
+                        break;
+                    case ARRAY_STATE:
+                        if (Character.isDigit(curChar) || curChar == ':' || curChar == ' ' || curChar == ',' || curChar == '\t' || curChar == '\n' || curChar == '\r') {
+                            processed.append(curChar);
+                        } else {
+                            state = DEFAULT_STATE;
+                            processed.append(curChar);
                         }
-                        if (contains)
-                            parameters.add(old);
-                        else {
-                            Parameter p = new Parameter(name);
-                            parameters.add(p);
-                            displayParameters.add(p);
+                        break;
+                    case PARAMETER_STATE:
+                        if (Character.isDigit(curChar) || Character.isAlphabetic(curChar) || curChar == '_' || curChar == '$') {
+                            parameter.append(curChar);
+                            if (i == len - 1) {
+                                createParameter(parameter);
+                            }
+                        } else {
+                            state = DEFAULT_STATE;
+                            createParameter(parameter);
                         }
-                    }
-                    break;
-                case EXECUTE_BLOCK:
-                    state = DEFAULT_STATE;
-                    processed.append(curChar);
-                    if (sb.toString().toLowerCase().indexOf("execute block") == i - 1)
-                        execute_block = true;
-                    break;
+                        break;
+                    case EXECUTE_BLOCK:
+                        state = DEFAULT_STATE;
+                        processed.append(curChar);
+                        if (sb.toString().toLowerCase().indexOf("execute block") == i - 1)
+                            execute_block = true;
+                        break;
 
+                }
+            } catch (Exception e) {
+                GUIUtilities.displayExceptionErrorDialog("Error parsing query", e);
             }
 
         }
@@ -167,5 +159,25 @@ public class SqlParser {
 
     public String getProcessedSql() {
         return processedSql;
+    }
+
+    private void createParameter(StringBuilder parameter) {
+        String name = parameter.toString();
+        boolean contains = false;
+        Parameter old = null;
+        for (int g = 0; g < parameters.size(); g++) {
+            if (parameters.get(g).getName().contentEquals(name)) {
+                contains = true;
+                old = parameters.get(g);
+                break;
+            }
+        }
+        if (contains)
+            parameters.add(old);
+        else {
+            Parameter p = new Parameter(name);
+            parameters.add(p);
+            displayParameters.add(p);
+        }
     }
 }

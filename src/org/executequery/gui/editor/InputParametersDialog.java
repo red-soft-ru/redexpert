@@ -19,22 +19,22 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SelectParametersDialog extends BaseDialog {
+public class InputParametersDialog extends BaseDialog {
 
-    List<Parameter> parameters;
-    JScrollPane scrollPanel;
-    JPanel mainPanel;
-    JPanel panel;
-    List<JComponent> componentList;
-    List<JCheckBox> nullBoxes;
+    private List<Parameter> parameters;
+    private JScrollPane scrollPanel;
+    private JPanel mainPanel;
+    private JPanel panel;
+    private List<JComponent> componentList;
+    private List<JCheckBox> nullBoxes;
 
-    public SelectParametersDialog(List<Parameter> parameters) {
-        super("Select Parameters", true, true);
+    public InputParametersDialog(List<Parameter> parameters) {
+        super("Input Parameters", true, true);
         this.parameters = parameters;
         init();
     }
 
-    void init() {
+    private void init() {
         mainPanel = new JPanel();
         scrollPanel = new JScrollPane();
         panel = new JPanel();
@@ -45,8 +45,12 @@ public class SelectParametersDialog extends BaseDialog {
         mainPanel.setLayout(new GridBagLayout());
         mainPanel.add(scrollPanel, new GridBagConstraints(0, 0,
                 1, 1, 1, 0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
+                GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
                 0, 0));
+        // empty panel for stretch
+        mainPanel.add(new JPanel(), new GridBagConstraints(0, 1, 2, 1,
+                1, 1, GridBagConstraints.CENTER,
+                GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
         BottomButtonPanel bottomButtonPanel = new BottomButtonPanel(this.isDialog());
         bottomButtonPanel.setOkButtonAction(new AbstractAction() {
             @Override
@@ -55,16 +59,16 @@ public class SelectParametersDialog extends BaseDialog {
             }
         });
         bottomButtonPanel.setOkButtonText("OK");
-        mainPanel.add(bottomButtonPanel, new GridBagConstraints(0, 1,
+        mainPanel.add(bottomButtonPanel, new GridBagConstraints(0, 2,
                 1, 1, 1, 0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
+                GridBagConstraints.SOUTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
         for (int i = 0; i < parameters.size(); i++)
             addParameter(parameters.get(i));
         addDisplayComponent(mainPanel);
     }
 
-    void addParameter(Parameter parameter) {
+    private void addParameter(Parameter parameter) {
         int count = componentList.size();
         panel.add(new JLabel(parameter.getName()), new GridBagConstraints(0, count,
                 1, 1, 0, 0,
@@ -104,7 +108,7 @@ public class SelectParametersDialog extends BaseDialog {
                 0, 0));
     }
 
-    void ok() {
+    private void ok() {
         for (int i = 0; i < parameters.size(); i++) {
             Parameter parameter = parameters.get(i);
             JComponent component = componentList.get(i);

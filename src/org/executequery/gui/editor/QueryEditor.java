@@ -1236,7 +1236,7 @@ public class QueryEditor extends DefaultTabView
         }
 
         editorPanel.resetExecutingLine();
-        boolean executeAsBlock = new SqlParser(query).isExecute_block();
+        boolean executeAsBlock = new SqlParser(query).isExecuteBlock();
 
         delegate.executeQuery(getSelectedConnection(), query, executeAsBlock);
     }

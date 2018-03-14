@@ -14,13 +14,13 @@ public class SqlParser {
     private static final int ARRAY_STATE = 4;
     private static final int PARAMETER_STATE = 6;
     private static final int EXECUTE_BLOCK = 7;
-    List<Parameter> parameters;
-    List<Parameter> displayParameters;
-    String processedSql;
-    private boolean execute_block;
+    private List<Parameter> parameters;
+    private List<Parameter> displayParameters;
+    private String processedSql;
+    private boolean executeBlock;
 
     public SqlParser(String sql) {
-        execute_block = false;
+        executeBlock = false;
         StringBuilder sb = new StringBuilder(sql);
         StringBuilder processed = new StringBuilder();
         displayParameters = new ArrayList<>();
@@ -131,7 +131,7 @@ public class SqlParser {
                         state = DEFAULT_STATE;
                         processed.append(curChar);
                         if (sb.toString().toLowerCase().indexOf("execute block") == i - 1)
-                            execute_block = true;
+                            executeBlock = true;
                         break;
 
                 }
@@ -141,12 +141,10 @@ public class SqlParser {
 
         }
         processedSql = processed.toString();
-
-
     }
 
-    public boolean isExecute_block() {
-        return execute_block;
+    public boolean isExecuteBlock() {
+        return executeBlock;
     }
 
     public List<Parameter> getDisplayParameters() {

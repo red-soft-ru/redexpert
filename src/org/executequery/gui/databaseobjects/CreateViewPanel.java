@@ -19,7 +19,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     private static final String AUTO_COMPLETE_POPUP_ACTION_KEY = "autoCompletePopupActionKey";
     private SimpleSqlTextPanel sqlTextPanel;
     private SimpleTextArea descriptionTextArea;
-    private static final String replacing_name = "<name_view>";
+    private static final String replacing_name = "<view_name>";
     String notChangedText;
     private DefaultAutoCompletePopupProvider autoCompletePopup;
     private DefaultDatabaseView view;

@@ -300,7 +300,10 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
      * Returns the display name.
      */
     public String toString() {
-        return getDisplayName() + ":" + getMetaDataKey();
+        String metadatakey = getMetaDataKey();
+        if (metadatakey != null)
+            return getDisplayName() + ":" + getMetaDataKey();
+        else return getDisplayName();
     }
 
     protected String bundleString(String key) {

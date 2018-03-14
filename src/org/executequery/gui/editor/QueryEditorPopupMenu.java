@@ -56,6 +56,9 @@ public class QueryEditorPopupMenu extends JPopupMenu
         add(createPasteMenuItem());
 
         addSeparator();
+        add(createMenuItem("to-upper-case-command", Bundles.get("action.to-upper-case-command")));
+        add(createMenuItem("to-lower-case-command", Bundles.get("action.to-lower-case-command")));
+        addSeparator();
 
         add(createExecuteMenuItem());
         add(createPartialExecuteMenuItem());

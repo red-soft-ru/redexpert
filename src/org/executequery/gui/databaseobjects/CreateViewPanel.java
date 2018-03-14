@@ -50,7 +50,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
         if (editing) {
             sql = replaceName(view.getCreateSQLText());
         } else {
-            sql = "create view <view_name> ( _fields_ )\n" +
+            sql = "create view <view_name>\n ( _fields_ )\n" +
                     "as\n" +
                     "select _fields_ from _table_name_\n" +
                     "where _conditions_";

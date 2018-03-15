@@ -64,8 +64,6 @@ public class ApplicationLauncher {
             macSettings();
             x11Settings();
 
-            createDesktopEntry();
-
             boolean dirsCreated = SystemResources.createUserHomeDirSettings();
             aaFonts();
 
@@ -73,6 +71,8 @@ public class ApplicationLauncher {
 
                 System.exit(0);
             }
+
+            createDesktopEntry();
 
             System.setProperty("executequery.minor.version",
                     stringApplicationProperty("re.version"));

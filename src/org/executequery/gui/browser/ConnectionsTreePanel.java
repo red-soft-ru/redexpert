@@ -102,37 +102,15 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
 
   private TreeFindAction treeFindAction;
 
+  private JScrollPane scrollPane;
+
   public ConnectionsTreePanel() {
 
     super(new BorderLayout());
     init();
   }
 
-  private void init() {
-
-    // default to not select the root node after a disconnection
-    rootSelectOnDisconnect = false;
-
-    controller = new BrowserController(this);
-    tree = new SchemaTree(createTreeStructure(), this);
-
-    MouseHandler mouseHandler = new MouseHandler();
-    tree.addMouseListener(mouseHandler);
-
-    treeFindAction = new TreeFindAction();
-    treeFindAction.install(tree);
-
-    // add the tools and tree to the panel
-    add(createToolBar(), BorderLayout.NORTH);
-    add(new JScrollPane(tree), BorderLayout.CENTER);
-
-    // register with the event listener
-    EventMediator.registerListener(this);
-
-    enableButtons(false, false, false, false);
-    tree.setSelectionRow(0);
-    tree.setToggleClickCount(2);
-  }
+  private boolean moveScroll = false;
 
   private DefaultMutableTreeNode createTreeStructure() {
 
@@ -1278,97 +1256,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     pathChanged(oldSelectionPath, newPath);
   }
 
-  public void pathChanged(TreePath oldPath, TreePath newPath) {
-
-    // store the last position
-    oldSelectionPath = oldPath;
-
-    // examine the last selection
-    if (oldSelectionPath != null) {
-
-      Object lastObject = oldSelectionPath.getLastPathComponent();
-      if (!canProceedWithChangesApplied(lastObject)) {
-
-        try {
-
-          removeTreeSelectionListener();
-          tree.setSelectionPath(oldSelectionPath);
-          return;
-
-        } finally {
-
-          addTreeSelectionListener();
-        }
-
-      }
-
-    }
-
-    Object object = newPath.getLastPathComponent();
-    if (object == null) {
-
-      return;
-    }
-
-    controller.selectionChanging();
-
-    if (object == tree.getConnectionsBranchNode()) { // root node
-
-      controller.displayConnectionList();
-      enableButtons(false, false, false, false);
-      return;
-    }
-
-    final DatabaseObjectNode node = (DatabaseObjectNode) object;
-    if (node instanceof ConnectionsFolderNode) {
-
-      controller.displayConnectionList(((ConnectionsFolderNode) node).getConnectionsFolder());
-      enableButtons(true, true, false, true);
-      return;
-
-    } else if (node instanceof DatabaseHostNode) {
-
-      DatabaseHostNode hostNode = (DatabaseHostNode) node;
-
-      boolean hostConnected = hostNode.isConnected();
-      enableButtons(true, true, hostConnected, !hostConnected);
-
-    } else {
-
-      enableButtons(false, false, true, false);
-    }
-
-    if (node.isHostNode()) {
-
-      final ConnectionsTreePanel c = this;
-
-      c.setInProcess(true);
-
-      worker = new SwingWorker() {
-        public Object construct() {
-          try {
-
-            tree.startLoadingNode();
-            treeExpanding = true;
-            valueChanged(node);
-
-          } finally {
-
-            treeExpanding = false;
-          }
-          return null;
-        }
-
-        public void finished() {
-          tree.finishedLoadingNode();
-          treeExpanding = false;
-
-          c.setInProcess(false);
-        }
-      };
-      worker.start();
-    }
-  }
+  private boolean moveScrollAfterExpansion = false;
 
   private boolean canProceedWithChangesApplied(Object selectedNode) {
 
@@ -1474,6 +1362,129 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     tree.nodeStructureChanged(node);
   }
 
+  private void init() {
+
+    // default to not select the root node after a disconnection
+    rootSelectOnDisconnect = false;
+
+    controller = new BrowserController(this);
+    tree = new SchemaTree(createTreeStructure(), this);
+
+    MouseHandler mouseHandler = new MouseHandler();
+    tree.addMouseListener(mouseHandler);
+
+    treeFindAction = new TreeFindAction();
+    treeFindAction.install(tree);
+
+    // add the tools and tree to the panel
+    add(createToolBar(), BorderLayout.NORTH);
+    scrollPane = new JScrollPane(tree);
+    add(scrollPane, BorderLayout.CENTER);
+
+    // register with the event listener
+    EventMediator.registerListener(this);
+
+    enableButtons(false, false, false, false);
+    tree.setSelectionRow(0);
+    tree.setToggleClickCount(2);
+  }
+
+  public void pathChanged(TreePath oldPath, TreePath newPath) {
+
+    // store the last position
+    oldSelectionPath = oldPath;
+
+
+    // examine the last selection
+    if (oldSelectionPath != null) {
+
+      Object lastObject = oldSelectionPath.getLastPathComponent();
+      if (!canProceedWithChangesApplied(lastObject)) {
+
+        try {
+
+          removeTreeSelectionListener();
+          tree.setSelectionPath(oldSelectionPath);
+          return;
+
+        } finally {
+
+          addTreeSelectionListener();
+        }
+
+      }
+
+    }
+
+    Object object = newPath.getLastPathComponent();
+    if (object == null) {
+
+      return;
+    }
+
+    controller.selectionChanging();
+
+    if (object == tree.getConnectionsBranchNode()) { // root node
+
+      controller.displayConnectionList();
+      enableButtons(false, false, false, false);
+      return;
+    }
+
+    final DatabaseObjectNode node = (DatabaseObjectNode) object;
+    if (node instanceof ConnectionsFolderNode) {
+
+      controller.displayConnectionList(((ConnectionsFolderNode) node).getConnectionsFolder());
+      enableButtons(true, true, false, true);
+      return;
+
+    } else if (node instanceof DatabaseHostNode) {
+
+      DatabaseHostNode hostNode = (DatabaseHostNode) node;
+
+      boolean hostConnected = hostNode.isConnected();
+      enableButtons(true, true, hostConnected, !hostConnected);
+
+    } else {
+
+      enableButtons(false, false, true, false);
+    }
+
+    if (node.isHostNode()) {
+
+      final ConnectionsTreePanel c = this;
+
+      c.setInProcess(true);
+
+      worker = new SwingWorker() {
+        public Object construct() {
+          try {
+
+            tree.startLoadingNode();
+            treeExpanding = true;
+            valueChanged(node);
+
+          } finally {
+
+            treeExpanding = false;
+          }
+          return null;
+        }
+
+        public void finished() {
+          tree.finishedLoadingNode();
+          treeExpanding = false;
+          c.setInProcess(false);
+        }
+      };
+      worker.start();
+    }
+    if (isMoveScroll()) {
+      moveScrollToSelection();
+      setMoveScroll(false);
+    }
+  }
+
   public void pathExpanded(TreePath path) {
 
     Object object = path.getLastPathComponent();
@@ -1491,11 +1502,31 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
       }
 
       public void finished() {
+        if (isMoveScrollAfterExpansion()) {
+          moveScrollToSelection();
+          setMoveScrollAfterExpansion(false);
+        }
         GUIUtilities.showNormalCursor();
       }
 
     };
     worker.start();
+  }
+
+  public boolean isMoveScroll() {
+    return moveScroll;
+  }
+
+  public void setMoveScroll(boolean moveScroll) {
+    this.moveScroll = moveScroll;
+  }
+
+  public boolean isMoveScrollAfterExpansion() {
+    return moveScrollAfterExpansion;
+  }
+
+  public void setMoveScrollAfterExpansion(boolean moveScroll) {
+    this.moveScrollAfterExpansion = moveScroll;
   }
 
   /**
@@ -1949,6 +1980,14 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     EventMediator.fireEvent(
         new DefaultConnectionsFolderRepositoryEvent(
             this, ConnectionsFolderRepositoryEvent.FOLDER_MODIFIED, connectionsFolder));
+  }
+
+  public void moveScrollToSelection() {
+    JScrollBar bar = scrollPane.getVerticalScrollBar();
+    int max_bar = bar.getMaximum();
+    int max_tree = tree.getRowCount();
+    int value = tree.getMaxSelectionRow() * (max_bar / max_tree);
+    bar.setValue(value);
   }
 
   @Override

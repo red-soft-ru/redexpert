@@ -23,6 +23,7 @@ package org.executequery.gui.browser;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
+import org.executequery.gui.browser.tree.SchemaTree;
 import org.executequery.localization.Bundles;
 
 import javax.swing.*;
@@ -110,8 +111,13 @@ public class TreeFindAction extends FindAction<TreePath> {
     }
 
     private void changeSelection(JTree tree, TreePath path) {
+        TreePath parent = path.getParentPath();
+        boolean expand = true;
+        if (parent != null)
+            expand = tree.isExpanded(parent);
+        ((SchemaTree) tree).getConnectionsTreePanel().setMoveScrollAfterExpansion(!expand);
+        ((SchemaTree) tree).getConnectionsTreePanel().setMoveScroll(expand);
         tree.setSelectionPath(path);
-
     }
 
     public TreePath getNextMatch(JTree tree, String prefix, int startingRow,

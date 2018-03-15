@@ -30,7 +30,6 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.swing.tree.DynamicTree;
-import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
@@ -203,6 +202,10 @@ public class SchemaTree extends DynamicTree
 
     // nice example: http://www.coderanch.com/t/346509/GUI/java/JTree-drag-drop-inside-one
 
+    public ConnectionsTreePanel getConnectionsTreePanel() {
+        return panel;
+    }
+
     class TreeTransferHandler extends TransferHandler {
 
         DataFlavor nodesFlavor;
@@ -288,7 +291,7 @@ public class SchemaTree extends DynamicTree
 
             }
 
-            // Do not allow MOVE-action drops if a non-leaf node is selected 
+            // Do not allow MOVE-action drops if a non-leaf node is selected
             // unless all of its children are also selected.
             int action = support.getDropAction();
             if (action == MOVE) {
@@ -297,12 +300,7 @@ public class SchemaTree extends DynamicTree
             }
 
             // Do not allow a non-leaf node to be copied to a level which is less than its source level.
-            if (firstNode.getChildCount() > 0 && target.getLevel() < firstNode.getLevel()) {
-
-                return false;
-            }
-
-            return true;
+            return firstNode.getChildCount() <= 0 || target.getLevel() >= firstNode.getLevel();
         }
 
         private boolean haveCompleteNode(JTree tree) {
@@ -316,7 +314,7 @@ public class SchemaTree extends DynamicTree
             /*
             // first has children and no children are selected.
             if (childCount > 0 && selRows.length == 1) {
-             
+
                 return false;
             }
             */
@@ -346,7 +344,7 @@ public class SchemaTree extends DynamicTree
             if (loadingNode) {
                 // I hope that this 'hack' will clear awt blah blah blah error
                 return;
-                // hack! 
+                // hack!
 //                throw new SuppressedException(Bundles.get("SchemaTree.error.exportAsDrag"));
             }
 
@@ -451,8 +449,8 @@ public class SchemaTree extends DynamicTree
                             TreePath path = null;
 
                             // need to make sure we have the right node since
-                            // nodes with the same prefix but higher will 
-                            // return first 
+                            // nodes with the same prefix but higher will
+                            // return first
 
                             int index = 0;
                             int rowCount = getRowCount();

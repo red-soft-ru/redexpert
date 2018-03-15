@@ -45,10 +45,8 @@ public class OpenEditorConnectionListener implements ConnectionListener {
                 QueryEditor queryEditor = null;
                 DatabaseConnection databaseConnection = connectionEvent.getDatabaseConnection();
 
-                if (isQueryEditorTheCentralPanel()) {
-
+                if (isQueryEditorTheCentralPanel() && queryEditor().getSelectedConnection() == null) {
                     queryEditor = queryEditor();
-
                 } else {
 
                     queryEditor = new QueryEditor();

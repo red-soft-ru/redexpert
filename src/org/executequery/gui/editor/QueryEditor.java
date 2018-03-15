@@ -1082,43 +1082,11 @@ public class QueryEditor extends DefaultTabView
     // --------------------------------------------
 
     /**
-     * Performs any resource clean up for a pending removal.
+     * Indicates a connection has been closed.
+     *
+     * @param the encapsulating event
      */
-    public void cleanup() {
-
-        /* ------------------------------------------------
-         * profiling found the popup keeps the
-         * editor from being garbage collected at all!!
-         * a call to removeAll() is a work around for now.
-         * ------------------------------------------------
-         */
-        popup.removeAll();
-
-        editorPanel.closingEditor();
-        resultsPanel.cleanup();
-        statusBar.cleanup();
-
-        resultsPanel = null;
-        statusBar = null;
-        toolBar = null;
-        editorPanel = null;
-        queryEditorAutoCompletePopupProvider = null;
-
-        delegate.disconnected(getSelectedConnection());
-
-        if (connectionChangeListeners != null) {
-
-            for (ConnectionChangeListener listener : connectionChangeListeners) {
-
-                listener.connectionChanged(null);
-            }
-
-        }
-
-        removeAll();
-        EventMediator.deregisterListener(this);
-        GUIUtilities.registerUndoRedoComponent(null);
-    }
+    private boolean closed = false;
 
     public void interruptStatement() {
 
@@ -1550,31 +1518,69 @@ public class QueryEditor extends DefaultTabView
     // ---------------------------------------------
 
     /**
+     * Performs any resource clean up for a pending removal.
+     */
+    public void cleanup() {
+
+        /* ------------------------------------------------
+         * profiling found the popup keeps the
+         * editor from being garbage collected at all!!
+         * a call to removeAll() is a work around for now.
+         * ------------------------------------------------
+         */
+        closed = true;
+        popup.removeAll();
+
+        editorPanel.closingEditor();
+        resultsPanel.cleanup();
+        statusBar.cleanup();
+
+        resultsPanel = null;
+        statusBar = null;
+        toolBar = null;
+        editorPanel = null;
+        queryEditorAutoCompletePopupProvider = null;
+
+        delegate.disconnected(getSelectedConnection());
+
+        if (connectionChangeListeners != null) {
+
+            for (ConnectionChangeListener listener : connectionChangeListeners) {
+
+                listener.connectionChanged(null);
+            }
+
+        }
+
+        removeAll();
+        EventMediator.deregisterListener(this);
+        GUIUtilities.registerUndoRedoComponent(null);
+    }
+
+    /**
      * Indicates a connection has been established.
      *
      * @param the encapsulating event
      */
     public void connected(ConnectionEvent connectionEvent) {
+        if (!closed) {
+            connectionsCombo.addElement(connectionEvent.getDatabaseConnection());
 
-        connectionsCombo.addElement(connectionEvent.getDatabaseConnection());
+            DatabaseConnection databaseConnection = connectionEvent.getDatabaseConnection();
+            if (databaseConnection == selectConnection) {
 
-        DatabaseConnection databaseConnection = connectionEvent.getDatabaseConnection();
-        if (databaseConnection == selectConnection) {
+                connectionsCombo.getModel().setSelectedItem(databaseConnection);
+                selectConnection = null;
+            }
 
-            connectionsCombo.getModel().setSelectedItem(databaseConnection);
-            selectConnection = null;
         }
-
     }
 
-    /**
-     * Indicates a connection has been closed.
-     *
-     * @param the encapsulating event
-     */
     public void disconnected(ConnectionEvent connectionEvent) {
-        connectionsCombo.removeElement(connectionEvent.getDatabaseConnection());
-        // TODO: NEED TO CHECK OPEN CONN
+        if (!closed) {
+            connectionsCombo.removeElement(connectionEvent.getDatabaseConnection());
+            // TODO: NEED TO CHECK OPEN CONN
+        }
     }
 
     // ---------------------------------------------

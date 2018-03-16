@@ -210,7 +210,7 @@ public class ApplicationLauncher {
                 openStartupConnection();
             }
 
-            QueryEditorHistory.restoreTabs(QueryEditorHistory.NULL_CONNECTION);
+            QueryEditorHistory.restoreTabs(null);
 
             doCheckForUpdate();
 

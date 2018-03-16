@@ -226,7 +226,10 @@ public class QueryEditorHistory {
             f.delete();
     }
 
-    public static void restoreTabs(String connectionName) {
+    public static void restoreTabs(DatabaseConnection connection) {
+        String connectionName = NULL_CONNECTION;
+        if (connection != null)
+            connectionName = connection.getName();
         List<PathNumber> copy = new ArrayList<>();
         copy.addAll(getEditors(connectionName));
         for (int i = 0; i < copy.size(); i++) {
@@ -236,6 +239,8 @@ public class QueryEditorHistory {
                 if (file.exists()) {
                     String contents = FileUtils.loadFile(file);
                     QueryEditor queryEditor = new QueryEditor(contents, copy.get(i).path);
+                    if (connection != null)
+                        queryEditor.setSelectedConnection(connection);
                     GUIUtilities.addCentralPane(QueryEditor.TITLE,
                             QueryEditor.FRAME_ICON,
                             queryEditor,

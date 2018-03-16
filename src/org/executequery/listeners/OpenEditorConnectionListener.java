@@ -61,7 +61,7 @@ public class OpenEditorConnectionListener implements ConnectionListener {
                 queryEditor.focusGained();
             }
         } else {
-            QueryEditorHistory.restoreTabs(connectionEvent.getDatabaseConnection().getName());
+            QueryEditorHistory.restoreTabs(connectionEvent.getDatabaseConnection());
         }
     }
 

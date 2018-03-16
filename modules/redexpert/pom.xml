@@ -422,6 +422,9 @@
                 <maxVersion>1.9.0</maxVersion>
                 <initialHeapSize>128</initialHeapSize>
                 <maxHeapSize>1024</maxHeapSize>
+                <opts>
+                  <opt>-Dfile.encoding=UTF-8</opt>
+                </opts>
               </jre>
               <versionInfo>
                 <fileVersion>${exe.version}</fileVersion>

@@ -130,7 +130,8 @@ public class SqlParser {
                     case EXECUTE_BLOCK:
                         state = DEFAULT_STATE;
                         processed.append(curChar);
-                        if (sb.toString().toLowerCase().indexOf("execute block") == i - 1)
+                        int indexOf = sb.toString().toLowerCase().indexOf("execute block", i - 1);
+                        if (indexOf == i - 1)
                             executeBlock = true;
                         break;
 

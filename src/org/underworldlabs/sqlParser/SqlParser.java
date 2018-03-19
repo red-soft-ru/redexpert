@@ -84,6 +84,12 @@ public class SqlParser {
                                 processed.append(curChar);
                                 first = false;
                                 break;
+                            case ' ':
+                            case '\n':
+                            case '\t':
+                            case '\r':
+                                processed.append(curChar);
+                                break;
                             default:
                                 processed.append(curChar);
                                 first = false;
@@ -130,9 +136,12 @@ public class SqlParser {
                     case EXECUTE_BLOCK:
                         state = DEFAULT_STATE;
                         processed.append(curChar);
-                        int indexOf = sb.toString().toLowerCase().indexOf("execute block", i - 1);
-                        if (indexOf == i - 1)
-                            executeBlock = true;
+                        int indexOf = sb.toString().toLowerCase().indexOf("execute", i - 1);
+                        if (indexOf == i - 1) {
+                            String subSql = sql.substring(i - 1).replaceAll("\\s", "");
+                            if (subSql.toLowerCase().indexOf("block") == "execute".length() && nextChar != 'b')
+                                executeBlock = true;
+                        }
                         break;
 
                 }

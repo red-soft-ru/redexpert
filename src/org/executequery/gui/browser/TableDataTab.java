@@ -832,6 +832,7 @@ public class TableDataTab extends JPanel
         PanelToolBar bar = new PanelToolBar();
         RolloverButton addRolloverButton = new RolloverButton();
         addRolloverButton.setIcon(GUIUtilities.loadIcon("add_16.png"));
+        addRolloverButton.setToolTipText("Insert record");
         addRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -845,6 +846,7 @@ public class TableDataTab extends JPanel
         bar.add(addRolloverButton);
         RolloverButton deleteRolloverButton = new RolloverButton();
         deleteRolloverButton.setIcon(GUIUtilities.loadIcon("delete_16.png"));
+        deleteRolloverButton.setToolTipText("Delete record");
         deleteRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -864,6 +866,7 @@ public class TableDataTab extends JPanel
         bar.add(deleteRolloverButton);
         RolloverButton commitRolloverButton = new RolloverButton();
         commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
+        commitRolloverButton.setToolTipText("Commit");
         commitRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -882,6 +885,7 @@ public class TableDataTab extends JPanel
         bar.add(commitRolloverButton);
         RolloverButton rollbackRolloverButton = new RolloverButton();
         rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
+        rollbackRolloverButton.setToolTipText("Rollback");
         rollbackRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {

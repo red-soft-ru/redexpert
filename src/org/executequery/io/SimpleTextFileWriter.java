@@ -21,10 +21,9 @@
 package org.executequery.io;
 
 import org.executequery.gui.text.LineSeparator;
+import org.underworldlabs.util.SystemProperties;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 
 public class SimpleTextFileWriter {
 
@@ -33,11 +32,16 @@ public class SimpleTextFileWriter {
         PrintWriter writer = null;
 
         try {
-
-            writer = new PrintWriter(new FileWriter(path, false), true);
+            String _text = text.replaceAll("\n", lineSeparator.value);
+            try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
+                    new FileOutputStream(path), SystemProperties.getProperty("user", "system.file.encoding")))) {
+                bw.write(_text);
+                bw.flush();
+            }
+            /*writer = new PrintWriter(new FileWriter(path, false), true);
 
             String _text = text.replaceAll("\n", lineSeparator.value);
-            writer.println(_text);
+            writer.println(_text);*/
 
         } finally {
 

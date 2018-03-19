@@ -4,6 +4,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.util.SystemResources;
 import org.underworldlabs.util.FileUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import java.io.*;
 import java.util.*;
@@ -226,7 +227,11 @@ public class QueryEditorHistory {
             f.delete();
     }
 
-    public static void restoreTabs(String connectionName) {
+    public static void restoreTabs(DatabaseConnection connection) {
+        String connectionName = NULL_CONNECTION;
+        if (connection != null)
+            connectionName = connection.getName();
+        String encoding = SystemProperties.getProperty("user", "system.file.encoding");
         List<PathNumber> copy = new ArrayList<>();
         copy.addAll(getEditors(connectionName));
         for (int i = 0; i < copy.size(); i++) {
@@ -234,8 +239,10 @@ public class QueryEditorHistory {
                 removeEditor(connectionName, copy.get(i).path);
                 File file = new File(copy.get(i).path);
                 if (file.exists()) {
-                    String contents = FileUtils.loadFile(file);
+                    String contents = FileUtils.loadFile(file, encoding);
                     QueryEditor queryEditor = new QueryEditor(contents, copy.get(i).path);
+                    if (connection != null)
+                        queryEditor.setSelectedConnection(connection);
                     GUIUtilities.addCentralPane(QueryEditor.TITLE,
                             QueryEditor.FRAME_ICON,
                             queryEditor,

@@ -42,8 +42,11 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.List;
 
@@ -207,7 +210,7 @@ public class ApplicationLauncher {
                 openStartupConnection();
             }
 
-            QueryEditorHistory.restoreTabs(QueryEditorHistory.NULL_CONNECTION);
+            QueryEditorHistory.restoreTabs(null);
 
             doCheckForUpdate();
 
@@ -568,6 +571,14 @@ public class ApplicationLauncher {
                 userProperties().setBooleanProperty("startup.create.desktop.entry", false);
                 int result = GUIUtilities.displayConfirmDialog("Create desktop link?");
                 if (result == JOptionPane.YES_OPTION) {
+                    File file = new File("createDesktopEntry.sh");
+
+                    Set<PosixFilePermission> perms = new HashSet<>();
+                    perms.add(PosixFilePermission.OWNER_READ);
+                    perms.add(PosixFilePermission.OWNER_WRITE);
+                    perms.add(PosixFilePermission.OWNER_EXECUTE);
+
+                    Files.setPosixFilePermissions(file.toPath(), perms);
                     Runtime.getRuntime().exec("./createDesktopEntry.sh");
                 }
             } catch (IOException e) {

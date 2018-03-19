@@ -98,6 +98,10 @@ public class FileUtils {
         return loadFile(file, true);
     }
 
+    public static String loadFile(File file, String encoding) throws IOException {
+        return loadFile(file, true, encoding);
+    }
+
     public static String loadFile(String path) throws IOException {
         return loadFile(new File(path), true);
     }
@@ -114,7 +118,6 @@ public class FileUtils {
         try {
             fileReader = new FileReader(file);
             reader = new BufferedReader(fileReader);
-
             String value = null;
             StringBuilder sb = new StringBuilder();
 
@@ -144,6 +147,43 @@ public class FileUtils {
             }
         }
     }
+
+    public static String loadFile(File file, boolean escapeLines, String encoding) throws IOException {
+
+        FileReader fileReader = null;
+        BufferedReader reader = null;
+
+        try {
+            fileReader = new FileReader(file);
+            reader = new BufferedReader(fileReader);
+            String value = null;
+            StringBuilder sb = new StringBuilder();
+
+            while ((value = reader.readLine()) != null) {
+                sb.append(value);
+
+                if (escapeLines) {
+                    sb.append('\n');
+                }
+
+            }
+            if (StringUtils.isNotBlank(encoding)) {
+
+                return new String(sb.toString().getBytes(), encoding);
+            }
+
+            return sb.toString();
+
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
+            if (fileReader != null) {
+                fileReader.close();
+            }
+        }
+    }
+
 
     public static String loadResource(String path) throws IOException {
         InputStream input = null;

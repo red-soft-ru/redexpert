@@ -45,10 +45,8 @@ public class OpenEditorConnectionListener implements ConnectionListener {
                 QueryEditor queryEditor = null;
                 DatabaseConnection databaseConnection = connectionEvent.getDatabaseConnection();
 
-                if (isQueryEditorTheCentralPanel()) {
-
+                if (isQueryEditorTheCentralPanel() && queryEditor().getSelectedConnection() == null) {
                     queryEditor = queryEditor();
-
                 } else {
 
                     queryEditor = new QueryEditor();
@@ -63,7 +61,7 @@ public class OpenEditorConnectionListener implements ConnectionListener {
                 queryEditor.focusGained();
             }
         } else {
-            QueryEditorHistory.restoreTabs(connectionEvent.getDatabaseConnection().getName());
+            QueryEditorHistory.restoreTabs(connectionEvent.getDatabaseConnection());
         }
     }
 

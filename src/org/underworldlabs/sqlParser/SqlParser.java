@@ -168,10 +168,7 @@ public class SqlParser {
                         if (curChar == block.charAt(cur_exec)) {
                             cur_exec++;
                             if (cur_exec == block.length()) {
-
-                                if (new String(new char[]{nextChar.charValue()}).matches("\\s")) {
                                     executeBlock = true;
-                                }
                                 state = DEFAULT_STATE;
                             }
                         } else state = DEFAULT_STATE;

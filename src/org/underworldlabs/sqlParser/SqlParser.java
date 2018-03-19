@@ -154,7 +154,7 @@ public class SqlParser {
                         break;
                     case EXECUTE:
                         processed.append(curChar);
-                        if (curChar == execute.charAt(cur_exec)) {
+                        if (Character.toLowerCase(curChar) == execute.charAt(cur_exec)) {
                             cur_exec++;
                             if (cur_exec == execute.length()) {
                                 second = true;
@@ -165,10 +165,10 @@ public class SqlParser {
                         break;
                     case BLOCK:
                         processed.append(curChar);
-                        if (curChar == block.charAt(cur_exec)) {
+                        if (Character.toLowerCase(curChar) == block.charAt(cur_exec)) {
                             cur_exec++;
                             if (cur_exec == block.length()) {
-                                    executeBlock = true;
+                                executeBlock = true;
                                 state = DEFAULT_STATE;
                             }
                         } else state = DEFAULT_STATE;

@@ -13,13 +13,16 @@ public class SqlParser {
     private static final int COMMENT_MULTILINE_STATE = 3;
     private static final int ARRAY_STATE = 4;
     private static final int PARAMETER_STATE = 6;
-    private static final int EXECUTE_BLOCK = 7;
+    private static final int EXECUTE = 7;
+    private static final int BLOCK = 8;
     private List<Parameter> parameters;
     private List<Parameter> displayParameters;
     private String processedSql;
     private boolean executeBlock;
 
     public SqlParser(String sql) {
+        String execute = "execute";
+        String block = "block";
         executeBlock = false;
         StringBuilder sb = new StringBuilder(sql);
         StringBuilder processed = new StringBuilder();
@@ -28,7 +31,9 @@ public class SqlParser {
         parameters = new ArrayList<>();
         int state = DEFAULT_STATE;
         int len = sql.length();
+        int cur_exec = 1;
         boolean first = true;
+        boolean second = false;
         Character openChar = null;
         for (int i = 0; i < len; i++) {
             char curChar = sb.charAt(i);
@@ -62,6 +67,7 @@ public class SqlParser {
                                 processed.append(curChar);
                                 state = ARRAY_STATE;
                                 first = false;
+                                second = false;
                                 break;
                             case '?':
                                 Parameter p = new Parameter("№" + (displayParameters.size() + 1));
@@ -69,20 +75,32 @@ public class SqlParser {
                                 displayParameters.add(p);
                                 processed.append(curChar);
                                 first = false;
+                                second = false;
                                 break;
                             case ':':
                                 processed.append('?');
                                 state = PARAMETER_STATE;
                                 parameter.setLength(0);
                                 first = false;
+                                second = false;
                                 break;
                             case 'e':
                             case 'E':
                                 if (first) {
-                                    state = EXECUTE_BLOCK;
+                                    state = EXECUTE;
                                 }
                                 processed.append(curChar);
                                 first = false;
+                                second = false;
+                                break;
+                            case 'b':
+                            case 'B':
+                                if (second) {
+                                    state = BLOCK;
+                                }
+                                processed.append(curChar);
+                                first = false;
+                                second = false;
                                 break;
                             case ' ':
                             case '\n':
@@ -93,6 +111,7 @@ public class SqlParser {
                             default:
                                 processed.append(curChar);
                                 first = false;
+                                second = false;
                                 break;
                         }
                         break;
@@ -133,15 +152,26 @@ public class SqlParser {
                             createParameter(parameter);
                         }
                         break;
-                    case EXECUTE_BLOCK:
-                        state = DEFAULT_STATE;
+                    case EXECUTE:
                         processed.append(curChar);
-                        int indexOf = sb.toString().toLowerCase().indexOf("execute", i - 1);
-                        if (indexOf == i - 1) {
-                            String subSql = sql.substring(i - 1).replaceAll("\\s", "");
-                            if (subSql.toLowerCase().indexOf("block") == "execute".length() && nextChar != 'b')
+                        if (Character.toLowerCase(curChar) == execute.charAt(cur_exec)) {
+                            cur_exec++;
+                            if (cur_exec == execute.length()) {
+                                second = true;
+                                cur_exec = 1;
+                                state = DEFAULT_STATE;
+                            }
+                        } else state = DEFAULT_STATE;
+                        break;
+                    case BLOCK:
+                        processed.append(curChar);
+                        if (Character.toLowerCase(curChar) == block.charAt(cur_exec)) {
+                            cur_exec++;
+                            if (cur_exec == block.length()) {
                                 executeBlock = true;
-                        }
+                                state = DEFAULT_STATE;
+                            }
+                        } else state = DEFAULT_STATE;
                         break;
 
                 }

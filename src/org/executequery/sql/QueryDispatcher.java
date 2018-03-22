@@ -22,8 +22,10 @@ package org.executequery.sql;
 
 import biz.redsoft.IFBDatabasePerformance;
 import biz.redsoft.IFBPerformanceInfo;
+import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.executequery.Constants;
@@ -432,6 +434,11 @@ public class QueryDispatcher {
                 REDDATABASESqlLexer lexer = new REDDATABASESqlLexer(CharStreams.fromString(sql));
                 CommonTokenStream tokens = new CommonTokenStream(lexer);
                 REDDATABASESqlParser sqlparser = new REDDATABASESqlParser(tokens);
+                List<? extends ANTLRErrorListener> listeners = sqlparser.getErrorListeners();
+                for (int i = 0; i < listeners.size(); i++) {
+                    if (listeners.get(i) instanceof ConsoleErrorListener)
+                        sqlparser.removeErrorListener(listeners.get(i));
+                }
                 ParseTree tree = sqlparser.execute_block_stmt();
                 ParseTreeWalker walker = new ParseTreeWalker();
                 StringBuilder variables = new StringBuilder();

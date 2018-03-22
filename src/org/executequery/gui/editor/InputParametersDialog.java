@@ -95,6 +95,7 @@ public class InputParametersDialog extends BaseDialog {
             case Types.BINARY:
             case Types.BLOB:
             case Types.LONGVARBINARY:
+            case Types.LONGVARCHAR:
                 component = new RDBFieldFileChooser();
                 break;
             default:

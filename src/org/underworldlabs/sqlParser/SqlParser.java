@@ -15,12 +15,21 @@ public class SqlParser {
     private static final int PARAMETER_STATE = 6;
     private static final int EXECUTE = 7;
     private static final int BLOCK = 8;
+    private static final int DECLARE = 9;
+    private static final int VARIABLE = 10;
+
     private List<Parameter> parameters;
     private List<Parameter> displayParameters;
     private String processedSql;
     private boolean executeBlock;
+    private String variables;
 
     public SqlParser(String sql) {
+        this(sql, "");
+    }
+
+    public SqlParser(String sql, String variables) {
+        this.variables = variables;
         String execute = "execute";
         String block = "block";
         executeBlock = false;
@@ -145,11 +154,12 @@ public class SqlParser {
                         if (Character.isDigit(curChar) || Character.isAlphabetic(curChar) || curChar == '_' || curChar == '$') {
                             parameter.append(curChar);
                             if (i == len - 1) {
-                                createParameter(parameter);
+                                createParameter(parameter, processed);
                             }
                         } else {
                             state = DEFAULT_STATE;
-                            createParameter(parameter);
+                            createParameter(parameter, processed);
+                            i--;
                         }
                         break;
                     case EXECUTE:
@@ -199,23 +209,27 @@ public class SqlParser {
         return processedSql;
     }
 
-    private void createParameter(StringBuilder parameter) {
+    private void createParameter(StringBuilder parameter, StringBuilder processed) {
         String name = parameter.toString();
-        boolean contains = false;
-        Parameter old = null;
-        for (int g = 0; g < parameters.size(); g++) {
-            if (parameters.get(g).getName().contentEquals(name)) {
-                contains = true;
-                old = parameters.get(g);
-                break;
+        if (variables.toLowerCase().contains("<" + name.toLowerCase() + ">")) {
+            processed.replace(processed.length() - 1, processed.length(), ":" + name);
+        } else {
+            boolean contains = false;
+            Parameter old = null;
+            for (int g = 0; g < parameters.size(); g++) {
+                if (parameters.get(g).getName().contentEquals(name)) {
+                    contains = true;
+                    old = parameters.get(g);
+                    break;
+                }
             }
-        }
-        if (contains)
-            parameters.add(old);
-        else {
-            Parameter p = new Parameter(name);
-            parameters.add(p);
-            displayParameters.add(p);
+            if (contains)
+                parameters.add(old);
+            else {
+                Parameter p = new Parameter(name);
+                parameters.add(p);
+                displayParameters.add(p);
+            }
         }
     }
 }

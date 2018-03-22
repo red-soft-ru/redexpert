@@ -22,6 +22,10 @@ package org.executequery.sql;
 
 import biz.redsoft.IFBDatabasePerformance;
 import biz.redsoft.IFBPerformanceInfo;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
@@ -38,6 +42,9 @@ import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.executequery.util.ThreadWorker;
 import org.executequery.util.UserProperties;
+import org.underworldlabs.sqlParser.REDDATABASESqlBaseListener;
+import org.underworldlabs.sqlParser.REDDATABASESqlLexer;
+import org.underworldlabs.sqlParser.REDDATABASESqlParser;
 import org.underworldlabs.sqlParser.SqlParser;
 import org.underworldlabs.util.MiscUtils;
 
@@ -422,8 +429,52 @@ public class QueryDispatcher {
                 executing = true;
 
                 start = System.currentTimeMillis();
-
-                SqlStatementResult result = querySender.execute(sql, true);
+                REDDATABASESqlLexer lexer = new REDDATABASESqlLexer(CharStreams.fromString(sql));
+                CommonTokenStream tokens = new CommonTokenStream(lexer);
+                REDDATABASESqlParser sqlparser = new REDDATABASESqlParser(tokens);
+                ParseTree tree = sqlparser.execute_block_stmt();
+                ParseTreeWalker walker = new ParseTreeWalker();
+                StringBuilder variables = new StringBuilder();
+                walker.walk(new REDDATABASESqlBaseListener() {
+                    @Override
+                    public void enterDeclare_block(REDDATABASESqlParser.Declare_blockContext ctx) {
+                        List<REDDATABASESqlParser.Input_parameterContext> in_pars = ctx.input_parameter();
+                        for (int i = 0; i < in_pars.size(); i++) {
+                            variables.append("<").append(in_pars.get(i).desciption_parameter().parameter_name().getRuleContext().getText()).append(">");
+                        }
+                        List<REDDATABASESqlParser.Output_parameterContext> out_pars = ctx.output_parameter();
+                        for (int i = 0; i < out_pars.size(); i++) {
+                            variables.append("<").append(out_pars.get(i).desciption_parameter().parameter_name().getRuleContext().getText()).append(">");
+                        }
+                        List<REDDATABASESqlParser.Local_variableContext> vars = ctx.local_variable();
+                        for (int i = 0; i < in_pars.size(); i++) {
+                            variables.append("<").append(vars.get(i).variable_name().getRuleContext().getText()).append(">");
+                        }
+                    }
+                }, tree);
+                SqlParser parser = new SqlParser(sql, variables.toString());
+                String queryToExecute = parser.getProcessedSql();
+                PreparedStatement statement = querySender.getPreparedStatement(queryToExecute);
+                statement.setEscapeProcessing(true);
+                ParameterMetaData pmd = statement.getParameterMetaData();
+                List<Parameter> params = parser.getParameters();
+                List<Parameter> displayParams = parser.getDisplayParameters();
+                for (int i = 0; i < params.size(); i++) {
+                    params.get(i).setType(pmd.getParameterType(i + 1));
+                    params.get(i).setTypeName(pmd.getParameterTypeName(i + 1));
+                }
+                if (!displayParams.isEmpty()) {
+                    InputParametersDialog spd = new InputParametersDialog(displayParams);
+                    spd.display();
+                }
+                for (int i = 0; i < params.size(); i++) {
+                    if (params.get(i).isNull())
+                        statement.setNull(i + 1, params.get(i).getType());
+                    else
+                        statement.setObject(i + 1, params.get(i).getValue());
+                }
+                SqlStatementResult result = querySender.execute(statement, true);
+                //SqlStatementResult result = querySender.execute(sql, true);
 
                 if (Thread.interrupted()) {
 
@@ -527,7 +578,6 @@ public class QueryDispatcher {
 
                 try {
                     DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
-                    DefaultDriverLoader driverLoader = new DefaultDriverLoader();
                     Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
                     DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
                     Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());

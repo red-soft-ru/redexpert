@@ -1766,6 +1766,17 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
         return (PreparedStatement) stmnt;
     }
+
+    public CallableStatement getCallableStatement(String query) throws SQLException {
+        if (!prepared()) {
+
+            return null;
+        }
+
+        stmnt = conn.prepareCall(query);
+
+        return (CallableStatement) stmnt;
+    }
 }
 
 

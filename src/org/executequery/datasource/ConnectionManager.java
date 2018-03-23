@@ -50,7 +50,7 @@ public final class ConnectionManager {
      *
      * @param the database connection properties object
      */
-    public static synchronized void createDataSource(DatabaseConnection databaseConnection) {
+    public static synchronized void createDataSource(DatabaseConnection databaseConnection) throws IllegalArgumentException {
 
         // check the connection has a driver
         if (databaseConnection.getJDBCDriver() == null) {

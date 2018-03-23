@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.DatabaseExecutable;
 import org.executequery.gui.editor.autocomplete.Parameter;
 import org.executequery.sql.SqlStatementResult;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -143,6 +144,8 @@ public interface StatementExecutor {
     void setTransactionIsolation(int transactionLevel);
 
     PreparedStatement getPreparedStatement(String query) throws SQLException;
+
+    CallableStatement getCallableStatement(String query) throws SQLException;
 
 }
 

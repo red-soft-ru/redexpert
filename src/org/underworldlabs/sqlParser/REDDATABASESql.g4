@@ -246,7 +246,7 @@ create_virtual_table_stmt
     | (FLOAT | DOUBLE PRECISION) array_size?
     | (DATE | TIME | TIMESTAMP) array_size?
     | (DECIMAL | NUMERIC) ('(' int_number (',' int_number)?')')? array_size?
-    | CHAR | CHARACTER | CHARACTER_VARYING | VARCHAR ('(' int_number ')')?
+    | (CHAR | CHARACTER | CHARACTER_VARYING | VARCHAR) ('('int_number')')?
     (CHARACTER_SET charset_name)? array_size?
     | (NCHAR | NATIONAL_CHARACTER | NATIONAL_CHAR) (VARYING)? ('(' DIGIT+ ')')? array_size?
     | BLOB (SUB_TYPE (any_name | int_number))?

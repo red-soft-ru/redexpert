@@ -499,8 +499,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
                 sb.append(" = ");
             }
-
-            sb.append(" call ");
+            sb.append(" execute procedure ");
 
             if (databaseExecutable.supportCatalogOrSchemaInFunctionOrProcedureCalls()) {
 
@@ -540,7 +539,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
             procQuery = sb.toString();
         } else {
             StringBuilder sb = new StringBuilder();
-            sb.append("{ call ");
+            sb.append("{ execute procedure ");
 
             if (databaseExecutable.getSchemaName() != null) {
                 sb.append(databaseExecutable.getSchemaName()).

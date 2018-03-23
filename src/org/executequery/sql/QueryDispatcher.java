@@ -454,7 +454,7 @@ public class QueryDispatcher {
                             variables.append("<").append(out_pars.get(i).desciption_parameter().parameter_name().getRuleContext().getText()).append(">");
                         }
                         List<REDDATABASESqlParser.Local_variableContext> vars = ctx.local_variable();
-                        for (int i = 0; i < in_pars.size(); i++) {
+                        for (int i = 0; i < vars.size(); i++) {
                             variables.append("<").append(vars.get(i).variable_name().getRuleContext().getText()).append(">");
                         }
                     }

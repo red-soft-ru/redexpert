@@ -1,6 +1,5 @@
 // Generated from D:/gitProjects/executequery/src/org/underworldlabs/sqlParser\REDDATABASESql.g4 by ANTLR 4.7
 package org.underworldlabs.sqlParser;
-
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**

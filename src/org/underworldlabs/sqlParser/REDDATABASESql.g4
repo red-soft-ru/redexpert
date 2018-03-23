@@ -218,7 +218,7 @@ create_virtual_table_stmt
  datatype
  : datatypeSQL
  | (K_TYPE_OF)? domain_name
- | K_TYPE_OF table_name'.'column_name
+ | K_TYPE_OF K_COLUMN table_name'.'column_name
  ;
 
  datatypeSQL
@@ -1058,7 +1058,7 @@ IDENTIFIER
  : '"' (~'"' | '""')* '"'
  | '`' (~'`' | '``')* '`'
  | '[' ~']'* ']'
- | [a-zA-Z_] [a-zA-Z_0-9]* // TODO check: needs more chars in set
+ | [a-zA-Z_] [a-zA-Z_$0-9]* // TODO check: needs more chars in set
  ;
 
 NUMERIC_LITERAL
@@ -1068,7 +1068,7 @@ NUMERIC_LITERAL
 
 BIND_PARAMETER
  : '?' DIGIT*
- | [:@$] IDENTIFIER
+ | [:@] IDENTIFIER
  ;
 
 STRING_LITERAL

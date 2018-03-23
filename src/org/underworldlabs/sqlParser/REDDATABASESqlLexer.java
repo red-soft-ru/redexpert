@@ -267,7 +267,7 @@ public class REDDATABASESqlLexer extends Lexer {
                     "\u019f\2\u01a1\2\u01a3\2\u01a5\2\u01a7\2\u01a9\2\u01ab\2\u01ad\2\u01af" +
                     "\2\u01b1\2\u01b3\2\u01b5\2\u01b7\2\u01b9\2\u01bb\2\u01bd\2\u01bf\2\u01c1" +
                     "\2\u01c3\2\u01c5\2\u01c7\2\u01c9\2\3\2\'\3\2$$\3\2bb\3\2__\5\2C\\aac|" +
-                    "\6\2\62;C\\aac|\4\2--//\5\2&&<<BB\3\2))\4\2\f\f\17\17\5\2\13\r\17\17\"" +
+                    "\7\2&&\62;C\\aac|\4\2--//\4\2<<BB\3\2))\4\2\f\f\17\17\5\2\13\r\17\17\"" +
                     "\"\3\2\62;\4\2CCcc\4\2DDdd\4\2EEee\4\2FFff\4\2GGgg\4\2HHhh\4\2IIii\4\2" +
                     "JJjj\4\2KKkk\4\2LLll\4\2MMmm\4\2NNnn\4\2OOoo\4\2PPpp\4\2QQqq\4\2RRrr\4" +
                     "\2SSss\4\2TTtt\4\2UUuu\4\2VVvv\4\2WWww\4\2XXxx\4\2YYyy\4\2ZZzz\4\2[[{" +

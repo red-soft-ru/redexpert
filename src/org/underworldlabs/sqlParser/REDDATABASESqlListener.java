@@ -260,6 +260,48 @@ public interface REDDATABASESqlListener extends ParseTreeListener {
     void exitCreate_procedure_stmt(REDDATABASESqlParser.Create_procedure_stmtContext ctx);
 
     /**
+     * Enter a parse tree produced by {@link REDDATABASESqlParser#create_or_alter_procedure_stmt}.
+     *
+     * @param ctx the parse tree
+     */
+    void enterCreate_or_alter_procedure_stmt(REDDATABASESqlParser.Create_or_alter_procedure_stmtContext ctx);
+
+    /**
+     * Exit a parse tree produced by {@link REDDATABASESqlParser#create_or_alter_procedure_stmt}.
+     *
+     * @param ctx the parse tree
+     */
+    void exitCreate_or_alter_procedure_stmt(REDDATABASESqlParser.Create_or_alter_procedure_stmtContext ctx);
+
+    /**
+     * Enter a parse tree produced by {@link REDDATABASESqlParser#recreate_procedure_stmt}.
+     *
+     * @param ctx the parse tree
+     */
+    void enterRecreate_procedure_stmt(REDDATABASESqlParser.Recreate_procedure_stmtContext ctx);
+
+    /**
+     * Exit a parse tree produced by {@link REDDATABASESqlParser#recreate_procedure_stmt}.
+     *
+     * @param ctx the parse tree
+     */
+    void exitRecreate_procedure_stmt(REDDATABASESqlParser.Recreate_procedure_stmtContext ctx);
+
+    /**
+     * Enter a parse tree produced by {@link REDDATABASESqlParser#alter_procedure_stmt}.
+     *
+     * @param ctx the parse tree
+     */
+    void enterAlter_procedure_stmt(REDDATABASESqlParser.Alter_procedure_stmtContext ctx);
+
+    /**
+     * Exit a parse tree produced by {@link REDDATABASESqlParser#alter_procedure_stmt}.
+     *
+     * @param ctx the parse tree
+     */
+    void exitAlter_procedure_stmt(REDDATABASESqlParser.Alter_procedure_stmtContext ctx);
+
+    /**
      * Enter a parse tree produced by {@link REDDATABASESqlParser#execute_block_stmt}.
      *
      * @param ctx the parse tree

@@ -155,6 +155,30 @@ public interface REDDATABASESqlVisitor<T> extends ParseTreeVisitor<T> {
     T visitCreate_procedure_stmt(REDDATABASESqlParser.Create_procedure_stmtContext ctx);
 
     /**
+     * Visit a parse tree produced by {@link REDDATABASESqlParser#create_or_alter_procedure_stmt}.
+     *
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    T visitCreate_or_alter_procedure_stmt(REDDATABASESqlParser.Create_or_alter_procedure_stmtContext ctx);
+
+    /**
+     * Visit a parse tree produced by {@link REDDATABASESqlParser#recreate_procedure_stmt}.
+     *
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    T visitRecreate_procedure_stmt(REDDATABASESqlParser.Recreate_procedure_stmtContext ctx);
+
+    /**
+     * Visit a parse tree produced by {@link REDDATABASESqlParser#alter_procedure_stmt}.
+     *
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    T visitAlter_procedure_stmt(REDDATABASESqlParser.Alter_procedure_stmtContext ctx);
+
+    /**
      * Visit a parse tree produced by {@link REDDATABASESqlParser#execute_block_stmt}.
      *
      * @param ctx the parse tree

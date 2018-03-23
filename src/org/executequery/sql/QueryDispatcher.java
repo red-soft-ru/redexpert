@@ -1014,7 +1014,56 @@ public class QueryDispatcher {
 
         long start = System.currentTimeMillis();
 
-        SqlStatementResult result = querySender.createProcedure(sql);
+        REDDATABASESqlLexer lexer = new REDDATABASESqlLexer(CharStreams.fromString(sql));
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        REDDATABASESqlParser sqlparser = new REDDATABASESqlParser(tokens);
+        List<? extends ANTLRErrorListener> listeners = sqlparser.getErrorListeners();
+        for (int i = 0; i < listeners.size(); i++) {
+            if (listeners.get(i) instanceof ConsoleErrorListener)
+                sqlparser.removeErrorListener(listeners.get(i));
+        }
+        ParseTree tree = sqlparser.create_or_alter_procedure_stmt();
+        ParseTreeWalker walker = new ParseTreeWalker();
+        StringBuilder variables = new StringBuilder();
+        walker.walk(new REDDATABASESqlBaseListener() {
+            @Override
+            public void enterDeclare_block(REDDATABASESqlParser.Declare_blockContext ctx) {
+                List<REDDATABASESqlParser.Input_parameterContext> in_pars = ctx.input_parameter();
+                for (int i = 0; i < in_pars.size(); i++) {
+                    variables.append("<").append(in_pars.get(i).desciption_parameter().parameter_name().getRuleContext().getText()).append(">");
+                }
+                List<REDDATABASESqlParser.Output_parameterContext> out_pars = ctx.output_parameter();
+                for (int i = 0; i < out_pars.size(); i++) {
+                    variables.append("<").append(out_pars.get(i).desciption_parameter().parameter_name().getRuleContext().getText()).append(">");
+                }
+                List<REDDATABASESqlParser.Local_variableContext> vars = ctx.local_variable();
+                for (int i = 0; i < vars.size(); i++) {
+                    variables.append("<").append(vars.get(i).variable_name().getRuleContext().getText()).append(">");
+                }
+            }
+        }, tree);
+        SqlParser parser = new SqlParser(sql, variables.toString());
+        String queryToExecute = parser.getProcessedSql();
+        PreparedStatement statement = querySender.getPreparedStatement(queryToExecute);
+        statement.setEscapeProcessing(true);
+        ParameterMetaData pmd = statement.getParameterMetaData();
+        List<Parameter> params = parser.getParameters();
+        List<Parameter> displayParams = parser.getDisplayParameters();
+        for (int i = 0; i < params.size(); i++) {
+            params.get(i).setType(pmd.getParameterType(i + 1));
+            params.get(i).setTypeName(pmd.getParameterTypeName(i + 1));
+        }
+        if (!displayParams.isEmpty()) {
+            InputParametersDialog spd = new InputParametersDialog(displayParams);
+            spd.display();
+        }
+        for (int i = 0; i < params.size(); i++) {
+            if (params.get(i).isNull())
+                statement.setNull(i + 1, params.get(i).getType());
+            else
+                statement.setObject(i + 1, params.get(i).getValue());
+        }
+        SqlStatementResult result = querySender.execute(QueryTypes.CREATE_PROCEDURE, statement);
 
         if (result.getUpdateCount() == -1) {
 
@@ -1275,7 +1324,8 @@ public class QueryDispatcher {
         int packageIndex = query.indexOf("PACKAGE");
 
         return (createIndex != -1) && (tableIndex == -1) &&
-                (procedureIndex > createIndex || packageIndex > createIndex);
+                (procedureIndex > createIndex || packageIndex > createIndex) || (createIndex != -1) &&
+                (tableIndex != -1) && (procedureIndex > createIndex && tableIndex > procedureIndex || packageIndex > createIndex && tableIndex > packageIndex);
     }
 
     /**
@@ -1291,7 +1341,9 @@ public class QueryDispatcher {
         int functionIndex = query.indexOf("FUNCTION");
         return createIndex != -1 &&
                 tableIndex == -1 &&
-                functionIndex > createIndex;
+                functionIndex > createIndex || createIndex != -1 &&
+                tableIndex != -1 &&
+                functionIndex > createIndex && functionIndex < tableIndex;
     }
 
     private boolean isNotSingleStatementExecution(String query) {

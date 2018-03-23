@@ -216,6 +216,39 @@ public class REDDATABASESqlBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
      * {@link #visitChildren} on {@code ctx}.</p>
      */
     @Override
+    public T visitCreate_or_alter_procedure_stmt(REDDATABASESqlParser.Create_or_alter_procedure_stmtContext ctx) {
+        return visitChildren(ctx);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <p>The default implementation returns the result of calling
+     * {@link #visitChildren} on {@code ctx}.</p>
+     */
+    @Override
+    public T visitRecreate_procedure_stmt(REDDATABASESqlParser.Recreate_procedure_stmtContext ctx) {
+        return visitChildren(ctx);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <p>The default implementation returns the result of calling
+     * {@link #visitChildren} on {@code ctx}.</p>
+     */
+    @Override
+    public T visitAlter_procedure_stmt(REDDATABASESqlParser.Alter_procedure_stmtContext ctx) {
+        return visitChildren(ctx);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <p>The default implementation returns the result of calling
+     * {@link #visitChildren} on {@code ctx}.</p>
+     */
+    @Override
     public T visitExecute_block_stmt(REDDATABASESqlParser.Execute_block_stmtContext ctx) {
         return visitChildren(ctx);
     }

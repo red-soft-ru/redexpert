@@ -57,7 +57,7 @@ sql_stmt
                                       | create_trigger_stmt
                                       | create_view_stmt
                                       | create_virtual_table_stmt
-                                      | create_procedure_stmt
+                                      | create_or_alter_procedure_stmt
                                       | execute_block_stmt
                                       | delete_stmt
                                       | delete_stmt_limited
@@ -159,6 +159,26 @@ create_virtual_table_stmt
     (K_AUTHID (K_OWNER|K_CALLER))?
     declare_block
  ;
+
+ create_or_alter_procedure_stmt
+ :K_CREATE_OR_ALTER K_PROCEDURE procedure_name
+      (K_AUTHID (K_OWNER|K_CALLER))?
+      declare_block
+ |recreate_procedure_stmt
+ |alter_procedure_stmt
+ |create_procedure_stmt
+ ;
+ recreate_procedure_stmt
+ :K_RECREATE  K_PROCEDURE procedure_name
+      (K_AUTHID (K_OWNER|K_CALLER))?
+      declare_block
+ ;
+
+ alter_procedure_stmt
+  : K_ALTER K_PROCEDURE procedure_name
+     (K_AUTHID (K_OWNER|K_CALLER))?
+     declare_block
+  ;
 
  execute_block_stmt
   :K_EXECUTE K_BLOCK
@@ -1017,6 +1037,7 @@ K_PROCEDURE : P R O C E D U R E;
 K_PRIMARY : P R I M A R Y;
 K_QUERY : Q U E R Y;
 K_RAISE : R A I S E;
+K_RECREATE : R E C R E A T E;
 K_RECURSIVE : R E C U R S I V E;
 K_REFERENCES : R E F E R E N C E S;
 K_REGEXP : R E G E X P;

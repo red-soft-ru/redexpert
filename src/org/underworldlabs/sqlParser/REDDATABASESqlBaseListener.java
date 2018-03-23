@@ -341,6 +341,60 @@ public class REDDATABASESqlBaseListener implements REDDATABASESqlListener {
      * <p>The default implementation does nothing.</p>
      */
     @Override
+    public void enterCreate_or_alter_procedure_stmt(REDDATABASESqlParser.Create_or_alter_procedure_stmtContext ctx) {
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <p>The default implementation does nothing.</p>
+     */
+    @Override
+    public void exitCreate_or_alter_procedure_stmt(REDDATABASESqlParser.Create_or_alter_procedure_stmtContext ctx) {
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <p>The default implementation does nothing.</p>
+     */
+    @Override
+    public void enterRecreate_procedure_stmt(REDDATABASESqlParser.Recreate_procedure_stmtContext ctx) {
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <p>The default implementation does nothing.</p>
+     */
+    @Override
+    public void exitRecreate_procedure_stmt(REDDATABASESqlParser.Recreate_procedure_stmtContext ctx) {
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <p>The default implementation does nothing.</p>
+     */
+    @Override
+    public void enterAlter_procedure_stmt(REDDATABASESqlParser.Alter_procedure_stmtContext ctx) {
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <p>The default implementation does nothing.</p>
+     */
+    @Override
+    public void exitAlter_procedure_stmt(REDDATABASESqlParser.Alter_procedure_stmtContext ctx) {
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <p>The default implementation does nothing.</p>
+     */
+    @Override
     public void enterExecute_block_stmt(REDDATABASESqlParser.Execute_block_stmtContext ctx) {
     }
 

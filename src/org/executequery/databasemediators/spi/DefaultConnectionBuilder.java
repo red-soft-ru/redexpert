@@ -97,14 +97,17 @@ public class DefaultConnectionBuilder implements ConnectionBuilder {
         return databaseConnection.isConnected();
     }
 
-    public void connect() {
+    public void connect() throws IllegalArgumentException {
 
         progressDialog = new ConnectionProgressDialog(this);
 
         worker = new SwingWorker() {
             public Object construct() {
-
-                createDataSource();
+                try {
+                    createDataSource();
+                } catch (IllegalArgumentException e) {
+                    dataSourceException = new DataSourceException(e);
+                }
                 return null;
             }
 
@@ -123,7 +126,7 @@ public class DefaultConnectionBuilder implements ConnectionBuilder {
 
     }
 
-    private void createDataSource() {
+    private void createDataSource() throws IllegalArgumentException {
 
         try {
 

@@ -499,7 +499,6 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
                 sb.append(" = ");
             }
-
             sb.append(" call ");
 
             if (databaseExecutable.supportCatalogOrSchemaInFunctionOrProcedureCalls()) {
@@ -1394,6 +1393,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
         return statementResult;
     }
+
 
     private void finished() throws SQLException {
 

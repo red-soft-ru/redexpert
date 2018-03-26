@@ -57,7 +57,7 @@ sql_stmt
                                       | create_trigger_stmt
                                       | create_view_stmt
                                       | create_virtual_table_stmt
-                                      | create_procedure_stmt
+                                      | create_or_alter_procedure_stmt
                                       | execute_block_stmt
                                       | delete_stmt
                                       | delete_stmt_limited
@@ -160,6 +160,26 @@ create_virtual_table_stmt
     declare_block
  ;
 
+ create_or_alter_procedure_stmt
+ :K_CREATE_OR_ALTER K_PROCEDURE procedure_name
+      (K_AUTHID (K_OWNER|K_CALLER))?
+      declare_block
+ |recreate_procedure_stmt
+ |alter_procedure_stmt
+ |create_procedure_stmt
+ ;
+ recreate_procedure_stmt
+ :K_RECREATE  K_PROCEDURE procedure_name
+      (K_AUTHID (K_OWNER|K_CALLER))?
+      declare_block
+ ;
+
+ alter_procedure_stmt
+  : K_ALTER K_PROCEDURE procedure_name
+     (K_AUTHID (K_OWNER|K_CALLER))?
+     declare_block
+  ;
+
  execute_block_stmt
   :K_EXECUTE K_BLOCK
      declare_block
@@ -218,7 +238,7 @@ create_virtual_table_stmt
  datatype
  : datatypeSQL
  | (K_TYPE_OF)? domain_name
- | K_TYPE_OF table_name'.'column_name
+ | K_TYPE_OF K_COLUMN table_name'.'column_name
  ;
 
  datatypeSQL
@@ -226,7 +246,7 @@ create_virtual_table_stmt
     | (FLOAT | DOUBLE PRECISION) array_size?
     | (DATE | TIME | TIMESTAMP) array_size?
     | (DECIMAL | NUMERIC) ('(' int_number (',' int_number)?')')? array_size?
-    | CHAR | CHARACTER | CHARACTER_VARYING | VARCHAR ('(' int_number ')')?
+    | (CHAR | CHARACTER | CHARACTER_VARYING | VARCHAR) ('('int_number')')?
     (CHARACTER_SET charset_name)? array_size?
     | (NCHAR | NATIONAL_CHARACTER | NATIONAL_CHAR) (VARYING)? ('(' DIGIT+ ')')? array_size?
     | BLOB (SUB_TYPE (any_name | int_number))?
@@ -1017,6 +1037,7 @@ K_PROCEDURE : P R O C E D U R E;
 K_PRIMARY : P R I M A R Y;
 K_QUERY : Q U E R Y;
 K_RAISE : R A I S E;
+K_RECREATE : R E C R E A T E;
 K_RECURSIVE : R E C U R S I V E;
 K_REFERENCES : R E F E R E N C E S;
 K_REGEXP : R E G E X P;
@@ -1058,7 +1079,7 @@ IDENTIFIER
  : '"' (~'"' | '""')* '"'
  | '`' (~'`' | '``')* '`'
  | '[' ~']'* ']'
- | [a-zA-Z_] [a-zA-Z_0-9]* // TODO check: needs more chars in set
+ | [a-zA-Z_] [a-zA-Z_$0-9]* // TODO check: needs more chars in set
  ;
 
 NUMERIC_LITERAL
@@ -1068,7 +1089,7 @@ NUMERIC_LITERAL
 
 BIND_PARAMETER
  : '?' DIGIT*
- | [:@$] IDENTIFIER
+ | [:@] IDENTIFIER
  ;
 
 STRING_LITERAL

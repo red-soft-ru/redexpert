@@ -29,3 +29,5 @@ lib/jaybird-full\.jar
 lib/jaybird-cryptoapi\.jar
 
 sql.log
+
+src/org/underworldlabs/sqlParser/REDDATABASESql*

@@ -87,7 +87,7 @@ public class SqlParser {
                                 second = false;
                                 break;
                             case ':':
-                                if (Character.isAlphabetic(nextChar)) {
+                                if (Character.isAlphabetic(nextChar) || Character.isDigit(nextChar) || nextChar == '$' || nextChar == '_') {
                                     processed.append('?');
                                     state = PARAMETER_STATE;
                                     parameter.setLength(0);

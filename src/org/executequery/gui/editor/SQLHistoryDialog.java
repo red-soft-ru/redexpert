@@ -111,7 +111,7 @@ public class SQLHistoryDialog extends AbstractBaseDialog
      *
      * @throws Exception
      */
-    private void init() throws Exception {
+    private void init() {
 
         JButton cancelButton = createButton(Bundles.get("common.cancel.button"), null);
         JButton selectButton = createButton(Bundles.get("common.select.button"),
@@ -298,7 +298,7 @@ public class SQLHistoryDialog extends AbstractBaseDialog
 
         } else if (command.equals("Clear")) {
 
-            sqlCommandHistoryRepository().clearSqlCommandHistory();
+            sqlCommandHistoryRepository().clearSqlCommandHistory(queryEditor.getSelectedConnection().getName());
             setHistoryData(new Vector<String>(0));
 
         } else {

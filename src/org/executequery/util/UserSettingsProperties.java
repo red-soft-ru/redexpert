@@ -53,7 +53,7 @@ public final class UserSettingsProperties {
         return ApplicationContext.getInstance().getBuild();
     }
 
-    private String fileSeparator() {
+    public String fileSeparator() {
 
         return System.getProperty("file.separator");
     }

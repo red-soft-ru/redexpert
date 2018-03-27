@@ -36,11 +36,11 @@ public class SqlCommandHistoryRepositoryImpl implements SqlCommandHistoryReposit
 
     private UserSettingsProperties settings;
 
-    public void addSqlCommand(String query) {
+    public void addSqlCommand(String query, String connection) {
 
-        if (!hasQueryAtZero(query)) {
+        if (!hasQueryAtZero(query, connection)) {
 
-            final Vector<String> history = getSqlCommandHistory();
+            final Vector<String> history = getSqlCommandHistory(connection);
 
             int size = history.size();
             if (size == maxHistoryCount()) {
@@ -50,13 +50,13 @@ public class SqlCommandHistoryRepositoryImpl implements SqlCommandHistoryReposit
 
             history.add(0, query);
 
-            writeHistory(history);
+            writeHistory(history, connection);
         }
     }
 
-    private boolean hasQueryAtZero(String query) {
+    private boolean hasQueryAtZero(String query, String connection) {
 
-        final Vector<String> history = getSqlCommandHistory();
+        final Vector<String> history = getSqlCommandHistory(connection);
 
         if (history.isEmpty()) {
 
@@ -73,17 +73,17 @@ public class SqlCommandHistoryRepositoryImpl implements SqlCommandHistoryReposit
         return UserProperties.getInstance().getIntProperty("editor.history.count");
     }
 
-    public void clearSqlCommandHistory() {
+    public void clearSqlCommandHistory(String connection) {
 
-        writeHistory(new Vector<String>(0));
+        writeHistory(new Vector<String>(0), connection);
     }
 
     @SuppressWarnings("unchecked")
-    public Vector<String> getSqlCommandHistory() {
+    public Vector<String> getSqlCommandHistory(String connection) {
 
         try {
 
-            File file = new File(filePath());
+            File file = new File(filePath(connection));
 
             if (!file.exists()) {
 
@@ -115,11 +115,11 @@ public class SqlCommandHistoryRepositoryImpl implements SqlCommandHistoryReposit
 
     }
 
-    private void writeHistory(Vector<String> history) {
+    private void writeHistory(Vector<String> history, String connection) {
 
         try {
 
-            FileUtils.writeObject(history, filePath());
+            FileUtils.writeObject(history, filePath(connection));
 
         } catch (IOException e) {
 
@@ -137,14 +137,18 @@ public class SqlCommandHistoryRepositoryImpl implements SqlCommandHistoryReposit
         return new Vector<String>();
     }
 
-    private String filePath() {
+    private String filePath(String connection) {
 
         if (settings == null) {
 
             settings = new UserSettingsProperties();
         }
-
-        return settings.getUserSettingsBaseHome() + FILE_PATH;
+        String dir = settings.getUserSettingsBaseHome() + "sqlHistory" + settings.fileSeparator();
+        File f_dir = new File(dir);
+        if (!f_dir.exists()) {
+            f_dir.mkdirs();
+        }
+        return dir + connection + "." + FILE_PATH;
     }
 
     public String getId() {

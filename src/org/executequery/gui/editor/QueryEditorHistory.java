@@ -2,6 +2,7 @@ package org.executequery.gui.editor;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.gui.editor.autocomplete.Parameter;
 import org.executequery.util.SystemResources;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.SystemProperties;
@@ -15,6 +16,7 @@ public class QueryEditorHistory {
     static QueryEditorHistory queryEditorHistory;
     private static Map<String, List<PathNumber>> editors;
     private static List<Integer> numbers;
+    private static Map<DatabaseConnection, List<Parameter>[]> historyParameters;
 
     public static final String NULL_CONNECTION = "null_connection";
 
@@ -22,6 +24,12 @@ public class QueryEditorHistory {
         if (queryEditorHistory == null)
             queryEditorHistory = new QueryEditorHistory();
         return queryEditorHistory;
+    }
+
+    public static Map<DatabaseConnection, List<Parameter>[]> getHistoryParameters() {
+        if (historyParameters == null)
+            historyParameters = new HashMap<>();
+        return historyParameters;
     }
 
     public static void addEditor(String connection, String editor, int number) {

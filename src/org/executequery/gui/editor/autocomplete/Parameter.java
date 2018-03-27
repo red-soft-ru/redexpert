@@ -1,7 +1,11 @@
 package org.executequery.gui.editor.autocomplete;
 
+import org.executequery.GUIUtilities;
 import org.underworldlabs.util.MiscUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.sql.Types;
 
 public class Parameter {
@@ -23,6 +27,16 @@ public class Parameter {
     }
 
     public Object getValue() {
+        return value;
+    }
+
+    public Object getPreparedValue() {
+        if (value instanceof File)
+            try {
+                return new FileInputStream((File) value);
+            } catch (FileNotFoundException e) {
+                GUIUtilities.displayExceptionErrorDialog("Invalid file", e);
+            }
         return value;
     }
 

@@ -43,4 +43,11 @@ public class RDBFieldFileChooser extends JPanel {
             return null;
         return valueBox.getFile();
     }
+
+    public void setFile(File file) {
+        if (file != null) {
+            valueBox.file = file;
+            valueBox.textField.setText(file.getAbsolutePath());
+        }
+    }
 }

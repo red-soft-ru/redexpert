@@ -1,6 +1,7 @@
 package org.underworldlabs.swing;
 
 import org.executequery.localization.Bundles;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -43,5 +44,11 @@ public class RDBCheckBox extends JPanel {
         if (nullBox.isSelected())
             return "";
         return String.valueOf(valueBox.isSelected());
+    }
+
+    public void setStingValue(String value) {
+        if (MiscUtils.isNull(value)) {
+            nullBox.setSelected(true);
+        } else valueBox.setSelected(value.toLowerCase().contentEquals("true"));
     }
 }

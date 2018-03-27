@@ -29,11 +29,11 @@ public interface SqlCommandHistoryRepository extends Repository {
 
     String REPOSITORY_ID = "sql-command-history";
 
-    void clearSqlCommandHistory(String connection);
+    void clearSqlCommandHistory(String connectionID);
 
-    void addSqlCommand(String query, String connection);
+    void addSqlCommand(String query, String connectionID);
 
-    Vector<String> getSqlCommandHistory(String connection);
+    Vector<String> getSqlCommandHistory(String connectionID);
 
 }
 

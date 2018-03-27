@@ -295,7 +295,7 @@ public class QueryEditorDelegate implements QueryDelegate {
         ThreadUtils.startWorker(new Runnable() {
             public void run() {
 
-                sqlCommandHistoryRepository().addSqlCommand(query, queryEditor.getSelectedConnection().getName());
+                sqlCommandHistoryRepository().addSqlCommand(query, queryEditor.getSelectedConnection().getId());
             }
         });
 
@@ -331,7 +331,7 @@ public class QueryEditorDelegate implements QueryDelegate {
 
     private Vector<String> getSqlCommandHistory() {
 
-        return sqlCommandHistoryRepository().getSqlCommandHistory(queryEditor.getSelectedConnection().getName());
+        return sqlCommandHistoryRepository().getSqlCommandHistory(queryEditor.getSelectedConnection().getId());
     }
 
     /**

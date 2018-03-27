@@ -298,7 +298,7 @@ public class SQLHistoryDialog extends AbstractBaseDialog
 
         } else if (command.equals("Clear")) {
 
-            sqlCommandHistoryRepository().clearSqlCommandHistory(queryEditor.getSelectedConnection().getName());
+            sqlCommandHistoryRepository().clearSqlCommandHistory(queryEditor.getSelectedConnection().getId());
             setHistoryData(new Vector<String>(0));
 
         } else {

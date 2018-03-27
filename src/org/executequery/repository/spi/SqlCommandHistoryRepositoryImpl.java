@@ -148,8 +148,9 @@ public class SqlCommandHistoryRepositoryImpl implements SqlCommandHistoryReposit
         if (!f_dir.exists()) {
             f_dir.mkdirs();
         }
-        connection = connection.replace("/", "->");
-        connection = connection.replace("\\", "->");
+        connection = connection.replace(":", "");
+        connection = connection.replace("/", "-");
+        connection = connection.replace("\\", "-");
         return dir + connection + "." + FILE_PATH;
     }
 

@@ -32,13 +32,13 @@ public class QueryEditorHistory {
         return historyParameters;
     }
 
-    public static void addEditor(String connection, String editor, int number) {
-        addEditor(connection, new PathNumber(editor, number));
+    public static void addEditor(String connectionID, String editor, int number) {
+        addEditor(connectionID, new PathNumber(editor, number));
 
     }
 
-    public static void addEditor(String connection, PathNumber pathNumber) {
-        getEditors(connection).add(pathNumber);
+    public static void addEditor(String connectionID, PathNumber pathNumber) {
+        getEditors(connectionID).add(pathNumber);
         if (pathNumber.number != -1) {
             numbers().add(pathNumber.number);
             saveNumbers();
@@ -46,9 +46,9 @@ public class QueryEditorHistory {
         saveEditors();
     }
 
-    public static void removeEditor(String connection, String editor) {
-        PathNumber pathNumber = getEditors(connection).get(indexOfEditor(editor, getEditors(connection)));
-        getEditors(connection).remove(pathNumber);
+    public static void removeEditor(String connectionID, String editor) {
+        PathNumber pathNumber = getEditors(connectionID).get(indexOfEditor(editor, getEditors(connectionID)));
+        getEditors(connectionID).remove(pathNumber);
         if (pathNumber.number != -1) {
             numbers().remove((Integer) pathNumber.number);
             saveNumbers();
@@ -66,21 +66,21 @@ public class QueryEditorHistory {
     }
 
 
-    public static void changedConnectionEditor(String oldConnection, String newConnection, String editor) {
-        int number = getEditors(oldConnection).get(indexOfEditor(editor, getEditors(oldConnection))).number;
-        removeEditor(oldConnection, editor);
-        addEditor(newConnection, editor, number);
+    public static void changedConnectionEditor(String oldConnectionID, String newConnectionID, String editor) {
+        int number = getEditors(oldConnectionID).get(indexOfEditor(editor, getEditors(oldConnectionID))).number;
+        removeEditor(oldConnectionID, editor);
+        addEditor(newConnectionID, editor, number);
     }
 
     public static List<PathNumber> getEditors(DatabaseConnection connection) {
-        return getEditors(connection.getName());
+        return getEditors(connection.getId());
     }
 
-    public static List<PathNumber> getEditors(String connectionName) {
-        List<PathNumber> list = editors().get(connectionName);
+    public static List<PathNumber> getEditors(String connectionID) {
+        List<PathNumber> list = editors().get(connectionID);
         if (list == null) {
             list = new ArrayList<>();
-            editors().put(connectionName, list);
+            editors().put(connectionID, list);
         }
         return list;
     }
@@ -236,15 +236,15 @@ public class QueryEditorHistory {
     }
 
     public static void restoreTabs(DatabaseConnection connection) {
-        String connectionName = NULL_CONNECTION;
+        String connectionID = NULL_CONNECTION;
         if (connection != null)
-            connectionName = connection.getName();
+            connectionID = connection.getId();
         String encoding = SystemProperties.getProperty("user", "system.file.encoding");
         List<PathNumber> copy = new ArrayList<>();
-        copy.addAll(getEditors(connectionName));
+        copy.addAll(getEditors(connectionID));
         for (int i = 0; i < copy.size(); i++) {
             try {
-                removeEditor(connectionName, copy.get(i).path);
+                removeEditor(connectionID, copy.get(i).path);
                 File file = new File(copy.get(i).path);
                 if (file.exists()) {
                     String contents = FileUtils.loadFile(file, encoding);

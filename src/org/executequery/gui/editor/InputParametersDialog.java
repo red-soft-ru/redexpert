@@ -13,9 +13,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.sql.Types;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,6 +69,33 @@ public class InputParametersDialog extends BaseDialog {
         addDisplayComponent(mainPanel);
     }
 
+    private void setValueToComponent(Parameter parameter, JComponent component) {
+        if (parameter.getValue() != null)
+            switch (parameter.getType()) {
+                case Types.DATE:
+                    ((DatePicker) component).setDate(LocalDate.parse((String) parameter.getValue()));
+                    break;
+                case Types.TIMESTAMP:
+                    ((EQDateTimePicker) component).setDateTimePermissive(LocalDateTime.parse((String) parameter.getValue()));
+                    break;
+                case Types.TIME:
+                    ((EQTimePicker) component).setTime(LocalTime.parse((String) parameter.getValue()));
+                    break;
+                case Types.BOOLEAN:
+                    ((RDBCheckBox) component).setStingValue((String) parameter.getValue());
+                    break;
+                case Types.BINARY:
+                case Types.BLOB:
+                case Types.LONGVARBINARY:
+                case Types.LONGVARCHAR:
+                    ((RDBFieldFileChooser) component).setFile(((File) parameter.getValue()));
+                    break;
+                default:
+                    ((JTextField) component).setText((String) parameter.getValue());
+                    break;
+            }
+    }
+
     private void addParameter(Parameter parameter) {
         int count = componentList.size();
         panel.add(new JLabel(parameter.getName()), new GridBagConstraints(0, count,
@@ -102,6 +130,7 @@ public class InputParametersDialog extends BaseDialog {
                 component = new JTextField(14);
                 break;
         }
+        setValueToComponent(parameter, component);
         componentList.add(component);
         panel.add(component, new GridBagConstraints(2, count,
                 1, 1, 1, 0,
@@ -129,14 +158,9 @@ public class InputParametersDialog extends BaseDialog {
                 case Types.BINARY:
                 case Types.BLOB:
                 case Types.LONGVARBINARY:
+                case Types.LONGVARCHAR:
                     File file = ((RDBFieldFileChooser) component).getFile();
-                    if (file != null) {
-                        try {
-                            parameter.setValue(new FileInputStream(file));
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
-                        }
-                    } else parameter.setValue(null);
+                    parameter.setValue(file);
                     break;
                 default:
                     parameter.setValue(((JTextField) component).getText());

@@ -96,7 +96,7 @@ public class OpenEditorConnectionListener implements ConnectionListener {
         for (String name : closeTabs)
             GUIUtilities.closeTab(name);
         for (QueryEditorHistory.PathNumber s : copy)
-            QueryEditorHistory.addEditor(connectionEvent.getDatabaseConnection().getName(), s);
+            QueryEditorHistory.addEditor(connectionEvent.getDatabaseConnection().getId(), s);
     }
 
     public boolean canHandleEvent(ApplicationEvent event) {

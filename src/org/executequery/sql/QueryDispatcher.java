@@ -39,6 +39,8 @@ import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.datasource.PooledResultSet;
 import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.editor.InputParametersDialog;
+import org.executequery.gui.editor.QueryEditorDelegate;
+import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.editor.autocomplete.Parameter;
 import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
@@ -459,27 +461,7 @@ public class QueryDispatcher {
                         }
                     }
                 }, tree);
-                SqlParser parser = new SqlParser(sql, variables.toString());
-                String queryToExecute = parser.getProcessedSql();
-                PreparedStatement statement = querySender.getPreparedStatement(queryToExecute);
-                statement.setEscapeProcessing(true);
-                ParameterMetaData pmd = statement.getParameterMetaData();
-                List<Parameter> params = parser.getParameters();
-                List<Parameter> displayParams = parser.getDisplayParameters();
-                for (int i = 0; i < params.size(); i++) {
-                    params.get(i).setType(pmd.getParameterType(i + 1));
-                    params.get(i).setTypeName(pmd.getParameterTypeName(i + 1));
-                }
-                if (!displayParams.isEmpty()) {
-                    InputParametersDialog spd = new InputParametersDialog(displayParams);
-                    spd.display();
-                }
-                for (int i = 0; i < params.size(); i++) {
-                    if (params.get(i).isNull())
-                        statement.setNull(i + 1, params.get(i).getType());
-                    else
-                        statement.setObject(i + 1, params.get(i).getValue());
-                }
+                PreparedStatement statement = prepareStatementWithParameters(sql, variables.toString());
                 SqlStatementResult result = querySender.execute(statement, true);
                 //SqlStatementResult result = querySender.execute(sql, true);
 
@@ -632,26 +614,7 @@ public class QueryDispatcher {
                 }
 
                 start = System.currentTimeMillis();
-                SqlParser parser = new SqlParser(queryToExecute);
-                queryToExecute = parser.getProcessedSql();
-                PreparedStatement statement = querySender.getPreparedStatement(queryToExecute);
-                ParameterMetaData pmd = statement.getParameterMetaData();
-                List<Parameter> params = parser.getParameters();
-                List<Parameter> displayParams = parser.getDisplayParameters();
-                for (int i = 0; i < params.size(); i++) {
-                    params.get(i).setType(pmd.getParameterType(i + 1));
-                    params.get(i).setTypeName(pmd.getParameterTypeName(i + 1));
-                }
-                if (!displayParams.isEmpty()) {
-                    InputParametersDialog spd = new InputParametersDialog(displayParams);
-                    spd.display();
-                }
-                for (int i = 0; i < params.size(); i++) {
-                    if (params.get(i).isNull())
-                        statement.setNull(i + 1, params.get(i).getType());
-                    else
-                        statement.setObject(i + 1, params.get(i).getValue());
-                }
+                PreparedStatement statement = prepareStatementWithParameters(queryToExecute, "");
                 SqlStatementResult result = querySender.execute(type, statement);
 
                 if (statementCancelled || Thread.interrupted()) {
@@ -836,6 +799,43 @@ public class QueryDispatcher {
         return DONE;
     }
 
+    PreparedStatement prepareStatementWithParameters(String sql, String variables) throws SQLException {
+        SqlParser parser = new SqlParser(sql, variables);
+        String queryToExecute = parser.getProcessedSql();
+        PreparedStatement statement = querySender.getPreparedStatement(queryToExecute);
+        statement.setEscapeProcessing(true);
+        ParameterMetaData pmd = statement.getParameterMetaData();
+        List<Parameter> params = parser.getParameters();
+        List<Parameter> displayParams = parser.getDisplayParameters();
+        boolean oldParameters = false;
+        if (delegate instanceof QueryEditorDelegate) {
+            QueryEditorDelegate qed = (QueryEditorDelegate) delegate;
+            String preQuery = qed.getPreviousQuery().trim();
+            if (sql.trim().contentEquals(preQuery))
+                if (QueryEditorHistory.getHistoryParameters().containsKey(querySender.getDatabaseConnection())) {
+                    params = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection())[0];
+                    displayParams = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection())[1];
+                    oldParameters = true;
+                }
+        }
+        if (!oldParameters)
+            for (int i = 0; i < params.size(); i++) {
+                params.get(i).setType(pmd.getParameterType(i + 1));
+                params.get(i).setTypeName(pmd.getParameterTypeName(i + 1));
+            }
+        if (!displayParams.isEmpty()) {
+            InputParametersDialog spd = new InputParametersDialog(displayParams);
+            spd.display();
+        }
+        for (int i = 0; i < params.size(); i++) {
+            if (params.get(i).isNull())
+                statement.setNull(i + 1, params.get(i).getType());
+            else
+                statement.setObject(i + 1, params.get(i).getPreparedValue());
+        }
+        QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), new List[]{params, displayParams});
+        return statement;
+    }
     private void printExecutionPlan(IFBPerformanceInfo before, IFBPerformanceInfo after) {
         // Trying to get execution plan of firebird statement
         DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
@@ -1042,27 +1042,7 @@ public class QueryDispatcher {
                 }
             }
         }, tree);
-        SqlParser parser = new SqlParser(sql, variables.toString());
-        String queryToExecute = parser.getProcessedSql();
-        PreparedStatement statement = querySender.getPreparedStatement(queryToExecute);
-        statement.setEscapeProcessing(true);
-        ParameterMetaData pmd = statement.getParameterMetaData();
-        List<Parameter> params = parser.getParameters();
-        List<Parameter> displayParams = parser.getDisplayParameters();
-        for (int i = 0; i < params.size(); i++) {
-            params.get(i).setType(pmd.getParameterType(i + 1));
-            params.get(i).setTypeName(pmd.getParameterTypeName(i + 1));
-        }
-        if (!displayParams.isEmpty()) {
-            InputParametersDialog spd = new InputParametersDialog(displayParams);
-            spd.display();
-        }
-        for (int i = 0; i < params.size(); i++) {
-            if (params.get(i).isNull())
-                statement.setNull(i + 1, params.get(i).getType());
-            else
-                statement.setObject(i + 1, params.get(i).getValue());
-        }
+        PreparedStatement statement = prepareStatementWithParameters(sql, variables.toString());
         SqlStatementResult result = querySender.execute(QueryTypes.CREATE_PROCEDURE, statement);
 
         if (result.getUpdateCount() == -1) {

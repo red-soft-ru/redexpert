@@ -44,7 +44,7 @@ public class HistoryCommand extends AbstractQueryEditorCommand {
                 public void run() {
 
                     Vector<String> history =
-                            sqlCommandHistoryRepository().getSqlCommandHistory();
+                            sqlCommandHistoryRepository().getSqlCommandHistory(queryEditor().getSelectedConnection().getId());
 
                     if (history == null || history.isEmpty()) {
 

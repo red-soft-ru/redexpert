@@ -29,7 +29,6 @@ import org.executequery.sql.QueryDispatcher;
 import org.executequery.util.ThreadUtils;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Vector;
 
 public class QueryEditorDelegate implements QueryDelegate {
@@ -234,7 +233,7 @@ public class QueryEditorDelegate implements QueryDelegate {
         queryEditor.setResultText(result, type);
     }
 
-    public void setResultSet(ResultSet rs, String query) throws SQLException {
+    public void setResultSet(ResultSet rs, String query) {
 
         queryEditor.setResultSet(rs, query);
     }
@@ -296,7 +295,7 @@ public class QueryEditorDelegate implements QueryDelegate {
         ThreadUtils.startWorker(new Runnable() {
             public void run() {
 
-                sqlCommandHistoryRepository().addSqlCommand(query);
+                sqlCommandHistoryRepository().addSqlCommand(query, queryEditor.getSelectedConnection().getId());
             }
         });
 
@@ -332,7 +331,7 @@ public class QueryEditorDelegate implements QueryDelegate {
 
     private Vector<String> getSqlCommandHistory() {
 
-        return sqlCommandHistoryRepository().getSqlCommandHistory();
+        return sqlCommandHistoryRepository().getSqlCommandHistory(queryEditor.getSelectedConnection().getId());
     }
 
     /**

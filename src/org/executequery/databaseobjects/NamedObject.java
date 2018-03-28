@@ -31,30 +31,30 @@ import java.util.List;
  */
 public interface NamedObject extends java.io.Serializable {
 
-    int FUNCTION = 0;
-    int INDEX = 1;
-    int PROCEDURE = 2;
-    int SEQUENCE = 3;
-    int SYNONYM = 4;
-    int TABLE = 5;
-    int TRIGGER = 6;
+    int INDEX = 0;
+    int PROCEDURE = 1;
+    int SEQUENCE = 2;
+    int SYNONYM = 3;
+    int TABLE = 4;
+    int TRIGGER = 5;
+    int SYSTEM_DATABASE_TRIGGER = 6;
     int VIEW = 7;
-    int GLOBAL_TEMPORARY = 8;
-    int DOMAIN = 9;
-    int EXCEPTION = 10;
-    int UDF = 11;
-    int SYSTEM_FUNCTION = 12;
-    int SYSTEM_STRING_FUNCTIONS = 13;
-    int SYSTEM_NUMERIC_FUNCTIONS = 14;
-    int SYSTEM_DATE_TIME_FUNCTIONS = 15;
-    int SYSTEM_VIEW = 16;
-    int SYSTEM_TABLE = 17;
-    int SYSTEM_DOMAIN = 18;
-    int SYSTEM_INDEX = 19;
-    int SYSTEM_TRIGGER = 20;
-    int SYSTEM_DATABASE_TRIGGER = 21;
-    int PACKAGE = 22;
-    int ROLE = 23;
+    int DOMAIN = 8;
+    int EXCEPTION = 9;
+    int UDF = 10;
+    int FUNCTION = 11;
+    int GLOBAL_TEMPORARY = 12;
+    int PACKAGE = 13;
+    int ROLE = 14;
+    int SYSTEM_FUNCTION = 15;
+    int SYSTEM_STRING_FUNCTIONS = 16;
+    int SYSTEM_NUMERIC_FUNCTIONS = 17;
+    int SYSTEM_DATE_TIME_FUNCTIONS = 18;
+    int SYSTEM_VIEW = 19;
+    int SYSTEM_TABLE = 20;
+    int SYSTEM_DOMAIN = 21;
+    int SYSTEM_INDEX = 22;
+    int SYSTEM_TRIGGER = 23;
 
     int META_TAG = 93;
     int TABLE_COLUMN = 94;
@@ -76,18 +76,22 @@ public interface NamedObject extends java.io.Serializable {
     int TABLE_INDEX = 996;
     int CHECK_KEY = 995;
 
-    String[] META_TYPES = {"FUNCTION",
+    String[] META_TYPES = {
             "INDEX",
             "PROCEDURE",
             "SEQUENCE",
             "SYNONYM",
             "TABLE",
             "TRIGGER",
+            "DATABASE TRIGGER",
             "VIEW",
-            "GLOBAL TEMPORARY",
             "DOMAIN",
             "EXCEPTION",
             "EXTERNAL FUNCTION",
+            "FUNCTION",
+            "GLOBAL TEMPORARY",
+            "PACKAGE",
+            "ROLE",
             "SYSTEM FUNCTIONS",
             "SYSTEM_STRING_FUNCTIONS",
             "SYSTEM_NUMERIC_FUNCTIONS",
@@ -96,22 +100,24 @@ public interface NamedObject extends java.io.Serializable {
             "SYSTEM TABLE",
             "SYSTEM DOMAIN",
             "SYSTEM INDEX",
-            "SYSTEM TRIGGER",
-            "DATABASE TRIGGER",
-            "PACKAGE",
-            "ROLE"};
-    String[] META_TYPES_FOR_BUNDLE = {"FUNCTION",
+            "SYSTEM TRIGGER"
+    };
+    String[] META_TYPES_FOR_BUNDLE = {
             "INDEX",
             "PROCEDURE",
             "SEQUENCE",
             "SYNONYM",
             "TABLE",
             "TRIGGER",
+            "DATABASE_TRIGGER",
             "VIEW",
-            "GLOBAL_TEMPORARY",
             "DOMAIN",
             "EXCEPTION",
             "EXTERNAL_FUNCTION",
+            "FUNCTION",
+            "GLOBAL_TEMPORARY",
+            "PACKAGE",
+            "ROLE",
             "SYSTEM_FUNCTIONS",
             "SYSTEM_STRING_FUNCTIONS",
             "SYSTEM_NUMERIC_FUNCTIONS",
@@ -120,10 +126,8 @@ public interface NamedObject extends java.io.Serializable {
             "SYSTEM_TABLE",
             "SYSTEM_DOMAIN",
             "SYSTEM_INDEX",
-            "SYSTEM_TRIGGER",
-            "DATABASE_TRIGGER",
-            "PACKAGE",
-            "ROLE"};
+            "SYSTEM_TRIGGER"
+    };
 
     /**
      * Marks this object as being 'reset', where for any loaded object

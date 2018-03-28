@@ -4,10 +4,7 @@ import com.github.lgooddatepicker.components.DatePicker;
 import org.executequery.components.BottomButtonPanel;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.editor.autocomplete.Parameter;
-import org.underworldlabs.swing.EQDateTimePicker;
-import org.underworldlabs.swing.EQTimePicker;
-import org.underworldlabs.swing.RDBCheckBox;
-import org.underworldlabs.swing.RDBFieldFileChooser;
+import org.underworldlabs.swing.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -125,6 +122,11 @@ public class InputParametersDialog extends BaseDialog {
             case Types.LONGVARBINARY:
             case Types.LONGVARCHAR:
                 component = new RDBFieldFileChooser();
+                break;
+            case Types.BIGINT:
+            case Types.INTEGER:
+            case Types.SMALLINT:
+                component = new NumberTextField();
                 break;
             default:
                 component = new JTextField(14);

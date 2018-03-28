@@ -39,7 +39,6 @@ import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.datasource.PooledResultSet;
 import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.editor.InputParametersDialog;
-import org.executequery.gui.editor.QueryEditorDelegate;
 import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.editor.autocomplete.Parameter;
 import org.executequery.log.Log;
@@ -614,7 +613,10 @@ public class QueryDispatcher {
                 }
 
                 start = System.currentTimeMillis();
-                PreparedStatement statement = prepareStatementWithParameters(queryToExecute, "");
+                PreparedStatement statement;
+                if (queryToExecute.toLowerCase().trim().contentEquals("commit") || queryToExecute.toLowerCase().trim().contentEquals("rollback"))
+                    statement = querySender.getPreparedStatement(queryToExecute);
+                else statement = prepareStatementWithParameters(queryToExecute, "");
                 SqlStatementResult result = querySender.execute(type, statement);
 
                 if (statementCancelled || Thread.interrupted()) {
@@ -807,22 +809,24 @@ public class QueryDispatcher {
         ParameterMetaData pmd = statement.getParameterMetaData();
         List<Parameter> params = parser.getParameters();
         List<Parameter> displayParams = parser.getDisplayParameters();
-        boolean oldParameters = false;
-        if (delegate instanceof QueryEditorDelegate) {
-            QueryEditorDelegate qed = (QueryEditorDelegate) delegate;
-            String preQuery = qed.getPreviousQuery().trim();
-            if (sql.trim().contentEquals(preQuery))
-                if (QueryEditorHistory.getHistoryParameters().containsKey(querySender.getDatabaseConnection())) {
-                    params = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection())[0];
-                    displayParams = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection())[1];
-                    oldParameters = true;
-                }
-        }
-        if (!oldParameters)
             for (int i = 0; i < params.size(); i++) {
                 params.get(i).setType(pmd.getParameterType(i + 1));
                 params.get(i).setTypeName(pmd.getParameterTypeName(i + 1));
             }
+        if (QueryEditorHistory.getHistoryParameters().containsKey(querySender.getDatabaseConnection())) {
+            List<Parameter> oldParams = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection());
+            for (int i = 0; i < displayParams.size(); i++) {
+                Parameter dp = displayParams.get(i);
+                for (int g = 0; g < oldParams.size(); g++) {
+                    Parameter p = oldParams.get(g);
+                    if (p.getType() == dp.getType() && p.getName().contentEquals(dp.getName())) {
+                        dp.setValue(p.getValue());
+                        oldParams.remove(p);
+                        break;
+                    }
+                }
+            }
+        }
         if (!displayParams.isEmpty()) {
             InputParametersDialog spd = new InputParametersDialog(displayParams);
             spd.display();
@@ -833,7 +837,7 @@ public class QueryDispatcher {
             else
                 statement.setObject(i + 1, params.get(i).getPreparedValue());
         }
-        QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), new List[]{params, displayParams});
+        QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), displayParams);
         return statement;
     }
     private void printExecutionPlan(IFBPerformanceInfo before, IFBPerformanceInfo after) {

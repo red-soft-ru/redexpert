@@ -16,7 +16,7 @@ public class QueryEditorHistory {
     static QueryEditorHistory queryEditorHistory;
     private static Map<String, List<PathNumber>> editors;
     private static List<Integer> numbers;
-    private static Map<DatabaseConnection, List<Parameter>[]> historyParameters;
+    private static Map<DatabaseConnection, List<Parameter>> historyParameters;
 
     public static final String NULL_CONNECTION = "null_connection";
 
@@ -26,7 +26,7 @@ public class QueryEditorHistory {
         return queryEditorHistory;
     }
 
-    public static Map<DatabaseConnection, List<Parameter>[]> getHistoryParameters() {
+    public static Map<DatabaseConnection, List<Parameter>> getHistoryParameters() {
         if (historyParameters == null)
             historyParameters = new HashMap<>();
         return historyParameters;

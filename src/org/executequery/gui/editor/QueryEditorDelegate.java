@@ -27,6 +27,7 @@ import org.executequery.repository.SqlCommandHistoryRepository;
 import org.executequery.sql.QueryDelegate;
 import org.executequery.sql.QueryDispatcher;
 import org.executequery.util.ThreadUtils;
+import org.underworldlabs.sqlParser.SqlParser;
 
 import java.sql.ResultSet;
 import java.util.Vector;
@@ -184,7 +185,7 @@ public class QueryEditorDelegate implements QueryDelegate {
         }
 
         if (StringUtils.isNotBlank(query)) {
-
+            query = new SqlParser(query, "").getProcessedSql();
             dispatcher.printExecutedPlan(selectedConnection, query);
         }
 

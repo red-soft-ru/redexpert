@@ -114,14 +114,18 @@ public class SQLHistoryDialog extends AbstractBaseDialog
     private void init() {
 
         JButton cancelButton = createButton(Bundles.get("common.cancel.button"), null);
+        cancelButton.setActionCommand("Cancel");
         JButton selectButton = createButton(Bundles.get("common.select.button"),
                 "Pastes the selected queries into the Query Editor");
+        selectButton.setActionCommand("Select");
         JButton copyButton = createButton(Bundles.get("common.copy.button"),
                 "Copies the selected queries to the system clipboard");
+        copyButton.setActionCommand("Copy");
         JButton insertAtCursorButton = createButton("Insert at Cursor",
                 "Inserts the selected queries at the cursor position within the Query Editor");
         JButton clearButton = createButton(Bundles.get("common.clear.button"),
                 "Clears and resets ALL SQL history");
+        clearButton.setActionCommand("Clear");
 
         newEditorCheck = new JCheckBox("Open in new Query Editor");
         newEditorCheck.setToolTipText("Select to paste the query in a new Query Editor panel");

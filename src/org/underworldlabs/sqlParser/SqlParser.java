@@ -47,7 +47,7 @@ public class SqlParser {
         for (int i = 0; i < len; i++) {
             char curChar = sb.charAt(i);
             Character nextChar = null;
-            if (i + 1 < len - 1)
+            if (i + 1 < len)
                 nextChar = sb.charAt(i + 1);
             try {
                 switch (state) {

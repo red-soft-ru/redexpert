@@ -1299,8 +1299,8 @@ public class QueryEditor extends DefaultTabView
      * @param s - the text to be set
      */
     public void setEditorText(String s) {
-
         editorPanel.setQueryAreaText(s);
+        save(false);
     }
 
     /**

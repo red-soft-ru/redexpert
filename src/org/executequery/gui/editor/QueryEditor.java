@@ -1299,7 +1299,7 @@ public class QueryEditor extends DefaultTabView
      * @param s - the text to be set
      */
     public void setEditorText(String s) {
-
+        save(false);
         editorPanel.setQueryAreaText(s);
     }
 

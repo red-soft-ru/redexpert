@@ -43,11 +43,11 @@ public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
     private JLabel boldSample;
     private JLabel italicBoldSample;
 
-    private JList fontList;
-    private JList sizeList;
+    protected JList fontList;
+    protected JList sizeList;
 
-    private DisabledField selectedFontField;
-    private DisabledField selectedSizeField;
+    protected DisabledField selectedFontField;
+    protected DisabledField selectedSizeField;
 
     public PropertiesEditorFonts() {
         try {
@@ -57,7 +57,7 @@ public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
         }
     }
 
-    private void jbInit() throws Exception {
+    private void jbInit() {
         selectedFontField = new DisabledField();
         selectedSizeField = new DisabledField();
 

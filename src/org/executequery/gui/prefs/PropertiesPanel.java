@@ -115,7 +115,7 @@ public class PropertiesPanel extends JPanel
         }
     }
 
-    private void init() throws Exception {
+    private void init() {
 
         JSplitPane splitPane = new SplitPaneFactory().createHorizontal();
         splitPane.setDividerSize(6);
@@ -165,6 +165,9 @@ public class PropertiesPanel extends JPanel
 //        node.addChild(new PropertyNode(PropertyTypes.EDITOR_SYNTAX, "Syntax Colours"));
         branches.add(node);
 
+        node = new PropertyNode(PropertyTypes.TREE_CONNECTIONS_FONTS, "Tree Connections Fonts");
+        branches.add(node);
+
         node = new PropertyNode(PropertyTypes.RESULTS, "Result Set Table");
         node.addChild(new PropertyNode(PropertyTypes.RESULT_SET_CELL_COLOURS, "Colours"));
         branches.add(node);
@@ -182,7 +185,7 @@ public class PropertiesPanel extends JPanel
 
         for (int i = 0, k = branches.size(); i < k; i++) {
 
-            node = (PropertyNode) branches.get(i);
+            node = branches.get(i);
             treeNode = new DefaultMutableTreeNode(node);
             root.add(treeNode);
 
@@ -350,6 +353,9 @@ public class PropertiesPanel extends JPanel
                 break;
             case PropertyTypes.RESULT_SET_CELL_COLOURS:
                 panel = new PropertiesResultSetTableColours();
+                break;
+            case PropertyTypes.TREE_CONNECTIONS_FONTS:
+                panel = new PropertiesTreeConnectionsFonts();
                 break;
         }
 

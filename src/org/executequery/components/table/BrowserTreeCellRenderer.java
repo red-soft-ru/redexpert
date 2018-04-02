@@ -30,6 +30,7 @@ import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -52,6 +53,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
     private Color selectedTextForeground;
 
     private Color selectedBackground;
+    private Font treeFont;
 
     /**
      * Constructs a new instance and initialises any variables
@@ -63,6 +65,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
         textForeground = UIManager.getColor("Tree.textForeground");
         selectedTextForeground = UIManager.getColor("Tree.selectionForeground");
         selectedBackground = UIManager.getColor("Tree.selectionBackground");
+        reloadFont();
 
         setIconTextGap(10);
         setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
@@ -96,7 +99,6 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                                                   boolean hasFocus) {
 
         this.hasFocus = hasFocus;
-
         DefaultMutableTreeNode child = (DefaultMutableTreeNode) value;
 
         DatabaseObjectNode node = (DatabaseObjectNode) child;
@@ -386,6 +388,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
             setForeground(selectedTextForeground);
         }
 
+        setFont(treeFont);
         JTree.DropLocation dropLocation = tree.getDropLocation();
         if (dropLocation != null && type == NamedObject.BRANCH_NODE
                 && dropLocation.getChildIndex() == -1
@@ -457,6 +460,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
     public Icon getLeafIcon() {
 
         return getIcon();
+    }
+
+    public void reloadFont() {
+        treeFont = new Font(SystemProperties.getProperty("user", "treeconnection.font.name"), Font.PLAIN, Integer.parseInt(SystemProperties.getProperty("user", "treeconnection.font.size")));
     }
 
 }

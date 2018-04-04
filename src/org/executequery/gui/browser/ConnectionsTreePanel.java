@@ -1389,6 +1389,10 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     tree.setToggleClickCount(2);
   }
 
+  public void reloadRowHeight() {
+    tree.setRowHeight(Integer.parseInt(SystemProperties.getProperty("user", "treeconnection.row.height")));
+  }
+
   public void pathChanged(TreePath oldPath, TreePath newPath) {
 
     // store the last position

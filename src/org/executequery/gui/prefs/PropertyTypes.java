@@ -54,6 +54,7 @@ public class PropertyTypes {
     public static final int BROWSER_DATA_TAB = 26;
     public static final int EDITOR_COLOURS = 27;
     public static final int TREE_CONNECTIONS_FONTS = 28;
+    public static final int TREE_CONNECTIONS_GENERAL = 29;
 
     /**
      * Creates a new instance of PropertyTypes

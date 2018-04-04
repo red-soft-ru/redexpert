@@ -30,6 +30,7 @@ import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -463,7 +464,14 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
     }
 
     public void reloadFont() {
-        treeFont = new Font(SystemProperties.getProperty("user", "treeconnection.font.name"), Font.PLAIN, Integer.parseInt(SystemProperties.getProperty("user", "treeconnection.font.size")));
+        String nameFont = SystemProperties.getProperty("user", "treeconnection.font.name");
+        if (!MiscUtils.isNull(nameFont)) {
+            treeFont = new Font(nameFont, Font.PLAIN, Integer.parseInt(SystemProperties.getProperty("user", "treeconnection.font.size")));
+        } else {
+            treeFont = UIManager.getDefaults().getFont("Tree.font");
+            SystemProperties.setProperty("user", "treeconnection.font.name", treeFont.getFontName());
+            reloadFont();
+        }
     }
 
 }

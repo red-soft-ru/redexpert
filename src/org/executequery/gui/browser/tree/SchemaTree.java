@@ -30,6 +30,7 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.swing.tree.DynamicTree;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
@@ -80,7 +81,7 @@ public class SchemaTree extends DynamicTree
         setTransferHandler(new TreeTransferHandler());
         getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
-        setRowHeight(ROW_HEIGHT);
+        setRowHeight(Integer.parseInt(SystemProperties.getProperty("user", "treeconnection.row.height")));
     }
 
     private Map<String, Icon> loadIcons() {

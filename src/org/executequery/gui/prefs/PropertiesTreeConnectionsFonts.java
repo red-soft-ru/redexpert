@@ -6,6 +6,8 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.log.Log;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
+
 
 public class PropertiesTreeConnectionsFonts extends PropertiesEditorFonts {
 
@@ -40,5 +42,12 @@ public class PropertiesTreeConnectionsFonts extends PropertiesEditorFonts {
         } catch (Exception e) {
             Log.debug("error reload font", e);
         }
+    }
+
+    public void restoreDefaults() {
+        fontList.setSelectedValue(
+                UIManager.getDefaults().getFont("Tree.font").getFontName(), true);
+        sizeList.setSelectedValue(SystemProperties.
+                getProperty("defaults", "treeconnection.font.size"), true);
     }
 }

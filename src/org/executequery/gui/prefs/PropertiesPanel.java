@@ -165,7 +165,8 @@ public class PropertiesPanel extends JPanel
 //        node.addChild(new PropertyNode(PropertyTypes.EDITOR_SYNTAX, "Syntax Colours"));
         branches.add(node);
 
-        node = new PropertyNode(PropertyTypes.TREE_CONNECTIONS_FONTS, "Tree Connections Fonts");
+        node = new PropertyNode(PropertyTypes.TREE_CONNECTIONS_GENERAL, "Tree Connections");
+        node.addChild(new PropertyNode(PropertyTypes.TREE_CONNECTIONS_FONTS, "Fonts"));
         branches.add(node);
 
         node = new PropertyNode(PropertyTypes.RESULTS, "Result Set Table");
@@ -356,6 +357,9 @@ public class PropertiesPanel extends JPanel
                 break;
             case PropertyTypes.TREE_CONNECTIONS_FONTS:
                 panel = new PropertiesTreeConnectionsFonts();
+                break;
+            case PropertyTypes.TREE_CONNECTIONS_GENERAL:
+                panel = new PropertiesTreeConnectionsGeneral();
                 break;
         }
 

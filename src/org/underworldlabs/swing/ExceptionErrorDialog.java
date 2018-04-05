@@ -134,7 +134,7 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
         }
     }
 
-    private void init() throws Exception {
+    private void init() {
         Icon errorIcon = UIManager.getIcon("OptionPane.errorIcon");
         if (errorIcon == null) {
             // if we don't have one (some LAFs), try the warning icon
@@ -258,6 +258,7 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
             textPane.setEditable(false);
             textPane.setWrapStyleWord(false);
             textPane.setBackground(getBackground());
+            textPane.setFont(UIManager.getDefaults().getFont("Label.font"));
             JScrollPane scroller = new JScrollPane(textPane);
 
             GridBagConstraints gbc = new GridBagConstraints();

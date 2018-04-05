@@ -114,6 +114,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         String labelText = generateLabelText();
 
         commentsField = new JTextArea(createHeader());
+        commentsField.setFont(UIManager.getDefaults().getFont("Label.font"));
         commentsField.setMargin(new Insets(2, 2, 2, 2));
 
         nameField = WidgetFactory.createTextField();

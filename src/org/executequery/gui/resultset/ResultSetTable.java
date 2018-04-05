@@ -29,6 +29,7 @@ import org.underworldlabs.swing.TimeCellEditor;
 import org.underworldlabs.swing.table.MultiLineStringCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
 import org.underworldlabs.swing.table.TableSorter;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -470,6 +471,18 @@ public class ResultSetTable extends JTable implements StandardTable {
                 return dateTimeCellEditor;
             case Types.TIME:
                 return timeCellEditor;
+            case Types.BOOLEAN:
+                JComboBox comboBox = new JComboBox(new String[]{"true", "false", "null"});
+                String booleanValue = String.valueOf(value.getValue());
+                if (MiscUtils.isNull(booleanValue))
+                    comboBox.setSelectedItem(2);
+                else if (booleanValue.equalsIgnoreCase("true"))
+                    comboBox.setSelectedIndex(0);
+                else if (booleanValue.equalsIgnoreCase("false"))
+                    comboBox.setSelectedIndex(1);
+                else
+                    comboBox.setSelectedItem(2);
+                return new DefaultCellEditor(comboBox);
 
         }
 

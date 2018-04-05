@@ -137,6 +137,21 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
      */
     private String certificate;
 
+    /**
+     * Whether container password is stored
+     */
+    private boolean containerPasswordStored;
+
+    /**
+     * The password for certificate container
+     */
+    private String containerPassword;
+
+    /**
+     * Whether server certificate is verified
+     */
+    private boolean verifyServerCertificate;
+
     private String authMethod;
 
     private String connectionMethod;
@@ -291,6 +306,30 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     public void setCertificate(String certificate) {
         this.certificate = certificate;
+    }
+
+    public boolean isContainerPasswordStored() {
+        return containerPasswordStored;
+    }
+
+    public String getContainerPassword() {
+        return this.containerPassword;
+    }
+
+    public void setContainerPassword(String password) {
+        this.containerPassword = password;
+    }
+
+    public void setContainerPasswordStored(boolean storePwd) {
+        this.containerPasswordStored = storePwd;
+    }
+
+    public boolean isVerifyServerCertCheck() {
+        return verifyServerCertificate;
+    }
+
+    public void setVerifyServerCertCheck(boolean verifyServer) {
+        this.verifyServerCertificate = verifyServer;
     }
 
     public String getConnectionMethod() {
@@ -509,6 +548,11 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         copy.setSshPort(getSshPort());
         copy.setEncryptedSshPassword(getSshPassword());
         copy.setSshPasswordStored(isSshPasswordStored());
+        copy.setCertificate(getCertificate());
+        copy.setAuthMethod(getAuthMethod());
+        copy.setContainerPassword(getContainerPassword());
+        copy.setContainerPasswordStored(isContainerPasswordStored());
+        copy.setVerifyServerCertCheck(isVerifyServerCertCheck());
 
         return copy;
     }

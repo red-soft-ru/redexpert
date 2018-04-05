@@ -183,7 +183,10 @@ public class ConnectionDataSource implements DataSource, DatabaseDataSource {
                 }
 
                 Log.info("JDBC URL generated: " + jdbcUrl);
-                Log.info("JDBC properties: " + databaseConnection.getJdbcProperties());
+                Properties clone = (Properties)databaseConnection.getJdbcProperties().clone();
+                if (clone.getProperty("isc_dpb_repository_pin") != null)
+                    clone.setProperty("isc_dpb_repository_pin", "********");
+                Log.info("JDBC properties: " + clone);
 
             }
 

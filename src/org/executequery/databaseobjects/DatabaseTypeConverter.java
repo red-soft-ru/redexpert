@@ -193,7 +193,7 @@ public class DatabaseTypeConverter {
 
     public static int getSqlTypeFromRDBType(int type, int subtype) {
         switch (type) {
-            case 7:
+            case smallint_type:
                 switch (subtype) {
                     case 1:
                         return Types.NUMERIC;
@@ -202,7 +202,7 @@ public class DatabaseTypeConverter {
                     default:
                         return Types.SMALLINT;
                 }
-            case 8:
+            case integer_type:
                 switch (subtype) {
                     case 1:
                         return Types.NUMERIC;
@@ -211,20 +211,20 @@ public class DatabaseTypeConverter {
                     default:
                         return Types.INTEGER;
                 }
-            case 10:
+            case float_type:
                 return Types.FLOAT;
-            case 12:
+            case date_type:
                 return Types.DATE;
-            case 13:
+            case time_type:
                 return Types.TIME;
-            case 14:
+            case char_type:
                 switch (subtype) {
                     case 0:
                         return Types.BINARY;
                     case 1:
                         return Types.CHAR;
                 }
-            case 16:
+            case int64_type:
                 switch (subtype) {
                     case 1:
                         return Types.NUMERIC;
@@ -233,18 +233,20 @@ public class DatabaseTypeConverter {
                     default:
                         return Types.BIGINT;
                 }
-            case 27:
+            case boolean_type:
+                return Types.BOOLEAN;
+            case double_type:
                 return Types.DOUBLE;
-            case 35:
+            case timestamp_type:
                 return Types.TIMESTAMP;
-            case 37:
+            case varchar_type:
                 switch (subtype) {
                     case 0:
                         return Types.VARBINARY;
                     case 1:
                         return Types.VARCHAR;
                 }
-            case 261:
+            case blob_type:
                 switch (subtype) {
                     case 1:
                         return Types.LONGVARCHAR;

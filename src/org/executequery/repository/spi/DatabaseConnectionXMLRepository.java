@@ -205,6 +205,8 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
     private static final String NAME = "name";
     private static final String USER = "user";
     private static final String PASSWORD = "password";
+    private static final String CONTAINER_PASSWORD = "container_password";
+    private static final String VERIFY_SERVER = "verify_server";
     private static final String FOLDER_ID = "folderid";
     private static final String ENCRYPTED = "encrypted";
     private static final String DRIVER_ID = "driverid";
@@ -225,6 +227,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
     private static final String KEY = "key";
     private static final String VALUE = "value";
     private static final String STORE_PASSWORD = "storepassword";
+    private static final String STORE_CONTAINER_PASSWORD = "storecontainerpassword";
     private static final String SSH_TUNNEL = "sshtunnel";
     private static final String SSH_USER_NAME = "sshusername";
     private static final String SSH_PASSWORD = "sshpassword";
@@ -257,6 +260,18 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                 if (!MiscUtils.isNull(value)) {
 
                     connection.setPasswordStored(Boolean.parseBoolean(value));
+                }
+
+                value = attrs.getValue(STORE_CONTAINER_PASSWORD);
+                if (!MiscUtils.isNull(value)) {
+
+                    connection.setContainerPasswordStored(Boolean.parseBoolean(value));
+                }
+
+                value = attrs.getValue(VERIFY_SERVER);
+                if (!MiscUtils.isNull(value)) {
+
+                    connection.setVerifyServerCertCheck(Boolean.parseBoolean(value));
                 }
 
             } else if (localName.equals(PASSWORD)) {
@@ -318,6 +333,20 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                 } else {
 
                     databaseConnection.setPasswordStored(false);
+                }
+
+            } else if (localNameIsKey(localName, CONTAINER_PASSWORD)) {
+
+                if (hasContents()) {
+
+                    String value = contentsAsString;
+                    databaseConnection.setContainerPassword(value);
+
+                    databaseConnection.setContainerPasswordStored(true);
+
+                } else {
+
+                    databaseConnection.setContainerPasswordStored(false);
                 }
 
             } else if (localNameIsKey(localName, HOST)) {
@@ -544,6 +573,12 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                 attributes().addAttribute(NSU, STORE_PASSWORD, STORE_PASSWORD,
                         CDDATA, valueToString(connection.isPasswordStored()));
 
+                attributes().addAttribute(NSU, STORE_CONTAINER_PASSWORD, STORE_CONTAINER_PASSWORD,
+                        CDDATA, valueToString(connection.isContainerPasswordStored()));
+
+                attributes().addAttribute(NSU, VERIFY_SERVER, VERIFY_SERVER,
+                        CDDATA, valueToString(connection.isVerifyServerCertCheck()));
+
                 handler().startElement(NSU, CONNECTION, CONNECTION, attributes());
 
                 resetAttributes();
@@ -562,6 +597,15 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                 } else {
 
                     writeXML(PASSWORD, Constants.EMPTY, INDENT_TWO);
+                }
+
+                if (connection.isContainerPasswordStored()) {
+
+                    writeXML(CONTAINER_PASSWORD, connection.getContainerPassword(), INDENT_TWO);
+
+                } else {
+
+                    writeXML(CONTAINER_PASSWORD, Constants.EMPTY, INDENT_TWO);
                 }
 
                 resetAttributes();

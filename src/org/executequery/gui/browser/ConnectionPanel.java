@@ -75,81 +75,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
         implements DatabaseDriverListener,
         ChangeListener {
 
-    private static class TraceMessageLoop
-            implements Runnable {
-
-        //        FBTraceManager fbTraceManager;
-        String configuration = null;
-        String database;
-        String charSet;
-        String user;
-        String password;
-        String host;
-        int port;
-
-        String traceUUID;
-
-        TraceMessageLoop() {
-//            fbTraceManager = new FBTraceManager();
-//            fbTraceManager.setLogger(System.out);
-//            traceUUID = UUID.randomUUID().toString();
-//            try {
-//                configuration = fbTraceManager.loadConfigurationFromFile("config/fbtrace.conf", true);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-        }
-
-        public void setDatabase(String database) {
-            this.database = database;
-        }
-
-        public void setCharSet(String charSet) {
-            this.charSet = charSet;
-        }
-
-        public void setUser(String user) {
-            this.user = user;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        public void setHost(String host) {
-            this.host = host;
-        }
-
-        public void setPort(int port) {
-            this.port = port;
-        }
-
-        public void run() {
-            try {
-//                fbTraceManager.setHost(this.host);
-//                fbTraceManager.setPort(this.port);
-//                fbTraceManager.setCharSet(this.charSet);
-//                fbTraceManager.setPassword(this.password);
-//                fbTraceManager.setUser(this.user);
-//                fbTraceManager.setDatabase(this.database);
-//                fbTraceManager.startTraceSession(traceUUID, configuration);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        public void stop() {
-            try {
-//                int traceSessionId = fbTraceManager.getSessionId(traceUUID);
-//                fbTraceManager.stopTraceSession(traceSessionId);
-            } catch (Exception e) {
-//                e.printStackTrace();
-            }
-        }
-    }
-
-    TraceMessageLoop traceMessageLoop = null;
-
     private List<String> charsets;
 
     // -------------------------------
@@ -174,6 +99,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private JTextField roleField;
 
     private JTextField certificateFileField;
+    private JPasswordField containerPasswordField;
+    private JCheckBox saveContPwdCheck;
+    private JCheckBox verifyServerCertCheck;
 
     private JComboBox authCombo;
     private JComboBox methodCombo;
@@ -302,6 +230,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
         urlField = createMatchedWidthTextField();
 
         certificateFileField = createMatchedWidthTextField();
+        containerPasswordField = createPasswordField();
+        saveContPwdCheck = ActionUtilities.createCheckBox("Store container password", "setStoreContainerPassword");
+        saveContPwdCheck.addActionListener(this);
+        verifyServerCertCheck = ActionUtilities.createCheckBox("Verify server certificate", "setVerifyServerCertCheck");
+        verifyServerCertCheck.addActionListener(this);
 
         nameField.addFocusListener(new ConnectionNameFieldListener(this));
 
@@ -512,6 +445,37 @@ public class ConnectionPanel extends AbstractConnectionPanel
         mCons.weightx = 0;
         mCons.fill = GridBagConstraints.NONE;
         multifactorPanel.add(openCertFile, mCons);
+
+        JLabel contLabel = new DefaultFieldLabel("Container password:");
+        mCons.gridy = 1;
+        mCons.gridx = 0;
+        mCons.gridwidth = 1;
+        mCons.anchor = GridBagConstraints.WEST;
+        mCons.insets = new Insets(0, 0, 5, 5);
+        multifactorPanel.add(contLabel, mCons);
+
+        mCons.gridx = 1;
+        mCons.gridwidth = 1;
+        mCons.insets.left = 5;
+        mCons.weightx = 1;
+        mCons.fill = GridBagConstraints.HORIZONTAL;
+        multifactorPanel.add(containerPasswordField, mCons);
+
+        mCons.gridy = 2;
+        mCons.gridx = 1;
+        mCons.gridwidth = 1;
+        mCons.insets.left = 5;
+        mCons.weightx = 1;
+        mCons.fill = GridBagConstraints.HORIZONTAL;
+        multifactorPanel.add(saveContPwdCheck, mCons);
+
+        mCons.gridy = 3;
+        mCons.gridx = 0;
+        mCons.gridwidth = 3;
+        mCons.insets.left = 0;
+        mCons.weightx = 1;
+        mCons.fill = GridBagConstraints.HORIZONTAL;
+        multifactorPanel.add(verifyServerCertCheck, mCons);
 
         sgbc.gridy++;
         sgbc.gridx = 0;
@@ -994,42 +958,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
                                     e.getMessage() + "\n\n");
                 }
 
-                Connection connection = host.getConnection();
-                DefaultDriverLoader driverLoader = new DefaultDriverLoader();
-                Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
-                DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-                Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
-
-                int majorVersion = driver.getMajorVersion();
-
-                try {
-                    if (majorVersion >= 3) {
-//
-//                        FBConnection fbConnection = connection.unwrap(FBConnection.class);
-//
-//                        Log.info("Connection encoding: " + fbConnection.getFbDatabase().getEncoding().getCharsetName());
-                    }
-
-                } catch (Exception e) {
-                    // nothing
-                }
-
-                if (majorVersion >= 3) {
-                    String className = host.getDatabaseConnection().getJDBCDriver().getClassName();
-                    if (className.contains("FBDriver")) {
-
-                        traceMessageLoop = new TraceMessageLoop();
-                        traceMessageLoop.setDatabase(host.getDatabaseConnection().getSourceName());
-                        traceMessageLoop.setPort(host.getDatabaseConnection().getPortInt());
-                        traceMessageLoop.setUser(host.getDatabaseConnection().getUserName());
-                        traceMessageLoop.setPassword(host.getDatabaseConnection().getPassword());
-                        traceMessageLoop.setCharSet("UTF8");
-                        traceMessageLoop.setHost(host.getDatabaseConnection().getHost());
-
-//                        Thread traceThread = new Thread(traceMessageLoop);
-//                        traceThread.start();
-                    }
-                }
             }
 
         } catch (DataSourceException e) {
@@ -1123,9 +1051,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
     public void disconnect() {
         try {
             host.disconnect();
-            if (traceMessageLoop != null) {
-                traceMessageLoop.stop();
-            }
         } catch (DataSourceException e) {
             GUIUtilities.displayErrorMessage(
                     bundleString("error.disconnect") + e.getMessage());
@@ -1186,6 +1111,14 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 && authCombo.getSelectedItem().toString().equalsIgnoreCase("multifactor"))
             properties.setProperty("isc_dpb_certificate", certificateFileField.getText());
 
+        if (containerPasswordField.getPassword() != null && containerPasswordField.getPassword().length != 0
+                && authCombo.getSelectedItem().toString().equalsIgnoreCase("multifactor"))
+            properties.setProperty("isc_dpb_repository_pin", MiscUtils.charsToString(containerPasswordField.getPassword()));
+
+        if (verifyServerCertCheck.isSelected()
+                && authCombo.getSelectedItem().toString().equalsIgnoreCase("multifactor"))
+            properties.setProperty("isc_dpb_verify_server", "1");
+
         String name = ManagementFactory.getRuntimeMXBean().getName();
         String pid = name.split("@")[0];
         properties.setProperty("process_id", pid);
@@ -1221,7 +1154,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
                     && !name.equalsIgnoreCase("roleName")
                     && !name.equalsIgnoreCase("isc_dpb_trusted_auth")
                     && !name.equalsIgnoreCase("isc_dpb_multi_factor_auth")
-                    && !name.equalsIgnoreCase("isc_dpb_certificate")) {
+                    && !name.equalsIgnoreCase("isc_dpb_certificate")
+                    && !name.equalsIgnoreCase("isc_dpb_repository_pin")
+                    && !name.equalsIgnoreCase("isc_dpb_verify_server")) {
                 advancedProperties[count][0] = name;
                 advancedProperties[count][1] = properties.getProperty(name);
                 count++;
@@ -1307,6 +1242,18 @@ public class ConnectionPanel extends AbstractConnectionPanel
         encryptPwdCheck.setEnabled(store);
     }
 
+    public void setStoreContainerPassword() {
+
+        boolean store = saveContPwdCheck.isSelected();
+        databaseConnection.setContainerPasswordStored(store);
+    }
+
+    public void setVerifyServerCertCheck() {
+
+        boolean store = verifyServerCertCheck.isSelected();
+        databaseConnection.setVerifyServerCertCheck(store);
+    }
+
     /**
      * Sets the values for the tx level on the connection object
      * based on the tx level in the tx combo.
@@ -1367,6 +1314,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         buildDriversList();
 
         // populate the field values/selections
+        saveContPwdCheck.setSelected(databaseConnection.isContainerPasswordStored());
         savePwdCheck.setSelected(databaseConnection.isPasswordStored());
         encryptPwdCheck.setSelected(databaseConnection.isPasswordEncrypted());
         userField.setText(databaseConnection.getUserName());
@@ -1379,6 +1327,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
         charsetsCombo.setSelectedItem(databaseConnection.getCharset());
         roleField.setText(databaseConnection.getRole());
         certificateFileField.setText(databaseConnection.getCertificate());
+        containerPasswordField.setText(databaseConnection.getContainerPassword());
+        verifyServerCertCheck.setSelected(databaseConnection.isVerifyServerCertCheck());
         authCombo.setSelectedItem(databaseConnection.getAuthMethod());
         methodCombo.setSelectedItem(databaseConnection.getConnectionMethod());
 
@@ -1423,6 +1373,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
         databaseConnection.setURL(urlField.getText());
         databaseConnection.setRole(roleField.getText());
         databaseConnection.setCertificate(certificateFileField.getText());
+        databaseConnection.setContainerPassword(MiscUtils.charsToString(containerPasswordField.getPassword()));
+        databaseConnection.setContainerPasswordStored(saveContPwdCheck.isSelected());
+        databaseConnection.setVerifyServerCertCheck(verifyServerCertCheck.isSelected());
         databaseConnection.setCharset(charsetsCombo.getSelectedItem().toString());
         databaseConnection.setAuthMethod(authCombo.getSelectedItem().toString());
         databaseConnection.setConnectionMethod(methodCombo.getSelectedItem().toString());

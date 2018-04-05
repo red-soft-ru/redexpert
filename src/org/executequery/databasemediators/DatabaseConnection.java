@@ -76,6 +76,18 @@ public interface DatabaseConnection extends Serializable {
 
     public void setCertificate(String certificate);
 
+    boolean isContainerPasswordStored();
+
+    void setContainerPasswordStored(boolean storePwd);
+
+    boolean isVerifyServerCertCheck();
+
+    void setVerifyServerCertCheck(boolean verifyServer);
+
+    String getContainerPassword();
+
+    void setContainerPassword(String password);
+
     public String getAuthMethod();
 
     public void setAuthMethod(String method);

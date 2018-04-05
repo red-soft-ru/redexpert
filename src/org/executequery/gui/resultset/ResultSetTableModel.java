@@ -822,7 +822,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             try {
                 if (value != null)
                     if (value.getClass().equals(String.class))
-                        if (((String) value).equals(""))
+                        if (value.equals("") || columnHeaders.get(column).getDataType() == Types.BOOLEAN && value == "null")
                             value = null;
                 rowData.get(asVisibleColumnIndex(column)).valueChanged(value);
                 fireTableCellUpdated(row, column);

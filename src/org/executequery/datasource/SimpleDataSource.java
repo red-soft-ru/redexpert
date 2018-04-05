@@ -77,7 +77,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         }
 
         url = generateUrl(databaseConnection);
-        Log.info("JDBC Driver class: " + driver.getClass().getName());
+        Log.info("JDBC Driver class: " + databaseConnection.getJDBCDriver().getClassName());
     }
 
     public Connection getConnection() throws SQLException {
@@ -182,7 +182,10 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
             url = replacePart(url, databaseConnection.getPort(), PORT);
             url = replacePart(url, databaseConnection.getSourceName(), SOURCE);
             Log.info("JDBC URL generated: " + url);
-            Log.info("JDBC properties: " + properties);
+            Properties clone = (Properties)properties.clone();
+            if (clone.getProperty("isc_dpb_repository_pin") != null)
+                clone.setProperty("isc_dpb_repository_pin", "********");
+            Log.info("JDBC properties: " + clone);
 
         }
 

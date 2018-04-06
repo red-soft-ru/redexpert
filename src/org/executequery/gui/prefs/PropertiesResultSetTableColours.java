@@ -46,7 +46,7 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
         }
     }
 
-    private void init() throws Exception {
+    private void init() {
 
         List<UserPreference> list = new ArrayList<UserPreference>();
 
@@ -147,6 +147,13 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
                 "Other value cell background",
                 SystemProperties.getColourProperty("user", key)));
 
+        key = "results.table.focus.row.background.colour";
+        list.add(new UserPreference(
+                UserPreference.COLOUR_TYPE,
+                key,
+                "Focus row background",
+                SystemProperties.getColourProperty("user", key)));
+
         key = "results.alternating.row.background";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
@@ -154,7 +161,7 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
                 "Alternating row background",
                 SystemProperties.getColourProperty("user", key)));
 
-        UserPreference[] preferences = (UserPreference[]) list.toArray(new UserPreference[list.size()]);
+        UserPreference[] preferences = list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
 

@@ -73,6 +73,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     private Color deletedValueDisplayColor;
     private Color newValueDisplayColor;
     private boolean otherColorForNull;
+    private Color focusRowBackground;
 
     private Color alternatingRowBackground;
 
@@ -108,6 +109,8 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
             setForeground(selectionForeground);
             setBackground(selectionBackground);
 
+        } else if (row == table.getSelectedRow()) {
+            setBackground(focusRowBackground);
         } else {
 
             if (tableBackground == null) {
@@ -140,12 +143,13 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
             setBorder(noFocusBorder);
         }
-
+        isSelected = isSelected || row == table.getSelectedRow();
         formatValueForDisplay(value, isSelected);
         if (rightAlignNumeric) {
 
             alignNumeric(value);
         }
+
 
         return this;
     }
@@ -401,6 +405,9 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         otherColorForNull = SystemProperties.getBooleanProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.use.other.color.null");
+
+        focusRowBackground = SystemProperties.getColourProperty(
+                Constants.USER_PROPERTIES_KEY, "results.table.focus.row.background.colour");
     }
 
     private String dateFormatted(Date date) {

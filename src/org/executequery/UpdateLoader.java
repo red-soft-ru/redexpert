@@ -109,6 +109,7 @@ public class UpdateLoader extends JFrame {
         panel2.setLayout(new FlowLayout());
 
         outText = new JTextArea();
+        outText.setFont(UIManager.getDefaults().getFont("Label.font"));
         scrollPane = new JScrollPane();
         scrollPane.setViewportView(outText);
 

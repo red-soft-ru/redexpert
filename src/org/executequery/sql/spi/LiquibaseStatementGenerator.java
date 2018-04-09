@@ -27,6 +27,7 @@ import liquibase.change.ColumnConfig;
 import liquibase.change.ConstraintsConfig;
 import liquibase.change.core.*;
 import liquibase.database.Database;
+import liquibase.database.core.Firebird3Database;
 import liquibase.database.core.FirebirdDatabase;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
@@ -48,6 +49,7 @@ import org.executequery.sql.StatementGenerator;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -786,8 +788,18 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
     private Database databaseFromName(Connection connection, String databaseName) {
 
         LogFactory.getInstance().setDefaultLoggingLevel("warning");
-
         Database database = databaseFactory().createDatabase(databaseName);
+        if (database instanceof FirebirdDatabase) {
+            int version = 0;
+            try {
+                version = connection.getMetaData().getDatabaseMajorVersion();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            if (version > 2)
+                database = new Firebird3Database();
+
+        }
         database.setConnection(new JdbcConnection(connection));
 
         return database;

@@ -113,7 +113,7 @@ public class UserManagerPanel extends JPanel {
     public void loadConnections() throws Exception {
         setEnableElements(true);
         con = null;
-        init_user_manager();
+        initUserManager();
         execute_w = false;
         databaseBox.removeAllItems();
         listConnections = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
@@ -434,7 +434,7 @@ public class UserManagerPanel extends JPanel {
         jTabbedPane1.getAccessibleContext().setAccessibleName(bundleString("Users"));
     }
 
-    void init_user_manager() throws Exception {
+    void initUserManager() throws Exception {
         if (con == null) {
             version = 2;
             DatabaseDriver dd = null;
@@ -630,9 +630,9 @@ public class UserManagerPanel extends JPanel {
         int col = membershipTable.getSelectedColumn();
         if (enableElements) if (col >= 0) {
             if (membershipTable.getValueAt(row, col).equals(adm)) {
-                revoke_grant(row, col);
+                revokeGrant(row, col);
             }
-            grant_to(row, col);
+            grantTo(row, col);
         }
     }
 
@@ -641,7 +641,7 @@ public class UserManagerPanel extends JPanel {
         int col = membershipTable.getSelectedColumn();
         if (enableElements) if (col >= 0) {
 
-            grant_with_admin(row, col);
+            grantWithAdmin(row, col);
         }
     }
 
@@ -650,7 +650,7 @@ public class UserManagerPanel extends JPanel {
         int col = membershipTable.getSelectedColumn();
         if (col >= 0)
             if (enableElements) {
-                revoke_grant(row, col);
+                revokeGrant(row, col);
             }
     }
 
@@ -660,11 +660,11 @@ public class UserManagerPanel extends JPanel {
             int col = membershipTable.getSelectedColumn();
             if (enableElements) if (col >= 0) {
                 if (membershipTable.getValueAt(row, col).equals(gr)) {
-                    grant_with_admin(row, col);
+                    grantWithAdmin(row, col);
                 } else if (membershipTable.getValueAt(row, col).equals(adm)) {
-                    revoke_grant(row, col);
+                    revokeGrant(row, col);
                 } else {
-                    grant_to(row, col);
+                    grantTo(row, col);
                 }
             }
         }
@@ -712,7 +712,7 @@ public class UserManagerPanel extends JPanel {
                 break;
             case GET_MEMBERSHIP:
                 if (!enableElements) {
-                    create_membership();
+                    createMembership();
                     setEnableElements(true);
                 }
             default:
@@ -720,7 +720,7 @@ public class UserManagerPanel extends JPanel {
         }
     }
 
-    void grant_with_admin(int row, int col) {
+    void grantWithAdmin(int row, int col) {
         if (col >= 0) {
             try {
                 Statement st = con.createStatement();
@@ -734,7 +734,7 @@ public class UserManagerPanel extends JPanel {
         }
     }
 
-    void grant_to(int row, int col) {
+    void grantTo(int row, int col) {
         if (col >= 0) {
             try {
                 Statement st = con.createStatement();
@@ -749,7 +749,7 @@ public class UserManagerPanel extends JPanel {
         }
     }
 
-    void revoke_grant(int row, int col) {
+    void revokeGrant(int row, int col) {
         if (col >= 0) {
             try {
                 Statement st = con.createStatement();
@@ -801,15 +801,15 @@ public class UserManagerPanel extends JPanel {
                     jTabbedPane1.addTab(bundleString("Membership"), membershipPanel);
                 }
                 con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
-                init_user_manager();
+                initUserManager();
                 userManager.setDatabase(listConnections.get(databaseBox.getSelectedIndex()).getSourceName());
                 userManager.setHost(listConnections.get(databaseBox.getSelectedIndex()).getHost());
                 userManager.setPort(listConnections.get(databaseBox.getSelectedIndex()).getPortInt());
                 userManager.setUser(listConnections.get(databaseBox.getSelectedIndex()).getUserName());
                 userManager.setPassword(listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
                 getUsersPanel();
-                get_roles();
-                create_membership();
+                getRoles();
+                createMembership();
                 update();
             } else {
                 getUsersPanel();
@@ -829,7 +829,7 @@ public class UserManagerPanel extends JPanel {
         setEnableElements(true);
     }
 
-    void get_roles() {
+    void getRoles() {
         try {
             Statement state = con.createStatement();
             result = state.executeQuery("SELECT RDB$ROLE_NAME,RDB$OWNER_NAME FROM RDB$ROLES ORDER BY" +
@@ -862,7 +862,7 @@ public class UserManagerPanel extends JPanel {
         jTabbedPane1.setSelectedIndex(ind);
     }
 
-    void create_membership() {
+    void createMembership() {
         membershipTable.setModel(new RoleTableModel(
                 new Object[][]{},
                 role_names.toArray()

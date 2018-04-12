@@ -80,8 +80,11 @@ public class SchemaTree extends DynamicTree
         setDropMode(DropMode.ON_OR_INSERT);
         setTransferHandler(new TreeTransferHandler());
         getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        int h = Integer.parseInt(SystemProperties.getProperty("user", "treeconnection.row.height"));
+        if (h == 16)
+            setRowHeight(17);
+        setRowHeight(h);
 
-        setRowHeight(Integer.parseInt(SystemProperties.getProperty("user", "treeconnection.row.height")));
     }
 
     private Map<String, Icon> loadIcons() {

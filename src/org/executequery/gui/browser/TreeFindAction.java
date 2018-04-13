@@ -89,6 +89,10 @@ public class TreeFindAction extends FindAction<TreePath> {
         return !(matchedPaths.isEmpty());
     }
 
+    public void findString(JComponent comp, String searchString) {
+        changed(comp, searchString, Position.Bias.Forward);
+    }
+
     private void findOnTree(TreePath path, List<TreePath> matchedPaths, Matcher matcher) {
         DatabaseObjectNode root = (DatabaseObjectNode) path.getLastPathComponent();
         root.populateChildren();
@@ -177,6 +181,10 @@ public class TreeFindAction extends FindAction<TreePath> {
     protected ListCellRenderer getListCellRenderer() {
 
         return new TreePathListCellRenderer();
+    }
+
+    public JList getResultsList() {
+        return this.resultsList;
     }
 
     private static final Border cellRendererBorder = BorderFactory.createEmptyBorder(2, 2, 2, 2);

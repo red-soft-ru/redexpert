@@ -22,6 +22,10 @@ package org.executequery.gui.editor;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
+import org.executequery.gui.BaseDialog;
+import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.TreeFindAction;
+import org.executequery.gui.browser.tree.SchemaTree;
 import org.executequery.gui.editor.autocomplete.AutoCompletePopupProvider;
 import org.executequery.gui.text.TextUtilities;
 import org.executequery.log.Log;
@@ -33,9 +37,12 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -90,10 +97,39 @@ public class QueryEditorTextPanel extends JPanel {
     /**
      * Initializes the state of this instance.
      */
-    private void init() throws Exception {
+    private void init() {
 
         // setup the query text panel and associated scroller
         queryPane = new QueryEditorTextPane(this);
+        queryPane.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() > 1) {
+                    int cursor = queryPane.getCurrentPosition();
+                    String s = queryPane.getSQLSyntaxDocument().getNameDBObjectFromPosition(cursor, queryPane.getText());
+                    if (s != null) {
+                        TreeFindAction action = new TreeFindAction();
+                        SchemaTree tree = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getTree();
+                        action.install(tree);
+                        action.findString(tree, s);
+                        BaseDialog dialog = new BaseDialog("find", false);
+                        JPanel panel = new JPanel();
+                        JList jList = action.getResultsList();
+                        jList.addPropertyChangeListener(new PropertyChangeListener() {
+                            @Override
+                            public void propertyChange(PropertyChangeEvent evt) {
+                                if (jList.getModel().getSize() == 0)
+                                    dialog.finished();
+                            }
+                        });
+                        JScrollPane scrollPane = new JScrollPane(jList);
+                        panel.add(scrollPane);
+                        dialog.addDisplayComponent(panel);
+                        dialog.display();
+                    }
+                }
+            }
+        });
 
         JScrollPane queryScroller = new JScrollPane();
         queryScroller.getViewport().add(queryPane, BorderLayout.CENTER);
@@ -426,7 +462,7 @@ public class QueryEditorTextPanel extends JPanel {
      * @param the table results to display
      * @param the executed query of the result set
      */
-    public void setResultSet(ResultSet rset, String query) throws SQLException {
+    public void setResultSet(ResultSet rset, String query) {
 
         queryEditor.setResultSet(rset, query);
     }
@@ -561,8 +597,7 @@ public class QueryEditorTextPanel extends JPanel {
         return sqlCommentMatcher;
     }
 
-    private boolean rowsHaveComments(int startRow, int endRow, boolean allRows)
-            throws BadLocationException {
+    private boolean rowsHaveComments(int startRow, int endRow, boolean allRows) {
 
         Matcher matcher = sqlCommentMatcher();
 

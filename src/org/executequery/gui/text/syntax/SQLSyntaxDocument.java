@@ -92,7 +92,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
         initMatchers();
         if (keys != null) {
-            setSQLKeywords(keys, false);
+            setSQLKeywords(keys);
         }
 
     }
@@ -162,8 +162,10 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         // update the stored tokens
         for (int i = 0; i < matchers.length; i++) {
             TokenMatcher matcher = matchers[i];
-            int type = matcher.getType();
-            matcher.setStyle(styles[type]);
+            if (matcher != null) {
+                int type = matcher.getType();
+                matcher.setStyle(styles[type]);
+            }
         }
     }
 
@@ -173,7 +175,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
     private Token getAvailableBraceToken() {
         for (int i = 0, k = braceTokens.size(); i < k; i++) {
-            Token token = (Token) braceTokens.get(i);
+            Token token = braceTokens.get(i);
             if (!token.isValid()) {
                 return token;
             }
@@ -189,7 +191,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
             return false;
         } else {
             for (int i = 0; i < size; i++) {
-                Token token = (Token) braceTokens.get(i);
+                Token token = braceTokens.get(i);
                 if (token.isValid()) {
                     return true;
                 }
@@ -204,7 +206,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         }
 
         for (int i = 0, k = braceTokens.size(); i < k; i++) {
-            Token token = (Token) braceTokens.get(i);
+            Token token = braceTokens.get(i);
             applyBraceHiglight(false, token);
             token.reset();
         }
@@ -772,6 +774,45 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         matcher.reset(Constants.EMPTY);
     }
 
+    public String getNameDBObjectFromPosition(int position, String text) {
+
+        TokenMatcher tokenMatcher = matchers[TokenTypes.DBOBJECTS_MATCH];
+        Matcher matcher = tokenMatcher.getMatcher();
+
+        int start = 0;
+        int end = 0;
+
+        boolean applyStyle = true;
+        matcher.reset(text);
+
+        // the string token count for when we are not
+        // processing string tokens
+        int stringTokenCount = stringTokens.size();
+
+        int length = text.length();
+        int matcherStart = 0;
+        while (matcher.find(matcherStart)) {
+            start = matcher.start();
+            end = matcher.end();
+
+            if (position >= start && position <= end) {
+                return text.substring(start, end);
+            }
+
+            // if this is a string mather add to the cache
+            // compare against string cache to apply
+
+
+            matcherStart = end + 1;
+            if (matcherStart > length) {
+                break;
+            }
+
+        }
+        matcher.reset(Constants.EMPTY);
+        return null;
+    }
+
     public void replace(int offset, int length,
                         String text, AttributeSet attrs)
             throws BadLocationException {
@@ -1010,7 +1051,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
      * @param keywords - the keywords list
      * @param reset
      */
-    public void setSQLKeywords(List<String> keywords, boolean reset) {
+    public void setSQLKeywords(List<String> keywords) {
         StringBuffer sb = new StringBuffer("\\b(?:");
         // the last start char
         char lastFirstChar = 0;
@@ -1043,6 +1084,41 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
                 sb.toString(),
                 Pattern.CASE_INSENSITIVE).matcher(Constants.EMPTY);
         matchers[KEYWORD_MATCH] = new TokenMatcher(KEYWORD, styles[KEYWORD], matcher);
+    }
+
+    public void setDBObjects(List<String> dbobjects) {
+        StringBuffer sb = new StringBuffer("\\b(?:");
+        // the last start char
+        char lastFirstChar = 0;
+
+        // we are trying to achieve the following regex
+        // where the first char of each group is the same char
+        // as in: t(?:his|hat) as opposed to (?:this|that)
+
+        for (int i = 0, k = dbobjects.size(); i < k; i++) {
+            String _dbobject = dbobjects.get(i).trim();
+
+            char firstChar = _dbobject.charAt(0);
+            if (firstChar == lastFirstChar) {
+                sb.append("|");
+                sb.append(_dbobject.substring(1));
+            } else {
+                if (i > 0) {
+                    sb.append(")|");
+                }
+                sb.append(firstChar);
+                sb.append("(?:");
+                sb.append(_dbobject.substring(1));
+                lastFirstChar = firstChar;
+            }
+
+        }
+        sb.append("))\\b");
+
+        Matcher matcher = Pattern.compile(
+                sb.toString(),
+                Pattern.CASE_INSENSITIVE).matcher(Constants.EMPTY);
+        matchers[DBOBJECTS_MATCH] = new TokenMatcher(DBOBJECT, styles[DBOBJECT], matcher);
     }
 
     public int getInsertMode() {

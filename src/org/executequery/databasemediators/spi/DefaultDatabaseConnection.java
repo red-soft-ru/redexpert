@@ -22,18 +22,21 @@ package org.executequery.databasemediators.spi;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
+import org.executequery.GUIUtilities;
 import org.executequery.crypto.PasswordEncoderDecoder;
 import org.executequery.crypto.spi.DefaultPasswordEncoderDecoderFactory;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.ConnectionsFolder;
+import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.repository.ConnectionFoldersRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.util.MiscUtils;
 
-import java.util.Properties;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * <p>This class maintains the necessary information for each
@@ -656,6 +659,26 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         setSourceName(source);
         return this;
     }
+
+    public List<String> getListObjectsDB() {
+        List<String> list = new ArrayList<>();
+        DatabaseObjectNode host = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(this);
+        addingChild(list, host);
+        return list;
+
+    }
+
+    private void addingChild(List<String> list, DatabaseObjectNode root) {
+        root.populateChildren();
+        Enumeration<DatabaseObjectNode> nodes = root.children();
+        while (nodes.hasMoreElements()) {
+            DatabaseObjectNode node = nodes.nextElement();
+            if (!node.isHostNode() && node.getType() != NamedObject.META_TAG)
+                list.add(node.getName());
+            addingChild(list, node);
+        }
+    }
+
 
     private static final long serialVersionUID = 950081216942320441L;
 

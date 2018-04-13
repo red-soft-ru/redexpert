@@ -58,7 +58,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         }
     }
 
-    private void init() throws Exception {
+    private void init() {
 
         // editor background etc colours
 
@@ -199,6 +199,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
                 "Sample literal text",
                 "Sample brace match",
                 "Sample brace match error",
+                "Sample objects db",
                 "Sample text"};
 
         return sampleLabels[index];
@@ -400,7 +401,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
 
                 if (key.equals(syntaxColour.property)) {
 
-                    return (Color) syntaxColour.color;
+                    return syntaxColour.color;
                 }
 
             }
@@ -434,6 +435,8 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
                     return "Braces match";
                 case 10:
                     return "Braces error";
+                case 11:
+                    return "Objects DB";
                 default:
                     return "Text";
 
@@ -450,7 +453,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         }
 
         public Object getValueAt(int row, int col) {
-            SyntaxColour ch = (SyntaxColour) syntaxColours.elementAt(row);
+            SyntaxColour ch = syntaxColours.elementAt(row);
 
             switch (col) {
                 case 0:
@@ -466,7 +469,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
 
         public void setValueAt(Object value, int row, int col) {
 
-            SyntaxColour ch = (SyntaxColour) syntaxColours.elementAt(row);
+            SyntaxColour ch = syntaxColours.elementAt(row);
 
             if (col == 1) {
                 ch.color = (Color) value;
@@ -491,10 +494,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         }
 
         public boolean isCellEditable(int nRow, int nCol) {
-            if (nCol == 2)
-                return true;
-            else
-                return false;
+            return nCol == 2;
         }
 
         public String getColumnName(int col) {
@@ -508,7 +508,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         public void save() {
 
             for (int i = 0; i < syntaxColours.size(); i++) {
-                SyntaxColour ch = (SyntaxColour) syntaxColours.elementAt(i);
+                SyntaxColour ch = syntaxColours.elementAt(i);
                 SystemProperties.setColourProperty("user",
                         STYLE_COLOUR_PREFIX + ch.property, ch.color);
                 SystemProperties.setIntProperty("user",

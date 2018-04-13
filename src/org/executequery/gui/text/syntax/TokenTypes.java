@@ -41,44 +41,46 @@ package org.executequery.gui.text.syntax;
  */
 public interface TokenTypes {
 
-    public static final String OPEN_COMMENT = "/*";
-    public static final String CLOSE_COMMENT = "*/";
-    public static final String SINGLE_LINE_COMMENT_STRING = "--";
+    String OPEN_COMMENT = "/*";
+    String CLOSE_COMMENT = "*/";
+    String SINGLE_LINE_COMMENT_STRING = "--";
 
-    public static final String SINGLE_LINE_COMMENT_REGEX = "--.*$";
+    String SINGLE_LINE_COMMENT_REGEX = "--.*$";
 
 //    public static final String QUOTE_REGEX = "'([^'\r\n])+'|'.*";
 
-    public static final String QUOTE_REGEX = "\'((?>[^\']*+)(?>\'{2}[^\']*+)*+)\'|\'.*";
+    String QUOTE_REGEX = "\'((?>[^\']*+)(?>\'{2}[^\']*+)*+)\'|\'.*";
 
-    public static final String NUMBER_REGEX = "\\b(([0-9]+)\\.?[0-9]*)\\b";
+    String NUMBER_REGEX = "\\b(([0-9]+)\\.?[0-9]*)\\b";
     //public static final String NUMBER_REGEX = "\\b(([0-9]+)\\.?[0-9]+[^\\.])\\b";
 
-    public static final String BRACES_REGEX = "\\(|\\{|\\[|\\)|\\]|\\}";
+    String BRACES_REGEX = "\\(|\\{|\\[|\\)|\\]|\\}";
 
-    public static final String OPERATOR_REGEX = "(\\;|\\.|\\,|~|\\?|\\:|" +
+    String OPERATOR_REGEX = "(\\;|\\.|\\,|~|\\?|\\:|" +
             "\\+|\\-|\\&|\\||\\\\|\\!" +
-            "|\\=|\\*|\\^|%|\\$|/|\\<|\\>)+";
+            "|\\=|\\*|\\^|%|/|\\<|\\>)+";
 
-    public static final String[] MATCHERS = {
+    String[] MATCHERS = {
             "keyword",
             "operator",
             "number",
             "literals",
+            "dbobjects",
             "braces",
             "string",
             "single-line-comment"
     };
 
-    public static final int KEYWORD_MATCH = 0,
+    int KEYWORD_MATCH = 0,
             OPERATOR_MATCH = 1,
             NUMBER_MATCH = 2,
             LITERALS_MATCH = 3,
-            BRACES_MATCH = 4,
-            SINGLE_LINE_COMMENT_MATCH = 6,
-            STRING_MATCH = 5;
+            DBOBJECTS_MATCH = 4,
+            BRACES_MATCH = 5,
+            SINGLE_LINE_COMMENT_MATCH = 7,
+            STRING_MATCH = 6;
 
-    public static final int UNRECOGNIZED = 0,
+    int UNRECOGNIZED = 0,
             WORD = 1,
             NUMBER = 2,
             COMMENT = 3,
@@ -90,14 +92,15 @@ public interface TokenTypes {
             BRACKET = 9,
             SINGLE_LINE_COMMENT = 10,
             BRACKET_HIGHLIGHT = 11,
-            BRACKET_HIGHLIGHT_ERR = 12;
+            BRACKET_HIGHLIGHT_ERR = 12,
+            DBOBJECT = 13;
 
 
     /**
      * The names of the token types, indexed by type, are provided for
      * descriptive purposes.
      */
-    public static final String[] typeNames = {
+    String[] typeNames = {
             "bad token",
             "normal",
             "number",
@@ -110,7 +113,8 @@ public interface TokenTypes {
             "bracket",
             "single line comment",
             "bracket highlight at cursor",
-            "bracket highlight at cursor error"
+            "bracket highlight at cursor error",
+            "object db"
     };
 }
 

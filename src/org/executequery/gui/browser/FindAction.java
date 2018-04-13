@@ -51,7 +51,7 @@ public abstract class FindAction<T> extends AbstractAction
 
     private JPopupMenu popup;
 
-    private JList resultsList;
+    protected JList resultsList;
 
     public FindAction() {
 

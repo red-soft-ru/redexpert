@@ -90,7 +90,35 @@ public class TreeFindAction extends FindAction<TreePath> {
     }
 
     public void findString(JComponent comp, String searchString) {
-        changed(comp, searchString, Position.Bias.Forward);
+        if (StringUtils.isBlank(searchString)) {
+
+            return;
+        }
+
+        JTree tree = (JTree) comp;
+        String prefix = searchString;
+
+        if (ignoreCase()) {
+
+            prefix = prefix.toUpperCase();
+        }
+
+        boolean wildcardStart = prefix.startsWith("*");
+        if (wildcardStart) {
+
+            prefix = prefix.substring(1);
+
+        } else {
+
+            prefix = "^" + prefix + "$";
+        }
+        prefix = prefix.replaceAll("\\*", ".*");
+
+        Matcher matcher = Pattern.compile(prefix).matcher("");
+        List<TreePath> matchedPaths = new ArrayList<TreePath>();
+        findOnTree(tree.getPathForRow(0), matchedPaths, matcher);
+
+        foundValues(matchedPaths);
     }
 
     private void findOnTree(TreePath path, List<TreePath> matchedPaths, Matcher matcher) {
@@ -99,7 +127,7 @@ public class TreeFindAction extends FindAction<TreePath> {
         Enumeration<DatabaseObjectNode> nodes = root.children();
         while (nodes.hasMoreElements()) {
             DatabaseObjectNode node = nodes.nextElement();
-            String text = node.getName();
+            String text = node.getName().trim();
             if (ignoreCase()) {
 
                 text = text.toUpperCase();

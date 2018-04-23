@@ -675,7 +675,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
             DatabaseObjectNode node = nodes.nextElement();
             if (!node.isHostNode() && node.getType() != NamedObject.META_TAG)
                 list.add(node.getName());
-            addingChild(list, node);
+            if (node.getType() != NamedObject.SYSTEM_TABLE && node.getType() != NamedObject.TABLE && node.getType() != NamedObject.VIEW)
+                addingChild(list, node);
         }
     }
 

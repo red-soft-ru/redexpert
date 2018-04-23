@@ -145,7 +145,7 @@ public abstract class FindAction<T> extends AbstractAction
         return list;
     }
 
-    private void listValueSelected(T selection) {
+    public void listValueSelected(T selection) {
 
         hidePopup();
         listValueSelected(component, selection);

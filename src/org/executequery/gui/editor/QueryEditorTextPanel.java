@@ -35,6 +35,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -115,17 +116,22 @@ public class QueryEditorTextPanel extends JPanel {
                         BaseDialog dialog = new BaseDialog("find", false);
                         JPanel panel = new JPanel();
                         JList jList = action.getResultsList();
-                        jList.addPropertyChangeListener(new PropertyChangeListener() {
-                            @Override
-                            public void propertyChange(PropertyChangeEvent evt) {
-                                if (jList.getModel().getSize() == 0)
-                                    dialog.finished();
-                            }
-                        });
-                        JScrollPane scrollPane = new JScrollPane(jList);
-                        panel.add(scrollPane);
-                        dialog.addDisplayComponent(panel);
-                        dialog.display();
+                        if (jList.getModel().getSize() == 1) {
+                            jList.setSelectedIndex(0);
+                            action.listValueSelected((TreePath) jList.getSelectedValue());
+                        } else {
+                            jList.addPropertyChangeListener(new PropertyChangeListener() {
+                                @Override
+                                public void propertyChange(PropertyChangeEvent evt) {
+                                    if (jList.getModel().getSize() == 0)
+                                        dialog.finished();
+                                }
+                            });
+                            JScrollPane scrollPane = new JScrollPane(jList);
+                            panel.add(scrollPane);
+                            dialog.addDisplayComponent(panel);
+                            dialog.display();
+                        }
                     }
                 }
             }

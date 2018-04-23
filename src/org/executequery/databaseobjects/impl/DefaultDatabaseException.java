@@ -89,7 +89,7 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
         sb.append("SELECT\n")
                 .append("RDB$MESSAGE AS ").append(EXCEPTION_TEXT).append(",\n")
                 .append("RDB$EXCEPTION_NUMBER AS ").append(ID).append(",\n")
-                .append("F.RDB$DESCRIPTION AS ").append(DESCRIPTION).append(",\n")
+                .append("RDB$DESCRIPTION AS ").append(DESCRIPTION).append("\n")
                 .append("FROM RDB$EXCEPTIONS\n")
                 .append("WHERE\n")
                 .append("TRIM(RDB$EXCEPTION_NAME) = '").append(getName()).append("'");

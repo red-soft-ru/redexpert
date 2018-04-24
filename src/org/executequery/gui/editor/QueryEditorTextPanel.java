@@ -37,7 +37,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.sql.ResultSet;
@@ -95,35 +98,14 @@ public class QueryEditorTextPanel extends JPanel {
     /**
      * Initializes the state of this instance.
      */
-    private boolean press_ctrl = false;
     private void init() {
 
         // setup the query text panel and associated scroller
         queryPane = new QueryEditorTextPane(this);
-        queryPane.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
-                    press_ctrl = true;
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
-                    press_ctrl = false;
-                }
-            }
-        });
         queryPane.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() > 1 || press_ctrl) {
+                if (e.getClickCount() > 1) {
                     int cursor = queryPane.getCurrentPosition();
                     String s = queryPane.getSQLSyntaxDocument().getNameDBObjectFromPosition(cursor, queryPane.getText());
                     if (s != null) {

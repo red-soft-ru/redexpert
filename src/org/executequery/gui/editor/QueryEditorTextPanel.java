@@ -112,7 +112,7 @@ public class QueryEditorTextPanel extends JPanel {
                         TreeFindAction action = new TreeFindAction();
                         SchemaTree tree = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getTree();
                         action.install(tree);
-                        action.findString(tree, s);
+                        action.findString(tree, s, ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(queryEditor.getSelectedConnection()));
                         BaseDialog dialog = new BaseDialog("find", false);
                         JPanel panel = new JPanel();
                         JList jList = action.getResultsList();

@@ -89,13 +89,13 @@ public class TreeFindAction extends FindAction<TreePath> {
         return !(matchedPaths.isEmpty());
     }
 
-    public void findString(JComponent comp, String searchString) {
+    public void findString(JComponent comp, String searchString, DatabaseObjectNode nodeHost) {
         if (StringUtils.isBlank(searchString)) {
 
             return;
         }
 
-        JTree tree = (JTree) comp;
+        SchemaTree tree = (SchemaTree) comp;
         String prefix = searchString;
 
         if (ignoreCase()) {
@@ -116,7 +116,8 @@ public class TreeFindAction extends FindAction<TreePath> {
 
         Matcher matcher = Pattern.compile(prefix).matcher("");
         List<TreePath> matchedPaths = new ArrayList<TreePath>();
-        findOnTree(tree.getPathForRow(0), matchedPaths, matcher);
+        tree.selectNode(nodeHost);
+        findOnTree(tree.getSelectionPath(), matchedPaths, matcher);
 
         foundValues(matchedPaths);
     }

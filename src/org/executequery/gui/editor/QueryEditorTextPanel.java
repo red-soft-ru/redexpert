@@ -105,7 +105,7 @@ public class QueryEditorTextPanel extends JPanel {
         queryPane.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() > 1) {
+                if (e.getClickCount() > 1 || e.isControlDown()) {
                     int cursor = queryPane.getCurrentPosition();
                     String s = queryPane.getSQLSyntaxDocument().getNameDBObjectFromPosition(cursor, queryPane.getText());
                     if (s != null) {

@@ -89,6 +89,7 @@ public class TreeFindAction extends FindAction<TreePath> {
         return !(matchedPaths.isEmpty());
     }
 
+    private boolean openDatabaseObject = false;
     public void findString(JComponent comp, String searchString, DatabaseObjectNode nodeHost) {
         if (StringUtils.isBlank(searchString)) {
 
@@ -116,10 +117,11 @@ public class TreeFindAction extends FindAction<TreePath> {
 
         Matcher matcher = Pattern.compile(prefix).matcher("");
         List<TreePath> matchedPaths = new ArrayList<TreePath>();
-        tree.selectNode(nodeHost);
-        findOnTree(tree.getSelectionPath(), matchedPaths, matcher);
-
+        TreePath hostPath = new TreePath(nodeHost.getPath());
+        openDatabaseObject = true;
+        findOnTree(hostPath, matchedPaths, matcher);
         foundValues(matchedPaths);
+
     }
 
     private void findOnTree(TreePath path, List<TreePath> matchedPaths, Matcher matcher) {
@@ -144,13 +146,19 @@ public class TreeFindAction extends FindAction<TreePath> {
     }
 
     private void changeSelection(JTree tree, TreePath path) {
+        SchemaTree schemaTree = (SchemaTree) tree;
+        ConnectionsTreePanel connectionsTreePanel = schemaTree.getConnectionsTreePanel();
         TreePath parent = path.getParentPath();
         boolean expand = true;
         if (parent != null)
             expand = tree.isExpanded(parent);
-        ((SchemaTree) tree).getConnectionsTreePanel().setMoveScrollAfterExpansion(!expand);
-        ((SchemaTree) tree).getConnectionsTreePanel().setMoveScroll(expand);
+        connectionsTreePanel.setMoveScrollAfterExpansion(!expand);
+        connectionsTreePanel.setMoveScroll(expand);
         tree.setSelectionPath(path);
+        if (openDatabaseObject) {
+            DatabaseObjectNode node = ((DatabaseObjectNode) path.getLastPathComponent());
+            connectionsTreePanel.valueChanged(node);
+        }
     }
 
     public TreePath getNextMatch(JTree tree, String prefix, int startingRow,

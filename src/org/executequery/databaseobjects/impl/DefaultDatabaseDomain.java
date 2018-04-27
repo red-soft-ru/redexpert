@@ -155,7 +155,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     @Override
     protected String queryForInfo() {
         StringBuilder sb = new StringBuilder();
-        sb.append("SELECT\n")
+        sb.append("SELECT  first 1\n")
                 .append("F.RDB$FIELD_TYPE AS ").append(TYPE).append(",\n")
                 .append("F.RDB$FIELD_SUB_TYPE AS ").append(SUB_TYPE).append(",\n")
                 .append("F.RDB$FIELD_PRECISION AS ").append(FIELD_PRECISION).append(",\n")

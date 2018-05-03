@@ -75,7 +75,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
     }
 
     @Override
-    protected void setInfoFromResultSet(ResultSet rs) {
+    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
 
     }
 

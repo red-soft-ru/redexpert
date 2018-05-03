@@ -1168,7 +1168,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     return null;
   }
 
-  protected DatabaseObjectNode getHostNode(DatabaseConnection dc) {
+  public DatabaseObjectNode getHostNode(DatabaseConnection dc) {
 
     for (Enumeration<?> i = tree.getConnectionsBranchNode().children(); i.hasMoreElements(); ) {
 

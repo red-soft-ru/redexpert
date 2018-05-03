@@ -1,7 +1,11 @@
 package org.executequery.databaseobjects.impl;
 
+import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * Created by vasiliy on 04.05.17.
@@ -39,6 +43,9 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     public String getHeaderSource() {
+        if (isMarkedForReload()) {
+            getObjectInfo();
+        }
         StringBuilder sb = new StringBuilder();
         sb.append("create or alter package");
         sb.append(" ");
@@ -151,5 +158,47 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         }
 
         return sb.toString();
+    }
+
+    protected String queryForInfo() {
+        return "select 0,\n" +
+                "p.rdb$package_header_source,\n" +
+                "p.rdb$package_body_source,\n" +
+                "p.rdb$valid_body_flag,\n" +
+                "p.rdb$security_class,\n" +
+                "p.rdb$owner_name,\n" +
+                "p.rdb$system_flag,\n" +
+                "p.rdb$description,\n" +
+                "p.rdb$sql_security\n" +
+                "\n" +
+                "from rdb$packages p\n" +
+                "where p.rdb$package_name='" + getName().trim() + "'";
+    }
+
+    @Override
+    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
+        if (rs.next()) {
+            setHeaderSource(rs.getString(2));
+            setBodySource(rs.getString(3));
+            setValidBodyFlag(rs.getBoolean(4));
+            setSecurityClass(rs.getString(5));
+            setOwnerName(rs.getString(6));
+            setSystemFlag(rs.getBoolean(7));
+            setDescription(rs.getString(8));
+            setSqlSecurity(rs.getBoolean(9));
+        }
+    }
+
+    protected void getObjectInfo() {
+        super.getObjectInfo();
+        try {
+            ResultSet rs = querySender.getResultSet(queryForInfo()).getResultSet();
+            setInfoFromResultSet(rs);
+        } catch (SQLException e) {
+            GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);
+        } finally {
+            querySender.releaseResources();
+            setMarkedForReload(false);
+        }
     }
 }

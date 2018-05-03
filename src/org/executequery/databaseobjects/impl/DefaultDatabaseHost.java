@@ -22,7 +22,6 @@ package org.executequery.databaseobjects.impl;
 
 import biz.redsoft.IFBDatabaseConnection;
 import org.apache.commons.lang.StringUtils;
-import org.apache.poi.ss.formula.functions.Column;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
@@ -35,7 +34,6 @@ import org.underworldlabs.util.MiscUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.*;
@@ -683,7 +681,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             DatabaseMetaData dmd = getDatabaseMetaData();
 
             boolean isFirebirdConnection = false;
-            Connection connection = dmd.getConnection();;
+            Connection connection = dmd.getConnection();
             if (connection.unwrap(Connection.class).getClass().getName().contains("FBConnection"))
                 isFirebirdConnection = true;
 
@@ -915,7 +913,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             final short nullFlag = rs.getShort("NULL_FLAG");
             final short sourceNullFlag = rs.getShort("SOURCE_NULL_FLAG");
             column.setRemarks(rs.getString("REMARKS"));
-            column.setRequired((nullFlag == 1 || sourceNullFlag == 1) ? true : false);
+            column.setRequired(nullFlag == 1 || sourceNullFlag == 1);
 
             String column_def = rs.getString("DEFAULT_SOURCE");
             if (column_def == null) {
@@ -1398,11 +1396,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
                     DatabaseMetaTag metaTag =
                             createDatabaseMetaTag(catalog, schema, type);
+                    metaObjects.add(metaTag);
 
-                    if (metaTag.hasChildObjects()) {
-
-                        metaObjects.add(metaTag);
-                    }
 
                 }
 
@@ -1438,7 +1433,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     boolean supportedObject(int type) throws Exception {
         DefaultDriverLoader driverLoader = new DefaultDriverLoader();
-        Map<String, Driver> loadedDrivers = driverLoader.getLoadedDrivers();
+        Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
         DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
         Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
         if (driver.getClass().getName().contains("FBDriver")) {

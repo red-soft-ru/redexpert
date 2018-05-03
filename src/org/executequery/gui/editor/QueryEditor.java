@@ -71,7 +71,9 @@ public class QueryEditor extends DefaultTabView
         UserPreferenceListener,
         TextEditor,
         KeywordListener,
-        FocusablePanel {
+        FocusablePanel
+
+{
 
     public static final String TITLE = "Query Editor";
     public static final String FRAME_ICON = "Edit16.png";
@@ -217,6 +219,8 @@ public class QueryEditor extends DefaultTabView
         contentChanged = false;
 
         formatter = new TokenizingFormatter();
+        if (getSelectedConnection() != null)
+            ((QueryEditorTextPane) editorPanel.getQueryArea()).setDBObjects(getSelectedConnection().getListObjectsDB());
     }
 
     private String defaultScriptName() {

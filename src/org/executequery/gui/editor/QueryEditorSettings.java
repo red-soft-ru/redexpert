@@ -183,6 +183,10 @@ public class QueryEditorSettings {
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.operator");
         createStyle(TokenTypes.OPERATOR, color, fontStyle, null);
 
+        color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.dbobjects");
+        fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.dbobjects");
+        createStyle(TokenTypes.DBOBJECT, color, fontStyle, null);
+
         color = SystemProperties.getColourProperty("user", "sqlsyntax.colour.braces");
         fontStyle = SystemProperties.getIntProperty("user", "sqlsyntax.style.braces");
         createStyle(TokenTypes.BRACKET, color, fontStyle, null);

@@ -90,6 +90,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
     public AbstractDatabaseObject(DatabaseMetaTag metaTagParent, String name) {
         this(metaTagParent);
+        setMarkedForReload(true);
         setName(name);
     }
 
@@ -232,6 +233,9 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
      * @return database object remarks
      */
     public String getRemarks() {
+        if (remarks == null || isMarkedForReload()) {
+            getObjectInfo();
+        }
         return remarks;
     }
 

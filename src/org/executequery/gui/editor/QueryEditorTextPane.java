@@ -418,7 +418,7 @@ public class QueryEditorTextPane extends SQLTextPane
 
     }
 
-    private void init() throws Exception {
+    private void init() {
 
         setMargin(INSETS);
 
@@ -756,8 +756,9 @@ public class QueryEditorTextPane extends SQLTextPane
 
     public void setSQLKeywords(boolean reset) {
 
-        document.setSQLKeywords(keywords().getSQLKeywords(), reset);
+        document.setSQLKeywords(keywords().getSQLKeywords());
     }
+
 
     private KeywordRepository keywords() {
 

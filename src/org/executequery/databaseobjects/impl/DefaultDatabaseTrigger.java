@@ -1,7 +1,11 @@
 package org.executequery.databaseobjects.impl;
 
+import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * Created by vasiliy on 26.01.17.
@@ -173,24 +177,28 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     }
 
     public String getTriggerSourceCode() {
-
+        if (isMarkedForReload())
+            getObjectInfo();
         return triggerSourceCode;
     }
 
     public boolean isTriggerActive() {
-
+        if (isMarkedForReload())
+            getObjectInfo();
         return triggerActive;
     }
 
     public String getTriggerTableName() {
-
+        if (isMarkedForReload())
+            getObjectInfo();
         if (tableName == null)
             return "";
         return tableName;
     }
 
     public String getTriggerDescription() {
-
+        if (isMarkedForReload())
+            getObjectInfo();
         return triggerDescription;
     }
 
@@ -211,6 +219,8 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     }
 
     public int getTriggerSequence() {
+        if (isMarkedForReload())
+            getObjectInfo();
         return triggerSequence;
     }
 
@@ -219,6 +229,8 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     }
 
     public String getStringTriggerType() {
+        if (isMarkedForReload())
+            getObjectInfo();
         return triggerType;
     }
 
@@ -229,6 +241,8 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     }
 
     public int getIntTriggerType() {
+        if (isMarkedForReload())
+            getObjectInfo();
         return intTriggerType;
     }
 
@@ -237,6 +251,8 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     }
 
     public long getLongTriggerType() {
+        if (isMarkedForReload())
+            getObjectInfo();
         return longTriggerType;
     }
 
@@ -349,6 +365,46 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
         sb.append("SET TERM ; ^");
 
         return sb.toString();
+    }
+
+    protected String queryForInfo() {
+        return "select 0,\n" +
+                "t.rdb$trigger_source,\n" +
+                "t.rdb$relation_name,\n" +
+                "t.rdb$trigger_sequence,\n" +
+                "t.rdb$trigger_type,\n" +
+                "t.rdb$trigger_inactive,\n" +
+                "t.rdb$description\n" +
+                "from rdb$triggers t\n" +
+                "where t.rdb$trigger_name = '" + getName().trim() + "'";
+    }
+
+    @Override
+    protected void getObjectInfo() {
+        super.getObjectInfo();
+        try {
+            ResultSet rs = querySender.getResultSet(queryForInfo()).getResultSet();
+            setInfoFromResultSet(rs);
+        } catch (SQLException e) {
+            GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);
+        } finally {
+            querySender.releaseResources();
+            setMarkedForReload(false);
+        }
+
+
+    }
+
+    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
+        if (rs.next()) {
+            setTableName(rs.getString(3));
+            setTriggerSequence(rs.getInt(4));
+            setTriggerActive(rs.getInt(6) != 1);
+            setTriggerType(rs.getLong(5));
+            setTriggerDescription(rs.getString(7));
+            setTriggerSourceCode(rs.getString(2));
+            setRemarks(rs.getString(7));
+        }
     }
 
 }

@@ -924,7 +924,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                     DefaultDatabaseProcedure procedure = new DefaultDatabaseProcedure(this, rs.getString(1));
                     procedure.setHost(getHost());
-                    procedure.setRemarks(rs.getString(2));
+                    //procedure.setRemarks(rs.getString(2));
                     list.add(procedure);
                 }
             } else {
@@ -963,12 +963,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             while (rs.next()) {
 
                 DefaultDatabaseIndex index = new DefaultDatabaseIndex(this, rs.getString(1).trim());
-                index.setTableName(rs.getString(2));
-                index.setIndexType(rs.getInt(4));
-                index.setActive(rs.getInt(6) != 1);
-                index.setUnique(rs.getInt(5) == 1);
-                index.setRemarks(rs.getString(7));
-                index.setConstraint_type(rs.getString(8));
                 index.setHost(this.getHost());
                 list.add(index);
             }
@@ -1032,13 +1026,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
                         rs.getString(1).trim());
-                trigger.setTableName(rs.getString(3));
-                trigger.setTriggerSequence(rs.getInt(4));
-                trigger.setTriggerActive(rs.getInt(6) != 1);
-                trigger.setTriggerType(rs.getLong(5));
-                trigger.setTriggerDescription(rs.getString(7));
-                trigger.setTriggerSourceCode(rs.getString(2));
-                trigger.setRemarks(rs.getString(7));
                 list.add(trigger);
             }
 
@@ -1068,7 +1055,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             while (rs.next()) {
 
                 DefaultDatabaseSequence sequence = new DefaultDatabaseSequence(this, rs.getString(1));
-                sequence.setRemarks(rs.getString(3));
+                //sequence.setRemarks(rs.getString(3));
                 list.add(sequence);
             }
 
@@ -1249,11 +1236,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             while (rs.next()) {
 
                 DefaultDatabaseIndex index = new DefaultDatabaseIndex(this, rs.getString(1).trim());
-                index.setTableName(rs.getString(2));
-                index.setIndexType(rs.getInt(4));
-                index.setActive(rs.getInt(6) != 1);
-                index.setUnique(rs.getInt(5) == 1);
-                index.setRemarks(rs.getString(7));
                 index.setHost(this.getHost());
                 list.add(index);
             }
@@ -1281,13 +1263,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             while (rs.next()) {
 
                 DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this, rs.getString(1));
-                trigger.setTableName(rs.getString(3));
-                trigger.setTriggerSequence(rs.getInt(4));
-                trigger.setTriggerActive(rs.getInt(6) != 1);
-                trigger.setTriggerType(rs.getInt(5));
-                trigger.setTriggerDescription(rs.getString(7));
-                trigger.setTriggerSourceCode(rs.getString(2));
-                trigger.setRemarks(rs.getString(7));
                 list.add(trigger);
             }
 
@@ -1315,13 +1290,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
                         rs.getString(1).trim());
-                trigger.setTableName(rs.getString(3));
-                trigger.setTriggerSequence(rs.getInt(4));
-                trigger.setTriggerActive(rs.getInt(6) != 1);
-                trigger.setTriggerType(rs.getLong(5));
-                trigger.setTriggerDescription(rs.getString(7));
-                trigger.setTriggerSourceCode(rs.getString(2));
-                trigger.setRemarks(rs.getString(7));
                 list.add(trigger);
             }
 
@@ -1348,14 +1316,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             while (rs.next()) {
 
                 DefaultDatabasePackage databasePackage = new DefaultDatabasePackage(this, rs.getString(1).trim());
-                databasePackage.setHeaderSource(rs.getString(2));
-                databasePackage.setBodySource(rs.getString(3));
-                databasePackage.setValidBodyFlag(rs.getBoolean(4));
-                databasePackage.setSecurityClass(rs.getString(5));
-                databasePackage.setOwnerName(rs.getString(6));
-                databasePackage.setSystemFlag(rs.getBoolean(7));
-                databasePackage.setDescription(rs.getString(8));
-                databasePackage.setSqlSecurity(rs.getBoolean(9));
+
                 list.add(databasePackage);
             }
 
@@ -1380,9 +1341,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Connection realConnection = ((PooledConnection) dmd.getConnection()).getRealConnection();
         if (realConnection.unwrap(Connection.class).getClass().getName().contains("FBConnection")) { // Red Database or FB
-            String sql = "select cast(rdb$procedure_name as varchar(63)) as procedure_name, \n" +
-                    "rdb$description as remarks, \n" +
-                    "rdb$procedure_outputs as procedure_type \n" +
+            String sql = "select rdb$procedure_name as procedure_name\n" +
                     "from rdb$procedures \n" +
                     "order by procedure_name";
             Statement statement = dmd.getConnection().createStatement();
@@ -1395,21 +1354,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getIndicesResultSet() throws SQLException {
 
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
-
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
         ResultSet resultSet = statement.executeQuery("select " +
-                "I.RDB$INDEX_NAME, " +
-                "I.RDB$RELATION_NAME, " +
-                "I.RDB$SYSTEM_FLAG," +
-                "I.RDB$INDEX_TYPE," +
-                "I.RDB$UNIQUE_FLAG," +
-                "I.RDB$INDEX_INACTIVE," +
-                "I.RDB$DESCRIPTION," +
-                "C.RDB$CONSTRAINT_TYPE\n" +
+                "I.RDB$INDEX_NAME\n " +
                 "FROM RDB$INDICES AS I LEFT JOIN rdb$relation_constraints as c on i.rdb$index_name=c.rdb$index_name\n" +
                 "where I.RDB$SYSTEM_FLAG = 0 \n" +
                 "ORDER BY I.RDB$INDEX_NAME");
@@ -1418,9 +1367,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     private ResultSet getIndexFromNameResultSet(String name) throws SQLException {
-
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
 
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
@@ -1443,20 +1389,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getTriggersResultSet() throws SQLException {
 
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
 
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
-        ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name,\n" +
-                "t.rdb$trigger_source,\n" +
-                "t.rdb$relation_name,\n" +
-                "t.rdb$trigger_sequence,\n" +
-                "t.rdb$trigger_type,\n" +
-                "t.rdb$trigger_inactive,\n" +
-                "t.rdb$description\n" +
-                "\n" +
+        ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name\n" +
                 "from rdb$triggers t\n" +
                 "where t.rdb$system_flag = 0\n" +
                 "and t.rdb$trigger_type <= 114 \n" +
@@ -1468,43 +1405,23 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getSequencesResultSet() throws SQLException {
 
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
-
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
-        ResultSet resultSet = statement.executeQuery("execute block\n" +
-                "returns (\n" +
-                "    out_name char(31),\n" +
-                "    out_value bigint,\n" +
-                "    out_desc blob sub_type 1)\n" +
-                "as\n" +
-                "begin\n" +
-                "    for select rdb$generator_name, rdb$description from rdb$generators where rdb$system_flag is distinct from 1\n" +
-                "     order by  rdb$generator_name\n" +
-                "     into out_name, out_desc do\n" +
-                "    begin\n" +
-                "        execute statement 'select gen_id(' || out_name || ', 0) from rdb$database' into out_value;\n" +
-                "        suspend;\n" +
-                "    end\n" +
-                "end");
+        ResultSet resultSet = statement.executeQuery(
+                "select rdb$generator_name from rdb$generators where rdb$system_flag is distinct from 1\n" +
+                        "     order by  rdb$generator_name");
 
         return resultSet;
     }
 
     private ResultSet getDomainsResultSet() throws SQLException {
 
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
-
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
         ResultSet resultSet = statement.executeQuery("select " +
-                "RDB$FIELD_NAME, " +
-                "RDB$SYSTEM_FLAG, " +
-                "RDB$DESCRIPTION\n" +
+                "RDB$FIELD_NAME " +
                 "from RDB$FIELDS\n" +
                 "where RDB$FIELD_NAME not like 'RDB$%'\n" +
                 "and RDB$FIELD_NAME not like 'MON$%'\n" +
@@ -1514,9 +1431,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     private ResultSet getRolesResultSet() throws SQLException {
-
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
 
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
@@ -1589,16 +1503,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getSystemDomainResultSet() throws SQLException {
 
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
-
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
         ResultSet resultSet = statement.executeQuery("select " +
-                "RDB$FIELD_NAME, " +
-                "RDB$SYSTEM_FLAG, " +
-                "RDB$DESCRIPTION\n" +
+                "RDB$FIELD_NAME " +
                 "from RDB$FIELDS\n" +
                 "where RDB$FIELD_NAME like 'RDB$%'\n" +
                 "or RDB$FIELD_NAME like 'MON$%'\n" +
@@ -1609,20 +1518,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getSystemIndexResultSet() throws SQLException {
 
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
 
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
         ResultSet resultSet = statement.executeQuery("select " +
-                "RDB$INDEX_NAME, " +
-                "RDB$RELATION_NAME, " +
-                "RDB$SYSTEM_FLAG," +
-                "RDB$INDEX_TYPE," +
-                "RDB$UNIQUE_FLAG," +
-                "RDB$INDEX_INACTIVE," +
-                "RDB$DESCRIPTION\n" +
+                "RDB$INDEX_NAME\n " +
                 "FROM RDB$INDICES \n" +
                 "where RDB$SYSTEM_FLAG = 1 \n" +
                 "ORDER BY RDB$INDEX_NAME");
@@ -1632,20 +1533,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getSystemTriggerResultSet() throws SQLException {
 
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
-
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
-        ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name,\n" +
-                "t.rdb$trigger_source,\n" +
-                "t.rdb$relation_name,\n" +
-                "t.rdb$trigger_sequence,\n" +
-                "t.rdb$trigger_type,\n" +
-                "t.rdb$trigger_inactive,\n" +
-                "t.rdb$description\n" +
-                "\n" +
+        ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name\n" +
                 "from rdb$triggers t\n" +
                 "where t.rdb$system_flag <> 0" +
                 "order by t.rdb$trigger_name");
@@ -1655,20 +1546,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getSystemDatabaseTriggerResultSet() throws SQLException {
 
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
-
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
-        ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name,\n" +
-                "t.rdb$trigger_source,\n" +
-                "t.rdb$relation_name,\n" +
-                "t.rdb$trigger_sequence,\n" +
-                "t.rdb$trigger_type,\n" +
-                "t.rdb$trigger_inactive,\n" +
-                "t.rdb$description\n" +
-                "\n" +
+        ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name\n" +
                 "from rdb$triggers t\n" +
                 "where t.rdb$system_flag = 0" +
                 "and t.rdb$trigger_type > 114 \n" +
@@ -1682,16 +1563,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
-        ResultSet resultSet = statement.executeQuery("select p.rdb$package_name,\n" +
-                "p.rdb$package_header_source,\n" +
-                "p.rdb$package_body_source,\n" +
-                "p.rdb$valid_body_flag,\n" +
-                "p.rdb$security_class,\n" +
-                "p.rdb$owner_name,\n" +
-                "p.rdb$system_flag,\n" +
-                "p.rdb$description,\n" +
-                "p.rdb$sql_security\n" +
-                "\n" +
+        ResultSet resultSet = statement.executeQuery("select p.rdb$package_name \n" +
                 "from rdb$packages p\n" +
                 "order by p.rdb$package_name");
 
@@ -1767,9 +1639,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             Connection realConnection = ((PooledConnection) dmd.getConnection()).getRealConnection();
             if (realConnection.unwrap(Connection.class).getClass().getName().contains("FBConnection")) {
                 Statement statement = dmd.getConnection().createStatement();
-                ResultSet rs = statement.executeQuery("select rdb$function_type,\n" +
-                        "rdb$system_flag,\n" +
-                        "cast(rdb$function_name as varchar(63)) as function_name,\n" +
+                ResultSet rs = statement.executeQuery("select 0,\n" +
+                        "0,\n" +
+                        "rdb$function_name as function_name,\n" +
                         "rdb$description as remarks\n" +
                         "from rdb$functions");
                 return rs;

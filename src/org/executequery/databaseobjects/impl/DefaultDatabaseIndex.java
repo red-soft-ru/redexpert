@@ -141,6 +141,8 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     }
 
     public int getIndexType() {
+        if (isMarkedForReload())
+            getObjectInfo();
         return indexType;
     }
 
@@ -149,6 +151,8 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     }
 
     public String getTableName() {
+        if (isMarkedForReload())
+            getObjectInfo();
         return tableName;
     }
 
@@ -157,6 +161,8 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     }
 
     public boolean isActive() {
+        if (isMarkedForReload())
+            getObjectInfo();
         return isActive;
     }
 
@@ -165,6 +171,8 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     }
 
     public boolean isUnique() {
+        if (isMarkedForReload())
+            getObjectInfo();
         return isUnique;
     }
 
@@ -233,6 +241,8 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     }
 
     public String getConstraint_type() {
+        if (isMarkedForReload())
+            getObjectInfo();
         return constraint_type;
     }
 
@@ -243,11 +253,33 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     @Override
     protected String queryForInfo() {
-        return null;
+        return "select " +
+                "0, " +
+                "I.RDB$RELATION_NAME, " +
+                "0," +
+                "I.RDB$INDEX_TYPE," +
+                "I.RDB$UNIQUE_FLAG," +
+                "I.RDB$INDEX_INACTIVE," +
+                "I.RDB$DESCRIPTION," +
+                "C.RDB$CONSTRAINT_TYPE\n" +
+                "FROM RDB$INDICES AS I LEFT JOIN rdb$relation_constraints as c on i.rdb$index_name=c.rdb$index_name\n" +
+                "where I.RDB$INDEX_NAME='" + getName().trim() + "'";
     }
 
     @Override
     protected void setInfoFromResultSet(ResultSet rs) {
+        try {
+            if (rs != null && rs.next()) {
+                setTableName(rs.getString(2));
+                setIndexType(rs.getInt(4));
+                setActive(rs.getInt(6) != 1);
+                setUnique(rs.getInt(5) == 1);
+                setRemarks(rs.getString(7));
+                setConstraint_type(rs.getString(8));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -261,6 +293,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     protected void getObjectInfo() {
         try {
+            super.getObjectInfo();
             loadColumns();
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog("Error loading info about Index", e);

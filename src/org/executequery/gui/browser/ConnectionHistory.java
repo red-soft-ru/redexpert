@@ -61,7 +61,7 @@ public class ConnectionHistory extends AbstractXMLResourceReaderWriter<String[]>
         DatabaseObjectNode dnode = (DatabaseObjectNode) node;
         path.add(dnode.getName());
       }
-      getListPaths().add((String[]) path.toArray(new String[path.size()]));
+      getListPaths().add(path.toArray(new String[path.size()]));
       getInstance().save();
     }
   }
@@ -76,7 +76,7 @@ public class ConnectionHistory extends AbstractXMLResourceReaderWriter<String[]>
           DatabaseObjectNode dnode = (DatabaseObjectNode) node;
           path.add(dnode.getName());
         }
-        String[] x = (String[]) path.toArray(new String[path.size()]);
+        String[] x = path.toArray(new String[path.size()]);
         for (int i = 0; i < getListPaths().size(); i++) {
           String[] y = getListPaths().get(i);
           if (cley(y, "^").equals(cley(x, "^"))) {
@@ -147,7 +147,6 @@ public class ConnectionHistory extends AbstractXMLResourceReaderWriter<String[]>
           if (node.isHostNode()) {
             String nodeName = node.getName();
             String connectionName = connectionEvent.getDatabaseConnection().getName();
-            int compare = nodeName.compareTo(connectionName);
             if (!nodeName.equals(connectionName)) {
               equal = false;
               break;
@@ -228,7 +227,7 @@ public class ConnectionHistory extends AbstractXMLResourceReaderWriter<String[]>
     public void endElement(String nameSpaceURI, String localName, String qName) {
       if (localName == "path")
         if (path.size() > 0) {
-          paths.add((String[]) path.toArray(new String[path.size()]));
+          paths.add(path.toArray(new String[path.size()]));
           path = new Vector<>();
         }
       if (localName == "node")

@@ -50,7 +50,9 @@ public interface Constants {
             "braces",
             "literal",
             "braces.match1",
-            "braces.error"};
+            "braces.error",
+            "dbobjects"
+    };
 
     /**
      * The properties file style name prefix

@@ -58,7 +58,7 @@ public class PropertiesEditorSyntax extends AbstractPropertiesBasePanel
         }
     }
 
-    private void init() throws Exception {
+    private void init() {
         tableModel = new ColorTableModel();
         table = new JTable(tableModel);
         table.setFont(AbstractPropertiesBasePanel.panelFont);
@@ -291,6 +291,8 @@ public class PropertiesEditorSyntax extends AbstractPropertiesBasePanel
                     return "Braces match";
                 case 10:
                     return "Braces error";
+                case 11:
+                    return "Objects DB";
                 default:
                     return "Text";
 
@@ -307,7 +309,7 @@ public class PropertiesEditorSyntax extends AbstractPropertiesBasePanel
         }
 
         public Object getValueAt(int row, int col) {
-            SyntaxColour ch = (SyntaxColour) syntaxColours.elementAt(row);
+            SyntaxColour ch = syntaxColours.elementAt(row);
 
             switch (col) {
                 case 0:
@@ -322,7 +324,7 @@ public class PropertiesEditorSyntax extends AbstractPropertiesBasePanel
         }
 
         public void setValueAt(Object value, int row, int col) {
-            SyntaxColour ch = (SyntaxColour) syntaxColours.elementAt(row);
+            SyntaxColour ch = syntaxColours.elementAt(row);
 
             if (col == 1) {
                 ch.color = (Color) value;
@@ -347,10 +349,7 @@ public class PropertiesEditorSyntax extends AbstractPropertiesBasePanel
         }
 
         public boolean isCellEditable(int nRow, int nCol) {
-            if (nCol == 2)
-                return true;
-            else
-                return false;
+            return nCol == 2;
         }
 
         public String getColumnName(int col) {
@@ -358,14 +357,14 @@ public class PropertiesEditorSyntax extends AbstractPropertiesBasePanel
         }
 
         public SyntaxColour[] getSyntaxColours() {
-            return (SyntaxColour[]) syntaxColours.toArray(
+            return syntaxColours.toArray(
                     new SyntaxColour[syntaxColours.size()]);
         }
 
         public void save() {
 
             for (int i = 0; i < syntaxColours.size(); i++) {
-                SyntaxColour ch = (SyntaxColour) syntaxColours.elementAt(i);
+                SyntaxColour ch = syntaxColours.elementAt(i);
                 SystemProperties.setColourProperty("user",
                         STYLE_COLOUR_PREFIX + ch.property, ch.color);
                 SystemProperties.setIntProperty("user",

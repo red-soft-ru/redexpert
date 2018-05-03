@@ -20,8 +20,12 @@
 
 package org.executequery.datasource;
 
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.databaseobjects.NamedObject;
+import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
@@ -86,8 +90,20 @@ public final class ConnectionManager {
 
         connectionPools.put(databaseConnection, pool);
         databaseConnection.setConnected(true);
+        loadTree(((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(databaseConnection));
 
         Log.info("Data source " + databaseConnection.getName() + " initialized.");
+    }
+
+    public static void loadTree(DatabaseObjectNode root) {
+        root.populateChildren();
+        Enumeration<DatabaseObjectNode> nodes = root.children();
+        while (nodes.hasMoreElements()) {
+            DatabaseObjectNode node = nodes.nextElement();
+            if (node.getType() != NamedObject.SYSTEM_TABLE && node.getType() != NamedObject.TABLE && node.getType() != NamedObject.VIEW)
+                loadTree(node);
+        }
+
     }
 
     /**

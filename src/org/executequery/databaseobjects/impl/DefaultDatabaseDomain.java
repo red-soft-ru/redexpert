@@ -155,7 +155,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     @Override
     protected String queryForInfo() {
         StringBuilder sb = new StringBuilder();
-        sb.append("SELECT  first 1\n")
+        sb.append("SELECT \n")
                 .append("F.RDB$FIELD_TYPE AS ").append(TYPE).append(",\n")
                 .append("F.RDB$FIELD_SUB_TYPE AS ").append(SUB_TYPE).append(",\n")
                 .append("F.RDB$FIELD_PRECISION AS ").append(FIELD_PRECISION).append(",\n")
@@ -164,7 +164,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
                 .append("F.RDB$DESCRIPTION AS ").append(DESCRIPTION).append(",\n")
                 .append("F.RDB$NULL_FLAG AS ").append(NULL_FLAG).append(",\n")
                 .append("F.RDB$COMPUTED_BLR AS ").append(COMPUTED_BY).append("\n")
-                .append("FROM RDB$RELATION_FIELDS RF,RDB$FIELDS F\n")
+                .append("FROM RDB$FIELDS F\n")
                 .append("WHERE\n")
                 .append("TRIM(F.RDB$FIELD_NAME) = '").append(getName()).append("'");
         return sb.toString();

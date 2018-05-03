@@ -27,6 +27,7 @@ import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.util.MiscUtils;
 
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.List;
 
@@ -220,5 +221,23 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
         sbSQL.append(";\n");
 
         return sbSQL.toString();
+    }
+
+    @Override
+    protected String queryForInfo() {
+        return "select rdb$description\n" +
+                "from rdb$procedures \n" +
+                "where rdb$procedure_name = '" + getName().trim() + "'";
+    }
+
+    @Override
+    protected void setInfoFromResultSet(ResultSet rs) {
+        try {
+            if (rs != null && rs.next()) {
+                setRemarks(rs.getString(1));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

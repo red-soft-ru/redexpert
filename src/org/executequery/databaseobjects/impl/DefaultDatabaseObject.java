@@ -67,6 +67,11 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
 
     }
 
+    @Override
+    protected void getObjectInfo() {
+
+    }
+
     /**
      * Returns the meta data key name of this object.
      *

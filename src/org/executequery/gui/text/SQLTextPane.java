@@ -31,6 +31,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.List;
 
 /**
  * Base SQL text pane object.
@@ -94,7 +95,11 @@ public class SQLTextPane extends JTextPane
 
     public void setSQLKeywords(boolean reset) {
 
-        document.setSQLKeywords(keywords().getSQLKeywords(), reset);
+        document.setSQLKeywords(keywords().getSQLKeywords());
+    }
+
+    public void setDBObjects(List<String> dbObjects) {
+        document.setDBObjects(dbObjects);
     }
 
     private KeywordRepository keywords() {

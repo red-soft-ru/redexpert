@@ -23,6 +23,7 @@ package org.executequery.databasemediators;
 import org.executequery.gui.browser.ConnectionsFolder;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -64,17 +65,17 @@ public interface DatabaseConnection extends Serializable {
 
     void setPort(String port);
 
-    public String getCharset();
+    String getCharset();
 
-    public void setCharset(String charset);
+    void setCharset(String charset);
 
-    public String getRole();
+    String getRole();
 
-    public void setRole(String role);
+    void setRole(String role);
 
-    public String getCertificate();
+    String getCertificate();
 
-    public void setCertificate(String certificate);
+    void setCertificate(String certificate);
 
     boolean isContainerPasswordStored();
 
@@ -88,13 +89,13 @@ public interface DatabaseConnection extends Serializable {
 
     void setContainerPassword(String password);
 
-    public String getAuthMethod();
+    String getAuthMethod();
 
-    public void setAuthMethod(String method);
+    void setAuthMethod(String method);
 
-    public String getConnectionMethod();
+    String getConnectionMethod();
 
-    public void setConnectionMethod(String method);
+    void setConnectionMethod(String method);
 
     String getURL();
 
@@ -194,6 +195,7 @@ public interface DatabaseConnection extends Serializable {
 
     DatabaseConnection withNewId();
 
+    List<String> getListObjectsDB();
 }
 
 

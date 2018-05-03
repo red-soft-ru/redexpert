@@ -1,5 +1,6 @@
 package org.executequery.databaseobjects.impl;
 
+import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.datasource.ConnectionManager;
@@ -172,5 +173,30 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
         sb.append(";");
 
         return sb.toString();
+    }
+
+    @Override
+    protected void getObjectInfo() {
+        super.getObjectInfo();
+        try {
+            String query = queryForInfo();
+            ResultSet rs = querySender.getResultSet(query).getResultSet();
+            setInfoFromResultSet(rs);
+        } catch (SQLException e) {
+            GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);
+        } finally {
+            querySender.releaseResources();
+            setMarkedForReload(false);
+        }
+    }
+
+    protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
+        if (rs.next())
+            setRemarks(rs.getString(1));
+    }
+
+    protected String queryForInfo() {
+        return "select rdb$description from rdb$generators where \n" +
+                "     rdb$generator_name='" + getName().trim() + "'";
     }
 }

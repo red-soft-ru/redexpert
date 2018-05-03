@@ -89,13 +89,48 @@ public class TreeFindAction extends FindAction<TreePath> {
         return !(matchedPaths.isEmpty());
     }
 
+    private boolean openDatabaseObject = false;
+    public void findString(JComponent comp, String searchString, DatabaseObjectNode nodeHost) {
+        if (StringUtils.isBlank(searchString)) {
+
+            return;
+        }
+
+        SchemaTree tree = (SchemaTree) comp;
+        String prefix = searchString;
+
+        if (ignoreCase()) {
+
+            prefix = prefix.toUpperCase();
+        }
+
+        boolean wildcardStart = prefix.startsWith("*");
+        if (wildcardStart) {
+
+            prefix = prefix.substring(1);
+
+        } else {
+
+            prefix = "^" + prefix + "$";
+        }
+        prefix = prefix.replaceAll("\\*", ".*");
+
+        Matcher matcher = Pattern.compile(prefix).matcher("");
+        List<TreePath> matchedPaths = new ArrayList<TreePath>();
+        TreePath hostPath = new TreePath(nodeHost.getPath());
+        openDatabaseObject = true;
+        findOnTree(hostPath, matchedPaths, matcher);
+        foundValues(matchedPaths);
+
+    }
+
     private void findOnTree(TreePath path, List<TreePath> matchedPaths, Matcher matcher) {
         DatabaseObjectNode root = (DatabaseObjectNode) path.getLastPathComponent();
         root.populateChildren();
         Enumeration<DatabaseObjectNode> nodes = root.children();
         while (nodes.hasMoreElements()) {
             DatabaseObjectNode node = nodes.nextElement();
-            String text = node.getName();
+            String text = node.getName().trim();
             if (ignoreCase()) {
 
                 text = text.toUpperCase();
@@ -111,13 +146,19 @@ public class TreeFindAction extends FindAction<TreePath> {
     }
 
     private void changeSelection(JTree tree, TreePath path) {
+        SchemaTree schemaTree = (SchemaTree) tree;
+        ConnectionsTreePanel connectionsTreePanel = schemaTree.getConnectionsTreePanel();
         TreePath parent = path.getParentPath();
         boolean expand = true;
         if (parent != null)
             expand = tree.isExpanded(parent);
-        ((SchemaTree) tree).getConnectionsTreePanel().setMoveScrollAfterExpansion(!expand);
-        ((SchemaTree) tree).getConnectionsTreePanel().setMoveScroll(expand);
+        connectionsTreePanel.setMoveScrollAfterExpansion(!expand);
+        connectionsTreePanel.setMoveScroll(expand);
         tree.setSelectionPath(path);
+        if (openDatabaseObject) {
+            DatabaseObjectNode node = ((DatabaseObjectNode) path.getLastPathComponent());
+            connectionsTreePanel.valueChanged(node);
+        }
     }
 
     public TreePath getNextMatch(JTree tree, String prefix, int startingRow,
@@ -177,6 +218,10 @@ public class TreeFindAction extends FindAction<TreePath> {
     protected ListCellRenderer getListCellRenderer() {
 
         return new TreePathListCellRenderer();
+    }
+
+    public JList getResultsList() {
+        return this.resultsList;
     }
 
     private static final Border cellRendererBorder = BorderFactory.createEmptyBorder(2, 2, 2, 2);

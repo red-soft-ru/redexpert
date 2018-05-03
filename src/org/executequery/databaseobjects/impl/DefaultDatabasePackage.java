@@ -177,14 +177,16 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
 
     @Override
     protected void setInfoFromResultSet(ResultSet rs) throws SQLException {
-        setHeaderSource(rs.getString(2));
-        setBodySource(rs.getString(3));
-        setValidBodyFlag(rs.getBoolean(4));
-        setSecurityClass(rs.getString(5));
-        setOwnerName(rs.getString(6));
-        setSystemFlag(rs.getBoolean(7));
-        setDescription(rs.getString(8));
-        setSqlSecurity(rs.getBoolean(9));
+        if (rs.next()) {
+            setHeaderSource(rs.getString(2));
+            setBodySource(rs.getString(3));
+            setValidBodyFlag(rs.getBoolean(4));
+            setSecurityClass(rs.getString(5));
+            setOwnerName(rs.getString(6));
+            setSystemFlag(rs.getBoolean(7));
+            setDescription(rs.getString(8));
+            setSqlSecurity(rs.getBoolean(9));
+        }
     }
 
     protected void getObjectInfo() {

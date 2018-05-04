@@ -100,7 +100,7 @@ public final class ConnectionManager {
         Enumeration<DatabaseObjectNode> nodes = root.children();
         while (nodes.hasMoreElements()) {
             DatabaseObjectNode node = nodes.nextElement();
-            if (node.getType() != NamedObject.SYSTEM_TABLE && node.getType() != NamedObject.TABLE && node.getType() != NamedObject.VIEW)
+            if (node.isHostNode() || node.getType() == NamedObject.META_TAG)
                 loadTree(node);
         }
 

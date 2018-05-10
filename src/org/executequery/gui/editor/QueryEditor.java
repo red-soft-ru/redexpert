@@ -1568,11 +1568,12 @@ public class QueryEditor extends DefaultTabView
      */
     public void connected(ConnectionEvent connectionEvent) {
         if (!closed) {
+            if (connectionsCombo.getModel().getSize() == 0) {
+                connectionsCombo.addElement(null);
+            }
             connectionsCombo.addElement(connectionEvent.getDatabaseConnection());
-
             DatabaseConnection databaseConnection = connectionEvent.getDatabaseConnection();
             if (databaseConnection == selectConnection) {
-
                 connectionsCombo.getModel().setSelectedItem(databaseConnection);
                 selectConnection = null;
             }

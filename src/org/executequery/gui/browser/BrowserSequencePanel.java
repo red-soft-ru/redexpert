@@ -4,6 +4,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextPane;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.StyledLogPane;
@@ -50,17 +51,17 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
     }
 
-    private void init() throws Exception {
+    private void init() {
 
         JPanel panel = new JPanel();
 
         panel.setLayout(new BorderLayout());
 
         JPanel paramPanel = new JPanel(new GridBagLayout());
-        paramPanel.setBorder(BorderFactory.createTitledBorder("Parameters"));
+        paramPanel.setBorder(BorderFactory.createTitledBorder(Bundles.getCommon("parameters")));
 
         valueLabel = new JLabel();
-        valueLabel.setText("Value: ");
+        valueLabel.setText(Bundles.getCommon("value"));
 
         valueField = new DisabledField();
 
@@ -72,7 +73,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         panel.add(paramPanel, BorderLayout.NORTH);
 
         JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP);
-        tabs.add("Sequence", panel);
+        tabs.add(bundleString("sequence"), panel);
 
         descriptionPane = new StyledLogPane();
 
@@ -81,7 +82,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         descPanel.setLayout(new BorderLayout());
         descPanel.add(descriptionPane);
 
-        tabs.add("Description", descPanel);
+        tabs.add(Bundles.getCommon("description"), descPanel);
 
         JPanel sqlPanel = new JPanel(new BorderLayout());
 
@@ -128,7 +129,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         ++gbc.gridy;
         gbc.insets.top = 0;
 
-        setHeaderText("Database Sequence");
+        setHeaderText(bundleString("DatabaseSequence"));
         setHeaderIcon(GUIUtilities.loadIcon("Sequence24.png", true));
         setContentPanel(base);
         cache = new HashMap();
@@ -151,8 +152,8 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
     public void setValues(DefaultDatabaseSequence sequence) {
 
-        objectNameLabel.setText("Sequence Name:");
-        setHeaderText("Database Sequence");
+        objectNameLabel.setText(bundleString("SequenceName"));
+        setHeaderText(bundleString("DatabaseSequence"));
         setHeaderIcon(GUIUtilities.loadIcon("Sequence16.png", true));
 
         try {

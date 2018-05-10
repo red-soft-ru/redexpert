@@ -24,6 +24,8 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.databaseobjects.impl.DefaultDatabaseColumn;
+import org.executequery.gui.browser.BrowserDomainPanel;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ import java.util.List;
  */
 public class DatabaseObjectTableModel extends AbstractPrintableTableModel {
 
-    protected String[] header = {"", "Name", "Datatype", "Size", "Scale", "Required", "Default", "Computed_Source", "Description", "Domain"};
+    protected String[] header = {"", Bundles.getCommon("name"), Bundles.getCommon("data-type"), Bundles.getCommon("size"), Bundles.getCommon("scale"), Bundles.getCommon("required"), Bundles.getCommon("default"), Bundles.getCommon("ComputedSource"), Bundles.getCommon("description"), Bundles.get(BrowserDomainPanel.class, "Domain")};
 
     /**
      * the database table columns

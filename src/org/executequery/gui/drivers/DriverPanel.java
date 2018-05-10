@@ -21,10 +21,11 @@
 package org.executequery.gui.drivers;
 
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.localization.Bundles;
 
 public interface DriverPanel {
 
-    String TITLE = "Drivers";
+    String TITLE = Bundles.getCommon("drivers");
 
     String FRAME_ICON = "DatabaseDrivers16.png";
 

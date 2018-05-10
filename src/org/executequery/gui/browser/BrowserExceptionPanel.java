@@ -5,6 +5,7 @@ import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseException;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextPane;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.StyledLogPane;
@@ -63,14 +64,14 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
 
     }
 
-    private void init() throws Exception {
+    private void init() {
         JPanel descPanel = new JPanel(new GridBagLayout());
 
         idField = new JTextField();
 
         exceptionTextPane = new JTextPane();
 
-        JLabel idLabel = new JLabel("Exception ID: ");
+        JLabel idLabel = new JLabel(bundleString("ExceptionID"));
 
         JPanel topGroupPanel = new JPanel(new BorderLayout());
 
@@ -91,7 +92,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
                         new Insets(2, 2, 2, 2), 0, 0));
 
         tabPane = new JTabbedPane(JTabbedPane.TOP);
-        tabPane.add("Exception", descPanel);
+        tabPane.add(bundleString("Exception"), descPanel);
         JPanel descriptionPanel = new JPanel(new BorderLayout());
 
         descriptionPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -100,7 +101,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
 
         descriptionPanel.add(descriptionPane, BorderLayout.CENTER);
 
-        tabPane.add("Description", descriptionPanel);
+        tabPane.add(Bundles.getCommon("description"), descriptionPanel);
 
         JPanel sqlPanel = new JPanel(new BorderLayout());
 
@@ -146,7 +147,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
         ++gbc.gridy;
         gbc.insets.top = 0;
 
-        setHeaderText("Database Exception");
+        setHeaderText("DatabaseException");
         setHeaderIcon(GUIUtilities.loadIcon("exception16.png", true));
         setContentPanel(base);
         cache = new HashMap();
@@ -171,8 +172,8 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
 
         currentObjectView = exception;
 
-        objectNameLabel.setText("Exception Name:");
-        setHeaderText("Database Exception");
+        objectNameLabel.setText(bundleString("ExceptionName"));
+        setHeaderText(bundleString("DatabaseException"));
         setHeaderIcon(GUIUtilities.loadIcon("exception16.png", true));
 
         try {
@@ -195,7 +196,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
     public void setValues(BaseDatabaseObject metaObject, DefaultDatabaseException exception) {
 
         objectNameLabel.setText("Exception Name:");
-        setHeaderText("Database Exception");
+        setHeaderText(bundleString("DatabaseException"));
         setHeaderIcon("exception16.png");
 
         if (exception != null) {

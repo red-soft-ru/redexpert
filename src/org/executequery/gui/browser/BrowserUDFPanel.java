@@ -5,6 +5,7 @@ import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUDF;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextPane;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.StyledLogPane;
@@ -67,7 +68,7 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
 
     }
 
-    private void init() throws Exception {
+    private void init() {
         JPanel descPanel = new JPanel(new GridBagLayout());
 
         model = new DefaultDatabaseUDF.UDFTableModel(udfs);
@@ -100,7 +101,7 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
 
         descriptionPanel.add(descriptionPane, BorderLayout.CENTER);
 
-        tabPane.add("Description", descriptionPanel);
+        tabPane.add(Bundles.getCommon("description"), descriptionPanel);
 
         JPanel sqlPanel = new JPanel(new BorderLayout());
 
@@ -110,7 +111,7 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
 
         sqlPanel.add(sqlPane, BorderLayout.CENTER);
 
-        tabPane.add("Sql", sqlPanel);
+        tabPane.add(Bundles.getCommon("SQL"), sqlPanel);
 
         objectNameLabel = new JLabel();
         udfNameField = new DisabledField();
@@ -180,8 +181,8 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
             controller.handleException(e);
         }
 
-        objectNameLabel.setText("UDF Name:");
-        setHeaderText("Database UDF");
+        objectNameLabel.setText(bundleString("UDFName"));
+        setHeaderText(bundleString("DatabaseUDF"));
         setHeaderIcon(GUIUtilities.loadIcon("udf16.png", true));
 
         try {
@@ -201,8 +202,8 @@ public class BrowserUDFPanel extends AbstractFormObjectViewPanel {
 
     public void setValues(BaseDatabaseObject metaObject, DefaultDatabaseUDF udf) {
 
-        objectNameLabel.setText("UDF Name:");
-        setHeaderText("Database UDF");
+        objectNameLabel.setText(bundleString("UDFName"));
+        setHeaderText(bundleString("DatabaseUDF"));
         setHeaderIcon("udf16.png");
 
         if (udf != null) {

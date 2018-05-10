@@ -2,6 +2,7 @@ package org.executequery.gui.datatype;
 
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.FileUtils;
@@ -50,11 +51,11 @@ public class SelectTypePanel extends JPanel {
     }
 
     private void init() {
-        typeLabel = new JLabel("Type");
-        sizeLabel = new JLabel("Size");
-        scaleLabel = new JLabel("Scale");
-        subtypeLabel = new JLabel("Subtype");
-        encodingLabel = new JLabel("Encoding");
+        typeLabel = new JLabel(Bundles.getCommon("data-type"));
+        sizeLabel = new JLabel(Bundles.getCommon("size"));
+        scaleLabel = new JLabel(Bundles.getCommon("scale"));
+        subtypeLabel = new JLabel(Bundles.getCommon("subtype"));
+        encodingLabel = new JLabel(Bundles.getCommon("encoding"));
         typeBox = new JComboBox();
         encodingBox = new JComboBox();
         sizeField = new NumberTextField();

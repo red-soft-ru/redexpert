@@ -79,7 +79,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
 
     }
 
-    private void init() throws Exception {
+    private void init() {
         model = new ProcedureTableModel();
         table = new DefaultTable(model);
         table.getTableHeader().setReorderingAllowed(false);
@@ -100,7 +100,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         paramPanel.add(new JScrollPane(table), BorderLayout.CENTER);
 
         JPanel sourcePanel = new JPanel(new BorderLayout());
-        sourcePanel.setBorder(BorderFactory.createTitledBorder("Source"));
+        sourcePanel.setBorder(BorderFactory.createTitledBorder(bundleString("source")));
         sourceTextPane = new SQLTextPane();
         sourceTextPane.setEditable(false);
         sourcePanel.add(new JScrollPane(sourceTextPane), BorderLayout.CENTER);
@@ -109,7 +109,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         splitPane.setBottomComponent(sourcePanel);
 
         JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP);
-        tabs.add("Description", splitPane);
+        tabs.add(Bundles.getCommon("description"), splitPane);
 
         JPanel sqlPanel = new JPanel(new BorderLayout());
         sqlPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -187,9 +187,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
     }
 
     public void removeObject(Object object) {
-        if (cache.containsKey(object)) {
-            cache.remove(object);
-        }
+        cache.remove(object);
     }
 
     public boolean hasObject(Object object) {

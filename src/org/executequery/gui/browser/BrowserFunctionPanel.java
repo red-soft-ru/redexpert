@@ -56,7 +56,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
 
     }
 
-    private void init() throws Exception {
+    private void init() {
         model = new BrowserFunctionPanel.FunctionTableModel();
         table = new DefaultTable(model);
         table.getTableHeader().setReorderingAllowed(false);
@@ -77,7 +77,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
         paramPanel.add(new JScrollPane(table), BorderLayout.CENTER);
 
         JPanel sourcePanel = new JPanel(new BorderLayout());
-        sourcePanel.setBorder(BorderFactory.createTitledBorder("Source"));
+        sourcePanel.setBorder(BorderFactory.createTitledBorder(bundleString("Source")));
         sourceTextPane = new SQLTextPane();
         sourceTextPane.setEditable(false);
         sourcePanel.add(new JScrollPane(sourceTextPane), BorderLayout.CENTER);
@@ -86,7 +86,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
         splitPane.setBottomComponent(sourcePanel);
 
         JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP);
-        tabs.add("Description", splitPane);
+        tabs.add(Bundles.getCommon("description"), splitPane);
 
         JPanel sqlPanel = new JPanel(new BorderLayout());
         sqlPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -164,9 +164,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
     }
 
     public void removeObject(Object object) {
-        if (cache.containsKey(object)) {
-            cache.remove(object);
-        }
+        cache.remove(object);
     }
 
     public boolean hasObject(Object object) {

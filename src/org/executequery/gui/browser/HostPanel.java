@@ -28,6 +28,7 @@ import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -112,7 +113,7 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         }
     }
 
-    private void init() throws Exception {
+    private void init() {
 
         connectionPanel = new ConnectionPanel(controller);
         databasePropertiesPanel = new DatabasePropertiesPanel();
@@ -121,14 +122,14 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         javaSqlTypesPanel = new JavaSQLTypesPanel();
 
         tabPane = new JTabbedPane(JTabbedPane.TOP);
-        tabPane.addTab("Connection", connectionPanel);
-        tabPane.addTab("Database Properties", databasePropertiesPanel);
-        tabPane.addTab("SQL Keywords", keyWordsPanel);
-        tabPane.addTab("Data Types", dataTypesPanel);
+        tabPane.addTab(Bundles.getCommon("connection"), connectionPanel);
+        tabPane.addTab(bundleString("DatabaseProperties"), databasePropertiesPanel);
+        tabPane.addTab(bundleString("SQLKeywords"), keyWordsPanel);
+        tabPane.addTab(bundleString("DataTypes"), dataTypesPanel);
         tabPane.addTab("java.sql.Types", javaSqlTypesPanel);
         enableConnectionTabs(false);
 
-        setHeaderText("Database Connection");
+        setHeaderText(bundleString("DatabaseConnection"));
         setHeaderIcon(GUIUtilities.loadIcon("Database24.png"));
         setContentPanel(tabPane);
 

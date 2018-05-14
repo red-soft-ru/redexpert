@@ -29,6 +29,7 @@ import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.SimpleValueSelectionDialog;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseDefinitionCache;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
@@ -57,7 +58,7 @@ import java.util.Vector;
 public class DriversPanel extends AbstractFormObjectViewPanel
         implements ItemListener, DriverPanel {
 
-    public static final String TITLE = "Drivers";
+    public static final String TITLE = Bundles.getCommon("drivers");
 
     public static final String FRAME_ICON = "DatabaseDrivers16.png";
 

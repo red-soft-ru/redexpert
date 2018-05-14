@@ -20,6 +20,7 @@
 
 package org.underworldlabs.swing.table;
 
+import org.executequery.localization.Bundles;
 import org.underworldlabs.util.KeyValuePair;
 
 import java.util.Arrays;
@@ -38,7 +39,7 @@ public class PropertyWrapperModel extends AbstractSortableTableModel {
     public static final int SORT_BY_KEY = 0;
     public static final int SORT_BY_VALUE = 1;
 
-    private static final String[] HEADER = {"Property", "Value"};
+    private static final String[] HEADER = Bundles.get(PropertyWrapperModel.class, new String[]{"property", "value"});
 
     private int sortBy;
     private KeyValuePair[] valuePairs;

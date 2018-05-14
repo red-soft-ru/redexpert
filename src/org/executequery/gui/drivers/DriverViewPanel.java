@@ -23,6 +23,7 @@ package org.executequery.gui.drivers;
 import org.executequery.base.TabView;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.gui.forms.FormObjectViewContainer;
+import org.executequery.localization.Bundles;
 
 /**
  * @author Takis Diakoumis
@@ -30,7 +31,7 @@ import org.executequery.gui.forms.FormObjectViewContainer;
 public class DriverViewPanel extends FormObjectViewContainer
         implements TabView {
 
-    public static final String TITLE = "Drivers";
+    public static final String TITLE = Bundles.getCommon("drivers");
     public static final String FRAME_ICON = "DatabaseDrivers16.png";
 
     /**

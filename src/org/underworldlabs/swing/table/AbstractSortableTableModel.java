@@ -20,6 +20,8 @@
 
 package org.underworldlabs.swing.table;
 
+import org.executequery.localization.Bundles;
+
 import javax.swing.table.AbstractTableModel;
 
 public abstract class AbstractSortableTableModel extends AbstractTableModel
@@ -30,6 +32,9 @@ public abstract class AbstractSortableTableModel extends AbstractTableModel
         return true;
     }
 
+    protected String bundleString(String key) {
+        return Bundles.get(getClass(), key);
+    }
 }
 
 

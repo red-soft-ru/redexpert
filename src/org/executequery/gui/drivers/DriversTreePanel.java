@@ -29,6 +29,7 @@ import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DatabaseDriverEvent;
 import org.executequery.event.DatabaseDriverListener;
 import org.executequery.gui.AbstractDockedTabActionPanel;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.util.ThreadUtils;
@@ -60,7 +61,7 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
         implements TreeSelectionListener,
         DatabaseDriverListener {
 
-    public static final String TITLE = "Drivers";
+    public static final String TITLE = Bundles.getCommon("drivers");
 
     /**
      * the tree display

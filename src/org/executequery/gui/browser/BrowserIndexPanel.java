@@ -7,11 +7,11 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DefaultComboBox;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.StyledLogPane;
-
 
 import javax.swing.*;
 import java.awt.*;
@@ -75,7 +75,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
     }
 
-    private void init() throws Exception {
+    private void init() {
         JPanel fieldsPanel = new JPanel(new GridBagLayout());
 
         model = new DefaultDatabaseIndex.IndexColumnsModel(columns);
@@ -89,7 +89,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
                         new Insets(2, 2, 2, 2), 0, 0));
 
         tabPane = new JTabbedPane(JTabbedPane.TOP);
-        tabPane.add("Included Fields", fieldsPanel);
+        tabPane.add(bundleString("IncludedFields"), fieldsPanel);
         JPanel descriptionPanel = new JPanel(new BorderLayout());
 
         descriptionPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -98,7 +98,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
         descriptionPanel.add(descriptionPane, BorderLayout.CENTER);
 
-        tabPane.add("Description", descriptionPanel);
+        tabPane.add(Bundles.getCommon("description"), descriptionPanel);
 
         objectNameLabel = new JLabel();
         indexNameField = new DisabledField();
@@ -132,14 +132,14 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
         gbc.gridx = 1;
 
         tableField = new DisabledField();
-        uniqueCheckBox = new JCheckBox("Is unique");
+        uniqueCheckBox = new JCheckBox(bundleString("Unique"));
         uniqueCheckBox.setSelected(false);
-        activeCheckBox = new JCheckBox("Is active");
+        activeCheckBox = new JCheckBox(bundleString("Active"));
         activeCheckBox.setSelected(false);
         sortingComboBox = new DefaultComboBox();
         List<String> sorting = new ArrayList<>();
-        sorting.add("Ascending");
-        sorting.add("Descending");
+        sorting.add(bundleString("Ascending"));
+        sorting.add(bundleString("Descending"));
         sortingComboBox.setModel(new DefaultComboBoxModel(sorting.toArray()));
 
         base.add(indexNameField, gbc);
@@ -147,8 +147,8 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
         JPanel panel = new JPanel(new FlowLayout());
 
-        JLabel tableLable = new JLabel("Table Name:");
-        JLabel sortingLable = new JLabel("Sorting:");
+        JLabel tableLable = new JLabel(bundleString("TableName"));
+        JLabel sortingLable = new JLabel(bundleString("Sorting"));
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(panel);
         panel.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -237,8 +237,8 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
             tabPane.setSelectedIndex(0);
         }
 
-        objectNameLabel.setText("Index Name:");
-        setHeaderText("Database Index");
+        objectNameLabel.setText(bundleString("IndexName"));
+        setHeaderText(bundleString("DatabaseIndex"));
         setHeaderIcon(GUIUtilities.loadIcon("TableIndex16.png", true));
 
         try {
@@ -257,8 +257,8 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
     public void setValues(BaseDatabaseObject metaObject, DefaultDatabaseIndex index) {
 
-        objectNameLabel.setText("Index Name:");
-        setHeaderText("Database Index");
+        objectNameLabel.setText(bundleString("IndexName"));
+        setHeaderText(bundleString("DatabaseIndex"));
         setHeaderIcon("TableIndex16.png");
 
         if (index != null) {

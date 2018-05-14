@@ -3,6 +3,7 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
+import org.executequery.databaseobjects.NamedObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -160,8 +161,10 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
      * @return the object type
      */
     public int getType() {
-        if (getParent().getMetaDataKey() == META_TYPES[6])
+        if (getParent().getMetaDataKey() == META_TYPES[NamedObject.TRIGGER])
             return TRIGGER;
+        else if (getParent().getMetaDataKey() == META_TYPES[NamedObject.SYSTEM_TRIGGER])
+            return SYSTEM_TRIGGER;
         return SYSTEM_DATABASE_TRIGGER;
     }
 

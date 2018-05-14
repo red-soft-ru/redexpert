@@ -4,6 +4,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextPane;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DefaultComboBox;
 import org.underworldlabs.swing.DisabledField;
@@ -57,38 +58,38 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
     }
 
-    private void init() throws Exception {
+    private void init() {
 
         JPanel panel = new JPanel();
 
         panel.setLayout(new BorderLayout());
 
         JPanel paramPanel = new JPanel(new GridBagLayout());
-        paramPanel.setBorder(BorderFactory.createTitledBorder("Parameters"));
+        paramPanel.setBorder(BorderFactory.createTitledBorder(Bundles.getCommon("Parameters")));
 
         JPanel sourcePanel = new JPanel(new BorderLayout());
-        sourcePanel.setBorder(BorderFactory.createTitledBorder("Source"));
+        sourcePanel.setBorder(BorderFactory.createTitledBorder(bundleString("Source")));
         textPane = new SQLTextPane();
         textPane.setEditable(false);
         sourcePanel.add(new JScrollPane(textPane), BorderLayout.CENTER);
 
-        activeCheckbox = new JCheckBox("Is Active", false);
+        activeCheckbox = new JCheckBox(bundleString("Active"), false);
         paramPanel.add(activeCheckbox, new GridBagConstraints(0, 0, 2, 1, 1, 0,
                 GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 0, 5, 5), 0, 0));
 
-        tableNameLabel = new JLabel("For Table:");
+        tableNameLabel = new JLabel(bundleString("ForTable"));
         paramPanel.add(tableNameLabel);
 
         tableNameCombo = new DefaultComboBox();
         paramPanel.add(tableNameCombo);
 
-        beforeAfterLabel = new JLabel("Before/After:");
+        beforeAfterLabel = new JLabel(bundleString("BeforeAfter"));
         paramPanel.add(beforeAfterLabel);
 
         triggerBeforeAfterField = new DisabledField();
         paramPanel.add(triggerBeforeAfterField);
 
-        triggerPositionLabel = new JLabel("Position:");
+        triggerPositionLabel = new JLabel(bundleString("Position"));
         paramPanel.add(triggerPositionLabel);
 
         triggerPositionField = new DisabledField();
@@ -99,7 +100,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         panel.add(sourcePanel, BorderLayout.CENTER);
 
         JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP);
-        tabs.add("Trigger", panel);
+        tabs.add(bundleString("Trigger"), panel);
 
         JPanel descriptionPanel = new JPanel(new BorderLayout());
         descriptionPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -108,7 +109,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
         descriptionPanel.add(descriptionPane, BorderLayout.CENTER);
 
-        tabs.add("Description", descriptionPanel);
+        tabs.add(Bundles.getCommon("description"), descriptionPanel);
 
         JPanel sqlPanel = new JPanel(new BorderLayout());
         sqlPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -184,9 +185,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
     }
 
     public void removeObject(Object object) {
-        if (cache.containsKey(object)) {
-            cache.remove(object);
-        }
+        cache.remove(object);
     }
 
     public boolean hasObject(Object object) {
@@ -195,8 +194,8 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
     public void setValues(DefaultDatabaseTrigger trigger) {
 
-        objectNameLabel.setText("Trigger Name:");
-        setHeaderText("Database Trigger");
+        objectNameLabel.setText(bundleString("TriggerName"));
+        setHeaderText(bundleString("DatabaseTrigger"));
         setHeaderIcon(GUIUtilities.loadIcon("TableTrigger16.png", true));
 
         try {
@@ -205,13 +204,13 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
             activeCheckbox.setSelected(trigger.isTriggerActive());
             if (!trigger.getStringTriggerType().toLowerCase().contains("before") &&
                     !trigger.getStringTriggerType().toLowerCase().contains("after"))
-                beforeAfterLabel.setText("Event:");
+                beforeAfterLabel.setText(bundleString("Event"));
             else if (trigger.getStringTriggerType().toLowerCase().contains("before"))
-                beforeAfterLabel.setText("Before:");
+                beforeAfterLabel.setText(bundleString("Before"));
             else if (trigger.getStringTriggerType().toLowerCase().contains("after"))
-                beforeAfterLabel.setText("After:");
+                beforeAfterLabel.setText(bundleString("After"));
             else
-                beforeAfterLabel.setText("Before/After:");
+                beforeAfterLabel.setText(bundleString("BeforeAfter"));
             triggerBeforeAfterField.setText(trigger.getStringTriggerType());
             tableNameCombo.removeAllItems();
             if (trigger.getTriggerTableName() != null && !trigger.getTriggerTableName().isEmpty()) {
@@ -238,8 +237,8 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
     public void setValues(BaseDatabaseObject metaObject, DefaultDatabaseTrigger trigger) {
 
-        objectNameLabel.setText("Trigger Name:");
-        setHeaderText("Database Trigger");
+        objectNameLabel.setText(bundleString("TriggerName"));
+        setHeaderText(bundleString("Database Trigger"));
         setHeaderIcon("Trigger16.png");
 
         if (trigger != null) {

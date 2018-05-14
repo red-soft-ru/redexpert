@@ -167,9 +167,12 @@ public class UserPreference {
                 if (saveActual) {
                     this.value = savedValue;
                 }
-
-                int index = Integer.parseInt(savedValue);
-                this.value = availableValues[index];
+                try {
+                    int index = Integer.parseInt(savedValue);
+                    this.value = availableValues[index];
+                } catch (NumberFormatException e) {
+                    this.value = value;
+                }
             }
 
         } else {

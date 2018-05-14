@@ -23,6 +23,7 @@ package org.executequery.gui.browser;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseObject;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.TablePrivilege;
 import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.event.ApplicationEvent;
@@ -34,6 +35,7 @@ import org.executequery.gui.databaseobjects.CreateViewPanel;
 import org.executequery.gui.databaseobjects.DefaultDatabaseObjectTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
+import org.executequery.localization.Bundles;
 import org.executequery.print.TablePrinter;
 import org.executequery.sql.SQLFormatter;
 import org.underworldlabs.Constants;
@@ -140,7 +142,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         }
     }
 
-    private void jbInit() throws Exception {
+    private void jbInit() {
 
         noResultsLabel = new JLabel("No information for this object is available.",
                 JLabel.CENTER);
@@ -157,7 +159,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridx = 0;
         gbc.gridy = 0;
-        descPanel.add(new JLabel("Name:"), gbc);
+        descPanel.add(new JLabel(Bundles.getCommon("name")), gbc);
         gbc.insets.left = 5;
         gbc.insets.right = 5;
         gbc.gridx = 1;
@@ -174,7 +176,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
         // configure the table column descriptions panel
         descBottomPanel = new JPanel(new BorderLayout());
-        descBottomPanel.setBorder(BorderFactory.createTitledBorder("Columns"));
+        descBottomPanel.setBorder(BorderFactory.createTitledBorder(Bundles.getCommon("columns")));
 
         tableDataPanel = new TableDataTab(true);
         tablePrivilegePanel = new TablePrivilegeTab();
@@ -184,11 +186,11 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         sqlTextPanel = new SimpleSqlTextPanel();
 
         tabPane = new JTabbedPane();
-        tabPane.add("Description", descBottomPanel);
-        tabPane.add("Privileges", tablePrivilegePanel);
-        tabPane.add("Data", tableDataPanel);
-        tabPane.add("SQL", sqlTextPanel);
-        tabPane.add("Meta Data", metaDataPanel);
+        tabPane.add(Bundles.getCommon("description"), descBottomPanel);
+        tabPane.add(Bundles.getCommon("privileges"), tablePrivilegePanel);
+        tabPane.add(Bundles.getCommon("data"), tableDataPanel);
+        tabPane.add(Bundles.getCommon("SQL"), sqlTextPanel);
+        tabPane.add(Bundles.getCommon("metadata"), metaDataPanel);
 
         // add the tab pane
         gbc.gridy = 2;
@@ -412,7 +414,10 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         sqlTextPanel.setSQLText(Constants.EMPTY);
 
         // header values
-        setHeaderText("Database " + MiscUtils.firstLetterToUpper(object.getMetaDataKey()));
+        if (object.getType() == NamedObject.VIEW) {
+            setHeaderText(bundleString("DatabaseView"));
+        } else
+            setHeaderText("Database " + MiscUtils.firstLetterToUpper(object.getMetaDataKey()));
         tableNameField.setText(object.getName());
         //schemaNameField.setText(object.getSchemaName());
 

@@ -9,6 +9,7 @@ import org.executequery.gui.databaseobjects.CreateDomainPanel;
 import org.executequery.gui.databaseobjects.DefaultDatabaseObjectTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextPane;
+import org.executequery.localization.Bundles;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
@@ -71,7 +72,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
 
     }
 
-    private void init() throws Exception {
+    private void init() {
         tableDescriptionTable = new DefaultDatabaseObjectTable();
         JPanel descPanel = new JPanel(new GridBagLayout());
         descPanel.add(
@@ -82,7 +83,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
                         new Insets(2, 2, 2, 2), 0, 0));
 
         tabPane = new JTabbedPane(JTabbedPane.TOP);
-        tabPane.add("Domain", descPanel);
+        tabPane.add(bundleString("Domain"), descPanel);
         JPanel descriptionPanel = new JPanel(new BorderLayout());
 
         descriptionPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -91,7 +92,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
 
         descriptionPanel.add(descriptionPane, BorderLayout.CENTER);
 
-        tabPane.add("Description", descriptionPanel);
+        tabPane.add(Bundles.getCommon("description"), descriptionPanel);
 
         JPanel sqlPanel = new JPanel(new BorderLayout());
 
@@ -172,7 +173,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
         ++gbc.gridy;
         gbc.insets.top = 0;
 
-        setHeaderText("Database Domain");
+        setHeaderText(Bundles.get(BrowserDomainPanel.class, "DatabaseDomain"));
         setHeaderIcon(GUIUtilities.loadIcon("domain16.png", true));
         setContentPanel(base);
         cache = new HashMap();
@@ -195,7 +196,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
 
             case 0:
                 return new TablePrinter(tableDescriptionTable,
-                        "Table: " + currentObjectView.getName());
+                        bundleString("table") + currentObjectView.getName());
             default:
                 return null;
         }
@@ -206,8 +207,8 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
         currentObjectView = domain;
         currentObjectView.setHost(((DatabaseMetaTag) domain.getParent()).getHost());
 
-        objectNameLabel.setText("Domain Name:");
-        setHeaderText("Database Domain");
+        objectNameLabel.setText(bundleString("DomainName"));
+        setHeaderText(bundleString("DatabaseDomain"));
         setHeaderIcon(GUIUtilities.loadIcon("domain16.png", true));
 
         try {
@@ -248,5 +249,6 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
 
         setHeaderIcon(GUIUtilities.loadIcon(icon, true));
     }
+
 
 }

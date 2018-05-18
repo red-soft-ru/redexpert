@@ -372,10 +372,10 @@ public class TableDataTab extends JPanel
                     SQLException sqlException = (SQLException) e.getCause();
                     if (sqlException.getSQLState().contentEquals("28000"))
                         GUIUtilities.displayExceptionErrorDialog("Data access error", e);
-                    else rebuild_data_from_metadata(columnDataList);
-                } else rebuild_data_from_metadata(columnDataList);
+                    else rebuildDataFromMetadata(columnDataList);
+                } else rebuildDataFromMetadata(columnDataList);
             } catch (Exception e) {
-                rebuild_data_from_metadata(columnDataList);
+                rebuildDataFromMetadata(columnDataList);
             } finally {
                 databaseObject.releaseResources();
             }
@@ -503,7 +503,7 @@ public class TableDataTab extends JPanel
         return "done";
     }
 
-    void rebuild_data_from_metadata(List<ColumnData> columnDataList) {
+    void rebuildDataFromMetadata(List<ColumnData> columnDataList) {
         Log.error("Error retrieving data for table - " + databaseObject.getName() + ". Try to rebuild table model.");
         databaseObject.releaseResources();
         ResultSet resultSet = databaseObject.getMetaData();

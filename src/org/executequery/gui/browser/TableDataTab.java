@@ -64,6 +64,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.*;
 import java.util.List;
@@ -366,11 +367,15 @@ public class TableDataTab extends JPanel
                 ResultSet resultSet = databaseObject.getData(true);
                 tableModel.createTable(resultSet, columnDataList);
 
+            } catch (DataSourceException e) {
+                if ((e.getCause() instanceof SQLException)) {
+                    SQLException sqlException = (SQLException) e.getCause();
+                    if (sqlException.getSQLState().contentEquals("28000"))
+                        GUIUtilities.displayExceptionErrorDialog("Data access error", e);
+                    else rebuild_data_from_metadata(columnDataList);
+                } else rebuild_data_from_metadata(columnDataList);
             } catch (Exception e) {
-                Log.error("Error retrieving data for table - " + databaseObject.getName() + ". Try to rebuild table model.");
-                databaseObject.releaseResources();
-                ResultSet resultSet = databaseObject.getMetaData();
-                tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection(), columnDataList);
+                rebuild_data_from_metadata(columnDataList);
             } finally {
                 databaseObject.releaseResources();
             }
@@ -496,6 +501,13 @@ public class TableDataTab extends JPanel
         repaint();
 
         return "done";
+    }
+
+    void rebuild_data_from_metadata(List<ColumnData> columnDataList) {
+        Log.error("Error retrieving data for table - " + databaseObject.getName() + ". Try to rebuild table model.");
+        databaseObject.releaseResources();
+        ResultSet resultSet = databaseObject.getMetaData();
+        tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection(), columnDataList);
     }
 
     Vector itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {

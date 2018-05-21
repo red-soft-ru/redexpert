@@ -22,6 +22,8 @@ public class DatabaseTypeConverter {
     private static final int cstring_type = 40;
     private static final int blob_type = 261;
     private static final short boolean_type = 23;
+    private static final int decfloat16_type = 24;
+    private static final int decfloat34_type = 25;
 
     public static String getTypeWithSize(int sqlType, int sqlSubtype, int sqlSize, int sqlScale) {
         switch (sqlType) {
@@ -81,6 +83,10 @@ public class DatabaseTypeConverter {
                 return "BOOLEAN";
             case cstring_type:
                 return "CSTRING(" + sqlSize + ")";
+            case decfloat16_type:
+                return "DECFLOAT(16)";
+            case decfloat34_type:
+                return "DECFLOAT(34)";
             default:
                 return "NULL";
         }
@@ -145,6 +151,10 @@ public class DatabaseTypeConverter {
                 return "BOOLEAN";
             case cstring_type:
                 return "CSTRING";
+            case decfloat16_type:
+                return "DECFLOAT(16)";
+            case decfloat34_type:
+                return "DECFLOAT(34)";
             default:
                 return "NULL";
         }
@@ -186,6 +196,9 @@ public class DatabaseTypeConverter {
                 return Types.OTHER;
             case "BLOB SUB_TYPE <0":
                 return Types.BLOB;
+            case "DECFLOAT(16)":
+            case "DECFLOAT(34)":
+                return -6001;
             default:
                 return 0;
         }
@@ -255,6 +268,9 @@ public class DatabaseTypeConverter {
                     default:
                         return Types.BLOB;
                 }
+            case decfloat16_type:
+            case decfloat34_type:
+                return -6001;
             default:
                 return 0;
         }

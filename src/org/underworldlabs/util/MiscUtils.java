@@ -621,7 +621,8 @@ public final class MiscUtils {
      * @return the Java VM version
      */
     public static final double getVMVersion() {
-        return Double.parseDouble(System.getProperty("java.version").substring(0, 3));
+        String property = System.getProperty("java.version");
+        return Double.parseDouble(property.length() >= 3 ? property.substring(0,3) : property);
     }
 
     public static byte[] inputStreamToBytes(InputStream is) {

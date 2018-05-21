@@ -29,6 +29,7 @@ import org.executequery.components.FileChooserDialog;
 import org.executequery.components.TextFieldPanel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.databaseobjects.ConnectionTester;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
@@ -304,12 +305,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
         bgbc.weightx = 0.25;
         basicPanel.add(passwordField, bgbc);
 
-//        addLabelFieldPair(basicPanel, "User Name:",
-//                userField, "Login user name", gbc);
-//
-//        addLabelFieldPair(basicPanel, "Password:",
-//                passwordField, "Login password", gbc);
-
         JButton showPassword = new LinkButton(bundleString("ShowPassword"));
         showPassword.setActionCommand("showPassword");
         showPassword.addActionListener(this);
@@ -539,7 +534,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbc.insets.right = 5;
         mainPanel.add(jdbcUrlPanel, gbc);
         jdbcUrlPanel.setVisible(false);
-
+        
+        JButton testButton = createButton(Bundles.getCommon("test.button"), "test", -1);
         connectButton = createButton(Bundles.getCommon("connect.button"), CONNECT_ACTION_COMMAND, 'T');
         disconnectButton = createButton(Bundles.getCommon("disconnect.button"), "disconnect", 'D');
 
@@ -553,14 +549,20 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.anchor = GridBagConstraints.NORTHEAST;
-        gbc.fill = GridBagConstraints.NONE;
+        gbc.fill = GridBagConstraints.NONE; 
+        
+        buttons.add(testButton, gbc);
+        gbc.gridx++;
+        gbc.weightx = 0;
+
         buttons.add(connectButton, gbc);
         gbc.gridx++;
         gbc.weightx = 0;
         buttons.add(disconnectButton, gbc);
 
         gbc.insets.right = 0;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridwidth = 3;
         mainPanel.add(buttons, gbc);
 
         // ---------------------------------
@@ -881,50 +883,14 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 DatabaseConnectionRepository.REPOSITORY_ID);
     }
 
+    
     /**
      * Acion implementation on selection of the Connect button.
      */
     public void connect() {
-
-        if (databaseConnection.isConnected()) {
-
-            return;
-        }
-
-        // ----------------------------
-        // some validation
-
-        // make sure a name has been entered
-        if (nameField.getText().trim().length() == 0) {
-            GUIUtilities.displayErrorMessage(bundleString("error.emptyName"));
-            return;
-        }
-
-        if (connectionNameExists()) {
-            focusNameField();
-            return;
-        }
-
-        // check a driver is selected
-        if (driverCombo.getSelectedIndex() == 0) {
-            GUIUtilities.displayErrorMessage(bundleString("error.emptyDriver"));
-            return;
-        }
-
-        // check if we have a url - if not check the port is valid
-        if (StringUtils.isBlank(urlField.getText())) {
-
-            String port = portField.getText();
-            if (!StringUtils.isNumeric(port)) {
-
-                GUIUtilities.displayErrorMessage(bundleString("error.invalidPort"));
-                return;
-            }
-
-        }
-
-        if (!sshTunnelConnectionPanel.canConnect()) {
-
+        
+        if (!valid()) {
+            
             return;
         }
 
@@ -962,10 +928,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         } catch (DataSourceException e) {
 
-            StringBuilder sb = new StringBuilder();
-            sb.append(Bundles.getCommon("error.connection"));
-            sb.append(e.getExtendedMessage());
-            GUIUtilities.displayExceptionErrorDialog(sb.toString(), e);
+            connectionError(e);
 
         } finally {
 
@@ -973,7 +936,88 @@ public class ConnectionPanel extends AbstractConnectionPanel
         }
 
     }
+	
+    public void test() {
+        
+        if (!valid()) {
+            
+            return;
+        }	
+		
+		populateAndSave();
+		
+		try {
 
+            GUIUtilities.showWaitCursor();
+            if (new ConnectionTester().test(databaseConnection)) {
+                
+                GUIUtilities.displayInformationMessage(bundleString("test.success"));
+            }
+
+        } catch (DataSourceException e) {
+			
+			connectionError(e);
+
+        } finally {
+
+            GUIUtilities.showNormalCursor();
+        }
+
+    }
+	
+    private void connectionError(DataSourceException e) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(Bundles.getCommon("error.connection"));
+        sb.append(e.getExtendedMessage());
+        GUIUtilities.displayExceptionErrorDialog(sb.toString(), e);
+    }
+
+    private boolean valid() {
+        
+        if (databaseConnection.isConnected()) {
+
+            return false;
+        }
+
+        // make sure a name has been entered
+        if (StringUtils.isBlank(nameField.getText())) {
+            GUIUtilities.displayErrorMessage(bundleString("error.emptyName"));
+            return false;
+        }
+
+        if (connectionNameExists()) {
+            focusNameField();
+            return false;
+        }
+        
+        // check a driver is selected
+        if (driverCombo.getSelectedIndex() == 0) {
+
+            GUIUtilities.displayErrorMessage(bundleString("error.emptyDriver"));
+            return false;
+        }
+
+        // check if we have a url - if not check the port is valid
+        if (StringUtils.isBlank(urlField.getText())) {
+
+            String port = portField.getText();
+            if (!StringUtils.isNumeric(port)) {
+                    
+                GUIUtilities.displayErrorMessage(bundleString("error.invalidPort"));
+                return false;                    
+            }
+
+        }
+
+        if (!sshTunnelConnectionPanel.canConnect()) {
+            
+            return false;
+        }
+
+        return true;
+    }
+    
     public void showPassword() {
 
         new ShowPasswordDialog(nameField.getText(),
@@ -1527,27 +1571,52 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbc.insets.left = 10;
         gbc.weightx = 0;
         panel.add(new DefaultFieldLabel(bundleString("driverField")), gbc);
+        
+        JPanel _panel = new JPanel(new GridBagLayout()); 
+        
+        GridBagConstraints _gbc = new GridBagConstraints();
+        _gbc.gridx = 0;
+        _gbc.gridy = 0;
+        _gbc.weightx = 1.0;
+        _gbc.fill = GridBagConstraints.HORIZONTAL;
+        _panel.add(driverCombo, _gbc);
+        
+        
         gbc.gridx = 1;
         gbc.insets.left = 5;
         gbc.insets.right = 5;
         gbc.weightx = 1.0;
         gbc.insets.top = 0;
-        panel.add(driverCombo, gbc);
+//        panel.add(driverCombo, gbc);
+//        _panel.add(driverCombo, BorderLayout.WEST);
 
         driverCombo.setToolTipText(bundleString("driverField.tool-tip"));
 
-        JButton button = WidgetFactory.createInlineFieldButton(bundleString("addNewDriver"));
-        button.setActionCommand("addNewDriver");
+//        JButton button = WidgetFactory.createInlineFieldButton(bundleString("addNewDriver"));
+        JButton button = new FormPanelButton(bundleString("addNewDriver"), "addNewDriver");
+//        button.setActionCommand("addNewDriver");
         button.addActionListener(this);
         button.setMnemonic('r');
 
-        gbc.gridx = 2;
-        gbc.weightx = 0;
-        gbc.gridwidth = 1;
-        gbc.insets.left = 0;
-        gbc.ipadx = 10;
+//        gbc.gridx = 2;
+//        gbc.weightx = 0;
+//        gbc.gridwidth = 2;
+//        gbc.insets.left = 0;
+//        gbc.ipadx = 10;
         gbc.insets.right = 10;
-        panel.add(button, gbc);
+//        panel.add(button, gbc);
+        
+        _gbc.gridx++;
+        _gbc.weightx = 0;
+        _gbc.fill = GridBagConstraints.NONE;
+        _gbc.ipadx = 10;
+        _gbc.insets.left = 10;
+        _panel.add(button, _gbc);
+        
+        gbc.gridwidth = GridBagConstraints.REMAINDER; 
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(_panel,gbc);
+    
     }
 
     public void addNewDriver() {

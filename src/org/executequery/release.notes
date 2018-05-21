@@ -9,6 +9,7 @@ Summary of changes - v4.4.2 Build 5489:
 - Incremental fix for the Java9 issue and undo/redo for text components.
 - Added (finally) DBUnit dataset export support.
 - Modified default table header view for dark theme.
+- Added connection test action to connection panel.
 
 
 Summary of changes - v4.4.1 Build 5484:

@@ -62,6 +62,8 @@ import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.image.BufferedImage;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -364,7 +366,7 @@ public class TableDataTab extends JPanel
 
             Log.debug("Retrieving data for table - " + databaseObject.getName());
             try {
-                ResultSet resultSet = databaseObject.getData(true);
+                ResultSet resultSet = databaseObject.getData(/*true*/);
                 tableModel.createTable(resultSet, columnDataList);
 
             } catch (DataSourceException e) {
@@ -376,8 +378,6 @@ public class TableDataTab extends JPanel
                 } else rebuildDataFromMetadata(columnDataList);
             } catch (Exception e) {
                 rebuildDataFromMetadata(columnDataList);
-            } finally {
-                databaseObject.releaseResources();
             }
             createResultSetTable();
             List<String> nonEditableCols = new ArrayList<>();
@@ -456,7 +456,6 @@ public class TableDataTab extends JPanel
 
                 };
                 sorter.setTableHeaderRenderer(renderer);
-
             }
 
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -469,6 +468,19 @@ public class TableDataTab extends JPanel
 
 
             scroller.getViewport().add(table);
+            scroller.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+                @Override
+                public void adjustmentValueChanged(AdjustmentEvent e) {
+                    if (!e.getValueIsAdjusting()) {
+                        JScrollBar scrollBar = (JScrollBar) e.getAdjustable();
+                        int extent = scrollBar.getModel().getExtent();
+                        int maximum = scrollBar.getModel().getMaximum();
+                        if (extent + e.getValue() == maximum) {
+                            tableModel.fetchMoreData();
+                        }
+                    }
+                }
+            });
             removeAll();
 
             add(/*canEditTableNotePanel*/buttonsEditingPanel, canEditTableNoteConstraints);

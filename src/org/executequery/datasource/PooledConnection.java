@@ -127,14 +127,7 @@ public class PooledConnection implements Connection {
 
             if (realConnection != null) {
 
-                if (!inUse && !realConnection.isClosed()) {
-
-                    return true;
-
-                } else {
-
-                    return false;
-                }
+                return !inUse && !realConnection.isClosed();
 
             }
 
@@ -781,28 +774,27 @@ public class PooledConnection implements Connection {
         }
     }
 
-    public void setSchema(String schema) throws SQLException {
-        // TODO Auto-generated method stub
-
-    }
-
-    public String getSchema() throws SQLException {
+    public String getSchema() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public void abort(Executor executor) throws SQLException {
+    public void setSchema(String schema) {
         // TODO Auto-generated method stub
 
     }
 
-    public void setNetworkTimeout(Executor executor, int milliseconds)
-            throws SQLException {
+    public void abort(Executor executor) {
         // TODO Auto-generated method stub
 
     }
 
-    public int getNetworkTimeout() throws SQLException {
+    public void setNetworkTimeout(Executor executor, int milliseconds) {
+        // TODO Auto-generated method stub
+
+    }
+
+    public int getNetworkTimeout() {
         // TODO Auto-generated method stub
         return 0;
     }
@@ -832,6 +824,18 @@ public class PooledConnection implements Connection {
             Log.debug("---------------------------------Connection is released.----------------------------------\n\n\n");
         }
 
+    }
+
+    public PooledStatement createIndividualStatement() throws SQLException {
+        checkOpen();
+        Statement statement = null;
+        try {
+            setAutoCommit(false);
+            statement = realConnection.createStatement();
+            return new PooledStatement(this, statement);
+        } catch (SQLException e) {
+            throw e;
+        }
     }
 }
 

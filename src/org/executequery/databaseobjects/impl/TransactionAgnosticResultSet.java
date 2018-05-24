@@ -62,11 +62,6 @@ public class TransactionAgnosticResultSet extends DelegatingResultSet {
             Connection connection = getConnection();
             if (connection != null) {
                 try {
-
-                    if (!connection.getAutoCommit()) {
-
-                        connection.commit();
-                    }
                     boolean keepAlive = true;
                     if (!keepAlive)
                         connection.close();

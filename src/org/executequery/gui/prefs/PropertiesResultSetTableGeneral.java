@@ -43,7 +43,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         }
     }
 
-    private void init() throws Exception {
+    private void init() {
 
         List<UserPreference> list = new ArrayList<UserPreference>();
 
@@ -162,8 +162,15 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 "Use other color for null when adding/deleting records",
                 Boolean.valueOf(stringUserProperty(key))));
 
+        key = "results.table.fetch.size";
+        list.add(new UserPreference(
+                UserPreference.INTEGER_TYPE,
+                key,
+                "Fetch size",
+                Integer.valueOf(stringUserProperty(key))));
+
         UserPreference[] preferences =
-                (UserPreference[]) list.toArray(new UserPreference[list.size()]);
+                list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
 

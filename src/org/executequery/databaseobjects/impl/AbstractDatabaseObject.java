@@ -25,6 +25,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.*;
+import org.executequery.datasource.PooledConnection;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.Log;
 
@@ -351,11 +352,6 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 dataRowCount = rs.getInt(1);
             }
 
-            if (!connection.getAutoCommit()) {
-
-                connection.commit();
-            }
-
             return dataRowCount;
 
         } catch (SQLException e) {
@@ -437,7 +433,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             }
 
             connection = getHost().getTemporaryConnection();
-            statement = connection.createStatement();
+            statement = ((PooledConnection) connection).createIndividualStatement();
 
             rs = statement.executeQuery(query);
             return new TransactionAgnosticResultSet(connection, statement, rs);

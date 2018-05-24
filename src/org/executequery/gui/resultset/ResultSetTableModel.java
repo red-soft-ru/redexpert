@@ -23,6 +23,7 @@ package org.executequery.gui.resultset;
 import biz.redsoft.IFBBlob;
 import biz.redsoft.IFBClob;
 import org.apache.commons.lang.StringUtils;
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
@@ -36,6 +37,7 @@ import org.executequery.util.UserProperties;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.table.AbstractSortableTableModel;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -160,6 +162,13 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         createTable(resultSet, null);
     }
 
+    int zeroBaseIndex;
+    int fetchSize;
+    boolean rsClose;
+    ResultSet rs;
+    int count;
+    private int recordCount;
+
     public synchronized void createTable(ResultSet resultSet, List<ColumnData> columnDataList) {
 
         if (!isOpenAndValid(resultSet)) {
@@ -229,7 +238,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
         } finally {
 
-            if (resultSet != null) {
+            /*if (resultSet != null) {
 
                 try {
 
@@ -244,18 +253,47 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                 } catch (SQLException e) {
                 }
 
-            }
+            }*/
         }
 
     }
 
     public synchronized void getDataForTable(ResultSet resultSet, int count, List<ColumnData> columnDataList) throws SQLException, InterruptedException {
-        int recordCount = 0;
+        recordCount = 0;
         this.columnDataList = columnDataList;
-        int zeroBaseIndex;
-        List<RecordDataItem> rowData;
         long time = System.currentTimeMillis();
-        while (resultSet.next()) {
+        fetchSize = SystemProperties.getIntProperty("user", "results.table.fetch.size");
+        rsClose = false;
+        rs = resultSet;
+        this.count = count;
+        for (int i = 0; i < fetchSize && !rsClose; i++) {
+            addingRecord(resultSet, count);
+        }
+        if (Log.isTraceEnabled()) {
+
+            Log.trace("Finished populating table model - " + recordCount + " rows - [ "
+                    + MiscUtils.formatDuration(System.currentTimeMillis() - time) + "]");
+        }
+
+        fireTableStructureChanged();
+
+
+    }
+
+    public void fetchMoreData() {
+        for (int i = 0; i < fetchSize && !rsClose; i++) {
+            try {
+                addingRecord(rs, count);
+            } catch (SQLException e) {
+                GUIUtilities.displayExceptionErrorDialog("Error loading data", e);
+            } catch (InterruptedException e) {
+                GUIUtilities.displayExceptionErrorDialog("Error loading data", e);
+            }
+        }
+    }
+
+    private void addingRecord(ResultSet resultSet, int count) throws SQLException, InterruptedException {
+        if (resultSet.next()) {
 
             if (interrupted || Thread.interrupted()) {
 
@@ -263,7 +301,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             }
 
             recordCount++;
-            rowData = new ArrayList<RecordDataItem>(count);
+            List<RecordDataItem> rowData = new ArrayList<RecordDataItem>(count);
 
             for (int i = 1; i <= count; i++) {
 
@@ -426,23 +464,11 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             }
 
             tableData.add(rowData);
-
-            if (recordCount == maxRecords) {
-
-                break;
-            }
-
+            fireTableStructureChanged();
+        } else {
+            resultSet.close();
+            rsClose = true;
         }
-
-        if (Log.isTraceEnabled()) {
-
-            Log.trace("Finished populating table model - " + recordCount + " rows - [ "
-                    + MiscUtils.formatDuration(System.currentTimeMillis() - time) + "]");
-        }
-
-        fireTableStructureChanged();
-
-
     }
 
     public synchronized void createTableFromMetaData(ResultSet resultSet, DatabaseConnection dc, List<ColumnData> columnDataList) {
@@ -544,9 +570,6 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                 Log.debug("Table model error - ", e);
             }
 
-        } finally {
-
-            executor.releaseResources();
         }
 
     }

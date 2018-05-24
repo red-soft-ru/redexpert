@@ -476,17 +476,21 @@ public class TableDataTab extends JPanel
                         int extent = scrollBar.getModel().getExtent();
                         int maximum = scrollBar.getModel().getMaximum();
                         if (extent + e.getValue() == maximum) {
-                            tableModel.fetchMoreData();
+                            if (!tableModel.isResultSetClose()) {
+                                tableModel.fetchMoreData();
+                                if (displayRowCount)
+                                    rowCountField.setText(String.valueOf(tableModel.getRowCount()));
+                            }
                         }
                     }
                 }
             });
             removeAll();
 
-            add(/*canEditTableNotePanel*/buttonsEditingPanel, canEditTableNoteConstraints);
+            add(buttonsEditingPanel, canEditTableNoteConstraints);
             add(scroller, scrollerConstraints);
 
-            if (displayRowCount && SystemProperties.getBooleanProperty("user", "browser.query.row.count")) {
+            if (displayRowCount) {
 
                 add(rowCountPanel, rowCountPanelConstraints);
                 rowCountField.setText(String.valueOf(sorter.getRowCount()));
@@ -543,7 +547,7 @@ public class TableDataTab extends JPanel
 
         if (tableModel == null) {
 
-            tableModel = new ResultSetTableModel(SystemProperties.getIntProperty("user", "browser.max.records"));
+            tableModel = new ResultSetTableModel(SystemProperties.getIntProperty("user", "browser.max.records"), true);
             tableModel.setHoldMetaData(false);
         }
 

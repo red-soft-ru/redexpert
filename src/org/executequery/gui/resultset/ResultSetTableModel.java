@@ -94,26 +94,28 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     private List<ColumnData> columnDataList;
 
-    public ResultSetTableModel() {
+    boolean isTable;
 
-        this(null, -1);
+    public ResultSetTableModel(boolean isTable) {
+
+        this(null, -1, isTable);
     }
 
-    public ResultSetTableModel(int maxRecords) {
+    public ResultSetTableModel(int maxRecords, boolean isTable) {
 
-        this(null, maxRecords);
+        this(null, maxRecords, isTable);
     }
 
-    public ResultSetTableModel(ResultSet resultSet, int maxRecords) {
+    public ResultSetTableModel(ResultSet resultSet, int maxRecords, boolean isTable) {
 
-        this(resultSet, maxRecords, null);
+        this(resultSet, maxRecords, null, isTable);
     }
 
-    public ResultSetTableModel(ResultSet resultSet, int maxRecords, String query) {
+    public ResultSetTableModel(ResultSet resultSet, int maxRecords, String query, boolean isTable) {
 
         this.maxRecords = maxRecords;
         this.query = query;
-
+        this.isTable = isTable;
         columnHeaders = new ArrayList<ResultSetColumnHeader>();
         visibleColumnHeaders = new ArrayList<ResultSetColumnHeader>();
 
@@ -237,13 +239,13 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             }
 
         } finally {
-
-            /*if (resultSet != null) {
+            if (!isTable) {
+                if (resultSet != null) {
 
                 try {
 
                     Statement statement = resultSet.getStatement();
-                    //resultSet.close();
+                    resultSet.close();
 
                     if (statement != null) {
                         if (!statement.isClosed())
@@ -253,7 +255,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                 } catch (SQLException e) {
                 }
 
-            }*/
+                }
+            }
         }
 
     }
@@ -266,9 +269,14 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         rsClose = false;
         rs = resultSet;
         this.count = count;
-        for (int i = 0; i < fetchSize && !rsClose; i++) {
-            addingRecord(resultSet, count);
-        }
+        if (isTable)
+            for (int i = 0; i < fetchSize && !rsClose; i++) {
+                addingRecord(resultSet, count);
+            }
+        else
+            while (!rsClose) {
+                addingRecord(resultSet, count);
+            }
         if (Log.isTraceEnabled()) {
 
             Log.trace("Finished populating table model - " + recordCount + " rows - [ "
@@ -285,11 +293,17 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             try {
                 addingRecord(rs, count);
             } catch (SQLException e) {
+                rsClose = true;
                 GUIUtilities.displayExceptionErrorDialog("Error loading data", e);
             } catch (InterruptedException e) {
+                rsClose = true;
                 GUIUtilities.displayExceptionErrorDialog("Error loading data", e);
             }
         }
+    }
+
+    public boolean isResultSetClose() {
+        return rsClose;
     }
 
     private void addingRecord(ResultSet resultSet, int count) throws SQLException, InterruptedException {

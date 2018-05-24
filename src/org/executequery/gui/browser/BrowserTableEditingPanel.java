@@ -210,7 +210,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         metaDataPanel = new DatabaseObjectMetaDataPanel();
 
         // table data panel
-        tableDataPanel = new TableDataTab(false);
+        tableDataPanel = new TableDataTab(true);
 
         // table privileges panel
         tablePrivilegePanel = new TablePrivilegeTab();

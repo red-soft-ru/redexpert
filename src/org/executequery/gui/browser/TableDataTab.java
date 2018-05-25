@@ -366,7 +366,7 @@ public class TableDataTab extends JPanel
 
             Log.debug("Retrieving data for table - " + databaseObject.getName());
             try {
-                ResultSet resultSet = databaseObject.getData(/*true*/);
+                ResultSet resultSet = databaseObject.getData();
                 tableModel.createTable(resultSet, columnDataList);
 
             } catch (DataSourceException e) {

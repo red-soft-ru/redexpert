@@ -52,18 +52,7 @@ public class PooledStatement implements CallableStatement {
         return statement.executeUpdate(s);
     }
 
-    @Override
-    public void close() throws SQLException {
-        if (!closed) {
-            if (statement != null)
-                if (!statement.isClosed())
-                    statement.close();
-            connection.lock(false);
-            closed = true;
-        } else {
-            Log.info("Trying to close connection a second time.");
-        }
-    }
+    private boolean individual = false;
 
     @Override
     public int getMaxFieldSize() throws SQLException {
@@ -236,8 +225,17 @@ public class PooledStatement implements CallableStatement {
     }
 
     @Override
-    public boolean isClosed() throws SQLException {
-        return closed;
+    public void close() throws SQLException {
+        if (!closed) {
+            if (statement != null)
+                if (!statement.isClosed())
+                    statement.close();
+            connection.lock(false);
+            closed = true;
+        } else {
+            if (!individual)
+                Log.info("Trying to close connection a second time.");
+        }
     }
 
     @Override
@@ -1108,5 +1106,14 @@ public class PooledStatement implements CallableStatement {
     @Override
     public <T> T getObject(String s, Class<T> aClass) throws SQLException {
         return callableStatement.getObject(s, aClass);
+    }
+
+    @Override
+    public boolean isClosed() {
+        return closed;
+    }
+
+    public void setIndividual(boolean individual) {
+        this.individual = individual;
     }
 }

@@ -833,7 +833,9 @@ public class PooledConnection implements Connection {
         try {
             setAutoCommit(false);
             statement = realConnection.createStatement();
-            return new PooledStatement(this, statement);
+            PooledStatement pooledStatement = new PooledStatement(this, statement);
+            pooledStatement.setIndividual(true);
+            return pooledStatement;
         } catch (SQLException e) {
             throw e;
         }

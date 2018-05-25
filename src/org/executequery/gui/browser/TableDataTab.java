@@ -302,7 +302,7 @@ public class TableDataTab extends JPanel
                 cancelStatement();
 
             } finally {
-
+                tableModel.cancelFetch();
                 cancelled = true;
             }
         }
@@ -468,23 +468,24 @@ public class TableDataTab extends JPanel
 
 
             scroller.getViewport().add(table);
-            scroller.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
-                @Override
-                public void adjustmentValueChanged(AdjustmentEvent e) {
-                    if (!e.getValueIsAdjusting()) {
-                        JScrollBar scrollBar = (JScrollBar) e.getAdjustable();
-                        int extent = scrollBar.getModel().getExtent();
-                        int maximum = scrollBar.getModel().getMaximum();
-                        if (extent + e.getValue() == maximum) {
-                            if (!tableModel.isResultSetClose()) {
-                                tableModel.fetchMoreData();
-                                if (displayRowCount)
-                                    rowCountField.setText(String.valueOf(tableModel.getRowCount()));
+            if (scroller.getVerticalScrollBar().getAdjustmentListeners().length < 1)
+                scroller.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+                    @Override
+                    public void adjustmentValueChanged(AdjustmentEvent e) {
+                        if (!e.getValueIsAdjusting()) {
+                            JScrollBar scrollBar = (JScrollBar) e.getAdjustable();
+                            int extent = scrollBar.getModel().getExtent();
+                            int maximum = scrollBar.getModel().getMaximum();
+                            if (extent + e.getValue() == maximum) {
+                                if (!tableModel.isResultSetClose()) {
+                                    tableModel.fetchMoreData();
+                                    if (displayRowCount)
+                                        rowCountField.setText(String.valueOf(tableModel.getRowCount()));
+                                }
                             }
                         }
                     }
-                }
-            });
+                });
             removeAll();
 
             add(buttonsEditingPanel, canEditTableNoteConstraints);
@@ -922,6 +923,64 @@ public class TableDataTab extends JPanel
             }
         });
         bar.add(rollbackRolloverButton);
+        RolloverButton fetchAllRolloverButton = new RolloverButton();
+        fetchAllRolloverButton.setText("Fetch all");
+        fetchAllRolloverButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                addInProgressPanel();
+                if (timer != null) {
+
+                    timer.cancel();
+                }
+
+                timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        tableModel.setFetchAll(true);
+                        if (worker != null) {
+                            cancel();
+                            worker.interrupt();
+                        }
+                        worker = new SwingWorker() {
+
+                            public Object construct() {
+                                try {
+                                    executing = true;
+                                    tableModel.fetchMoreData();
+                                    removeAll();
+                                    add(buttonsEditingPanel, canEditTableNoteConstraints);
+                                    add(scroller, scrollerConstraints);
+                                    if (displayRowCount) {
+                                        add(rowCountPanel, rowCountPanelConstraints);
+                                        rowCountField.setText(String.valueOf(tableModel.getRowCount()));
+                                    }
+                                    setTableProperties();
+                                    validate();
+                                    repaint();
+                                    return "done";
+                                } catch (Exception e) {
+                                    addErrorLabel(e);
+                                    return "done";
+                                }
+                            }
+
+                            public void finished() {
+
+                                executing = false;
+                                cancelled = false;
+                            }
+
+                        };
+                        worker.start();
+
+                    }
+                }, 600);
+
+            }
+        });
+        bar.add(fetchAllRolloverButton);
         GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
         buttonsEditingPanel.add(bar, gbc3);

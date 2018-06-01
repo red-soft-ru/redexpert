@@ -76,7 +76,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
             throw new DataSourceException("Error loading specified JDBC driver");
         }
 
-        url = generateUrl(databaseConnection, properties);
+        url = generateUrl(databaseConnection);
         Log.info("JDBC Driver class: " + databaseConnection.getJDBCDriver().getClassName());
     }
 
@@ -164,7 +164,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         return DRIVER_LOADER.load(databaseDriver);
     }
 
-    public static final String generateUrl(DatabaseConnection databaseConnection, Properties properties) {
+    protected final String generateUrl(DatabaseConnection databaseConnection) {
 
         String url = databaseConnection.getURL();
 
@@ -192,7 +192,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         return url;
     }
 
-    private static String replacePart(String url, String value, String propertyName) {
+    private String replacePart(String url, String value, String propertyName) {
 
         if (url.contains(propertyName)) {
 
@@ -208,7 +208,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         return url;
     }
 
-    private static void handleMissingInformationException() {
+    private void handleMissingInformationException() {
 
         throw new DataSourceException(
                 "Insufficient information was provided to establish the connection.\n" +
@@ -220,8 +220,8 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         throw new DataSourceException(e);
     }
 
-    public static Properties buildAdvancedProperties(DatabaseConnection databaseConnection) {
-        Properties properties = new Properties();
+    private void populateAdvancedProperties() {
+
         Properties advancedProperties = databaseConnection.getJdbcProperties();
 
         for (Iterator i = advancedProperties.keySet().iterator(); i.hasNext(); ) {
@@ -241,39 +241,35 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
-        return properties;
+
     }
 
-    private void populateAdvancedProperties() {
-        properties = buildAdvancedProperties(databaseConnection);
-    }
-
-    public int getLoginTimeout() {
+    public int getLoginTimeout() throws SQLException {
 
         return DriverManager.getLoginTimeout();
     }
 
-    public void setLoginTimeout(int timeout) {
-
-        DriverManager.setLoginTimeout(timeout);
-    }
-
-    public PrintWriter getLogWriter() {
+    public PrintWriter getLogWriter() throws SQLException {
 
         return DriverManager.getLogWriter();
     }
 
-    public void setLogWriter(PrintWriter writer) {
+    public void setLoginTimeout(int timeout) throws SQLException {
+
+        DriverManager.setLoginTimeout(timeout);
+    }
+
+    public void setLogWriter(PrintWriter writer) throws SQLException {
 
         DriverManager.setLogWriter(writer);
     }
 
-    public boolean isWrapperFor(Class<?> iface) {
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
 
         return false;
     }
 
-    public <T> T unwrap(Class<T> iface) {
+    public <T> T unwrap(Class<T> iface) throws SQLException {
 
         return null;
     }

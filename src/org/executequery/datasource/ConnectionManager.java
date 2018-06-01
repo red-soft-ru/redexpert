@@ -20,6 +20,7 @@
 
 package org.executequery.datasource;
 
+import biz.redsoft.IFBDataSource;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
@@ -30,9 +31,14 @@ import org.executequery.log.Log;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.resource.ResourceException;
 import javax.sql.DataSource;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -47,7 +53,7 @@ import java.util.*;
 public final class ConnectionManager {
 
     private static Map<DatabaseConnection, ConnectionPool> connectionPools = Collections.synchronizedMap(new HashMap<DatabaseConnection, ConnectionPool>());
-
+    private static Map<DatabaseConnection, IFBDataSource> dataSourceMap = Collections.synchronizedMap(new HashMap<DatabaseConnection, IFBDataSource>());
     /**
      * Creates a stored data source for the specified database
      * connection properties object.
@@ -90,9 +96,52 @@ public final class ConnectionManager {
 
         connectionPools.put(databaseConnection, pool);
         databaseConnection.setConnected(true);
+        Connection connection = pool.getConnection();
+        Connection unwrapConnection = null;
+        try {
+            unwrapConnection = connection.unwrap(Connection.class);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        IFBDataSource dataSource = (IFBDataSource) loadingObjectFromClassLoader(unwrapConnection, "FBDataSourceImpl");
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        dataSource.setUserName(databaseConnection.getUserName());
+        dataSource.setPassword(databaseConnection.getUnencryptedPassword());
+        dataSource.setCharset(databaseConnection.getCharset());
+        dataSource.setURL(SimpleDataSource.generateUrl(databaseConnection, SimpleDataSource.buildAdvancedProperties(databaseConnection)));
+
+        dataSource.setCertificate(databaseConnection.getCertificate());
+        dataSourceMap.put(databaseConnection, dataSource);
         loadTree(((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(databaseConnection));
 
         Log.info("Data source " + databaseConnection.getName() + " initialized.");
+    }
+
+    public static Object loadingObjectFromClassLoader(Object unwrapObject, String className) {
+
+        URL[] urls;
+        Class clazzdb;
+        Object odb = null;
+        try {
+            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+            ClassLoader cl = new URLClassLoader(urls, unwrapObject.getClass().getClassLoader());
+            clazzdb = cl.loadClass("biz.redsoft." + className);
+            odb = clazzdb.newInstance();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return odb;
     }
 
     public static void loadTree(DatabaseObjectNode root) {
@@ -127,9 +176,13 @@ public final class ConnectionManager {
             }
 
             ConnectionPool pool = connectionPools.get(databaseConnection);
-            Connection connection = pool.getConnection();
-
-            return connection;
+            IFBDataSource dataSource = dataSourceMap.get(databaseConnection);
+            try {
+                return new PooledConnection(dataSource.getConnection());
+            } catch (SQLException e) {
+                Log.error("Error get connection", e);
+                return pool.getConnection();
+            }
         }
 
     }
@@ -157,6 +210,12 @@ public final class ConnectionManager {
             pool.close();
 
             connectionPools.remove(databaseConnection);
+            try {
+                dataSourceMap.get(databaseConnection).close();
+            } catch (ResourceException e) {
+                e.printStackTrace();
+            }
+            dataSourceMap.remove(databaseConnection);
             databaseConnection.setConnected(false);
         }
 

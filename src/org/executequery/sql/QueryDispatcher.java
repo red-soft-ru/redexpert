@@ -579,25 +579,7 @@ public class QueryDispatcher {
                             e.printStackTrace();
                         }
 
-                        URL[] urls = new URL[0];
-                        Class clazzdb = null;
-                        Object odb = null;
-                        try {
-                            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-                            ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
-                            clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformanceImpl");
-                            odb = clazzdb.newInstance();
-                        } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                        } catch (InstantiationException e) {
-                            e.printStackTrace();
-                        } catch (MalformedURLException e) {
-                            e.printStackTrace();
-                        }
-
-                        IFBDatabasePerformance db = (IFBDatabasePerformance) odb;
+                        IFBDatabasePerformance db = (IFBDatabasePerformance) ConnectionManager.loadingObjectFromClassLoader(connection, "FBDatabasePerformanceImpl");
                         try {
 
                             db.setConnection(connection);

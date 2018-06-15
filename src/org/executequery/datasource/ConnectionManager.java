@@ -121,15 +121,19 @@ public final class ConnectionManager {
         Log.info("Data source " + databaseConnection.getName() + " initialized.");
     }
 
-    public static Object loadingObjectFromClassLoader(Object unwrapObject, String className) {
+    public static Object loadingObjectFromClassLoader(Object unwrapObject, String shortClassName) {
+        return loadingObjectFromClassLoader(unwrapObject, "biz.redsoft." + shortClassName, "./lib/fbplugin-impl.jar");
+    }
+
+    public static Object loadingObjectFromClassLoader(Object unwrapObject, String className, String pathJar) {
 
         URL[] urls;
         Class clazzdb;
         Object odb = null;
         try {
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+            urls = MiscUtils.loadURLs(pathJar);
             ClassLoader cl = new URLClassLoader(urls, unwrapObject.getClass().getClassLoader());
-            clazzdb = cl.loadClass("biz.redsoft." + className);
+            clazzdb = cl.loadClass(className);
             odb = clazzdb.newInstance();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();

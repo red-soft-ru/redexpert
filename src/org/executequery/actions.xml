@@ -878,5 +878,11 @@
             description="Create a new database view"
             execute-class="org.executequery.actions.databasecommands.CreateViewCommand"/>
 
+    <action id="trace-manager-command"
+            name="Trace Manager"
+            mnemonic="TM"
+            accel-editable="true"
+            description="Trace Manager"
+            execute-class="org.executequery.actions.toolscommands.TraceManagerCommands"/>
 
 </actions>

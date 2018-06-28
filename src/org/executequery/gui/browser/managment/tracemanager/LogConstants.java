@@ -27,6 +27,14 @@ public class LogConstants {
     public static final String LEVEL_ISOLATION_COLUMN = "LEVEL_ISOLATION";
     public static final String MODE_OF_BLOCK_COLUMN = "MODE_OF_BLOCK";
     public static final String MODE_OF_ACCESS_COLUMN = "MODE_OF_ACCESS";
+    public static final String TIME_EXECUTION_COLUMN = "TIME_EXECUTION";
+    public static final String COUNT_READS_COLUMN = "COUNT_READS";
+    public static final String COUNT_WRITES_COLUMN = "COUNT_WRITES";
+    public static final String COUNT_FETCHES_COLUMN = "COUNT_FETCHES";
+    public static final String COUNT_MARKS_COLUMN = "COUNT_MARKS";
+    public static final String ID_STATEMENT_COLUMN = "ID_STATEMENT";
+    public static final String RECORDS_FETCHED_COLUMN = "RECORDS_FETCHED";
+    public static final String STATEMENT_TEXT_COLUMN = "STATEMENT_TEXT";
     public static final String[] COLUMNS =
             {
                     ID_COLUMN,
@@ -51,9 +59,17 @@ public class LogConstants {
                     ID_TRANSACTION_COLUMN,
                     LEVEL_ISOLATION_COLUMN,
                     MODE_OF_BLOCK_COLUMN,
-                    MODE_OF_ACCESS_COLUMN
+                    MODE_OF_ACCESS_COLUMN,
+                    TIME_EXECUTION_COLUMN,
+                    COUNT_READS_COLUMN,
+                    COUNT_WRITES_COLUMN,
+                    COUNT_FETCHES_COLUMN,
+                    COUNT_MARKS_COLUMN,
+                    ID_STATEMENT_COLUMN,
+                    RECORDS_FETCHED_COLUMN,
+                    STATEMENT_TEXT_COLUMN
             };
-    public static final int NUMBER_ID_COLUMN = 0;
+    /*public static final int NUMBER_ID_COLUMN = 0;
     public static final int NUMBER_TSTAMP_COLUMN = 1;
     public static final int NUMBER_ID_PROCESS_COLUMN = 2;
     public static final int NUMBER_ID_THREAD_COLUMN = 3;
@@ -75,5 +91,5 @@ public class LogConstants {
     public static final int NUMBER_ID_TRANSACTION_COLUMN = 19;
     public static final int NUMBER_LEVEL_ISOLATION_COLUMN = 20;
     public static final int NUMBER_MODE_OF_BLOCK_COLUMN = 21;
-    public static final int NUMBER_MODE_OF_ACCESS_COLUMN = 22;
+    public static final int NUMBER_MODE_OF_ACCESS_COLUMN = 22;*/
 }

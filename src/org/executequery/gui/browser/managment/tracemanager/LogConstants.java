@@ -35,6 +35,17 @@ public class LogConstants {
     public static final String ID_STATEMENT_COLUMN = "ID_STATEMENT";
     public static final String RECORDS_FETCHED_COLUMN = "RECORDS_FETCHED";
     public static final String STATEMENT_TEXT_COLUMN = "STATEMENT_TEXT";
+    public static final String PARAMETERS_TEXT_COLUMN = "PARAMETERS_TEXT";
+    public static final String PLAN_TEXT_COLUMN = "PLAN_TEXT";
+    public static final String TABLE_COUNTERS_COLUMN = "TABLE_COUNTERS";
+    public static final String DECLARE_CONTEXT_VARIABLES_TEXT_COLUMN = "DECLARE_CONTEXT_VARIABLES";
+    public static final String EXECUTOR_COLUMN = "EXECUTOR";
+    public static final String GRANTOR_COLUMN = "GRANTOR";
+    public static final String PRIVILEGE_COLUMN = "PRIVILEGE";
+    public static final String PRIVILEGE_OBJECT_COLUMN = "PRIVILEGE_OBJECT";
+    public static final String PRIVILEGE_USERNAME_COLUMN = "PRIVILEGE_USERNAME";
+    public static final String PRIVILEGE_ATTACHMENT_COLUMN = "PRIVILEGE_ATTACHMENT";
+    public static final String PRIVILEGE_TRANSACTION_COLUMN = "PRIVILEGE_TRANSACTION";
     public static final String[] COLUMNS =
             {
                     ID_COLUMN,
@@ -67,7 +78,18 @@ public class LogConstants {
                     COUNT_MARKS_COLUMN,
                     ID_STATEMENT_COLUMN,
                     RECORDS_FETCHED_COLUMN,
-                    STATEMENT_TEXT_COLUMN
+                    STATEMENT_TEXT_COLUMN,
+                    PARAMETERS_TEXT_COLUMN,
+                    PLAN_TEXT_COLUMN,
+                    TABLE_COUNTERS_COLUMN,
+                    DECLARE_CONTEXT_VARIABLES_TEXT_COLUMN,
+                    EXECUTOR_COLUMN,
+                    GRANTOR_COLUMN,
+                    PRIVILEGE_COLUMN,
+                    PRIVILEGE_OBJECT_COLUMN,
+                    PRIVILEGE_USERNAME_COLUMN,
+                    PRIVILEGE_ATTACHMENT_COLUMN,
+                    PRIVILEGE_TRANSACTION_COLUMN
             };
     /*public static final int NUMBER_ID_COLUMN = 0;
     public static final int NUMBER_TSTAMP_COLUMN = 1;

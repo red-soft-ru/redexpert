@@ -1,12 +1,11 @@
 package org.executequery.gui.browser.managment.tracemanager;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
-public class StatementTimestampTableCellRenderer extends DefaultTableCellRenderer {
+public class StatementTimestampTableCellRenderer extends CustomTableCellRenderer {
 
     private static final long serialVersionUID = 1L;
     private static final SimpleDateFormat tstampFormat = new SimpleDateFormat("HH:mm:ss.SSS");

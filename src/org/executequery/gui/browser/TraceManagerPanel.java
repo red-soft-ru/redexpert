@@ -35,9 +35,11 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private JButton fileDatabaseButton;
     private JButton fileConfButton;
     private JButton startStopSessionButton;
+    private JButton openFileLog;
     private JTextField fileLogField;
     private JTextField fileDatabaseField;
     private JTextField fileConfField;
+    private JTextField openFileLogField;
     private JTextField userField;
     private JPasswordField passwordField;
     private JCheckBox logToFileBox;
@@ -77,11 +79,13 @@ public class TraceManagerPanel extends JPanel implements TabView {
         fileLogButton = new JButton("...");
         fileDatabaseButton = new JButton("...");
         fileConfButton = new JButton("...");
+        openFileLog = new JButton("...");
         fileLogField = new JTextField();
         fileDatabaseField = new JTextField();
         fileDatabaseField.setText("D:\\databases\\EMPLOYEE.FDB");
         fileConfField = new JTextField();
         fileConfField.setText("d:\\fbtrace_dba.conf");
+        openFileLogField = new JTextField();
         userField = new JTextField();
         userField.setText("SYSDBA");
         passwordField = new JPasswordField();
@@ -117,7 +121,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                int returnVal = fileChooser.showSaveDialog(fileDatabaseButton);
+                int returnVal = fileChooser.showOpenDialog(fileDatabaseButton);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     File file = fileChooser.getSelectedFile();
                     fileDatabaseField.setText(file.getAbsolutePath());
@@ -130,10 +134,65 @@ public class TraceManagerPanel extends JPanel implements TabView {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                int returnVal = fileChooser.showSaveDialog(fileConfButton);
+                int returnVal = fileChooser.showOpenDialog(fileConfButton);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     File file = fileChooser.getSelectedFile();
                     fileConfField.setText(file.getAbsolutePath());
+                }
+            }
+        });
+
+        openFileLog.addActionListener(new ActionListener() {
+            FileChooserDialog fileChooser = new FileChooserDialog();
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int returnVal = fileChooser.showOpenDialog(openFileLog);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    openFileLogField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+                    /*SwingWorker worker = new SwingWorker() {
+                        @Override
+                        public Object construct() {*/
+                    String s = "";
+                    boolean finded = false;
+                    clearAll();
+                    BufferedReader reader = null;
+                    try {
+                        reader = new BufferedReader(
+                                new InputStreamReader(
+                                        new FileInputStream(openFileLogField.getText())));
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            String str = line.trim();
+                            if (str.matches(".?\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+.*")) {
+                                if (finded) {
+                                    LogMessage logMessage = new LogMessage(s);
+                                    idLogMessage++;
+                                    logMessage.setId(idLogMessage);
+                                    loggerPanel.addRow(logMessage);
+                                }
+                                finded = true;
+                                s = str + "\n";
+                            } else {
+                                s += str + "\n";
+                            }
+                        }
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    } finally {
+                        if (reader != null) {
+                            try {
+                                reader.close();
+                            } catch (IOException e1) {
+                                // log warning
+                            }
+                        }
+                    }
+                           /* return null;
+                        }
+                    };
+                    worker.start();*/
+
                 }
             }
         });
@@ -301,6 +360,22 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
+        label = new JLabel("Open filelog");
+        add(label, new GridBagConstraints(3, 3,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        add(openFileLog, new GridBagConstraints(4, 3,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        add(openFileLogField, new GridBagConstraints(5, 3,
+                2, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+
 
     }
 
@@ -353,6 +428,10 @@ public class TraceManagerPanel extends JPanel implements TabView {
         }
         changed = false;
         lock.unlock();
+    }
+
+    public void clearAll() {
+        loggerPanel.clearAll();
     }
 
     private DatabaseDriverRepository driverRepository() {

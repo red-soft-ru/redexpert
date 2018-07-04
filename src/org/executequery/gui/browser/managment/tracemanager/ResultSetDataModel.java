@@ -98,13 +98,15 @@ class ResultSetDataModel extends AbstractTableModel {
             */
         visibleRows = new ArrayList<>();
         for (int i = 0; i < rows.size(); i++) {
-            if (filterTypeBox.getSelectedItem() == Filter.FilterType.FILTER) {
                 String filter = filterTextField.getText();
                 String field = String.valueOf(rows.get(i).getFieldOfName((String) filterColumnBox.getSelectedItem()));
+            if (filterTypeBox.getSelectedItem() == Filter.FilterType.FILTER) {
                 if (field.contains(filter))
                     visibleRows.add(rows.get(i));
-            } else
+            } else {
                 visibleRows.add(rows.get(i));
+                rows.get(i).setHighlight(field.contains(filter) && !filter.isEmpty());
+            }
         }
         DynamicComboBoxModel model = (DynamicComboBoxModel) filterColumnBox.getModel();
         Object selectedItem = filterColumnBox.getSelectedItem();
@@ -181,4 +183,36 @@ class ResultSetDataModel extends AbstractTableModel {
         }
     }
 
+    public void clearAll() {
+        rows.clear();
+        rebuildModel();
+    }
+
+    public void setColumnNames(List<String> columnNames) {
+        this.columnNames = columnNames;
+    }
+
+    public List<String> getVisibleColumnNames() {
+        return visibleColumnNames;
+    }
+
+    public void setVisibleColumnNames(List<String> visibleColumnNames) {
+        this.visibleColumnNames = visibleColumnNames;
+    }
+
+    public List<LogMessage> getRows() {
+        return rows;
+    }
+
+    public void setRows(List<LogMessage> rows) {
+        this.rows = rows;
+    }
+
+    public List<LogMessage> getVisibleRows() {
+        return visibleRows;
+    }
+
+    public void setVisibleRows(List<LogMessage> visibleRows) {
+        this.visibleRows = visibleRows;
+    }
 }

@@ -51,7 +51,18 @@ public class LogMessage {
     private String fetchedRecords;
     private String statementText;
     private String paramText;
-
+    private String planText;
+    private String tableCounters;
+    private String declareContextVariablesText;
+    private String executor;
+    private String grantor;
+    private String privilege;
+    private String privilegeObject;
+    private String privilegeUsername;
+    private String privilegeAttachment;
+    private String privilegeTransaction;
+    private boolean failed;
+    private boolean highlight;
     public LogMessage(String body) {
         /*body = addField(body, "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+)", new String[]{}, LogConstants.TSTAMP_COLUMN);
         body = addField(body, "^\\([\\d\\w]+:", new String[]{"(", ":"}, LogConstants.ID_PROCESS_COLUMN);
@@ -72,6 +83,8 @@ public class LogMessage {
                     setTypeEvent(ctx.type_database_event().getText());
                     setTypeEventTrace(TypeEventTrace.DATABASE_EVENT);
                     setHeader(ctx.header_event());
+                    setClientProcessInfo(ctx.client_process_info());
+                    setConnectionInfo(ctx.connection_info());
                 }
 
                 @Override
@@ -91,7 +104,6 @@ public class LogMessage {
                 @Override
                 public void enterStatement_event(RedTraceParser.Statement_eventContext ctx) {
                     setTypeEvent(textFromRuleContext(ctx.type_statement_event()));
-                    setTypeEvent(ctx.type_statement_event().getText());
                     setTypeEventTrace(TypeEventTrace.STATEMENT_EVENT);
                     setHeader(ctx.header_event());
                     setConnectionInfo(ctx.connection_info());
@@ -99,41 +111,20 @@ public class LogMessage {
                     setTransactionInfo(ctx.transaction_info());
                     if (ctx.id_statement() != null)
                         setIdStatement(textFromRuleContext(ctx.id_statement().ID()));
-                    String query = textFromRuleContext(ctx.query_and_params());
-                    if (query != null) {
-                        if (isFindOfRegex("param0 = .+\n", query)) {
-                            paramText = findOfRegex("param0 = .+\n", query);
-                            query = query.replace(paramText, "").trim();
-                        }
-                        if (isFindOfRegex("[\\d]+ ms.+\n", query)) {
-                            String global_counters = findOfRegex("[\\d]+ ms.+\n", query);
-                            RedTraceParser redTraceParser = buildParser(global_counters);
-                            ParseTree redTree = redTraceParser.global_counters();
-                            ParseTreeWalker redWalker = new ParseTreeWalker();
-                            redWalker.walk(new RedTraceBaseListener() {
-                                @Override
-                                public void enterGlobal_counters(RedTraceParser.Global_countersContext ctx) {
-                                    setGlobalCounters(ctx);
-                                }
-                            }, redTree);
-                            query = query.replace(global_counters, "").trim();
-                        }
-                        if (isFindOfRegex("[\\d]+ records fetched", query)) {
-                            String records_fetched = findOfRegex("[\\d]+ records fetched", query);
-                            RedTraceParser redTraceParser = buildParser(records_fetched);
-                            ParseTree redTree = redTraceParser.records_fetched();
-                            ParseTreeWalker redWalker = new ParseTreeWalker();
-                            redWalker.walk(new RedTraceBaseListener() {
-                                @Override
-                                public void enterRecords_fetched(RedTraceParser.Records_fetchedContext ctx) {
-                                    setFetchedRecords(textFromRuleContext(ctx.ID()));
-                                }
-                            }, redTree);
-                            query = query.replace(records_fetched, "").trim();
-                        }
-                        setStatementText(query);
-                    }
+                    setQueryAndParams(ctx.query_and_params());
+                }
 
+                @Override
+                public void enterStatement_prepare_event(RedTraceParser.Statement_prepare_eventContext ctx) {
+                    setTypeEvent(textFromRuleContext(ctx.type_statement_prepare_event()));
+                    setTypeEventTrace(TypeEventTrace.STATEMENT_PREPARE_EVENT);
+                    setHeader(ctx.header_event());
+                    setConnectionInfo(ctx.connection_info());
+                    setClientProcessInfo(ctx.client_process_info());
+                    setTransactionInfo(ctx.transaction_info());
+                    if (ctx.id_statement() != null)
+                        setIdStatement(textFromRuleContext(ctx.id_statement().ID()));
+                    setQueryAndParams(ctx.query_and_params());
 
                 }
 
@@ -142,6 +133,10 @@ public class LogMessage {
                     setTypeEvent(ctx.type_trace_event().getText());
                     setTypeEventTrace(TypeEventTrace.TRACE_EVENT);
                     setHeader(ctx.header_event());
+                    String id = textFromRuleContext(ctx.ID_SESSION());
+                    if (id != null)
+                        setSessionID(id.trim().replace("SESSION_", ""));
+                    setSessionName(textFromRuleContext(ctx.name_session()));
                 }
 
                 @Override
@@ -149,189 +144,39 @@ public class LogMessage {
                     setTypeEvent(ctx.type_transaction_event().getText());
                     setTypeEventTrace(TypeEventTrace.TRANSACTION_EVENT);
                     setHeader(ctx.header_event());
+                    setConnectionInfo(ctx.connection_info());
+                    setClientProcessInfo(ctx.client_process_info());
+                    setTransactionInfo(ctx.transaction_info());
+                    setGlobalCounters(ctx.global_counters());
+                    setTableCounters(textFromRuleContext(ctx.table_counters()));
+                }
+
+                @Override
+                public void enterFree_statement_event(RedTraceParser.Free_statement_eventContext ctx) {
+                    setTypeEvent(textFromRuleContext(ctx.type_free_statement_event()));
+                    setTypeEventTrace(TypeEventTrace.STATEMENT_FREE_EVENT);
+                    setHeader(ctx.header_event());
+                    setConnectionInfo(ctx.connection_info());
+                    setClientProcessInfo(ctx.client_process_info());
+                    if (ctx.id_statement() != null)
+                        setIdStatement(textFromRuleContext(ctx.id_statement().ID()));
+                    setQueryAndParams(ctx.query_and_params());
+                }
+
+                @Override
+                public void enterPrivileges_change_event(RedTraceParser.Privileges_change_eventContext ctx) {
+                    setTypeEvent(textFromRuleContext(ctx.type_privileges_change_event()));
+                    setTypeEventTrace(TypeEventTrace.PRIVILEGES_CHANGE_EVENT);
+                    setHeader(ctx.header_event());
+                    setConnectionInfo(ctx.connection_info());
+                    setClientProcessInfo(ctx.client_process_info());
+                    setTransactionInfo(ctx.transaction_info());
+                    setPrivilegesChangeInfo(ctx.privileges_change_info());
                 }
             }, tree);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        /*if (typeEvent.contentEquals("TRACE_INIT") || typeEvent.contentEquals(" TRACE_FINI")) {
-            typeEventTrace = TypeEventTrace.TRACE_EVENT;
-            body = addField(body, "^SESSION_[\\w\\d]+ ", "SESSION_", LogConstants.ID_SESSION_COLUMN);
-            body = addField(body, "^[\\w\\d_]+ ", " ", LogConstants.NAME_SESSION_COLUMN);
-        } else if (typeEvent.contentEquals("CREATE_DATABASE")
-                || typeEvent.contentEquals("ATTACH_DATABASE")
-                || typeEvent.contentEquals("DROP_DATABASE")
-                || typeEvent.contentEquals("DETACH_DATABASE")) {
-            typeEventTrace = TypeEventTrace.DATABASE_EVENT;
-            body = addField(body, "^.+ \\(ATT_", "(ATT_", LogConstants.DATABASE_COLUMN);
-            body = addField(body, "^[\\w\\d]+,", ",", LogConstants.ID_CONNECTION_COLUMN);
-            body = addField(body, "^[\\w\\d_]+:", ":", LogConstants.USERNAME_COLUMN);
-            body = addField(body, "^[\\w\\d_]+,", ",", LogConstants.ROLE_COLUMN);
-            if (!body.contentEquals("<internal>)")) {
-                body = addField(body, "^[\\w\\d_]+,", ",", LogConstants.CHARSET_COLUMN);
-                body = addField(body, "^[\\w\\d_]+:", ":", LogConstants.PROTOCOL_CONNECTION_COLUMN);
-                body = addField(body, "^[\\w\\d_\\./]+\\)", ")", LogConstants.CLIENT_ADDRESS_COLUMN);
-                if(!body.isEmpty()) {
-                    body = addField(body, ":[\\w\\d]+$", ":", LogConstants.ID_CLIENT_PROCESS_COLUMN);
-                    setClientProcess(body);
-                }
-            }
-
-        } else if (typeEvent.contentEquals("START_TRANSACTION")
-                || typeEvent.contentEquals("COMMIT_RETAINING")
-                || typeEvent.contentEquals("COMMIT_TRANSACTION")
-                || typeEvent.contentEquals("ROLLBACK_RETAINING")
-                || typeEvent.contentEquals("ROLLBACK_TRANSACTION")) {
-            typeEventTrace = TypeEventTrace.TRANSACTION_EVENT;
-            body = addField(body, "^.+ \\(ATT_", "(ATT_", LogConstants.DATABASE_COLUMN);
-            body = addField(body, "^[\\w\\d]+,", ",", LogConstants.ID_CONNECTION_COLUMN);
-            body = addField(body, "^[\\w\\d_]+:", ":", LogConstants.USERNAME_COLUMN);
-            body = addField(body, "^[\\w\\d_]+,", ",", LogConstants.ROLE_COLUMN);
-            if (!body.startsWith("<internal>)")) {
-                body = addField(body, "^[\\w\\d_]+,", ",", LogConstants.CHARSET_COLUMN);
-                body = addField(body, "^[\\w\\d_]+:", ":", LogConstants.PROTOCOL_CONNECTION_COLUMN);
-                body = addField(body, "^[\\w\\d_\\./]+\\)", ")", LogConstants.CLIENT_ADDRESS_COLUMN);
-            } else {
-                body = body.replace("<internal>)", "").trim();
-            }
-            body = addField(body, "^\\(TRA_[\\d]+,", new String[]{"(TRA_", ","}, LogConstants.ID_TRANSACTION_COLUMN);
-            body = addField(body, "^[\\w_]+ \\|", new String[]{" ", "|"}, LogConstants.LEVEL_ISOLATION_COLUMN);
-            if (levelIsolation.contentEquals("READ_COMMITTED")) {
-                body = addField(body, "^[\\w_]+ \\|", new String[]{" ", "|"}, LogConstants.LEVEL_ISOLATION_COLUMN);
-                levelIsolation = "READ_COMMITTED | " + levelIsolation;
-            }
-            body = addField(body, "^[\\w_]+ \\|", new String[]{" ", "|"}, LogConstants.MODE_OF_BLOCK_COLUMN);
-            body = addField(body, "^[\\w_]+\\)", ")", LogConstants.MODE_OF_ACCESS_COLUMN);
-            if(!body.isEmpty())
-            {
-                if(isFindOfRegex("^[\\d]+ ms[,]?",body))
-                body = addField(body, "^[\\d]+ ms[,]?", new String[]{"ms",","," "}, LogConstants.TIME_EXECUTION_COLUMN);
-                if(isFindOfRegex("^[\\d]+ read\\(s\\)[,]?",body))
-                    body = addField(body, "^[\\d]+ read\\(s\\)[,]?",  new String[]{"read(s)",","," "}, LogConstants.COUNT_READS_COLUMN);
-                if(isFindOfRegex("^[\\d]+ write(s)[,]?",body))
-                    body = addField(body, "^[\\d]+ write\\(s\\)[,]?", new String[]{"write(s)",","," "}, LogConstants.COUNT_WRITES_COLUMN);
-                if(isFindOfRegex("^[\\d]+ fetch\\(es\\)[,]?",body))
-                    body = addField(body, "^[\\d]+ fetch\\(es\\)[,]?",  new String[]{"fetch(es)",","," "}, LogConstants.COUNT_FETCHES_COLUMN);
-                if(isFindOfRegex("^[\\d]+ mark\\(s\\)[,]?",body))
-                    body = addField(body, "^[\\d]+ mark\\(s\\)[,]?", new String[]{"mark(s)",","," "}, LogConstants.COUNT_MARKS_COLUMN);
-            }
-
-        } else if (typeEvent.contentEquals(" PREPARE_STATEMENT"))
-
-        {
-            typeEventTrace = TypeEventTrace.STATEMENT_PREPARE_EVENT;
-        } else if (typeEvent.contentEquals("FREE_STATEMENT")
-                || typeEvent.contentEquals("CLOSE_CURSOR"))
-
-        {
-            typeEventTrace = TypeEventTrace.STATEMENT_FREE_EVENT;
-        } else if (typeEvent.contentEquals("EXECUTE_STATEMENT_START")
-                || typeEvent.contentEquals("EXECUTE_STATEMENT_FINISH"))
-
-        {
-            typeEventTrace = TypeEventTrace.STATEMENT_EVENT;
-            body = addField(body, "^.+ \\(ATT_", "(ATT_", LogConstants.DATABASE_COLUMN);
-            body = addField(body, "^[\\w\\d]+,", ",", LogConstants.ID_CONNECTION_COLUMN);
-            body = addField(body, "^[\\w\\d_]+:", ":", LogConstants.USERNAME_COLUMN);
-            body = addField(body, "^[\\w\\d_]+,", ",", LogConstants.ROLE_COLUMN);
-            if (!body.startsWith("<internal>)")) {
-                body = addField(body, "^[\\w\\d_]+,", ",", LogConstants.CHARSET_COLUMN);
-                body = addField(body, "^[\\w\\d_]+:", ":", LogConstants.PROTOCOL_CONNECTION_COLUMN);
-                body = addField(body, "^[\\w\\d_\\./]+\\)", ")", LogConstants.CLIENT_ADDRESS_COLUMN);
-            } else {
-                body = body.replace("<internal>)", "").trim();
-            }
-            body = addField(body, "^\\(TRA_[\\d]+,", new String[]{"(TRA_", ","}, LogConstants.ID_TRANSACTION_COLUMN);
-            body = addField(body, "^[\\w_]+ \\|", new String[]{" ", "|"}, LogConstants.LEVEL_ISOLATION_COLUMN);
-            if (levelIsolation.contentEquals("READ_COMMITTED")) {
-                body = addField(body, "^[\\w_]+ \\|", new String[]{" ", "|"}, LogConstants.LEVEL_ISOLATION_COLUMN);
-                levelIsolation = "READ_COMMITTED | " + levelIsolation;
-            }
-            body = addField(body, "^[\\w_]+ \\|", new String[]{" ", "|"}, LogConstants.MODE_OF_BLOCK_COLUMN);
-            body = addField(body, "^[\\w_]+\\)", ")", LogConstants.MODE_OF_ACCESS_COLUMN);
-            body = addField(body,"^Statement [\\d]+:",new String[]{"Statement",":"},LogConstants.ID_STATEMENT_COLUMN);
-            if(isFindOfRegex("[\\d]+ records fetched",body))
-            body = addField(body,"[\\d]+ records fetched"," records fetched",LogConstants.RECORDS_FETCHED_COLUMN);
-            if(isFindOfRegex("[\\d]+ ms[,]?",body))
-                body = addField(body, "[\\d]+ ms[,]?", new String[]{"ms",","," "}, LogConstants.TIME_EXECUTION_COLUMN);
-            if(isFindOfRegex("[\\d]+ read\\(s\\)[,]?",body))
-                body = addField(body, "[\\d]+ read\\(s\\)[,]?",  new String[]{"read(s)",","," "}, LogConstants.COUNT_READS_COLUMN);
-            if(isFindOfRegex("[\\d]+ write(s)[,]?",body))
-                body = addField(body, "[\\d]+ write\\(s\\)[,]?", new String[]{"write(s)",","," "}, LogConstants.COUNT_WRITES_COLUMN);
-            if(isFindOfRegex("[\\d]+ fetch\\(es\\)[,]?",body))
-                body = addField(body, "[\\d]+ fetch\\(es\\)[,]?",  new String[]{"fetch(es)",","," "}, LogConstants.COUNT_FETCHES_COLUMN);
-            if(isFindOfRegex("[\\d]+ mark\\(s\\)[,]?",body))
-                body = addField(body, "[\\d]+ mark\\(s\\)[,]?", new String[]{"mark(s)",","," "}, LogConstants.COUNT_MARKS_COLUMN);
-            body = addField(body,"^[-]+","",LogConstants.STATEMENT_TEXT_COLUMN);
-            statementText = body;
-            String[] strs = statementText.split("\n");
-            if(strs.length>1)
-                if(strs[strs.length-1].startsWith("param"))
-                    paramText = strs[strs.length-1];
-            statementText.replace(paramText,"");
-        } else if (typeEvent.contentEquals("SET_CONTEXT"))
-
-        {
-            typeEventTrace = TypeEventTrace.CONTEXT_EVENT;
-        } else if (typeEvent.contentEquals("PRIVILEGES_CHANGE"))
-
-        {
-            typeEventTrace = TypeEventTrace.PRIVILEGES_CHANGE_EVENT;
-        } else if (typeEvent.contentEquals("EXECUTE_PROCEDURE_START")
-                || typeEvent.contentEquals("EXECUTE_FUNCTION_START")
-                || typeEvent.contentEquals("EXECUTE_PROCEDURE_FINISH")
-                || typeEvent.contentEquals("EXECUTE_FUNCTION_FINISH"))
-
-        {
-            typeEventTrace = TypeEventTrace.PROCEDURE_FUNCTION_EVENT;
-        } else if (typeEvent.contentEquals("EXECUTE_TRIGGER_START")
-                || typeEvent.contentEquals("EXECUTE_TRIGGER_FINISH"))
-
-        {
-            typeEventTrace = TypeEventTrace.TRIGGER_EVENT;
-        } else if (typeEvent.contentEquals("COMPILE_BLR"))
-
-        {
-            typeEventTrace = TypeEventTrace.COMPILE_BLR_EVENT;
-        } else if (typeEvent.contentEquals("EXECUTE_BLR"))
-
-        {
-            typeEventTrace = TypeEventTrace.EXECUTE_BLR_EVENT;
-        } else if (typeEvent.contentEquals("EXECUTE_DYN"))
-
-        {
-            typeEventTrace = TypeEventTrace.EXECUTE_DYN_EVENT;
-        } else if (typeEvent.contentEquals("ATTACH_SERVICE")
-                || typeEvent.contentEquals("DETACH_SERVICE"))
-
-        {
-            typeEventTrace = TypeEventTrace.SERVICE_EVENT;
-        } else if (typeEvent.contentEquals("START_SERVICE"))
-
-        {
-            typeEventTrace = TypeEventTrace.START_SERVICE_EVENT;
-            body = addField(body, "^service_mgr, \\(Service [\\w\\d]+,", new String[]{"service_mgr, (Service ", ","}, LogConstants.ID_SERVICE_COLUMN);
-            body = addField(body, "^[\\w\\d_]+,", ",", LogConstants.USERNAME_COLUMN);
-            body = addField(body, "^[\\w\\d_]+:", ":", LogConstants.PROTOCOL_CONNECTION_COLUMN);
-            body = addField(body, "^[\\w\\d_\\./]+\\)", ")", LogConstants.CLIENT_ADDRESS_COLUMN);
-            body = addField(body, "^\"[\\w\\d_\\./ ]+\"", "\"", LogConstants.TYPE_QUERY_SERVICE_COLUMN);
-            setOptionsStartService(body);
-        } else if (typeEvent.contentEquals(" QUERY_SERVICE"))
-
-        {
-            typeEventTrace = TypeEventTrace.QUERY_SERVICE_EVENT;
-        } else if (typeEvent.contentEquals("ERROR") || typeEvent.contentEquals("WARNING"))
-
-        {
-            typeEventTrace = TypeEventTrace.ERROR_WARNING_EVENT;
-        } else if (typeEvent.contentEquals("{SWEEP_START")
-                || typeEvent.contentEquals("SWEEP_FINISH")
-                || typeEvent.contentEquals("SWEEP_FAILED")
-                || typeEvent.contentEquals("SWEEP_PROGRESS"))
-
-        {
-            typeEventTrace = TypeEventTrace.SWEEP_EVENT;
-        }*/
     }
 
     private String findOfRegex(String regex, String str) {
@@ -350,6 +195,7 @@ public class LogMessage {
         setTimestamp(Timestamp.valueOf(textFromRuleContext(ctx.timestamp()).replace("T", " ")));
         setIdProcess(textFromRuleContext(ctx.id_process()));
         setIdThread(textFromRuleContext(ctx.id_thread()));
+        setFailed(ctx.failed() != null);
     }
 
     public void setClientProcessInfo(RedTraceParser.Client_process_infoContext ctx) {
@@ -376,7 +222,9 @@ public class LogMessage {
 
     public void setTransactionInfo(RedTraceParser.Transaction_infoContext ctx) {
         if (ctx != null) {
-            setIdTransaction(textFromRuleContext(ctx.ID_TRANSACTION()).replace("TRA_", ""));
+            String id = textFromRuleContext(ctx.ID_TRANSACTION());
+            if (id != null)
+                setIdTransaction(id.replace("TRA_", ""));
             setLevelIsolation(textFromRuleContext(ctx.level_isolation()));
             setModeOfBlock(textFromRuleContext(ctx.mode_of_block()));
             setModeOfAccess(textFromRuleContext(ctx.mode_of_access()));
@@ -391,6 +239,75 @@ public class LogMessage {
             setCountFetches(textFromRuleContext(ctx.fetches()));
             setCountMarks(textFromRuleContext(ctx.marks()));
         }
+    }
+
+    public void setQueryAndParams(RedTraceParser.Query_and_paramsContext ctx) {
+        if (ctx != null) {
+            if (ctx.not_query() != null) {
+                RedTraceParser.Not_queryContext not_queryContext = ctx.not_query();
+                setPlanText(textFromRuleContext(not_queryContext.plan()));
+                setParamText(textFromRuleContext(not_queryContext.params()));
+                if (not_queryContext.records_fetched() != null)
+                    setFetchedRecords(textFromRuleContext(not_queryContext.records_fetched().ID()));
+                setGlobalCounters(not_queryContext.global_counters());
+                setTableCounters(textFromRuleContext(not_queryContext.table_counters()));
+                setStatementText(textFromRuleContext(ctx.query()));
+            } else {
+                String query = textFromRuleContext(ctx);
+                if (query != null) {
+                    if (isFindOfRegex("param0 = .+\n", query)) {
+                        paramText = findOfRegex("(param.+\n)+", query);
+                        if (paramText != null)
+                            query = query.replace(paramText, "").trim();
+                    }
+                    if (isFindOfRegex("[\\d]+ ms.+\n", query)) {
+                        String global_counters = findOfRegex("[\\d]+ ms.+\n", query);
+                        RedTraceParser redTraceParser = buildParser(global_counters);
+                        ParseTree redTree = redTraceParser.global_counters();
+                        ParseTreeWalker redWalker = new ParseTreeWalker();
+                        redWalker.walk(new RedTraceBaseListener() {
+                            @Override
+                            public void enterGlobal_counters(RedTraceParser.Global_countersContext ctx) {
+                                setGlobalCounters(ctx);
+                            }
+                        }, redTree);
+                        query = query.replace(global_counters, "").trim();
+                    }
+                    if (isFindOfRegex("[\\d]+ records fetched", query)) {
+                        String records_fetched = findOfRegex("[\\d]+ records fetched", query);
+                        RedTraceParser redTraceParser = buildParser(records_fetched);
+                        ParseTree redTree = redTraceParser.records_fetched();
+                        ParseTreeWalker redWalker = new ParseTreeWalker();
+                        redWalker.walk(new RedTraceBaseListener() {
+                            @Override
+                            public void enterRecords_fetched(RedTraceParser.Records_fetchedContext ctx) {
+                                setFetchedRecords(textFromRuleContext(ctx.ID()));
+                            }
+                        }, redTree);
+                        query = query.replace(records_fetched, "").trim();
+                    }
+                    setStatementText(query);
+                }
+            }
+        }
+    }
+
+    public void setPrivilegesChangeInfo(RedTraceParser.Privileges_change_infoContext ctx) {
+        if (ctx != null) {
+            setExecutor(textFromRuleContext(ctx.executor()));
+            setGrantor(textFromRuleContext(ctx.grantor()));
+            setPrivilege(textFromRuleContext(ctx.privilege()));
+            setPrivilegeObject(textFromRuleContext(ctx.object()));
+            setPrivilegeUsername(textFromRuleContext(ctx.username()));
+            RedTraceParser.AttachmentContext attachment = ctx.attachment();
+            if (attachment != null)
+                setPrivilegeAttachment(textFromRuleContext(attachment.ID()));
+            RedTraceParser.TransactionContext transaction = ctx.transaction();
+            if (transaction != null)
+                setPrivilegeTransaction(textFromRuleContext(transaction.ID()));
+
+        }
+
     }
 
     private String textFromRuleContext(ParserRuleContext ctx) {
@@ -696,6 +613,110 @@ public class LogMessage {
         this.statementText = statementText;
     }
 
+    public String getParamText() {
+        return paramText;
+    }
+
+    public void setParamText(String paramText) {
+        this.paramText = paramText;
+    }
+
+    public String getPlanText() {
+        return planText;
+    }
+
+    public void setPlanText(String planText) {
+        this.planText = planText;
+    }
+
+    public String getTableCounters() {
+        return tableCounters;
+    }
+
+    public void setTableCounters(String tableCounters) {
+        this.tableCounters = tableCounters;
+    }
+
+    public String getDeclareContextVariablesText() {
+        return declareContextVariablesText;
+    }
+
+    public void setDeclareContextVariablesText(String declareContextVariablesText) {
+        this.declareContextVariablesText = declareContextVariablesText;
+    }
+
+    public String getExecutor() {
+        return executor;
+    }
+
+    public void setExecutor(String executor) {
+        this.executor = executor;
+    }
+
+    public String getGrantor() {
+        return grantor;
+    }
+
+    public void setGrantor(String grantor) {
+        this.grantor = grantor;
+    }
+
+    public String getPrivilege() {
+        return privilege;
+    }
+
+    public void setPrivilege(String privilege) {
+        this.privilege = privilege;
+    }
+
+    public String getPrivilegeObject() {
+        return privilegeObject;
+    }
+
+    public void setPrivilegeObject(String privilegeObject) {
+        this.privilegeObject = privilegeObject;
+    }
+
+    public String getPrivilegeUsername() {
+        return privilegeUsername;
+    }
+
+    public void setPrivilegeUsername(String privilegeUsername) {
+        this.privilegeUsername = privilegeUsername;
+    }
+
+    public String getPrivilegeAttachment() {
+        return privilegeAttachment;
+    }
+
+    public void setPrivilegeAttachment(String privilegeAttachment) {
+        this.privilegeAttachment = privilegeAttachment;
+    }
+
+    public String getPrivilegeTransaction() {
+        return privilegeTransaction;
+    }
+
+    public void setPrivilegeTransaction(String privilegeTransaction) {
+        this.privilegeTransaction = privilegeTransaction;
+    }
+
+    public boolean isFailed() {
+        return failed;
+    }
+
+    public void setFailed(boolean failed) {
+        this.failed = failed;
+    }
+
+    public boolean isHighlight() {
+        return highlight;
+    }
+
+    public void setHighlight(boolean highlight) {
+        this.highlight = highlight;
+    }
+
     private String addField(String body, String regex, String excludedRegex, String colName) {
         return addField(body, regex, new String[]{excludedRegex}, colName);
     }
@@ -796,6 +817,9 @@ public class LogMessage {
             case LogConstants.STATEMENT_TEXT_COLUMN:
                 setStatementText(field.field);
                 break;
+            case LogConstants.PARAMETERS_TEXT_COLUMN:
+                setParamText(field.field);
+                break;
             default:
                 break;
         }
@@ -866,6 +890,28 @@ public class LogMessage {
                 return getFetchedRecords();
             case LogConstants.STATEMENT_TEXT_COLUMN:
                 return getStatementText();
+            case LogConstants.PARAMETERS_TEXT_COLUMN:
+                return getParamText();
+            case LogConstants.PLAN_TEXT_COLUMN:
+                return getPlanText();
+            case LogConstants.TABLE_COUNTERS_COLUMN:
+                return getTableCounters();
+            case LogConstants.DECLARE_CONTEXT_VARIABLES_TEXT_COLUMN:
+                return getDeclareContextVariablesText();
+            case LogConstants.EXECUTOR_COLUMN:
+                return getExecutor();
+            case LogConstants.GRANTOR_COLUMN:
+                return getGrantor();
+            case LogConstants.PRIVILEGE_COLUMN:
+                return getPrivilege();
+            case LogConstants.PRIVILEGE_OBJECT_COLUMN:
+                return getPrivilegeObject();
+            case LogConstants.PRIVILEGE_USERNAME_COLUMN:
+                return getPrivilegeUsername();
+            case LogConstants.PRIVILEGE_ATTACHMENT_COLUMN:
+                return getPrivilegeAttachment();
+            case LogConstants.PRIVILEGE_TRANSACTION_COLUMN:
+                return getPrivilegeTransaction();
             default:
                 return null;
         }

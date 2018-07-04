@@ -18,33 +18,76 @@ event
 |transaction_event
 |statement_event
 |start_service_event
+|statement_prepare_event
+|free_statement_event
+|context_event
+|privileges_change_event
 ;
 
 trace_event
-:header_event WS? type_trace_event WS? ID_SESSION WS name_session WS database
+:header_event SPACE type_trace_event end_line ID_SESSION SPACE name_session end_line database
 ;
 
 database_event
-:header_event WS type_database_event WS connection_info WS client_process_info?
+:header_event SPACE type_database_event end_line connection_info end_line client_process_info?
 ;
 
 transaction_event
-:header_event WS type_transaction_event WS connection_info WS client_process_info? transaction_info WS?
-global_counters? WS?
-table_counters? WS?
+:header_event SPACE type_transaction_event end_line connection_info end_line (client_process_info end_line)? transaction_info end_line
+(global_counters end_line)?
+(table_counters end_line)?
 ;
 
 statement_event
-:header_event WS type_statement_event WS connection_info WS client_process_info? transaction_info WS id_statement WS
-MINUSES WS
+:header_event SPACE type_statement_event end_line
+ connection_info end_line
+ (client_process_info end_line)?
+ transaction_info ws
+ id_statement end_line
+MINUSES end_line
 query_and_params
 ;
 
 start_service_event
-:header_event WS type_start_service_event WS 'service_mgr,' WS? '(' id_service ',' WS? username ',' WS? protocol ':' client_address (',' client_process_info)? WS? ')'
- WS '"' type_query_service '"'
- WS options_service
+:header_event SPACE type_start_service_event end_line 'service_mgr,' SPACE? '(' id_service ',' SPACE? username ',' SPACE? protocol ':' client_address (','end_line client_process_info SPACE?)? ')' end_line
+ '"' type_query_service '"' end_line
+ options_service
 ;
+
+statement_prepare_event
+:header_event SPACE type_statement_prepare_event end_line
+connection_info end_line
+ (client_process_info end_line)?
+ transaction_info ws
+ id_statement end_line
+MINUSES end_line
+query_and_params
+;
+
+free_statement_event
+:header_event SPACE type_free_statement_event end_line
+connection_info end_line
+(client_process_info end_line)?
+id_statement end_line
+query_and_params
+;
+
+context_event
+:header_event SPACE type_context_event end_line
+ connection_info end_line
+ (client_process_info end_line)?
+ transaction_info ws
+declare_context_variables
+;
+
+privileges_change_event
+:header_event SPACE type_privileges_change_event end_line
+connection_info end_line
+(client_process_info end_line)?
+ transaction_info ws
+ privileges_change_info
+;
+
 
 //types
 type_trace_event
@@ -76,28 +119,100 @@ type_start_service_event
 : 'START_SERVICE'
 ;
 
+type_statement_prepare_event
+: 'PREPARE_STATEMENT'
+;
+
+type_free_statement_event
+:'FREE_STATEMENT' | 'CLOSE_CURSOR'
+;
+
+type_context_event
+:'SET_CONTEXT'
+;
+
+type_privileges_change_event
+:'PRIVILEGES_CHANGE'
+;
+
 header_event
-:timestamp WS? '(' id_process ':' id_thread ')'
+:timestamp SPACE? '(' id_process ':' id_thread ')' failed?
 ;
 
 connection_info
-:database WS? '(' ID_CONNECTION ', '  username ':' rolename ', ' charset ', ' WS? (( protocol ':' client_address)|'<internal>') WS? ')'
+:begin_line database SPACE? '(' ID_CONNECTION ', '  username ':' rolename ', ' charset ', ' SPACE? (( protocol ':' client_address)|'<internal>') SPACE? ')'
 ;
 
 query_and_params
+:query (end_line
+ CARETS end_line
+ not_query)?
+;
+
+query
+:~CARETS*
+;
+
+not_query
+:(plan end_line+)?
+(params end_line+)?
+(records_fetched end_line+)?
+(global_counters end_line+)?
+(table_counters end_line+)?
+;
+
+failed
+:' FAILED'
+;
+
+declare_context_variables
 :.*?
 ;
 
+privileges_change_info
+:'Executed by' SPACE executor SPACE 'as' SPACE grantor ', operation:' SPACE privilege end_line
+ object SPACE 'for' SPACE username end_line
+ attachment ', ' transaction
+;
 
+executor
+:username
+;
 
+grantor
+:username
+;
+
+attachment
+:'Attachment:' SPACE ID
+;
+
+transaction
+:'Transaction:' SPACE ID
+;
+
+object
+:any_name ('(' any_name ')')?
+;
+
+privilege
+: ('ADD'|'DELETE') SPACE 'PRIVILEGE' SPACE ((
+'ALL' | 'INSERT' | 'UPDATE' | 'DELETE' | 'SELECT'
+| 'EXECUTE' | 'REFERENCE' | 'CREATE' | 'ALTER' | 'ALTER ANY'
+| 'DROP' | 'DROP ANY' | 'ROLE' | 'ENCRYPTION KEY') SPACE?)+
+;
+
+plan
+:'Select Expression' end_line
+ ( '->' (~('\n'))+ end_line)+
+;
 
 params
-:'param0 = ' any_name ('(' ID (',' ID) ')')? ',' WS (('"' path '"')|path)
-(ID WS '=' WS any_name ('(' ID (',' ID) ')')? ','WS (('"' path '"')|path))*
+:(PARAM (~('\n'))+ end_line)+
 ;
 
 records_fetched
-:ID WS 'records fetched'
+:ID SPACE 'records fetched'
 ;
 
 transaction_info
@@ -110,7 +225,11 @@ level_isolation
 ;
 
 mode_of_block
-:'WAIT' ('N')? |'NOWAIT'
+:'WAIT' (SPACE time_wait)? |'NOWAIT'
+;
+
+time_wait
+:ID
 ;
 
 mode_of_access
@@ -118,11 +237,11 @@ mode_of_access
 ;
 
 global_counters
-:time_execution WS 'ms' (', ')? (reads WS 'read(s)')? (', ')? (writes WS 'write(s)')? (', ')? (fetches WS 'fetch(es)')? (', ')? (marks WS 'mark(s)')?
+:time_execution SPACE 'ms' (', ')? (reads SPACE 'read(s)')? (', ')? (writes SPACE 'write(s)')? (', ')? (fetches SPACE 'fetch(es)')? (', ')? (marks SPACE 'mark(s)')?
 ;
 
 id_statement
-:'Statement' WS ID ':'
+:'Statement' SPACE ID ':'
 ;
 
 time_execution
@@ -145,7 +264,10 @@ marks
 :ID
 ;
 
-table_counters : table natural index update insert delete backout purge expunge ;
+table_counters : 'Table' (SPACE 'Natural')? (SPACE 'Index')? (SPACE 'Update')?
+ (SPACE 'Insert')? (SPACE 'Delete')? (SPACE 'Backout')? (SPACE 'Purge')? (SPACE 'Expunge')? end_line
+ ('*')+ end_line
+ (~'\n')+ end_line;
 
 table
 :any_name
@@ -188,19 +310,21 @@ options_service
 ;
 
 type_query_service
-:any_name (WS any_name)*
+:any_name (SPACE any_name)*
 ;
 
 client_process_info
-:client_process ':' id_client_process WS?
+:client_process ':' id_client_process
 ;
 
 id_service
-:'Service' WS ID
+:'Service' SPACE ID
 ;
 
 client_process
-:path
+:path (SPACE path)*
+|client_process 'IP:' client_process
+|client_process ':[' client_process
 ;
 id_client_process
 :ID
@@ -244,6 +368,7 @@ name_session
 
 database
 :path
+|database SPACE path
 ;
 
 path
@@ -255,9 +380,35 @@ timestamp
 :TIMESTAMP
 ;
 
+begin_line
+:SPACE*
+|TAB*
+;
+
+ws
+:SPACE
+|end_line
+|TAB+
+;
+
+end_line
+:'\n'
+|'\n' TAB+
+|'\r\n'
+| '\n' SPACE
+;
+
 //keywords
 MINUSES
 :('-')+
+;
+
+CARETS
+:('^')+
+;
+
+PARAM
+:'param' ID ' = '
 ;
 
 ID_TRANSACTION
@@ -270,6 +421,10 @@ ID_CONNECTION
 
 ID_SESSION
 :'SESSION_' ID
+;
+
+SIMPLE_ID
+:'ID_' ID
 ;
 
 CLIENT_ADDRESS
@@ -310,21 +465,24 @@ ID
 ;
 
 ANY_NAME
-:(LETTER|DIGIT|'_')+
+:(LETTER|DIGIT|'_'|'$')+
 ;
 
 PATH
-:(LETTER|DIGIT|':\\'|':/'|'_'|'-'|'.'|'/'|'\\'|'$'|'%')+
+:(LETTER|DIGIT|KIRILLIC_LETTER|':\\'|':/'|'_'|'-'|'.'|'/'|'\\'|'$'|'%'|'['|']')+
 ;
 
 fragment DIGIT:[0-9];
 
 fragment LETTER:[a-zA-Z];
 
-WS
-: [ \t\u000C\r\n]+
-;
+fragment KIRILLIC_LETTER:[А-Яа-я];
 
+SPACE:(' ')+;
+
+TAB:
+'\t'
+;
 
 
 

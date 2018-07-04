@@ -211,6 +211,8 @@ public class TablePanel extends JPanel {
         logListPanel.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         table = new JTable(dataModel);
         table.setRowSorter(new CustomTableRowSorter(dataModel));
+        table.setDefaultRenderer(Object.class, new CustomTableCellRenderer());
+        table.setDefaultRenderer(Integer.class, new CustomTableCellRenderer());
         table.setDefaultRenderer(Timestamp.class, new StatementTimestampTableCellRenderer());
         logListPanel.setViewportView(table);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -241,6 +243,10 @@ public class TablePanel extends JPanel {
     public void addRow(LogMessage message) {
 
         dataModel.addRow(message);
+    }
+
+    public void clearAll() {
+        dataModel.clearAll();
     }
 
 

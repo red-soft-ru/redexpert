@@ -175,13 +175,26 @@ public class TablePanel extends JPanel {
                 dataModel.rebuildModel();
             }
         });
+
+        JButton hideShowColumnsButton = new JButton("Hide columns");
+        hideShowColumnsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                columnsCheckPanel.setVisible(!columnsCheckPanel.isVisible());
+                if (hideShowColumnsButton.getText().contentEquals("Hide columns"))
+                    hideShowColumnsButton.setText("Show columns");
+                else hideShowColumnsButton.setText("Hide columns");
+            }
+        });
+        topPanel.add(hideShowColumnsButton, new GridBagConstraints(0, 1, 1, 1, 0, 0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
+
         columnsCheckPanel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Columns",
                 TitledBorder.LEADING, TitledBorder.TOP, null, null));
         GridBagConstraints gbc_typeEventPanel = new GridBagConstraints();
         gbc_typeEventPanel.fill = GridBagConstraints.BOTH;
         gbc_typeEventPanel.insets = new Insets(5, 5, 5, 5);
         gbc_typeEventPanel.gridx = 0;
-        gbc_typeEventPanel.gridy = 1;
+        gbc_typeEventPanel.gridy = 2;
         gbc_typeEventPanel.gridwidth = 1;
         gbc_typeEventPanel.gridheight = 1;
         gbc_typeEventPanel.weightx = 0;
@@ -220,7 +233,7 @@ public class TablePanel extends JPanel {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 int row = table.getSelectedRow();
-                int col = dataModel.getColumnNames().indexOf(comboBoxRawSql.getSelectedItem());
+                int col = dataModel.getVisibleColumnNames().indexOf(comboBoxRawSql.getSelectedItem());
                 if (row >= 0 && col >= 0) {
                     Object obj = table.getValueAt(row, col);
                     if (obj == null) {

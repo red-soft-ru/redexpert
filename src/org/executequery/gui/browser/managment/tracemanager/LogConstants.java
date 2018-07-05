@@ -8,6 +8,7 @@ public class LogConstants {
     public static final String TSTAMP_COLUMN = "TSTAMP";
     public static final String ID_PROCESS_COLUMN = "ID_PROCESS";
     public static final String ID_THREAD_COLUMN = "ID_THREAD";
+    public static final String FAILED_COLUMN = "FAILED";
     public static final String EVENT_TYPE_COLUMN = "EVENT_TYPE";
     public static final String ID_SESSION_COLUMN = "ID_SESSION";
     public static final String NAME_SESSION_COLUMN = "NAME_SESSION";
@@ -46,6 +47,8 @@ public class LogConstants {
     public static final String PRIVILEGE_USERNAME_COLUMN = "PRIVILEGE_USERNAME";
     public static final String PRIVILEGE_ATTACHMENT_COLUMN = "PRIVILEGE_ATTACHMENT";
     public static final String PRIVILEGE_TRANSACTION_COLUMN = "PRIVILEGE_TRANSACTION";
+    public static final String PROCEDURE_NAME_COLUMN = "PROCEDURE_NAME";
+    public static final String RETURN_VALUE_COLUMN = "RETURN_VALUE";
     public static final String[] COLUMNS =
             {
                     ID_COLUMN,
@@ -53,6 +56,7 @@ public class LogConstants {
                     ID_PROCESS_COLUMN,
                     ID_THREAD_COLUMN,
                     EVENT_TYPE_COLUMN,
+                    FAILED_COLUMN,
                     ID_SESSION_COLUMN,
                     NAME_SESSION_COLUMN,
                     ID_SERVICE_COLUMN,
@@ -89,7 +93,9 @@ public class LogConstants {
                     PRIVILEGE_OBJECT_COLUMN,
                     PRIVILEGE_USERNAME_COLUMN,
                     PRIVILEGE_ATTACHMENT_COLUMN,
-                    PRIVILEGE_TRANSACTION_COLUMN
+                    PRIVILEGE_TRANSACTION_COLUMN,
+                    PROCEDURE_NAME_COLUMN,
+                    RETURN_VALUE_COLUMN
             };
     /*public static final int NUMBER_ID_COLUMN = 0;
     public static final int NUMBER_TSTAMP_COLUMN = 1;

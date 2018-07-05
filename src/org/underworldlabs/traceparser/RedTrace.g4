@@ -22,6 +22,7 @@ event
 |free_statement_event
 |context_event
 |privileges_change_event
+|procedure_function_event
 ;
 
 trace_event
@@ -88,6 +89,13 @@ connection_info end_line
  privileges_change_info
 ;
 
+procedure_function_event
+:header_event SPACE type_procedure_event end_line
+connection_info end_line
+(client_process_info end_line)?
+ transaction_info ws
+ procedure_info
+;
 
 //types
 type_trace_event
@@ -135,6 +143,13 @@ type_privileges_change_event
 :'PRIVILEGES_CHANGE'
 ;
 
+type_procedure_event
+:'EXECUTE_PROCEDURE_START'
+| 'EXECUTE_FUNCTION_START'
+| 'EXECUTE_PROCEDURE_FINISH'
+| 'EXECUTE_FUNCTION_FINISH'
+;
+
 header_event
 :timestamp SPACE? '(' id_process ':' id_thread ')' failed?
 ;
@@ -161,8 +176,26 @@ not_query
 (table_counters end_line+)?
 ;
 
+procedure_info
+:procedure_name ':' end_line
+(params end_line+)?
+('returns: ' return_value end_line+)?
+(records_fetched end_line+)?
+(global_counters end_line+)?
+(table_counters end_line+)?
+;
+
+procedure_name:
+('Procedure'|'Function') SPACE any_name;
+
+return_value
+:any_name
+|'"' path '"'
+;
+
 failed
 :' FAILED'
+|' UNAUTHORIZED'
 ;
 
 declare_context_variables

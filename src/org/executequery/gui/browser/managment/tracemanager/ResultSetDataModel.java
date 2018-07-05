@@ -103,6 +103,7 @@ class ResultSetDataModel extends AbstractTableModel {
             if (filterTypeBox.getSelectedItem() == Filter.FilterType.FILTER) {
                 if (field.contains(filter))
                     visibleRows.add(rows.get(i));
+                rows.get(i).setHighlight(false);
             } else {
                 visibleRows.add(rows.get(i));
                 rows.get(i).setHighlight(field.contains(filter) && !filter.isEmpty());

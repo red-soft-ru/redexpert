@@ -61,6 +61,9 @@ public class LogMessage {
     private String privilegeUsername;
     private String privilegeAttachment;
     private String privilegeTransaction;
+    private String procedureName;
+    private String returnValue;
+    private String failedText;
     private boolean failed;
     private boolean highlight;
     public LogMessage(String body) {
@@ -173,6 +176,17 @@ public class LogMessage {
                     setTransactionInfo(ctx.transaction_info());
                     setPrivilegesChangeInfo(ctx.privileges_change_info());
                 }
+
+                @Override
+                public void enterProcedure_function_event(RedTraceParser.Procedure_function_eventContext ctx) {
+                    setTypeEvent(textFromRuleContext(ctx.type_procedure_event()));
+                    setTypeEventTrace(TypeEventTrace.PROCEDURE_FUNCTION_EVENT);
+                    setHeader(ctx.header_event());
+                    setConnectionInfo(ctx.connection_info());
+                    setClientProcessInfo(ctx.client_process_info());
+                    setTransactionInfo(ctx.transaction_info());
+                    setProcedureInfo(ctx.procedure_info());
+                }
             }, tree);
         } catch (Exception e) {
             e.printStackTrace();
@@ -196,6 +210,7 @@ public class LogMessage {
         setIdProcess(textFromRuleContext(ctx.id_process()));
         setIdThread(textFromRuleContext(ctx.id_thread()));
         setFailed(ctx.failed() != null);
+        setFailedText(textFromRuleContext(ctx.failed()));
     }
 
     public void setClientProcessInfo(RedTraceParser.Client_process_infoContext ctx) {
@@ -310,6 +325,15 @@ public class LogMessage {
 
     }
 
+    public void setProcedureInfo(RedTraceParser.Procedure_infoContext ctx) {
+        setProcedureName(textFromRuleContext(ctx.procedure_name()));
+        setReturnValue(textFromRuleContext(ctx.return_value()));
+        setParamText(textFromRuleContext(ctx.params()));
+        setGlobalCounters(ctx.global_counters());
+        if (ctx.records_fetched() != null)
+            setFetchedRecords(textFromRuleContext(ctx.records_fetched().ID()));
+        setTableCounters(textFromRuleContext(ctx.table_counters()));
+    }
     private String textFromRuleContext(ParserRuleContext ctx) {
         try {
             return ctx.getText();
@@ -717,6 +741,30 @@ public class LogMessage {
         this.highlight = highlight;
     }
 
+    public String getProcedureName() {
+        return procedureName;
+    }
+
+    public void setProcedureName(String procedureName) {
+        this.procedureName = procedureName;
+    }
+
+    public String getReturnValue() {
+        return returnValue;
+    }
+
+    public void setReturnValue(String returnValue) {
+        this.returnValue = returnValue;
+    }
+
+    public String getFailedText() {
+        return failedText;
+    }
+
+    public void setFailedText(String failedText) {
+        this.failedText = failedText;
+    }
+
     private String addField(String body, String regex, String excludedRegex, String colName) {
         return addField(body, regex, new String[]{excludedRegex}, colName);
     }
@@ -912,6 +960,12 @@ public class LogMessage {
                 return getPrivilegeAttachment();
             case LogConstants.PRIVILEGE_TRANSACTION_COLUMN:
                 return getPrivilegeTransaction();
+            case LogConstants.FAILED_COLUMN:
+                return getFailedText();
+            case LogConstants.PROCEDURE_NAME_COLUMN:
+                return getProcedureName();
+            case LogConstants.RETURN_VALUE_COLUMN:
+                return getReturnValue();
             default:
                 return null;
         }
@@ -935,6 +989,12 @@ public class LogMessage {
 
     }
 
+    @Override
+    public String toString() {
+        return "LogMessage{" +
+                "body='" + body + '\'' +
+                '}';
+    }
 
     public enum TypeEventTrace {
         TRACE_EVENT,

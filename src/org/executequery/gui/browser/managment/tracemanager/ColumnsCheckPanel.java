@@ -8,7 +8,7 @@ import java.util.Map;
 public class ColumnsCheckPanel extends JPanel {
 
     private Map<String, JCheckBox> checkBoxMap;
-    private int x = 5;
+    private int x = 6;
 
     public ColumnsCheckPanel() {
         setLayout(new GridBagLayout());

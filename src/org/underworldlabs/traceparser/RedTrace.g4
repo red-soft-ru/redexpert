@@ -24,6 +24,13 @@ event
 |privileges_change_event
 |procedure_function_event
 |trigger_event
+|compile_blr_event
+|execute_blr_event
+|execute_dyn_event
+|service_event
+|service_query_event
+|error_event
+|sweep_event
 ;
 
 trace_event
@@ -109,6 +116,67 @@ connection_info end_line
  (table_counters end_line+)?
 ;
 
+compile_blr_event
+:header_event SPACE type_compile_blr_event end_line
+ connection_info end_line
+ (client_process_info end_line)?
+ transaction_info ws
+ id_statement end_line
+MINUSES end_line
+query_and_params
+;
+
+execute_blr_event
+:header_event SPACE type_execute_blr_event end_line
+ connection_info end_line
+ (client_process_info end_line)?
+ transaction_info ws
+ id_statement end_line
+MINUSES end_line
+query_and_params
+;
+
+execute_dyn_event
+:header_event SPACE type_execute_dyn_event end_line
+ connection_info end_line
+ (client_process_info end_line)?
+ transaction_info ws
+MINUSES end_line
+query_and_params
+;
+
+service_event
+:header_event SPACE type_service_event end_line
+ 'service_mgr,' SPACE? '(' id_service ',' SPACE? username ',' SPACE? protocol ':' client_address (','end_line client_process_info SPACE?)? ')'
+;
+
+service_query_event
+:header_event SPACE type_query_service_event end_line
+ 'service_mgr,' SPACE? '(' id_service ',' SPACE? username ',' SPACE? protocol ':' client_address (','end_line client_process_info SPACE?)? ')' end_line
+'"' type_query_service '"' end_line
+('Send portion of the query:' sended_data)?
+('Receive portion of the query:' received_data)?
+;
+
+error_event
+:header_event SPACE type_error_event end_line
+  connection_info end_line
+  (client_process_info end_line)?
+  error_message
+;
+sweep_event
+:header_event SPACE type_sweep_event end_line
+connection_info end_line
+(client_process_info end_line)?
+'Transaction counters:' end_line
+'Oldest interesting' SPACE oldest_interesting end_line
+'Oldest active' SPACE oldest_active end_line
+'Oldest snapshot' SPACE oldest_snapshot end_line
+'Next transaction' SPACE next_transaction end_line
+(global_counters end_line+)?
+ (table_counters end_line+)?
+;
+
 
 //types
 type_trace_event
@@ -168,6 +236,40 @@ type_trigger_event
 |'EXECUTE_TRIGGER_FINISH'
  ;
 
+ type_compile_blr_event
+ :'COMPILE_BLR'
+ ;
+
+ type_execute_blr_event
+ : 'EXECUTE_BLR'
+ ;
+
+ type_execute_dyn_event
+ : 'EXECUTE_DYN'
+ ;
+
+ type_service_event
+ :'ATTACH_SERVICE'
+ |'DETACH_SERVICE'
+ ;
+
+ type_query_service_event
+ :'QUERY_SERVICE'
+ ;
+
+type_error_event
+: 'ERROR AT'
+| 'WARNING AT'
+;
+
+type_sweep_event
+: 'SWEEP_START'
+| 'SWEEP_FINISH'
+| 'SWEEP_FAILED'
+| 'SWEEP_PROGRESS'
+;
+
+
 header_event
 :timestamp SPACE? '(' id_process ':' id_thread ')' failed?
 ;
@@ -184,6 +286,22 @@ query_and_params
 
 query
 :~CARETS*
+;
+
+oldest_interesting
+:any_name
+;
+
+oldest_active
+:any_name
+;
+
+oldest_snapshot
+:any_name
+;
+
+next_transaction
+:any_name
 ;
 
 not_query
@@ -298,6 +416,18 @@ global_counters
 
 id_statement
 :'Statement' SPACE ID ':'
+;
+
+sended_data
+:(~('Receive portion of the query:'))+
+;
+
+received_data
+:.*?
+;
+
+error_message
+:.*?
 ;
 
 time_execution

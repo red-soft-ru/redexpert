@@ -65,6 +65,13 @@ public class LogMessage {
     private String returnValue;
     private String failedText;
     private String triggerInfo;
+    private String sentData;
+    private String receivedData;
+    private String errorMessage;
+    private String oldestInteresting;
+    private String oldestActive;
+    private String oldestSnapshot;
+    private String nextTransaction;
     private boolean failed;
     private boolean highlight;
     public LogMessage(String body) {
@@ -194,6 +201,94 @@ public class LogMessage {
                     setClientProcessInfo(ctx.client_process_info());
                     setTransactionInfo(ctx.transaction_info());
                     setTriggerInfo(textFromRuleContext(ctx.trigger_info()));
+                    setGlobalCounters(ctx.global_counters());
+                    setTableCounters(textFromRuleContext(ctx.table_counters()));
+                }
+
+                @Override
+                public void enterCompile_blr_event(RedTraceParser.Compile_blr_eventContext ctx) {
+                    setTypeEvent(textFromRuleContext(ctx.type_compile_blr_event()));
+                    setTypeEventTrace(TypeEventTrace.COMPILE_BLR_EVENT);
+                    setHeader(ctx.header_event());
+                    setConnectionInfo(ctx.connection_info());
+                    setClientProcessInfo(ctx.client_process_info());
+                    setTransactionInfo(ctx.transaction_info());
+                    if (ctx.id_statement() != null)
+                        setIdStatement(textFromRuleContext(ctx.id_statement().ID()));
+                    setQueryAndParams(ctx.query_and_params());
+                }
+
+                @Override
+                public void enterExecute_blr_event(RedTraceParser.Execute_blr_eventContext ctx) {
+                    setTypeEvent(textFromRuleContext(ctx.type_execute_blr_event()));
+                    setTypeEventTrace(TypeEventTrace.EXECUTE_BLR_EVENT);
+                    setHeader(ctx.header_event());
+                    setConnectionInfo(ctx.connection_info());
+                    setClientProcessInfo(ctx.client_process_info());
+                    setTransactionInfo(ctx.transaction_info());
+                    if (ctx.id_statement() != null)
+                        setIdStatement(textFromRuleContext(ctx.id_statement().ID()));
+                    setQueryAndParams(ctx.query_and_params());
+                }
+
+                @Override
+                public void enterExecute_dyn_event(RedTraceParser.Execute_dyn_eventContext ctx) {
+                    setTypeEvent(textFromRuleContext(ctx.type_execute_dyn_event()));
+                    setTypeEventTrace(TypeEventTrace.EXECUTE_DYN_EVENT);
+                    setHeader(ctx.header_event());
+                    setConnectionInfo(ctx.connection_info());
+                    setClientProcessInfo(ctx.client_process_info());
+                    setTransactionInfo(ctx.transaction_info());
+                    setQueryAndParams(ctx.query_and_params());
+                }
+
+                @Override
+                public void enterService_event(RedTraceParser.Service_eventContext ctx) {
+                    setTypeEvent(textFromRuleContext(ctx.type_service_event()));
+                    setTypeEventTrace(TypeEventTrace.SERVICE_EVENT);
+                    setHeader(ctx.header_event());
+                    setServiceID(textFromRuleContext(ctx.id_service().ID()));
+                    setUserName(textFromRuleContext(ctx.username()));
+                    setProtocolConnection(textFromRuleContext(ctx.protocol()));
+                    setClientAddress(textFromRuleContext(ctx.client_address()));
+                    setClientProcessInfo(ctx.client_process_info());
+                }
+
+                @Override
+                public void enterService_query_event(RedTraceParser.Service_query_eventContext ctx) {
+                    setTypeEvent(textFromRuleContext(ctx.type_query_service_event()));
+                    setTypeEventTrace(TypeEventTrace.QUERY_SERVICE_EVENT);
+                    setHeader(ctx.header_event());
+                    setServiceID(textFromRuleContext(ctx.id_service().ID()));
+                    setUserName(textFromRuleContext(ctx.username()));
+                    setProtocolConnection(textFromRuleContext(ctx.protocol()));
+                    setClientAddress(textFromRuleContext(ctx.client_address()));
+                    setClientProcessInfo(ctx.client_process_info());
+                    setTypeQueryService(textFromRuleContext(ctx.type_query_service()));
+                    setSentData(textFromRuleContext(ctx.sended_data()));
+                    setReceivedData(textFromRuleContext(ctx.received_data()));
+                }
+
+                @Override
+                public void enterError_event(RedTraceParser.Error_eventContext ctx) {
+                    setTypeEvent(textFromRuleContext(ctx.type_error_event()));
+                    setTypeEventTrace(TypeEventTrace.ERROR_WARNING_EVENT);
+                    setHeader(ctx.header_event());
+                    setConnectionInfo(ctx.connection_info());
+                    setClientProcessInfo(ctx.client_process_info());
+                    setErrorMessage(textFromRuleContext(ctx.error_message()));
+                }
+
+                @Override
+                public void enterSweep_event(RedTraceParser.Sweep_eventContext ctx) {
+                    setTypeEvent(textFromRuleContext(ctx.type_sweep_event()));
+                    setTypeEventTrace(TypeEventTrace.SWEEP_EVENT);
+                    setHeader(ctx.header_event());
+                    setConnectionInfo(ctx.connection_info());
+                    setClientProcessInfo(ctx.client_process_info());
+                    setOldestInteresting(textFromRuleContext(ctx.oldest_interesting()));
+                    setOldestActive(textFromRuleContext(ctx.oldest_active()));
+                    setOldestSnapshot(textFromRuleContext(ctx.oldest_snapshot()));
                     setGlobalCounters(ctx.global_counters());
                     setTableCounters(textFromRuleContext(ctx.table_counters()));
                 }
@@ -784,6 +879,62 @@ public class LogMessage {
         this.triggerInfo = triggerInfo;
     }
 
+    public String getSentData() {
+        return sentData;
+    }
+
+    public void setSentData(String sentData) {
+        this.sentData = sentData;
+    }
+
+    public String getReceivedData() {
+        return receivedData;
+    }
+
+    public void setReceivedData(String receivedData) {
+        this.receivedData = receivedData;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    public String getOldestInteresting() {
+        return oldestInteresting;
+    }
+
+    public void setOldestInteresting(String oldestInteresting) {
+        this.oldestInteresting = oldestInteresting;
+    }
+
+    public String getOldestActive() {
+        return oldestActive;
+    }
+
+    public void setOldestActive(String oldestActive) {
+        this.oldestActive = oldestActive;
+    }
+
+    public String getOldestSnapshot() {
+        return oldestSnapshot;
+    }
+
+    public void setOldestSnapshot(String oldestSnapshot) {
+        this.oldestSnapshot = oldestSnapshot;
+    }
+
+    public String getNextTransaction() {
+        return nextTransaction;
+    }
+
+    public void setNextTransaction(String nextTransaction) {
+        this.nextTransaction = nextTransaction;
+    }
+
     private String addField(String body, String regex, String excludedRegex, String colName) {
         return addField(body, regex, new String[]{excludedRegex}, colName);
     }
@@ -987,6 +1138,20 @@ public class LogMessage {
                 return getReturnValue();
             case LogConstants.TRIGGER_INFO_COLUMN:
                 return getTriggerInfo();
+            case LogConstants.SENT_DATA_COLUMN:
+                return getSentData();
+            case LogConstants.RECEIVED_DATA_COLUMN:
+                return getReceivedData();
+            case LogConstants.ERROR_MESSAGE_COLUMN:
+                return getErrorMessage();
+            case LogConstants.OLDEST_INTERESTING_COLUMN:
+                return getOldestInteresting();
+            case LogConstants.OLDEST_ACTIVE_COLUMN:
+                return getOldestActive();
+            case LogConstants.OLDEST_SNAPSHOT_COLUMN:
+                return getOldestSnapshot();
+            case LogConstants.NEXT_TRANSACTION_COLUMN:
+                return getNextTransaction();
             default:
                 return null;
         }

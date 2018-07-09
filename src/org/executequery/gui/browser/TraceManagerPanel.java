@@ -60,6 +60,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private JPanel connnectionPanel;
     private JTabbedPane tabPane;
     private JPanel confPanel;
+    private JButton hideShowTabPaneButton;
 
     public TraceManagerPanel() {
         init();
@@ -271,6 +272,17 @@ public class TraceManagerPanel extends JPanel implements TabView {
             }
         });
 
+        hideShowTabPaneButton = new JButton("Hide connection info");
+        hideShowTabPaneButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tabPane.setVisible(!tabPane.isVisible());
+                if (hideShowTabPaneButton.getText().contentEquals("Hide connection info"))
+                    hideShowTabPaneButton.setText("Show connection info");
+                else hideShowTabPaneButton.setText("Hide connection info");
+            }
+        });
+
         tabPane = new JTabbedPane();
         connnectionPanel = new JPanel();
         confPanel = new BuildConfigurationPanel();
@@ -281,7 +293,12 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        add(loggerPanel, new GridBagConstraints(0, 1,
+        add(hideShowTabPaneButton, new GridBagConstraints(0, 1,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        add(loggerPanel, new GridBagConstraints(0, 2,
                 1, 1, 1, 1,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
                 0, 0));

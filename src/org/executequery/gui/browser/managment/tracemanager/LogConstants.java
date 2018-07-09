@@ -50,6 +50,13 @@ public class LogConstants {
     public static final String PROCEDURE_NAME_COLUMN = "PROCEDURE_NAME";
     public static final String RETURN_VALUE_COLUMN = "RETURN_VALUE";
     public static final String TRIGGER_INFO_COLUMN = "TRIGGER_INFO";
+    public static final String SENT_DATA_COLUMN = "SENT_DATA";
+    public static final String RECEIVED_DATA_COLUMN = "RECEIVED_DATA";
+    public static final String ERROR_MESSAGE_COLUMN = "ERROR_MESSAGE";
+    public static final String OLDEST_INTERESTING_COLUMN = "OLDEST_INTERESTING";
+    public static final String OLDEST_ACTIVE_COLUMN = "OLDEST_ACTIVE";
+    public static final String OLDEST_SNAPSHOT_COLUMN = "OLDEST_SNAPSHOT";
+    public static final String NEXT_TRANSACTION_COLUMN = "NEXT_TRANSACTION";
     public static final String[] COLUMNS =
             {
                     ID_COLUMN,
@@ -97,7 +104,14 @@ public class LogConstants {
                     PRIVILEGE_TRANSACTION_COLUMN,
                     PROCEDURE_NAME_COLUMN,
                     RETURN_VALUE_COLUMN,
-                    TRIGGER_INFO_COLUMN
+                    TRIGGER_INFO_COLUMN,
+                    SENT_DATA_COLUMN,
+                    RECEIVED_DATA_COLUMN,
+                    ERROR_MESSAGE_COLUMN,
+                    OLDEST_INTERESTING_COLUMN,
+                    OLDEST_ACTIVE_COLUMN,
+                    OLDEST_SNAPSHOT_COLUMN,
+                    NEXT_TRANSACTION_COLUMN
             };
     /*public static final int NUMBER_ID_COLUMN = 0;
     public static final int NUMBER_TSTAMP_COLUMN = 1;

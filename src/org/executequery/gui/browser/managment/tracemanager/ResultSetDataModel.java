@@ -98,16 +98,7 @@ class ResultSetDataModel extends AbstractTableModel {
             */
         visibleRows = new ArrayList<>();
         for (int i = 0; i < rows.size(); i++) {
-                String filter = filterTextField.getText();
-                String field = String.valueOf(rows.get(i).getFieldOfName((String) filterColumnBox.getSelectedItem()));
-            if (filterTypeBox.getSelectedItem() == Filter.FilterType.FILTER) {
-                if (field.contains(filter))
-                    visibleRows.add(rows.get(i));
-                rows.get(i).setHighlight(false);
-            } else {
-                visibleRows.add(rows.get(i));
-                rows.get(i).setHighlight(field.contains(filter) && !filter.isEmpty());
-            }
+            checkFilterMessage(rows.get(i));
         }
         DynamicComboBoxModel model = (DynamicComboBoxModel) filterColumnBox.getModel();
         Object selectedItem = filterColumnBox.getSelectedItem();
@@ -120,6 +111,19 @@ class ResultSetDataModel extends AbstractTableModel {
             rawSqlBox.setSelectedItem(selectedItem);
         model.setElements(visibleColumnNames);
         fireTableStructureChanged();
+    }
+
+    private void checkFilterMessage(LogMessage message) {
+        String filter = filterTextField.getText();
+        String field = String.valueOf(message.getFieldOfName((String) filterColumnBox.getSelectedItem()));
+        if (filterTypeBox.getSelectedItem() == Filter.FilterType.FILTER) {
+            if (field.contains(filter))
+                visibleRows.add(message);
+            message.setHighlight(false);
+        } else {
+            visibleRows.add(message);
+            message.setHighlight(field.contains(filter) && !filter.isEmpty());
+        }
     }
 
     @Override
@@ -162,7 +166,8 @@ class ResultSetDataModel extends AbstractTableModel {
 
     public void addRow(LogMessage message) {
         rows.add(message);
-        rebuildModel();
+        checkFilterMessage(message);
+        fireTableDataChanged();
     }
 
     public List<String> getColumnNames() {

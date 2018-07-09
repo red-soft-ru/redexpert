@@ -49,6 +49,7 @@ public class LogConstants {
     public static final String PRIVILEGE_TRANSACTION_COLUMN = "PRIVILEGE_TRANSACTION";
     public static final String PROCEDURE_NAME_COLUMN = "PROCEDURE_NAME";
     public static final String RETURN_VALUE_COLUMN = "RETURN_VALUE";
+    public static final String TRIGGER_INFO_COLUMN = "TRIGGER_INFO";
     public static final String[] COLUMNS =
             {
                     ID_COLUMN,
@@ -95,7 +96,8 @@ public class LogConstants {
                     PRIVILEGE_ATTACHMENT_COLUMN,
                     PRIVILEGE_TRANSACTION_COLUMN,
                     PROCEDURE_NAME_COLUMN,
-                    RETURN_VALUE_COLUMN
+                    RETURN_VALUE_COLUMN,
+                    TRIGGER_INFO_COLUMN
             };
     /*public static final int NUMBER_ID_COLUMN = 0;
     public static final int NUMBER_TSTAMP_COLUMN = 1;

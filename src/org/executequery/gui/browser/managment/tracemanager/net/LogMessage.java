@@ -64,13 +64,10 @@ public class LogMessage {
     private String procedureName;
     private String returnValue;
     private String failedText;
+    private String triggerInfo;
     private boolean failed;
     private boolean highlight;
     public LogMessage(String body) {
-        /*body = addField(body, "(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+)", new String[]{}, LogConstants.TSTAMP_COLUMN);
-        body = addField(body, "^\\([\\d\\w]+:", new String[]{"(", ":"}, LogConstants.ID_PROCESS_COLUMN);
-        body = addField(body, "^[\\w\\d]+\\)", ")", LogConstants.ID_THREAD_COLUMN);
-        body = addField(body, "^[\\w\\d_]+\\s", new String[]{"\t", "\n", "\r"}, LogConstants.EVENT_TYPE_COLUMN);*/
         init(body);
     }
 
@@ -187,6 +184,20 @@ public class LogMessage {
                     setTransactionInfo(ctx.transaction_info());
                     setProcedureInfo(ctx.procedure_info());
                 }
+
+                @Override
+                public void enterTrigger_event(RedTraceParser.Trigger_eventContext ctx) {
+                    setTypeEvent(textFromRuleContext(ctx.type_trigger_event()));
+                    setTypeEventTrace(TypeEventTrace.TRIGGER_EVENT);
+                    setHeader(ctx.header_event());
+                    setConnectionInfo(ctx.connection_info());
+                    setClientProcessInfo(ctx.client_process_info());
+                    setTransactionInfo(ctx.transaction_info());
+                    setTriggerInfo(textFromRuleContext(ctx.trigger_info()));
+                    setGlobalCounters(ctx.global_counters());
+                    setTableCounters(textFromRuleContext(ctx.table_counters()));
+                }
+
             }, tree);
         } catch (Exception e) {
             e.printStackTrace();
@@ -765,6 +776,14 @@ public class LogMessage {
         this.failedText = failedText;
     }
 
+    public String getTriggerInfo() {
+        return triggerInfo;
+    }
+
+    public void setTriggerInfo(String triggerInfo) {
+        this.triggerInfo = triggerInfo;
+    }
+
     private String addField(String body, String regex, String excludedRegex, String colName) {
         return addField(body, regex, new String[]{excludedRegex}, colName);
     }
@@ -966,6 +985,8 @@ public class LogMessage {
                 return getProcedureName();
             case LogConstants.RETURN_VALUE_COLUMN:
                 return getReturnValue();
+            case LogConstants.TRIGGER_INFO_COLUMN:
+                return getTriggerInfo();
             default:
                 return null;
         }

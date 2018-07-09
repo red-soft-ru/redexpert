@@ -23,6 +23,7 @@ event
 |context_event
 |privileges_change_event
 |procedure_function_event
+|trigger_event
 ;
 
 trace_event
@@ -97,6 +98,17 @@ connection_info end_line
  procedure_info
 ;
 
+trigger_event
+:header_event SPACE type_trigger_event end_line
+connection_info end_line
+(client_process_info end_line)?
+ transaction_info ws
+ trigger_info end_line
+ (global_counters end_line+)?
+ (table_counters end_line+)?
+;
+
+
 //types
 type_trace_event
 : 'TRACE_INIT'
@@ -150,6 +162,11 @@ type_procedure_event
 | 'EXECUTE_FUNCTION_FINISH'
 ;
 
+type_trigger_event
+:'EXECUTE_TRIGGER_START'
+|'EXECUTE_TRIGGER_FINISH'
+ ;
+
 header_event
 :timestamp SPACE? '(' id_process ':' id_thread ')' failed?
 ;
@@ -187,6 +204,10 @@ procedure_info
 
 procedure_name:
 ('Procedure'|'Function') SPACE any_name;
+
+trigger_info:
+(~('\n'))+
+;
 
 return_value
 :any_name
@@ -238,6 +259,7 @@ privilege
 plan
 :'Select Expression' end_line
  ( '->' (~('\n'))+ end_line)+
+ |'PLAN' (~('\n'))+ end_line
 ;
 
 params

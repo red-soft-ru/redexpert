@@ -71,6 +71,7 @@ free_statement_event
 connection_info end_line
 (client_process_info end_line)?
 id_statement end_line
+MINUSES end_line
 query_and_params
 ;
 

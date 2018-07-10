@@ -5,7 +5,6 @@ import org.executequery.base.TabView;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
-import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.browser.managment.tracemanager.BuildConfigurationPanel;
 import org.executequery.gui.browser.managment.tracemanager.TablePanel;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
@@ -14,6 +13,7 @@ import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.FileUtils;
 
 import javax.swing.*;
@@ -74,8 +74,8 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 dd = d;
             break;
         }
-        Object driver = ConnectionManager.loadingObjectFromClassLoader(dd, dd.getClassName(), dd.getPath());
-        traceManager = (IFBTraceManager) ConnectionManager.loadingObjectFromClassLoader(driver, "FBTraceManagerImpl");
+        Object driver = DynamicLibraryLoader.loadingObjectFromClassLoader(dd, dd.getClassName(), dd.getPath());
+        traceManager = (IFBTraceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(driver, "FBTraceManagerImpl");
     }
 
     private void init() {

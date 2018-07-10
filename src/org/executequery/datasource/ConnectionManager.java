@@ -100,7 +100,7 @@ public final class ConnectionManager {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        IFBDataSource dataSource = (IFBDataSource) loadingObjectFromClassLoader(unwrapConnection, "FBDataSourceImpl");
+        IFBDataSource dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoader(unwrapConnection, "FBDataSourceImpl");
         try {
             connection.close();
         } catch (SQLException e) {

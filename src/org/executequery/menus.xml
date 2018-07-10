@@ -329,7 +329,7 @@
                        cache-name="viewBrowserTools"
                        tool-tip="Displays the browser tool bar"/>
 
-            <!--<menu-item name="Import/Export Tool Bar"
+            <menu-item name="Import/Export Tool Bar"
                        key="menu.view.tool-bars.import-export-tool-bar"
                        class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                        mnemonic="X"
@@ -479,6 +479,8 @@
         <menu-item id="user-manager-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
         <menu-item id="grant-manager-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+        <menu-item id="trace-manager-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
         <!--<menu-item id="comparerDB-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>

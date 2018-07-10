@@ -59,6 +59,19 @@ public final class ConnectionMediator {
 
     public boolean connect(DatabaseConnection dc) throws DataSourceException {
 
+        if (!establish(dc)) {
+            
+            return false;
+        }
+
+        fireConnectionOpened(dc);
+        GUIUtils.scheduleGC();
+
+        return true;
+    }
+
+    private boolean establish(DatabaseConnection dc) {
+
         DefaultConnectionBuilder builder = new DefaultConnectionBuilder(dc);
         builder.connect();
 
@@ -83,12 +96,22 @@ public final class ConnectionMediator {
 
         }
 
-        fireConnectionOpened(dc);
+        return connected;
+    }
+
+    public boolean test(DatabaseConnection dc) throws DataSourceException {
+        
+        if (!establish(dc)) {
+            
+            return false;
+        }
+
         GUIUtils.scheduleGC();
+        ConnectionManager.closeConnection(dc);
 
         return true;
     }
-
+    
     private void fireConnectionOpened(DatabaseConnection dc) {
 
         fireConnectionEvent(new DefaultConnectionEvent(dc, DefaultConnectionEvent.CONNECTED));

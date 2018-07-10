@@ -62,8 +62,11 @@ import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.image.BufferedImage;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.*;
 import java.util.List;
@@ -299,7 +302,7 @@ public class TableDataTab extends JPanel
                 cancelStatement();
 
             } finally {
-
+                tableModel.cancelFetch();
                 cancelled = true;
             }
         }
@@ -363,16 +366,18 @@ public class TableDataTab extends JPanel
 
             Log.debug("Retrieving data for table - " + databaseObject.getName());
             try {
-                ResultSet resultSet = databaseObject.getData(true);
+                ResultSet resultSet = databaseObject.getData();
                 tableModel.createTable(resultSet, columnDataList);
 
+            } catch (DataSourceException e) {
+                if ((e.getCause() instanceof SQLException)) {
+                    SQLException sqlException = (SQLException) e.getCause();
+                    if (sqlException.getSQLState().contentEquals("28000"))
+                        GUIUtilities.displayExceptionErrorDialog("Data access error", e);
+                    else rebuildDataFromMetadata(columnDataList);
+                } else rebuildDataFromMetadata(columnDataList);
             } catch (Exception e) {
-                Log.error("Error retrieving data for table - " + databaseObject.getName() + ". Try to rebuild table model.");
-                databaseObject.releaseResources();
-                ResultSet resultSet = databaseObject.getMetaData();
-                tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection(), columnDataList);
-            } finally {
-                databaseObject.releaseResources();
+                rebuildDataFromMetadata(columnDataList);
             }
             createResultSetTable();
             List<String> nonEditableCols = new ArrayList<>();
@@ -451,7 +456,6 @@ public class TableDataTab extends JPanel
 
                 };
                 sorter.setTableHeaderRenderer(renderer);
-
             }
 
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -464,12 +468,30 @@ public class TableDataTab extends JPanel
 
 
             scroller.getViewport().add(table);
+            if (scroller.getVerticalScrollBar().getAdjustmentListeners().length < 1)
+                scroller.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+                    @Override
+                    public void adjustmentValueChanged(AdjustmentEvent e) {
+                        if (!e.getValueIsAdjusting()) {
+                            JScrollBar scrollBar = (JScrollBar) e.getAdjustable();
+                            int extent = scrollBar.getModel().getExtent();
+                            int maximum = scrollBar.getModel().getMaximum();
+                            if (extent + e.getValue() == maximum) {
+                                if (!tableModel.isResultSetClose()) {
+                                    tableModel.fetchMoreData();
+                                    if (displayRowCount)
+                                        rowCountField.setText(String.valueOf(tableModel.getRowCount()));
+                                }
+                            }
+                        }
+                    }
+                });
             removeAll();
 
-            add(/*canEditTableNotePanel*/buttonsEditingPanel, canEditTableNoteConstraints);
+            add(buttonsEditingPanel, canEditTableNoteConstraints);
             add(scroller, scrollerConstraints);
 
-            if (displayRowCount && SystemProperties.getBooleanProperty("user", "browser.query.row.count")) {
+            if (displayRowCount) {
 
                 add(rowCountPanel, rowCountPanelConstraints);
                 rowCountField.setText(String.valueOf(sorter.getRowCount()));
@@ -498,6 +520,13 @@ public class TableDataTab extends JPanel
         return "done";
     }
 
+    void rebuildDataFromMetadata(List<ColumnData> columnDataList) {
+        Log.error("Error retrieving data for table - " + databaseObject.getName() + ". Try to rebuild table model.");
+        databaseObject.releaseResources();
+        ResultSet resultSet = databaseObject.getMetaData();
+        tableModel.createTableFromMetaData(resultSet, databaseObject.getHost().getDatabaseConnection(), columnDataList);
+    }
+
     Vector itemsForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
         String query = "SELECT distinct " + key.getReferencedColumn() + " FROM " + key.getReferencedTable() + " order by 1";
         Vector items = new Vector();
@@ -519,7 +548,7 @@ public class TableDataTab extends JPanel
 
         if (tableModel == null) {
 
-            tableModel = new ResultSetTableModel(SystemProperties.getIntProperty("user", "browser.max.records"));
+            tableModel = new ResultSetTableModel(SystemProperties.getIntProperty("user", "browser.max.records"), true);
             tableModel.setHoldMetaData(false);
         }
 
@@ -894,6 +923,64 @@ public class TableDataTab extends JPanel
             }
         });
         bar.add(rollbackRolloverButton);
+        RolloverButton fetchAllRolloverButton = new RolloverButton();
+        fetchAllRolloverButton.setText("Fetch all");
+        fetchAllRolloverButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                addInProgressPanel();
+                if (timer != null) {
+
+                    timer.cancel();
+                }
+
+                timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        tableModel.setFetchAll(true);
+                        if (worker != null) {
+                            cancel();
+                            worker.interrupt();
+                        }
+                        worker = new SwingWorker() {
+
+                            public Object construct() {
+                                try {
+                                    executing = true;
+                                    tableModel.fetchMoreData();
+                                    removeAll();
+                                    add(buttonsEditingPanel, canEditTableNoteConstraints);
+                                    add(scroller, scrollerConstraints);
+                                    if (displayRowCount) {
+                                        add(rowCountPanel, rowCountPanelConstraints);
+                                        rowCountField.setText(String.valueOf(tableModel.getRowCount()));
+                                    }
+                                    setTableProperties();
+                                    validate();
+                                    repaint();
+                                    return "done";
+                                } catch (Exception e) {
+                                    addErrorLabel(e);
+                                    return "done";
+                                }
+                            }
+
+                            public void finished() {
+
+                                executing = false;
+                                cancelled = false;
+                            }
+
+                        };
+                        worker.start();
+
+                    }
+                }, 600);
+
+            }
+        });
+        bar.add(fetchAllRolloverButton);
         GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
         buttonsEditingPanel.add(bar, gbc3);

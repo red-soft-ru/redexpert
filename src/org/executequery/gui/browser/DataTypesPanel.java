@@ -47,7 +47,7 @@ public class DataTypesPanel extends ConnectionPropertiesPanel {
 
     private void init() {
 
-        model = new ResultSetTableModel();
+        model = new ResultSetTableModel(false);
         JTable table = new SortableColumnsTable(model);
 
         setTableProperties(table);

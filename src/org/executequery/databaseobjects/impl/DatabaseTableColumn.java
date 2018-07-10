@@ -111,7 +111,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
         StringBuilder sb = new StringBuilder();
         sb.append("TABLE COLUMN: ");
-        sb.append(STATEMENT_GENERATOR.columnDescription(this));
+        sb.append(getName().trim()).append("[").append(getTypeName()).append("]");
 
         if (isPrimaryKey()) {
 
@@ -334,11 +334,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         }
 
         if (MiscUtils.isNull(copy.getColumnDescription())) {
-            if (MiscUtils.isNull(getColumnDescription())) {
-                return false;
-            } else {
-                return true;
-            }
+            return !MiscUtils.isNull(getColumnDescription());
         } else {
             if (MiscUtils.isNull(getColumnDescription()))
                 return true;
@@ -372,11 +368,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         }
 
         if (MiscUtils.isNull(copy.getDefaultValue())) {
-            if (MiscUtils.isNull(getDefaultValue())) {
-                return false;
-            } else {
-                return true;
-            }
+            return !MiscUtils.isNull(getDefaultValue());
         } else {
             if (MiscUtils.isNull(getDefaultValue()))
                 return true;

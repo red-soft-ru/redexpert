@@ -43,7 +43,6 @@ import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -345,8 +344,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
      * @param showRowNumber - whether to return the result set row count
      * @param maxRecords    - the maximum records to return
      */
-    public int setResultSet(ResultSet rset, boolean showRowNumber, int maxRecords)
-            throws SQLException {
+    public int setResultSet(ResultSet rset, boolean showRowNumber, int maxRecords) {
 
         return setResultSet(rset, showRowNumber, maxRecords, null);
     }
@@ -361,7 +359,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
      */
     public int setResultSet(ResultSet rset, boolean showRowNumber, int maxRecords, String query) {
 
-        ResultSetTableModel model = new ResultSetTableModel(rset, maxRecords, query);
+        ResultSetTableModel model = new ResultSetTableModel(rset, maxRecords, query, false);
 
         int rowCount = getResultSetRowCount(model, showRowNumber);
         if (rowCount == 0) {

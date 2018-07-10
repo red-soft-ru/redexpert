@@ -177,11 +177,13 @@ public final class GUIUtilities {
 
         // create the mediator object
         desktopMediator = new DesktopMediator(frame);
+        
+        String javaVersion = System.getProperty("java.version");
 
         // initialise and add the status bar
         statusBar = new StatusBarPanel(" Not Connected", Constants.EMPTY);
         statusBar.setFourthLabelText(
-                "JDK" + System.getProperty("java.version").substring(0, 5),
+                "JDK" + (javaVersion.length() >= 5 ? javaVersion.substring(0,5) : javaVersion),
                 SwingConstants.CENTER);
 
         displayStatusBar(SystemProperties.getBooleanProperty(

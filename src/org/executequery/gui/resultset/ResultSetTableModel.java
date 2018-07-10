@@ -23,6 +23,7 @@ package org.executequery.gui.resultset;
 import biz.redsoft.IFBBlob;
 import biz.redsoft.IFBClob;
 import org.apache.commons.lang.StringUtils;
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
@@ -36,6 +37,7 @@ import org.executequery.util.UserProperties;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.table.AbstractSortableTableModel;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -92,26 +94,28 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     private List<ColumnData> columnDataList;
 
-    public ResultSetTableModel() {
+    boolean isTable;
 
-        this(null, -1);
+    public ResultSetTableModel(boolean isTable) {
+
+        this(null, -1, isTable);
     }
 
-    public ResultSetTableModel(int maxRecords) {
+    public ResultSetTableModel(int maxRecords, boolean isTable) {
 
-        this(null, maxRecords);
+        this(null, maxRecords, isTable);
     }
 
-    public ResultSetTableModel(ResultSet resultSet, int maxRecords) {
+    public ResultSetTableModel(ResultSet resultSet, int maxRecords, boolean isTable) {
 
-        this(resultSet, maxRecords, null);
+        this(resultSet, maxRecords, null, isTable);
     }
 
-    public ResultSetTableModel(ResultSet resultSet, int maxRecords, String query) {
+    public ResultSetTableModel(ResultSet resultSet, int maxRecords, String query, boolean isTable) {
 
         this.maxRecords = maxRecords;
         this.query = query;
-
+        this.isTable = isTable;
         columnHeaders = new ArrayList<ResultSetColumnHeader>();
         visibleColumnHeaders = new ArrayList<ResultSetColumnHeader>();
 
@@ -159,6 +163,13 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     public synchronized void createTable(ResultSet resultSet) {
         createTable(resultSet, null);
     }
+
+    int zeroBaseIndex;
+    int fetchSize;
+    boolean rsClose;
+    ResultSet rs;
+    int count;
+    private int recordCount;
 
     public synchronized void createTable(ResultSet resultSet, List<ColumnData> columnDataList) {
 
@@ -228,13 +239,13 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             }
 
         } finally {
-
-            if (resultSet != null) {
+            if (!isTable) {
+                if (resultSet != null) {
 
                 try {
 
                     Statement statement = resultSet.getStatement();
-                    //resultSet.close();
+                    resultSet.close();
 
                     if (statement != null) {
                         if (!statement.isClosed())
@@ -244,18 +255,261 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                 } catch (SQLException e) {
                 }
 
+                }
             }
         }
 
     }
 
+    private boolean fetchAll = false;
+    private boolean cancelled = false;
+
     public synchronized void getDataForTable(ResultSet resultSet, int count, List<ColumnData> columnDataList) throws SQLException, InterruptedException {
-        int recordCount = 0;
+        recordCount = 0;
         this.columnDataList = columnDataList;
-        int zeroBaseIndex;
-        List<RecordDataItem> rowData;
         long time = System.currentTimeMillis();
-        while (resultSet.next()) {
+        fetchSize = SystemProperties.getIntProperty("user", "results.table.fetch.size");
+        rsClose = false;
+        rs = resultSet;
+        this.count = count;
+        if (isTable)
+            for (int i = 0; i < fetchSize && !rsClose; i++) {
+                fetchOneRecord(resultSet, count);
+            }
+        else
+            fetchAllRecords(resultSet, count);
+        if (Log.isTraceEnabled()) {
+
+            Log.trace("Finished populating table model - " + recordCount + " rows - [ "
+                    + MiscUtils.formatDuration(System.currentTimeMillis() - time) + "]");
+        }
+
+        fireTableStructureChanged();
+
+
+    }
+
+    public void setFetchAll(boolean fetchAll) {
+        this.fetchAll = fetchAll;
+    }
+
+    public boolean isResultSetClose() {
+        return rsClose;
+    }
+
+    public void fetchMoreData() {
+        try {
+            if (fetchAll) {
+                fetchAllRecords(rs, count);
+            } else {
+                for (int i = 0; i < fetchSize && !rsClose; i++) {
+                    fetchOneRecord(rs, count);
+                }
+                fireTableStructureChanged();
+            }
+        } catch (Exception e) {
+            rsClose = true;
+            if (cancelled) {
+                cancelled = false;
+                fetchAll = false;
+            } else
+                GUIUtilities.displayExceptionErrorDialog("Error loading data", e);
+            fireTableStructureChanged();
+        }
+    }
+
+    private void fetchOneRecord(ResultSet resultSet, int count) throws SQLException, InterruptedException {
+        if (resultSet.next())
+            addingRecord(resultSet, count);
+        else {
+            resultSet.close();
+            rsClose = true;
+        }
+    }
+
+    private void fetchAllRecords(ResultSet resultSet, int count) throws SQLException, InterruptedException {
+        while (resultSet.next())
+            addingRecord(resultSet, count);
+        fireTableStructureChanged();
+        resultSet.close();
+        rsClose = true;
+    }
+
+    public synchronized void createTableFromMetaData(ResultSet resultSet, DatabaseConnection dc, List<ColumnData> columnDataList) {
+
+        if (!isOpenAndValid(resultSet)) {
+
+            clearData();
+            return;
+        }
+        StatementExecutor executor = new DefaultStatementExecutor(dc, true);
+
+        try {
+            resetMetaData();
+
+            columnHeaders.clear();
+            visibleColumnHeaders.clear();
+            tableData.clear();
+            String tableName = "";
+            int zeroBaseIndex = 0;
+            int g = 1;
+            while (resultSet.next()) {
+
+                zeroBaseIndex = g - 1;
+
+                columnHeaders.add(
+                        new ResultSetColumnHeader(zeroBaseIndex,
+                                resultSet.getString(4),
+                                resultSet.getString(4),
+                                resultSet.getInt(5),
+                                resultSet.getString(6)
+                        ));
+                tableName = resultSet.getString(3);
+                g++;
+            }
+            Statement st = resultSet.getStatement();
+            if (st != null)
+                if (!st.isClosed()) {
+                    st.close();
+                }
+            int count = g - 1;
+
+            int recordCount = 0;
+            interrupted = false;
+
+            /*if (holdMetaData) {
+
+                setMetaDataVectors(rsmd);
+            }*/
+            //List<String> errorCols=new ArrayList<>();
+            String sql = "SELECT ";
+            for (int i = 0; i < count; i++) {
+                try {
+                    String query = "SELECT " + columnHeaders.get(i).getName() + " FROM " + tableName;
+                    SqlStatementResult result = executor.execute(QueryTypes.SELECT, query);
+                    ResultSet rs = result.getResultSet();
+                    if (rs != null)
+                        sql += columnHeaders.get(i).getName();
+                    else {
+                        sql += "'" + result.getErrorMessage() + "' as " + columnHeaders.get(i).getName();
+                        columnHeaders.get(i).setEditable(false);
+                    }
+
+                } catch (Exception e) {
+                    Log.error("Error get result set from metadata" + e.getMessage());
+
+                }
+                if (i < count - 1)
+                    sql += ", ";
+                executor.releaseResources();
+
+            }
+            sql += " FROM " + tableName;
+            resultSet = executor.execute(QueryTypes.SELECT, sql).getResultSet();
+            getDataForTable(resultSet, count, columnDataList);
+
+        } catch (SQLException e) {
+
+            System.err.println("SQL error populating table model at: " + e.getMessage());
+            Log.debug("Table model error - " + e.getMessage(), e);
+
+        } catch (Exception e) {
+
+            if (e instanceof InterruptedException) {
+
+                Log.error("ResultSet generation interrupted.", e);
+
+            } else {
+
+                String message = e.getMessage();
+                if (StringUtils.isBlank(message)) {
+
+                    System.err.println("Exception populating table model.");
+
+                } else {
+
+                    System.err.println("Exception populating table model at: " + message);
+                }
+
+                Log.debug("Table model error - ", e);
+            }
+
+        }
+
+    }
+
+    private void asStringOrObject(RecordDataItem value, ResultSet resultSet, int column) throws SQLException {
+
+        // often getString returns a more useful representation
+        // return using getString where object.toString is the default impl
+
+        Object valueAsObject = resultSet.getObject(column);
+        String valueAsString = resultSet.getString(column);
+
+        if (valueAsObject != null) {
+
+            String valueAsObjectToString = valueAsObject.toString();
+            String toString = valueAsObject.getClass().getName() + "@" + Integer.toHexString(valueAsObject.hashCode());
+            if (!StringUtils.equals(valueAsObjectToString, toString)) {
+
+                valueAsString = valueAsObjectToString;
+            }
+        }
+
+        value.setValue(valueAsString);
+    }
+
+    private boolean isOpenAndValid(ResultSet resultSet) {
+
+        try {
+
+            if (resultSet != null) {
+
+                try {
+
+                    return !resultSet.isClosed();
+
+                } catch (IllegalAccessError e) {
+
+                    // possible jt400 issue
+
+                    return false;
+                }
+
+            }
+
+            return false;
+
+        } catch (SQLException e) {
+
+            Log.debug("Error checking if result set is open and valid - " + e.getMessage());
+            return false;
+        }
+    }
+
+    private void resetMetaData() {
+        if (metaDataTableModel != null) {
+
+            metaDataTableModel.reset();
+        }
+    }
+
+    private void clearData() {
+
+        if (tableData != null) {
+
+            tableData.clear();
+
+        } else {
+
+            tableData = new ArrayList<List<RecordDataItem>>(0);
+        }
+
+        fireTableStructureChanged();
+    }
+
+    private void addingRecord(ResultSet resultSet, int count) throws SQLException, InterruptedException {
+
 
             if (interrupted || Thread.interrupted()) {
 
@@ -263,7 +517,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             }
 
             recordCount++;
-            rowData = new ArrayList<RecordDataItem>(count);
+            List<RecordDataItem> rowData = new ArrayList<RecordDataItem>(count);
 
             for (int i = 1; i <= count; i++) {
 
@@ -426,199 +680,10 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             }
 
             tableData.add(rowData);
-
-            if (recordCount == maxRecords) {
-
-                break;
-            }
-
-        }
-
-        if (Log.isTraceEnabled()) {
-
-            Log.trace("Finished populating table model - " + recordCount + " rows - [ "
-                    + MiscUtils.formatDuration(System.currentTimeMillis() - time) + "]");
-        }
-
-        fireTableStructureChanged();
-
-
     }
 
-    public synchronized void createTableFromMetaData(ResultSet resultSet, DatabaseConnection dc, List<ColumnData> columnDataList) {
-
-        if (!isOpenAndValid(resultSet)) {
-
-            clearData();
-            return;
-        }
-        StatementExecutor executor = new DefaultStatementExecutor(dc, true);
-
-        try {
-            resetMetaData();
-
-            columnHeaders.clear();
-            visibleColumnHeaders.clear();
-            tableData.clear();
-            String tableName = "";
-            int zeroBaseIndex = 0;
-            int g = 1;
-            while (resultSet.next()) {
-
-                zeroBaseIndex = g - 1;
-
-                columnHeaders.add(
-                        new ResultSetColumnHeader(zeroBaseIndex,
-                                resultSet.getString(4),
-                                resultSet.getString(4),
-                                resultSet.getInt(5),
-                                resultSet.getString(6)
-                        ));
-                tableName = resultSet.getString(3);
-                g++;
-            }
-            Statement st = resultSet.getStatement();
-            if (st != null)
-                if (!st.isClosed()) {
-                    st.close();
-                }
-            int count = g - 1;
-
-            int recordCount = 0;
-            interrupted = false;
-
-            /*if (holdMetaData) {
-
-                setMetaDataVectors(rsmd);
-            }*/
-            //List<String> errorCols=new ArrayList<>();
-            String sql = "SELECT ";
-            for (int i = 0; i < count; i++) {
-                try {
-                    String query = "SELECT " + columnHeaders.get(i).getName() + " FROM " + tableName;
-                    SqlStatementResult result = executor.execute(QueryTypes.SELECT, query);
-                    ResultSet rs = result.getResultSet();
-                    if (rs != null)
-                        sql += columnHeaders.get(i).getName();
-                    else {
-                        sql += "'" + result.getErrorMessage() + "' as " + columnHeaders.get(i).getName();
-                        columnHeaders.get(i).setEditable(false);
-                    }
-
-                } catch (Exception e) {
-                    Log.error("Error get result set from metadata" + e.getMessage());
-
-                }
-                if (i < count - 1)
-                    sql += ", ";
-                executor.releaseResources();
-
-            }
-            sql += " FROM " + tableName;
-            resultSet = executor.execute(QueryTypes.SELECT, sql).getResultSet();
-            getDataForTable(resultSet, count, columnDataList);
-
-        } catch (SQLException e) {
-
-            System.err.println("SQL error populating table model at: " + e.getMessage());
-            Log.debug("Table model error - " + e.getMessage(), e);
-
-        } catch (Exception e) {
-
-            if (e instanceof InterruptedException) {
-
-                Log.error("ResultSet generation interrupted.", e);
-
-            } else {
-
-                String message = e.getMessage();
-                if (StringUtils.isBlank(message)) {
-
-                    System.err.println("Exception populating table model.");
-
-                } else {
-
-                    System.err.println("Exception populating table model at: " + message);
-                }
-
-                Log.debug("Table model error - ", e);
-            }
-
-        } finally {
-
-            executor.releaseResources();
-        }
-
-    }
-
-    private void asStringOrObject(RecordDataItem value, ResultSet resultSet, int column) throws SQLException {
-
-        // often getString returns a more useful representation
-        // return using getString where object.toString is the default impl
-
-        Object valueAsObject = resultSet.getObject(column);
-        String valueAsString = resultSet.getString(column);
-
-        if (valueAsObject != null) {
-
-            String valueAsObjectToString = valueAsObject.toString();
-            String toString = valueAsObject.getClass().getName() + "@" + Integer.toHexString(valueAsObject.hashCode());
-            if (!StringUtils.equals(valueAsObjectToString, toString)) {
-
-                valueAsString = valueAsObjectToString;
-            }
-        }
-
-        value.setValue(valueAsString);
-    }
-
-    private boolean isOpenAndValid(ResultSet resultSet) {
-
-        try {
-
-            if (resultSet != null) {
-
-                try {
-
-                    return !resultSet.isClosed();
-
-                } catch (IllegalAccessError e) {
-
-                    // possible jt400 issue
-
-                    return false;
-                }
-
-            }
-
-            return false;
-
-        } catch (SQLException e) {
-
-            Log.debug("Error checking if result set is open and valid - " + e.getMessage());
-            return false;
-        }
-    }
-
-    private void resetMetaData() {
-        if (metaDataTableModel != null) {
-
-            metaDataTableModel.reset();
-        }
-    }
-
-    private void clearData() {
-
-        if (tableData != null) {
-
-            tableData.clear();
-
-        } else {
-
-            tableData = new ArrayList<List<RecordDataItem>>(0);
-        }
-
-        fireTableStructureChanged();
+    public void cancelFetch() {
+        cancelled = true;
     }
 
     public void interrupt() {

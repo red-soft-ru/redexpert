@@ -40,7 +40,7 @@ public class DatabaseObjectMetaDataPanel extends JPanel implements ResultSetTabl
         super(new BorderLayout());
 
         table = new ResultSetTable();
-        tableModel = new ResultSetTableModel();
+        tableModel = new ResultSetTableModel(false);
         table.setModel(new TableSorter(tableModel, table.getTableHeader()));
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 

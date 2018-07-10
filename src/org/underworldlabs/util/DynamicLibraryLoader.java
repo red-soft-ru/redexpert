@@ -20,6 +20,7 @@
 
 package org.underworldlabs.util;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 
@@ -79,6 +80,29 @@ public class DynamicLibraryLoader extends URLClassLoader {
             return parent.loadClass(name);
         }
 
+    }
+
+    public static Object loadingObjectFromClassLoader(Object unwrapObject, String className) {
+
+        URL[] urls;
+        Class clazzdb;
+        Object odb = null;
+        try {
+            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+            ClassLoader cl = new URLClassLoader(urls, unwrapObject.getClass().getClassLoader());
+            clazzdb = cl.loadClass("biz.redsoft." + className);
+            odb = clazzdb.newInstance();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return odb;
     }
 
 }

@@ -49,6 +49,7 @@ import org.underworldlabs.sqlParser.REDDATABASESqlBaseListener;
 import org.underworldlabs.sqlParser.REDDATABASESqlLexer;
 import org.underworldlabs.sqlParser.REDDATABASESqlParser;
 import org.underworldlabs.sqlParser.SqlParser;
+import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 
 import java.net.MalformedURLException;
@@ -579,25 +580,7 @@ public class QueryDispatcher {
                             e.printStackTrace();
                         }
 
-                        URL[] urls = new URL[0];
-                        Class clazzdb = null;
-                        Object odb = null;
-                        try {
-                            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-                            ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
-                            clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformanceImpl");
-                            odb = clazzdb.newInstance();
-                        } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                        } catch (InstantiationException e) {
-                            e.printStackTrace();
-                        } catch (MalformedURLException e) {
-                            e.printStackTrace();
-                        }
-
-                        IFBDatabasePerformance db = (IFBDatabasePerformance) odb;
+                        IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(connection, "FBDatabasePerformanceImpl");
                         try {
 
                             db.setConnection(connection);

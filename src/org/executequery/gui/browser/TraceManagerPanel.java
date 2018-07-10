@@ -185,6 +185,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     String s = "";
                     boolean finded = false;
                     clearAll();
+                    idLogMessage = 0;
                     BufferedReader reader = null;
                     try {
                         reader = new BufferedReader(
@@ -206,6 +207,10 @@ public class TraceManagerPanel extends JPanel implements TabView {
                                 s += str + "\n";
                             }
                         }
+                        LogMessage logMessage = new LogMessage(s);
+                        idLogMessage++;
+                        logMessage.setId(idLogMessage);
+                        loggerPanel.addRow(logMessage);
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     } finally {

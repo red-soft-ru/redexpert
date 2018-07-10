@@ -139,7 +139,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     File file = fileChooser.getSelectedFile();
                     fileLogField.setText(file.getAbsolutePath());
                     try {
-                        fileLog = new FileOutputStream(file, true);
+                        fileLog = new FileOutputStream(file, false);
                     } catch (FileNotFoundException e1) {
                         e1.printStackTrace();
                     }
@@ -298,7 +298,12 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        add(loggerPanel, new GridBagConstraints(0, 2,
+        add(startStopSessionButton, new GridBagConstraints(0, 2,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        add(loggerPanel, new GridBagConstraints(0, 3,
                 1, 1, 1, 1,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -360,11 +365,6 @@ public class TraceManagerPanel extends JPanel implements TabView {
         connnectionPanel.add(passwordField, new GridBagConstraints(1, 3,
                 2, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connnectionPanel.add(startStopSessionButton, new GridBagConstraints(0, 5,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
 
         label = new JLabel("Database");

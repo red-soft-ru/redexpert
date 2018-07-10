@@ -58,7 +58,7 @@ query_and_params
 ;
 
 start_service_event
-:header_event SPACE type_start_service_event end_line 'service_mgr,' SPACE? '(' id_service ',' SPACE? username ',' SPACE? protocol ':' client_address (','end_line client_process_info SPACE?)? ')' end_line
+:header_event SPACE type_start_service_event end_line 'service_mgr, ' '(' id_service ', ' username ', ' protocol ':' client_address (','end_line client_process_info )? ')' end_line
  '"' type_query_service '"' end_line
  options_service
 ;
@@ -147,12 +147,12 @@ query_and_params
 
 service_event
 :header_event SPACE type_service_event end_line
- 'service_mgr,' SPACE? '(' id_service ',' SPACE? username ',' SPACE? protocol ':' client_address (','end_line client_process_info SPACE?)? ')'
+ 'service_mgr, '  '(' id_service ', ' username ', ' protocol ':' client_address (','end_line client_process_info )? ')'
 ;
 
 service_query_event
 :header_event SPACE type_query_service_event end_line
- 'service_mgr,' SPACE? '(' id_service ',' SPACE? username ',' SPACE? protocol ':' client_address (','end_line client_process_info SPACE?)? ')' end_line
+ 'service_mgr, ' '(' id_service ', ' username ', ' protocol ':' client_address (','end_line client_process_info )? ')' end_line
 '"' type_query_service '"' end_line
 ('Send portion of the query:' sended_data)?
 ('Receive portion of the query:' received_data)?

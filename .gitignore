@@ -31,3 +31,11 @@ lib/jaybird-cryptoapi\.jar
 sql.log
 
 src/org/underworldlabs/sqlParser/REDDATABASESql*
+src/org/underworldlabs/traceparser/RedTrace.tokens
+src/org/underworldlabs/traceparser/RedTraceBaseListener.java
+src/org/underworldlabs/traceparser/RedTraceBaseVisitor.java
+src/org/underworldlabs/traceparser/RedTraceLexer.java
+src/org/underworldlabs/traceparser/RedTraceLexer.tokens
+src/org/underworldlabs/traceparser/RedTraceListener.java
+src/org/underworldlabs/traceparser/RedTraceParser.java
+src/org/underworldlabs/traceparser/RedTraceVisitor.java

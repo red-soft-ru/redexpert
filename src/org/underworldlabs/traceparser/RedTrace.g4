@@ -453,7 +453,7 @@ marks
 table_counters : 'Table' (SPACE 'Natural')? (SPACE 'Index')? (SPACE 'Update')?
  (SPACE 'Insert')? (SPACE 'Delete')? (SPACE 'Backout')? (SPACE 'Purge')? (SPACE 'Expunge')? end_line
  ('*')+ end_line
- (~'\n')+ end_line;
+ (any_name SPACE ID (SPACE ID)* SPACE? end_line)+;
 
 table
 :any_name

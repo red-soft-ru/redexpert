@@ -83,7 +83,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
         loadCharsets();
         loggerPanel = new TablePanel();
         lock = new ReentrantLock();
-        timer = new Timer(1000, new ActionListener() {
+        timer = new Timer(1500, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 timerAction();

@@ -480,6 +480,8 @@
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
         <menu-item id="grant-manager-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
+        <menu-item id="trace-manager-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
         <menu-item id="comparerDB-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 

@@ -30,8 +30,9 @@ public class TablePanel extends JPanel {
     private ColumnsCheckPanel columnsCheckPanel;
 
 
-    public TablePanel() {
+    public TablePanel(ColumnsCheckPanel columnsCheckPanel) {
         super(new BorderLayout());
+        this.columnsCheckPanel = columnsCheckPanel;
         init();
     }
 
@@ -77,7 +78,7 @@ public class TablePanel extends JPanel {
                 TitledBorder.LEADING, TitledBorder.TOP, null, null));
         GridBagConstraints gbc_filterPanel = new GridBagConstraints();
         gbc_filterPanel.fill = GridBagConstraints.HORIZONTAL;
-        gbc_filterPanel.insets = new Insets(5, 5, 5, 5);
+        gbc_filterPanel.insets = new Insets(0, 0, 0, 0);
         gbc_filterPanel.gridx = 0;
         gbc_filterPanel.gridy = 0;
         gbc_filterPanel.gridwidth = 1;
@@ -132,7 +133,7 @@ public class TablePanel extends JPanel {
         lblText = new JLabel("Filter Column:");
         gbc_lblText = new GridBagConstraints();
         gbc_lblText.anchor = GridBagConstraints.NORTHWEST;
-        gbc_lblText.insets = new Insets(0, 0, 5, 5);
+        gbc_lblText.insets = new Insets(0, 5, 5, 5);
         gbc_lblText.gridx = 3;
         gbc_lblText.gridy = 0;
         gbc_lblText.gridwidth = 1;
@@ -152,7 +153,7 @@ public class TablePanel extends JPanel {
         lblText = new JLabel("Raw SQL Column:");
         gbc_lblText = new GridBagConstraints();
         gbc_lblText.anchor = GridBagConstraints.NORTHWEST;
-        gbc_lblText.insets = new Insets(0, 0, 5, 5);
+        gbc_lblText.insets = new Insets(0, 5, 5, 5);
         gbc_lblText.gridx = 5;
         gbc_lblText.gridy = 0;
         gbc_lblText.gridwidth = 1;
@@ -186,7 +187,7 @@ public class TablePanel extends JPanel {
                 else hideShowColumnsButton.setText("Hide columns");
             }
         });
-        topPanel.add(hideShowColumnsButton, new GridBagConstraints(0, 1, 1, 1, 0, 0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
+        //topPanel.add(hideShowColumnsButton, new GridBagConstraints(0, 1, 1, 1, 0, 0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
 
         columnsCheckPanel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Columns",
                 TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -200,7 +201,7 @@ public class TablePanel extends JPanel {
         gbc_typeEventPanel.weightx = 0;
         gbc_typeEventPanel.weighty = 0;
         gbc_typeEventPanel.anchor = GridBagConstraints.NORTHWEST;
-        topPanel.add(columnsCheckPanel, gbc_typeEventPanel);
+        //topPanel.add(columnsCheckPanel, gbc_typeEventPanel);
 
 
         JSplitPane splitPane = new JSplitPane();

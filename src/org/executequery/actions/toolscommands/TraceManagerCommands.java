@@ -11,13 +11,10 @@ import java.awt.event.ActionEvent;
 public class TraceManagerCommands extends OpenFrameCommand implements BaseCommand {
 
     public void execute(ActionEvent e) {
-
-        if (GUIUtilities.getCentralPane(TraceManagerPanel.TITLE) == null)
             GUIUtilities.addCentralPane(TraceManagerPanel.TITLE,
                     (Icon) null,
                     new TraceManagerPanel(),
                     null,
                     true);
-        else GUIUtilities.setSelectedCentralPane(TraceManagerPanel.TITLE);
     }
 }

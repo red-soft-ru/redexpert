@@ -1,11 +1,13 @@
 package org.executequery.gui.browser;
 
 import biz.redsoft.IFBTraceManager;
+import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.gui.browser.managment.tracemanager.BuildConfigurationPanel;
+import org.executequery.gui.browser.managment.tracemanager.ColumnsCheckPanel;
 import org.executequery.gui.browser.managment.tracemanager.TablePanel;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -30,8 +32,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class TraceManagerPanel extends JPanel implements TabView {
 
     public static final String TITLE = "Trace Manager";
-    IFBTraceManager traceManager;
-    TablePanel loggerPanel;
+    private IFBTraceManager traceManager;
+    private TablePanel loggerPanel;
     private Timer timer;
     private OutputStream fileLog;
     private OutputStream outputStream;
@@ -57,10 +59,11 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private boolean changed = false;
     private List<String> charsets;
     private JComboBox charsetCombo;
-    private JPanel connnectionPanel;
+    private JPanel connectionPanel;
     private JTabbedPane tabPane;
     private JPanel confPanel;
     private JButton hideShowTabPaneButton;
+    private ColumnsCheckPanel columnsCheckPanel;
 
     public TraceManagerPanel() {
         init();
@@ -81,9 +84,10 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private void init() {
         initTraceManager();
         loadCharsets();
-        loggerPanel = new TablePanel();
+        columnsCheckPanel = new ColumnsCheckPanel();
+        loggerPanel = new TablePanel(columnsCheckPanel);
         lock = new ReentrantLock();
-        timer = new Timer(1000, new ActionListener() {
+        timer = new Timer(1500, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 timerAction();
@@ -103,7 +107,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
         logToFileBox = new JCheckBox("Log to file");
         hostField = new JTextField("127.0.0.1");
         portField = new NumberTextField();
-        portField.setValue(3050);
+        portField.setText("3050");
         sessionField = new JTextField();
         sessionField.setText("Session");
         charsetCombo = new JComboBox<>(charsets.toArray());
@@ -185,6 +189,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     String s = "";
                     boolean finded = false;
                     clearAll();
+                    idLogMessage = 0;
                     BufferedReader reader = null;
                     try {
                         reader = new BufferedReader(
@@ -206,6 +211,10 @@ public class TraceManagerPanel extends JPanel implements TabView {
                                 s += str + "\n";
                             }
                         }
+                        LogMessage logMessage = new LogMessage(s);
+                        idLogMessage++;
+                        logMessage.setId(idLogMessage);
+                        loggerPanel.addRow(logMessage);
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     } finally {
@@ -257,40 +266,45 @@ public class TraceManagerPanel extends JPanel implements TabView {
                         traceManager.startTraceSession("session", traceManager.loadConfigurationFromFile(fileConfField.getText()));
                         startStopSessionButton.setText("Stop");
                         logToFileBox.setEnabled(false);
-                    } catch (SQLException e1) {
-                        e1.printStackTrace();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
+                    } catch (Exception e1) {
+                        GUIUtilities.displayExceptionErrorDialog("Error start Trace Manager", e1);
                     }
                 } else try {
                     traceManager.stopTraceSession(traceManager.getSessionID("session"));
                     startStopSessionButton.setText("Start");
                     logToFileBox.setEnabled(true);
                 } catch (SQLException e1) {
-                    e1.printStackTrace();
+                    GUIUtilities.displayExceptionErrorDialog("Error stop Trace Manager", e1);
                 }
             }
         });
 
-        hideShowTabPaneButton = new JButton("Hide connection info");
+        hideShowTabPaneButton = new JButton("Hide Top Panel");
         hideShowTabPaneButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 tabPane.setVisible(!tabPane.isVisible());
-                if (hideShowTabPaneButton.getText().contentEquals("Hide connection info"))
-                    hideShowTabPaneButton.setText("Show connection info");
-                else hideShowTabPaneButton.setText("Hide connection info");
+                if (hideShowTabPaneButton.getText().contentEquals("Hide Top Panel"))
+                    hideShowTabPaneButton.setText("Show Top Panel");
+                else hideShowTabPaneButton.setText("Hide Top Panel");
             }
         });
 
         tabPane = new JTabbedPane();
-        connnectionPanel = new JPanel();
+        connectionPanel = new JPanel();
         confPanel = new BuildConfigurationPanel();
 
         setLayout(new GridBagLayout());
-        add(tabPane, new GridBagConstraints(0, 0,
-                1, 1, 1, 0,
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new GridBagLayout());
+        topPanel.add(tabPane, new GridBagConstraints(0, 1,
+                3, 1, 1, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        add(topPanel, new GridBagConstraints(0, 0,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0),
                 0, 0));
 
         add(hideShowTabPaneButton, new GridBagConstraints(0, 1,
@@ -303,148 +317,148 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        add(loggerPanel, new GridBagConstraints(0, 3,
-                1, 1, 1, 1,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        tabPane.add("Connection", connnectionPanel);
-        tabPane.add("Build Configuration File", new JScrollPane(confPanel));
-        connnectionPanel.setLayout(new GridBagLayout());
-
-        JLabel label = new JLabel("Connections");
-        connnectionPanel.add(label, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        connnectionPanel.add(databaseBox, new GridBagConstraints(1, 0,
-                2, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        label = new JLabel("Charset");
-        connnectionPanel.add(label, new GridBagConstraints(3, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        connnectionPanel.add(charsetCombo, new GridBagConstraints(4, 0,
-                3, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-
-        connnectionPanel.add(logToFileBox, new GridBagConstraints(0, 1,
+        JLabel label = new JLabel("Open filelog");
+        topPanel.add(label, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        connnectionPanel.add(fileLogButton, new GridBagConstraints(1, 1,
+        topPanel.add(openFileLog, new GridBagConstraints(1, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
-        connnectionPanel.add(fileLogField, new GridBagConstraints(2, 1,
+
+        topPanel.add(openFileLogField, new GridBagConstraints(2, 0,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        label = new JLabel("User name");
-        connnectionPanel.add(label, new GridBagConstraints(0, 2,
+        add(loggerPanel, new GridBagConstraints(0, 3,
+                1, 1, 1, 1,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(0, 5, 5, 5),
+                0, 0));
+
+        tabPane.add("Connection", connectionPanel);
+        tabPane.add("Build Configuration File", new JScrollPane(confPanel));
+        tabPane.add("Visible Columns", columnsCheckPanel);
+        connectionPanel.setLayout(new GridBagLayout());
+
+        label = new JLabel("Connections");
+        connectionPanel.add(label, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
-        connnectionPanel.add(userField, new GridBagConstraints(1, 2,
+        connectionPanel.add(databaseBox, new GridBagConstraints(1, 0,
+                6, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        label = new JLabel("Database");
+        connectionPanel.add(label, new GridBagConstraints(0, 1,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        connectionPanel.add(fileDatabaseButton, new GridBagConstraints(1, 1,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        connectionPanel.add(fileDatabaseField, new GridBagConstraints(2, 1,
+                5, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        label = new JLabel("Session name");
+        connectionPanel.add(label, new GridBagConstraints(0, 2,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        connectionPanel.add(sessionField, new GridBagConstraints(1, 2,
+                2, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        label = new JLabel("User name");
+        connectionPanel.add(label, new GridBagConstraints(0, 3,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        connectionPanel.add(userField, new GridBagConstraints(1, 3,
                 2, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
         label = new JLabel("Password");
-        connnectionPanel.add(label, new GridBagConstraints(0, 3,
+        connectionPanel.add(label, new GridBagConstraints(3, 3,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
-        connnectionPanel.add(passwordField, new GridBagConstraints(1, 3,
-                2, 1, 1, 0,
+        connectionPanel.add(passwordField, new GridBagConstraints(4, 3,
+                3, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        label = new JLabel("Database");
-        connnectionPanel.add(label, new GridBagConstraints(3, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connnectionPanel.add(fileDatabaseButton, new GridBagConstraints(4, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connnectionPanel.add(fileDatabaseField, new GridBagConstraints(5, 1,
-                2, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        label = new JLabel("Config file");
-        connnectionPanel.add(label, new GridBagConstraints(3, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connnectionPanel.add(fileConfButton, new GridBagConstraints(4, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connnectionPanel.add(fileConfField, new GridBagConstraints(5, 2,
-                2, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        label = new JLabel("Port");
-        connnectionPanel.add(label, new GridBagConstraints(3, 3,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-
-        connnectionPanel.add(portField, new GridBagConstraints(4, 3,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
         label = new JLabel("Host");
-        connnectionPanel.add(label, new GridBagConstraints(5, 3,
+        connectionPanel.add(label, new GridBagConstraints(3, 2,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        connnectionPanel.add(hostField, new GridBagConstraints(6, 3,
+        connectionPanel.add(hostField, new GridBagConstraints(4, 2,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        label = new JLabel("Session name");
-        connnectionPanel.add(label, new GridBagConstraints(0, 4,
+        label = new JLabel("Port");
+        connectionPanel.add(label, new GridBagConstraints(5, 2,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        connnectionPanel.add(sessionField, new GridBagConstraints(1, 4,
-                2, 1, 1, 0,
+        connectionPanel.add(portField, new GridBagConstraints(6, 2,
+                1, 1, 0.3, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        label = new JLabel("Charset");
+        connectionPanel.add(label, new GridBagConstraints(0, 4,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        connectionPanel.add(charsetCombo, new GridBagConstraints(1, 4,
+                6, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        label = new JLabel("Open filelog");
-        connnectionPanel.add(label, new GridBagConstraints(3, 4,
+        label = new JLabel("Config file");
+        connectionPanel.add(label, new GridBagConstraints(0, 5,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        connnectionPanel.add(openFileLog, new GridBagConstraints(4, 4,
+        connectionPanel.add(fileConfButton, new GridBagConstraints(1, 5,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        connnectionPanel.add(openFileLogField, new GridBagConstraints(5, 4,
-                2, 1, 1, 0,
+        connectionPanel.add(fileConfField, new GridBagConstraints(2, 5,
+                5, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        connectionPanel.add(logToFileBox, new GridBagConstraints(0, 6,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        connectionPanel.add(fileLogButton, new GridBagConstraints(1, 6,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        connectionPanel.add(fileLogField, new GridBagConstraints(2, 6,
+                5, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 

@@ -221,7 +221,7 @@ public class BuildConfigurationPanel extends JPanel {
                 componentMap.put(intValues[k], field);
             }
 
-        JLabel label = new JLabel("Appropriation Symbol");
+        JLabel label = new JLabel("Server Version");
         add(label, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),

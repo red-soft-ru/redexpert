@@ -8,8 +8,10 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.gui.browser.managment.tracemanager.BuildConfigurationPanel;
 import org.executequery.gui.browser.managment.tracemanager.ColumnsCheckPanel;
+import org.executequery.gui.browser.managment.tracemanager.SessionManagerPanel;
 import org.executequery.gui.browser.managment.tracemanager.TablePanel;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
+import org.executequery.gui.browser.managment.tracemanager.net.SessionInfo;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
@@ -17,6 +19,7 @@ import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.FileUtils;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -59,32 +62,21 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private boolean changed = false;
     private List<String> charsets;
     private JComboBox charsetCombo;
-    private JPanel connectionPanel;
     private JTabbedPane tabPane;
-    private JPanel confPanel;
     private JButton hideShowTabPaneButton;
-    private ColumnsCheckPanel columnsCheckPanel;
-
-    public TraceManagerPanel() {
-        init();
-    }
-
-    private void initTraceManager() {
-        DatabaseDriver dd = null;
-        List<DatabaseDriver> dds = driverRepository().findAll();
-        for (DatabaseDriver d : dds) {
-            if (d.getClassName().contains("FBDriver"))
-                dd = d;
-            break;
-        }
-        Object driver = DynamicLibraryLoader.loadingObjectFromClassLoader(dd, dd.getClassName(), dd.getPath());
-        traceManager = (IFBTraceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(driver, "FBTraceManagerImpl");
-    }
+    private Message message;
+    private List<SessionInfo> sessions;
+    private SessionManagerPanel sessionManagerPanel;
 
     private void init() {
+        message = Message.LOG_MESSAGE;
+        sessions = new ArrayList<>();
         initTraceManager();
+        sessionField = new JTextField();
+        sessionField.setText("Session");
+        sessionManagerPanel = new SessionManagerPanel(traceManager, sessionField);
         loadCharsets();
-        columnsCheckPanel = new ColumnsCheckPanel();
+        ColumnsCheckPanel columnsCheckPanel = new ColumnsCheckPanel();
         loggerPanel = new TablePanel(columnsCheckPanel);
         lock = new ReentrantLock();
         timer = new Timer(1500, new ActionListener() {
@@ -108,8 +100,6 @@ public class TraceManagerPanel extends JPanel implements TabView {
         hostField = new JTextField("127.0.0.1");
         portField = new NumberTextField();
         portField.setText("3050");
-        sessionField = new JTextField();
-        sessionField.setText("Session");
         charsetCombo = new JComboBox<>(charsets.toArray());
         DynamicComboBoxModel model = new DynamicComboBoxModel();
         List<DatabaseConnection> databaseConnectionList = new ArrayList<>();
@@ -126,7 +116,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     userField.setText(dc.getUserName());
                     passwordField.setText(dc.getUnencryptedPassword());
                     hostField.setText(dc.getHost());
-                    portField.setValue(dc.getPortInt());
+                    portField.setText(dc.getPort());
                     sessionField.setText(dc.getName() + "_trace_session");
                     charsetCombo.setSelectedItem(dc.getCharset());
                 }
@@ -257,20 +247,20 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     traceManager.setUser(userField.getText());
                     traceManager.setPassword(new String(passwordField.getPassword()));
                     traceManager.setLogger(outputStream);
-                    traceManager.setCharSet("UTF8");
+                    traceManager.setCharSet(MiscUtils.getJavaCharsetFromSqlCharset((String) charsetCombo.getSelectedItem()));
                     traceManager.setDatabase(fileDatabaseField.getText());
                     traceManager.setHost(hostField.getText());
                     traceManager.setPort(portField.getValue());
                     timer.start();
                     try {
-                        traceManager.startTraceSession("session", traceManager.loadConfigurationFromFile(fileConfField.getText()));
+                        traceManager.startTraceSession(sessionField.getText(), traceManager.loadConfigurationFromFile(fileConfField.getText()));
                         startStopSessionButton.setText("Stop");
                         logToFileBox.setEnabled(false);
                     } catch (Exception e1) {
                         GUIUtilities.displayExceptionErrorDialog("Error start Trace Manager", e1);
                     }
                 } else try {
-                    traceManager.stopTraceSession(traceManager.getSessionID("session"));
+                    traceManager.stopTraceSession(traceManager.getSessionID(sessionField.getText()));
                     startStopSessionButton.setText("Start");
                     logToFileBox.setEnabled(true);
                 } catch (SQLException e1) {
@@ -291,8 +281,8 @@ public class TraceManagerPanel extends JPanel implements TabView {
         });
 
         tabPane = new JTabbedPane();
-        connectionPanel = new JPanel();
-        confPanel = new BuildConfigurationPanel();
+        JPanel connectionPanel = new JPanel();
+        JPanel confPanel = new BuildConfigurationPanel();
 
         setLayout(new GridBagLayout());
         JPanel topPanel = new JPanel();
@@ -341,6 +331,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
         tabPane.add("Connection", connectionPanel);
         tabPane.add("Build Configuration File", new JScrollPane(confPanel));
         tabPane.add("Visible Columns", columnsCheckPanel);
+        tabPane.add("Session Manager", sessionManagerPanel);
         connectionPanel.setLayout(new GridBagLayout());
 
         label = new JLabel("Connections");
@@ -465,6 +456,60 @@ public class TraceManagerPanel extends JPanel implements TabView {
 
     }
 
+    public TraceManagerPanel() {
+        init();
+    }
+
+    private void initTraceManager() {
+        DatabaseDriver dd = null;
+        List<DatabaseDriver> dds = driverRepository().findAll();
+        for (DatabaseDriver d : dds) {
+            if (d.getClassName().contains("FBDriver"))
+                dd = d;
+            break;
+        }
+        Object driver = DynamicLibraryLoader.loadingObjectFromClassLoader(dd, dd.getClassName(), dd.getPath());
+        traceManager = (IFBTraceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(driver, "FBTraceManagerImpl");
+    }
+
+    private void timerAction() {
+        lock.lock();
+        String messages = sb.toString();
+        sb.setLength(0);
+        String s = "";
+        String[] strs = messages.split("\n");
+        boolean finded = false;
+        if (!messages.isEmpty())
+            for (int i = 0; i < strs.length; i++) {
+                String str = strs[i].trim();
+                if (str.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}.*")) {
+                    if (finded) {
+                        parseMessage(s);
+                    }
+                    message = Message.LOG_MESSAGE;
+                    finded = true;
+                    s = str + "\n";
+                } else if (str.matches("^Session ID:.*")) {
+                    if (finded) {
+                        parseMessage(s);
+                    }
+                    message = Message.SESSION_INFO;
+                    finded = true;
+                    s = str + "\n";
+                } else {
+                    s += str + "\n";
+                }
+            }
+        if (changed)
+            sb.append(s);
+        else if (!s.isEmpty() && !s.toLowerCase().startsWith("trace session")) {
+            s = s.trim();
+            parseMessage(s);
+        }
+        changed = false;
+        lock.unlock();
+    }
+
     @Override
     public boolean tabViewClosing() {
         return true;
@@ -480,40 +525,21 @@ public class TraceManagerPanel extends JPanel implements TabView {
         return true;
     }
 
-    private void timerAction() {
-        lock.lock();
-        String messages = sb.toString();
-        sb.setLength(0);
-        String s = "";
-        String[] strs = messages.split("\n");
-        boolean finded = false;
-        if (!messages.isEmpty())
-            for (int i = 0; i < strs.length; i++) {
-                String str = strs[i].trim();
-                if (str.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}.*")) {
-                    if (finded) {
-                        LogMessage logMessage = new LogMessage(s);
-                        idLogMessage++;
-                        logMessage.setId(idLogMessage);
-                        loggerPanel.addRow(logMessage);
-                    }
-                    finded = true;
-                    s = str + "\n";
-                } else {
-                    s += str + "\n";
-                }
-            }
-        if (changed)
-            sb.append(s);
-        else if (!s.isEmpty() && !s.toLowerCase().startsWith("trace session")) {
-            s = s.trim();
-            LogMessage logMessage = new LogMessage(s);
+    private void parseMessage(String msg) {
+        if (message == Message.LOG_MESSAGE) {
+            LogMessage logMessage = new LogMessage(msg);
             idLogMessage++;
             logMessage.setId(idLogMessage);
             loggerPanel.addRow(logMessage);
+        } else {
+            if (sessionManagerPanel.isRefreshFlag()) {
+                sessions.clear();
+                sessionManagerPanel.setRefreshFlag(false);
+            }
+            SessionInfo sessionInfo = new SessionInfo(msg);
+            sessions.add(sessionInfo);
+            sessionManagerPanel.setSessions(sessions);
         }
-        changed = false;
-        lock.unlock();
     }
 
     public void clearAll() {
@@ -538,12 +564,16 @@ public class TraceManagerPanel extends JPanel implements TabView {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return;
         }
     }
 
     private DatabaseDriverRepository driverRepository() {
         return (DatabaseDriverRepository) RepositoryCache.load(
                 DatabaseDriverRepository.REPOSITORY_ID);
+    }
+
+    enum Message {
+        LOG_MESSAGE,
+        SESSION_INFO
     }
 }

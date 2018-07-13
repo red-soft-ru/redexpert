@@ -177,6 +177,14 @@ connection_info end_line
  (table_counters end_line+)?
 ;
 
+session_info:
+'Session ID:' SPACE ID end_line
+'name:' SPACE name_session end_line
+'user:' SPACE username? end_line
+'date:' SPACE datetime end_line
+'flags:' flags
+  ;
+
 
 //types
 type_trace_event
@@ -298,6 +306,14 @@ oldest_active
 
 oldest_snapshot
 :any_name
+;
+
+flags:
+SPACE any_name(', ' any_name)*
+;
+
+datetime
+:DATE SPACE TIME
 ;
 
 next_transaction

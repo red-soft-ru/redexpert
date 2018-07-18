@@ -126,13 +126,6 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
                 "Check major versions",
                 Boolean.valueOf(stringUserProperty(key))));
 
-        key = "connection.logging";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                "Using JDBC logging",
-                Boolean.valueOf(stringUserProperty(key))));
-
         key = "system.log.level";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,

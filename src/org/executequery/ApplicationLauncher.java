@@ -133,14 +133,7 @@ public class ApplicationLauncher {
 
             advanceSplash(splash);
 
-            if (!UserProperties.getInstance().containsKey("connection.logging")) {
-                boolean logging = SystemProperties.getBooleanProperty("defaults", "connection.logging");
-                SystemProperties.setProperty("user", "connection.logging", logging ? "true" : "false");
-            }
-
             GUIUtilities.startLogger();
-
-            GUIUtilities.startJdbcLogger();
 
             advanceSplash(splash);
 

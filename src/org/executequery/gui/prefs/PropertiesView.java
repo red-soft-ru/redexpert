@@ -81,13 +81,6 @@ public class PropertiesView extends AbstractPropertiesBasePanel {
                 "System console",
                 Boolean.valueOf(SystemProperties.getProperty("user", key)));
 
-        key = "system.display.jdbclogger";
-        preferences[count++] = new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                "Jdbc logger",
-                new Boolean(SystemProperties.getProperty("user", key)));
-
         key = "system.display.connections";
         preferences[count++] = new UserPreference(
                 UserPreference.BOOLEAN_TYPE,

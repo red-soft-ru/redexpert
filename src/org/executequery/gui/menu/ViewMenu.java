@@ -76,7 +76,6 @@ public class ViewMenu extends AbstractOptionsMenu
 
         actionCommandsToPropertiesMap = new HashMap<String, String>();
 
-        actionCommandsToPropertiesMap.put("viewLogger", "system.display.jdbclogger");
         actionCommandsToPropertiesMap.put("viewConsole", "system.display.console");
         actionCommandsToPropertiesMap.put("viewConnections", "system.display.connections");
         actionCommandsToPropertiesMap.put("viewKeywords", "system.display.keywords");

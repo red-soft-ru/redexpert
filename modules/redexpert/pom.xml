@@ -251,7 +251,6 @@
                                 <resource>
                                     <directory>${pom.basedir}/../../lib</directory>
                                     <includes>
-                                        <!--include>**/jdbc-perf-logger-driver-0.8.1-SNAPSHOT.jar</include-->
                                         <include>**/fbplugin.jar</include>
                                         <include>**/liquibase-3.5.6-SNAPSHOT.jar</include>
                                     </includes>
@@ -304,7 +303,6 @@
                                     <directory>${pom.basedir}/../../lib</directory>
                                     <includes>
                                         <include>fbplugin-impl.jar</include>
-                                        <include>jdbc-perf-logger-driver-0.8.1-SNAPSHOT.jar</include>
                                         <include>jdbc-logger.jar</include>
                                     </includes>
                                 </resource>

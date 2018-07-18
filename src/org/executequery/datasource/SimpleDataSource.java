@@ -131,12 +131,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         }
 
         if (driver != null) {
-            boolean jdbcLogging = SystemProperties.getBooleanProperty("user", "connection.logging");
-
-            if (!jdbcLogging)
-                return driver.connect(url, advancedProperties);
-
-            return driver.connect("jdbcperflogger:" + url, advancedProperties);
+            return driver.connect(url, advancedProperties);
         }
 
         throw new DataSourceException("Error loading specified JDBC driver");

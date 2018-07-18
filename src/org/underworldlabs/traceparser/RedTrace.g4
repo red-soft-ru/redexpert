@@ -671,14 +671,14 @@ ANY_NAME
 ;
 
 PATH
-:(LETTER|DIGIT|KIRILLIC_LETTER|':\\'|':/'|'_'|'-'|'.'|'/'|'\\'|'$'|'%'|'['|']')+
+:(LETTER|DIGIT|CYRILLIC_LETTER|':\\'|':/'|'_'|'-'|'.'|'/'|'\\'|'$'|'%'|'['|']')+
 ;
 
 fragment DIGIT:[0-9];
 
 fragment LETTER:[a-zA-Z];
 
-fragment KIRILLIC_LETTER:[А-Яа-я];
+fragment CYRILLIC_LETTER:[\u0410-\u042F\u0430-\u044F];
 
 SPACE:(' ')+;
 

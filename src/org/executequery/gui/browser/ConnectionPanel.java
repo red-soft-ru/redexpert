@@ -21,10 +21,7 @@
 package org.executequery.gui.browser;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.Constants;
-import org.executequery.EventMediator;
-import org.executequery.ExecuteQuery;
-import org.executequery.GUIUtilities;
+import org.executequery.*;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.components.TextFieldPanel;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -1165,9 +1162,19 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         String name = ManagementFactory.getRuntimeMXBean().getName();
         String pid = name.split("@")[0];
+        String path = null;
+        if (ApplicationContext.getInstance().getExternalProcessName() != null &&
+                !ApplicationContext.getInstance().getExternalProcessName().isEmpty()) {
+            path = ApplicationContext.getInstance().getExternalProcessName();
+        }
+        if (ApplicationContext.getInstance().getExternalPID() != null &&
+                !ApplicationContext.getInstance().getExternalPID().isEmpty()) {
+            pid = ApplicationContext.getInstance().getExternalPID();
+        }
         properties.setProperty("process_id", pid);
         try {
-            String path = ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            if (path == null)
+                path = ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
             properties.setProperty("process_name", path);
         } catch (URISyntaxException e) {
             e.printStackTrace();

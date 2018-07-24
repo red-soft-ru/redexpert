@@ -16,10 +16,13 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
-#include <tchar.h>
 
 #ifdef __linux__
 #include <dlfcn.h>
+
+// Create type for pointer to the JNI_CreateJavaVM function
+typedef jint (*CreateJvmFuncPtr) (JavaVM**, void**, JavaVMInitArgs*);
+
 CreateJvmFuncPtr createJvm = NULL;
 void* jvm_lib;
 char* error;
@@ -34,9 +37,6 @@ HMODULE hJVM = NULL;
 #endif
 
 #define CLEAR(x) memset(&x, 0, sizeof(x))
-
-// Create type for pointer to the JNI_CreateJavaVM function
-typedef jint (*CreateJvmFuncPtr) (JavaVM**, void**, JavaVMInitArgs*);
 
 #ifdef __linux__
 // New method returns pointer to the JNI_CreateJavaVM function
@@ -78,7 +78,7 @@ CreateJvmFuncPtr findCreateJvm() {
     }
 
     // Load pointer to the function within the shared library
-    createJvm = (CreateJvmFuncPtr) dlsym(jvmLib, "JNI_CreateJavaVM");
+    createJvm = (CreateJvmFuncPtr) dlsym(jvm_lib, "JNI_CreateJavaVM");
     error = dlerror();
     if(error != NULL)
     {

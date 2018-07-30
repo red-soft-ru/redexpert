@@ -34,7 +34,7 @@ win32: {
         DEPENDPATH += "C:/Java/jdk1.8.0_171_i586/include/win32/"
     } else {
         message("select 64-bit arch")
-        TARGET = bin64/RedExpertNativeLauncher64
+        TARGET = bin/RedExpertNativeLauncher64
         LIBS += -L"C:/Java/jdk1.8.0_121/lib/" -ljvm
         INCLUDEPATH += "C:/Java/jdk1.8.0_121/include/"
         INCLUDEPATH += "C:/Java/jdk1.8.0_121/include/win32/"
@@ -52,11 +52,11 @@ else:unix: {
     contains(QT_ARCH, i386) {
         message("select 32-bit arch")
         TARGET = bin/RedExpertNativeLauncher
-        LIBS += -L/usr/lib/jvm/java-8-oracle/jre/lib/i386/server/ -ljvm
+#        LIBS += -L/usr/lib/jvm/java-8-oracle/jre/lib/i386/server/ -ljvm
     } else {
         message("select 64-bit arch")
-        TARGET = bin64/RedExpertNativeLauncher64
-        LIBS += -L/usr/lib/jvm/java-8-oracle/jre/lib/amd64/server/ -ljvm
+        TARGET = bin/RedExpertNativeLauncher64
+#        LIBS += -L/usr/lib/jvm/java-8-oracle/jre/lib/amd64/server/ -ljvm
     }
 
     INCLUDEPATH += /usr/lib/jvm/java-8-oracle/include

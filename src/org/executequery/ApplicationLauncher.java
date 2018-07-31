@@ -565,7 +565,8 @@ public class ApplicationLauncher {
                 int result = GUIUtilities.displayConfirmDialog("Create desktop link?");
                 if (result == JOptionPane.YES_OPTION) {
                     File file = new File("createDesktopEntry.sh");
-
+                    if (!file.exists())
+                        file = new File("../createDesktopEntry.sh");
                     Set<PosixFilePermission> perms = new HashSet<>();
                     perms.add(PosixFilePermission.OWNER_READ);
                     perms.add(PosixFilePermission.OWNER_WRITE);

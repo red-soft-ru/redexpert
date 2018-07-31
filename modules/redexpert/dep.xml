@@ -27,7 +27,7 @@
           <include>RedExpert.*</include>
           <include>createDesktopEntry.sh</include>
         </includes>
-          <fileMode>0755</fileMode>
+        <fileMode>0755</fileMode>
       </fileSet>
       <fileSet>
         <directory>${project.build.directory}/../../../docs</directory>
@@ -56,6 +56,14 @@
         <includes>
           <include>*</include>
         </includes>
+      </fileSet>
+      <fileSet>
+        <directory>${project.build.directory}/bin</directory>
+        <outputDirectory>bin</outputDirectory>
+        <includes>
+          <include>**/*</include>
+        </includes>
+        <fileMode>0755</fileMode>
       </fileSet>
     </fileSets>
 </assembly>

@@ -62,7 +62,7 @@ node('jdk18&&linux&&builder&&x86_64&&mvn')
         
         sh "tar xf dist-src/${archive_prefix}-src.tar.gz"
         withEnv(["JAVA_HOME=${JAVA_HOME_1_8}", "RED_EXPERT_VERSION=${version}"]) {
-            sh '''cd ${archive_prefix}\native\RedExpertNativeLauncher
+            sh '''cd ${archive_prefix}/native/RedExpertNativeLauncher
             /usr/bin/qmake-qt5
             make
             cd ..

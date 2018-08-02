@@ -78,7 +78,7 @@ node('jdk18&&windows&&builder&&x86_64')
         def archive_prefix="RedExpert-${version}"
 
         bat "unzip dist-src\\${archive_prefix}-src.zip"
-        withEnv(["JAVA_HOME=${JAVA_HOME_1_8}", "RED_EXPERT_VERSION=${version}"]) {
+        withEnv(["JAVA_HOME=${JAVA_HOME_1_8_x64}", "RED_EXPERT_VERSION=${version}"]) {
             bat "cd ${archive_prefix} && mvn package && mkdir dist && copy /y modules\\redexpert\\target\\${archive_prefix}.* dist\\ && move dist .."
         }
 

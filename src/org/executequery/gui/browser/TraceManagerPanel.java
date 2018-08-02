@@ -54,6 +54,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private JTextField userField;
     private JPasswordField passwordField;
     private JCheckBox logToFileBox;
+    private JCheckBox useBuildConfBox;
     private JTextField hostField;
     private NumberTextField portField;
     private JTextField sessionField;
@@ -67,6 +68,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private Message message;
     private List<SessionInfo> sessions;
     private SessionManagerPanel sessionManagerPanel;
+    private BuildConfigurationPanel confPanel;
 
     private void init() {
         message = Message.LOG_MESSAGE;
@@ -100,6 +102,15 @@ public class TraceManagerPanel extends JPanel implements TabView {
         hostField = new JTextField("127.0.0.1");
         portField = new NumberTextField();
         portField.setText("3050");
+        useBuildConfBox = new JCheckBox("Use Config File");
+        useBuildConfBox.setSelected(true);
+        useBuildConfBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fileConfButton.setEnabled(useBuildConfBox.isSelected());
+                fileConfField.setEnabled(useBuildConfBox.isSelected());
+            }
+        });
         charsetCombo = new JComboBox<>(charsets.toArray());
         DynamicComboBoxModel model = new DynamicComboBoxModel();
         List<DatabaseConnection> databaseConnectionList = new ArrayList<>();
@@ -253,7 +264,11 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     traceManager.setPort(portField.getValue());
                     timer.start();
                     try {
-                        traceManager.startTraceSession(sessionField.getText(), traceManager.loadConfigurationFromFile(fileConfField.getText()));
+                        String conf;
+                        if (useBuildConfBox.isSelected())
+                            conf = traceManager.loadConfigurationFromFile(fileConfField.getText());
+                        else conf = confPanel.getConfig();
+                        traceManager.startTraceSession(sessionField.getText(), conf);
                         startStopSessionButton.setText("Stop");
                         logToFileBox.setEnabled(false);
                     } catch (Exception e1) {
@@ -282,7 +297,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
 
         tabPane = new JTabbedPane();
         JPanel connectionPanel = new JPanel();
-        JPanel confPanel = new BuildConfigurationPanel();
+        confPanel = new BuildConfigurationPanel();
 
         setLayout(new GridBagLayout());
         JPanel topPanel = new JPanel();
@@ -423,11 +438,15 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        label = new JLabel("Config file");
-        connectionPanel.add(label, new GridBagConstraints(0, 5,
+        connectionPanel.add(useBuildConfBox, new GridBagConstraints(0, 5,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
+        /*label = new JLabel("Config file");
+        connectionPanel.add(label, new GridBagConstraints(1, 5,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));*/
 
         connectionPanel.add(fileConfButton, new GridBagConstraints(1, 5,
                 1, 1, 0, 0,

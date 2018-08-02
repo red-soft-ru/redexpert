@@ -62,7 +62,17 @@ node('jdk18&&linux&&builder&&x86_64&&mvn')
         
         sh "tar xf dist-src/${archive_prefix}-src.tar.gz"
         withEnv(["JAVA_HOME=${JAVA_HOME_1_8}", "RED_EXPERT_VERSION=${version}"]) {
-            sh "cd ${archive_prefix} && mvn package && mkdir dist && cp ./modules/redexpert/target/${archive_prefix}.* dist/ && mv dist .."
+            sh '''cd ${archive_prefix}\native\RedExpertNativeLauncher
+            /usr/bin/qmake-qt5
+            make
+            cd ..
+            mkdir bin
+            cp ./RedExpertNativeLauncher/bin/RedExpertNativeLauncher64 bin/
+            cd ..
+            mvn package
+            mkdir dist
+            cp ./modules/redexpert/target/${archive_prefix}.* dist/
+            mv dist ..'''
         }
         
         stash includes: 'dist/**', name: 'bin'
@@ -79,7 +89,26 @@ node('jdk18&&windows&&builder&&x86_64')
 
         bat "unzip dist-src\\${archive_prefix}-src.zip"
         withEnv(["JAVA_HOME=${JAVA_HOME_1_8_x64}", "RED_EXPERT_VERSION=${version}"]) {
-            bat "cd ${archive_prefix} && mvn package && mkdir dist && copy /y modules\\redexpert\\target\\${archive_prefix}.* dist\\ && move dist .."
+            // TODO QT_HOME variable?
+            bat '''cd ${archive_prefix}\native\RedExpertNativeLauncher
+            "c:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\qmake.exe"
+            %comspec% /k "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" amd64
+            "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\bin\\amd64\\nmake.exe"
+            cd ..
+            mkdir bin
+            copy RedExpertNativeLauncher\\release\\bin\\RedExpertNativeLauncher64.exe bin\\
+            mkdir bin\platforms
+            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\plugins\\platforms\\qminimal.dll" bin\\platforms\\
+            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\plugins\\platforms\\qoffscreen.dll" bin\\platforms\\
+            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\plugins\\platforms\\qwindows.dll" bin\\platforms\\
+            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\Qt5Core.dll" bin\\
+            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\Qt5Gui.dll" bin\\
+            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\Qt5Widgets.dll" bin\\
+            cd ..
+            mvn package
+            mkdir dist
+            copy /y modules\\redexpert\\target\\${archive_prefix}.* dist\\
+            move dist ..'''
         }
 
         stash includes: 'dist/**', name: 'bin'

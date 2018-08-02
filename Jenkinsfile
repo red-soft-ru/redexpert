@@ -90,14 +90,14 @@ node('jdk18&&windows&&builder&&x86_64')
         bat "unzip dist-src\\${archive_prefix}-src.zip"
         withEnv(["JAVA_HOME=${JAVA_HOME_1_8_x64}", "RED_EXPERT_VERSION=${version}"]) {
             // TODO QT_HOME variable?
-            bat '''cd ${archive_prefix}\native\RedExpertNativeLauncher
+            bat '''cd ${archive_prefix}\\native\\RedExpertNativeLauncher
             "c:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\qmake.exe"
-            %comspec% /k "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" amd64
+            %comspec% /k "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat" amd64
             "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\bin\\amd64\\nmake.exe"
             cd ..
             mkdir bin
             copy RedExpertNativeLauncher\\release\\bin\\RedExpertNativeLauncher64.exe bin\\
-            mkdir bin\platforms
+            mkdir bin\\platforms
             copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\plugins\\platforms\\qminimal.dll" bin\\platforms\\
             copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\plugins\\platforms\\qoffscreen.dll" bin\\platforms\\
             copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\plugins\\platforms\\qwindows.dll" bin\\platforms\\

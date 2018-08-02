@@ -27,19 +27,19 @@ win32: {
     contains(QT_ARCH, i386) {
         message("select 32-bit arch")
         TARGET = bin/RedExpertNativeLauncher
-        LIBS += -L"C:/Java/jdk1.8.0_171_i586/lib/" -ljvm
-        INCLUDEPATH += "C:/Java/jdk1.8.0_171_i586/include/"
-        INCLUDEPATH += "C:/Java/jdk1.8.0_171_i586/include/win32/"
-        DEPENDPATH += "C:/Java/jdk1.8.0_171_i586/include/"
-        DEPENDPATH += "C:/Java/jdk1.8.0_171_i586/include/win32/"
+        LIBS += -L"$$(JAVA_HOME)/lib/" -ljvm
+        INCLUDEPATH += "$$(JAVA_HOME)/include/"
+        INCLUDEPATH += "$$(JAVA_HOME)/include/win32/"
+        DEPENDPATH += "$$(JAVA_HOME)/include/"
+        DEPENDPATH += "$$(JAVA_HOME)/include/win32/"
     } else {
         message("select 64-bit arch")
         TARGET = bin/RedExpertNativeLauncher64
-        LIBS += -L"C:/Java/jdk1.8.0_121/lib/" -ljvm
-        INCLUDEPATH += "C:/Java/jdk1.8.0_121/include/"
-        INCLUDEPATH += "C:/Java/jdk1.8.0_121/include/win32/"
-        DEPENDPATH += "C:/Java/jdk1.8.0_121/include/"
-        DEPENDPATH += "C:/Java/jdk1.8.0_121/include/win32/"
+        LIBS += -L"$$(JAVA_HOME)/lib/" -ljvm
+        INCLUDEPATH += "$$(JAVA_HOME)/include/"
+        INCLUDEPATH += "$$(JAVA_HOME)/include/win32/"
+        DEPENDPATH += "$$(JAVA_HOME)/include/"
+        DEPENDPATH += "$$(JAVA_HOME)/include/win32/"
     }
     QMAKE_CXXFLAGS_RELEASE -= -Zc:strictStrings
     QMAKE_CFLAGS_RELEASE -= -Zc:strictStrings
@@ -59,8 +59,8 @@ else:unix: {
 #        LIBS += -L/usr/lib/jvm/java-8-oracle/jre/lib/amd64/server/ -ljvm
     }
 
-    INCLUDEPATH += /usr/lib/jvm/java-8-oracle/include
-    INCLUDEPATH += /usr/lib/jvm/java-8-oracle/include/linux
+    INCLUDEPATH += $$(JAVA_HOME)/include
+    INCLUDEPATH += $$(JAVA_HOME)/include/linux
 
     # QMAKE_LFLAGS_RPATH=
     # add your own with quoting gyrations to make sure $ORIGIN gets to the command line unexpanded

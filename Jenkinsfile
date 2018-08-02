@@ -61,8 +61,8 @@ node('jdk18&&linux&&builder&&x86_64&&mvn')
         def archive_prefix="RedExpert-${version}"
         
         sh "tar xf dist-src/${archive_prefix}-src.tar.gz"
-        withEnv(["JAVA_HOME=${JAVA_HOME_1_8}", "RED_EXPERT_VERSION=${version}"]) {
-            sh '''cd ${archive_prefix}/native/RedExpertNativeLauncher
+        withEnv(["JAVA_HOME=${JAVA_HOME_1_8}", "RED_EXPERT_VERSION=${version}", "ARCHIVE_PREFIX=${archive_prefix}"]) {
+            sh '''cd ${ARCHIVE_PREFIX}/native/RedExpertNativeLauncher
             /usr/bin/qmake-qt5
             make
             cd ..
@@ -71,7 +71,7 @@ node('jdk18&&linux&&builder&&x86_64&&mvn')
             cd ..
             mvn package
             mkdir dist
-            cp ./modules/redexpert/target/${archive_prefix}.* dist/
+            cp ./modules/redexpert/target/${ARCHIVE_PREFIX}.* dist/
             mv dist ..'''
         }
         
@@ -88,9 +88,9 @@ node('jdk18&&windows&&builder&&x86_64')
         def archive_prefix="RedExpert-${version}"
 
         bat "unzip dist-src\\${archive_prefix}-src.zip"
-        withEnv(["JAVA_HOME=${JAVA_HOME_1_8_x64}", "RED_EXPERT_VERSION=${version}"]) {
+        withEnv(["JAVA_HOME=${JAVA_HOME_1_8_x64}", "RED_EXPERT_VERSION=${version}", "ARCHIVE_PREFIX=${archive_prefix}"]) {
             // TODO QT_HOME variable?
-            bat '''cd ${archive_prefix}\\native\\RedExpertNativeLauncher
+            bat '''cd ${ARCHIVE_PREFIX}\\native\\RedExpertNativeLauncher
             "c:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\qmake.exe"
             %comspec% /k "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat" amd64
             "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\bin\\amd64\\nmake.exe"
@@ -107,7 +107,7 @@ node('jdk18&&windows&&builder&&x86_64')
             cd ..
             mvn package
             mkdir dist
-            copy /y modules\\redexpert\\target\\${archive_prefix}.* dist\\
+            copy /y modules\\redexpert\\target\\${ARCHIVE_PREFIX}.* dist\\
             move dist ..'''
         }
 

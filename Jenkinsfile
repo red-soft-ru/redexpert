@@ -69,7 +69,7 @@ node('jdk18&&linux&&builder&&x86_64&&mvn')
     }
 }
 
-node('jdk18&&windows&&builder&&x86_64&&mvn')
+node('jdk18&&windows&&builder&&x86_64')
 {
     stage('Build')
     {

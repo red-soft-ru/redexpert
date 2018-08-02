@@ -52,7 +52,7 @@ node('master')
     }
 }
 
-node('jdk18&&linux&&builder&&mvn')
+node('jdk18&&linux&&builder&&x86_64&&mvn')
 {
     stage('Build')
     {
@@ -65,6 +65,23 @@ node('jdk18&&linux&&builder&&mvn')
             sh "cd ${archive_prefix} && mvn package && mkdir dist && cp ./modules/redexpert/target/${archive_prefix}.* dist/ && mv dist .."
         }
         
+        stash includes: 'dist/**', name: 'bin'
+    }
+}
+
+node('jdk18&&windows&&builder&&x86_64&&mvn')
+{
+    stage('Build')
+    {
+        deleteDir()
+        unstash 'src'
+        def archive_prefix="RedExpert-${version}"
+
+        unzip dist-src\\${archive_prefix}-src.zip
+        withEnv(["JAVA_HOME=${JAVA_HOME_1_8}", "RED_EXPERT_VERSION=${version}"]) {
+            cd ${archive_prefix} && mvn package && mkdir dist && copy /y modules\\redexpert\\target\\${archive_prefix}.* dist\\ && move dist ..
+        }
+
         stash includes: 'dist/**', name: 'bin'
     }
 }

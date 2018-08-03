@@ -47,27 +47,14 @@ public class DefaultDriverLoader implements DriverLoader {
 
     private static final Map<String, Driver> LOADED_DRIVERS = new HashMap<String, Driver>();
 
-    public static Map<String, Driver> getLoadedWrappingDrivers() {
-        return LOADED_DRIVERS;
-    }
-
-    private static final Map<String, Driver> LOADED_WRAPPING_DRIVERS = new HashMap<String, Driver>();
-
     private static final Class[] parameters = new Class[]{URL.class};
 
     public Driver load(DatabaseDriver databaseDriver) {
 
-        boolean jdbcLogging = SystemProperties.getBooleanProperty("user", "connection.logging");
-
         Driver driver = null;
-        Driver wrappingDriver = null;
         String key = key(databaseDriver);
         if (LOADED_DRIVERS.containsKey(key)) {
-
-            if (!jdbcLogging)
-                return LOADED_DRIVERS.get(key);
-
-            return LOADED_WRAPPING_DRIVERS.get(key);
+            return LOADED_DRIVERS.get(key);
         }
 
         try {
@@ -106,23 +93,6 @@ public class DefaultDriverLoader implements DriverLoader {
 
             LOADED_DRIVERS.put(key(databaseDriver), driver);
 
-            ClassLoader classLoader = driver.getClass().getClassLoader();
-            URL[] urls = new URL[0];
-            Class clazzdb = null;
-            Object odb = null;
-            try {
-                urls = MiscUtils.loadURLs("./lib/jdbc-perf-logger-driver-0.8.1-SNAPSHOT.jar");
-                ClassLoader cl = new URLClassLoader(urls, classLoader);
-                clazzdb = cl.loadClass("ch.sla.jdbcperflogger.driver.WrappingDriver");
-                odb = clazzdb.newInstance();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            wrappingDriver = (Driver) odb;
-
-            LOADED_WRAPPING_DRIVERS.put(key(databaseDriver), wrappingDriver);
-
         } catch (ClassNotFoundException e) {
 
             handleException("The specified JDBC driver class was not found", databaseDriver, e);
@@ -139,10 +109,7 @@ public class DefaultDriverLoader implements DriverLoader {
 
             handleException("The specified JDBC driver class was not accessible", databaseDriver, e);
         }
-        if (!jdbcLogging)
-            return driver;
-
-        return wrappingDriver;
+        return driver;
     }
 
     private String key(DatabaseDriver databaseDriver) {

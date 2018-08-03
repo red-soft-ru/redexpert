@@ -251,7 +251,6 @@
                                 <resource>
                                     <directory>${pom.basedir}/../../lib</directory>
                                     <includes>
-                                        <!--include>**/jdbc-perf-logger-driver-0.8.1-SNAPSHOT.jar</include-->
                                         <include>**/fbplugin.jar</include>
                                         <include>**/liquibase-3.5.6-SNAPSHOT.jar</include>
                                     </includes>
@@ -304,9 +303,23 @@
                                     <directory>${pom.basedir}/../../lib</directory>
                                     <includes>
                                         <include>fbplugin-impl.jar</include>
-                                        <include>jdbc-perf-logger-driver-0.8.1-SNAPSHOT.jar</include>
                                         <include>jdbc-logger.jar</include>
                                     </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-native-exe</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/bin</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${pom.basedir}/../../native/bin</directory>       
                                 </resource>
                             </resources>
                         </configuration>
@@ -398,51 +411,6 @@
                         </filter>
                     </filters>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.bluestemsoftware.open.maven.plugin</groupId>
-                <artifactId>launch4j-plugin</artifactId>
-                <version>1.5.0.0</version>
-                <executions>
-                    <!-- GUI exe -->
-                    <execution>
-                        <id>l4j-gui</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>launch4j</goal>
-                        </goals>
-                        <configuration>
-                            <headerType>gui</headerType>
-                            <outfile>${pom.basedir}/target/${project.artifactId}.exe</outfile>
-                            <jar>${pom.basedir}/target/${project.artifactId}.jar</jar>
-                            <errTitle>Red Expert Error</errTitle>
-                            <classPath>
-                                <mainClass>org.executequery.ExecuteQuery</mainClass>
-                            </classPath>
-                            <icon>${pom.basedir}/../../red_expert.ico</icon>
-                            <jre>
-                                <minVersion>1.8.0</minVersion>
-                                <maxVersion>1.9.0</maxVersion>
-                                <initialHeapSize>128</initialHeapSize>
-                                <maxHeapSize>1024</maxHeapSize>
-                                <opts>
-                                    <opt>-Dfile.encoding=UTF-8</opt>
-                                </opts>
-                            </jre>
-                            <versionInfo>
-                                <fileVersion>${exe.version}</fileVersion>
-                                <txtFileVersion>${project.version}</txtFileVersion>
-                                <fileDescription>${project.artifactId}-${project.version}</fileDescription>
-                                <copyright>Red Soft</copyright>
-                                <productVersion>${exe.version}</productVersion>
-                                <txtProductVersion>${exe.version}</txtProductVersion>
-                                <productName>${project.artifactId}</productName>
-                                <internalName>${project.artifactId}</internalName>
-                                <originalFilename>${project.artifactId}-${project.version}.exe</originalFilename>
-                            </versionInfo>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>

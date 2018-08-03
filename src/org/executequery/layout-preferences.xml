@@ -19,14 +19,6 @@
     </docked-tab>
 
     <docked-tab>
-        <key>system.display.jdbclogger</key>
-        <index>1</index>
-        <position>2</position>
-        <visible>false</visible>
-        <minimised>true</minimised>
-    </docked-tab>
-
-    <docked-tab>
         <key>system.display.drivers</key>
         <index>1</index>
         <position>8</position>

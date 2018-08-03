@@ -26,7 +26,6 @@ import org.executequery.gui.SystemOutputPanel;
 import org.executequery.gui.SystemPropertiesDockedTab;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.drivers.DriversTreePanel;
-import org.executequery.gui.jdbclogger.JdbcLoggerPanel;
 import org.executequery.gui.keywords.KeywordsDockedPanel;
 import org.executequery.gui.sqlstates.SQLStateCodesDockedPanel;
 
@@ -45,11 +44,6 @@ public class ViewOptionsCommand extends AbstractViewOptionsCommand {
     public void viewConsole(ActionEvent e) {
 
         displayDockedComponent(e, SystemOutputPanel.PROPERTY_KEY);
-    }
-
-    public void viewJdbcLogger(ActionEvent e) {
-
-        displayDockedComponent(e, JdbcLoggerPanel.PROPERTY_KEY);
     }
 
     public void viewConnections(ActionEvent e) {

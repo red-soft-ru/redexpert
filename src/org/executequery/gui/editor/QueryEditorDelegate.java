@@ -331,8 +331,11 @@ public class QueryEditorDelegate implements QueryDelegate {
     }
 
     private Vector<String> getSqlCommandHistory() {
-
-        return sqlCommandHistoryRepository().getSqlCommandHistory(queryEditor.getSelectedConnection().getId());
+        String id;
+        if (queryEditor.getSelectedConnection() == null)
+            id = QueryEditorHistory.NULL_CONNECTION;
+        else id = queryEditor.getSelectedConnection().getId();
+        return sqlCommandHistoryRepository().getSqlCommandHistory(id);
     }
 
     /**

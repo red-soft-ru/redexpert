@@ -38,7 +38,11 @@ public final class ApplicationContext {
 
     private static final String REPO = "-repo";
 
-    private static final String[] PROPERTY_OVERRIDES = {SETTINGS_DIR, USER_HOME_DIR, REPO};
+    private static final String EXT_EXE_PATH = "-exe_path";
+
+    private static final String EXT_EXE_PID = "-exe_pid";
+
+    private static final String[] PROPERTY_OVERRIDES = {SETTINGS_DIR, USER_HOME_DIR, REPO, EXT_EXE_PATH, EXT_EXE_PID};
 
     private static ApplicationContext applicationContext;
 
@@ -112,6 +116,14 @@ public final class ApplicationContext {
     public void setBuild(String build) {
 
         settings.put(EXECUTEQUERY_BUILD, build);
+    }
+
+    public String getExternalProcessName() {
+        return settings.get(EXT_EXE_PATH);
+    }
+
+    public String getExternalPID() {
+        return settings.get(EXT_EXE_PID);
     }
 
     public void startup(String[] args) {

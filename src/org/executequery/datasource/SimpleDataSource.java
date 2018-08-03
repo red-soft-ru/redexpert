@@ -22,6 +22,7 @@ package org.executequery.datasource;
 
 import biz.redsoft.IFBCryptoPluginInit;
 import org.apache.commons.lang.StringUtils;
+import org.executequery.ApplicationContext;
 import org.executequery.ExecuteQuery;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
@@ -131,12 +132,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         }
 
         if (driver != null) {
-            boolean jdbcLogging = SystemProperties.getBooleanProperty("user", "connection.logging");
-
-            if (!jdbcLogging)
-                return driver.connect(url, advancedProperties);
-
-            return driver.connect("jdbcperflogger:" + url, advancedProperties);
+            return driver.connect(url, advancedProperties);
         }
 
         throw new DataSourceException("Error loading specified JDBC driver");
@@ -234,9 +230,19 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
         String name = ManagementFactory.getRuntimeMXBean().getName();
         String pid = name.split("@")[0];
+        String path = null;
+        if (ApplicationContext.getInstance().getExternalProcessName() != null &&
+                !ApplicationContext.getInstance().getExternalProcessName().isEmpty()) {
+            path = ApplicationContext.getInstance().getExternalProcessName();
+        }
+        if (ApplicationContext.getInstance().getExternalPID() != null &&
+                !ApplicationContext.getInstance().getExternalPID().isEmpty()) {
+            pid = ApplicationContext.getInstance().getExternalPID();
+        }
         properties.setProperty("process_id", pid);
         try {
-            String path = ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            if (path == null)
+                path = ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
             properties.setProperty("process_name", path);
         } catch (URISyntaxException e) {
             e.printStackTrace();

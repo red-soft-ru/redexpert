@@ -19,7 +19,16 @@ import java.util.Map;
 
 public class BuildConfigurationPanel extends JPanel {
     String[] checkDatabaseStrs = {
+            "print_plan",
+            "print_perf",
+            "print_blr",
+            "print_dyn",
+            "print_stack_trace",
+            "log_errors_only",
+            "log_changes_only",
             "log_security_incidents",
+            "log_privilege_changes",
+            "log_auth_factors",
             "log_init",
             "log_connections",
             "log_transactions",
@@ -29,25 +38,17 @@ public class BuildConfigurationPanel extends JPanel {
             "log_statement_finish",
             "log_procedure_start",
             "log_procedure_finish",
-            "log_function_start",
-            "log_function_finish",
             "log_trigger_start",
             "log_trigger_finish",
             "log_context",
             "log_errors",
             "log_warnings",
-            "print_plan",
-            "print_perf",
-            "log_blr_requests",
-            "print_blr",
-            "log_dyn_requests",
-            "print_dyn",
-            "log_privilege_changes",
-            "log_changes_only",
             "log_mandatory_access",
             "log_record_mandatory_access",
             "log_object_relabeling",
-            "log_record_relabeling"
+            "log_record_relabeling",
+            "log_blr_requests",
+            "log_dyn_requests"
     };
     String[] checkDatabase3Strs = {
             "log_security_incidents",
@@ -307,6 +308,17 @@ public class BuildConfigurationPanel extends JPanel {
     }
 
     private void save() {
+        try (FileWriter writer = new FileWriter(saveFileField.getText(), false)) {
+            writer.write(getConfig());
+            writer.flush();
+            GUIUtilities.displayInformationMessage("Configuration file was built");
+        } catch (IOException e) {
+            GUIUtilities.displayExceptionErrorDialog("Error write to file", e);
+        }
+
+    }
+
+    public String getConfig() {
         StringBuilder sb = new StringBuilder();
         if (filename != null)
             sb.append("#").append(filename).append("\n");
@@ -351,14 +363,7 @@ public class BuildConfigurationPanel extends JPanel {
         if (appropriationBox.getSelectedIndex() == 0)
             sb.append("</services>");
         else sb.append("}");
-        try (FileWriter writer = new FileWriter(saveFileField.getText(), false)) {
-            writer.write(sb.toString());
-            writer.flush();
-            GUIUtilities.displayInformationMessage("Configuration file was built");
-        } catch (IOException e) {
-            GUIUtilities.displayExceptionErrorDialog("Error write to file", e);
-        }
-
+        return sb.toString();
     }
 
     private String apSymbol() {

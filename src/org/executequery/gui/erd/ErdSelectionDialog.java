@@ -59,14 +59,16 @@ public class ErdSelectionDialog extends AbstractBaseDialog {
         setVisible(true);
     }
 
-    private void jbInit() throws Exception {
+    private void jbInit() {
         Container c = this.getContentPane();
         c.setLayout(new GridBagLayout());
 
         selectionPanel = new ErdSelectionPanel();
 
         JButton addButton = new DefaultPanelButton(Bundles.get("common.add.button"));
+        addButton.setActionCommand("Add");
         JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
+        cancelButton.setActionCommand("Cancel");
 
         ActionListener btnListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {

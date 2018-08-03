@@ -65,29 +65,27 @@ node('jdk18&&linux&&builder&&x86_64&&mvn')
             sh '''cd ${ARCHIVE_PREFIX}
             mkdir dist
             mkdir dist/bin
-            mkdir dist/bin/platforms
             mkdir dist/lib
             mkdir dist/docs
             mkdir dist/license
             mkdir dist/config
-            cd ./native/RedExpertNativeLauncher
+            cd native/RedExpertNativeLauncher
             /usr/bin/qmake-qt5
             make
             cd ..
             mkdir bin
-            cp ./RedExpertNativeLauncher/bin/RedExpertNativeLauncher64 bin/
+            cp RedExpertNativeLauncher/bin/RedExpertNativeLauncher64 bin/
             cd ..
             mvn package
-            cp ./native/bin dist/bin/
-            cp ./native/bin/platforms dist/bin/platforms/
-            cp ./modules/redexpert/target/lib dist/lib/
-            cp ./docs/ dist/docs/
-            cp ./license/ dist/license/
-            cp ./config/ dist/config/
+            cp -r native/bin dist/
+            cp -r modules/redexpert/target/lib dist/
+            cp -r docs/ dist/
+            cp -r license/ dist/
+            cp -r config/ dist/
             cp red_expert.png dist/
             cp red_expert.ico dist/
             cp redexpert.desktop dist/
-            cp ./modules/redexpert/target/RedExpert.jar dist/
+            cp modules/redexpert/target/RedExpert.jar dist/
             cp createDesktopEntry.sh dist/
             cp LICENSE.txt dist/
             mv dist ..'''

@@ -107,7 +107,7 @@ node('jdk18&&windows&&builder&&x86_64')
         withEnv(["JAVA_HOME=${JAVA_HOME_1_8_x64}", "RED_EXPERT_VERSION=${version}", "ARCHIVE_PREFIX=${archive_prefix}"]) {
             // TODO QT_HOME variable?
             bat '''cd %ARCHIVE_PREFIX%\\
-            call %comspec% /k "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat" amd64
+            call "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat" amd64
             mkdir dist
             mkdir dist\\bin\\
             mkdir dist\\bin\\platforms\\

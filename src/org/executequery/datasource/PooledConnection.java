@@ -208,10 +208,11 @@ public class PooledConnection implements Connection {
 
     private void fireConnectionClosed() {
 
-        for (PooledConnectionListener listener : listeners) {
+        if (listeners != null)
+            for (PooledConnectionListener listener : listeners) {
 
-            listener.connectionClosed(this);
-        }
+                listener.connectionClosed(this);
+            }
 
     }
 

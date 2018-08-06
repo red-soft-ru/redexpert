@@ -150,7 +150,8 @@ node('master')
         unstash 'linux-bin'
         unstash 'windows-bin'
 
-        sh "VERSION=${version} ci/package-bin.sh"
+        sh "tar xf dist-src/RedExpert-${version}-src.tar.gz"
+        sh "VERSION=${version} RedExpert-${version}/ci/package-bin.sh"
         
         sh "echo artifact red_expert ${version} > artifacts"
         sh "echo file dist-bin/RedExpert-${version}.tar.gz tar.gz bin >> artifacts"

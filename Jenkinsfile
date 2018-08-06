@@ -149,10 +149,12 @@ node('master')
         unstash 'src'
         unstash 'linux-bin'
         unstash 'windows-bin'
+
+        sh "VERSION=${version} ci/package.sh"
         
         sh "echo artifact red_expert ${version} > artifacts"
-        sh "echo file dist/RedExpert-${version}.tar.gz tar.gz bin >> artifacts"
-        sh "echo file dist/RedExpert-${version}.zip zip bin >> artifacts"
+        sh "echo file dist-bin/RedExpert-${version}.tar.gz tar.gz bin >> artifacts"
+        sh "echo file dist-bin/RedExpert-${version}.zip zip bin >> artifacts"
         sh "echo end >> artifacts"
 
         sh "echo artifact red_expert-src ${version} >> artifacts"

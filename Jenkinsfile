@@ -129,19 +129,8 @@ node('jdk18&&windows&&builder&&x86_64')
             copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\Qt5Gui.dll" bin\\
             copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\Qt5Widgets.dll" bin\\
             cd ..
-            mvn package
             copy /y native\\bin\\ dist\\bin\\
             copy /y native\\bin\\platforms\\ dist\\bin\\platforms\\
-            copy /y modules\\redexpert\\target\\lib\\ dist\\lib\\
-            copy /y docs\\ dist\\docs\\
-            copy /y license\\ dist\\license\\
-            copy /y config\\ dist\\config\\
-            copy /y red_expert.png dist\\
-            copy /y red_expert.ico dist\\
-            copy /y redexpert.desktop dist\\
-            copy /y modules\\redexpert\\target\\RedExpert.jar dist\\
-            copy /y createDesktopEntry.sh dist\\
-            copy /y LICENSE.txt dist\\
             move dist ..
             '''
         }

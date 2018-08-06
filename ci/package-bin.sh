@@ -20,7 +20,7 @@ check_variable VERSION
 echo Packing binaries
 echo $BIN
 cd $BIN
-RESULT_DIR=`pwd`/dist
+RESULT_DIR=$BIN/dist
 
 #mkdir -p $RESULT_DIR
 

@@ -20,7 +20,6 @@ check_variable VERSION
 echo Packing binaries
 echo $BIN
 cd $BIN
-ll
 RESULT_DIR=`pwd`/dist
 
 #mkdir -p $RESULT_DIR
@@ -30,5 +29,3 @@ RESULT_DIR=`pwd`/dist
 
 tar -czvf RedExpert-$VERSION.tar.gz RESULT_DIR
 zip -r RedExpert-$VERSION.zip RESULT_DIR
-
-ll

@@ -142,7 +142,8 @@ node('jdk18&&windows&&builder&&x86_64')
             copy /y modules\\redexpert\\target\\RedExpert.jar dist\\
             copy /y createDesktopEntry.sh dist\\
             copy /y LICENSE.txt dist\\
-            move dist ..'''
+            move dist ..
+            '''
         }
 
         stash includes: 'dist/**', name: 'windows-bin'

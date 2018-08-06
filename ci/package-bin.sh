@@ -29,3 +29,6 @@ RESULT_DIR=$BIN/dist
 
 tar -czvf RedExpert-$VERSION.tar.gz $RESULT_DIR
 zip -r RedExpert-$VERSION.zip $RESULT_DIR
+
+mv RedExpert-$VERSION.tar.gz $RESULT_DIR
+mv RedExpert-$VERSION.zip $RESULT_DIR

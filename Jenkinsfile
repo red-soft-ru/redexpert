@@ -154,8 +154,8 @@ node('master')
         sh "VERSION=${version} RedExpert-${version}/ci/package-bin.sh"
         
         sh "echo artifact red_expert ${version} > artifacts"
-        sh "echo file dist-bin/RedExpert-${version}.tar.gz tar.gz bin >> artifacts"
-        sh "echo file dist-bin/RedExpert-${version}.zip zip bin >> artifacts"
+        sh "echo file dist/RedExpert-${version}.tar.gz tar.gz bin >> artifacts"
+        sh "echo file dist/RedExpert-${version}.zip zip bin >> artifacts"
         sh "echo end >> artifacts"
 
         sh "echo artifact red_expert-src ${version} >> artifacts"

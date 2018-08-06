@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+BIN=$(readlink -f $(dirname $0)/../..)
+
 function die()
 {
 	echo "$1"
@@ -16,7 +18,9 @@ function check_variable()
 check_variable VERSION
 
 echo Packing binaries
-
+echo $BIN
+cd $BIN
+echo ll
 RESULT_DIR=`pwd`/dist-bin
 
 mkdir -p $RESULT_DIR

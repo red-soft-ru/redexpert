@@ -131,6 +131,7 @@ node('jdk18&&windows&&builder&&x86_64')
             cd ..
             copy /y native\\bin\\ dist\\bin\\
             copy /y native\\bin\\platforms\\ dist\\bin\\platforms\\
+            copy /y RedExpert.bat dist\\
             move dist ..
             '''
         }

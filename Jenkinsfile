@@ -86,6 +86,7 @@ node('jdk18&&linux&&builder&&x86_64&&mvn')
             cp red_expert.ico dist/
             cp redexpert.desktop dist/
             cp modules/redexpert/target/RedExpert.jar dist/
+            cp modules/redexpert/target/RedExpert.sh dist/
             cp createDesktopEntry.sh dist/
             cp LICENSE.txt dist/
             mv dist ..'''

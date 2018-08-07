@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
         paths.append(separator);
     }
 
-    paths = paths.left(paths.lastIndexOf(":"));
+    paths = paths.left(paths.lastIndexOf(separator));
 
 #ifdef QT_DEBUG
     qDebug() << paths;

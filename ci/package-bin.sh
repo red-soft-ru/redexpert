@@ -27,7 +27,7 @@ RESULT_DIR=$BIN/dist
 #cp -r linux-bin/ $RESULT_DIR
 #cp -r windows-bin/ $RESULT_DIR
 
-tar --transform "s/.*\/$RESULT_DIR//" -czf RedExpert-$VERSION.tar.gz $RESULT_DIR
+tar --transform "s/.*\/dist//" -czf RedExpert-$VERSION.tar.gz $RESULT_DIR
 cd $RESULT_DIR
 zip -rq ../RedExpert-$VERSION.zip ./
 cd ..

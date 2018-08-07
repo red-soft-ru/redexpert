@@ -197,17 +197,28 @@ int main(int argc, char *argv[])
     JNIEnv* env(0);
     JavaVMInitArgs jvm_args;
     CLEAR(jvm_args);
-    JavaVMOption options[1];
+    std::vector<JavaVMOption> options;
     CLEAR(options);
 
     // add to java class path Red Expert jar
     std::string stdString = paths.toStdString();
     char* class_path = (char*)stdString.c_str();
-    options[0].optionString = class_path;
-    options[0].extraInfo = 0;
+    JavaVMOption class_opt;
+    class_opt.optionString = class_path;
+    class_opt.extraInfo = 0;
+    options.push_back(class_opt);
+
+    for (int i = 1; i < argc; i++)
+    {
+        JavaVMOption opt;
+        opt.optionString = argv[i];
+        opt.extraInfo = 0;
+        options.push_back(opt);
+    }
+
     jvm_args.version = JNI_VERSION_1_8;
-    jvm_args.options = options;
-    jvm_args.nOptions = 1;
+    jvm_args.options = options.data();
+    jvm_args.nOptions = options.size();
     jvm_args.ignoreUnrecognized = JNI_TRUE;
 
     // try to create java vm

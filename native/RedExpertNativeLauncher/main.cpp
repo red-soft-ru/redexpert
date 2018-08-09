@@ -16,9 +16,11 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
+#include <regex>
 
 #ifdef __linux__
 #include <dlfcn.h>
+#include <unistd.h>
 
 // Create type for pointer to the JNI_CreateJavaVM function
 typedef jint (*CreateJvmFuncPtr) (JavaVM**, void**, JavaVMInitArgs*);
@@ -38,28 +40,102 @@ HMODULE hJVM = NULL;
 
 #define CLEAR(x) memset(&x, 0, sizeof(x))
 
+int executeCmdEx(const char* cmd, std::string &result)
+{
+    char buffer[128];
+    int retCode = -1; // -1 if error ocurs.
+    std::string command(cmd);
+    command.append(" 2>&1"); // also redirect stderr to stdout
+
+    result = "";
+    FILE* pipe;
 #ifdef __linux__
+    pipe = popen(command.c_str(), "r");
+#else
+    pipe = _popen(command.c_str(), "r");
+#endif
+    if (pipe != NULL) {
+        try {
+            while (!feof(pipe)) {
+                if (fgets(buffer, 128, pipe) != NULL)
+                    result += buffer;
+            }
+        }
+        catch (...) {
+#ifdef __linux__
+            retCode = pclose(pipe);
+#else
+            retCode = _pclose(pipe);
+#endif
+            throw;
+        }
+#ifdef __linux__
+        retCode = pclose(pipe);
+#else
+        retCode = _pclose(pipe);
+#endif
+    }
+    return retCode;
+}
+
+#ifdef __linux__
+inline bool fileExists(const std::string& name) {
+    return (access( name.c_str(), F_OK) != -1);
+}
+
 // New method returns pointer to the JNI_CreateJavaVM function
 CreateJvmFuncPtr findCreateJvm() {
 
-    char *java_env = getenv("JAVA_HOME");
-    if (java_env == NULL)
+    char* java_env = getenv("JAVA_HOME");
+    std::string jvm_path;
+    if (java_env == NULL || strcmp(java_env, "") == 0)
+    {
+        std::string out;
+        executeCmdEx("java -XshowSettings:properties -version", out);
+        std::string jhome_pat = "java.home = ";
+        int jhome_pos = out.find(jhome_pat.c_str()) +  jhome_pat.length();
+        int end_pos = out.find("\n", jhome_pos);
+        java_env = strdup(out.substr(jhome_pos, end_pos - jhome_pos).c_str());
+    }
+    jvm_path = java_env;
+    std::string out;
+    std::string cmd = java_env;
+    cmd.append("/bin/java -version");
+    executeCmdEx(cmd.c_str(), out);
+    int jver_pos = out.find("\"") + 1;
+    int first_dot_pos = out.find(".");
+    int second_dot_pos = out.find(".", first_dot_pos + 1);
+    std::string str_ver = out.substr(jver_pos, second_dot_pos - jver_pos);
+    if(jver_pos)
+    {
+        double version = atof(str_ver.c_str());
+        if (version < 1.9)
+        {
+            std::string tmp_path = jvm_path;
+            tmp_path.append("/jre/lib/amd64/server/libjvm.so");
+            if (!fileExists(tmp_path))
+                jvm_path.append("/lib/amd64/server/libjvm.so");
+            else
+                jvm_path.append("/jre/lib/amd64/server/libjvm.so");
+        }
+        else
+            jvm_path.append("/lib/server/libjvm.so");
+    }
+    else
     {
         QMessageBox msgBox;
-        msgBox.setInformativeText("Please set JAVA_HOME to a Java JDK Install");
-        msgBox.setText("Cannot find Java!");
+        msgBox.setInformativeText("Cannot determine the version of java from version string");
+        msgBox.setText("Cannot find Java version!");
         msgBox.setWindowTitle("Application error");
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
 #ifdef QT_DEBUG
-        qDebug() << "Cannot find Java!\n";
+        qDebug() << "Cannot find Java version!\n";
 #endif
         exit(EXIT_FAILURE);
     }
-    std::string jvm_path = java_env;
 
-    jvm_path.append("/jre/lib/amd64/server/libjvm.so");
     jvm_lib = dlopen(jvm_path.c_str(), RTLD_LAZY); // Get handle to jvm shared library
     error = dlerror(); //Check for errors on dlopen
     if(jvm_lib == NULL || error != NULL)
@@ -91,9 +167,70 @@ CreateJvmFuncPtr findCreateJvm() {
 }
 #else
 
+bool fileExists(const std::string& path)
+{
+    return GetFileAttributesA(path.c_str()) != INVALID_FILE_ATTRIBUTES;
+}
+
 bool loadJVMLibrary()
 {
-    char *java_env = getenv("JAVA_HOME");
+    char* java_env;
+    size_t len;
+    errno_t err = _dupenv_s(&java_env, &len, "JAVA_HOME");
+    bool use_jhome = true;
+    std::string jvm_path;
+    if (java_env == NULL || strcmp(java_env, "") == 0)
+    {
+        std::string out;
+        executeCmdEx("java -XshowSettings:properties -version", out);
+        std::regex jhome_regex("java\\.home\\s\\=\\s(([\\w+\\\\\\-:\\.])+)");
+        std::smatch match;
+        if(std::regex_search(out, match, jhome_regex))
+        {
+            std::string str = match[1].str();
+            java_env = strdup(str.c_str());
+            use_jhome = false;
+        }
+    }
+    jvm_path = java_env;
+    std::string out;
+    std::string cmd = java_env;
+    cmd.append("\\bin\\java -version");
+    executeCmdEx(cmd.c_str(), out);
+    int jver_pos = out.find("\"") + 1;
+    int first_dot_pos = out.find(".");
+    int second_dot_pos = out.find(".", first_dot_pos + 1);
+    std::string str_ver = out.substr(jver_pos, second_dot_pos - jver_pos);
+    if(jver_pos)
+    {
+        double version = atof(str_ver.c_str());
+        if (version < 1.9)
+        {
+            std::string tmp_path = jvm_path;
+            tmp_path.append("\\jre\\bin\\server\\jvm.dll");
+            if (!fileExists(tmp_path))
+                jvm_path.append("\\bin\\server\\jvm.dll");
+            else
+                jvm_path.append("\\jre\\bin\\server\\jvm.dll");
+        }
+        else
+            jvm_path.append("\\bin\\server\\jvm.dll");
+    }
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setInformativeText("Cannot determine the version of java from version string");
+        msgBox.setText("Cannot find Java version!");
+        msgBox.setWindowTitle("Application error");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
+#ifdef QT_DEBUG
+        qDebug() << "Cannot find Java version!\n";
+#endif
+        exit(EXIT_FAILURE);
+    }
+
     if (java_env == NULL)
     {
         QMessageBox msgBox;
@@ -108,8 +245,6 @@ bool loadJVMLibrary()
 #endif
         exit(EXIT_FAILURE);
     }
-    std::string jvm_path = java_env;
-    jvm_path.append("\\jre\\bin\\server\\jvm.dll");
 
     hJVM = LoadLibraryA(jvm_path.c_str());
     if(!hJVM)
@@ -136,6 +271,8 @@ bool loadJVMLibrary()
 #endif
         printf("Success JVM creating\n");
     }
+
+    free(java_env);
 }
 #endif
 

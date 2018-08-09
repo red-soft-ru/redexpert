@@ -390,7 +390,16 @@ public class UpdateLoader extends JFrame {
     private void launch() {
         ApplicationContext instance = ApplicationContext.getInstance();
         String repo = "-repo=" + instance.getRepo();
-        String[] run = {"java", "-jar", "RedExpert.jar", repo};
+        String externalProcessName = instance.getExternalProcessName();
+        String[] run;
+        if (externalProcessName != null && !externalProcessName.isEmpty())
+            run = new String[]{externalProcessName, repo};
+        else {
+            File file = new File("RedExpert.jar");
+            if (!file.exists())
+                file = new File("../RedExpert.jar");
+            run = new String[]{"java", "-jar", file.getAbsolutePath(), repo};
+        }
         try {
             Runtime.getRuntime().exec(run);
         } catch (Exception ex) {

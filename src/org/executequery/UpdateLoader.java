@@ -394,8 +394,12 @@ public class UpdateLoader extends JFrame {
         String[] run;
         if (externalProcessName != null && !externalProcessName.isEmpty())
             run = new String[]{externalProcessName, repo};
-        else
-            run = new String[]{"java", "-jar", "RedExpert.jar", repo};
+        else {
+            File file = new File("RedExpert.jar");
+            if (!file.exists())
+                file = new File("../RedExpert.jar");
+            run = new String[]{"java", "-jar", file.getAbsolutePath(), repo};
+        }
         try {
             Runtime.getRuntime().exec(run);
         } catch (Exception ex) {

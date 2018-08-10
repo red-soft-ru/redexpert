@@ -1,0 +1,78 @@
+cache:
+  paths:
+    - .m2/
+
+stages:
+- prepare
+- source_package
+- build
+- deploy
+
+variables:
+  RELEASE_HUB_PROJECT: red_expert
+  CI_URL: ${CI_PROJECT_URL}/pipelines/${CI_PIPELINE_ID}
+  CONTEXT: commit
+  TAG_BRANCH: master
+
+.prepare_template: &prepare_template
+  stage: prepare
+  image: redsoftru/relmanager_client
+  script:
+    - m4 -DVERSION=${VERSION} ci/artifacts.m4 > .ci/artifacts
+    - echo ${VERSION} > .ci/version
+    - echo ${BRANCH} > .ci/branch
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - .ci/
+
+prepare_snapshot:
+  <<: *prepare_template
+  before_script:
+    - mkdir .ci
+    - VERSION=$(awk -F= '{if ($1 == "re.version") printf("%s", $2)}' src/org/executequery/eq.system.properties|sed 's/\(.*\)-.*/\1/')
+    - export BUILDNO=$(relmanager_client genbuildno ${RELEASE_HUB_PROJECT} ${VERSION}-SNAPSHOT)
+    - export VERSION=${VERSION}-SNAPSHOT.${BUILDNO}
+    - export BRANCH=${CI_COMMIT_REF_NAME}
+  except:
+    - tags
+
+prepare_release:
+  <<: *prepare_template
+  before_script:
+    - apk --update add sed
+    - mkdir .ci
+    - export VERSION=$(echo ${CI_COMMIT_TAG}|sed 's/v//')
+    - export BRANCH=${TAG_BRANCH}
+  only:
+    - tags
+
+source_package:
+  stage: source_package
+  image: alpine:3.7
+  before_script:
+    - apk --update add bash git zip tar
+    - git config --global user.name "Dummy Name"
+    - git config --global user.email "dummy@email.org"
+    - export VERSION=`cat .ci/version`
+  script:
+    - ./ci/prepare-src.sh
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - dist-src/
+
+deploy:
+  stage: deploy
+  image: redsoftru/relmanager_client
+  script:
+    - VERSION=$(cat .ci/version)
+    - BRANCH=$(cat .ci/branch)
+    - echo $BRANCH $VERSION
+    - cat .ci/artifacts
+    - find dist-src
+    - find dist-bin
+    - relmanager_client deploy ${RELEASE_HUB_PROJECT} ${VERSION} --artifacts .ci/artifacts --ci_url ${CI_URL} --context ${CONTEXT} --branch ${BRANCH} --commit ${CI_COMMIT_SHA}
+  only:
+    variables:
+      - "$RELEASE_HUB_KEY"

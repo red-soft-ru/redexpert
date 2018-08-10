@@ -19,6 +19,8 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,14 +36,14 @@ import java.util.zip.ZipFile;
 public class UpdateLoader extends JFrame {
 
     private Thread worker;
-    private final String root = "update/";
     private String binaryZipUrl;
+    private boolean releaseHub;
 
     public String getRepo() {
         return repo;
     }
 
-    private String repo;
+    private static String repo;
     private String version = null;
     private String downloadLink;
 
@@ -51,6 +53,19 @@ public class UpdateLoader extends JFrame {
     private JScrollPane scrollPane;
     private JPanel panel1;
     private JPanel panel2;
+    private String repoArg;
+
+    public void setRepoArg(String repoArg) {
+        this.repoArg = repoArg;
+    }
+
+    public void setExternalArg(String externalArg) {
+        this.externalArg = externalArg;
+    }
+
+    private String externalArg;
+
+    private String root = "update/";
 
     public UpdateLoader(String repository) {
         initComponents();
@@ -96,6 +111,10 @@ public class UpdateLoader extends JFrame {
             return res;
         else
             return null;
+    }
+
+    public void setReleaseHub(boolean releaseHub) {
+        this.releaseHub = releaseHub;
     }
 
     private void initComponents() {
@@ -301,7 +320,7 @@ public class UpdateLoader extends JFrame {
         return postJsonObject(Url, parameters).getString(key);
     }
 
-    void update(boolean releaseHub) {
+    void update() {
         this.setTitle("Updating");
         if (releaseHub) {
             outText.setText("Contacting Download Server...");
@@ -370,10 +389,13 @@ public class UpdateLoader extends JFrame {
         worker = new Thread(
                 () -> {
                     try {
+                        String parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
+                        parent += "/";
+                        File aNew = new File(parent);
+                        root = parent + "/update/";
                         downloadFile(downloadLink);
                         unzip();
-                        File aNew = new File("");
-                        boolean mkdir = aNew.mkdir();
+                        aNew.mkdir();
                         copyFiles(new File(root), aNew.getAbsolutePath());
                         cleanup();
                         restartButton.setEnabled(true);
@@ -388,9 +410,8 @@ public class UpdateLoader extends JFrame {
     }
 
     private void launch() {
-        ApplicationContext instance = ApplicationContext.getInstance();
-        String repo = "-repo=" + instance.getRepo();
-        String externalProcessName = instance.getExternalProcessName();
+        String repo = repoArg;
+        String externalProcessName = externalArg;
         String[] run;
         if (externalProcessName != null && !externalProcessName.isEmpty())
             run = new String[]{externalProcessName, repo};
@@ -413,7 +434,11 @@ public class UpdateLoader extends JFrame {
         File f = new File("update.zip");
         f.delete();
         remove(new File(root));
-        new File(root).delete();
+        try {
+            Files.delete(Paths.get(root));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void remove(File f) {
@@ -560,5 +585,28 @@ public class UpdateLoader extends JFrame {
 
     public void setBinaryZipUrl(String binaryZip) {
         this.binaryZipUrl = binaryZip;
+    }
+
+    public static void main(String[] args) {
+        UpdateLoader updateLoader = new UpdateLoader(repo);
+        for (String arg :
+                args) {
+            if (arg.equalsIgnoreCase("usereleasehub")) {
+                updateLoader.setReleaseHub(true);
+            } else if (arg.contains("version")) {
+                int i = arg.indexOf('=');
+                String ver = arg.substring(i + 1);
+                updateLoader.setVersion(ver);
+            } else if (arg.contains("-repo")) {
+                updateLoader.setRepoArg(arg);
+            } else if (arg.contains("externalProcessName")) {
+                int i = arg.indexOf('=');
+                String external = arg.substring(i + 1);
+                updateLoader.setExternalArg(external);
+            }
+
+        }
+        updateLoader.setVisible(true);
+        updateLoader.update();
     }
 }

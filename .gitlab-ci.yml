@@ -49,9 +49,9 @@ prepare_release:
 
 source_package:
   stage: source_package
-  image: alpine:3.7
+  image: maven:3-jdk-8-alpine
   before_script:
-    - apk --update add bash git zip tar
+    - apk --update add bash git
     - git config --global user.name "Dummy Name"
     - git config --global user.email "dummy@email.org"
     - export VERSION=`cat .ci/version`

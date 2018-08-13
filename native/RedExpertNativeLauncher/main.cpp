@@ -323,6 +323,15 @@ int main(int argc, char *argv[])
         paths.append(separator);
     }
 
+    QDir docs_dir(a.applicationDirPath() + "/../docs");
+    jars = docs_dir.entryList(QStringList() << "*.jar" << "*.JAR", QDir::Files);
+
+    foreach(QString filename, jars)
+    {
+        paths.append(docs_dir.absoluteFilePath(filename));
+        paths.append(separator);
+    }
+
     paths = paths.left(paths.lastIndexOf(separator));
 
 #ifdef QT_DEBUG

@@ -431,7 +431,11 @@ public class WindowAddUser extends javax.swing.JPanel {
                 ump.userAdd.setDescription(descriptionField.getText().trim());
                 Map<String, String> tags = new HashMap<>();
                 for (int i = 0; i < tagTable.getRowCount(); i++) {
-                    tags.put((String) tagTable.getModel().getValueAt(i, 0), (String) tagTable.getModel().getValueAt(i, 1));
+                    String tag = tagTable.getModel().getValueAt(i, 0).toString();
+                    String value = tagTable.getModel().getValueAt(i, 1).toString();
+                    if (tag != null && !tag.isEmpty() && value != null && !value.isEmpty()) {
+                        tags.put(tag, value);
+                    }
                 }
                 ump.userAdd.setTags(tags);
                 if (edit) {

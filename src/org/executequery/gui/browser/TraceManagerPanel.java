@@ -531,6 +531,12 @@ public class TraceManagerPanel extends JPanel implements TabView {
 
     @Override
     public boolean tabViewClosing() {
+        if (startStopSessionButton.getText().contentEquals("Stop"))
+            try {
+                traceManager.stopTraceSession(traceManager.getSessionID(sessionField.getText()));
+            } catch (SQLException e) {
+                GUIUtilities.displayExceptionErrorDialog("Error stop session", e);
+            }
         return true;
     }
 

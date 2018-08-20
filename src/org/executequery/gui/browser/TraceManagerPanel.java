@@ -270,6 +270,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                         else conf = confPanel.getConfig();
                         traceManager.startTraceSession(sessionField.getText(), conf);
                         startStopSessionButton.setText("Stop");
+                        tabPane.add("Session Manager", sessionManagerPanel);
                         logToFileBox.setEnabled(false);
                     } catch (Exception e1) {
                         GUIUtilities.displayExceptionErrorDialog("Error start Trace Manager", e1);
@@ -277,6 +278,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 } else try {
                     traceManager.stopTraceSession(traceManager.getSessionID(sessionField.getText()));
                     startStopSessionButton.setText("Start");
+                    tabPane.remove(sessionManagerPanel);
                     logToFileBox.setEnabled(true);
                 } catch (SQLException e1) {
                     GUIUtilities.displayExceptionErrorDialog("Error stop Trace Manager", e1);
@@ -346,7 +348,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
         tabPane.add("Connection", connectionPanel);
         tabPane.add("Build Configuration File", new JScrollPane(confPanel));
         tabPane.add("Visible Columns", columnsCheckPanel);
-        tabPane.add("Session Manager", sessionManagerPanel);
+        //tabPane.add("Session Manager", sessionManagerPanel);
         connectionPanel.setLayout(new GridBagLayout());
 
         label = new JLabel("Connections");

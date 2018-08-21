@@ -46,6 +46,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private JButton fileDatabaseButton;
     private JButton fileConfButton;
     private JButton startStopSessionButton;
+    private JButton clearTableButton;
     private JButton openFileLog;
     private JTextField fileLogField;
     private JTextField fileDatabaseField;
@@ -140,6 +141,13 @@ public class TraceManagerPanel extends JPanel implements TabView {
             }
         });
         startStopSessionButton = new JButton("Start");
+        clearTableButton = new JButton("Clear table");
+        clearTableButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                clearAll();
+            }
+        });
         fileLogButton.addActionListener(new ActionListener() {
             FileChooserDialog fileChooser = new FileChooserDialog();
 
@@ -330,7 +338,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 0, 0));
 
         add(topPanel, new GridBagConstraints(0, 0,
-                1, 1, 1, 0,
+                2, 1, 1, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0),
                 0, 0));
 
@@ -340,6 +348,11 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 0, 0));
 
         add(startStopSessionButton, new GridBagConstraints(0, 2,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+
+        add(clearTableButton, new GridBagConstraints(1, 2,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -361,7 +374,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 0, 0));
 
         add(loggerPanel, new GridBagConstraints(0, 3,
-                1, 1, 1, 1,
+                2, 1, 1, 1,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(0, 5, 5, 5),
                 0, 0));
 
@@ -464,6 +477,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
+
         /*label = new JLabel("Config file");
         connectionPanel.add(label, new GridBagConstraints(1, 5,
                 1, 1, 0, 0,
@@ -591,6 +605,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
 
     public void clearAll() {
         loggerPanel.clearAll();
+        idLogMessage = 0;
     }
 
     private void loadCharsets() {

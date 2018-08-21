@@ -261,7 +261,10 @@ public class TraceManagerPanel extends JPanel implements TabView {
                                     lock.unlock();
                                 }
                             };
-                        } else GUIUtilities.displayErrorMessage("File is empty");
+                        } else {
+                            GUIUtilities.displayErrorMessage("File is empty");
+                            return;
+                        }
                     }
                     else
                         outputStream = new OutputStream() {
@@ -282,9 +285,6 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     traceManager.setPort(portField.getValue());
                     timer.start();
                     try {
-                        if (outputStream == null) {
-                            throw new NullPointerException();
-                        }
                         String conf;
                         if (useBuildConfBox.isSelected())
                             conf = traceManager.loadConfigurationFromFile(fileConfField.getText());

@@ -52,7 +52,7 @@ node('master')
     }
 }
 
-node('jdk18&&linux&&builder&&mvn')
+node('jdk18&&linux&&builder&&x86_64&&mvn')
 {
     stage('Build')
     {
@@ -61,11 +61,83 @@ node('jdk18&&linux&&builder&&mvn')
         def archive_prefix="RedExpert-${version}"
         
         sh "tar xf dist-src/${archive_prefix}-src.tar.gz"
-        withEnv(["JAVA_HOME=${JAVA_HOME_1_8}", "RED_EXPERT_VERSION=${version}"]) {
-            sh "cd ${archive_prefix} && mvn package && mkdir dist && cp ./modules/redexpert/target/${archive_prefix}.* dist/ && mv dist .."
+        withEnv(["JAVA_HOME=${JAVA_HOME_1_8}", "RED_EXPERT_VERSION=${version}", "ARCHIVE_PREFIX=${archive_prefix}"]) {
+            sh '''cd ${ARCHIVE_PREFIX}
+            mkdir dist
+            mkdir dist/bin
+            mkdir dist/lib
+            mkdir dist/docs
+            mkdir dist/license
+            mkdir dist/config
+            cd native/RedExpertNativeLauncher
+            /usr/bin/qmake-qt5
+            make
+            cd ..
+            mkdir bin
+            cp RedExpertNativeLauncher/bin/RedExpertNativeLauncher64 bin/
+            cd ..
+            mvn package
+            cp -r native/bin dist/
+            cp -r modules/redexpert/target/lib dist/
+            cp -r docs/ dist/
+            cp -r license/ dist/
+            cp -r config/ dist/
+            cp red_expert.png dist/
+            cp red_expert.ico dist/
+            cp redexpert.desktop dist/
+            cp modules/redexpert/target/RedExpert.jar dist/
+            cp modules/redexpert/target/RedExpert.sh dist/
+            cp createDesktopEntry.sh dist/
+            cp LICENSE.txt dist/
+            mv dist ..'''
         }
         
-        stash includes: 'dist/**', name: 'bin'
+        stash includes: 'dist/**', name: 'linux-bin'
+    }
+}
+
+node('jdk18&&windows&&builder&&x86_64')
+{
+    stage('Build')
+    {
+        deleteDir()
+        unstash 'src'
+        def archive_prefix="RedExpert-${version}"
+
+        bat "unzip dist-src\\${archive_prefix}-src.zip"
+        withEnv(["JAVA_HOME=${JAVA_HOME_1_8_x64}", "RED_EXPERT_VERSION=${version}", "ARCHIVE_PREFIX=${archive_prefix}"]) {
+            // TODO QT_HOME variable?
+            bat '''cd %ARCHIVE_PREFIX%\\
+            call "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat" amd64
+            mkdir dist
+            mkdir dist\\bin\\
+            mkdir dist\\bin\\platforms\\
+            mkdir dist\\lib\\
+            mkdir dist\\docs\\
+            mkdir dist\\license\\
+            mkdir dist\\config\\
+            cd native\\RedExpertNativeLauncher
+            "c:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\qmake.exe"
+            "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\bin\\amd64\\nmake.exe"
+            cd ..
+            mkdir bin
+            copy RedExpertNativeLauncher\\release\\bin\\RedExpertNativeLauncher64.exe bin\\
+            mkdir bin\\platforms
+            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\plugins\\platforms\\qminimal.dll" bin\\platforms\\
+            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\plugins\\platforms\\qoffscreen.dll" bin\\platforms\\
+            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\plugins\\platforms\\qwindows.dll" bin\\platforms\\
+            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\Qt5Core.dll" bin\\
+            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\Qt5Gui.dll" bin\\
+            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\Qt5Widgets.dll" bin\\
+            cd ..
+            copy /y native\\bin\\ dist\\bin\\
+            copy /y native\\bin\\platforms\\ dist\\bin\\platforms\\
+            copy /y RedExpert.bat dist\\
+            move dist ..
+            '''
+        }
+
+        stash includes: 'dist/**', name: 'windows-bin'
     }
 }
 
@@ -77,7 +149,11 @@ node('master')
         def wd = pwd()
 
         unstash 'src'
-        unstash 'bin'
+        unstash 'linux-bin'
+        unstash 'windows-bin'
+
+        sh "tar xf dist-src/RedExpert-${version}-src.tar.gz"
+        sh "VERSION=${version} RedExpert-${version}/ci/package-bin.sh"
         
         sh "echo artifact red_expert ${version} > artifacts"
         sh "echo file dist/RedExpert-${version}.tar.gz tar.gz bin >> artifacts"

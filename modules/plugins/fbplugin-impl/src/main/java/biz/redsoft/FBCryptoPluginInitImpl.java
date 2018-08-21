@@ -4,7 +4,7 @@ import org.firebirdsql.cryptoapi.cryptopro.exception.CryptoException;
 import org.firebirdsql.gds.impl.wire.auth.AuthCryptoPlugin;
 
 /**
- * Implementation of the сrypto plugin initialization interface
+ * Implementation of the crypto plugin initialization interface
  *
  * @author <a href="mailto:vasiliy.yashkov@red-soft.ru">Vasiliy Yashkov</a>
  */

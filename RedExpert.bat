@@ -1,2 +1,3 @@
-set JAVA_HEAP_SIZE=1024
-start javaw -jar RedExpert.jar
+@echo off
+
+call bin\\RedExpertNativeLauncher64.exe -Xms1024m

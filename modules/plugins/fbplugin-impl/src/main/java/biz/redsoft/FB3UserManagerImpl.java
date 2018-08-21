@@ -205,7 +205,7 @@ public class FB3UserManagerImpl implements IFBUserManager {
                 value.setActive(false);
             }
             try {
-                value.setAdministrator(result.getBoolean(5));
+                value.setAdministrator(result.getBoolean(6));
             } catch (NullPointerException e) {
                 value.setAdministrator(false);
             }

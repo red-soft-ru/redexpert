@@ -13,5 +13,5 @@ fi
 
 # DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-exec $JAVA -mx${JAVA_HEAP_SIZE}m -jar "RedExpert.jar" &
+exec bin/RedExpertNativeLauncher64 -mx${JAVA_HEAP_SIZE}m &
 

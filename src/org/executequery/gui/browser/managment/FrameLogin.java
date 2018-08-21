@@ -21,6 +21,7 @@ public class FrameLogin extends JFrame {
     private JLabel usernameLabel;
     private JPasswordField passwordField;
     FrameLogin frameLogin;
+    private boolean useCustomServer;
 
     /**
      * Creates new form NewJFrame
@@ -29,6 +30,7 @@ public class FrameLogin extends JFrame {
         initComponents();
         this.userManagerPanel = userManagerPanel;
         this.setSize(800, this.getHeight());
+        useCustomServer = false;
     }
 
     public FrameLogin(UserManagerPanel userManagerPanel, String user) {
@@ -118,6 +120,7 @@ public class FrameLogin extends JFrame {
         userManagerPanel.userManager.setUser(usernameField.getText());
         userManagerPanel.userManager.setPassword(new String(passwordField.getPassword()));
         try {
+            userManagerPanel.setUseCustomServer(getUseCustomServer());
             userManagerPanel.refresh();
         } catch (Exception e) {
             e.printStackTrace();
@@ -127,5 +130,13 @@ public class FrameLogin extends JFrame {
 
     private String bundleString(String key) {
         return Bundles.get(UserManagerPanel.class, key);
+    }
+
+    public void setUseCustomServer(boolean useCustomServer) {
+        this.useCustomServer = useCustomServer;
+    }
+
+    public boolean getUseCustomServer() {
+        return useCustomServer;
     }
 }

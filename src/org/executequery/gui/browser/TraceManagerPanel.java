@@ -69,6 +69,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private List<SessionInfo> sessions;
     private SessionManagerPanel sessionManagerPanel;
     private BuildConfigurationPanel confPanel;
+    private JPanel connectionPanel;
 
     private void init() {
         message = Message.LOG_MESSAGE;
@@ -99,6 +100,12 @@ public class TraceManagerPanel extends JPanel implements TabView {
         userField = new JTextField();
         passwordField = new JPasswordField();
         logToFileBox = new JCheckBox("Log to file");
+        logToFileBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setEnableElements();
+            }
+        });
         hostField = new JTextField("127.0.0.1");
         portField = new NumberTextField();
         portField.setText("3050");
@@ -107,8 +114,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
         useBuildConfBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                fileConfButton.setEnabled(useBuildConfBox.isSelected());
-                fileConfField.setEnabled(useBuildConfBox.isSelected());
+                setEnableElements();
             }
         });
         charsetCombo = new JComboBox<>(charsets.toArray());
@@ -233,18 +239,22 @@ public class TraceManagerPanel extends JPanel implements TabView {
         startStopSessionButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                outputStream = null;
                 if (startStopSessionButton.getText().toUpperCase().contentEquals("START")) {
-                    if (logToFileBox.isSelected())
-                        outputStream = new OutputStream() {
-                            @Override
-                            public void write(int b) throws IOException {
-                                fileLog.write(b);
-                                lock.lock();
-                                changed = true;
-                                sb.append((char) b);
-                                lock.unlock();
-                            }
-                        };
+                    if (logToFileBox.isSelected()) {
+                        if (fileLog != null) {
+                            outputStream = new OutputStream() {
+                                @Override
+                                public void write(int b) throws IOException {
+                                    fileLog.write(b);
+                                    lock.lock();
+                                    changed = true;
+                                    sb.append((char) b);
+                                    lock.unlock();
+                                }
+                            };
+                        } else GUIUtilities.displayErrorMessage("File is empty");
+                    }
                     else
                         outputStream = new OutputStream() {
                             @Override
@@ -264,12 +274,19 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     traceManager.setPort(portField.getValue());
                     timer.start();
                     try {
+                        if (outputStream == null) {
+                            throw new NullPointerException();
+                        }
                         String conf;
                         if (useBuildConfBox.isSelected())
                             conf = traceManager.loadConfigurationFromFile(fileConfField.getText());
                         else conf = confPanel.getConfig();
                         traceManager.startTraceSession(sessionField.getText(), conf);
                         startStopSessionButton.setText("Stop");
+                        tabPane.add("Session Manager", sessionManagerPanel);
+                        for (int i = 0; i < connectionPanel.getComponents().length; i++) {
+                            connectionPanel.getComponents()[i].setEnabled(false);
+                        }
                         logToFileBox.setEnabled(false);
                     } catch (Exception e1) {
                         GUIUtilities.displayExceptionErrorDialog("Error start Trace Manager", e1);
@@ -277,6 +294,11 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 } else try {
                     traceManager.stopTraceSession(traceManager.getSessionID(sessionField.getText()));
                     startStopSessionButton.setText("Start");
+                    tabPane.remove(sessionManagerPanel);
+                    for (int i = 0; i < connectionPanel.getComponents().length; i++) {
+                        connectionPanel.getComponents()[i].setEnabled(true);
+                    }
+                    setEnableElements();
                     logToFileBox.setEnabled(true);
                 } catch (SQLException e1) {
                     GUIUtilities.displayExceptionErrorDialog("Error stop Trace Manager", e1);
@@ -296,7 +318,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
         });
 
         tabPane = new JTabbedPane();
-        JPanel connectionPanel = new JPanel();
+        connectionPanel = new JPanel();
         confPanel = new BuildConfigurationPanel();
 
         setLayout(new GridBagLayout());
@@ -346,7 +368,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
         tabPane.add("Connection", connectionPanel);
         tabPane.add("Build Configuration File", new JScrollPane(confPanel));
         tabPane.add("Visible Columns", columnsCheckPanel);
-        tabPane.add("Session Manager", sessionManagerPanel);
+        //tabPane.add("Session Manager", sessionManagerPanel);
         connectionPanel.setLayout(new GridBagLayout());
 
         label = new JLabel("Connections");
@@ -471,7 +493,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 5, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-
+        setEnableElements();
 
     }
 
@@ -531,6 +553,12 @@ public class TraceManagerPanel extends JPanel implements TabView {
 
     @Override
     public boolean tabViewClosing() {
+        if (startStopSessionButton.getText().contentEquals("Stop"))
+            try {
+                traceManager.stopTraceSession(traceManager.getSessionID(sessionField.getText()));
+            } catch (SQLException e) {
+                GUIUtilities.displayExceptionErrorDialog("Error stop session", e);
+            }
         return true;
     }
 
@@ -589,6 +617,13 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private DatabaseDriverRepository driverRepository() {
         return (DatabaseDriverRepository) RepositoryCache.load(
                 DatabaseDriverRepository.REPOSITORY_ID);
+    }
+
+    private void setEnableElements() {
+        fileConfButton.setEnabled(useBuildConfBox.isSelected());
+        fileConfField.setEnabled(useBuildConfBox.isSelected());
+        fileLogButton.setEnabled(logToFileBox.isSelected());
+        fileLogField.setEnabled(logToFileBox.isSelected());
     }
 
     enum Message {

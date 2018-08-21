@@ -20,6 +20,7 @@
 
 package org.executequery;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.executequery.components.SimpleHtmlContentPane;
 import org.executequery.components.StatusBarPanel;
 import org.executequery.gui.InformationDialog;
@@ -40,8 +41,11 @@ import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -206,9 +210,34 @@ public class CheckForUpdateNotifier implements Interruptible {
 
                 public Object construct() {
 
-                    updateLoader.setVisible(true);
-                    updateLoader.update(releaseHub);
-
+//                    updateLoader.setVisible(true);
+                    updateLoader.setReleaseHub(releaseHub);
+                    List<String> argsList = new ArrayList<String>();
+                    if (releaseHub)
+                        argsList.add("useReleaseHub");
+                    String version = "version=" + updateLoader.getVersion();
+                    argsList.add(version);
+                    ApplicationContext instance = ApplicationContext.getInstance();
+                    String repo = "-repo=" + instance.getRepo();
+                    argsList.add(repo);
+                    String externalProcessName = instance.getExternalProcessName();
+                    if (externalProcessName != null && !externalProcessName.isEmpty()) {
+                        externalProcessName = "externalProcessName=" + externalProcessName;
+                        argsList.add(externalProcessName);
+                    }
+                    String[] args = argsList.toArray(new String[0]);
+                    String[] run;
+                    File file = new File("RedExpert.jar");
+                    if (!file.exists())
+                        file = new File("../RedExpert.jar");
+                    run = new String[]{"java", "-cp", file.getPath(), "org.executequery.UpdateLoader"};
+                    run = (String[]) ArrayUtils.addAll(run, args);
+                    try {
+                        Runtime.getRuntime().exec(run);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    System.exit(0);
                     return Constants.WORKER_SUCCESS;
                 }
 
@@ -220,7 +249,6 @@ public class CheckForUpdateNotifier implements Interruptible {
 
             };
             worker.start();
-
         }
 
     }

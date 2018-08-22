@@ -71,6 +71,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private SessionManagerPanel sessionManagerPanel;
     private BuildConfigurationPanel confPanel;
     private JPanel connectionPanel;
+    private int currentSessionId;
 
     private void init() {
         message = Message.LOG_MESSAGE;
@@ -300,14 +301,8 @@ public class TraceManagerPanel extends JPanel implements TabView {
                         GUIUtilities.displayExceptionErrorDialog("Error start Trace Manager", e1);
                     }
                 } else try {
-                    traceManager.stopTraceSession(traceManager.getSessionID(sessionField.getText()));
-                    startStopSessionButton.setText("Start");
-                    tabPane.remove(sessionManagerPanel);
-                    for (int i = 0; i < connectionPanel.getComponents().length; i++) {
-                        connectionPanel.getComponents()[i].setEnabled(true);
-                    }
-                    setEnableElements();
-                    logToFileBox.setEnabled(true);
+                    traceManager.stopTraceSession(currentSessionId);
+                    stopSession();
                 } catch (SQLException e1) {
                     GUIUtilities.displayExceptionErrorDialog("Error stop Trace Manager", e1);
                 }
@@ -537,7 +532,24 @@ public class TraceManagerPanel extends JPanel implements TabView {
         if (!messages.isEmpty())
             for (int i = 0; i < strs.length; i++) {
                 String str = strs[i].trim();
-                if (str.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}.*")) {
+                if (str.toLowerCase().startsWith("trace session id")) {
+                    if (finded) {
+                        parseMessage(s);
+                    }
+                    s = str.replace("Trace session ID ", "");
+                    if (s.contains("started")) {
+                        s = s.replace("started", "");
+                        s = s.replace(" ", "");
+                        currentSessionId = Integer.parseInt(s);
+                    } else if (s.contains("stopped")) {
+                        s = s.replace("stopped", "");
+                        s = s.replace(" ", "");
+                        int sessionId = Integer.parseInt(s);
+                        if (sessionId == currentSessionId)
+                            stopSession();
+                    }
+
+                } else if (str.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}.*")) {
                     if (finded) {
                         parseMessage(s);
                     }
@@ -639,6 +651,16 @@ public class TraceManagerPanel extends JPanel implements TabView {
         fileConfField.setEnabled(useBuildConfBox.isSelected());
         fileLogButton.setEnabled(logToFileBox.isSelected());
         fileLogField.setEnabled(logToFileBox.isSelected());
+    }
+
+    private void stopSession() {
+        startStopSessionButton.setText("Start");
+        tabPane.remove(sessionManagerPanel);
+        for (int i = 0; i < connectionPanel.getComponents().length; i++) {
+            connectionPanel.getComponents()[i].setEnabled(true);
+        }
+        setEnableElements();
+        logToFileBox.setEnabled(true);
     }
 
     enum Message {

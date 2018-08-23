@@ -303,7 +303,7 @@ public class BuildConfigurationPanel extends JPanel {
                 3, 1, 1, 1,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        repaint();
+        updateUI();
 
     }
 

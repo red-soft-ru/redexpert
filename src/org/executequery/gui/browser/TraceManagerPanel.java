@@ -105,7 +105,26 @@ public class TraceManagerPanel extends JPanel implements TabView {
         logToFileBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+
                 setEnableElements();
+                if (fileLog != null) {
+                    try {
+                        fileLog.close();
+                        fileLog = null;
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+                if (logToFileBox.isSelected()) {
+                    if (!fileLogField.getText().isEmpty()) {
+                        File file = new File(fileLogField.getText());
+                        try {
+                            fileLog = new FileOutputStream(file, true);
+                        } catch (FileNotFoundException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                }
             }
         });
         hostField = new JTextField("127.0.0.1");
@@ -156,6 +175,14 @@ public class TraceManagerPanel extends JPanel implements TabView {
             public void actionPerformed(ActionEvent e) {
                 int returnVal = fileChooser.showSaveDialog(fileLogButton);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    if (fileLog != null) {
+                        try {
+                            fileLog.close();
+                            fileLog = null;
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
                     File file = fileChooser.getSelectedFile();
                     fileLogField.setText(file.getAbsolutePath());
                     try {
@@ -248,6 +275,13 @@ public class TraceManagerPanel extends JPanel implements TabView {
         startStopSessionButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (outputStream != null) {
+                    try {
+                        outputStream.close();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
                 outputStream = null;
                 if (startStopSessionButton.getText().toUpperCase().contentEquals("START")) {
                     if (logToFileBox.isSelected()) {

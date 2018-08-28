@@ -3,7 +3,6 @@ package biz.redsoft;
 
 import org.firebirdsql.management.FBUserManager;
 
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -124,7 +123,7 @@ public class FB3UserManagerImpl implements IFBUserManager {
                 query += "\nMIDDLENAME '" + user.getMiddleName() + "'";
             if (user.getLastName() != user1.getLastName())
                 query += "\nLASTNAME '" + user.getLastName() + "'";
-            if (user.getPassword() != "") {
+            if (user.getPassword() != "" && user.getPassword() != null) {
                 query += "\nPASSWORD '" + user.getPassword() + "'\n";
             }
             if (user.getActive()) {
@@ -172,7 +171,7 @@ public class FB3UserManagerImpl implements IFBUserManager {
     }
 
     @Override
-    public Map<String, IFBUser> getUsers() throws SQLException, IOException {
+    public Map<String, IFBUser> getUsers() throws SQLException {
         Map<String, IFBUser> mUsers = new TreeMap<>();
 
         Statement state = con.createStatement();
@@ -248,7 +247,7 @@ public class FB3UserManagerImpl implements IFBUserManager {
         }
     }
 
-    private void execute_query(String query) throws SQLException, IOException {
+    private void execute_query(String query) throws SQLException {
 
         Statement state = con.createStatement();
         state.executeUpdate(query);

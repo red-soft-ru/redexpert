@@ -1,0 +1,297 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A,T1]{fontenc}
+\usepackage[english,russian]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb,amsfonts,textcomp}
+\usepackage{fancyhdr}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{hhline}
+\usepackage[pdftex]{graphicx}
+\usepackage[colorlinks=true,linkcolor=blue]{hyperref}
+\makeatletter
+\newcommand\arraybslash{\let\\\@arraycr}
+\makeatother
+\setlength\tabcolsep{1mm}
+\renewcommand\arraystretch{1.3}
+\newcounter{Table}[section]
+\renewcommand\theTable{\thesection.\arabic{Table}}
+\parindent=1cm
+\usepackage[letterpaper, left=3cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
+\usepackage{color}
+\usepackage{framed}
+\usepackage{titlesec}
+\usepackage{fancybox}
+\usepackage[tikz]{bclogo}
+\usepackage{xhfill}
+\usepackage{booktabs}
+\usepackage{listingsutf8}
+\usepackage{float}
+\usepackage{tablefootnote}
+\usepackage{colortbl} 
+\usepackage{type1ec} % для четкости шрифта
+\usepackage[numbered]{bookmark} % для корректного отображения оглавления в ридере
+\usepackage{arydshln} %для пунктирных линий
+\usepackage[framemethod=tikz]{mdframed}
+\usepackage{multirow}
+
+
+\mdfsetup{%
+	middlelinewidth=0.5pt,
+	backgroundcolor=white!98!black,	
+	roundcorner=5pt,
+	innerleftmargin = 10pt,
+	innertopmargin=5pt,
+	skipabove = 10pt,
+	skipbelow = 5pt,
+	shadow=true,
+	shadowsize=4pt,
+	nobreak=false,
+	rightmargin=0pt,
+	align=right, 
+}
+\global\mdfdefinestyle{importantstyle}{%
+	linecolor=red,linewidth=4pt,%
+	topline=false,bottomline=false, rightline = false, %
+	backgroundcolor=red!8,%
+	shadow=false
+}
+
+\global\mdfdefinestyle{examplestyle}{%
+	middlelinewidth=0.5pt,
+	backgroundcolor=white!98!black,	
+	roundcorner=5pt,
+	innerleftmargin = 10pt,
+	innertopmargin=5pt,
+	skipabove = 10pt,
+	skipbelow = 5pt,
+	shadow=true,
+	shadowsize=4pt,
+	nobreak=false,
+	rightmargin=0pt,
+	align=right, 
+}
+
+
+\global\mdfdefinestyle{remarkstyle}{%
+	linecolor=green!50!black,linewidth=4pt,%
+	topline=false,bottomline=false, rightline = false, %
+	backgroundcolor=green!8,%
+	shadow=false
+}
+
+\mdfdefinestyle{theoremstyle}{%
+	frametitlebackgroundcolor=white!40!black,
+	frametitlealignment = \raggedright,
+	frametitlerule=true,
+	frametitlefont={\normalfont\bfseries\color{white}},
+	frametitlebelowskip = 4pt,
+	frametitleaboveskip = 4pt,
+}
+
+
+\newcounter{redlisting}[section]
+\renewcommand{\theredlisting}{\thesection.\arabic{redlisting}}
+\newcommand{\li}{\refstepcounter{redlisting} Листинг \theredlisting. }
+\newcommand{\enli}{\refstepcounter{redlisting} Listing \theredlisting. }
+
+
+\newenvironment{redlisting}[1]{\begin{mdframed}[style=theoremstyle,frametitle={\li #1}]\flushleft}{\end{mdframed}}
+
+\newenvironment{redexample}{\begin{mdframed}\flushleft}{\end{mdframed}}
+
+\newenvironment{redimportant}{\begin{mdframed}[style=importantstyle]}{\end{mdframed}}
+
+\newenvironment{redremark}{\begin{mdframed}[style=remarkstyle]}{\end{mdframed}}
+
+
+\usepackage{comment}
+
+%\usepackage{parskip}
+\usepackage{enumitem}
+
+\usepackage{indentfirst}  % абзацный отступ после заголовка
+\graphicspath{{SQLGuide-img/}} %
+
+% другой счетчик для приложений (по \ref выдает A,B,C...)
+\newcounter{application}
+\renewcommand{\theapplication}{\Asbuk{application}}
+\newcommand{\appcount}{\refstepcounter{application}}
+
+\newcounter{test}
+\renewcommand{\thetest}{\Asbuk{test}}
+\newcommand{\apptest}{\refstepcounter{test}}
+
+% чтобы в оглавлении было не присто А Б, а Приложение А, Приложение Б
+\renewcommand\appendixname{Приложение}
+
+\makeatletter
+\def\redeflsection{\def\l@section{\@dottedtocline{1}{0em}{8em}}}
+\renewcommand\appendix{\par
+	\setcounter{application}{0}%
+	\setcounter{subsection}{0}%
+	\def\@chapapp{\appendixname}%
+	\addtocontents{toc}{\protect\redeflsection}	
+	\def\thesection{\appendixname\hspace{0.2cm}\Asbuk{application}}
+	}
+\makeatother
+
+
+% чтобы разделы в оглавлении были не жирным а обычным шрифтом
+\makeatletter 
+\renewcommand*\l@section[2]{% 
+	\ifnum \c@tocdepth >\z@ 
+	\addpenalty\@secpenalty 
+	\addvspace{1.0em \@plus\p@}% 
+	\setlength\@tempdima{1.5em}% 
+	\begingroup 
+	\parindent \z@ \rightskip \@pnumwidth 
+	\parfillskip -\@pnumwidth 
+	\leavevmode 
+	\advance\leftskip\@tempdima 
+	\hskip -\leftskip 
+	#1\nobreak\hfil \nobreak\hb@xt@\@pnumwidth{\hss #2}\par 
+	\endgroup 
+	\fi} 
+\makeatother 
+
+
+\emergencystretch=25pt %борьба с переполнением строк
+
+
+\renewcommand{\thetable}{\thesection.\arabic{table}} % нумерация таблиц с номером section
+\renewcommand{\thefigure}{\thesection.\arabic{figure}} % нумерация рисунков с номером section
+
+\makeatletter
+\@addtoreset{table}{section} % сбросит счетчик таблиц в начале каждого раздела. 
+\makeatother
+
+\makeatletter
+\@addtoreset{figure}{section} % сбросит счетчик рисунков в начале каждого раздела. 
+\makeatother
+
+% пакет оформления блоков "Внимание" и "Пример"
+\usepackage{tcolorbox}
+\tcbuselibrary{most}
+
+%пакет для работы с плавающими объектами
+\usepackage{afterpage}
+
+%оформление таблиц и рисунков по ГОСТ
+\usepackage[tableposition=top]{caption}
+\usepackage{subcaption}
+\DeclareCaptionLabelFormat{gostfigure}{Рисунок #2} 
+\DeclareCaptionLabelFormat{gosttable}{Таблица #2} 
+\DeclareCaptionLabelSeparator{gost}{~---~}
+\captionsetup{labelsep=gost}
+\captionsetup[figure]{labelformat=gostfigure}
+\captionsetup[table]{labelformat=gosttable,justification=raggedright,slc=off} 
+
+\newcommand{\vspacebf}[1]{\vspace{5pt}\noindent \textbf{#1}}
+
+%задает цвет гиперссылок 
+\hypersetup{urlcolor=blue}
+
+\tcbset{
+	enhanced,
+	colback=black!2,
+	boxrule=0.4pt,
+	fonttitle=\bfseries
+}
+
+
+
+%задает пустое пространство до и после таблицы
+\setlength{\LTpre}{5pt}
+\setlength{\LTpost}{5pt}
+
+\newenvironment{redparam}
+{\vspace{10pt}\bf\parindent=0cm}
+{\par}
+
+\newenvironment{redparam1}
+{\vspace{5pt}\ttfamily\parindent=0cm}
+{}
+
+
+\newenvironment{rederror}
+{\par\vspace{5pt}\ttfamily}
+{\par\vspace{5pt}}
+
+\newcommand{\sectionbreak}{\clearpage}
+
+\titleformat{\section}
+{\huge}
+{\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\LARGE}
+{\thesubsection}{1em}{}
+
+\titleformat{\subsubsection}
+{\Large}
+{\thesubsubsection}{1em}{}
+
+\titleformat{\paragraph}
+{\large}
+{\theparagraph}{1em}{}
+
+  
+\title{}
+\author{Red Soft Corporation}
+\date{}
+
+\setlength{\headheight}{24pt}
+\pagestyle{fancy}
+
+
+\newcommand{\anonsection}[1]{\phantomsection\section*{#1}\addcontentsline{toc}{section}{#1}}
+
+
+\newcommand{\anonsubsection}[1]{\phantomsection\subsection*{#1}\addcontentsline{toc}{subsection}{#1}}
+
+\newcommand{\anonsubsubsection}[1]{\phantomsection\subsubsection*{#1}\addcontentsline{toc}{subsubsection}{#1}}
+
+
+
+\newcommand{\beginrudoc}[1]{
+\fancyhf{}
+\thispagestyle{empty}
+
+\topskip0pt
+\vspace*{\fill}
+
+\begin{flushright}
+\Huge {\xhrulefill{red}{2mm}\color{red} Red Expert} \\
+\LARGE Версия 1.0\\
+#1
+\end{flushright}
+
+\vspace*{\fill}
+
+\newpage
+
+\fancyhead[R]{#1\\\leftmark}
+\fancyfoot[C]{\xhrulefill{red}{2mm} Стр. \thepage}
+
+\setcounter{tocdepth}{10}
+\renewcommand\contentsname{Содержание}
+\tableofcontents
+}
+
+
+%печать одинарных кавычек
+\newcommand{\rr}[1]{{\textquotesingle}#1{\textquotesingle}}
+
+%печать двойных кавычек
+\newcommand{\pp}[1]{"#1{}"}
+
+\newcommand{\ttt}{\texttt}
+
+%для приложения 5 в SQL
+\newcommand{\hl}[1]{\hyperlink{#1}{#1}}
+
+\setlist[enumerate]{itemindent=1.3mm, topsep = 1mm, parsep=0pt, leftmargin=45pt} %чтобы списки были более сжатыми
+\setlist[itemize]{itemindent=1.3mm, topsep = 1mm, parsep=0pt, leftmargin=45pt}   %чтобы списки были более сжатыми
+

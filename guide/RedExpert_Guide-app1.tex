@@ -1,0 +1,215 @@
+\renewcommand{\thesubsection}{}
+
+\appcount\section{Свойства базы данных} \apptest
+\label{app:1}
+
+В таблице отражена информация о возможностях конкретной СУБД в сочетании с конкретным JDBC драйвером. 
+Представленные свойства являются методами интерфейса \href{https://docs.oracle.com/javase/7/docs/api/java/sql/DatabaseMetaData.html}{ DatabaseMetaData}.
+
+\begin{longtable}[c]{|>{\ttfamily}m{5.1cm}|>{\ttfamily\centering}m{1.3cm}|m{9.2cm}|}
+	\hline
+	\centering\normalfont\bfseries Свойство &
+	\centering\normalfont\bfseries Тип &
+	\centering\arraybslash\bfseries Описание\\\hline
+	\endfirsthead
+	\hline
+	\centering\normalfont\bfseries Свойство &
+	\centering\normalfont\bfseries Тип &
+	\centering\arraybslash\bfseries Описание\\\hline
+	\endhead
+	allProceduresAreCallable & boolean & Может ли текущий пользователь вызывать все процедуры, возвращаемые методом \ttt{getProcedures}.\\\hline 
+	allTablesAreSelectable & boolean & Может ли текущий пользователь использовать все таблицы, возвращаемые методом \ttt{getTables} в выражении \ttt{SELECT}\\\hline 
+	autoCommitFailureClosesAll 
+	
+	ResultSets& boolean & Закрываются ли все ResultSet'ы, если происходит исключение, когда параметр \ttt{autoCommit} установлен в \ttt{true} \\\hline 
+	DatabaseMajorVersion & int &  Мажорная версия СУБД\\\hline 
+	DatabaseMinorVersion & int & Минорная версия СУБД \\\hline 
+	DatabaseProductName & String & Имя СУБД\\\hline 
+	DatabaseProductVersion & String & Версия СУБД\\\hline 
+	dataDefinitionCauses
+	
+	TransactionCommit & boolean & DDL-запросы в транзакции запускают её коммит\\\hline 
+	dataDefinitionIgnoredIn
+	
+	Transactions & boolean & СУБД игнорирует DDL-запросы в транзакции \\\hline 
+	DefaultTransactionIsolation & int & Уровень изоляции транзакции по умолчанию этой базы данных.\\\hline 
+	doesMaxRowSizeIncludeBlobs & boolean & Учитываются ли типы данных JDBC  \ttt{LONGVARCHAR} и \ttt{LONGVARBINARY} для результата функции \ttt{getMaxRowSize}.\\\hline 
+	DriverMajorVersion & int & Мажорная версия драйвера \\\hline 
+	DriverMinorVersion & int & Минорная версия драйвера \\\hline 
+	DriverName & String & Имя драйвера \\\hline 
+	DriverVersion & String & Версия драйвера\\\hline 
+	ExtraNameCharacters & String & Символы, которые могут использоваться в именах без кавычек\\\hline 
+	generatedKeyAlwaysReturned & boolean & \\\hline 
+	hashCode & --- & \\\hline 
+	IdentifierQuoteString & String & Строка, используемая для цитирования идентификаторов SQL\\\hline 
+	isCatalogAtStart & boolean & \ttt{True}, если имя каталога обозначается в начале полного имени таблицы; \ttt{false}, если в конце\\\hline 
+	isReadOnly & boolean & База данных в режиме "только для чтения"\\\hline 
+	JDBCMajorVersion & int & Мажорный номер версии JDBC для этого драйвера\\\hline 
+	JDBCMinorVersion & int & Минорный номер версии JDBC для этого драйвера\\\hline 
+	locatorsUpdateCopy & boolean & Сделаны ли изменения в LOB на копии или непосредственно на LOB.\\\hline 
+	MaxBinaryLiteralLength & int &  Максимальная длина (в шестнадцатеричных символах) бинарного литерала; 0 означает, что нет предела или лимит не известен\\\hline 
+	MaxCatalogNameLength & int & Максимальное количество символов, разрешенных в имени каталога; 0 означает, что нет предела или лимит не известен\\\hline 
+	MaxCharLiteralLength & int & Максимальное количество символов символьного литерала; 0 означает, что нет предела или лимит не известен\\\hline 
+	MaxColumnNameLength & int & Максимальное количество символов в имени столбца; 0 означает, что нет предела или лимит не известен \\\hline 
+	MaxColumnsInGroupBy & int & Какое максимальное число столбцов может быть использовано в предложении \ttt{GROUP BY}; 0 означает, что нет предела или лимит не известен\\\hline 
+	MaxColumnsInIndex & int & Максимальное число столбцов, на которых может быть построен индекс; 0 означает, что нет предела или лимит не известен \\\hline 
+	MaxColumnsInOrderBy & int & Какое максимальное число столбцов может быть использовано в предложении \ttt{ORDER BY}; 0 означает, что нет предела или лимит не известен\\\hline 
+	MaxColumnsInSelect & int & Максимальное число столбцов, которое может быть в результирующем наборе оператора \ttt{SELECT}; 0 означает, что нет предела или лимит не известен\\\hline 
+	MaxColumnsInTable & int & Максимальное число столбцов в таблице; 0 означает, что нет предела или лимит не известен \\\hline 
+	MaxConnections & int & Максимальное количество одновременных подключений к этой базе данных; 0 означает, что нет предела или лимит не известен\\\hline 
+	MaxCursorNameLength & int & Максимальное количество символов в имени курсора; 0 означает, что нет предела или лимит не известен\\\hline 
+	MaxIndexLength & int & Максимальное допустимое количество байтов, которые можно индексировать; этот предел включает в себя совокупность всех составляющих частей индекса; 0 означает, что нет предела или лимит не известен\\\hline 
+	MaxLogicalLobSize & int & Максимально допустимый размер LOB \\\hline 
+	MaxProcedureNameLength & int & Допустимое количество символов в имени процедуры; 0 означает, что нет предела или лимит не известен\\\hline 
+	MaxRowSize & int & Максимальное число байт в одной строке; 0 означает, что нет предела или лимит не известен \\\hline 
+	MaxSchemaNameLength & int & Максимальное количество символов, которое допустимо в имени схемы\\\hline 
+	MaxStatementLength & int & Максимальное количество символов, которое допускается в операторе SQL; 0 означает, что нет предела или лимит не известен\\\hline 
+	MaxStatements & int & Максимальное количество активных операторов, которые могут быть открыты одновременно; 0 означает, что нет предела или лимит не известен\\\hline 
+	MaxTableNameLength & int & Допустимое количество символов в имени таблицы; 0 означает, что нет предела или лимит не известен\\\hline 
+	MaxTablesInSelect & int & Максимальное количество таблиц, разрешенных в операторе \ttt{SELECT}; 0 означает, что нет предела или лимит не известен\\\hline 
+	MaxUserNameLength & int & Допустимое количество символов в имени пользователя; 0 означает, что нет предела или лимит не известен\\\hline 
+	nullPlusNonNullIsNull & boolean & Будет ли результат равным NULL при конкатенации значений NULL и не-NULL\\\hline 
+	nullsAreSortedAtEnd & boolean & Будут ли значения NULL отсортированы в конце независимо от порядка сортировки\\\hline 
+	nullsAreSortedAtStart & boolean & Будут ли значения NULL отсортированы в начале независимо от порядка сортировки\\\hline 
+	nullsAreSortedHigh & boolean & При сортировке значения NULL будут выводиться в начале\\\hline 
+	nullsAreSortedLow & boolean & При сортировке значения NULL будут выводиться в конце\\\hline 
+	NumericFunctions & String & Математические функции\\\hline 
+	ProcedureTerm & String & Термин, обозначающий хранимую процедуру\\\hline 
+	ResultSetHoldability & int & Значение параметра holdability для объектов ResultSet по умолчанию: \ttt{HOLD\_CURSORS\_OVER\_COMMIT} (курсоры ResultSet остаются открытыми при вызове метода \ttt{commit}) или \ttt{CLOSE\_CURSORS\_AT\_COMMIT} (курсоры ResultSet закрываются при вызове метода \ttt{commit})\\\hline 
+	SearchStringEscape & String & Строка для экранирования специальных символов. Таких как  \rr{\ttt{\_}} или \rr{\ttt{\%}}, используемых в шаблонах \\\hline 
+	SQLKeywords & String &  Список всех ключевых слов SQL СУБД, которые НЕ являются также ключевыми словами SQL:2003\\\hline 
+	SQLStateType & int & Тип \ttt{SQLSTATE: sqlStateXOpen} или \ttt{sqlStateSQL}\\\hline 
+	storesLowerCaseIdentifiers & boolean & Идентификаторы, не заключенные в кавычки, не чувствительны к регистру и сохраняются в нижнем регистре \\\hline 
+	storesLowerCaseQuoted
+	
+	Identifiers & boolean & Идентификаторы, заключенные в кавычки, не чувствительны к регистру и сохраняются в нижнем регистре\\\hline 
+	storesMixedCaseIdentifiers & boolean &  Идентификаторы, не заключенные в кавычки, не чувствительны к регистру и сохраняются в смешанном регистре\\\hline 
+	storesMixedCaseQuoted
+	
+	Identifiers & boolean & Идентификаторы, заключенные в кавычки, не чувствительны к регистру и сохраняются в смешанном регистре\\\hline 
+	storesUpperCaseIdentifiers & boolean & Идентификаторы, не заключенные в кавычки, не чувствительны к регистру и сохраняются в верхнем регистре\\\hline 
+	storesUpperCaseQuoted
+	
+	Identifiers & boolean & Идентификаторы, заключенные в кавычки, не чувствительны к регистру и сохраняются в верхнем регистре\\\hline 
+	StringFunctions & String & Строковые функции\\\hline 
+	supportsAlterTableWithAdd
+	
+	Column & boolean & Можно ли добавлять новый столбец при изменении существующей таблицы\\\hline 
+	supportsAlterTableWithDrop
+	
+	Column & boolean & Можно ли удалять столбец при изменении существующей таблицы\\\hline 
+	supportsANSI92EntryLevelSQL & boolean & Поддерживает ли эта СУБД SQL-стандарт ANSI92 начального уровня\\\hline 
+	supportsANSI92FullSQL & boolean & Поддерживает ли эта СУБД SQL-стандарт ANSI92 полностью\\\hline 
+	supportsANSI92Intermediate
+	
+	SQL & boolean & Поддерживает ли эта СУБД SQL-стандарт ANSI92 среднего уровня\\\hline 
+	supportsBatchUpdates & boolean & Поддерживает ли эта база данных пакетные обновления.\\\hline 
+	supportsCatalogsInData
+	
+	Manipulation & boolean & Можно ли использовать имя каталога в DML-запросе\\\hline 
+	supportsCatalogsInIndex
+	
+	Definitions & boolean & Можно ли использовать имя каталога в операторе создания индекса\\\hline 
+	supportsCatalogsInPrivilege
+	
+	Definitions & boolean & Можно ли использовать имя каталога в операторе назначения привилегий\\\hline 
+	supportsCatalogsInProcedure
+	
+	Calls & boolean &  Можно ли использовать имя каталога в операторе вызова процедуры \\\hline 
+	supportsCatalogsInTable
+	
+	Definitions & boolean & Можно ли использовать имя каталога в операторе создания таблицы \\\hline 
+	supportsColumnAliasing & boolean & Можно ли давать псевдонимы столбцам \\\hline 
+	supportsConvert & boolean & Поддерживает ли эта СУБД скалярную функцию JDBC \ttt{CONVERT} для преобразования одного типа JDBC в другой. Типы JDBC - это общие типы данных SQL, определенные в \ttt{java.sql.Types}\\\hline 
+	supportsCoreSQLGrammar & boolean & Поддерживает ли СУБД базовый синтаксис ODBC (Core SQL Grammar)\\\hline 
+	supportsCorrelatedSubqueries & boolean & Поддерживает ли эта СУБД коррелированные подзапросы.\\\hline 
+	supportsDataDefinitionAnd
+	
+	DataManipulationTransactions & boolean & Поддерживает ли СУБД и DDL- и DML-запросы в транзакциях\\\hline 
+	supportsDataManipulation
+	
+	TransactionsOnly & boolean & Поддерживает ли СУБД только DML-запросы в транзакциях\\\hline 
+	supportsDifferentTable
+	
+	CorrelationNames & boolean & Псевдонимы таблиц (если они поддерживаются СУБД) должны отличаться от настоящих имен таблиц \\\hline 
+	supportsExpressionsInOrderBy & boolean & Поддерживает ли эта база данных выражения в списках \ttt{ORDER BY}\\\hline 
+	supportsExtendedSQLGrammar & boolean & Поддерживает ли СУБД расширенный синтаксис ODBC (Extended SQL Grammar)\\\hline 
+	supportsFullOuterJoins & boolean & Поддерживает ли СУБД полные внешние соединения\\\hline 
+	supportsGetGeneratedKeys & boolean & Retrieves whether auto-generated keys can be retrieved after a statement has been executed\\\hline 
+	supportsGroupBy & boolean & Поддерживает ли эта СУБД какую-либо форму предложения \ttt{GROUP BY}\\\hline 
+	supportsGroupByBeyondSelect & boolean & Можно ли использовать столбцы, не включенные в \ttt{GROUP BY}, если все столбцы в операторе \ttt{SELECT} включены в \ttt{GROUP BY}\\\hline 
+	supportsGroupByUnrelated & boolean & Можно ли использовать столбец, который не находится в инструкции \ttt{SELECT} в предложении \ttt{GROUP BY}\\\hline 
+	supportsIntegrityEnhancement
+	
+	Facility & boolean & Поддерживает ли СУБД SQL Integrity Enhancement Facility\\\hline 
+	supportsLikeEscapeClause & boolean & Поддерживает ли СУБД предложение \ttt{LIKE ... ESCAPE}\\\hline 
+	supportsLimitedOuterJoins & boolean & Поддерживает ли СУБД ограниченные внешние соединения(\ttt{true}, если \ttt{supportsFullOuterJoins=true})\\\hline 
+	supportsMinimumSQLGrammar & boolean & Поддерживает ли СУБД минимальный синтаксис ODBC (Minimum SQL Grammar)\\\hline 
+	supportsMixedCaseIdentifiers & boolean &  Идентификаторы, не заключенные в кавычки, чувствительны к регистру и сохраняются в смешанном регистре\\\hline 
+	supportsMixedCaseQuoted
+	
+	Identifiers & boolean & Идентификаторы, заключенные в кавычки, чувствительны к регистру и сохраняются в смешанном регистре\\\hline 
+	supportsMultipleOpenResults & boolean & Возможно одновременное использование нескольких объектов ResultSet, возвращаемых из объекта \ttt{CallableStatement} \\\hline 
+	supportsMultipleResultSets & boolean & СУБД поддерживает получение нескольких объектов ResultSet из одного вызова метода \ttt{execute}\\\hline 
+	supportsMultipleTransactions & boolean & СУБД позволяет сразу открывать несколько транзакций (в разных соединениях)\\\hline 
+	supportsNamedParameters & boolean & Поддерживает ли СУБД именованные параметры\\\hline 
+	supportsNonNullableColumns & boolean & Столбцы могут быть обозначены как не-NULL\\\hline 
+	supportsOpenCursorsAcross
+	
+	Commit & boolean & СУБД сохраняет курсоры открытыми между коммитами\\\hline 
+	supportsOpenCursorsAcross
+	
+	Rollback & boolean & СУБД сохраняет курсоры открытыми между откатами\\\hline 
+	supportsOpenStatementsAcross
+	
+	Commit & boolean & СУБД сохраняет операторы открытыми между коммитами\\\hline 
+	supportsOpenStatementsAcross
+	
+	Rollback & boolean & СУБД сохраняет операторы открытыми между откатами\\\hline 
+	supportsOrderByUnrelated & boolean & Можно ли использовать столбец, который не находится в инструкции \ttt{SELECT} в предложении \ttt{ORDER BY} \\\hline 
+	supportsOuterJoins & boolean &  Поддерживает ли СУБД внешние соединения\\\hline 
+	supportsPositionedDelete & boolean & Поддерживает ли эта база данных позиционные операторы \ttt{DELETE} \\\hline 
+	supportsPositionedUpdate & boolean & Поддерживает ли эта база данных позиционные операторы \ttt{UPDATE} \\\hline 
+	supportsRefCursors & boolean & ---\\\hline 
+	supportsSavepoints & boolean & Поддерживает ли СУБД точки сохранения\\\hline 
+	supportsSchemasInData
+	
+	Manipulation & boolean & Можно ли использовать имя схемы в DML-операторе \\\hline 
+	supportsSchemasInIndex
+	
+	Definitions & boolean & Можно ли использовать имя схемы в операторе создания индекса\\\hline 
+	supportsSchemasInPrivilege
+	
+	Definitions & boolean & Можно ли использовать имя схемы в операторе назначения привилегий \\\hline 
+	supportsSchemasInProcedure
+	
+	Calls & boolean & Можно ли использовать имя схемы в операторе вызова процедуры\\\hline 
+	supportsSchemasInTable
+	
+	Definitions & boolean & Можно ли использовать имя схемы в операторе создания таблицы \\\hline 
+	supportsSelectForUpdate & boolean & Поддерживает ли СУБД инструкции \ttt{SELECT FOR UPDATE}\\\hline  
+	supportsStatementPooling & boolean & Поддерживает ли СУБД кэширование запросов \\\hline 
+	supportsStoredFunctionsUsing
+	
+	CallSyntax & boolean & this database supports invoking user-defined or vendor functions using the stored procedure escape syntax.\\\hline 
+	supportsStoredProcedures & boolean & Поддерживает ли СУБД хранимые процедуры\\\hline 
+	supportsSubqueriesIn
+	
+	Comparisons & boolean & Поддерживает ли СУБД подзапросы в выражениях сравнения\\\hline 
+	supportsSubqueriesInExists & boolean & Поддерживает ли СУБД подзапросы в выражениях \ttt{EXISTS} \\\hline 
+	supportsSubqueriesInIns & boolean & Поддерживает ли СУБД подзапросы в выражениях \ttt{IN} \\\hline 
+	supportsSubqueriesIn
+	
+	Quantifieds & boolean & Поддерживает ли СУБД подзапросы в кванторах \\\hline 
+	supportsTableCorrelationNames & boolean &  СУБД поддерживает создание псевдонимов для таблиц \\\hline 
+	supportsTransactions & boolean & Поддерживает ли СУБД транзакции. Если нет, вызов метода \ttt{commit} - холостой, а уровень изоляции - \ttt{TRANSACTION\_NONE}\\\hline 
+	supportsUnion & boolean & Поддерживает ли СУБД объединение таблиц\\\hline 
+	supportsUnionAll & boolean &  Поддерживает ли СУБД объединение таблиц с дубликатами строк на выходе (\ttt{UNION ALL})\\\hline 
+	SystemFunctions & String & Список системных функций\\\hline 
+	TimeDateFunctions & String & Список функций для работы с датой и временем\\\hline 
+	toString & String & --- \\\hline 
+	URL & String & URL-адрес подключения\\\hline 
+	UserName & String & Имя подключившегося пользователя\\\hline 
+	usesLocalFilePerTable & boolean & Использует ли СУБД файл для каждой таблицы\\\hline 
+	usesLocalFiles & boolean & Хранит ли СУБД таблицы в локальном файле\\\hline 
+\end{longtable}	

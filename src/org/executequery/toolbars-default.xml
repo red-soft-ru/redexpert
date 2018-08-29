@@ -178,41 +178,6 @@
 
     </toolbar>
 
-    <toolbar name="Browser Tools" visible="true">
-
-        <constraints>
-
-            <row>0</row>
-            <position>3</position>
-            <loc-x>-1</loc-x>
-            <resize-offset-x>-1</resize-offset-x>
-            <minimum-width>-1</minimum-width>
-            <preferred-width>-1</preferred-width>
-            <current-width>0</current-width>
-
-        </constraints>
-
-        <buttons>
-
-            <button id="37" action-id="insert-row-command">
-                <visible>true</visible>
-                <order>0</order>
-            </button>
-
-            <button id="38" action-id="delete-row-command">
-                <visible>true</visible>
-                <order>1</order>
-            </button>
-
-            <button id="39" action-id="drop-object-command">
-                <visible>true</visible>
-                <order>2</order>
-            </button>
-
-        </buttons>
-
-    </toolbar>
-
     <toolbar name="Database Tools" visible="true">
 
         <constraints>
@@ -259,16 +224,6 @@
                 <visible>true</visible>
                 <order>9</order>
             </button>-->
-
-            <button id="21" action-id="create-table-command">
-                <visible>true</visible>
-                <order>3</order>
-            </button>
-
-            <button id="23" action-id="create-index-command">
-                <visible>true</visible>
-                <order>4</order>
-            </button>
 
             <button id="22" action-id="generate-scripts-command">
                 <visible>true</visible>

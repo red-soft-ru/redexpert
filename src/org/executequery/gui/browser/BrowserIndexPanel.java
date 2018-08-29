@@ -133,9 +133,11 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
         tableField = new DisabledField();
         uniqueCheckBox = new JCheckBox(bundleString("Unique"));
+        uniqueCheckBox.setEnabled(false);
         uniqueCheckBox.setSelected(false);
         activeCheckBox = new JCheckBox(bundleString("Active"));
         activeCheckBox.setSelected(false);
+        activeCheckBox.setEnabled(false);
         sortingComboBox = new DefaultComboBox();
         List<String> sorting = new ArrayList<>();
         sorting.add(bundleString("Ascending"));

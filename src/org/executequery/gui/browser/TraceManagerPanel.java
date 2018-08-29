@@ -157,6 +157,11 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     portField.setText(dc.getPort());
                     sessionField.setText(dc.getName() + "_trace_session");
                     charsetCombo.setSelectedItem(dc.getCharset());
+                    if (dc.getServerVersion() >= 3) {
+                        confPanel.getAppropriationBox().setSelectedIndex(1);
+                    } else {
+                        confPanel.getAppropriationBox().setSelectedIndex(0);
+                    }
                 }
             }
         });

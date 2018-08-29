@@ -196,6 +196,10 @@ public interface DatabaseConnection extends Serializable {
     DatabaseConnection withNewId();
 
     List<String> getListObjectsDB();
+
+    int getServerVersion();
+
+    void setServerVersion(int serverVersion);
 }
 
 

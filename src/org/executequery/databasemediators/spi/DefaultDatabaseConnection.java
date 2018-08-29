@@ -185,6 +185,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     private transient PasswordEncoderDecoder encoderDecoder;
 
+    private int serverVersion;
+
     /**
      * Creates a new empty <code>DatabaseConnection</code> object.
      */
@@ -556,6 +558,7 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         copy.setContainerPassword(getContainerPassword());
         copy.setContainerPasswordStored(isContainerPasswordStored());
         copy.setVerifyServerCertCheck(isVerifyServerCertCheck());
+        copy.setServerVersion(getServerVersion());
 
         return copy;
     }
@@ -666,6 +669,16 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         addingChild(list, host);
         return list;
 
+    }
+
+    @Override
+    public int getServerVersion() {
+        return serverVersion;
+    }
+
+    @Override
+    public void setServerVersion(int serverVersion) {
+        this.serverVersion = serverVersion;
     }
 
     private void addingChild(List<String> list, DatabaseObjectNode root) {

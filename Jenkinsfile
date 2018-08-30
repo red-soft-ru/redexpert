@@ -66,7 +66,7 @@ node('jdk18&&linux&&builder&&x86_64&&mvn')
             mkdir dist
             mkdir dist/bin
             mkdir dist/lib
-            mkdir dist/docs
+            mkdir dist/guide
             mkdir dist/license
             mkdir dist/config
             cd native/RedExpertNativeLauncher
@@ -79,7 +79,7 @@ node('jdk18&&linux&&builder&&x86_64&&mvn')
             mvn package
             cp -r native/bin dist/
             cp -r modules/redexpert/target/lib dist/
-            cp -r docs/ dist/
+            cp -r guide/ dist/
             cp -r license/ dist/
             cp -r config/ dist/
             cp red_expert.png dist/
@@ -113,7 +113,7 @@ node('jdk18&&windows&&builder&&x86_64')
             mkdir dist\\bin\\
             mkdir dist\\bin\\platforms\\
             mkdir dist\\lib\\
-            mkdir dist\\docs\\
+            mkdir dist\\guide\\
             mkdir dist\\license\\
             mkdir dist\\config\\
             cd native\\RedExpertNativeLauncher

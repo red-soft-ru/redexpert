@@ -23,6 +23,7 @@ package org.executequery.actions.helpcommands;
 import org.executequery.actions.AbstractUrlLauncherCommand;
 import org.underworldlabs.util.MiscUtils;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -35,15 +36,26 @@ import java.net.URL;
 public class HelpCommand extends AbstractUrlLauncherCommand {
 
     private static final String URL = "guide/RedExpert_Guide-ru.pdf";
+    private static final String URL2 = "../guide/RedExpert_Guide-ru.pdf";
 
     @Override
     public String url() {
         java.net.URL[] urls = new URL[0];
-        try {
-            urls = MiscUtils.loadURLs(URL);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+        File file = new File(URL);
+        if (file.exists()) {
+            try {
+                urls = MiscUtils.loadURLs(URL);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                urls = MiscUtils.loadURLs(URL2);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
         }
+
         return urls[0].toString();
     }
 

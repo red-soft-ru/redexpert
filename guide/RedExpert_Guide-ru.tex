@@ -515,14 +515,17 @@ Red Expert позволяет одновременно использовать 
 \begin{itemize}
 	\item Настраиваемая подсветка синтаксиса SQL;
 	\item Согласованность скобок;
+	\item Подсказки ключевых слов и имен объектов базы данных по нажатию \ttt{Ctrl+Space};
 	\item Выполнение нескольких запросов;
-	\item Выполнение и отображение нескольких запросов с множеством результатов (Result Set);
+	\item Выполнение и отображение нескольких запросов с множеством результатов (\hyperref[sec:resultset]{Result Set});
+	\item Поддержка \hyperref[sec:param_queries]{параметризованных запросов};
 	\item Полная поддержка печати;
 	\item Управление транзакциями;
 	\item Функции текстового редактора стиля IDE - поиск, замена, вставка и т.д.;
 	\item Экспорт результатов;
 	\item Поддержка нескольких открытых соединений;
-	\item Поисковая исполняемая история SQL-запросов.
+	\item Поисковая исполняемая \hyperref[sec:query_history]{история} SQL-запросов;
+	\item Быстрый переход из редактора к просмотру объекта базы данных двойным кликом или нажатием \ttt{CTRL + Левая клавиша мыши} по имени объекта.
 \end{itemize}
 
 \anonsubsection{Панель инструментов}
@@ -641,7 +644,7 @@ Red Expert позволяет одновременно использовать 
 
 Содержимое окна вывода редактора может сохраняться в файл. Для это откройте настройки редактора (\textit{Инструменты}$\rightarrow$\textit{Настройки}$\rightarrow$\textit{Editor}) и поставьте галочку напротив параметра «\ttt{Log output to file}». А в качестве значения параметра  «\ttt{Output log file path}» укажите путь к лог-файлу, в который будет записываться вывод.
 
-\anonsubsubsection{Result Set}
+\anonsubsubsection{Result Set}\label{sec:resultset}
 
 Если результатом запроса является Result Set, то он отображается в отдельной вкладке на панели вывода. Если таких запросов несколько, то для каждого создается своя вкладка в порядке выполнения.
 
@@ -667,7 +670,37 @@ Red Expert позволяет одновременно использовать 
 	\end{redremark}
 \end{itemize}
 
-\anonsubsection{История запросов}
+\anonsubsection{Параметризованные запросы}\label{sec:param_queries}
+
+В некоторых случаях нужно создать запрос, который можно использовать многократно, но каждый раз с разными «входными» значениями. Например, можно написать несколько запросов, чтобы найти данные о сотруднике с определенной фамилией. А можно написать один запрос, меняя только фамилию сотрудника.
+
+Чтобы создать запрос, который в разное время может иметь разные «входные» данные, используются параметры запроса. Параметры могут быть именованными или неименованными. Неименованный параметр — это вопросительный знак («?»), который можно подставлять в любое место запроса, вместо литерального значения. Например:
+
+\begin{redexample}\ttfamily
+SELECT * FROM employees WHERE (surname = ?)  
+\end{redexample}
+
+Запустив на выполнение такой запрос в редакторе запросов, на экране появится диалоговое окно для ввода значения параметра (фамилии сотрудника):
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width = 0.4\linewidth]{img/input_param.png}
+\end{figure}
+
+Именованные параметры -- это комбинация двоеточия и имени параметра (\ttt{:<paramname>}), которую также можно подставлять вместо литерального значения. Именованные параметры особенно полезны, если в запросе имеется несколько параметров. Например:
+
+\begin{redexample}\ttfamily
+	SELECT * FROM employees WHERE (surname = :surname AND name =:name)  
+\end{redexample}
+
+Запустив на выполнение такой запрос в редакторе запросов, на экране появится диалоговое окно для ввода значений параметров (фамилии и имени сотрудника):
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width = 0.4\linewidth]{img/input_param2.png}
+\end{figure}
+
+\anonsubsection{История запросов}\label{sec:query_history}
 
 После успешного выполнения любого запроса, он сохраняется в кеше журнала редактора для последующего удобного поиска поиска. Количество хранящихся в истории запросов указывается в настройках редактора. Сохраненные запросы не теряются после перезапуска приложения или редактора запросов
 
@@ -2071,70 +2104,77 @@ ER-диаграмма визуализирует табличные связи, 
 
 \anonsubsection{Панель Подключения}
 
-На боковой панели \textit{Подключения} отображены имена всех ранее устанавливаемых соединений. После подключения к базе данных на этой панели появляется структура дерева, узлы которого представляют собой объекты базы данных:
+На боковой панели \textit{Подключения} отображены имена всех ранее устанавливаемых соединений (см. раздел \hyperref[sec:connections]{«Подключение к базе данных»}). 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width = 0.55\linewidth]{img/connections.png}
+\end{figure}
+
+После подключения к базе данных на этой панели появляется структура дерева, узлы которого представляют собой объекты базы данных:
+
+\ 
 
 \begin{longtable}[c]{|m{5mm}|m{6cm}|m{5mm}|m{8cm}|}
 	\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/TableIndex16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ИНДЕКСЫ & 
-	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/exception16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ИСКЛЮЧЕНИЯ \\\hline
+	\end{tikzpicture} & ИНДЕКСЫ & \begin{tikzpicture}
+	\pgftext{\includegraphics[width=12pt]{img/udf16.png}} at (0pt,0pt)
+	\end{tikzpicture} & ВНЕШНИЕ ФУНКЦИИ
+	\\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/Procedure16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ПРОЦЕДУРЫ & 
-	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/udf16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ВНЕШНИЕ ФУНКЦИИ \\\hline
+	\end{tikzpicture} & ПРОЦЕДУРЫ & \begin{tikzpicture}
+	\pgftext{\includegraphics[width=12pt]{img/Function16.png}} at (0pt,0pt)
+	\end{tikzpicture} & ФУНКЦИИ
+	 \\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/Sequence16.png}} at (0pt,0pt)
 	\end{tikzpicture} & ГЕНЕРАТОРЫ & 
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/GlobalTable16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ГЛОБАЛЬНЫЕ ВРЕМЕННЫЕ ТАБЛИЦЫ \\\hline
+\end{tikzpicture} & ГЛОБАЛЬНЫЕ ВРЕМЕННЫЕ ТАБЛИЦЫ \\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/PlainTable16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ТАБЛИЦЫ & 
-	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/user_manager_16.png}} at (0pt,0pt)
-	\end{tikzpicture} & РОЛИ \\\hline
+	\end{tikzpicture} & ТАБЛИЦЫ & \begin{tikzpicture}
+	\pgftext{\includegraphics[width=12pt]{img/package16.png}} at (0pt,0pt)
+	\end{tikzpicture} & ПАКЕТЫ
+	 \\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/Trigger.png}} at (0pt,0pt)
-	\end{tikzpicture} & ТРИГГЕРЫ & 
-	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/SystemTable16.png}} at (0pt,0pt)
-	\end{tikzpicture} & СИСТЕМНЫЕ ТАБЛИЦЫ \\\hline
+	\end{tikzpicture} & ТРИГГЕРЫ & \begin{tikzpicture}
+	\pgftext{\includegraphics[width=12pt]{img/user_manager_16.png}} at (0pt,0pt)
+	\end{tikzpicture} & РОЛИ
+	\\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/SystemDatabaseTrigger.png}} at (0pt,0pt)
-	\end{tikzpicture} & ТРИГГЕРЫ БАЗЫ ДАННЫХ & 
-	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/SystemDomain16.png}} at (0pt,0pt)
-	\end{tikzpicture} & СИСТЕМНЫЕ ДОМЕНЫ \\\hline
+	\end{tikzpicture} & ТРИГГЕРЫ 	БАЗЫ ДАННЫХ & \begin{tikzpicture}
+	\pgftext{\includegraphics[width=12pt]{img/SystemTable16.png}} at (0pt,0pt)
+	\end{tikzpicture} & СИСТЕМНЫЕ ТАБЛИЦЫ 
+	 \\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/TableView16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ПРЕДСТАВЛЕНИЯ & 
-	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/SystemIndex16.png}} at (0pt,0pt)
-	\end{tikzpicture} & СИСТЕМНЫЕ ИНДЕКСЫ \\\hline
+	\end{tikzpicture} & ПРЕДСТАВЛЕНИЯ & \begin{tikzpicture}
+	\pgftext{\includegraphics[width=12pt]{img/SystemDomain16.png}} at (0pt,0pt)
+	\end{tikzpicture} & СИСТЕМНЫЕ ДОМЕНЫ
+	 \\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/domain16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ДОМЕНЫ & 
+	\end{tikzpicture} & ДОМЕНЫ & \begin{tikzpicture}
+	\pgftext{\includegraphics[width=12pt]{img/SystemIndex16.png}} at (0pt,0pt)
+	\end{tikzpicture} & СИСТЕМНЫЕ ИНДЕКСЫ
+	\\\hline
 	\begin{tikzpicture}
+	\pgftext{\includegraphics[width=12pt]{img/exception16.png}} at (0pt,0pt)
+	\end{tikzpicture} & ИСКЛЮЧЕНИЯ & \begin{tikzpicture}
 	\pgftext{\includegraphics[width=12pt]{img/SystemTrigger.png}} at (0pt,0pt)
 	\end{tikzpicture} & СИСТЕМНЫЕ ТРИГГЕРЫ \\\hline
 \end{longtable}
 
 Щелчок правой кнопкой мыши на любом узле вызовет всплывающее меню с доступными действиями. Оно включает в себя перезагрузку выбранного узла, экспорт данных узла (в случае таблиц), редактирование, повторное использование соединения и закрытие соединения.
 
-Двойной клик по узлу откроет вкладку на главной панели с детальным описанием каждого объекта. Например, двойной клик по узлу с названием конкретной процедуры отобразит таблицу с ее входными и выходными параметрами, их типами, тело процедуры и SQL команду создания этой процедуры.
+Двойной клик по узлу откроет вкладку на главной панели с детальным описанием каждого объекта (см. раздел \hyperref[sec:objects]{«Объекты»}). Например, двойной клик по узлу с названием конкретной процедуры отобразит таблицу с ее входными и выходными параметрами, их типами, тело процедуры и SQL команду создания этой процедуры.
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width = 0.55\linewidth]{img/connections.png}
-\end{figure}
-
-Дополнительную информацию см. в разделе \hyperref[sec:connections]{«Подключение к базе данных»}.
 
 \anonsubsection{Ключевые слова}
 
@@ -2312,7 +2352,7 @@ ER-диаграмма визуализирует табличные связи, 
 
 \anonsubsection{Look \& Feel Plugins}
 
-В этом разделе настроек можно установить плагин с новой темой приложения. И в дальнейшем активировать ее в разделе \textit{Display}.
+В этом разделе настроек можно установить плагин с новой темой приложения. И в дальнейшем активировать ее в разделе настроек \textit{Display}.
 
 \anonsubsection{Tool Bar}\label{sec:pref_toolbar}
 

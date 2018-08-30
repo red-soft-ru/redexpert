@@ -318,7 +318,7 @@
             accel-key=""
             accel-editable="false"
             small-icon="/org/executequery/icons/ContextualHelp16.png"
-            execute-class="org.executequery.actions.othercommands.ErdHelpCommand"/>
+            execute-class="org.executequery.actions.helpcommands.HelpCommand"/>
 
     <action id="execute-command"
             name="Execute"
@@ -339,7 +339,7 @@
             accel-key=""
             accel-editable="false"
             small-icon="/org/executequery/icons/ContextualHelp16.png"
-            execute-class="org.executequery.actions.queryeditor.EditorHelpCommand"/>
+            execute-class="org.executequery.actions.helpcommands.HelpCommand"/>
 
     <action id="editor-refresh-autocomplete-command"
             name=" Query Editor Refresh Autocomplete List"

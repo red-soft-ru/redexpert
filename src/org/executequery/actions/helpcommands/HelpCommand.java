@@ -20,10 +20,11 @@
 
 package org.executequery.actions.helpcommands;
 
-import org.executequery.gui.HelpWindow;
-import org.underworldlabs.swing.actions.BaseCommand;
+import org.executequery.actions.AbstractUrlLauncherCommand;
+import org.underworldlabs.util.MiscUtils;
 
-import java.awt.event.ActionEvent;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * Executes the Help command.<br>
@@ -31,40 +32,20 @@ import java.awt.event.ActionEvent;
  *
  * @author Takis Diakoumis
  */
-public class HelpCommand implements BaseCommand {
+public class HelpCommand extends AbstractUrlLauncherCommand {
 
-    /**
-     * Document help target ID
-     */
-    private String target;
+    private static final String URL = "guide/RedExpert_Guide-ru.pdf";
 
-    public HelpCommand() {
-    }
-
-    public HelpCommand(String page) {
-        target = page;
-    }
-
-    public void execute(ActionEvent e) {
-
-        String aCommand = e.getActionCommand();
-
-        if (aCommand != null) {
-
-            if (aCommand.length() > 0) {
-                target = aCommand;
-            }
-            if ("Help Topics".equals(aCommand)) {
-                target = null;
-            }
-
-        } else {
-            target = null;
+    @Override
+    public String url() {
+        java.net.URL[] urls = new URL[0];
+        try {
+            urls = MiscUtils.loadURLs(URL);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
         }
-
-        new HelpWindow(target);
+        return urls[0].toString();
     }
 
 }
-
 

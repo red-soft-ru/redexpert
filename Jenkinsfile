@@ -79,7 +79,7 @@ node('jdk18&&linux&&builder&&x86_64&&mvn')
             mvn package
             cp -r native/bin dist/
             cp -r modules/redexpert/target/lib dist/
-            cp -r guide/ dist/
+            cp -r guide/*.pdf dist/
             cp -r license/ dist/
             cp -r config/ dist/
             cp red_expert.png dist/

@@ -39,12 +39,15 @@ public class HelpCommand extends AbstractUrlLauncherCommand {
     @Override
     public String url() {
         java.net.URL[] urls = new URL[0];
-        try {
-            urls = MiscUtils.loadURLs(URL);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        return urls[0].toString();
+
+            try {
+                urls = MiscUtils.loadURLs(URL);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        String url = urls[0].toString();
+        url = url.replace("bin/guide/RedExpert_Guide-ru.pdf", "guide/RedExpert_Guide-ru.pdf");
+        return url;
     }
 
 }

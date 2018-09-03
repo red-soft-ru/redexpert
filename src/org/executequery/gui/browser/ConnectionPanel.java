@@ -29,7 +29,6 @@ import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.ConnectionTester;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.datasource.ConnectionManager;
-import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.event.*;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.FormPanelButton;
@@ -61,10 +60,10 @@ import java.awt.event.ItemEvent;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * @author Takis Diakoumis
@@ -308,10 +307,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         JPanel passwordOptionsPanel = new JPanel(new GridBagLayout());
         addComponents(passwordOptionsPanel,
-                new ComponentToolTipPair[]{
-                        new ComponentToolTipPair(savePwdCheck, bundleString("StorePassword.tool-tip")),
-                        new ComponentToolTipPair(encryptPwdCheck, bundleString("EncryptPassword.tool-tip")),
-                        new ComponentToolTipPair(showPassword, bundleString("ShowPassword.tool-tip"))});
+                new ComponentToolTipPair(savePwdCheck, bundleString("StorePassword.tool-tip")),
+                new ComponentToolTipPair(encryptPwdCheck, bundleString("EncryptPassword.tool-tip")),
+                new ComponentToolTipPair(showPassword, bundleString("ShowPassword.tool-tip")));
 
         bgbc.gridx = 3;
         bgbc.gridy = 1;
@@ -728,7 +726,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 return nameField.getPreferredSize();
             }
 
-            ;
         };
         formatTextField(textField);
 
@@ -920,7 +917,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
                             bundleString("warning.DataSourceException.level-change") +
                                     e.getMessage() + "\n\n");
                 }
-
             }
 
         } catch (DataSourceException e) {
@@ -1007,12 +1003,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         }
 
-        if (!sshTunnelConnectionPanel.canConnect()) {
-            
-            return false;
-        }
-
-        return true;
+        return sshTunnelConnectionPanel.canConnect();
     }
     
     public void showPassword() {
@@ -1442,7 +1433,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         if (driverIndex > 0) {
 
-            DatabaseDriver driver = (DatabaseDriver) jdbcDrivers.get(driverIndex - 1);
+            DatabaseDriver driver = jdbcDrivers.get(driverIndex - 1);
 
             databaseConnection.setJDBCDriver(driver);
             databaseConnection.setDriverName(driver.getName());

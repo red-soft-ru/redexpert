@@ -14,6 +14,8 @@ import javax.swing.event.UndoableEditListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.sql.Timestamp;
 import java.util.EnumSet;
 
@@ -37,7 +39,6 @@ public class TablePanel extends JPanel {
     }
 
     private void init() {
-        columnsCheckPanel = new ColumnsCheckPanel();
         comboBoxFilterType = new JComboBox<>();
         comboBoxFilterColumn = new JComboBox<>();
         txtFldSqlFilter = new JTextField();
@@ -48,9 +49,9 @@ public class TablePanel extends JPanel {
         comboBoxFilterColumn.setModel(dynamicComboBoxModel);
         dataModel = new ResultSetDataModel(columnsCheckPanel.getCheckBoxMap(), comboBoxFilterType, comboBoxFilterColumn, comboBoxRawSql, txtFldSqlFilter);
         for (JCheckBox checkBox : columnsCheckPanel.getCheckBoxMap().values()) {
-            checkBox.addActionListener(new ActionListener() {
+            checkBox.addItemListener(new ItemListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void itemStateChanged(ItemEvent e) {
                     dataModel.rebuildModel();
                     dataModel.fireTableStructureChanged();
                 }
@@ -177,19 +178,9 @@ public class TablePanel extends JPanel {
             }
         });
 
-        JButton hideShowColumnsButton = new JButton("Hide columns");
-        hideShowColumnsButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                columnsCheckPanel.setVisible(!columnsCheckPanel.isVisible());
-                if (hideShowColumnsButton.getText().contentEquals("Hide columns"))
-                    hideShowColumnsButton.setText("Show columns");
-                else hideShowColumnsButton.setText("Hide columns");
-            }
-        });
         //topPanel.add(hideShowColumnsButton, new GridBagConstraints(0, 1, 1, 1, 0, 0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
 
-        columnsCheckPanel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Columns",
+        /*columnsCheckPanel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Columns",
                 TitledBorder.LEADING, TitledBorder.TOP, null, null));
         GridBagConstraints gbc_typeEventPanel = new GridBagConstraints();
         gbc_typeEventPanel.fill = GridBagConstraints.BOTH;
@@ -200,7 +191,7 @@ public class TablePanel extends JPanel {
         gbc_typeEventPanel.gridheight = 1;
         gbc_typeEventPanel.weightx = 0;
         gbc_typeEventPanel.weighty = 0;
-        gbc_typeEventPanel.anchor = GridBagConstraints.NORTHWEST;
+        gbc_typeEventPanel.anchor = GridBagConstraints.NORTHWEST;*/
         //topPanel.add(columnsCheckPanel, gbc_typeEventPanel);
 
 

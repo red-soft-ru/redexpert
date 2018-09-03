@@ -21,6 +21,7 @@
 package org.executequery.actions.queryeditor;
 
 import org.executequery.GUIUtilities;
+import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.editor.SQLHistoryDialog;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.repository.SqlCommandHistoryRepository;
@@ -43,8 +44,12 @@ public class HistoryCommand extends AbstractQueryEditorCommand {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
 
+                    String id;
+                    if (queryEditor().getSelectedConnection() == null)
+                        id = QueryEditorHistory.NULL_CONNECTION;
+                    else id = queryEditor().getSelectedConnection().getId();
                     Vector<String> history =
-                            sqlCommandHistoryRepository().getSqlCommandHistory(queryEditor().getSelectedConnection().getId());
+                            sqlCommandHistoryRepository().getSqlCommandHistory(id);
 
                     if (history == null || history.isEmpty()) {
 

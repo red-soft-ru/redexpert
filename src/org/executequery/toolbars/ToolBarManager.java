@@ -114,7 +114,6 @@ public class ToolBarManager extends DefaultToolBarManager
         buildToolBar(DATABASE_TOOLS, rebuild);
         buildToolBar(IMPORT_EXPORT_TOOLS, rebuild);
         buildToolBar(SYSTEM_TOOLS, rebuild);
-        buildToolBar(BROWSER_TOOLS, rebuild);
 
         if (rebuild) {
 

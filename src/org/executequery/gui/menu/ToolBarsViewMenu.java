@@ -87,7 +87,6 @@ public class ToolBarsViewMenu extends AbstractOptionsMenu
         actionCommandToToolBarNameMap.put("viewEditTools", ToolBarManager.EDIT_TOOLS);
         actionCommandToToolBarNameMap.put("viewSearchTools", ToolBarManager.SEARCH_TOOLS);
         actionCommandToToolBarNameMap.put("viewDatabaseTools", ToolBarManager.DATABASE_TOOLS);
-        actionCommandToToolBarNameMap.put("viewBrowserTools", ToolBarManager.BROWSER_TOOLS);
         actionCommandToToolBarNameMap.put("viewImportExportTools", ToolBarManager.IMPORT_EXPORT_TOOLS);
         actionCommandToToolBarNameMap.put("viewSystemTools", ToolBarManager.SYSTEM_TOOLS);
 

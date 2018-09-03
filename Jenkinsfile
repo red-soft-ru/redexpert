@@ -74,7 +74,7 @@ node('jdk18&&linux&&builder&&x86_64&&mvn')
             make
             cd ..
             mkdir bin
-            cp RedExpertNativeLauncher/bin/RedExpertNativeLauncher64 bin/
+            cp RedExpertNativeLauncher/bin/RedExpert64 bin/
             cd ..
             mvn package
             cp -r native/bin dist/
@@ -106,7 +106,6 @@ node('jdk18&&windows&&builder&&x86_64')
 
         bat "unzip dist-src\\${archive_prefix}-src.zip"
         withEnv(["JAVA_HOME=${JAVA_HOME_1_8_x64}", "RED_EXPERT_VERSION=${version}", "ARCHIVE_PREFIX=${archive_prefix}"]) {
-            // TODO QT_HOME variable?
             bat '''cd %ARCHIVE_PREFIX%\\
             call "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat" amd64
             mkdir dist
@@ -121,17 +120,9 @@ node('jdk18&&windows&&builder&&x86_64')
             "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\bin\\amd64\\nmake.exe"
             cd ..
             mkdir bin
-            copy RedExpertNativeLauncher\\release\\bin\\RedExpertNativeLauncher64.exe bin\\
-            mkdir bin\\platforms
-            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\plugins\\platforms\\qminimal.dll" bin\\platforms\\
-            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\plugins\\platforms\\qoffscreen.dll" bin\\platforms\\
-            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\plugins\\platforms\\qwindows.dll" bin\\platforms\\
-            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\Qt5Core.dll" bin\\
-            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\Qt5Gui.dll" bin\\
-            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\Qt5Widgets.dll" bin\\
+            copy RedExpertNativeLauncher\\release\\bin\\RedExpert64.exe bin\\
             cd ..
             copy /y native\\bin\\ dist\\bin\\
-            copy /y native\\bin\\platforms\\ dist\\bin\\platforms\\
             copy /y RedExpert.bat dist\\
             move dist ..
             '''

@@ -52,6 +52,34 @@ node('master')
     }
 }
 
+node('jdk18&&linux&&builder&&x86')
+{
+    stage('Build')
+    {
+        deleteDir()
+        unstash 'src'
+        def archive_prefix="RedExpert-${version}"
+
+        sh "tar xf dist-src/${archive_prefix}-src.tar.gz"
+        withEnv(["JAVA_HOME=${JAVA_HOME_1_8}", "RED_EXPERT_VERSION=${version}", "ARCHIVE_PREFIX=${archive_prefix}"]) {
+            sh '''cd ${ARCHIVE_PREFIX}
+            mkdir dist
+            mkdir dist/bin
+            cd native/RedExpertNativeLauncher
+            /usr/bin/qmake-qt5
+            make
+            cd ..
+            mkdir bin
+            cp RedExpertNativeLauncher/bin/RedExpert bin/
+            cd ..
+            cp -r native/bin dist/
+            mv dist ..'''
+        }
+
+        stash includes: 'dist/**', name: 'linux-bin'
+    }
+}
+
 node('jdk18&&linux&&builder&&x86_64&&mvn')
 {
     stage('Build')
@@ -93,6 +121,42 @@ node('jdk18&&linux&&builder&&x86_64&&mvn')
         }
         
         stash includes: 'dist/**', name: 'linux-bin'
+    }
+}
+
+node('jdk18&&windows&&builder&&x86_64')
+{
+    stage('Build')
+    {
+        deleteDir()
+        unstash 'src'
+        def archive_prefix="RedExpert-${version}"
+
+        bat "unzip dist-src\\${archive_prefix}-src.zip"
+        withEnv(["JAVA_HOME=${JAVA_HOME_1_8_x86}", "RED_EXPERT_VERSION=${version}", "ARCHIVE_PREFIX=${archive_prefix}"]) {
+            bat '''cd %ARCHIVE_PREFIX%\\
+            call "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat" x86
+            mkdir dist
+            mkdir dist\\bin\\
+            mkdir dist\\bin\\platforms\\
+            mkdir dist\\lib\\
+            mkdir dist\\guide\\
+            mkdir dist\\license\\
+            mkdir dist\\config\\
+            cd native\\RedExpertNativeLauncher
+            "c:\\Qt\\Qt5.6.3_x86\\5.6.3\\msvc2013\\bin\\qmake.exe"
+            "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\bin\\nmake.exe"
+            cd ..
+            mkdir bin
+            copy RedExpertNativeLauncher\\release\\bin\\RedExpert.exe bin\\
+            cd ..
+            copy /y native\\bin\\ dist\\bin\\
+            copy /y RedExpert.bat dist\\
+            move dist ..
+            '''
+        }
+
+        stash includes: 'dist/**', name: 'windows-bin'
     }
 }
 

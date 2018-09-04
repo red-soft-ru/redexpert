@@ -54,7 +54,7 @@ node('master')
 
 node('jdk18&&linux&&builder&&x86')
 {
-    stage('Build')
+    stage('Build linux x86')
     {
         deleteDir()
         unstash 'src'
@@ -82,7 +82,7 @@ node('jdk18&&linux&&builder&&x86')
 
 node('jdk18&&linux&&builder&&x86_64&&mvn')
 {
-    stage('Build')
+    stage('Build linux x64')
     {
         deleteDir()
         unstash 'src'
@@ -126,7 +126,7 @@ node('jdk18&&linux&&builder&&x86_64&&mvn')
 
 node('jdk18&&windows&&builder&&x86_64')
 {
-    stage('Build')
+    stage('Build windows x86')
     {
         deleteDir()
         unstash 'src'
@@ -162,7 +162,7 @@ node('jdk18&&windows&&builder&&x86_64')
 
 node('jdk18&&windows&&builder&&x86_64')
 {
-    stage('Build')
+    stage('Build windows x64')
     {
         deleteDir()
         unstash 'src'

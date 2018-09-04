@@ -52,7 +52,7 @@ node('master')
     }
 }
 
-node('jdk18&&linux&&builder&&x86')
+node('jdk18&&linux&&centos-6.5&&builder&&x86')
 {
     stage('Build linux x86')
     {
@@ -80,7 +80,7 @@ node('jdk18&&linux&&builder&&x86')
     }
 }
 
-node('jdk18&&linux&&builder&&x86_64&&mvn')
+node('jdk18&&linux&&centos-6.5&&builder&&x86_64&&mvn')
 {
     stage('Build linux x64')
     {

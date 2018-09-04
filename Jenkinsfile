@@ -76,7 +76,7 @@ node('jdk18&&linux&&builder&&x86')
             mv dist ..'''
         }
 
-        stash includes: 'dist/**', name: 'linux-bin'
+        stash includes: 'dist/**', name: 'linux-bin86'
     }
 }
 
@@ -120,7 +120,7 @@ node('jdk18&&linux&&builder&&x86_64&&mvn')
             mv dist ..'''
         }
         
-        stash includes: 'dist/**', name: 'linux-bin'
+        stash includes: 'dist/**', name: 'linux-bin64'
     }
 }
 
@@ -156,7 +156,7 @@ node('jdk18&&windows&&builder&&x86_64')
             '''
         }
 
-        stash includes: 'dist/**', name: 'windows-bin'
+        stash includes: 'dist/**', name: 'windows-bin86'
     }
 }
 
@@ -192,7 +192,7 @@ node('jdk18&&windows&&builder&&x86_64')
             '''
         }
 
-        stash includes: 'dist/**', name: 'windows-bin'
+        stash includes: 'dist/**', name: 'windows-bin64'
     }
 }
 
@@ -204,8 +204,10 @@ node('master')
         def wd = pwd()
 
         unstash 'src'
-        unstash 'linux-bin'
-        unstash 'windows-bin'
+        unstash 'linux-bin86'
+        unstash 'linux-bin64'
+        unstash 'windows-bin86'
+        unstash 'windows-bin64'
 
         sh "tar xf dist-src/RedExpert-${version}-src.tar.gz"
         sh "VERSION=${version} RedExpert-${version}/ci/package-bin.sh"

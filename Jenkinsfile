@@ -52,9 +52,37 @@ node('master')
     }
 }
 
-node('jdk18&&linux&&builder&&x86_64&&mvn')
+node('jdk18&&linux&&centos-6.5&&builder&&x86')
 {
-    stage('Build')
+    stage('Build linux x86')
+    {
+        deleteDir()
+        unstash 'src'
+        def archive_prefix="RedExpert-${version}"
+
+        sh "tar xf dist-src/${archive_prefix}-src.tar.gz"
+        withEnv(["JAVA_HOME=${JAVA_HOME_1_8}", "RED_EXPERT_VERSION=${version}", "ARCHIVE_PREFIX=${archive_prefix}"]) {
+            sh '''cd ${ARCHIVE_PREFIX}
+            mkdir dist
+            mkdir dist/bin
+            cd native/RedExpertNativeLauncher
+            /usr/bin/qmake-qt5
+            make
+            cd ..
+            mkdir bin
+            cp RedExpertNativeLauncher/bin/RedExpert bin/
+            cd ..
+            cp -r native/bin dist/
+            mv dist ..'''
+        }
+
+        stash includes: 'dist/**', name: 'linux-bin86'
+    }
+}
+
+node('jdk18&&linux&&centos-6.5&&builder&&x86_64&&mvn')
+{
+    stage('Build linux x64')
     {
         deleteDir()
         unstash 'src'
@@ -74,7 +102,7 @@ node('jdk18&&linux&&builder&&x86_64&&mvn')
             make
             cd ..
             mkdir bin
-            cp RedExpertNativeLauncher/bin/RedExpertNativeLauncher64 bin/
+            cp RedExpertNativeLauncher/bin/RedExpert64 bin/
             cd ..
             mvn package
             cp -r native/bin dist/
@@ -92,13 +120,49 @@ node('jdk18&&linux&&builder&&x86_64&&mvn')
             mv dist ..'''
         }
         
-        stash includes: 'dist/**', name: 'linux-bin'
+        stash includes: 'dist/**', name: 'linux-bin64'
     }
 }
 
 node('jdk18&&windows&&builder&&x86_64')
 {
-    stage('Build')
+    stage('Build windows x86')
+    {
+        deleteDir()
+        unstash 'src'
+        def archive_prefix="RedExpert-${version}"
+
+        bat "unzip dist-src\\${archive_prefix}-src.zip"
+        withEnv(["JAVA_HOME=${JAVA_HOME_1_8_x86}", "RED_EXPERT_VERSION=${version}", "ARCHIVE_PREFIX=${archive_prefix}"]) {
+            bat '''cd %ARCHIVE_PREFIX%\\
+            call "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat" x86
+            mkdir dist
+            mkdir dist\\bin\\
+            mkdir dist\\bin\\platforms\\
+            mkdir dist\\lib\\
+            mkdir dist\\guide\\
+            mkdir dist\\license\\
+            mkdir dist\\config\\
+            cd native\\RedExpertNativeLauncher
+            "c:\\Qt\\Qt5.6.3_x86\\5.6.3\\msvc2013\\bin\\qmake.exe"
+            "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\bin\\nmake.exe"
+            cd ..
+            mkdir bin
+            copy RedExpertNativeLauncher\\release\\bin\\RedExpert.exe bin\\
+            cd ..
+            copy /y native\\bin\\ dist\\bin\\
+            copy /y RedExpert.bat dist\\
+            move dist ..
+            '''
+        }
+
+        stash includes: 'dist/**', name: 'windows-bin86'
+    }
+}
+
+node('jdk18&&windows&&builder&&x86_64')
+{
+    stage('Build windows x64')
     {
         deleteDir()
         unstash 'src'
@@ -106,7 +170,6 @@ node('jdk18&&windows&&builder&&x86_64')
 
         bat "unzip dist-src\\${archive_prefix}-src.zip"
         withEnv(["JAVA_HOME=${JAVA_HOME_1_8_x64}", "RED_EXPERT_VERSION=${version}", "ARCHIVE_PREFIX=${archive_prefix}"]) {
-            // TODO QT_HOME variable?
             bat '''cd %ARCHIVE_PREFIX%\\
             call "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\vcvarsall.bat" amd64
             mkdir dist
@@ -121,23 +184,15 @@ node('jdk18&&windows&&builder&&x86_64')
             "C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\bin\\amd64\\nmake.exe"
             cd ..
             mkdir bin
-            copy RedExpertNativeLauncher\\release\\bin\\RedExpertNativeLauncher64.exe bin\\
-            mkdir bin\\platforms
-            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\plugins\\platforms\\qminimal.dll" bin\\platforms\\
-            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\plugins\\platforms\\qoffscreen.dll" bin\\platforms\\
-            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\plugins\\platforms\\qwindows.dll" bin\\platforms\\
-            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\Qt5Core.dll" bin\\
-            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\Qt5Gui.dll" bin\\
-            copy "C:\\Qt\\Qt5.6.3\\5.6.3\\msvc2013_64\\bin\\Qt5Widgets.dll" bin\\
+            copy RedExpertNativeLauncher\\release\\bin\\RedExpert64.exe bin\\
             cd ..
             copy /y native\\bin\\ dist\\bin\\
-            copy /y native\\bin\\platforms\\ dist\\bin\\platforms\\
             copy /y RedExpert.bat dist\\
             move dist ..
             '''
         }
 
-        stash includes: 'dist/**', name: 'windows-bin'
+        stash includes: 'dist/**', name: 'windows-bin64'
     }
 }
 
@@ -149,8 +204,10 @@ node('master')
         def wd = pwd()
 
         unstash 'src'
-        unstash 'linux-bin'
-        unstash 'windows-bin'
+        unstash 'linux-bin86'
+        unstash 'linux-bin64'
+        unstash 'windows-bin86'
+        unstash 'windows-bin64'
 
         sh "tar xf dist-src/RedExpert-${version}-src.tar.gz"
         sh "VERSION=${version} RedExpert-${version}/ci/package-bin.sh"

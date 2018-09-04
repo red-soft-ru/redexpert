@@ -315,6 +315,8 @@ int main(int argc, char *argv[])
     bin_dir = dirname((char*)tmp_path.c_str());
     app_pid = getpid();
 #else
+    // hide console window
+    ::ShowWindow(::GetConsoleWindow(), SW_HIDE);
     HMODULE hModule = GetModuleHandleW(NULL);
     WCHAR path[MAX_PATH];
     GetModuleFileNameW(hModule, path, MAX_PATH);

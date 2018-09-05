@@ -89,7 +89,14 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         if (!isConnected()) {
 
-            return connectionMediator().connect(getDatabaseConnection());
+            boolean connected = connectionMediator().connect(getDatabaseConnection());
+            try {
+                getDatabaseConnection().setServerVersion(connection.getMetaData().getDatabaseMajorVersion());
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            return connected;
         }
 
         return true;

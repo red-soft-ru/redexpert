@@ -11,6 +11,8 @@ import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -111,9 +113,9 @@ public class BuildConfigurationPanel extends JPanel {
     public BuildConfigurationPanel() {
         componentMap = new HashMap<>();
         appropriationBox = new JComboBox<>(new String[]{"RedDatabase 2.6", "RedDatabase 3.0"});
-        appropriationBox.addActionListener(new ActionListener() {
+        appropriationBox.addItemListener(new ItemListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void itemStateChanged(ItemEvent e) {
                 rebuildDatabasePanel();
             }
         });
@@ -303,7 +305,7 @@ public class BuildConfigurationPanel extends JPanel {
                 3, 1, 1, 1,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        repaint();
+        updateUI();
 
     }
 
@@ -386,5 +388,9 @@ public class BuildConfigurationPanel extends JPanel {
 
     private void appendProp(StringBuilder sb, String key) {
         sb.append("\t").append(key).append(apSymbol()).append(strFromComponent(componentMap.get(key))).append("\n\n");
+    }
+
+    public JComboBox<String> getAppropriationBox() {
+        return appropriationBox;
     }
 }

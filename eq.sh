@@ -13,5 +13,10 @@ fi
 
 # DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-exec bin/RedExpertNativeLauncher64 -mx${JAVA_HEAP_SIZE}m &
+if [ `getconf LONG_BIT` = "64" ]
+then
+    exec bin/RedExpert64 -mx${JAVA_HEAP_SIZE}m &
+else
+    exec bin/RedExpert -mx${JAVA_HEAP_SIZE}m &
+fi
 

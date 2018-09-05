@@ -1,26 +1,20 @@
-#include <QApplication>
-
-#include <QDebug>
-
 #include <jni.h>
 #include <iostream>
-#include <QMessageBox>
-#include <QDir>
-#include <QString>
-#include <QStringList>
-#include <QProcess>
 #include <iostream>
 #include <stdlib.h>
 // C RunTime Header Files
 #include <stdio.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <malloc.h>
 #include <memory.h>
-#include <regex>
+#include <vector>
 
 #ifdef __linux__
+#include <dirent.h>
 #include <dlfcn.h>
 #include <unistd.h>
+#include <gtk/gtk.h>
+#include <libgen.h>
 
 // Create type for pointer to the JNI_CreateJavaVM function
 typedef jint (*CreateJvmFuncPtr) (JavaVM**, void**, JavaVMInitArgs*);
@@ -30,8 +24,10 @@ void* jvm_lib;
 char* error;
 #else
 // Windows Header Files:
+#pragma comment(lib, "user32.lib")
 #include <windows.h>
 #include <ShellAPI.h>
+#include <regex>
 
 typedef JNIIMPORT jint(JNICALL *JNI_createJavaVM)(JavaVM **pvm, JNIEnv **env, void *args);
 JNI_createJavaVM createJVM = NULL;
@@ -83,6 +79,48 @@ inline bool fileExists(const std::string& name) {
     return (access( name.c_str(), F_OK) != -1);
 }
 
+void gtkMessageBox(char *title, char *message)
+{
+    GtkWidget *dialog;
+    GtkWidget *label;
+    GtkWidget *content_area;
+
+    gtk_init(NULL, NULL);
+
+    dialog = gtk_dialog_new_with_buttons(title,
+                                         NULL,
+                                         GTK_DIALOG_MODAL,
+                                         GTK_STOCK_OK,
+                                         GTK_RESPONSE_ACCEPT,
+                                         NULL);
+    gtk_container_set_border_width (GTK_CONTAINER(dialog), 5);
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    gtk_container_set_border_width (GTK_CONTAINER(content_area), 15);
+
+    label = gtk_label_new(message);
+    gtk_container_add(GTK_CONTAINER(content_area), label);
+    gtk_widget_show(label);
+
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+
+    g_signal_connect(G_OBJECT(dialog), "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+    gtk_main();
+}
+
+std::string getSelfpath()
+{
+    char buff[PATH_MAX];
+    ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
+    if (len != -1)
+    {
+        buff[len] = '\0';
+        return std::string(buff);
+    }
+    /* handle error condition */
+}
+
 // New method returns pointer to the JNI_CreateJavaVM function
 CreateJvmFuncPtr findCreateJvm() {
 
@@ -123,16 +161,7 @@ CreateJvmFuncPtr findCreateJvm() {
     }
     else
     {
-        QMessageBox msgBox;
-        msgBox.setInformativeText("Cannot determine the version of java from version string");
-        msgBox.setText("Cannot find Java version!");
-        msgBox.setWindowTitle("Application error");
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Critical);
-        msgBox.exec();
-#ifdef QT_DEBUG
-        qDebug() << "Cannot find Java version!\n";
-#endif
+        gtkMessageBox("Application error", "Cannot find Java version! Cannot determine the version of java from version string.");
         exit(EXIT_FAILURE);
     }
 
@@ -140,16 +169,7 @@ CreateJvmFuncPtr findCreateJvm() {
     error = dlerror(); //Check for errors on dlopen
     if(jvm_lib == NULL || error != NULL)
     {
-        QMessageBox msgBox;
-        msgBox.setInformativeText("Failed to load JVM!");
-        msgBox.setText("Cannot load JVM!");
-        msgBox.setWindowTitle("Application error");
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Critical);
-        msgBox.exec();
-#ifdef QT_DEBUG
-        qDebug() << "Failed to load JVM!\n";
-#endif
+        gtkMessageBox("Application error", "Failed to load JVM!");
         exit(EXIT_FAILURE);
     }
 
@@ -158,9 +178,6 @@ CreateJvmFuncPtr findCreateJvm() {
     error = dlerror();
     if(error != NULL)
     {
-#ifdef QT_DEBUG
-        qDebug() << "Success JVM creating\n";
-#endif
         printf("Success JVM creating\n");
     }
     return createJvm;
@@ -170,6 +187,25 @@ CreateJvmFuncPtr findCreateJvm() {
 bool fileExists(const std::string& path)
 {
     return GetFileAttributesA(path.c_str()) != INVALID_FILE_ATTRIBUTES;
+}
+
+int windowsMessageBox(LPCWSTR title, LPCWSTR message)
+{
+    int msgboxID = MessageBox(
+        NULL,
+        (LPCWSTR)message,
+        (LPCWSTR)title,
+        MB_ICONERROR | MB_OK | MB_DEFBUTTON2
+    );
+
+    switch (msgboxID)
+    {
+    case IDOK:
+         exit(EXIT_FAILURE);
+        break;
+    }
+
+    return msgboxID;
 }
 
 bool loadJVMLibrary()
@@ -218,47 +254,20 @@ bool loadJVMLibrary()
     }
     else
     {
-        QMessageBox msgBox;
-        msgBox.setInformativeText("Cannot determine the version of java from version string");
-        msgBox.setText("Cannot find Java version!");
-        msgBox.setWindowTitle("Application error");
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Critical);
-        msgBox.exec();
-#ifdef QT_DEBUG
-        qDebug() << "Cannot find Java version!\n";
-#endif
+        windowsMessageBox(L"Application error", L"Cannot determine the version of java from version string");
         exit(EXIT_FAILURE);
     }
 
     if (java_env == NULL)
     {
-        QMessageBox msgBox;
-        msgBox.setInformativeText("Please set JAVA_HOME to a Java JDK Install");
-        msgBox.setText("Cannot find Java!");
-        msgBox.setWindowTitle("Application error");
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Critical);
-        msgBox.exec();
-#ifdef QT_DEBUG
-        qDebug() << "Cannot find Java!\n";
-#endif
+        windowsMessageBox(L"Application error", L"Please set JAVA_HOME to a Java JDK Install");
         exit(EXIT_FAILURE);
     }
 
     hJVM = LoadLibraryA(jvm_path.c_str());
     if(!hJVM)
     {
-        QMessageBox msgBox;
-        msgBox.setInformativeText("Failed to load JVM!");
-        msgBox.setText("Cannot load JVM!");
-        msgBox.setWindowTitle("Application error");
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Critical);
-        msgBox.exec();
-#ifdef QT_DEBUG
-        qDebug() << "Failed to load JVM!\n";
-#endif
+        windowsMessageBox(L"Application error", L"Failed to load JVM!");
         exit(EXIT_FAILURE);
     }
 
@@ -266,15 +275,20 @@ bool loadJVMLibrary()
 
     if(createJVM != NULL)
     {
-#ifdef QT_DEBUG
-        qDebug() << "Success JVM creating\n";
-#endif
         printf("Success JVM creating\n");
     }
 
     free(java_env);
 }
 #endif
+
+std::string itos(int n)
+{
+   const int max_size = 16;
+   char buffer[max_size] = {0};
+   sprintf(buffer, "%d", n);
+   return std::string(buffer);
+}
 
 int main(int argc, char *argv[])
 {
@@ -285,49 +299,81 @@ int main(int argc, char *argv[])
     setenv("XDG_CURRENT_DESKTOP", "NONE", 1);
 #endif
 
-    QChar separator = ';';
+    std::string separator = ";";
 #ifdef __linux__
-    separator = ':';
+    separator = ":";
 #endif
 
-    QString paths("-Djava.class.path=");
+    std::string paths("-Djava.class.path=");
+    std::string app_exe_path;
+    std::string bin_dir;
+    std::string app_dir;
+    int app_pid;
+#ifdef __linux__
+    app_exe_path = getSelfpath();
+    std::string tmp_path = app_exe_path;
+    bin_dir = dirname((char*)tmp_path.c_str());
+    app_pid = getpid();
+#else
+    // hide console window
+    ::ShowWindow(::GetConsoleWindow(), SW_HIDE);
+    HMODULE hModule = GetModuleHandleW(NULL);
+    WCHAR path[MAX_PATH];
+    GetModuleFileNameW(hModule, path, MAX_PATH);
+    std::wstring ws(path);
+    std::string str(ws.begin(), ws.end());
+    app_exe_path = str;
+    char buf[256];
+    GetCurrentDirectoryA(256, buf);
+    bin_dir = std::string(buf);
+#endif
 
-    QApplication a(argc, argv);
-    QStringList app_args = a.arguments();
-    QDir bin_dir(a.applicationDirPath());
-    QString app_exe_path = bin_dir.absoluteFilePath(a.applicationFilePath());
-#ifdef QT_DEBUG
-    qDebug() << app_exe_path;
-#endif
-    qint64 app_pid = QCoreApplication::applicationPid();
-#ifdef QT_DEBUG
-    qDebug() << app_pid;
-#endif
-    QDir app_dir(a.applicationDirPath() + "/../");
-    paths.append(app_dir.absoluteFilePath("RedExpert.jar"));
+    app_dir = bin_dir + "/..";
+    paths.append(app_dir + "/RedExpert.jar");
     paths.append(separator);
 
 #ifdef __linux__
-    paths.append(app_dir.absoluteFilePath("createDesktopEntry.sh"));
+    paths.append(app_dir + "/createDesktopEntry.sh");
     paths.append(separator);
-    paths.append(app_dir.absoluteFilePath("redexpert.desktop"));
+    paths.append(app_dir + "/redexpert.desktop");
     paths.append(separator);
 #endif
 
-    QDir lib_dir(a.applicationDirPath() + "/../lib");
-    QStringList jars = lib_dir.entryList(QStringList() << "*.jar" << "*.JAR", QDir::Files);
+    std::string lib_dir(app_dir + "/lib");
 
-    foreach(QString filename, jars)
+#ifdef __linux__
+    DIR *dir;
+    struct dirent *ent;
+    if ((dir = opendir(lib_dir.c_str())) != NULL)
     {
-        paths.append(lib_dir.absoluteFilePath(filename));
-        paths.append(separator);
+        while ((ent = readdir (dir)) != NULL)
+        {
+            paths.append(lib_dir + "/" + ent->d_name);
+            paths.append(separator);
+        }
+        closedir (dir);
     }
+    else
+    {
+        exit(EXIT_FAILURE);
+    }
+#else
+    WIN32_FIND_DATA data;
+    HANDLE hFind = FindFirstFile((LPCWSTR)lib_dir.c_str(), &data);
 
-    paths = paths.left(paths.lastIndexOf(separator));
-
-#ifdef QT_DEBUG
-    qDebug() << paths;
+    if ( hFind != INVALID_HANDLE_VALUE )
+    {
+        do
+        {
+            std::cout << data.cFileName << std::endl;
+        }
+        while (FindNextFile(hFind, &data));
+        FindClose(hFind);
+    }
 #endif
+
+    int sep_idx = paths.find_last_of(separator);
+    paths = paths.substr(0, sep_idx);
 
     // JavaVM variables
     JavaVM* jvm(0);
@@ -338,7 +384,7 @@ int main(int argc, char *argv[])
     CLEAR(options);
 
     // add to java class path Red Expert jar
-    std::string stdString = paths.toStdString();
+    std::string stdString = paths;
     char* class_path = (char*)stdString.c_str();
     JavaVMOption class_opt;
     class_opt.optionString = class_path;
@@ -372,15 +418,10 @@ int main(int argc, char *argv[])
     //End new code
     if (retCrJvm != JNI_OK)
     {
-        QMessageBox msgBox;
-        msgBox.setInformativeText("Cannot create JVM!");
-        msgBox.setText("Error when start Red Expert");
-        msgBox.setWindowTitle("Application error");
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Critical);
-        msgBox.exec();
-#ifdef QT_DEBUG
-        qDebug() << "Cannot create JVM!\n";
+#ifdef __linux__
+        gtkMessageBox("Application error", "Cannot create JVM!");
+#else
+        windowsMessageBox(L"Application error", L"Cannot create JVM!");
 #endif
         exit(EXIT_FAILURE);
     }
@@ -389,15 +430,10 @@ int main(int argc, char *argv[])
     jclass class_ = env->FindClass("org/executequery/ExecuteQuery");
     if (class_ == 0)
     {
-        QMessageBox msgBox;
-        msgBox.setInformativeText("org.executequery.ExecuteQuery class not found!");
-        msgBox.setText("Error when start Red Expert");
-        msgBox.setWindowTitle("Application error");
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Critical);
-        msgBox.exec();
-#ifdef QT_DEBUG
-        qDebug() << "Code class not found!\n";
+#ifdef __linux__
+        gtkMessageBox("Application error", "Error when start Red Expert. org.executequery.ExecuteQuery class not found!");
+#else
+        windowsMessageBox(L"Application error", L"Error when start Red Expert. org.executequery.ExecuteQuery class not found!");
 #endif
         exit(EXIT_FAILURE);
     }
@@ -406,15 +442,10 @@ int main(int argc, char *argv[])
     jmethodID method_id = env->GetStaticMethodID(class_, "main", "([Ljava/lang/String;)V");
     if (method_id == 0)
     {
-        QMessageBox msgBox;
-        msgBox.setInformativeText("Main method not found!");
-        msgBox.setText("Error when start Red Expert");
-        msgBox.setWindowTitle("Application error");
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Critical);
-        msgBox.exec();
-#ifdef QT_DEBUG
-        qDebug() << "Main method not found!\n";
+#ifdef __linux__
+        gtkMessageBox("Application error", "Error when start Red Expert. Main method not found!");
+#else
+        windowsMessageBox(L"Application error", L"Error when start Red Expert. Main method not found!");
 #endif
         exit(EXIT_FAILURE);
     }
@@ -422,15 +453,23 @@ int main(int argc, char *argv[])
     jobjectArray ret;
     int i;
 
-    app_args.append("-exe_path=" + app_exe_path);
-    app_args.append("-exe_pid=" + QString::number(app_pid));
+    std::vector<std::string> app_args;
+
+    for (int i = 0; i < argc; i++)
+    {
+        app_args.push_back(argv[i]);
+    }
+
+    app_args.push_back("-exe_path=" + app_exe_path);
+    std::string str_pid = itos(app_pid);
+    app_args.push_back("-exe_pid=" + str_pid);
 
     ret = (jobjectArray)env->NewObjectArray(app_args.size(),
                                             env->FindClass("java/lang/String"), env->NewStringUTF(""));
 
     for (i = 0; i < app_args.size(); i++)
     {
-        std::string stdString = app_args.at(i).toStdString();
+        std::string stdString = app_args.at(i);
         char* arg = (char*)stdString.c_str();
         env->SetObjectArrayElement(ret, i, env->NewStringUTF(arg));
     }
@@ -441,5 +480,5 @@ int main(int argc, char *argv[])
     // clean
     jvm->DestroyJavaVM();
 
-    return a.exec();
+    exit(EXIT_SUCCESS);
 }

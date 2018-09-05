@@ -29,13 +29,13 @@
         </includes>
         <fileMode>0755</fileMode>
       </fileSet>
-      <fileSet>
-        <directory>${project.build.directory}/../../../docs</directory>
-        <outputDirectory>docs</outputDirectory>
-        <includes>
-          <include>*</include>
-        </includes>
-      </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/../../../guide</directory>
+      <outputDirectory>guide</outputDirectory>
+      <includes>
+        <include>*.pdf</include>
+      </includes>
+    </fileSet>
       <fileSet>
         <directory>${project.build.directory}/lib</directory>
         <outputDirectory>lib</outputDirectory>

@@ -259,7 +259,7 @@ public class WindowAddUser extends javax.swing.JPanel {
                                 .addGroup(layout.createSequentialGroup()
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                 .addGroup(layout.createSequentialGroup()
-                                                        .addGap(14, 14, 14)
+                                                        .addContainerGap()
                                                         .addComponent(jLabel1))
                                                 .addGroup(layout.createSequentialGroup()
                                                         .addContainerGap()
@@ -390,12 +390,12 @@ public class WindowAddUser extends javax.swing.JPanel {
                                                 .addGap(10, 10, 10))))
 
         );
-        init_version();
+        initVersion();
         //pack();
     }
 
-    private void init_version() {
-        if (version == 3) {
+    private void initVersion() {
+        if (version >= 3) {
             jLabel7.setVisible(false);
             jLabel8.setVisible(false);
             userIDField.setVisible(false);
@@ -431,7 +431,11 @@ public class WindowAddUser extends javax.swing.JPanel {
                 ump.userAdd.setDescription(descriptionField.getText().trim());
                 Map<String, String> tags = new HashMap<>();
                 for (int i = 0; i < tagTable.getRowCount(); i++) {
-                    tags.put((String) tagTable.getModel().getValueAt(i, 0), (String) tagTable.getModel().getValueAt(i, 1));
+                    String tag = tagTable.getModel().getValueAt(i, 0).toString();
+                    String value = tagTable.getModel().getValueAt(i, 1).toString();
+                    if (tag != null && !tag.isEmpty() && value != null && !value.isEmpty()) {
+                        tags.put(tag, value);
+                    }
                 }
                 ump.userAdd.setTags(tags);
                 if (edit) {

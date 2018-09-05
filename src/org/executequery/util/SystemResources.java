@@ -316,7 +316,6 @@ public class SystemResources {
                                 "jdbcdrivers.xml",
                                 "connection-folders.xml",
                                 "lookandfeel.xml",
-                                "toolbars.xml",
                                 "querybookmarks.xml",
                                 "print.setup",
                                 "savedconnections.xml",

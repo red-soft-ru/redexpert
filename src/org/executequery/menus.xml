@@ -411,18 +411,6 @@
 
         <menu-item id="separator"/>
 
-        <menu-item id="create-table-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="create-view-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="create-index-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="create-sequence-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
         <menu-item id="execute-object"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 

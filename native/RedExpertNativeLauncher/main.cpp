@@ -230,8 +230,9 @@ bool loadJVMLibrary()
     }
     jvm_path = java_env;
     std::string out;
-    std::string cmd = java_env;
-    cmd.append("\\bin\\java -version");
+    std::string cmd = "\"";
+    cmd.append(java_env);
+    cmd.append("\\bin\\java.exe\" -version");
     executeCmdEx(cmd.c_str(), out);
     int jver_pos = out.find("\"") + 1;
     int first_dot_pos = out.find(".");

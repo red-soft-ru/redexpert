@@ -70,6 +70,8 @@ source_package:
 build_linux_x86_64:
   stage: build
   image: redsoftru/rdbbuildenv-lsbsdk-centos:centos6-lsb4.1.0
+  variables:
+    MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2"
   before_script:
     - mkdir dist/linux-x86_64
     - tar xf dist-src/RedExpert-$VERSION.tar.gz

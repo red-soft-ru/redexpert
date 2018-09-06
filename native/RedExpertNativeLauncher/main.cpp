@@ -219,7 +219,7 @@ bool loadJVMLibrary()
     {
         std::string out;
         executeCmdEx("java -XshowSettings:properties -version", out);
-        std::regex jhome_regex("java\\.home\\s\\=\\s(([\\w+\\\\\\-:\\.][^\\r\\n])+)");
+        std::regex jhome_regex("java\\.home\\s\\=\\s(([\\w+\\s\\\\\\-:\\.])+)\\n");
         std::smatch match;
         if(std::regex_search(out, match, jhome_regex))
         {

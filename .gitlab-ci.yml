@@ -73,7 +73,7 @@ build_linux_x86_64:
   variables:
     MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2"
   before_script:
-    - mkdir dist/linux-x86_64
+    - mkdir -p dist/linux-x86_64
     - tar xf dist-src/RedExpert-$VERSION.tar.gz
     - yum install -y java-1.8.0-openjdk-devel-1.8.0.181 qt-devel gtk2-devel-2.24.23
     - cd /opt

@@ -77,7 +77,7 @@ build_linux_x86_64:
     - export M2_HOME=/opt/apache-maven-3.5.4/
     - export PATH=${M2_HOME}/bin:${PATH}
     - export QMAKE=qmake-qt4
-    - export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.181*
+    - export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.181-3.b13.el6_10.x86_64/
     - export VERSION=`cat .ci/version`
     - mkdir -p dist/linux-x86_64
     - cd /opt

@@ -7,7 +7,6 @@
     <packaging>jar</packaging>
 
     <properties>
-        <exe.version>4.3.4.8</exe.version>
         <basedir>${pom.basedir}</basedir>
     </properties>
 

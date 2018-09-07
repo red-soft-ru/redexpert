@@ -126,17 +126,11 @@ repackage:
     paths:
       - dist/unified/
 
-# deploy:
-#   stage: deploy
-#   image: redsoftru/relmanager_client
-#   script:
-#     - VERSION=$(cat .ci/version)
-#     - BRANCH=$(cat .ci/branch)
-#     - echo $BRANCH $VERSION
-#     - cat .ci/artifacts
-#     - find dist-src
-#     - find dist-bin
-#     - relmanager_client deploy ${RELEASE_HUB_PROJECT} ${VERSION} --artifacts .ci/artifacts --ci_url ${CI_URL} --context ${CONTEXT} --branch ${BRANCH} --commit ${CI_COMMIT_SHA}
-#   only:
-#     variables:
-#       - "$RELEASE_HUB_KEY"
+deploy:
+  stage: deploy
+  image: redsoftru/relmanager_client
+  script:
+    - relmanager_client deploy ${RELEASE_HUB_PROJECT} $(cat .ci/version) --artifacts .ci/artifacts --ci_url ${CI_URL} --context $(cat .ci/context) --branch $(cat .ci/branch) --commit ${CI_COMMIT_SHA}
+  only:
+    variables:
+      - "$RELEASE_HUB_KEY"

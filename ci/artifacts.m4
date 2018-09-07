@@ -1,8 +1,8 @@
 group red_expert
 
 artifact red_expert VERSION
-file dist/RedExpert-VERSION.tar.gz tar.gz bin
-file dist/RedExpert-VERSION.zip zip bin
+file dist/unified/RedExpert-VERSION.tar.gz tar.gz bin
+file dist/unified/RedExpert-VERSION.zip zip bin
 end
 
 artifact red_expert-src VERSION

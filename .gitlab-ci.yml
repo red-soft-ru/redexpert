@@ -89,7 +89,7 @@ build_linux_x86_64:
     - cd RedExpert-$VERSION
     - ./ci/build_native.sh
     - ./ci/build_jar.sh
-    - mv /modules/redexpert/target/RedExpert-$VERSION.* ../dist/linux-x86_64
+    - mv modules/redexpert/target/RedExpert-$VERSION.* ../dist/linux-x86_64
   artifacts:
     expire_in: 1 day
     paths:

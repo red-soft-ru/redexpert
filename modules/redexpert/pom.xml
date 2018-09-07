@@ -142,7 +142,9 @@
         <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
-            <version>3.6.2</version>
+            <version>3.5.6-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${pom.basedir}/../../lib/liquibase-3.5.6-SNAPSHOT.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -249,6 +251,7 @@
                                     <directory>${pom.basedir}/../../lib</directory>
                                     <includes>
                                         <include>**/fbplugin.jar</include>
+                                        <include>**/liquibase-3.5.6-SNAPSHOT.jar</include>
                                     </includes>
                                 </resource>
                             </resources>

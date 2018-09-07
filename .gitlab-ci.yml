@@ -86,7 +86,7 @@ source_package:
     - wget http://www.apache.org/dist/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.tar.gz
     - tar xzf apache-maven-3.5.4-bin.tar.gz
     - export PATH=${M2_HOME}/bin:${PATH}
-    - export VERSION=`cat .ci/version`
+    - export VERSION=`cat ${CI_PROJECT_DIR}/.ci/version`
   script:
     - cd "${CI_PROJECT_DIR}"
     - tar xf dist-src/RedExpert-$VERSION-src.tar.gz

@@ -318,7 +318,7 @@
                             <outputDirectory>${basedir}/target/bin</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${pom.basedir}/../../native/bin</directory>       
+                                    <directory>${pom.basedir}/../../native/RedExpertNativeLauncher/bin</directory>
                                 </resource>
                             </resources>
                         </configuration>

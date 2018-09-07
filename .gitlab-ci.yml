@@ -6,6 +6,7 @@ stages:
 - prepare
 - source_package
 - build
+- repackage
 - deploy
 
 variables:
@@ -111,6 +112,19 @@ build_linux_x86:
     DIST: ${CI_PROJECT_DIR}/dist/linux-x86
     JAVA_HOME: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.181-3.b13.el6_10.i386/
     <<: *build_linux_template_variables
+
+repackage:
+  stage: repackage
+  image: alpine:3.8
+  before_script:
+    - apk --update add bash tar zip
+    - export VERSION=`cat .ci/version`
+  script:
+    - ./ci/repackage.sh linux-x86_64 linux-x86
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - dist/unified/
 
 # deploy:
 #   stage: deploy

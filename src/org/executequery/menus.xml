@@ -631,14 +631,6 @@
                    mnemonic="H"
                    accel-key="F1"/>
 
-        <menu-item id="help-command"
-                   key="menu.help.search"
-                   name="Search for help on"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"
-                   mnemonic="S"
-                   accel-key="{-NULL-}"
-                   action-command="search_help_on"/>
-
         <menu-item id="separator"/>
 
         <menu-item id="license-command"

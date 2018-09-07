@@ -67,33 +67,42 @@ source_package:
     paths:
       - dist-src/
 
-build_linux_x86_64:
+.build_template: &build_template
   stage: build
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - dist/
+
+.build_linux_template: &build_linux_template
+  <<: *build_template
+  variables: &build_linux_template_variables
+    MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2"
+  script:
+    - cd "${CI_PROJECT_DIR}"
+    - export VERSION=`cat .ci/version`
+    - tar xf dist-src/RedExpert-$VERSION-src.tar.gz
+    - cd RedExpert-$VERSION
+    - ./ci/build_native.sh
+    - ./ci/build_jar.sh
+    - mkdir -p "${DIST}"
+    - mv modules/redexpert/target/RedExpert-$VERSION.* "${DIST}"
+
+build_linux_x86_64:
+  <<: *build_linux_template
   image: redsoftru/rdbbuildenv-lsbsdk-centos:centos6-lsb4.1.0
   variables:
-    MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2"
+    DIST: ${CI_PROJECT_DIR}/dist/linux-x86_64
+    <<: *build_linux_template_variables
   before_script:
     - yum install -y java-1.8.0-openjdk-devel-1.8.0.181 qt-devel gtk2-devel-2.24.23
     - export M2_HOME=/opt/apache-maven-3.5.4/
     - export PATH=${M2_HOME}/bin:${PATH}
     - export QMAKE=qmake-qt4
     - export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.181-3.b13.el6_10.x86_64/
-    - export VERSION=`cat .ci/version`
-    - mkdir -p dist/linux-x86_64
     - cd /opt
     - wget http://www.apache.org/dist/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.tar.gz
     - tar xzf apache-maven-3.5.4-bin.tar.gz
-    - cd "${CI_PROJECT_DIR}"
-    - tar xf dist-src/RedExpert-$VERSION-src.tar.gz
-  script:
-    - cd RedExpert-$VERSION
-    - ./ci/build_native.sh
-    - ./ci/build_jar.sh
-    - mv modules/redexpert/target/RedExpert-$VERSION.* ../dist/linux-x86_64
-  artifacts:
-    expire_in: 1 day
-    paths:
-      - dist/
 
 # deploy:
 #   stage: deploy

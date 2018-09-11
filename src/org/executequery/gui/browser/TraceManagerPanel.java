@@ -12,6 +12,7 @@ import org.executequery.gui.browser.managment.tracemanager.SessionManagerPanel;
 import org.executequery.gui.browser.managment.tracemanager.TablePanel;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
 import org.executequery.gui.browser.managment.tracemanager.net.SessionInfo;
+import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
@@ -73,6 +74,10 @@ public class TraceManagerPanel extends JPanel implements TabView {
     private JPanel connectionPanel;
     private int currentSessionId;
 
+    public static String bundleString(String key) {
+        return Bundles.get(TraceManagerPanel.class, key);
+    }
+
     private void init() {
         message = Message.LOG_MESSAGE;
         sessions = new ArrayList<>();
@@ -101,7 +106,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
         openFileLogField = new JTextField();
         userField = new JTextField();
         passwordField = new JPasswordField();
-        logToFileBox = new JCheckBox("Log to file");
+        logToFileBox = new JCheckBox(bundleString("LogToFile"));
         logToFileBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -130,7 +135,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
         hostField = new JTextField("127.0.0.1");
         portField = new NumberTextField();
         portField.setText("3050");
-        useBuildConfBox = new JCheckBox("Use Config File");
+        useBuildConfBox = new JCheckBox(bundleString("UseConfigFile"));
         useBuildConfBox.setSelected(true);
         useBuildConfBox.addActionListener(new ActionListener() {
             @Override
@@ -165,8 +170,8 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 }
             }
         });
-        startStopSessionButton = new JButton("Start");
-        clearTableButton = new JButton("Clear table");
+        startStopSessionButton = new JButton(bundleString("Start"));
+        clearTableButton = new JButton(bundleString("ClearTable"));
         clearTableButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -288,7 +293,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     }
                 }
                 outputStream = null;
-                if (startStopSessionButton.getText().toUpperCase().contentEquals("START")) {
+                if (startStopSessionButton.getText().toUpperCase().contentEquals(bundleString("Start").toUpperCase())) {
                     if (logToFileBox.isSelected()) {
                         if (fileLog != null) {
                             outputStream = new OutputStream() {
@@ -330,8 +335,8 @@ public class TraceManagerPanel extends JPanel implements TabView {
                             conf = traceManager.loadConfigurationFromFile(fileConfField.getText());
                         else conf = confPanel.getConfig();
                         traceManager.startTraceSession(sessionField.getText(), conf);
-                        startStopSessionButton.setText("Stop");
-                        tabPane.add("Session Manager", sessionManagerPanel);
+                        startStopSessionButton.setText(bundleString("Stop"));
+                        tabPane.add(bundleString("SessionManager"), sessionManagerPanel);
                         for (int i = 0; i < connectionPanel.getComponents().length; i++) {
                             connectionPanel.getComponents()[i].setEnabled(false);
                         }
@@ -348,14 +353,14 @@ public class TraceManagerPanel extends JPanel implements TabView {
             }
         });
 
-        hideShowTabPaneButton = new JButton("Hide Top Panel");
+        hideShowTabPaneButton = new JButton(bundleString("HideTopPanel"));
         hideShowTabPaneButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 tabPane.setVisible(!tabPane.isVisible());
-                if (hideShowTabPaneButton.getText().contentEquals("Hide Top Panel"))
-                    hideShowTabPaneButton.setText("Show Top Panel");
-                else hideShowTabPaneButton.setText("Hide Top Panel");
+                if (hideShowTabPaneButton.getText().contentEquals(bundleString("HideTopPanel")))
+                    hideShowTabPaneButton.setText(bundleString("ShowTopPanel"));
+                else hideShowTabPaneButton.setText(bundleString("HideTopPanel"));
             }
         });
 
@@ -391,7 +396,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        JLabel label = new JLabel("Open filelog");
+        JLabel label = new JLabel(bundleString("OpenFileLog"));
         topPanel.add(label, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -412,13 +417,13 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(0, 5, 5, 5),
                 0, 0));
 
-        tabPane.add("Connection", connectionPanel);
-        tabPane.add("Build Configuration File", new JScrollPane(confPanel));
-        tabPane.add("Visible Columns", columnsCheckPanel);
+        tabPane.add(bundleString("Connection"), connectionPanel);
+        tabPane.add(bundleString("BuildConfigurationFile"), new JScrollPane(confPanel));
+        tabPane.add(bundleString("VisibleColumns"), columnsCheckPanel);
         //tabPane.add("Session Manager", sessionManagerPanel);
         connectionPanel.setLayout(new GridBagLayout());
 
-        label = new JLabel("Connections");
+        label = new JLabel(bundleString("Connections"));
         connectionPanel.add(label, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -428,7 +433,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        label = new JLabel("Database");
+        label = new JLabel(bundleString("Database"));
         connectionPanel.add(label, new GridBagConstraints(0, 1,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -444,7 +449,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        label = new JLabel("Session name");
+        label = new JLabel(bundleString("SessionName"));
         connectionPanel.add(label, new GridBagConstraints(0, 2,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -455,7 +460,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        label = new JLabel("User name");
+        label = new JLabel(bundleString("Username"));
         connectionPanel.add(label, new GridBagConstraints(0, 3,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -465,7 +470,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        label = new JLabel("Password");
+        label = new JLabel(bundleString("Password"));
         connectionPanel.add(label, new GridBagConstraints(3, 3,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -475,7 +480,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        label = new JLabel("Host");
+        label = new JLabel(bundleString("Host"));
         connectionPanel.add(label, new GridBagConstraints(3, 2,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -486,7 +491,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        label = new JLabel("Port");
+        label = new JLabel(bundleString("Port"));
         connectionPanel.add(label, new GridBagConstraints(5, 2,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -497,7 +502,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        label = new JLabel("Charset");
+        label = new JLabel(bundleString("Charset"));
         connectionPanel.add(label, new GridBagConstraints(0, 4,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -618,7 +623,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
 
     @Override
     public boolean tabViewClosing() {
-        if (startStopSessionButton.getText().contentEquals("Stop"))
+        if (startStopSessionButton.getText().contentEquals(bundleString("Stop")))
             try {
                 traceManager.stopTraceSession(traceManager.getSessionID(sessionField.getText()));
             } catch (SQLException e) {
@@ -693,7 +698,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
     }
 
     private void stopSession() {
-        startStopSessionButton.setText("Start");
+        startStopSessionButton.setText(bundleString("Start"));
         tabPane.remove(sessionManagerPanel);
         for (int i = 0; i < connectionPanel.getComponents().length; i++) {
             connectionPanel.getComponents()[i].setEnabled(true);

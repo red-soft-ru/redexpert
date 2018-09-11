@@ -2,6 +2,7 @@ package org.executequery.gui.browser.managment.tracemanager;
 
 import biz.redsoft.IFBTraceManager;
 import org.executequery.GUIUtilities;
+import org.executequery.gui.browser.TraceManagerPanel;
 import org.executequery.gui.browser.managment.tracemanager.net.SessionInfo;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 
@@ -64,7 +65,7 @@ public class SessionManagerPanel extends JPanel {
         userField.setEditable(false);
         datetimeField = new JTextField();
         datetimeField.setEditable(false);
-        stopButton = new JButton("Stop");
+        stopButton = new JButton(TraceManagerPanel.bundleString("Stop"));
         stopButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -87,7 +88,7 @@ public class SessionManagerPanel extends JPanel {
             }
         });
 
-        refreshButton = new JButton("Refresh");
+        refreshButton = new JButton(TraceManagerPanel.bundleString("Refresh"));
         refreshButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -95,7 +96,7 @@ public class SessionManagerPanel extends JPanel {
             }
         });
 
-        JLabel label = new JLabel("Sessions");
+        JLabel label = new JLabel(TraceManagerPanel.bundleString("Sessions"));
         add(label, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -105,7 +106,7 @@ public class SessionManagerPanel extends JPanel {
                 GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        label = new JLabel("Id");
+        label = new JLabel(TraceManagerPanel.bundleString("ID"));
         add(label, new GridBagConstraints(1, 1,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -116,7 +117,7 @@ public class SessionManagerPanel extends JPanel {
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        label = new JLabel("Name");
+        label = new JLabel(TraceManagerPanel.bundleString("Name"));
         add(label, new GridBagConstraints(3, 1,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -127,7 +128,7 @@ public class SessionManagerPanel extends JPanel {
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        label = new JLabel("User");
+        label = new JLabel(TraceManagerPanel.bundleString("User"));
         add(label, new GridBagConstraints(1, 2,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -138,7 +139,7 @@ public class SessionManagerPanel extends JPanel {
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        label = new JLabel("Date");
+        label = new JLabel(TraceManagerPanel.bundleString("Date"));
         add(label, new GridBagConstraints(3, 2,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -149,7 +150,7 @@ public class SessionManagerPanel extends JPanel {
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        label = new JLabel("Flags");
+        label = new JLabel(TraceManagerPanel.bundleString("Flags"));
         add(label, new GridBagConstraints(1, 3,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),

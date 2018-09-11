@@ -1,5 +1,6 @@
 package org.executequery.gui.browser.managment.tracemanager;
 
+import org.executequery.gui.browser.TraceManagerPanel;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.underworldlabs.swing.DynamicComboBoxModel;
@@ -75,7 +76,7 @@ public class TablePanel extends JPanel {
         topPanel.setLayout(gbl_topPanel);
 
         JPanel filterPanel = new JPanel();
-        filterPanel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Filter",
+        filterPanel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), TraceManagerPanel.bundleString("Filter"),
                 TitledBorder.LEADING, TitledBorder.TOP, null, null));
         GridBagConstraints gbc_filterPanel = new GridBagConstraints();
         gbc_filterPanel.fill = GridBagConstraints.HORIZONTAL;
@@ -111,7 +112,7 @@ public class TablePanel extends JPanel {
         gbc_filterTypeComboBox.anchor = GridBagConstraints.NORTHWEST;
         filterPanel.add(comboBoxFilterType, gbc_filterTypeComboBox);
 
-        JLabel lblText = new JLabel("Text:");
+        JLabel lblText = new JLabel(TraceManagerPanel.bundleString("Text"));
         GridBagConstraints gbc_lblText = new GridBagConstraints();
         gbc_lblText.anchor = GridBagConstraints.BASELINE_TRAILING;
         gbc_lblText.insets = new Insets(0, 0, 5, 5);
@@ -131,7 +132,7 @@ public class TablePanel extends JPanel {
         gbc_txtFldSqlFilter.weightx = 1;
         filterPanel.add(txtFldSqlFilter, gbc_txtFldSqlFilter);
 
-        lblText = new JLabel("Filter Column:");
+        lblText = new JLabel(TraceManagerPanel.bundleString("FilterColumn"));
         gbc_lblText = new GridBagConstraints();
         gbc_lblText.anchor = GridBagConstraints.NORTHWEST;
         gbc_lblText.insets = new Insets(0, 5, 5, 5);
@@ -151,7 +152,7 @@ public class TablePanel extends JPanel {
         gbc_comboBoxRawSql.anchor = GridBagConstraints.NORTHWEST;
         filterPanel.add(comboBoxFilterColumn, gbc_comboBoxRawSql);
 
-        lblText = new JLabel("Raw SQL Column:");
+        lblText = new JLabel(TraceManagerPanel.bundleString("RawSQLColumn"));
         gbc_lblText = new GridBagConstraints();
         gbc_lblText.anchor = GridBagConstraints.NORTHWEST;
         gbc_lblText.insets = new Insets(0, 5, 5, 5);

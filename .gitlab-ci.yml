@@ -16,6 +16,9 @@ variables:
   TAG_BRANCH: master
 
 .prepare_template: &prepare_template
+  tags:
+    - docker
+    - builder
   stage: prepare
   image: redsoftru/relmanager_client
   script:
@@ -52,6 +55,9 @@ prepare_release:
     - tags
 
 source_package:
+  tags:
+    - docker
+    - builder
   stage: source_package
   image: maven:3-jdk-8-alpine
   variables:
@@ -76,6 +82,9 @@ source_package:
       - dist/
 
 .build_linux_template: &build_linux_template
+  tags:
+    - docker
+    - builder
   <<: *build_template
   variables: &build_linux_template_variables
     MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2"
@@ -114,6 +123,9 @@ build_linux_x86:
     <<: *build_linux_template_variables
 
 repackage:
+  tags:
+    - docker
+    - builder
   stage: repackage
   image: alpine:3.8
   before_script:
@@ -127,6 +139,9 @@ repackage:
       - dist/unified/
 
 deploy:
+  tags:
+    - docker
+    - builder
   stage: deploy
   image: redsoftru/relmanager_client
   script:

@@ -4,7 +4,7 @@ cache:
 
 stages:
 - prepare
-- source_package
+- sources
 - build
 - repackage
 - deploy
@@ -31,7 +31,7 @@ variables:
     paths:
       - .ci/
 
-prepare_snapshot:
+prepare:snapshot:
   <<: *prepare_template
   before_script:
     - mkdir .ci
@@ -43,7 +43,7 @@ prepare_snapshot:
   except:
     - tags
 
-prepare_release:
+prepare:release:
   <<: *prepare_template
   before_script:
     - apk --update add sed
@@ -54,11 +54,11 @@ prepare_release:
   only:
     - tags
 
-source_package:
+sources:
   tags:
     - docker
     - builder
-  stage: source_package
+  stage: sources
   image: maven:3-jdk-8-alpine
   variables:
     MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2"
@@ -106,7 +106,7 @@ source_package:
     - mkdir -p "${DIST}"
     - mv modules/redexpert/target/RedExpert-$VERSION.* "${DIST}"
 
-build_linux_x86_64:
+build:linux:x86_64:
   <<: *build_linux_template
   image: redsoftru/rdbbuildenv-lsbsdk-centos:centos6-lsb4.1.0
   variables:
@@ -114,7 +114,7 @@ build_linux_x86_64:
     JAVA_HOME: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.181-3.b13.el6_10.x86_64/
     <<: *build_linux_template_variables
 
-build_linux_x86:
+build:linux:x86:
   <<: *build_linux_template
   image: redsoftru/rdbbuildenv-lsbsdk-centos:centos6-i386-lsb4.1.0
   variables:

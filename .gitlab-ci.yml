@@ -1,0 +1,187 @@
+cache:
+  paths:
+    - .m2/
+
+stages:
+- prepare
+- sources
+- build
+- repackage
+- deploy
+
+variables:
+  RELEASE_HUB_PROJECT: red_expert
+  CI_URL: ${CI_PROJECT_URL}/pipelines/${CI_PIPELINE_ID}
+  CONTEXT: commit
+  TAG_BRANCH: master
+
+.prepare_template: &prepare_template
+  tags:
+    - docker
+    - builder
+  stage: prepare
+  image: redsoftru/relmanager_client
+  script:
+    - m4 -DVERSION=${VERSION} ci/artifacts.m4 > .ci/artifacts
+    - echo ${VERSION} > .ci/version
+    - echo ${BRANCH} > .ci/branch
+    - echo ${CONTEXT} > .ci/context
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - .ci/
+
+prepare:snapshot:
+  <<: *prepare_template
+  before_script:
+    - mkdir .ci
+    - VERSION=$(awk -F= '{if ($1 == "re.version") printf("%s", $2)}' src/org/executequery/eq.system.properties|sed 's/\(.*\)-.*/\1/')
+    - BUILDNO=$(relmanager_client genbuildno ${RELEASE_HUB_PROJECT} ${VERSION}-SNAPSHOT)
+    - export VERSION=${VERSION}-SNAPSHOT.${BUILDNO}
+    - export BRANCH=${CI_COMMIT_REF_NAME}
+    - export CONTEXT=commit
+  except:
+    - tags
+
+prepare:release:
+  <<: *prepare_template
+  before_script:
+    - apk --update add sed
+    - mkdir .ci
+    - export VERSION=$(echo ${CI_COMMIT_TAG}|sed 's/v//')
+    - export BRANCH=${TAG_BRANCH}
+    - export CONTEXT=tag
+  only:
+    - tags
+
+sources:
+  tags:
+    - docker
+    - builder
+  stage: sources
+  image: maven:3-jdk-8-alpine
+  variables:
+    MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2"
+  before_script:
+    - apk --update add bash git
+    - git config --global user.name "Dummy Name"
+    - git config --global user.email "dummy@email.org"
+    - export VERSION=`cat .ci/version`
+  script:
+    - ./ci/prepare-src.sh
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - dist-src/
+
+.build_template: &build_template
+  stage: build
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - dist/
+
+.build_linux_template: &build_linux_template
+  tags:
+    - docker
+    - builder
+  <<: *build_template
+  variables: &build_linux_template_variables
+    MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2"
+    M2_HOME: /opt/apache-maven-3.5.4/
+    QMAKE: qmake-qt4
+  before_script:
+    - yum install -y java-1.8.0-openjdk-devel-1.8.0.181 qt-devel gtk2-devel-2.24.23
+    - cd /opt
+    - wget http://www.apache.org/dist/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.tar.gz
+    - tar xzf apache-maven-3.5.4-bin.tar.gz
+    - export PATH=${M2_HOME}/bin:${PATH}
+    - export VERSION=`cat ${CI_PROJECT_DIR}/.ci/version`
+  script:
+    - cd "${CI_PROJECT_DIR}"
+    - tar xf dist-src/RedExpert-$VERSION-src.tar.gz
+    - cd RedExpert-$VERSION
+    - ./ci/build_native.sh
+    - ./ci/build_jar.sh
+    - mkdir -p "${DIST}"
+    - mv modules/redexpert/target/RedExpert-$VERSION.* "${DIST}"
+
+build:linux:x86_64:
+  <<: *build_linux_template
+  image: redsoftru/rdbbuildenv-lsbsdk-centos:centos6-lsb4.1.0
+  variables:
+    DIST: ${CI_PROJECT_DIR}/dist/linux-x86_64
+    JAVA_HOME: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.181-3.b13.el6_10.x86_64/
+    <<: *build_linux_template_variables
+
+build:linux:x86:
+  <<: *build_linux_template
+  image: redsoftru/rdbbuildenv-lsbsdk-centos:centos6-i386-lsb4.1.0
+  variables:
+    DIST: ${CI_PROJECT_DIR}/dist/linux-x86
+    JAVA_HOME: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.181-3.b13.el6_10.i386/
+    <<: *build_linux_template_variables
+
+.build_windows_template: &build_windows_template
+  tags:
+    - windows
+    - builder
+  variables: &build_windows_template_vars
+    ErrorActionPreference: STOP
+    JAVA_HOME: c:\Program Files\Java\jdk8
+    MAVEN_OPTS: -Dmaven.repo.local=${CI_PROJECT_DIR}\.m2
+  before_script:
+    - $VERSION = (get-content .ci\version -Raw).trim()
+    - unzip -q dist-src\RedExpert-$VERSION-src.zip
+    - mkdir ${DIST}
+  script:
+    - cd ${CI_PROJECT_DIR}\RedExpert-$VERSION
+    - powershell -ExecutionPolicy ByPass -file ci\build_native.ps1
+    - powershell -ExecutionPolicy ByPass -file ci\build_jar.ps1
+    - mv modules/redexpert/target/RedExpert-$VERSION.* "${DIST}"
+
+build:windows:x86_64:
+  <<: *build_template
+  <<: *build_windows_template
+  variables:
+    DIST: ${CI_PROJECT_DIR}\dist\windows-x86_64
+    QMAKE: c:\Qt\Qt5.6.3\5.6.3\msvc2013_64\bin\qmake.exe
+    ARCH: amd64
+    <<: *build_windows_template_vars
+
+build:windows:x86:
+  <<: *build_template
+  <<: *build_windows_template
+  variables:
+    DIST: ${CI_PROJECT_DIR}\dist\windows-x86
+    QMAKE: c:\Qt\Qt5.6.3_x86\5.6.3\msvc2013\bin\qmake.exe
+    ARCH: x86
+    <<: *build_windows_template_vars
+
+repackage:
+  tags:
+    - docker
+    - builder
+  stage: repackage
+  image: alpine:3.8
+  before_script:
+    - apk --update add bash tar zip
+    - export VERSION=`cat .ci/version`
+  script:
+    - ./ci/repackage.sh linux-x86_64 linux-x86 windows-x86_64 windows-x86
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - dist/unified/
+
+deploy:
+  tags:
+    - docker
+    - builder
+  stage: deploy
+  image: redsoftru/relmanager_client
+  script:
+    - relmanager_client deploy ${RELEASE_HUB_PROJECT} $(cat .ci/version) --artifacts .ci/artifacts --ci_url ${CI_URL} --context $(cat .ci/context) --branch $(cat .ci/branch) --commit ${CI_COMMIT_SHA}
+  only:
+    variables:
+      - "$RELEASE_HUB_KEY"

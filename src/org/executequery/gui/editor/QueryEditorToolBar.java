@@ -46,8 +46,6 @@ class QueryEditorToolBar extends PanelToolBar {
 
     private static final String QUERY_SHORTCUTS = "manage-shortcuts-command";
 
-    private static final String EDITOR_HELP_COMMAND = "editor-help-command";
-
     private static final String FORMAT_SQL_COMMAND = "editor-format-sql-command";
 
 //    private static final String REMOVE_COMMENT_LINES_COMMAND = "remove-comment-lines-command";
@@ -124,7 +122,7 @@ class QueryEditorToolBar extends PanelToolBar {
     /**
      * Initializes the state of this instance.
      */
-    private void init() throws Exception {
+    private void init() {
         buttons = new HashMap<String, RolloverButton>();
 
         addButton(createButton(EXECUTE_COMMAND,
@@ -206,10 +204,6 @@ class QueryEditorToolBar extends PanelToolBar {
 //                     "Uncomment"));
 
         addButton(createButton(FORMAT_SQL_COMMAND, "Format SQL"));
-
-        addSeparator();
-
-        addButton(createButton(EDITOR_HELP_COMMAND, "Query Editor help"));
 
     }
 

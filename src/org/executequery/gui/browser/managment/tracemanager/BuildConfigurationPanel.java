@@ -2,6 +2,7 @@ package org.executequery.gui.browser.managment.tracemanager;
 
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
+import org.executequery.gui.browser.TraceManagerPanel;
 import org.underworldlabs.swing.NumberTextField;
 
 import javax.swing.*;
@@ -155,7 +156,7 @@ public class BuildConfigurationPanel extends JPanel {
             }
         });
         saveFileField = new JTextField();
-        saveButton = new JButton("Save");
+        saveButton = new JButton(TraceManagerPanel.bundleString("Save"));
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -224,7 +225,7 @@ public class BuildConfigurationPanel extends JPanel {
                 componentMap.put(intValues[k], field);
             }
 
-        JLabel label = new JLabel("Server Version");
+        JLabel label = new JLabel(TraceManagerPanel.bundleString("ServerVersion"));
         add(label, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -254,7 +255,7 @@ public class BuildConfigurationPanel extends JPanel {
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
 
-        label = new JLabel("Config file");
+        label = new JLabel(TraceManagerPanel.bundleString("ConfigFile"));
         add(label, new GridBagConstraints(0, 5,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),

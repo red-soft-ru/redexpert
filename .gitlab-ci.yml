@@ -129,6 +129,7 @@ build:linux:x86:
   variables: &build_windows_template_vars
     ErrorActionPreference: STOP
     JAVA_HOME: c:\Program Files\Java\jdk8
+    MAVEN_OPTS: -Dmaven.repo.local=${CI_PROJECT_DIR}\.m2
   before_script:
     - $VERSION = (get-content .ci\version -Raw).trim()
     - unzip -q dist-src\RedExpert-$VERSION-src.zip

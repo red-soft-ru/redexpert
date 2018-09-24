@@ -13,7 +13,7 @@ variables:
   RELEASE_HUB_PROJECT: red_expert
   CI_URL: ${CI_PROJECT_URL}/pipelines/${CI_PIPELINE_ID}
   CONTEXT: commit
-  TAG_BRANCH: master
+  TAG_BRANCH: RedExpert_1.0
 
 .prepare_template: &prepare_template
   tags:

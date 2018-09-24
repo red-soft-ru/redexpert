@@ -187,3 +187,7 @@ deploy:
   only:
     variables:
       - "$RELEASE_HUB_KEY"
+  dependencies:
+    - prepare
+    - sources
+    - repackage

@@ -77,7 +77,7 @@ public class ErdToolBarPalette extends PanelToolBar
         }
     }
 
-    private void jbInit() throws Exception {
+    private void jbInit() {
 
         dropTableButton = new RolloverButton("/org/executequery/icons/DropTable16.png",
                 "Remove selected object(s) from the ERD");
@@ -163,11 +163,6 @@ public class ErdToolBarPalette extends PanelToolBar
         addButton(zoomOutButton);
         //addComboBox(scaleCombo);
         addButton(zoomInButton);
-
-        addSeparator();
-
-        addButton(createButton("erd-help-command",
-                "ERD help"));
 
     }
 

@@ -1,5 +1,7 @@
 package org.executequery.gui.browser.managment.tracemanager;
 
+import org.executequery.gui.browser.TraceManagerPanel;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -28,7 +30,7 @@ public class ColumnsCheckPanel extends JPanel {
                 add(checkBox, gbc);
                 checkBoxMap.put(LogConstants.COLUMNS[k], checkBox);
             }
-        JButton buttonSelectAll = new JButton("Select All");
+        JButton buttonSelectAll = new JButton(TraceManagerPanel.bundleString("SelectAll"));
         buttonSelectAll.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -37,7 +39,7 @@ public class ColumnsCheckPanel extends JPanel {
                 }
             }
         });
-        JButton buttonDeselectAll = new JButton("Deselect All");
+        JButton buttonDeselectAll = new JButton(TraceManagerPanel.bundleString("DeselectAll"));
         buttonDeselectAll.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

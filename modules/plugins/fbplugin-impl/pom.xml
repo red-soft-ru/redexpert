@@ -9,11 +9,15 @@
   <parent>
     <groupId>org.executequery</groupId>
     <artifactId>RedExpert-parent</artifactId>
-    <version>4.3</version>
+    <version>1.0.1-SNAPSHOT</version>
     <relativePath>../../../pom.xml</relativePath>
   </parent>
 
   <repositories>
+    <repository>
+      <id>maven-central</id>
+      <url>http://repo1.maven.org/maven2</url>
+    </repository>
     <repository>
       <id>red-database</id>
       <name>red-database</name>
@@ -31,12 +35,12 @@
     <dependency>
       <groupId>ru.red-soft.jdbc</groupId>
       <artifactId>jaybird-full-jdk18</artifactId>
-      <version>3.0.5.31</version>
+      <version>3.0.6-SNAPSHOT.15</version>
     </dependency>
     <dependency>
       <groupId>ru.red-soft.jdbc</groupId>
       <artifactId>jaybird-cryptoapi-jdk18</artifactId>
-      <version>3.0.5.31</version>
+      <version>3.0.6-SNAPSHOT.15</version>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>

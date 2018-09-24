@@ -1,11 +1,13 @@
 package org.executequery.gui.browser.managment.tracemanager;
 
+import org.executequery.gui.browser.TraceManagerPanel;
+
 /**
  * Created by vasiliy on 23.12.16.
  */
 public class Filter {
     public enum FilterType {
-        HIGHLIGHT("Highlight"), FILTER("Filter");
+        HIGHLIGHT(TraceManagerPanel.bundleString("Highlight")), FILTER(TraceManagerPanel.bundleString("Filter"));
         final private String title;
 
         FilterType(final String title) {

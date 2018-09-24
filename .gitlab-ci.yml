@@ -48,7 +48,9 @@ prepare:release:
   before_script:
     - apk --update add sed
     - mkdir .ci
+    - VERSION_IN_PROPERTIES=`cat src/org/executequery/eq.system.properties|awk -F= '{if ($1 == "re.version") print($2)}'`
     - export VERSION=$(echo ${CI_COMMIT_TAG}|sed 's/v//')
+    - "[ \"$VERSION\" = \"$VERSION_IN_PROPERTIES\" ] || (Update re.version in eq.system.properties!; exit 1)"
     - export BRANCH=${TAG_BRANCH}
     - export CONTEXT=tag
   only:

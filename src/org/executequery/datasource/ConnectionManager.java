@@ -109,7 +109,7 @@ public final class ConnectionManager {
         dataSource.setUserName(databaseConnection.getUserName());
         dataSource.setPassword(databaseConnection.getUnencryptedPassword());
         dataSource.setCharset(databaseConnection.getCharset());
-        dataSource.setURL(SimpleDataSource.generateUrl(databaseConnection, SimpleDataSource.buildAdvancedProperties(databaseConnection)));
+        dataSource.setURL(getURL(databaseConnection));
 
         dataSource.setCertificate(databaseConnection.getCertificate());
         dataSourceMap.put(databaseConnection, dataSource);
@@ -159,6 +159,14 @@ public final class ConnectionManager {
             }
         }
 
+    }
+
+    public static String getURL(DatabaseConnection databaseConnection) {
+        if (databaseConnection == null) {
+
+            return null;
+        }
+        return SimpleDataSource.generateUrl(databaseConnection, SimpleDataSource.buildAdvancedProperties(databaseConnection));
     }
 
     public static Connection realConnection(DatabaseMetaData dmd) throws SQLException {

@@ -1,6 +1,6 @@
 cache:
   paths:
-    - .m2/
+    - .m2/repository
 
 stages:
 - prepare
@@ -14,6 +14,7 @@ variables:
   CI_URL: ${CI_PROJECT_URL}/pipelines/${CI_PIPELINE_ID}
   CONTEXT: commit
   TAG_BRANCH: master
+  MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository"
 
 .prepare_template: &prepare_template
   tags:
@@ -62,8 +63,6 @@ sources:
     - builder
   stage: sources
   image: maven:3-jdk-8-alpine
-  variables:
-    MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2"
   before_script:
     - apk --update add bash git
     - git config --global user.name "Dummy Name"
@@ -89,7 +88,6 @@ sources:
     - builder
   <<: *build_template
   variables: &build_linux_template_variables
-    MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2"
     M2_HOME: /opt/apache-maven-3.5.4/
     QMAKE: qmake-qt4
   before_script:
@@ -131,7 +129,6 @@ build:linux:x86:
   variables: &build_windows_template_vars
     ErrorActionPreference: STOP
     JAVA_HOME: c:\Program Files\Java\jdk8
-    MAVEN_OPTS: -Dmaven.repo.local=${CI_PROJECT_DIR}\.m2
   before_script:
     - $VERSION = (get-content .ci\version -Raw).trim()
     - unzip -q dist-src\RedExpert-$VERSION-src.zip

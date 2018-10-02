@@ -14,6 +14,48 @@ Red Expert был протестирован под Windows, Linux с испол
 
 Red Expert обладает рядом полезных компонентов: визуальным редактором для всех объектов базы данных, редактором SQL запросов и исполнителем SQL скриптов и др.
 
+\section{Запуск Red Expert}
+
+\begin{enumerate}[leftmargin=15pt]
+	\item Установите JDK не ниже 1.8.
+	\item С официального сайта СУБД Ред Базы Данных --- \href{http://reddatabase.ru/downloads/}{reddatabase.ru} скачайте бинарный пакет (\ttt{tar.gz:bin} или \ttt{zip:bin}) для запуска Red Expert на соответствующей операционной системе. Загрузка доступна только авторизованному пользователю. 
+	\item Распакуйте архив.
+	\item Запустите исполняемый файл в зависимости от разрядности ОС: \ttt{bin/RedExpert64} или \ttt{bin/RedExpert}. Вы увидете следующее окно загрузки:
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width = 0.45\linewidth]{img/install.png}
+	\end{figure}
+Главное окно приложение будет выглядеть так:
+\begin{figure}[H]
+	\centering
+	\includegraphics[width = 0.85\linewidth]{img/main_window.png}
+\end{figure}
+\end{enumerate}	
+
+\section{Обновление Red Expert}
+Для того, чтобы не пропускать появление свежих версий Red Expert:
+
+\begin{enumerate}[leftmargin=25pt]
+\item  В настройках приложения (\textit{Инструменты} $\rightarrow$ \textit{Настройки} $\rightarrow$ \textit{General}) поставьте галочку \ttt{Load unstable versions}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width = 0.85\linewidth]{img/load_versions.png}
+\end{figure}
+
+\item При выходе новой версии приложения в строке состояния (внизу главного окна)
+будет появляться пульсирующая точка желтого цвета с надписью \ttt{Update available}:
+\begin{figure}[H]
+	\begin{flushright}
+		\includegraphics[width = 0.94\linewidth]{img/status_bar.png}
+	\end{flushright}
+\end{figure}
+
+\item Нажмите на эту панель и согласитесь на все предлагаемые действия.
+
+\item По окончании обновления перезапустите Red Expert.
+\end{enumerate}	
 \section{Обзор графического интерфейса}\label{sec:overview}
 
 В Red Expert используется распространенный для таких инструментов и даже большинства IDE интерфейс с вкладками и подключаемыми компонентами.

@@ -61,7 +61,6 @@ public class LatestVersionRepositoryImpl implements LatestVersionRepository {
             try {
 
                 String version = null;
-                String build = null;
 
                 RemoteHttpClient httpClient = remoteHttpClient();
                 RemoteHttpResponse response = httpClient.httpGetRequest("api.github.com", versionUrl().getPath() +
@@ -89,7 +88,7 @@ public class LatestVersionRepositoryImpl implements LatestVersionRepository {
                     binaryZipUrl = m.group(1);//responseTextLines.substring(m.start(), m.end()).trim();
                 }
 
-                return new ApplicationVersion(version, build);
+                return new ApplicationVersion(version);
 
             } catch (MalformedURLException e) {
 

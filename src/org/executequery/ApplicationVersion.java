@@ -39,7 +39,6 @@ public final class ApplicationVersion {
 
     public ApplicationVersion(String version, String build) {
         super();
-        version = version.replaceAll("-[A-Z]+", "");
         String xs = beforeDot(version);
         String temp = afterDot(version);
         x = Integer.parseInt(xs);

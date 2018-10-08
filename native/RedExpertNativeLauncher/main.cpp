@@ -360,16 +360,30 @@ int main(int argc, char *argv[])
     }
 #else
     WIN32_FIND_DATA data;
-    HANDLE hFind = FindFirstFile((LPCWSTR)lib_dir.c_str(), &data);
+    std::wstring wlib_dir(lib_dir.begin(), lib_dir.end());
+    wlib_dir.append(L"\\*");
+    HANDLE hFind = FindFirstFile(wlib_dir.c_str(), &data);
 
     if ( hFind != INVALID_HANDLE_VALUE )
     {
         do
         {
-            std::cout << data.cFileName << std::endl;
+            // convert from wide char to narrow char array
+            char buffer[1024];
+            char def_char = '\0';
+            WideCharToMultiByte(CP_ACP, 0, data.cFileName, -1, buffer, 260, &def_char, NULL);
+            std::string conv_file(buffer);
+            if (conv_file != "." && conv_file != "..")
+            {
+                paths.append(lib_dir + "\\");
+                paths.append(conv_file);
+                paths.append(separator);
+            }
         }
         while (FindNextFile(hFind, &data));
         FindClose(hFind);
+        int localLength = paths.length();
+        paths.resize(paths.length() - 2);
     }
 #endif
 

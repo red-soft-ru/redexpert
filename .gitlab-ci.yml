@@ -36,7 +36,7 @@ prepare:snapshot:
   <<: *prepare_template
   before_script:
     - mkdir .ci
-    - VERSION=$(awk -F= '{if ($1 == "re.version") printf("%s", $2)}' src/org/executequery/eq.system.properties|sed 's/\(.*\)-.*/\1/')
+    - VERSION=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec|sed 's/\(.*\)-.*/\1/')
     - BUILDNO=$(relmanager_client genbuildno ${RELEASE_HUB_PROJECT} ${VERSION}-SNAPSHOT)
     - export VERSION=${VERSION}-SNAPSHOT.${BUILDNO}
     - export BRANCH=${CI_COMMIT_REF_NAME}
@@ -49,9 +49,9 @@ prepare:release:
   before_script:
     - apk --update add sed
     - mkdir .ci
-    - VERSION_IN_PROPERTIES=`cat src/org/executequery/eq.system.properties|awk -F= '{if ($1 == "re.version") print($2)}'`
+    - VERSION_IN_POM=$(mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec)
     - export VERSION=$(echo ${CI_COMMIT_TAG}|sed 's/v//')
-    - "[ \"$VERSION\" = \"$VERSION_IN_PROPERTIES\" ] || (echo Update re.version in eq.system.properties!; exit 1)"
+    - "[ \"$VERSION\" = \"$VERSION_IN_POM\" ] || (echo Project version in pom.xml and tag do not match!; exit 1)"
     - export BRANCH=${TAG_BRANCH}
     - export CONTEXT=tag
   only:

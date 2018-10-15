@@ -211,16 +211,14 @@ public class QueryEditor extends DefaultTabView
         QueryEditorHistory.addEditor(connectionID, absolutePath, number);
         scriptFile.setAbsolutePath(absolutePath);
 
-        if (text != null) {
-
-            loadText(text);
-        }
-
         contentChanged = false;
 
         formatter = new TokenizingFormatter();
         if (getSelectedConnection() != null)
             ((QueryEditorTextPane) editorPanel.getQueryArea()).setDBObjects(getSelectedConnection().getListObjectsDB());
+        if (text != null) {
+            loadText(text);
+        }
     }
 
     private String defaultScriptName() {
@@ -736,8 +734,7 @@ public class QueryEditor extends DefaultTabView
      * @param whether to return the result set row count
      * @param the     executed query of the result set
      */
-    public int setResultSet(ResultSet rset, boolean showRowNumber, String query)
-            throws SQLException {
+    public int setResultSet(ResultSet rset, boolean showRowNumber, String query) {
 
         int rowCount = resultsPanel.setResultSet(rset, showRowNumber, getMaxRecords());
         revalidate();
@@ -749,7 +746,7 @@ public class QueryEditor extends DefaultTabView
      *
      * @param rset the executed result set
      */
-    public void setResultSet(ResultSet rset) throws SQLException {
+    public void setResultSet(ResultSet rset) {
 
         resultsPanel.setResultSet(rset, true, getMaxRecords());
         revalidate();

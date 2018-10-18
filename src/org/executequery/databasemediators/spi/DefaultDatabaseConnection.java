@@ -687,7 +687,7 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         while (nodes.hasMoreElements()) {
             DatabaseObjectNode node = nodes.nextElement();
             if (!node.isHostNode() && node.getType() != NamedObject.META_TAG)
-                list.add(node.getName());
+                list.add(node.getName().replace("$", "\\$"));
             if (node.isHostNode() || node.getType() == NamedObject.META_TAG)
                 addingChild(list, node);
         }

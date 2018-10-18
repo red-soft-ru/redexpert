@@ -109,6 +109,7 @@ public class QueryEditorTextPanel extends JPanel {
                     int cursor = queryPane.getCurrentPosition();
                     String s = queryPane.getSQLSyntaxDocument().getNameDBObjectFromPosition(cursor, queryPane.getText());
                     if (s != null) {
+                        s = s.replace("$", "\\$");
                         TreeFindAction action = new TreeFindAction();
                         SchemaTree tree = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getTree();
                         action.install(tree);

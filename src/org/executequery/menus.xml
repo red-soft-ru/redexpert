@@ -518,22 +518,6 @@
                        action-command="viewSystemLog"
                        tool-tip="View the system output log"/>
 
-            <menu-item id="application-logs-command"
-                       key="menu.tools.system-logs.data-export"
-                       name="Data Export Log"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"
-                       mnemonic="X"
-                       action-command="viewExportLog"
-                       tool-tip="View the data export log"/>
-
-            <menu-item id="application-logs-command"
-                       key="menu.tools.system-logs.data-import"
-                       name="Data Import Log"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"
-                       mnemonic="I"
-                       action-command="viewImportLog"
-                       tool-tip="View the data import log"/>
-
             <menu-item id="separator"/>
 
             <menu name="Reset Logs"

@@ -411,21 +411,12 @@
 
         <menu-item id="separator"/>
 
-        <menu-item id="execute-object"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
         <menu-item id="compare-data-types"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="separator"/>
 
         <menu-item id="export-resultset-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="execute-sql-script-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="generate-scripts-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu name="Generate ERD"

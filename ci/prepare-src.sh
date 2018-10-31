@@ -24,7 +24,6 @@ mkdir -p $RESULT_DIR
 
 echo Preparing $VERSION sources
 cd $SOURCES
-sed -e "s/^\(re.version\).*/\1=$VERSION/" -i $SOURCES/src/org/executequery/eq.system.properties
 
 ARCHIVE_PREFIX=RedExpert-$VERSION
 git log > Changelog

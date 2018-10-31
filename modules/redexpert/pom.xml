@@ -14,7 +14,7 @@
         <groupId>org.executequery</groupId>
         <artifactId>RedExpert-parent</artifactId>
         <relativePath>../../pom.xml</relativePath>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.1-RC.1</version>
     </parent>
 
     <dependencies>
@@ -232,6 +232,16 @@
                     <include>**/*.html</include>
                     <include>**/*.notes</include>
                 </includes>
+                <excludes>
+                    <exclude>**/eq.system.properties</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>${pom.basedir}/../../src</directory>
+                <includes>
+                    <include>**/eq.system.properties</include>
+                </includes>
+                <filtering>true</filtering>
             </resource>
         </resources>
 
@@ -383,34 +393,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>1.4</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <finalName>${project.artifactId}-shaded</finalName>
-                    <shadedArtifactAttached>true</shadedArtifactAttached>
-                    <shadedClassifierName>shaded</shadedClassifierName>
-                    <filters>
-                        <filter>
-                            <artifact>*:*</artifact>
-                            <excludes>
-                                <exclude>META-INF/*.SF</exclude>
-                                <exclude>META-INF/*.DSA</exclude>
-                                <exclude>META-INF/*.RSA</exclude>
-                            </excludes>
-                        </filter>
-                    </filters>
-                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>

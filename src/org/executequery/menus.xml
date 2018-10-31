@@ -411,21 +411,12 @@
 
         <menu-item id="separator"/>
 
-        <menu-item id="execute-object"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
         <menu-item id="compare-data-types"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="separator"/>
 
         <menu-item id="export-resultset-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="execute-sql-script-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="generate-scripts-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu name="Generate ERD"
@@ -517,22 +508,6 @@
                        mnemonic="S"
                        action-command="viewSystemLog"
                        tool-tip="View the system output log"/>
-
-            <menu-item id="application-logs-command"
-                       key="menu.tools.system-logs.data-export"
-                       name="Data Export Log"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"
-                       mnemonic="X"
-                       action-command="viewExportLog"
-                       tool-tip="View the data export log"/>
-
-            <menu-item id="application-logs-command"
-                       key="menu.tools.system-logs.data-import"
-                       name="Data Import Log"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"
-                       mnemonic="I"
-                       action-command="viewImportLog"
-                       tool-tip="View the data import log"/>
 
             <menu-item id="separator"/>
 

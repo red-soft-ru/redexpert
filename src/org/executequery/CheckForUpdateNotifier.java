@@ -157,9 +157,11 @@ public class CheckForUpdateNotifier implements Interruptible {
             branch = SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "branch.next.major.version");
         else branch = SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "branch");
         url = "http://builds.red-soft.biz/api/builds/latest/?project=red_expert&branch=" + branch;
-        if (!unstable)
+        if (unstable)
+            url += "&stage=0";
+        else
             url += "&stage=2";
-        version = new ApplicationVersion(updateLoader.getJsonPropertyFromUrl(url, "version"), null);
+        version = new ApplicationVersion(updateLoader.getJsonPropertyFromUrl(url, "version"));
         if (isNewVersion(version)) {
 
             updateLoader.setVersion(version.getVersion());
@@ -177,7 +179,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         // updating from repository to latest version
         updateLoader = new UpdateLoader(repo);
         if (updateLoader.isNeedUpdate()) {
-            version = new ApplicationVersion(updateLoader.getVersion(), null);
+            version = new ApplicationVersion(updateLoader.getVersion());
             setDownloadNotifierInStatusBar();
         } else {
             if (updateLoader.getVersion() != null)

@@ -37,7 +37,7 @@ public class LicenseCommand extends OpenFrameCommand
     public void execute(ActionEvent e) {
 
         new InformationDialog(bundledString("license"),
-                "org/executequery/gpl.license", InformationDialog.RESOURCE_PATH_VALUE);
+                "org/executequery/gpl.license", InformationDialog.RESOURCE_PATH_VALUE, null);
     }
 
 }

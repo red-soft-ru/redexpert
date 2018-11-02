@@ -38,7 +38,7 @@ public class InformationDialog extends ActionDialog {
     /**
      * Creates a new instance of InformationDialog
      */
-    public InformationDialog(String name, String value, int valueType) {
+    public InformationDialog(String name, String value, int valueType, String charSet) {
 
         super(name, true);
 
@@ -47,8 +47,10 @@ public class InformationDialog extends ActionDialog {
             String text = null;
 
             if (valueType == RESOURCE_PATH_VALUE) {
-
+                if (charSet == null)
                 text = FileUtils.loadResource(value);
+                else
+                    text = FileUtils.loadResource(value, "UTF8");
 
             } else {
 

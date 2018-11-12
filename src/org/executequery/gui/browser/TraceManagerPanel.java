@@ -324,7 +324,10 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     traceManager.setUser(userField.getText());
                     traceManager.setPassword(new String(passwordField.getPassword()));
                     traceManager.setLogger(outputStream);
-                    traceManager.setCharSet(MiscUtils.getJavaCharsetFromSqlCharset((String) charsetCombo.getSelectedItem()));
+                    if (charsetCombo.getSelectedIndex() == 0)
+                        traceManager.setCharSet(null);
+                    else
+                        traceManager.setCharSet(MiscUtils.getJavaCharsetFromSqlCharset((String) charsetCombo.getSelectedItem()));
                     traceManager.setDatabase(fileDatabaseField.getText());
                     traceManager.setHost(hostField.getText());
                     traceManager.setPort(portField.getValue());

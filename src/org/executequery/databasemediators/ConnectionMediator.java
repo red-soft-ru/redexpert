@@ -105,10 +105,7 @@ public final class ConnectionMediator {
             
             return false;
         }
-
-        GUIUtils.scheduleGC();
-        ConnectionManager.closeConnection(dc);
-
+        disconnect(dc);
         return true;
     }
     

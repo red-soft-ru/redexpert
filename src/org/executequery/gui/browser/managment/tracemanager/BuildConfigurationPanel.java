@@ -44,7 +44,6 @@ public class BuildConfigurationPanel extends JPanel {
             "log_trigger_start",
             "log_trigger_finish",
             "log_context",
-            "log_errors",
             "log_warnings",
             "log_mandatory_access",
             "log_record_mandatory_access",

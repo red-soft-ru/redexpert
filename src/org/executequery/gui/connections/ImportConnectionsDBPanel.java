@@ -44,6 +44,7 @@ public class ImportConnectionsDBPanel extends JPanel {
             }
         });
         bottomButtonPanel.setOkButtonText("OK");
+        bottomButtonPanel.setHelpButtonVisible(false);
 
         setLayout(new BorderLayout());
 

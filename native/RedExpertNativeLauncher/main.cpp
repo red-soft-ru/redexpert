@@ -128,12 +128,8 @@ CreateJvmFuncPtr findCreateJvm() {
     std::string jvm_path;
     if (java_env == NULL || strcmp(java_env, "") == 0)
     {
-        std::string out;
-        executeCmdEx("java -XshowSettings:properties -version", out);
-        std::string jhome_pat = "java.home = ";
-        int jhome_pos = out.find(jhome_pat.c_str()) +  jhome_pat.length();
-        int end_pos = out.find("\n", jhome_pos);
-        java_env = strdup(out.substr(jhome_pos, end_pos - jhome_pos).c_str());
+        gtkMessageBox("Application error", "Please, set the JAVA_HOME environment variable and restart the program!");
+        exit(EXIT_FAILURE);
     }
     jvm_path = java_env;
     std::string out;
@@ -169,7 +165,7 @@ CreateJvmFuncPtr findCreateJvm() {
     error = dlerror(); //Check for errors on dlopen
     if(jvm_lib == NULL || error != NULL)
     {
-        gtkMessageBox("Application error", "Failed to load JVM!");
+        gtkMessageBox("Application error", "Failed to load JVM! Please check to make sure that Java is configured correctly.");
         exit(EXIT_FAILURE);
     }
 
@@ -217,16 +213,8 @@ bool loadJVMLibrary()
     std::string jvm_path;
     if (java_env == NULL || strcmp(java_env, "") == 0)
     {
-        std::string out;
-        executeCmdEx("java -XshowSettings:properties -version", out);
-        std::regex jhome_regex("java\\.home\\s\\=\\s(([\\w+\\s\\\\\\-:\\.])+)\\n");
-        std::smatch match;
-        if(std::regex_search(out, match, jhome_regex))
-        {
-            std::string str = match[1].str();
-            java_env = strdup(str.c_str());
-            use_jhome = false;
-        }
+        windowsMessageBox(L"Application error", L"Please set the JAVA_HOME environment variable and restart the program!");
+        exit(EXIT_FAILURE);
     }
     jvm_path = java_env;
     std::string out;
@@ -259,16 +247,10 @@ bool loadJVMLibrary()
         exit(EXIT_FAILURE);
     }
 
-    if (java_env == NULL)
-    {
-        windowsMessageBox(L"Application error", L"Please set JAVA_HOME to a Java JDK Install");
-        exit(EXIT_FAILURE);
-    }
-
     hJVM = LoadLibraryA(jvm_path.c_str());
     if(!hJVM)
     {
-        windowsMessageBox(L"Application error", L"Failed to load JVM!");
+        windowsMessageBox(L"Application error", L"Failed to load JVM! Please check to make sure that Java is configured correctly.");
         exit(EXIT_FAILURE);
     }
 

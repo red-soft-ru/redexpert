@@ -220,6 +220,41 @@ public class FileUtils {
         }
     }
 
+    public static String loadResource(String path, String charSet) throws IOException {
+        InputStream input = null;
+        BufferedReader reader = null;
+
+        try {
+
+            ClassLoader cl = FileUtils.class.getClassLoader();
+
+            if (cl != null) {
+                input = cl.getResourceAsStream(path);
+            } else {
+                input = ClassLoader.getSystemResourceAsStream(path);
+            }
+
+            reader = new BufferedReader(new InputStreamReader(input, charSet));
+
+            String line = null;
+            StringBuilder buf = new StringBuilder();
+
+            while ((line = reader.readLine()) != null) {
+                buf.append(line);
+                buf.append("\n");
+            }
+
+            return buf.toString();
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
+            if (input != null) {
+                input.close();
+            }
+        }
+    }
+
     public static Properties loadProperties(String path, Properties defaults) throws IOException {
         return loadProperties(new File(path), defaults);
     }

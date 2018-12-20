@@ -37,7 +37,7 @@ public class ReleaseNotesCommand extends OpenFrameCommand
     public void execute(ActionEvent e) {
 
         new InformationDialog(bundledString("ReleaseNotes"),
-                "org/executequery/release.notes", InformationDialog.RESOURCE_PATH_VALUE);
+                "org/executequery/release.notes", InformationDialog.RESOURCE_PATH_VALUE, "UTF8");
     }
 
 }

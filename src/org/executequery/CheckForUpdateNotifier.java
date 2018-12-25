@@ -25,6 +25,7 @@ import org.executequery.components.SimpleHtmlContentPane;
 import org.executequery.components.StatusBarPanel;
 import org.executequery.gui.InformationDialog;
 import org.executequery.gui.PulsatingCircle;
+import org.executequery.http.JSONAPI;
 import org.executequery.log.Log;
 import org.executequery.repository.LatestVersionRepository;
 import org.executequery.repository.RepositoryCache;
@@ -127,7 +128,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             if (unstable)
                 url = UserProperties.getInstance().getStringProperty("reddatabase.check.rc.url");
             else url = UserProperties.getInstance().getStringProperty("reddatabase.check.url");
-            version = new ApplicationVersion(updateLoader.getJsonPropertyFromUrl(url, "version"));
+            version = new ApplicationVersion(JSONAPI.getJsonPropertyFromUrl(url, "version"));
 
             if (isNewVersion(version)) {
                 logNewVersonInfo();
@@ -161,7 +162,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             url += "&stage=0";
         else
             url += "&stage=2";
-        version = new ApplicationVersion(updateLoader.getJsonPropertyFromUrl(url, "version"));
+        version = new ApplicationVersion(JSONAPI.getJsonPropertyFromUrl(url, "version"));
         if (isNewVersion(version)) {
 
             updateLoader.setVersion(version.getVersion());

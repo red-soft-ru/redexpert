@@ -1,16 +1,10 @@
 package org.executequery;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.executequery.gui.LoginPasswordDialog;
+import org.executequery.http.JSONAPI;
+import org.executequery.http.ReddatabaseAPI;
 import org.executequery.log.Log;
 import org.executequery.util.UserProperties;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.underworldlabs.util.MiscUtils;
-import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,7 +16,6 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -69,11 +62,11 @@ public class UpdateLoader extends JFrame {
 
     public UpdateLoader(String repository) {
         initComponents();
-        this.repo = repository;
+        repo = repository;
     }
 
     private String getLastVersion(String repo) {
-        StringBuilder buffer = new StringBuilder("");
+        StringBuilder buffer = new StringBuilder();
         try {
             URL myUrl = new URL(repo);
             URLConnection myUrlCon = myUrl.openConnection();
@@ -165,168 +158,13 @@ public class UpdateLoader extends JFrame {
         this.dispose();
     }
 
-    JSONObject getJsonObject(String Url) throws IOException {
-
-        StringBuilder text = new StringBuilder();
-        HttpClient client = new HttpClient();
-        GetMethod get = new GetMethod(Url);
-        client.executeMethod(get);
-
-        BufferedReader br = new BufferedReader(
-                new InputStreamReader(get.getResponseBodyAsStream()));
-
-        String inputLine;
-
-
-        while ((inputLine = br.readLine()) != null) {
-            text.append(inputLine).append("\n");
-        }
-
-        br.close();
-
-        if (text.length() == 0)
-            text.append("{\n" +
-                    "    \"version\": \"0.0.0.0\"\n" +
-                    "}");
-
-        return new JSONObject(text.toString());
-    }
-
-    JSONObject getJsonObject(String Url, Map<String, String> headers) throws IOException {
-
-        StringBuilder text = new StringBuilder();
-        HttpClient client = new HttpClient();
-        GetMethod get = new GetMethod(Url);
-        for (String key : headers.keySet()) {
-            get.addRequestHeader(key, headers.get(key));
-        }
-        client.executeMethod(get);
-        BufferedReader br = new BufferedReader(
-                new InputStreamReader(get.getResponseBodyAsStream()));
-
-        String inputLine;
-
-
-        while ((inputLine = br.readLine()) != null) {
-            text.append(inputLine).append("\n");
-        }
-
-        br.close();
-
-
-        return new JSONObject(text.toString());
-    }
-
-    JSONObject postJsonObject(String Url, Map<String, String> parameters) throws IOException {
-
-        StringBuilder text = new StringBuilder();
-        HttpClient client = new HttpClient();
-        PostMethod get = new PostMethod(Url);
-        for (String key : parameters.keySet()) {
-            get.addParameter(key, parameters.get(key));
-        }
-        client.executeMethod(get);
-
-        BufferedReader br = new BufferedReader(
-                new InputStreamReader(get.getResponseBodyAsStream()));
-
-        String inputLine;
-
-
-        while ((inputLine = br.readLine()) != null) {
-            text.append(inputLine).append("\n");
-        }
-
-        br.close();
-
-
-        return new JSONObject(text.toString());
-    }
-
-    JSONArray getJsonArray(String Url, Map<String, String> headers) throws IOException {
-        URL url;
-        StringBuilder text = new StringBuilder();
-
-        HttpClient client = new HttpClient();
-        //HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        GetMethod get = new GetMethod(Url);
-        for (String key : headers.keySet()) {
-            get.addRequestHeader(key, headers.get(key));
-        }
-        client.executeMethod(get);
-
-        BufferedReader br = new BufferedReader(
-                new InputStreamReader(get.getResponseBodyAsStream()));
-
-        String inputLine;
-
-
-        while ((inputLine = br.readLine()) != null) {
-            text.append(inputLine).append("\n");
-        }
-
-        br.close();
-
-        return new JSONArray(text.toString());
-    }
-
-    JSONArray getJsonArray(String Url) throws IOException {
-        URL url;
-        StringBuilder text = new StringBuilder();
-
-        HttpClient client = new HttpClient();
-        //HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        GetMethod get = new GetMethod(Url);
-        client.executeMethod(get);
-
-        BufferedReader br = new BufferedReader(
-                new InputStreamReader(get.getResponseBodyAsStream()));
-
-        String inputLine;
-
-
-        while ((inputLine = br.readLine()) != null) {
-            text.append(inputLine).append("\n");
-        }
-
-        br.close();
-
-        return new JSONArray(text.toString());
-    }
-
-
-    JSONObject getJsonObjectFromArray(JSONArray mas, String key, String value) {
-        for (int i = 0; i < mas.length(); i++) {
-            String prop = mas.getJSONObject(i).getString(key);
-            if (prop.contentEquals(value))
-                return mas.getJSONObject(i);
-        }
-        return null;
-
-    }
-
-    String getJsonPropertyFromUrl(String Url, String key) throws IOException {
-
-        return getJsonObject(Url).getString(key);
-    }
-
-    String getJsonPropertyFromUrl(String Url, String key, Map<String, String> headers) throws IOException {
-
-        return getJsonObject(Url, headers).getString(key);
-    }
-
-    String postJsonPropertyFromUrl(String Url, String key, Map<String, String> parameters) throws IOException {
-
-        return postJsonObject(Url, parameters).getString(key);
-    }
-
     void update() {
         this.setTitle("Updating");
         if (releaseHub) {
             outText.setText("Contacting Download Server...");
             try {
 
-                JSONObject obj = getJsonObjectFromArray(getJsonArray(
+                JSONObject obj = JSONAPI.getJsonObjectFromArray(JSONAPI.getJsonArray(
                         "http://builds.red-soft.biz/api/artifacts/by_build/?project=red_expert&version=" + version),
                         "artifact_id",
                         "red_expert:red_expert:" + version + ":zip:bin");
@@ -341,50 +179,22 @@ public class UpdateLoader extends JFrame {
                 this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
                 download();
             } else {
-                if (MiscUtils.isNull(SystemProperties.getStringProperty("user", "reddatabase.token"))) {
-                    getToken();
-                }
-                String token = SystemProperties.getStringProperty("user", "reddatabase.token");
-                if (!MiscUtils.isNull(token)) {
-                    try {
+                try {
                         //изменить эту строку в соответствии с форматом имени файла на сайте
                         String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version + ".zip";
-                        Map<String, String> heads = new HashMap<>();
-                        heads.put("Authorization", "Token " + token);
-                        String url = getJsonObjectFromArray(getJsonArray(UserProperties.getInstance().getStringProperty("reddatabase.get-files.url") + version,
+                    Map<String, String> heads = ReddatabaseAPI.getHeadersWithToken();
+                    if (heads != null) {
+                        String url = JSONAPI.getJsonObjectFromArray(JSONAPI.getJsonArray(UserProperties.getInstance().getStringProperty("reddatabase.get-files.url") + version,
                                 heads), "filename", filename).getString("url");
-                        downloadLink = getJsonPropertyFromUrl(url + "genlink/", "link", heads);
+                        downloadLink = JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link", heads);
                         download();
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         }
-
     }
-
-    private void getToken() {
-        LoginPasswordDialog dialog = new LoginPasswordDialog("Autorisation", "To continue the update you need to enter\nyour login and password from the site reddatabase.ru");
-        dialog.display();
-        Map<String, String> params = new HashMap<>();
-        params.put("username", dialog.getUsername());
-        params.put("password", dialog.getPassword());
-        try {
-            String token = postJsonPropertyFromUrl(UserProperties.getInstance().getStringProperty("reddatabase.get-token.url"), "token", params);
-            if (token != null) {
-                SystemProperties.setProperty("user", "reddatabase.token", token);
-                UserPreferencesManager.fireUserPreferencesChanged();
-            }
-        } catch (JSONException e) {
-            if (GUIUtilities.displayConfirmCancelDialog("Unknown Login or Password. Try again?") == JOptionPane.YES_OPTION)
-                getToken();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
     private void download() {
         worker = new Thread(
                 () -> {
@@ -512,7 +322,7 @@ public class UpdateLoader extends JFrame {
                     is = new BufferedInputStream
                             (zipfile.getInputStream(entry));
                     int count;
-                    byte data[] = new byte[BUFFER];
+                    byte[] data = new byte[BUFFER];
                     try {
                         FileOutputStream fos = new
                                 FileOutputStream(root + entry.getName());
@@ -564,7 +374,7 @@ public class UpdateLoader extends JFrame {
     }
 
     public boolean isNeedUpdate() {
-        version = getLastVersion(this.repo);
+        version = getLastVersion(repo);
         String localVersion = System.getProperty("executequery.minor.version");
 
         if (version != null && localVersion != null) {

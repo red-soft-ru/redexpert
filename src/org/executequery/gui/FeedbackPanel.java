@@ -51,17 +51,17 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
     /**
      * user comments feedback indicator
      */
-    public static final int USER_COMMENTS = 2;
+    public static final int USER_COMMENTS = 0;
 
     /**
      * feature request feedback indicator
      */
-    public static final int FEATURE_REQUEST = 1;
+    public static final int FEATURE_REQUEST = 2;
 
     /**
      * bug report feedback indicator
      */
-    public static final int BUG_REPORT = 0;
+    public static final int BUG_REPORT = 1;
 
     /**
      * the feedback type for the instance
@@ -425,20 +425,9 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
 
     private UserFeedback createUserFeedback() {
 
-        String typeString = null;
+        String typeString = "" + feedbackType;
 
-        switch (feedbackType) {
-            case BUG_REPORT:
-                typeString = "Red Expert: BUG_REPORT";
-                break;
-            case FEATURE_REQUEST:
-                typeString = "Red Expert: FEATURE_REQUEST";
-                break;
-            case USER_COMMENTS:
-            default:
-                typeString = "Red Expert: USER_COMMENTS";
-                break;
-        }
+
 
         return new UserFeedback(nameField.getText(),
                 emailField.getText(),

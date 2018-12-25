@@ -20,6 +20,9 @@
 
 package org.executequery.repository.spi;
 
+
+import org.executequery.http.JSONAPI;
+import org.executequery.http.ReddatabaseAPI;
 import org.executequery.http.RemoteHttpClient;
 import org.executequery.http.RemoteHttpClientException;
 import org.executequery.http.spi.DefaultRemoteHttpClient;
@@ -31,24 +34,20 @@ import org.executequery.util.SystemResources;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import java.util.Properties;
+import java.io.IOException;
+import java.util.Map;
+
 
 /**
  * @author Takis Diakoumis
  */
 public class UserFeedbackRepositoryImpl implements UserFeedbackRepository {
 
-    private static final String FEEDBACK_POST_ADDRESS = "rdb.support@red-soft.ru";
+    private static final String ADDRESS = "reddatabase.ru";
 
-    private static final String ADDRESS = "red-soft.ru";
 
-    private static final String MAIL_SERVER = "mail.red-soft.ru";
+
+
 
     public void postFeedback(UserFeedback userFeedback) throws RepositoryException {
 
@@ -59,45 +58,18 @@ public class UserFeedbackRepositoryImpl implements UserFeedbackRepository {
             saveEntriesToPreferences(userFeedback);
 
             if (siteAvailable()) {
-
-                try {
-                    // Get system properties
-                    Properties properties = System.getProperties();
-
-                    // Setup mail server
-                    properties.setProperty("mail.smtp.host", MAIL_SERVER);
-
-                    // Get the default Session object.
-                    Session session = Session.getDefaultInstance(properties);
-
-                    // Create a default MimeMessage object.
-                    MimeMessage message = new MimeMessage(session);
-
-                    // Set From: header field of the header.
-                    message.setFrom(new InternetAddress(userFeedback.getEmail()));
-
-                    // Set To: header field of the header.
-                    message.addRecipient(Message.RecipientType.TO, new InternetAddress(FEEDBACK_POST_ADDRESS));
-
-                    // Set Subject: header field
-                    message.setSubject(userFeedback.getType());
-
-                    // Now set the actual message
-                    message.setText("From: " + userFeedback.getName() + "\n\n" + userFeedback.getRemarks());
-
-                    // Send message
-                    Transport.send(message);
-                    System.out.println("Sent message successfully....");
-                } catch (MessagingException mex) {
-                    mex.printStackTrace();
-                }
-
+                Map<String, String> heads = ReddatabaseAPI.getHeadersWithToken();
+                Map<String, String> params = userFeedback.asMap();
+                String res = JSONAPI.postJsonObject("http://reddatabase.ru/api/website/feedbacks/", params, heads);
+                Log.info(res);
             }
 
         } catch (RemoteHttpClientException e) {
-
+            handleException(e);
+        } catch (IOException e) {
             handleException(e);
         }
+
 
     }
 

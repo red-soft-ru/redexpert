@@ -1,10 +1,13 @@
 package org.executequery;
 
+import org.apache.commons.lang.StringUtils;
 import org.executequery.http.JSONAPI;
 import org.executequery.http.ReddatabaseAPI;
 import org.executequery.log.Log;
+import org.executequery.util.ApplicationProperties;
 import org.executequery.util.UserProperties;
 import org.json.JSONObject;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -158,43 +161,29 @@ public class UpdateLoader extends JFrame {
         this.dispose();
     }
 
-    void update() {
-        this.setTitle("Updating");
-        if (releaseHub) {
-            outText.setText("Contacting Download Server...");
-            try {
+    public static void main(String[] args) {
+        applySystemProperties();
+        UpdateLoader updateLoader = new UpdateLoader(repo);
+        for (String arg :
+                args) {
+            if (arg.equalsIgnoreCase("usereleasehub")) {
+                updateLoader.setReleaseHub(true);
+            } else if (arg.contains("version")) {
+                int i = arg.indexOf('=');
+                String ver = arg.substring(i + 1);
+                updateLoader.setVersion(ver);
+            } else if (arg.contains("-repo")) {
+                updateLoader.setRepoArg(arg);
+            } else if (arg.contains("externalProcessName")) {
+                int i = arg.indexOf('=');
+                String external = arg.substring(i + 1);
+                updateLoader.setExternalArg(external);
+            }
 
-                JSONObject obj = JSONAPI.getJsonObjectFromArray(JSONAPI.getJsonArray(
-                        "http://builds.red-soft.biz/api/artifacts/by_build/?project=red_expert&version=" + version),
-                        "artifact_id",
-                        "red_expert:red_expert:" + version + ":zip:bin");
-                downloadLink = "http://builds.red-soft.biz/" + obj.getString("file");
-                download();
-            } catch (Exception e) {
-                Log.error(e.getMessage());
-            }
-        } else {
-            outText.setText("Contacting Download Server...");
-            if (!repo.isEmpty()) {
-                this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
-                download();
-            } else {
-                try {
-                        //изменить эту строку в соответствии с форматом имени файла на сайте
-                        String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version + ".zip";
-                    Map<String, String> heads = ReddatabaseAPI.getHeadersWithToken();
-                    if (heads != null) {
-                        String url = JSONAPI.getJsonObjectFromArray(JSONAPI.getJsonArray(UserProperties.getInstance().getStringProperty("reddatabase.get-files.url") + version,
-                                heads), "filename", filename).getString("url");
-                        downloadLink = JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link", heads);
-                        download();
-                    }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
         }
+        updateLoader.setVisible(true);
+        updateLoader.update();
+    }
     private void download() {
         worker = new Thread(
                 () -> {
@@ -352,25 +341,21 @@ public class UpdateLoader extends JFrame {
         }
     }
 
-    private void downloadFile(String link) throws IOException {
-        URL url = new URL(link);
-        URLConnection conn = url.openConnection();
-        InputStream is = conn.getInputStream();
-        long max = conn.getContentLength();
-        outText.setText(outText.getText() + "\n" + "Downloding file...\nUpdate Size(compressed): " + max + " Bytes");
-        BufferedOutputStream fOut = new BufferedOutputStream(new FileOutputStream(new File("update.zip")));
-        byte[] buffer = new byte[32 * 1024];
-        int bytesRead;
-        int in = 0;
-        while ((bytesRead = is.read(buffer)) != -1) {
-            in += bytesRead;
-            fOut.write(buffer, 0, bytesRead);
-        }
-        fOut.flush();
-        fOut.close();
-        is.close();
-        outText.setText(outText.getText() + "\nDownload Complete!");
+    private static void applySystemProperties() {
 
+        String encoding = stringApplicationProperty("system.file.encoding");
+        if (StringUtils.isNotBlank(encoding)) {
+
+            System.setProperty("file.encoding", encoding);
+        }
+
+        String settingDirName = stringApplicationProperty("eq.user.home.dir");
+        System.setProperty("executequery.user.home.dir", settingDirName);
+        ApplicationContext.getInstance().setUserSettingsDirectoryName(settingDirName);
+
+        String build = stringApplicationProperty("eq.build");
+        System.setProperty("executequery.build", build);
+        ApplicationContext.getInstance().setBuild(build);
     }
 
     public boolean isNeedUpdate() {
@@ -397,26 +382,73 @@ public class UpdateLoader extends JFrame {
         this.binaryZipUrl = binaryZip;
     }
 
-    public static void main(String[] args) {
-        UpdateLoader updateLoader = new UpdateLoader(repo);
-        for (String arg :
-                args) {
-            if (arg.equalsIgnoreCase("usereleasehub")) {
-                updateLoader.setReleaseHub(true);
-            } else if (arg.contains("version")) {
-                int i = arg.indexOf('=');
-                String ver = arg.substring(i + 1);
-                updateLoader.setVersion(ver);
-            } else if (arg.contains("-repo")) {
-                updateLoader.setRepoArg(arg);
-            } else if (arg.contains("externalProcessName")) {
-                int i = arg.indexOf('=');
-                String external = arg.substring(i + 1);
-                updateLoader.setExternalArg(external);
-            }
+    private static String stringApplicationProperty(String key) {
 
-        }
-        updateLoader.setVisible(true);
-        updateLoader.update();
+        return applicationProperties().getProperty(key);
     }
+
+    private static ApplicationProperties applicationProperties() {
+
+        return ApplicationProperties.getInstance();
+    }
+
+    void update() {
+        this.setTitle("Updating");
+        if (releaseHub) {
+            outText.setText("Contacting Download Server...");
+            try {
+
+                JSONObject obj = JSONAPI.getJsonObjectFromArray(JSONAPI.getJsonArray(
+                        "http://builds.red-soft.biz/api/artifacts/by_build/?project=red_expert&version=" + version),
+                        "artifact_id",
+                        "red_expert:red_expert:" + version + ":zip:bin");
+                downloadLink = "http://builds.red-soft.biz/" + obj.getString("file");
+                download();
+            } catch (Exception e) {
+                Log.error(e.getMessage());
+            }
+        } else {
+            outText.setText("Contacting Download Server...");
+            if (!MiscUtils.isNull(repo)) {
+                this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
+                download();
+            } else {
+                try {
+                    //изменить эту строку в соответствии с форматом имени файла на сайте
+                    String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version + ".zip";
+                    Map<String, String> heads = ReddatabaseAPI.getHeadersWithToken();
+                    if (heads != null) {
+                        String url = JSONAPI.getJsonObjectFromArray(JSONAPI.getJsonArray(UserProperties.getInstance().getStringProperty("reddatabase.get-files.url") + version,
+                                heads), "filename", filename).getString("url");
+                        downloadLink = JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link", heads);
+                        download();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void downloadFile(String link) throws IOException {
+        URL url = new URL(link);
+        URLConnection conn = url.openConnection();
+        InputStream is = conn.getInputStream();
+        long max = conn.getContentLength();
+        outText.setText(outText.getText() + "\n" + "Downloading file...\nUpdate Size(compressed): " + max + " Bytes");
+        BufferedOutputStream fOut = new BufferedOutputStream(new FileOutputStream(new File("update.zip")));
+        byte[] buffer = new byte[32 * 1024];
+        int bytesRead;
+        int in = 0;
+        while ((bytesRead = is.read(buffer)) != -1) {
+            in += bytesRead;
+            fOut.write(buffer, 0, bytesRead);
+        }
+        fOut.flush();
+        fOut.close();
+        is.close();
+        outText.setText(outText.getText() + "\nDownload Complete!");
+
+    }
+
 }

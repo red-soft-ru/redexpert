@@ -131,6 +131,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             version = new ApplicationVersion(JSONAPI.getJsonPropertyFromUrl(url, "version"));
 
             if (isNewVersion(version)) {
+                updateLoader.setVersion(version.getVersion());
                 logNewVersonInfo();
                 setNotifierInStatusBar();
                 setDownloadNotifierInStatusBar();

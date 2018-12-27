@@ -272,7 +272,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         sb.append("</td></tr><tr><td>");
         sb.append("If you wish to send feedback with ");
         sb.append("attachments, please send an email to ");
-        sb.append("rdb.support@red-soft.biz instead of completing this form.");
+        sb.append("rdb.support@red-soft.ru instead of completing this form.");
         sb.append("</td></tr><tr><td>This feature requires an active ");
         sb.append("internet connection.</td></tr>");
         sb.append(Constants.TABLE_TAG_END);
@@ -321,7 +321,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
 
                     GUIUtilities.displayInformationMessage(
                             "Your remarks were successfully posted to " +
-                                    "rdb.support@red-soft.biz.\nThank you for your feedback.");
+                                    "rdb.support@red-soft.ru.\nThank you for your feedback.");
 
                 } else if (cancelled || result == Constants.WORKER_FAIL ||
                         result == Constants.WORKER_CANCEL) {
@@ -345,7 +345,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         progressDialog = new InterruptibleProgressDialog(
                 GUIUtilities.getParentFrame(),
                 "Posting Feedback",
-                "Posting feedback report to rdb.support@red-soft.biz",
+                "Posting feedback report to rdb.support@red-soft.ru",
                 this);
 
         worker.start();
@@ -400,9 +400,12 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         try {
 
             UserFeedback userFeedback = createUserFeedback();
-            repository.postFeedback(userFeedback);
-
+            if (repository.postFeedback(userFeedback))
             return Constants.WORKER_SUCCESS;
+            else {
+                showError("Error posting feedback");
+                return Constants.WORKER_FAIL;
+            }
 
         } catch (RepositoryException e) {
 

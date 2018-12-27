@@ -59,16 +59,19 @@ import org.underworldlabs.swing.actions.BaseActionCommand;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.toolbar.ToolBarProperties;
 import org.underworldlabs.swing.util.IconUtilities;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * <p>The GUIUtilities is the primary 'controller' class for all
@@ -235,6 +238,22 @@ public final class GUIUtilities {
 
         // select the first main panel
 //        desktopMediator.setSelectedPane(SwingConstants.CENTER, 0);
+    }
+
+    public static void loadAuthorisationInfo() {
+        if (!MiscUtils.isNull(SystemProperties.getStringProperty("user", "reddatabase.token"))) {
+            statusBar.getLabel(4).setText(" user:" + SystemProperties.getStringProperty("user", "reddatabase.user"));
+            statusBar.getLabel(4).addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    if (GUIUtilities.displayConfirmDialog("Do yo want exit from this account?") == JOptionPane.YES_OPTION) {
+                        SystemProperties.setStringProperty("user", "reddatabase.token", "");
+                        statusBar.getLabel(4).removeMouseListener(this);
+                        loadAuthorisationInfo();
+                    }
+                }
+            });
+        } else statusBar.getLabel(4).setText(" not authorized");
     }
 
     /**
@@ -1669,17 +1688,10 @@ public final class GUIUtilities {
                 saveAs = QueryEditorHistory.isDefaultEditorDirectory((QueryEditor) saveFunction);
             }
 
-            if (saveFunction.save(saveAs) != SaveFunction.SAVE_COMPLETE) {
+            return saveFunction.save(saveAs) == SaveFunction.SAVE_COMPLETE;
 
-                return false;
-            }
+        } else return result != JOptionPane.CANCEL_OPTION;
 
-        } else if (result == JOptionPane.CANCEL_OPTION) {
-
-            return false;
-        }
-
-        return true;
     }
 
 

@@ -5,13 +5,13 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HostParams;
+import org.executequery.GUIUtilities;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.Map;
 
 public class JSONAPI {
@@ -87,26 +87,26 @@ public class JSONAPI {
         HostConfiguration config = client.getHostConfiguration();
         HostParams hostParams = config.getParams();
         hostParams.setParameter("http.protocol.content-charset", "UTF8");
-        client.executeMethod(get);
+        int cod = client.executeMethod(get);
 
         BufferedReader br = new BufferedReader(
                 new InputStreamReader(get.getResponseBodyAsStream()));
-
         String inputLine;
-
-
         while ((inputLine = br.readLine()) != null) {
             text.append(inputLine).append("\n");
         }
 
         br.close();
 
+        if (cod < 200 || cod > 300) {
+            text.insert(0, "Server return error:\n");
+            GUIUtilities.displayErrorMessage(text.toString());
 
+        }
         return text.toString();
     }
 
     public static JSONArray getJsonArray(String Url, Map<String, String> headers) throws IOException {
-        URL url;
         StringBuilder text = new StringBuilder();
 
         HttpClient client = new HttpClient();

@@ -114,6 +114,13 @@ public class ExecuteQueryMenu extends JMenuBar {
         return new JPopupMenu.Separator();
     }
 
+    public JMenuItemFactory getjMenuItemFactory() {
+        return jMenuItemFactory;
+    }
+
+    public void setjMenuItemFactory(JMenuItemFactory jMenuItemFactory) {
+        this.jMenuItemFactory = jMenuItemFactory;
+    }
 }
 
 

@@ -85,6 +85,7 @@ public class JMenuItemFactory {
                 }
 
                 addMenuItemToParent(parent, menuItem, jMenuItem);
+
             }
 
         } catch (Exception e) {

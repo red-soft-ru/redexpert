@@ -873,4 +873,11 @@
             description="Trace Manager"
             execute-class="org.executequery.actions.toolscommands.TraceManagerCommands"/>
 
+    <action id="exit-from-account-command"
+            name="Exit From Account"
+            mnemonic="TM"
+            accel-editable="true"
+            description="Exit From Account"
+            execute-class="org.executequery.actions.ExitFromAccountCommand"/>
+
 </actions>

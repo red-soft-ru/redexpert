@@ -103,10 +103,6 @@ void gtkMessageBox(char *title, char *message)
 
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
-
-    g_signal_connect(G_OBJECT(dialog), "destroy", G_CALLBACK(gtk_main_quit), NULL);
-
-    gtk_main();
 }
 
 std::string getSelfpath()

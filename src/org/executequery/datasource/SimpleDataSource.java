@@ -21,6 +21,7 @@
 package org.executequery.datasource;
 
 import biz.redsoft.IFBCryptoPluginInit;
+import biz.redsoft.IFBDataSource;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.ApplicationContext;
 import org.executequery.ExecuteQuery;
@@ -28,9 +29,11 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.resource.ResourceException;
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
@@ -58,6 +61,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     private Properties properties = new Properties();
 
     private Driver driver;
+    private IFBDataSource dataSource;
     private final String url;
     private final DatabaseConnection databaseConnection;
 
@@ -132,7 +136,15 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         }
 
         if (driver != null) {
-            return driver.connect(url, advancedProperties);
+
+            dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoader(driver, "FBDataSourceImpl");
+            dataSource.setUserName(databaseConnection.getUserName());
+            dataSource.setPassword(databaseConnection.getUnencryptedPassword());
+            dataSource.setCharset(databaseConnection.getCharset());
+            dataSource.setURL(url);
+
+            dataSource.setCertificate(databaseConnection.getCertificate());
+            return dataSource.getConnection();
         }
 
         throw new DataSourceException("Error loading specified JDBC driver");
@@ -299,6 +311,11 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         return driver.getParentLogger();
     }
 
+    public void close() throws ResourceException {
+
+        dataSource.close();
+
+    }
 
 }
 

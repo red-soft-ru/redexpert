@@ -4,16 +4,14 @@ import javax.swing.*;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 
 public class LoginPasswordDialog extends BaseDialog {
     private JTextField username;
     private JPasswordField password;
     private String message;
     private String user;
+    private boolean closedDialog = false;
 
     public LoginPasswordDialog(String name, String message) {
         this(name, message, null);
@@ -105,6 +103,13 @@ public class LoginPasswordDialog extends BaseDialog {
 
             }
         });
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                setClosedDialog(true);
+                finished();
+            }
+        });
 
     }
 
@@ -114,5 +119,13 @@ public class LoginPasswordDialog extends BaseDialog {
 
     public String getPassword() {
         return new String(password.getPassword());
+    }
+
+    public boolean isClosedDialog() {
+        return closedDialog;
+    }
+
+    public void setClosedDialog(boolean closedDialog) {
+        this.closedDialog = closedDialog;
     }
 }

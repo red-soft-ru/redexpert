@@ -5,7 +5,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HostParams;
-import org.executequery.GUIUtilities;
+import org.executequery.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -100,7 +100,7 @@ public class JSONAPI {
 
         if (cod < 200 || cod > 300) {
             text.insert(0, "Server return error:\n");
-            GUIUtilities.displayErrorMessage(text.toString());
+            Log.error(text);
 
         }
         return text.toString();

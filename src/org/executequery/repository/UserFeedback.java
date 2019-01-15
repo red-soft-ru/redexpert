@@ -27,26 +27,19 @@ public class UserFeedback {
 
     private String name;
 
-    private String email;
-
     private String remarks;
 
     private String type;
 
-    public UserFeedback(String name, String email, String remarks, String type) {
+    public UserFeedback(String name, String remarks, String type) {
         super();
         this.name = name;
-        this.email = email;
         this.remarks = remarks;
         this.type = type;
     }
 
     public String getName() {
         return name;
-    }
-
-    public String getEmail() {
-        return email;
     }
 
     public String getRemarks() {
@@ -63,7 +56,6 @@ public class UserFeedback {
 
         map.put("body", getRemarks());
         map.put("name", getName());
-        map.put("email", getEmail());
         map.put("type", getType());
         map.put("project", "/api/website/projects/3/");
         map.put("version", System.getProperty("executequery.minor.version"));

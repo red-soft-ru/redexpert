@@ -79,11 +79,6 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
     private JTextArea commentsField;
 
     /**
-     * user's email field
-     */
-    private JTextField emailField;
-
-    /**
      * the parent container
      */
     private ActionContainer parent;
@@ -118,7 +113,6 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         commentsField.setMargin(new Insets(2, 2, 2, 2));
 
         nameField = WidgetFactory.createTextField();
-        emailField = WidgetFactory.createTextField();
         initFieldValues();
 
         JPanel basePanel = new JPanel(new GridBagLayout());
@@ -146,21 +140,6 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         gbc.insets.right = 5;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         basePanel.add(nameField, gbc);
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.weightx = 0;
-        gbc.insets.top = 2;
-        gbc.insets.left = 5;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.insets.right = 10;
-        basePanel.add(new JLabel("Email:"), gbc);
-        gbc.gridx++;
-        gbc.insets.left = 0;
-        gbc.weightx = 1.0;
-        gbc.insets.top = 0;
-        gbc.insets.right = 5;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        basePanel.add(emailField, gbc);
 
         gbc.gridy++;
         gbc.gridx = 0;
@@ -197,23 +176,6 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
 
             nameField.setText(System.getProperty("user.name"));
         }
-
-        if (hasUserEmail()) {
-
-            emailField.setText(getUserEmail());
-        }
-    }
-
-    private String getUserEmail() {
-
-        return SystemProperties.getProperty(
-                Constants.USER_PROPERTIES_KEY, "user.email.address");
-    }
-
-    private boolean hasUserEmail() {
-
-        return SystemProperties.containsKey(
-                Constants.USER_PROPERTIES_KEY, "user.email.address");
     }
 
     private String getUserFullName() {
@@ -354,21 +316,6 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
 
     private boolean fieldsValid() {
 
-        String email = emailField.getText();
-
-        if (MiscUtils.isNull(email)) {
-
-            int result = GUIUtilities.displayYesNoDialog(
-                    noEmailAddressWarningMessage(), "Feedback");
-
-            if (result == JOptionPane.NO_OPTION ||
-                    result == JOptionPane.CANCEL_OPTION) {
-
-                return false;
-            }
-
-        }
-
         String comments = commentsField.getText();
 
         if (MiscUtils.isNull(comments)) {
@@ -433,7 +380,6 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
 
 
         return new UserFeedback(nameField.getText(),
-                emailField.getText(),
                 commentsField.getText(),
                 typeString);
     }

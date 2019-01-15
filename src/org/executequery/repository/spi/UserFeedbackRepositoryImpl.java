@@ -132,12 +132,6 @@ public class UserFeedbackRepositoryImpl implements UserFeedbackRepository {
                     "user", "user.full.name", userFeedback.getName());
         }
 
-        if (!MiscUtils.isNull(userFeedback.getEmail())) {
-            savePrefs = true;
-            SystemProperties.setStringProperty(
-                    "user", "user.email.address", userFeedback.getEmail());
-        }
-
         if (savePrefs) {
             SystemResources.setUserPreferences(
                     SystemProperties.getProperties("user"));

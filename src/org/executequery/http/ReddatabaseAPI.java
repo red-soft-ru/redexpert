@@ -18,6 +18,8 @@ public class ReddatabaseAPI {
         String user = SystemProperties.getStringProperty("user", "reddatabase.user");
         LoginPasswordDialog dialog = new LoginPasswordDialog("Authorization", "To continue you need to enter\nyour login and password from the site reddatabase.ru", user);
         dialog.display();
+        if (dialog.isClosedDialog())
+            return false;
         SystemProperties.setProperty("user", "reddatabase.user", dialog.getUsername());
         Map<String, String> params = new HashMap<>();
         params.put("username", dialog.getUsername());

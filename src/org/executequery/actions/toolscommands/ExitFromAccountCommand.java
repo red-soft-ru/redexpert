@@ -1,6 +1,7 @@
-package org.executequery.actions;
+package org.executequery.actions.toolscommands;
 
 import org.executequery.GUIUtilities;
+import org.executequery.actions.OpenFrameCommand;
 import org.underworldlabs.swing.actions.BaseCommand;
 import org.underworldlabs.util.SystemProperties;
 

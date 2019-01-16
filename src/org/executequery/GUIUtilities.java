@@ -42,6 +42,7 @@ import org.executequery.gui.menu.MenuItem;
 import org.executequery.gui.sqlstates.SQLStateCodesDockedPanel;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
+import org.executequery.http.ReddatabaseAPI;
 import org.executequery.io.RecentFileIOListener;
 import org.executequery.listeners.*;
 import org.executequery.localization.Bundles;
@@ -245,6 +246,8 @@ public final class GUIUtilities {
 
     public static void loadAuthorisationInfo() {
         if (!MiscUtils.isNull(SystemProperties.getStringProperty("user", "reddatabase.token"))) {
+            while (statusBar.getLabel(4).getMouseListeners().length > 0)
+                statusBar.getLabel(4).removeMouseListener(statusBar.getLabel(4).getMouseListeners()[0]);
             statusBar.getLabel(4).setText(" user:" + SystemProperties.getStringProperty("user", "reddatabase.user"));
             statusBar.getLabel(4).addMouseListener(new MouseAdapter() {
                 @Override
@@ -269,11 +272,30 @@ public final class GUIUtilities {
                 }
             }
             toolsMenu.add(menu.getjMenuItemFactory().createJMenuItem(toolsMenu, item));
+            if (toolsMenu != null)
+                for (int i = 0; i < ((JMenu) toolsMenu).getItemCount(); i++) {
+                    JMenuItem menuItem = ((JMenu) toolsMenu).getItem(i);
+                    if (menuItem != null)
+                        if (Bundles.get("action.log-in-account-command").contentEquals(menuItem.getText())) {
+                            toolsMenu.remove(i);
+                            break;
+                        }
+                }
         } else {
             while (statusBar.getLabel(4).getMouseListeners().length > 0)
                 statusBar.getLabel(4).removeMouseListener(statusBar.getLabel(4).getMouseListeners()[0]);
             statusBar.getLabel(4).setText(" not authorized");
+            statusBar.getLabel(4).addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    ReddatabaseAPI.getToken();
+                }
+            });
             ExecuteQueryMenu menu = (ExecuteQueryMenu) frame.getJMenuBar();
+            MenuItem item = new MenuItem();
+            item.setName(Bundles.get("action.log-in-account-command"));
+            item.setActionCommand("log-in-account-command");
+            item.setId("log-in-account-command");
             JMenuItem toolsMenu = null;
             for (int i = 0; i < menu.getMenuCount(); i++) {
                 if (menu.getMenu(i).getText().contentEquals(Bundles.get("menu.tools"))) {
@@ -281,11 +303,12 @@ public final class GUIUtilities {
                     break;
                 }
             }
+            toolsMenu.add(menu.getjMenuItemFactory().createJMenuItem(toolsMenu, item));
             if (toolsMenu != null)
                 for (int i = 0; i < ((JMenu) toolsMenu).getItemCount(); i++) {
-                    JMenuItem item = ((JMenu) toolsMenu).getItem(i);
-                    if (item != null)
-                        if (Bundles.get("action.exit-from-account-command").contentEquals(item.getText())) {
+                    JMenuItem menuItem = ((JMenu) toolsMenu).getItem(i);
+                    if (menuItem != null)
+                        if (Bundles.get("action.exit-from-account-command").contentEquals(menuItem.getText())) {
                             toolsMenu.remove(i);
                             break;
                         }

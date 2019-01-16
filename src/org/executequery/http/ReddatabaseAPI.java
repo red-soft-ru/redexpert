@@ -14,9 +14,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ReddatabaseAPI {
+
+    public static final String URL_OF_REGISTRATION = "http://reddatabase.ru/user/register/";
+    public static final String MESSAGE = "To continue you need to enter\n" +
+            "your login and password from the site reddatabase.ru\n" +
+            "Authorization is required to send bug reports\n" +
+            "and automatically download updates from the site.";
+
     public static boolean getToken() {
         String user = SystemProperties.getStringProperty("user", "reddatabase.user");
-        LoginPasswordDialog dialog = new LoginPasswordDialog("Authorization", "To continue you need to enter\nyour login and password from the site reddatabase.ru", user);
+        LoginPasswordDialog dialog = new LoginPasswordDialog("Authorization", MESSAGE, URL_OF_REGISTRATION, user);
         dialog.display();
         if (dialog.isClosedDialog())
             return false;

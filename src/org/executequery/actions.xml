@@ -878,6 +878,13 @@
             mnemonic="TM"
             accel-editable="true"
             description="Exit From Account"
-            execute-class="org.executequery.actions.ExitFromAccountCommand"/>
+            execute-class="org.executequery.actions.toolscommands.ExitFromAccountCommand"/>
+
+    <action id="log-in-account-command"
+            name="Log In Account"
+            mnemonic="TM"
+            accel-editable="true"
+            description="Log In Account"
+            execute-class="org.executequery.actions.toolscommands.LogInAccountCommand"/>
 
 </actions>

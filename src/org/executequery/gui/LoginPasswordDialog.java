@@ -106,7 +106,6 @@ public class LoginPasswordDialog extends BaseDialog {
                 }
             }
         });
-        mainPanel.setPreferredSize(new Dimension(300, 200));
         setResizable(false);
         addDisplayComponent(mainPanel);
         mainPanel.addAncestorListener(new AncestorListener() {

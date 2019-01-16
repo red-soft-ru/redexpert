@@ -294,6 +294,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
 
                         JDialog dialog = (JDialog) parent;
                         dialog.setVisible(true);
+                        closeProgressDialog();
                         return;
                     }
 
@@ -324,6 +325,14 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
 
             return false;
         }
+        String name = nameField.getText();
+
+        if (MiscUtils.isNull(name)) {
+
+            GUIUtilities.displayErrorMessage(noNameErrorMessage());
+
+            return false;
+        }
 
         return true;
     }
@@ -332,12 +341,8 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         return "Please enter your remarks in the text area provided.";
     }
 
-    private String noEmailAddressWarningMessage() {
-        return "You have not entered your email address.\n" +
-                "An email address is required in order for the " +
-                "developers to reply to your feedback.\n" +
-                "Are you sure you want to submit this report " +
-                "without an email address?";
+    private String noNameErrorMessage() {
+        return "Please enter your name or nickname in the text field provided.";
     }
 
     private Object doWork() {
@@ -347,13 +352,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         try {
 
             UserFeedback userFeedback = createUserFeedback();
-            if (repository.postFeedback(userFeedback))
-            return Constants.WORKER_SUCCESS;
-            else {
-                showError("Error posting feedback");
-                return Constants.WORKER_FAIL;
-            }
-
+            return resultWork(repository.postFeedback(userFeedback));
         } catch (RepositoryException e) {
 
             if (cancelled) {
@@ -366,6 +365,20 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
             return Constants.WORKER_FAIL;
         }
 
+    }
+
+    private Object resultWork(int res) {
+        if (res == 1)
+            return Constants.WORKER_SUCCESS;
+        else {
+            if (res == 401) {
+                SystemProperties.setStringProperty("user", "reddatabase.token", "");
+                GUIUtilities.loadAuthorisationInfo();
+                UserFeedback userFeedback = createUserFeedback();
+                return resultWork(repository.postFeedback(userFeedback));
+            }
+            return Constants.WORKER_FAIL;
+        }
     }
 
     private UserFeedbackRepository createFeedbackRepository() {

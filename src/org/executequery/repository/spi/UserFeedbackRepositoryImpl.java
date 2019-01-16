@@ -46,7 +46,7 @@ public class UserFeedbackRepositoryImpl implements UserFeedbackRepository {
     private static final String ADDRESS = "reddatabase.ru";
 
 
-    public boolean postFeedback(UserFeedback userFeedback) throws RepositoryException {
+    public int postFeedback(UserFeedback userFeedback) throws RepositoryException {
 
         try {
 
@@ -57,22 +57,22 @@ public class UserFeedbackRepositoryImpl implements UserFeedbackRepository {
             if (siteAvailable()) {
                 Map<String, String> heads = ReddatabaseAPI.getHeadersWithToken();
                 if (heads == null)
-                    return false;
+                    return 0;
                 Map<String, String> params = userFeedback.asMap();
                 String res = JSONAPI.postJsonObject("http://reddatabase.ru/api/website/feedbacks/", params, heads);
                 if (res.startsWith("Server return error"))
-                    return false;
+                    return Integer.parseInt(res.split("\n")[1]);
                 Log.info(res);
-                return true;
+                return 1;
             }
-            return false;
+            return -1;
 
         } catch (RemoteHttpClientException e) {
             handleException(e);
-            return false;
+            return 0;
         } catch (IOException e) {
             handleException(e);
-            return false;
+            return 0;
         }
 
 

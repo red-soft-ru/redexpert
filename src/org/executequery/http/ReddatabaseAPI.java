@@ -34,7 +34,7 @@ public class ReddatabaseAPI {
             }
             return false;
         } catch (JSONException e) {
-            if (GUIUtilities.displayConfirmCancelDialog("Unknown Login or Password. Try again?") == JOptionPane.YES_OPTION)
+            if (GUIUtilities.displayConfirmDialog("Unknown Login or Password. Try again?") == JOptionPane.YES_OPTION)
                 return getToken();
             else return false;
         } catch (IOException e) {

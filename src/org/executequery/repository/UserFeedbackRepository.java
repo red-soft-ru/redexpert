@@ -24,7 +24,7 @@ public interface UserFeedbackRepository {
 
     void cancel();
 
-    boolean postFeedback(UserFeedback userFeedback) throws RepositoryException;
+    int postFeedback(UserFeedback userFeedback) throws RepositoryException;
 
 }
 

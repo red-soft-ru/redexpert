@@ -1,5 +1,10 @@
 package org.executequery.gui;
 
+import org.executequery.ApplicationException;
+import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
+import org.executequery.util.SystemWebBrowserLauncher;
+
 import javax.swing.*;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
@@ -12,15 +17,17 @@ public class LoginPasswordDialog extends BaseDialog {
     private String message;
     private String user;
     private boolean closedDialog = false;
+    private String urlOfRegistration;
 
-    public LoginPasswordDialog(String name, String message) {
-        this(name, message, null);
+    public LoginPasswordDialog(String name, String message, String urlOfRegistration) {
+        this(name, message, urlOfRegistration, null);
     }
 
-    public LoginPasswordDialog(String name, String message, String username) {
+    public LoginPasswordDialog(String name, String message, String urlOfRegistration, String username) {
         super(name, true, true);
         this.message = message;
         user = username;
+        this.urlOfRegistration = urlOfRegistration;
         init();
     }
 
@@ -81,7 +88,26 @@ public class LoginPasswordDialog extends BaseDialog {
                 finished();
             }
         });
+        button = new JButton("Register");
+        mainPanel.add(button, new GridBagConstraints(0, 4,
+                2, 1, 1, 0,
+                GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try {
+                    new SystemWebBrowserLauncher().launch(urlOfRegistration);
+                } catch (ApplicationException applicationException) {
+                    GUIUtilities.displayExceptionErrorDialog(
+                            Bundles.get("AbstractUrlLauncherCommand.error.launchBrowser") +
+                                    applicationException.getMessage(), applicationException);
+
+                }
+            }
+        });
         mainPanel.setPreferredSize(new Dimension(300, 200));
+        setResizable(false);
         addDisplayComponent(mainPanel);
         mainPanel.addAncestorListener(new AncestorListener() {
             @Override

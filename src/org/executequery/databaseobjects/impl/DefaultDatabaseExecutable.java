@@ -289,7 +289,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 "prc.rdb$engine_name, \n" +
                 "prc.rdb$entrypoint \n" +
                 "from rdb$procedures prc\n" +
-                "left join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
+                "join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
                 "and (pp.rdb$package_name is null)\n" +
                 "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
                 "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
@@ -327,7 +327,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                     "co2.rdb$collation_name, \n" +
                     "cr.rdb$default_collate_name \n" +
                     "from rdb$procedures prc\n" +
-                    "left join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
+                    "join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
                     "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
                     "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
                     "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +

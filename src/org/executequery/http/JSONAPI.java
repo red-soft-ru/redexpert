@@ -99,7 +99,7 @@ public class JSONAPI {
         br.close();
 
         if (cod < 200 || cod > 300) {
-            text.insert(0, "Server return error:\n");
+            text.insert(0, "Server return error:\n" + cod + "\n");
             Log.error(text);
 
         }

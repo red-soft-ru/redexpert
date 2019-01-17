@@ -144,6 +144,10 @@ public class CheckForUpdateNotifier implements Interruptible {
         } catch (ApplicationException e) {
             Log.warning("Error checking for update: " + e.getMessage());
         } catch (UnknownHostException e) {
+            if (progressDialog != null) {
+                GUIUtilities.displayExceptionErrorDialog("There is no internet connection. Please check for updates later", e);
+                closeProgressDialog();
+            }
             Log.error("There is no internet connection. Please check for updates later");
         } catch (IOException e) {
             e.printStackTrace();
@@ -429,7 +433,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         progressDialog = new InterruptibleProgressDialog(
                 GUIUtilities.getParentFrame(),
                 "Check for update",
-                "Checking for updated version from https://github.com/redsoftbiz/executequery/releases",
+                "Checking for updated version",
                 this);
     }
 
@@ -529,7 +533,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             progressDialog = new InterruptibleProgressDialog(
                     GUIUtilities.getParentFrame(),
                     "Check for update",
-                    "Retrieving new version release notes from https://github.com/redsoftbiz/executequery/releases/latest",
+                    "Retrieving new version release notes",
                     CheckForUpdateNotifier.this);
 
             progressDialog.run();
@@ -545,7 +549,7 @@ public class CheckForUpdateNotifier implements Interruptible {
     private String genericIOError() {
 
         return "An error occured trying to communicate " +
-                " with the server at https://github.com/redsoftbiz/executequery/releases.";
+                " with the server";
     }
 
     private String newVersionMessage(ApplicationVersion version) {

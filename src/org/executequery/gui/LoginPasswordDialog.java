@@ -37,7 +37,7 @@ public class LoginPasswordDialog extends BaseDialog {
         pane.setEditable(false);
         pane.setText(message);
         mainPanel.add(pane, new GridBagConstraints(0, 0,
-                2, 1, 1, 0,
+                3, 1, 1, 0,
                 GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
         JLabel label = new JLabel("Username");
@@ -57,7 +57,7 @@ public class LoginPasswordDialog extends BaseDialog {
             }
         });
         mainPanel.add(username, new GridBagConstraints(1, 1,
-                1, 1, 1, 0,
+                2, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
         label = new JLabel("Password");
@@ -74,13 +74,13 @@ public class LoginPasswordDialog extends BaseDialog {
             }
         });
         mainPanel.add(password, new GridBagConstraints(1, 2,
-                1, 1, 1, 0,
+                2, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        JButton button = new JButton("OK");
-        mainPanel.add(button, new GridBagConstraints(0, 3,
-                2, 1, 1, 0,
-                GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+        JButton button = new JButton("Login");
+        mainPanel.add(button, new GridBagConstraints(1, 3,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
         button.addActionListener(new ActionListener() {
             @Override
@@ -89,9 +89,9 @@ public class LoginPasswordDialog extends BaseDialog {
             }
         });
         button = new JButton("Register");
-        mainPanel.add(button, new GridBagConstraints(0, 4,
-                2, 1, 1, 0,
-                GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+        mainPanel.add(button, new GridBagConstraints(2, 3,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
         button.addActionListener(new ActionListener() {
             @Override

@@ -40,7 +40,7 @@ public class LoginPasswordDialog extends BaseDialog {
                 3, 1, 1, 0,
                 GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        JLabel label = new JLabel("Username");
+        JLabel label = new JLabel(bundledString("username"));
         mainPanel.add(label, new GridBagConstraints(0, 1,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -60,7 +60,7 @@ public class LoginPasswordDialog extends BaseDialog {
                 2, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        label = new JLabel("Password");
+        label = new JLabel(bundledString("password"));
         mainPanel.add(label, new GridBagConstraints(0, 2,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
@@ -77,7 +77,7 @@ public class LoginPasswordDialog extends BaseDialog {
                 2, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        JButton button = new JButton("Login");
+        JButton button = new JButton(bundledString("login"));
         mainPanel.add(button, new GridBagConstraints(1, 3,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
@@ -88,7 +88,7 @@ public class LoginPasswordDialog extends BaseDialog {
                 finished();
             }
         });
-        button = new JButton("Register");
+        button = new JButton(bundledString("register"));
         mainPanel.add(button, new GridBagConstraints(2, 3,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
@@ -152,5 +152,9 @@ public class LoginPasswordDialog extends BaseDialog {
 
     public void setClosedDialog(boolean closedDialog) {
         this.closedDialog = closedDialog;
+    }
+
+    private String bundledString(String key) {
+        return Bundles.get(this.getClass(), key);
     }
 }

@@ -12,11 +12,16 @@ if [ "X$JAVA" = "X" ]; then
 fi
 
 # DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
+
+if [ -z "$JAVA_HOME" ]; then
+	export JAVA_HOME=$1
+fi
 
 if [ `getconf LONG_BIT` = "64" ]
 then
-    exec bin/RedExpert64 -mx${JAVA_HEAP_SIZE}m &
+    exec $SCRIPTPATH/bin/RedExpert64 -mx${JAVA_HEAP_SIZE}m &
 else
-    exec bin/RedExpert -mx${JAVA_HEAP_SIZE}m &
+    exec $SCRIPTPATH/bin/RedExpert -mx${JAVA_HEAP_SIZE}m &
 fi
 

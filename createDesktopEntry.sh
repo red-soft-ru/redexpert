@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
-desktopsh="re.sh"
 
-if [ ! -f "$desktopsh" ]; then
-    echo "#!/bin/sh
-cd $PWD
-exec  ./RedExpert.sh &">>re.sh
-chmod 777 re.sh
-echo "Exec=\"$PWD/re.sh\" %f">>redexpert.desktop
-echo "Icon=$PWD/red_expert.png">>redexpert.desktop
-cp "./redexpert.desktop" $HOME/.local/share/applications/redexpert.desktop
-chmod 777 redexpert.desktop
+if [ ! -f $HOME/.local/share/applications/redexpert.desktop ]; then
+    EXE_PATH=$PWD
+    if [[ $PWD == *"/bin"* ]]; then
+        EXE_PATH=$(dirname "$EXE_PATH")
+    fi
+    cp $EXE_PATH/redexpert.desktop $HOME/.local/share/applications/redexpert.desktop
+    echo "Exec=\"$EXE_PATH/RedExpert.sh\" $JAVA_HOME">>$HOME/.local/share/applications/redexpert.desktop
+    echo "Icon=$EXE_PATH/red_expert.png">>$HOME/.local/share/applications/redexpert.desktop
 fi

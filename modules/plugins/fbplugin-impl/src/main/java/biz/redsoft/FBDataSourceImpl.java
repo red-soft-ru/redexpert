@@ -51,6 +51,12 @@ public class FBDataSourceImpl implements IFBDataSource {
     }
 
     @Override
+    public void setNonStandardProperty(String key, String value) {
+        // add any parameters with isc_ prefix
+        fbDataSource.setNonStandardProperty(key, value);
+    }
+
+    @Override
     public void close() throws ResourceException {
         fbDataSource.close();
     }

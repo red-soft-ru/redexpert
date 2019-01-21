@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public interface IFBDataSource {
+
     void setUserName(String userName);
 
     void setPassword(String password);
@@ -19,4 +20,5 @@ public interface IFBDataSource {
 
     void setCertificate(String certificate);
 
+    void setNonStandardProperty(String key, String value);
 }

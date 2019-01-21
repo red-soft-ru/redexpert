@@ -43,6 +43,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -107,44 +108,51 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                 advancedProperties.put("password", password);
             }
         }
-        // in multifactor authentication case, need to load firebird
-        // plugin to initialize crypto plugin, otherwise get an error message
-        if (advancedProperties.containsKey("isc_dpb_trusted_auth")
-                && advancedProperties.containsKey("isc_dpb_multi_factor_auth")
-                && cryptoPlugin == null) {
-            URL[] urls = new URL[0];
-            Class clazzdb = null;
-            Object odb = null;
-            try {
-                urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;./lib/jaybird-cryptoapi.jar");
-                ClassLoader cl = new URLClassLoader(urls, driver.getClass().getClassLoader());
-                clazzdb = cl.loadClass("biz.redsoft.FBCryptoPluginInitImpl");
-                odb = clazzdb.newInstance();
-                cryptoPlugin = (IFBCryptoPluginInit) odb;
-                cryptoPlugin.init();
-            } catch (ClassNotFoundException e) {
-                throw new SQLException("Class not found: " + e.getMessage());
-            } catch (IllegalAccessException e) {
-                throw new SQLException(e.getMessage());
-            } catch (InstantiationException e) {
-                throw new SQLException(e.getMessage());
-            } catch (MalformedURLException e) {
-                throw new SQLException(e.getMessage());
-            } catch (Exception e) {
-                throw new SQLException(e.getMessage());
-            }
-        }
 
         if (driver != null) {
 
-            dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoader(driver, "FBDataSourceImpl");
-            dataSource.setUserName(databaseConnection.getUserName());
-            dataSource.setPassword(databaseConnection.getUnencryptedPassword());
-            dataSource.setCharset(databaseConnection.getCharset());
-            dataSource.setURL(url);
+            // If used jaybird
+            if (databaseConnection.getJDBCDriver().getClassName().contains("FBDriver")) {
 
-            dataSource.setCertificate(databaseConnection.getCertificate());
-            return dataSource.getConnection();
+                try {
+
+                    // Checking for original jaybird or rdb jaybird...
+                    Class<?> aClass = driver.getClass().getClassLoader().loadClass("org.firebirdsql.jca.FBSADataSource");
+
+                    // ...rdb jaybird
+                    // in multifactor authentication case, need to load firebird
+                    // plugin to initialize crypto plugin, otherwise get an error message
+                    if (advancedProperties.containsKey("isc_dpb_trusted_auth")
+                            && advancedProperties.containsKey("isc_dpb_multi_factor_auth")
+                            && cryptoPlugin == null) {
+                        try {
+                            Object odb = DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
+                                    "biz.redsoft.FBCryptoPluginInitImpl",
+                                    "./lib/fbplugin-impl.jar;./lib/jaybird-cryptoapi.jar");
+                            cryptoPlugin = (IFBCryptoPluginInit) odb;
+                            cryptoPlugin.init();
+
+                        } catch (Exception e) {
+                            throw new SQLException(e.getMessage());
+                        }
+                    }
+
+                    dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
+                            "FBDataSourceImpl");
+
+                    for (Map.Entry<Object, Object> entry : advancedProperties.entrySet()) {
+                        dataSource.setNonStandardProperty(entry.getKey().toString(), entry.getValue().toString());
+                    }
+                    dataSource.setURL(url);
+
+                    return dataSource.getConnection();
+                } catch (ClassNotFoundException e) {
+                    // ...original jaybird
+                    return driver.connect(url, advancedProperties);
+                }
+            } else { // another databases...
+                return driver.connect(url, advancedProperties);
+            }
         }
 
         throw new DataSourceException("Error loading specified JDBC driver");
@@ -313,7 +321,8 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
     public void close() throws ResourceException {
 
-        dataSource.close();
+        if (dataSource != null)
+            dataSource.close();
 
     }
 

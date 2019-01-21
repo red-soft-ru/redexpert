@@ -82,28 +82,30 @@ public class DynamicLibraryLoader extends URLClassLoader {
 
     }
 
-    public static Object loadingObjectFromClassLoader(Object unwrapObject, String shortClassName) {
-        return loadingObjectFromClassLoader(unwrapObject, "biz.redsoft." + shortClassName, "./lib/fbplugin-impl.jar");
+    public static Object loadingObjectFromClassLoader(Object unwrapObject, String shortClassName)
+            throws ClassNotFoundException {
+        return loadingObjectFromClassLoader(unwrapObject, "biz.redsoft."
+                + shortClassName, "./lib/fbplugin-impl.jar");
     }
 
-    public static Object loadingObjectFromClassLoader(Object unwrapObject, String className, String pathJar) {
+    public static Object loadingObjectFromClassLoader(Object unwrapObject, String className, String jarPath)
+            throws ClassNotFoundException {
 
         URL[] urls;
         Class clazzdb;
         Object odb = null;
         try {
-            urls = MiscUtils.loadURLs(pathJar);
+            urls = MiscUtils.loadURLs(jarPath);
             ClassLoader cl = new URLClassLoader(urls, unwrapObject.getClass().getClassLoader());
             clazzdb = cl.loadClass(className);
             odb = clazzdb.newInstance();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Error loading class ");
+            sb.append(className);
+            sb.append(" from ");
+            sb.append(jarPath);
+            throw new ClassNotFoundException(sb.toString(), e.getCause());
         }
 
         return odb;

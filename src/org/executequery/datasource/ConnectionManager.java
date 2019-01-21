@@ -155,8 +155,6 @@ public final class ConnectionManager {
      */
     public static synchronized void closeConnection(DatabaseConnection databaseConnection) {
 
-//        synchronized (databaseConnection) {
-
         if (connectionPools.containsKey(databaseConnection)) {
 
             Log.info("Disconnecting from data source " + databaseConnection.getName());
@@ -173,9 +171,6 @@ public final class ConnectionManager {
             connectionPools.remove(databaseConnection);
             databaseConnection.setConnected(false);
         }
-
-//        }
-
     }
 
     /**

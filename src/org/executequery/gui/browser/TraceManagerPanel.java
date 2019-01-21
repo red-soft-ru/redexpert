@@ -565,8 +565,14 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 dd = d;
             break;
         }
-        Object driver = DynamicLibraryLoader.loadingObjectFromClassLoader(dd, dd.getClassName(), dd.getPath());
-        traceManager = (IFBTraceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(driver, "FBTraceManagerImpl");
+        Object driver = null;
+        try {
+            driver = DynamicLibraryLoader.loadingObjectFromClassLoader(dd, dd.getClassName(), dd.getPath());
+            traceManager = (IFBTraceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
+                    "FBTraceManagerImpl");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     private void timerAction() {

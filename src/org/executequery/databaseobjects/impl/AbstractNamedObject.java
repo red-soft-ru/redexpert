@@ -223,7 +223,9 @@ public abstract class AbstractNamedObject implements NamedObject,
                 return metaDataKey + ": " + getName();
             }
         }
-        return getName();
+        if (getObjects() != null)
+            return getName() + "(" + getObjects().size() + ")";
+        else return getName();
     }
 
     /**

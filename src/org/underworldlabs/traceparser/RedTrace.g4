@@ -671,7 +671,7 @@ ANY_NAME
 ;
 
 PATH
-:(LETTER|DIGIT|CYRILLIC_LETTER|':\\'|':/'|'_'|'-'|'.'|'/'|'\\'|'$'|'%'|'['|']'|EQUALITY|QUESTION)+
+:(LETTER|DIGIT|CYRILLIC_LETTER|':\\'|':/'|'_'|'-'|'.'|'/'|'\\'|'$'|'%'|'['|']'|'\''|EQUALITY|QUESTION)+
 ;
 
 fragment DIGIT:[0-9];

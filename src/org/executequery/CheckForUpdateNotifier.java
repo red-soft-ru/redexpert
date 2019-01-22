@@ -26,6 +26,7 @@ import org.executequery.components.StatusBarPanel;
 import org.executequery.gui.InformationDialog;
 import org.executequery.gui.PulsatingCircle;
 import org.executequery.http.JSONAPI;
+import org.executequery.http.ReddatabaseAPI;
 import org.executequery.log.Log;
 import org.executequery.repository.LatestVersionRepository;
 import org.executequery.repository.RepositoryCache;
@@ -218,11 +219,14 @@ public class CheckForUpdateNotifier implements Interruptible {
 
                 public Object construct() {
 
-//                    updateLoader.setVisible(true);
                     updateLoader.setReleaseHub(releaseHub);
                     List<String> argsList = new ArrayList<String>();
                     if (releaseHub)
                         argsList.add("useReleaseHub");
+                    else if (!ReddatabaseAPI.getToken()) {
+                        return Constants.WORKER_CANCEL;
+                    }
+
                     String version = "version=" + updateLoader.getVersion();
                     argsList.add(version);
                     ApplicationContext instance = ApplicationContext.getInstance();

@@ -276,7 +276,11 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             for (int i = 0; i < fetchSize && !rsClose; i++) {
                 fetchOneRecord(resultSet, count);
             }
-        else
+        else if (maxRecords > 0) {
+            for (int i = 0; i < maxRecords && !rsClose; i++) {
+                fetchOneRecord(resultSet, count);
+            }
+        } else
             fetchAllRecords(resultSet, count);
         if (Log.isTraceEnabled()) {
 

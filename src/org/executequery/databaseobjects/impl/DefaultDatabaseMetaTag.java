@@ -28,10 +28,9 @@ import org.executequery.datasource.PooledResultSet;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -1341,8 +1340,20 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Connection realConnection = ((PooledConnection) dmd.getConnection()).getRealConnection();
         if (realConnection.unwrap(Connection.class).getClass().getName().contains("FBConnection")) { // Red Database or FB
+            Connection fbConn = realConnection.unwrap(Connection.class);
+            IFBDatabaseConnection db = null;
+            try {
+                db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(fbConn, "FBDatabaseConnectionImpl");
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            db.setConnection(fbConn);
+            String condition = "";
+            if (db.getMajorVersion() > 2)
+                condition = "where RDB$PACKAGE_NAME is null\n";
             String sql = "select rdb$procedure_name as procedure_name\n" +
                     "from rdb$procedures \n" +
+                    condition +
                     "order by procedure_name";
             Statement statement = dmd.getConnection().createStatement();
             ResultSet rs = statement.executeQuery(sql);
@@ -1464,14 +1475,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         Statement statement = dmd.getConnection().createStatement();
         PooledConnection connection = (PooledConnection) dmd.getConnection();
         Connection fbConn = connection.unwrap(Connection.class);
-        URL[] urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
-        ClassLoader cl = new URLClassLoader(urls, fbConn.getClass().getClassLoader());
-        IFBDatabaseConnection db;
-        Class clazzdb;
-        Object odb;
-        clazzdb = cl.loadClass("biz.redsoft.FBDatabaseConnectionImpl");
-        odb = clazzdb.newInstance();
-        db = (IFBDatabaseConnection) odb;
+        IFBDatabaseConnection db = null;
+        try {
+            db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(fbConn, "FBDatabaseConnectionImpl");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         db.setConnection(fbConn);
         switch (db.getMajorVersion()) {
             case 2:
@@ -1493,7 +1502,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         "RDB$RETURN_ARGUMENT,\n" +
                         "RDB$DESCRIPTION as description\n" +
                         "from RDB$FUNCTIONS\n" +
-                        "where RDB$LEGACY_FLAG = 1\n" +
+                        "where RDB$LEGACY_FLAG = 1 and (RDB$MODULE_NAME is not NULL)\n" +
                         "order by RDB$FUNCTION_NAME");
                 break;
         }
@@ -1643,7 +1652,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         "0,\n" +
                         "rdb$function_name as function_name,\n" +
                         "rdb$description as remarks\n" +
-                        "from rdb$functions");
+                        "from rdb$functions\n" +
+                        "where (RDB$MODULE_NAME is NULL) and (RDB$PACKAGE_NAME is NULL)\n" +
+                        "order by function_name ");
                 return rs;
             } else {
                 return dmd.getFunctions(catalogName, schemaName, null);

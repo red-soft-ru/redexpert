@@ -42,60 +42,6 @@ class ResultSetDataModel extends AbstractTableModel {
             if (mapCheckBox.get(columnNames.get(i)).isSelected())
                 visibleColumnNames.add(columnNames.get(i));
         }
-        /*visibleColumnNames.add(LogConstants.ID_COLUMN);
-        visibleColumnNames.add(LogConstants.TSTAMP_COLUMN);
-        visibleColumnNames.add(LogConstants.ID_PROCESS_COLUMN);
-        visibleColumnNames.add(LogConstants.ID_THREAD_COLUMN);
-        visibleColumnNames.add(LogConstants.EVENT_TYPE_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.TRACE_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.ID_SESSION_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.TRACE_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.NAME_SESSION_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.START_SERVICE_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.ID_SERVICE_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.START_SERVICE_EVENT).isSelected()
-                || mapCheckBox.get(LogMessage.TypeEventTrace.TRANSACTION_EVENT).isSelected()
-                || mapCheckBox.get(LogMessage.TypeEventTrace.DATABASE_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.USERNAME_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.START_SERVICE_EVENT).isSelected()
-                || mapCheckBox.get(LogMessage.TypeEventTrace.TRANSACTION_EVENT).isSelected()
-                || mapCheckBox.get(LogMessage.TypeEventTrace.DATABASE_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.PROTOCOL_CONNECTION_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.START_SERVICE_EVENT).isSelected()
-                || mapCheckBox.get(LogMessage.TypeEventTrace.TRANSACTION_EVENT).isSelected()
-                || mapCheckBox.get(LogMessage.TypeEventTrace.DATABASE_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.CLIENT_ADDRESS_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.START_SERVICE_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.TYPE_QUERY_SERVICE_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.START_SERVICE_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.OPTIONS_START_SERVICE_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.TRANSACTION_EVENT).isSelected()
-                || mapCheckBox.get(LogMessage.TypeEventTrace.DATABASE_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.CHARSET_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.TRANSACTION_EVENT).isSelected()
-                || mapCheckBox.get(LogMessage.TypeEventTrace.DATABASE_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.ROLE_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.TRANSACTION_EVENT).isSelected()
-                || mapCheckBox.get(LogMessage.TypeEventTrace.DATABASE_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.DATABASE_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.TRANSACTION_EVENT).isSelected()
-                || mapCheckBox.get(LogMessage.TypeEventTrace.DATABASE_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.ID_CONNECTION_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.TRANSACTION_EVENT).isSelected()
-                || mapCheckBox.get(LogMessage.TypeEventTrace.DATABASE_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.CLIENT_PROCESS_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.TRANSACTION_EVENT).isSelected()
-                || mapCheckBox.get(LogMessage.TypeEventTrace.DATABASE_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.ID_CLIENT_PROCESS_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.TRANSACTION_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.LEVEL_ISOLATION_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.TRANSACTION_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.ID_TRANSACTION_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.TRANSACTION_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.MODE_OF_ACCESS_COLUMN);
-        if (mapCheckBox.get(LogMessage.TypeEventTrace.TRANSACTION_EVENT).isSelected())
-            visibleColumnNames.add(LogConstants.MODE_OF_BLOCK_COLUMN);
-            */
         visibleRows = new ArrayList<>();
         for (int i = 0; i < rows.size(); i++) {
             checkFilterMessage(rows.get(i));
@@ -107,22 +53,24 @@ class ResultSetDataModel extends AbstractTableModel {
             filterColumnBox.setSelectedItem(selectedItem);
         model = (DynamicComboBoxModel) rawSqlBox.getModel();
         selectedItem = rawSqlBox.getSelectedItem();
+        model.setElements(visibleColumnNames);
         if (visibleColumnNames.contains(selectedItem))
             rawSqlBox.setSelectedItem(selectedItem);
-        model.setElements(visibleColumnNames);
         fireTableStructureChanged();
     }
 
     private void checkFilterMessage(LogMessage message) {
         String filter = filterTextField.getText();
-        String field = String.valueOf(message.getFieldOfName((String) filterColumnBox.getSelectedItem()));
-        if (filterTypeBox.getSelectedItem() == Filter.FilterType.FILTER) {
-            if (field.contains(filter))
+        if (filterColumnBox.getSelectedItem() != null) {
+            String field = String.valueOf(message.getFieldOfName((String) filterColumnBox.getSelectedItem()));
+            if (filterTypeBox.getSelectedItem() == Filter.FilterType.FILTER) {
+                if (field.contains(filter))
+                    visibleRows.add(message);
+                message.setHighlight(false);
+            } else {
                 visibleRows.add(message);
-            message.setHighlight(false);
-        } else {
-            visibleRows.add(message);
-            message.setHighlight(field.contains(filter) && !filter.isEmpty());
+                message.setHighlight(field.contains(filter) && !filter.isEmpty());
+            }
         }
     }
 

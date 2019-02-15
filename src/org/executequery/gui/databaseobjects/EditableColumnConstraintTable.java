@@ -90,7 +90,7 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
      */
     public EditableColumnConstraintTable() {
         super();
-        getColumnConstraintTableModel().setEditable(true);
+        getColumnConstraintTableModel().setEditable(false);
         setCellEditorListeners();
         setCellEditors();
         addMouseListener(new MouseHandler());
@@ -297,8 +297,8 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
 
                 DefaultCellEditor _cellEditor = (DefaultCellEditor) cellEditor;
                 if (_cellEditor.getComponent() instanceof JTextField) {
-                    ((JTextField) _cellEditor.
-                            getComponent()).addKeyListener(this);
+                    _cellEditor.
+                            getComponent().addKeyListener(this);
                 }
 
             }

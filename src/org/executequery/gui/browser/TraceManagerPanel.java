@@ -7,7 +7,7 @@ import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.gui.browser.managment.tracemanager.BuildConfigurationPanel;
-import org.executequery.gui.browser.managment.tracemanager.ColumnsCheckPanel;
+import org.executequery.gui.browser.managment.tracemanager.LogConstants;
 import org.executequery.gui.browser.managment.tracemanager.SessionManagerPanel;
 import org.executequery.gui.browser.managment.tracemanager.TablePanel;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
@@ -16,6 +16,7 @@ import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
+import org.underworldlabs.swing.CheckBoxPanel;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.DynamicLibraryLoader;
@@ -86,7 +87,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
         sessionField.setText("Session");
         sessionManagerPanel = new SessionManagerPanel(traceManager, sessionField);
         loadCharsets();
-        ColumnsCheckPanel columnsCheckPanel = new ColumnsCheckPanel();
+        CheckBoxPanel columnsCheckPanel = new CheckBoxPanel(LogConstants.COLUMNS, 6, true);
         loggerPanel = new TablePanel(columnsCheckPanel);
         lock = new ReentrantLock();
         timer = new Timer(1500, new ActionListener() {

@@ -409,11 +409,16 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
               "where T.RDB$RELATION_NAME='" + getName() + "'";
           result = executor.execute(QueryTypes.SELECT, query);
           ResultSet rs = result.getResultSet();
+            List<String> names = new ArrayList<>();
           if (rs != null) {
             while (rs.next()) {
-              ColumnConstraint constraint = new TableColumnConstraint(rs.getString(2));
-              constraint.setName(rs.getString(1).trim());
-              constraints.add(constraint);
+                String name = rs.getString(1).trim();
+                if (!names.contains(name)) {
+                    ColumnConstraint constraint = new TableColumnConstraint(rs.getString(2));
+                    constraint.setName(name);
+                    constraints.add(constraint);
+                    names.add(name);
+                }
             }
           }
         } catch (Exception e) {
@@ -421,6 +426,31 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         } finally {
           executor.releaseResources();
         }
+          result = null;
+          try {
+              String query = "SELECT C.RDB$CONSTRAINT_NAME,I.RDB$FIELD_NAME\n" +
+                      "FROM RDB$RELATION_CONSTRAINTS AS C LEFT JOIN RDB$INDEX_SEGMENTS AS I\n" +
+                      "ON C.RDB$INDEX_NAME=I.RDB$INDEX_NAME\n" +
+                      "where C.RDB$RELATION_NAME='" + getName() + "' AND C.RDB$CONSTRAINT_TYPE = 'UNIQUE'";
+              ResultSet rs = executor.getResultSet(query).getResultSet();
+              if (rs != null) {
+                  while (rs.next()) {
+                      String name = rs.getString(1).trim();
+                      ColumnConstraint constraint = new TableColumnConstraint(UNIQUE_KEY);
+                      constraint.setName(name);
+                      String columnName = rs.getString("RDB$FIELD_NAME").trim();
+                      for (DatabaseColumn i : columns) {
+                          if (i.getName().trim().contentEquals(columnName))
+                              constraint.setColumn((DatabaseTableColumn) i);
+                      }
+                      constraints.add(constraint);
+                  }
+              }
+          } catch (Exception e) {
+              Log.error("Error loading unique-constraints:" + result.getErrorMessage(), e);
+          } finally {
+              executor.releaseResources();
+          }
         constraints.removeAll(Collections.singleton(null));
 
         return constraints;
@@ -544,6 +574,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     clearColumns();
     clearIndexes();
     clearDataChanges();
+      clearConstraints();
   }
 
   public void clearDefinitionChanges() {
@@ -559,6 +590,13 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
     columns = null;
   }
+
+    private void clearConstraints() {
+        if (constraints != null) {
+            constraints.clear();
+        }
+        constraints = null;
+    }
 
   private void clearIndexes() {
     if (indexes != null) {

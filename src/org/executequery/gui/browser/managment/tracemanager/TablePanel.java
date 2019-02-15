@@ -3,6 +3,7 @@ package org.executequery.gui.browser.managment.tracemanager;
 import org.executequery.gui.browser.TraceManagerPanel;
 import org.executequery.gui.browser.managment.tracemanager.net.LogMessage;
 import org.executequery.gui.text.SimpleSqlTextPanel;
+import org.underworldlabs.swing.CheckBoxPanel;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 
 import javax.swing.*;
@@ -30,10 +31,10 @@ public class TablePanel extends JPanel {
     private JComboBox<String> comboBoxRawSql;
     private JComboBox<String> comboBoxFilterColumn;
     private JTextField txtFldSqlFilter;
-    private ColumnsCheckPanel columnsCheckPanel;
+    private CheckBoxPanel columnsCheckPanel;
 
 
-    public TablePanel(ColumnsCheckPanel columnsCheckPanel) {
+    public TablePanel(CheckBoxPanel columnsCheckPanel) {
         super(new BorderLayout());
         this.columnsCheckPanel = columnsCheckPanel;
         init();

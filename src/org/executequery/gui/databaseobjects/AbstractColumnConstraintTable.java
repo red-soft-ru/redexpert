@@ -59,7 +59,7 @@ public abstract class AbstractColumnConstraintTable extends DefaultTable {
     /**
      * Returns the table model as a DatabaseObjectTableModel.
      */
-    protected ColumnConstraintTableModel getColumnConstraintTableModel() {
+    public ColumnConstraintTableModel getColumnConstraintTableModel() {
         return model;
     }
 

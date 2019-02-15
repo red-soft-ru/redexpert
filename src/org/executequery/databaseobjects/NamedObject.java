@@ -21,6 +21,7 @@
 package org.executequery.databaseobjects;
 
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.swing.Named;
 
 import java.util.List;
 
@@ -29,7 +30,7 @@ import java.util.List;
  *
  * @author Takis Diakoumis
  */
-public interface NamedObject extends java.io.Serializable {
+public interface NamedObject extends Named, java.io.Serializable {
 
     int INDEX = 0;
     int PROCEDURE = 1;
@@ -147,13 +148,6 @@ public interface NamedObject extends java.io.Serializable {
      * Returns the name of this object.
      *
      * @return the object name
-     */
-    String getName();
-
-    /**
-     * Sets the name of this database object as specified.
-     *
-     * @param name the name of this database object
      */
     void setName(String name);
 

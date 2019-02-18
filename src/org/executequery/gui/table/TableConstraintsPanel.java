@@ -27,6 +27,7 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -69,6 +70,8 @@ public abstract class TableConstraintsPanel extends JPanel
      * The keys combo box cell editor
      */
     protected ComboBoxCellEditor keysCombo;
+
+    private boolean generatedName = false;
 
     public TableConstraintsPanel() {
         super(new BorderLayout());
@@ -383,6 +386,9 @@ public abstract class TableConstraintsPanel extends JPanel
                     cc.setRefSchema(Constants.EMPTY);
                     cc.setRefTable(Constants.EMPTY);
                     cc.setRefColumn(Constants.EMPTY);
+                    if (MiscUtils.isNull(cc.getName()) || generatedName) {
+                        setValueAt(generateName(colType), row, 1);
+                    }
                     break;
                 case 3:
                     cc.setColumn(value != null ? value.toString() : "");
@@ -439,11 +445,8 @@ public abstract class TableConstraintsPanel extends JPanel
                     case 4:
                     case 5:
                     case 6:
-                        if ((cc.getType() == ColumnConstraint.UNIQUE_KEY ||
-                                cc.getType() == ColumnConstraint.PRIMARY_KEY)) {
-                            return false;
-                        }
-                        return true;
+                        return (cc.getType() != ColumnConstraint.UNIQUE_KEY &&
+                                cc.getType() != ColumnConstraint.PRIMARY_KEY);
                 }
             } else {
                 if (col == 1) {
@@ -452,12 +455,8 @@ public abstract class TableConstraintsPanel extends JPanel
 
                 if (cc.isNewConstraint()) {
 
-                    if (col > 3 && (cc.getType() == ColumnConstraint.UNIQUE_KEY ||
-                            cc.getType() == ColumnConstraint.PRIMARY_KEY)) {
-                        return false;
-                    } else {
-                        return true;
-                    }
+                    return col <= 3 || (cc.getType() != ColumnConstraint.UNIQUE_KEY &&
+                            cc.getType() != ColumnConstraint.PRIMARY_KEY);
 
                 }
 
@@ -520,6 +519,42 @@ public abstract class TableConstraintsPanel extends JPanel
         public Vector getKeys() {
             return keys;
         }
+
+        private String generateName(String type) {
+            String name = "_<TABLE_NAME>";
+            switch (type) {
+                case org.executequery.databaseobjects.impl.ColumnConstraint.PRIMARY:
+                    name = "PK" + name;
+                    break;
+                case org.executequery.databaseobjects.impl.ColumnConstraint.FOREIGN:
+                    name = "FK" + name;
+                    break;
+                case org.executequery.databaseobjects.impl.ColumnConstraint.CHECK:
+                    name = "CHECK" + name;
+                    break;
+                case org.executequery.databaseobjects.impl.ColumnConstraint.UNIQUE:
+                    name = "UQ" + name;
+                    break;
+            }
+            name = name + "_";
+            int int_number = 0;
+            String number = "0";
+            if (keys != null)
+                for (int i = 0; i < keys.size(); i++) {
+                    if (!MiscUtils.isNull(getConstraintAt(i).getName()))
+                        if (getConstraintAt(i).getName().contains(name)) {
+                            number = getConstraintAt(i).getName().replace(name, "");
+                            if (Integer.parseInt(number) > int_number)
+                                int_number = Integer.parseInt(number);
+                        }
+
+                }
+            number = "" + (int_number + 1);
+
+            generatedName = true;
+            return name + number;
+        }
+
 
     } // class ColumnConstraintModel
 

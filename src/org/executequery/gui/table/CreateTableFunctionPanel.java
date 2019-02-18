@@ -485,34 +485,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
     }
 
     public void setSQLText() {
-        sqlBuffer.setLength(0);
-        if (temporary)
-            sqlBuffer.append(CreateTableSQLSyntax.CREATE_GLOBAL_TEMPORARY_TABLE);
-        else
-            sqlBuffer.append(CreateTableSQLSyntax.CREATE_TABLE);
-
-        // check for a valid schema name
-        if (schemaModel.getSize() > 0) {
-            String schema = schemaCombo.getSelectedItem().toString();
-            if (!MiscUtils.isNull(schema)) {
-                sqlBuffer.append(schemaCombo.getSelectedItem()).
-                        append(CreateTableSQLSyntax.DOT);
-
-            }
-        }
-
-        sqlBuffer.append(nameField.getText()).
-                append(CreateTableSQLSyntax.SPACE).
-                append(CreateTableSQLSyntax.B_OPEN).
-                append(tablePanel.getSQLText()).
-                append(consPanel.getSQLText().replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, nameField.getText()));
-
-        sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE);
-        if (temporary)
-            sqlBuffer.append("\nON COMMIT ").append(typeTemporaryBox.getSelectedItem());
-        sqlBuffer.append(CreateTableSQLSyntax.SEMI_COLON);
-
-        setSQLText(sqlBuffer.toString());
+        setSQLText(null, TableModifier.EMPTY_VALUE);
     }
 
     public void setSQLText(String values, int type) {
@@ -530,13 +503,14 @@ public abstract class CreateTableFunctionPanel extends JPanel
         primary.append(")");
         StringBuffer description = new StringBuffer(50);
         description.setLength(0);
-        for (String d : tablePanel.descriptions) {
-            description.append("COMMENT ON COLUMN ");
-            description.append(nameField.getText());
-            description.append("." + d);
-            description.append("^");
+        if (tablePanel.descriptions != null)
+            for (String d : tablePanel.descriptions) {
+                description.append("COMMENT ON COLUMN ");
+                description.append(nameField.getText());
+                description.append("." + d);
+                description.append("^");
 
-        }
+            }
 
         // check for a valid schema name
         if (schemaModel.getSize() > 0) {
@@ -562,8 +536,12 @@ public abstract class CreateTableFunctionPanel extends JPanel
             if (tablePanel.primary)
                 sqlBuffer.append(primary);
             sqlBuffer.append(values.replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, nameField.getText()));
+        } else if (type == TableModifier.EMPTY_VALUE) {
+            sqlBuffer.append(tablePanel.getSQLText());
+            if (tablePanel.primary)
+                sqlBuffer.append(primary);
+            sqlBuffer.append(consPanel.getSQLText().replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, nameField.getText()));
         }
-
         sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE);
         if (temporary)
             sqlBuffer.append("\nON COMMIT ").append(typeTemporaryBox.getSelectedItem());

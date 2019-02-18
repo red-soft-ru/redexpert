@@ -253,7 +253,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
             connectionsCombo.setEnabled(false);
         } else {
             DatabaseConnection connection =
-                    (DatabaseConnection) connections.elementAt(0);
+                    connections.elementAt(0);
             metaData.setDatabaseConnection(connection);
             Vector schemas = metaData.getHostedSchemasVector();
             if (schemas == null || schemas.size() == 0) {
@@ -556,12 +556,12 @@ public abstract class CreateTableFunctionPanel extends JPanel
             sqlBuffer.append(values);
             if (tablePanel.primary)
                 sqlBuffer.append(primary);
-            sqlBuffer.append(consPanel.getSQLText());
+            sqlBuffer.append(consPanel.getSQLText().replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, nameField.getText()));
         } else if (type == TableModifier.CONSTRAINT_VALUES) {
             sqlBuffer.append(tablePanel.getSQLText());
             if (tablePanel.primary)
                 sqlBuffer.append(primary);
-            sqlBuffer.append(values);
+            sqlBuffer.append(values.replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, nameField.getText()));
         }
 
         sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE);

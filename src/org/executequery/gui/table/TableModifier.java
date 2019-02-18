@@ -29,11 +29,12 @@ public interface TableModifier extends CreateTableSQLSyntax {
 
     int COLUMN_VALUES = 0;
     int CONSTRAINT_VALUES = 1;
+    int EMPTY_VALUE = -1;
 
     /**
      * Generates and prints the SQL text.
      */
-    public void setSQLText();
+    void setSQLText();
 
     /**
      * Generates and prints the SQL text with the specified values as either
@@ -42,14 +43,14 @@ public interface TableModifier extends CreateTableSQLSyntax {
      * @param the values to add to the SQL
      * @param the type of values - column or constraint
      */
-    public void setSQLText(String values, int type);
+    void setSQLText(String values, int type);
 
     /**
      * Retrieves the currently selected/created table name.
      *
      * @return the table name
      */
-    public String getTableName();
+    String getTableName();
 
 }
 

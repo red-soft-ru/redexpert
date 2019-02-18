@@ -505,7 +505,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
                 append(CreateTableSQLSyntax.SPACE).
                 append(CreateTableSQLSyntax.B_OPEN).
                 append(tablePanel.getSQLText()).
-                append(consPanel.getSQLText());
+                append(consPanel.getSQLText().replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, nameField.getText()));
 
         sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE);
         if (temporary)

@@ -136,6 +136,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         tabbedPane.add("Autoincrement", autoIncrementPanel);
         tabbedPane.add("Description", descriptionPanel);
         tabbedPane.add("SQL", sqlPanel);
+        columnData.setColumnName(nameField.getText());
     }
 
     @Override

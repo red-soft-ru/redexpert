@@ -77,7 +77,7 @@ public class AutoIncrementPanel extends JPanel {
         cancelButton = new JButton("Cancel");
         systemStartValue = new NumberTextField(0);
         createStartValue = new NumberTextField(0);
-        createGeneratorName = new JTextField("SEQ_" + tableName + "_" + ai.getFieldName());
+        createGeneratorName = new JTextField();
         comboGenerators = new JComboBox(generators);
         triggerSQLPane = new SQLTextPane();
         triggerScroll = new JScrollPane(triggerSQLPane);
@@ -133,6 +133,7 @@ public class AutoIncrementPanel extends JPanel {
                     useGeneratorPanel.setVisible(false);
                     systemGeneratorBox.setSelected(false);
                     useGeneratorBox.setSelected(false);
+                    createGeneratorName.setText("SEQ_" + tableName + "_" + ai.getFieldName());
                     ai.setGeneratorName(createGeneratorName.getText());
                 } else {
                     createGeneratorPanel.setVisible(false);

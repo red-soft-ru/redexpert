@@ -584,13 +584,21 @@ public abstract class CreateTableFunctionPanel extends JPanel
     public void stateChanged(ChangeEvent e) {
         if (tableTabs.getSelectedIndex() == 1) {
             tools.enableButtons(false);
-
-            //          if (table.isEditing())
-            //            table.removeEditor();
-
+            checkFullType();
         } else {
             tools.enableButtons(true);
         }
+    }
+
+    protected boolean checkFullType() {
+        for (int i = 0; i < getTableColumnData().length; i++) {
+            if (getTableColumnData()[i].getColumnType() == null) {
+                GUIUtilities.displayErrorMessage("Select type for all columns");
+                tableTabs.setSelectedIndex(0);
+                return false;
+            }
+        }
+        return true;
     }
 
     /*

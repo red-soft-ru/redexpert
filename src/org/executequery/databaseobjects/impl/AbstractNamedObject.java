@@ -234,7 +234,9 @@ public abstract class AbstractNamedObject implements NamedObject,
      * @param name the name of this database object
      */
     public void setName(String name) {
-        this.name = name;
+        if (name != null)
+            this.name = name.trim();
+        else this.name = name;
     }
 
     /**

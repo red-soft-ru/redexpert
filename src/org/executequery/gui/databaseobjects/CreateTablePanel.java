@@ -196,6 +196,8 @@ public class CreateTablePanel extends CreateTableFunctionPanel
 
     private void createTable() {
         try {
+            if (!checkFullType())
+                return;
             String querys = getSQLText();
             ExecuteQueryDialog eqd = new ExecuteQueryDialog("Creating table", querys, getSelectedConnection(), true, "^");
             eqd.display();

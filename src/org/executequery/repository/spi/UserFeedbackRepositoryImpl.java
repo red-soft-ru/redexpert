@@ -22,7 +22,6 @@ package org.executequery.repository.spi;
 
 
 import org.executequery.http.JSONAPI;
-import org.executequery.http.ReddatabaseAPI;
 import org.executequery.http.RemoteHttpClient;
 import org.executequery.http.RemoteHttpClientException;
 import org.executequery.http.spi.DefaultRemoteHttpClient;
@@ -55,11 +54,8 @@ public class UserFeedbackRepositoryImpl implements UserFeedbackRepository {
             saveEntriesToPreferences(userFeedback);
 
             if (siteAvailable()) {
-                Map<String, String> heads = ReddatabaseAPI.getHeadersWithToken();
-                if (heads == null)
-                    return 0;
                 Map<String, String> params = userFeedback.asMap();
-                String res = JSONAPI.postJsonObject("http://reddatabase.ru/api/website/feedbacks/", params, heads);
+                String res = JSONAPI.postJsonObject("http://reddatabase.ru/api/website/feedbacks/", params, null);
                 if (res.startsWith("Server return error"))
                     return Integer.parseInt(res.split("\n")[1]);
                 Log.info(res);
@@ -130,6 +126,12 @@ public class UserFeedbackRepositoryImpl implements UserFeedbackRepository {
             savePrefs = true;
             SystemProperties.setStringProperty(
                     "user", "user.full.name", userFeedback.getName());
+        }
+
+        if (!MiscUtils.isNull(userFeedback.getEmail())) {
+            savePrefs = true;
+            SystemProperties.setStringProperty(
+                    "user", "user.email.address", userFeedback.getEmail());
         }
 
         if (savePrefs) {

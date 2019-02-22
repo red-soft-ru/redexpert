@@ -21,7 +21,7 @@
 package org.executequery.databaseobjects;
 
 import org.executequery.databaseobjects.impl.ColumnConstraint;
-import org.executequery.databaseobjects.impl.TableColumnIndex;
+import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.ResultSet;
@@ -60,7 +60,7 @@ public interface DatabaseTable extends DatabaseTableObject {
      *
      * @return the indexes
      */
-    List<TableColumnIndex> getIndexes() throws DataSourceException;
+    List<DefaultDatabaseIndex> getIndexes() throws DataSourceException;
 
     /**
      * Returns this table's column meta data result set.

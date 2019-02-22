@@ -38,15 +38,25 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
     private JCheckBox computedBox;
     private JCheckBox activeBox;
     private DefaultDatabaseIndex databaseIndex;
+    private String table_name;
     private boolean edited;
     private boolean free_sender = true;
 
     public CreateIndexPanel(DatabaseConnection dc, ActionContainer dialog) {
-        this(dc, dialog, null);
+        this(dc, dialog, (DefaultDatabaseIndex) null);
+    }
+
+    public CreateIndexPanel(DatabaseConnection dc, ActionContainer dialog, String tableName) {
+        this(dc, dialog, null, tableName);
     }
 
     public CreateIndexPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseIndex index) {
         super(dc, dialog, index);
+        edited = false;
+    }
+
+    public CreateIndexPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseIndex index, String tableName) {
+        super(dc, dialog, index, new Object[]{tableName});
         edited = false;
     }
 
@@ -115,7 +125,9 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
     @Override
     public void setParameters(Object[] params) {
-
+        if (params != null) {
+            table_name = (String) params[0];
+        }
     }
 
     protected void init() {
@@ -224,7 +236,19 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         tabbedPane.add(bundlesString("description"), descriptionPanel);
         descriptionPanel.setLayout(new BorderLayout());
         descriptionPanel.add(description);
+        if (table_name != null) {
+            for (int i = 0; i < tableName.getItemCount(); i++) {
+                if (table_name.trim().equals(tableName.getItemAt(i))) {
+                    tableName.setSelectedIndex(i);
+                    updateListFields();
+                    break;
+                }
+
+            }
+            tableName.setEnabled(false);
+        }
     }
+
 
     private void updateListTables() {
         try {

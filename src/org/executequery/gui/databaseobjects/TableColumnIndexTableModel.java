@@ -20,7 +20,7 @@
 
 package org.executequery.gui.databaseobjects;
 
-import org.executequery.databaseobjects.impl.TableColumnIndex;
+import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.gui.browser.AbstractDatabaseTableViewModel;
 
 import java.util.List;
@@ -30,13 +30,12 @@ import java.util.List;
  */
 public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
 
-  /**
-   * the table indexed columns
-   */
-  private List<TableColumnIndex> indexes;
-
   private static final String[] header = {"", "Index Name",
-      "Indexed Column","Expression", "Non-Unique"};
+          "Indexed Columns", "Expression", "Unique"};
+    /**
+     * the table indexed columns
+     */
+    private List<DefaultDatabaseIndex> indexes;
 
   /**
    * Creates a new instance of DatabaseTableColumnIndexTableModel
@@ -44,7 +43,7 @@ public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
   public TableColumnIndexTableModel() {
   }
 
-  public void setIndexData(List<TableColumnIndex> indexes) {
+    public void setIndexData(List<DefaultDatabaseIndex> indexes) {
     if (this.indexes == indexes) {
       return;
     }
@@ -72,25 +71,31 @@ public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
   }
 
   public Object getValueAt(int row, int col) {
-    TableColumnIndex index = indexes.get(row);
+      DefaultDatabaseIndex index = indexes.get(row);
     switch (col) {
       case 0:
         return index.getConstraint_type();
       case 1:
         return index.getName();
       case 2:
-        return index.getIndexedColumn();
+          String cols = "";
+          for (int i = 0; i < index.getIndexColumns().size(); i++) {
+              if (i != 0)
+                  cols += ",";
+              cols += " " + index.getIndexColumns().get(i).getFieldName();
+          }
+          return cols;
       case 3:
         return index.getExpression();
       case 4:
-        return Boolean.valueOf(index.isNonUnique());
+          return Boolean.valueOf(index.isUnique());
       default:
         return null;
     }
   }
 
   public void setValueAt(Object value, int row, int col) {
-    TableColumnIndex index = indexes.get(row);
+    /*DefaultDatabaseIndex index = indexes.get(row);
     switch (col) {
       case 1:
         index.setName((String) value);
@@ -102,7 +107,7 @@ public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
         index.setNonUnique(((Boolean) value).booleanValue());
         break;
     }
-    fireTableRowsUpdated(row, row);
+    fireTableRowsUpdated(row, row);*/
   }
 
   public Class<?> getColumnClass(int col) {
@@ -112,6 +117,9 @@ public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
     return String.class;
   }
 
+    public List<DefaultDatabaseIndex> getIndexes() {
+        return indexes;
+    }
 }
 
 

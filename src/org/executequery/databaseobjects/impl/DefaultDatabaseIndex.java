@@ -204,7 +204,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
             List<DefaultDatabaseIndex.DatabaseIndexColumn> columns = new ArrayList<>();
             while (rs2.next()) {
                 DefaultDatabaseIndex.DatabaseIndexColumn column = new DefaultDatabaseIndex.DatabaseIndexColumn();
-                column.setFieldName(rs2.getString(6));
+                column.setFieldName(rs2.getString(6).trim());
                 column.setSelectivity(rs2.getDouble(8));
                 column.setFieldPosition(rs2.getInt(7));
                 setExpression(rs2.getString(9));

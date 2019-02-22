@@ -26,6 +26,7 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.TablePrivilege;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
+import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
@@ -33,6 +34,8 @@ import org.executequery.event.KeywordListener;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.DefaultTable;
+import org.executequery.gui.ExecuteQueryDialog;
+import org.executequery.gui.databaseobjects.CreateIndexPanel;
 import org.executequery.gui.databaseobjects.EditableColumnConstraintTable;
 import org.executequery.gui.databaseobjects.EditableDatabaseTable;
 import org.executequery.gui.databaseobjects.TableColumnIndexTableModel;
@@ -179,6 +182,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     private JPanel buttonsEditingColumnPanel;
     private JPanel buttonsEditingConstraintPanel;
+    private JPanel buttonsEditingIndexesPanel;
 
     Semaphore lock;
 
@@ -203,9 +207,42 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         columnIndexTable.getTableHeader().setReorderingAllowed(false);
 
         // column indexes panel
-        JPanel indexesPanel = new JPanel(new BorderLayout());
+        JPanel indexesPanel = new JPanel(new GridBagLayout());
         indexesPanel.setBorder(BorderFactory.createTitledBorder(bundleString("table-indexes")));
-        indexesPanel.add(new JScrollPane(columnIndexTable), BorderLayout.CENTER);
+        createButtonsEditingIndexesPanel();
+        indexesPanel.add(buttonsEditingIndexesPanel, new GridBagConstraints(
+                1, 0, 1, 1, 0, 0,
+                GridBagConstraints.NORTH,
+                GridBagConstraints.HORIZONTAL,
+                new Insets(2, 2, 2, 2), 0, 0));
+        indexesPanel.add(new JScrollPane(columnIndexTable), new GridBagConstraints(
+                1, 1, 1, 1, 1.0, 1.0,
+                GridBagConstraints.SOUTHEAST,
+                GridBagConstraints.BOTH,
+                new Insets(2, 2, 2, 2), 0, 0));
+        columnIndexTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() > 1) {
+                    int row = columnIndexTable.getSelectedRow();
+                    if (row >= 0) {
+                        row = ((TableSorter) columnIndexTable.getModel()).modelIndex(row);
+                        DefaultDatabaseIndex index = ((TableColumnIndexTableModel) ((TableSorter) columnIndexTable.getModel()).getTableModel()).getIndexes().get(row);
+                        BaseDialog dialog = new BaseDialog("Edit Index", true);
+                        CreateIndexPanel panel = new CreateIndexPanel(table.getHost().getDatabaseConnection(), dialog, index, table.getName());
+                        dialog.addDisplayComponent(panel);
+                        dialog.display();
+                        try {
+                            table.reset();
+                            setValues(table);
+
+                        } catch (DataSourceException ex) {
+                            GUIUtilities.displayExceptionErrorDialog(ex.getMessage(), ex);
+                        }
+                    }
+                }
+            }
+        });
 
         // table meta data table
         metaDataPanel = new DatabaseObjectMetaDataPanel();
@@ -866,6 +903,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             tableNameField.setText(table.getName());
             descriptionTable.setDatabaseTable(table);
             constraintsTable.setDatabaseTable(table);
+            loadIndexes();
 
             alterSqlText.setSQLText(EMPTY);
             try {
@@ -1040,6 +1078,18 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         } else if (tabIndex == 1) {
 
             constraintsTable.deleteSelectedConstraint();
+        } else if (tabIndex == 2) {
+            int row = columnIndexTable.getSelectedRow();
+            if (row >= 0) {
+                row = ((TableSorter) columnIndexTable.getModel()).modelIndex(row);
+                DefaultDatabaseIndex index = ((TableColumnIndexTableModel) ((TableSorter) columnIndexTable.getModel()).getTableModel()).getIndexes().get(row);
+                String query = "DROP INDEX " + index.getName();
+                ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, table.getHost().getDatabaseConnection(), true);
+                eqd.display();
+                if (eqd.getCommit())
+                    table.reset();
+                setValues(table);
+            }
         }
 
         setSQLText();
@@ -1051,22 +1101,24 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     public void insertAfter() {
 
         int tabIndex = tabPane.getSelectedIndex();
-
+        JPanel panelForDialog = null;
+        BaseDialog dialog = null;
         if (tabIndex == 0) {
-            BaseDialog dialog = new BaseDialog("Add column", true);
-            InsertColumnPanel icp = new InsertColumnPanel(table, dialog);
-            dialog.addDisplayComponent(icp);
-            dialog.display();
-            table.reset();
-            reloadView();
+            dialog = new BaseDialog("Add column", true);
+            panelForDialog = new InsertColumnPanel(table, dialog);
         } else if (tabIndex == 1) {
-            BaseDialog dialog = new BaseDialog("Add constraint", true);
-            EditConstraintPanel icp = new EditConstraintPanel(table, dialog);
-            dialog.addDisplayComponent(icp);
-            dialog.display();
-            table.reset();
-            reloadView();
+            dialog = new BaseDialog("Add constraint", true);
+            panelForDialog = new EditConstraintPanel(table, dialog);
+        } else if (tabIndex == 2) {
+            dialog = new BaseDialog("Add Index", true);
+            panelForDialog = new CreateIndexPanel(table.getHost().getDatabaseConnection(), dialog, table.getName());
+
         }
+
+        dialog.addDisplayComponent(panelForDialog);
+        dialog.display();
+        table.reset();
+        reloadView();
 
     }
 
@@ -1274,6 +1326,34 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
         buttonsEditingConstraintPanel.add(bar, gbc3);
+    }
+
+    private void createButtonsEditingIndexesPanel() {
+        buttonsEditingIndexesPanel = new JPanel(new GridBagLayout());
+        PanelToolBar bar = new PanelToolBar();
+        RolloverButton addRolloverButton = new RolloverButton();
+        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.png"));
+        addRolloverButton.setToolTipText("Insert Index");
+        addRolloverButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                insertAfter();
+            }
+        });
+        bar.add(addRolloverButton);
+        RolloverButton deleteRolloverButton = new RolloverButton();
+        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
+        deleteRolloverButton.setToolTipText("Delete Index");
+        deleteRolloverButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                deleteRow();
+            }
+        });
+        bar.add(deleteRolloverButton);
+        GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
+                GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
+        buttonsEditingIndexesPanel.add(bar, gbc3);
     }
 
 }

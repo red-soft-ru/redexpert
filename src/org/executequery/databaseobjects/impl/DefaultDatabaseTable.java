@@ -54,7 +54,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
   /**
    * the table indexed columns
    */
-  private List<TableColumnIndex> indexes;
+  private List<DefaultDatabaseIndex> indexes;
 
   /**
    * the user modified SQL text for changes
@@ -365,9 +365,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     return Collections.synchronizedList(new ArrayList<ColumnConstraint>(size));
   }
 
-  private List<TableColumnIndex> databaseIndexListWithSize(int size) {
+  private List<DefaultDatabaseIndex> databaseIndexListWithSize(int size) {
 
-    return Collections.synchronizedList(new ArrayList<TableColumnIndex>(size));
+    return Collections.synchronizedList(new ArrayList<DefaultDatabaseIndex>(size));
   }
 
   List<ColumnConstraint> constraints;
@@ -467,7 +467,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
    *
    * @return the indexes
    */
-  public List<TableColumnIndex> getIndexes() throws DataSourceException {
+  public List<DefaultDatabaseIndex> getIndexes() throws DataSourceException {
 
     if (!isMarkedForReload() && indexes != null) {
 
@@ -480,7 +480,8 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       DatabaseHost _host = getHost();
       rs = _host.getDatabaseMetaData().getIndexInfo(getCatalogName(), getSchemaName(), getName(), false, true);
       TableColumnIndex lastIndex = null;
-      indexes = databaseIndexListWithSize(10);
+      indexes = new ArrayList<>();
+      List<TableColumnIndex> tindexes = new ArrayList<>();
       while (rs.next()) {
         String name = rs.getString(6);
         if (StringUtils.isBlank(name)) {
@@ -493,17 +494,18 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
           index.addIndexedColumn(rs.getString(9));
           index.setMetaData(resultSetRowToMap(rs));
           lastIndex = index;
-          indexes.add(index);
+          tindexes.add(index);
         } else {
           lastIndex.addIndexedColumn(rs.getString(9));
         }
       }
       releaseResources(rs);
       DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(getHost(),null,null,META_TYPES[INDEX]);
-      for (TableColumnIndex index:indexes)
+      for (TableColumnIndex index : tindexes)
       {
         DefaultDatabaseIndex index1 = metaTag.getIndexFromName(index.getName());
         index1.loadColumns();
+        indexes.add(index1);
         if(index1.getExpression()!=null)
         {
           index.setIndexedColumns(null);

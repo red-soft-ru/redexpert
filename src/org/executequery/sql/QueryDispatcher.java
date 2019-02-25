@@ -51,11 +51,13 @@ import org.underworldlabs.sqlParser.REDDATABASESqlParser;
 import org.underworldlabs.sqlParser.SqlParser;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -267,6 +269,62 @@ public class QueryDispatcher {
             public Object construct() {
 
                 return executeSQL(query, executeAsBlock);
+            }
+
+            public void finished() {
+
+                delegate.finished(duration);
+
+                if (statementCancelled) {
+
+                    setOutputMessage(SqlMessages.PLAIN_MESSAGE,
+                            "Statement cancelled");
+                    delegate.setStatusMessage(" Statement cancelled");
+                }
+
+                querySender.releaseResources();
+                executing = false;
+            }
+
+        };
+
+        setOutputMessage(SqlMessages.PLAIN_MESSAGE, "---\nUsing connection: " + dc);
+
+        delegate.executing();
+        delegate.setStatusMessage(Constants.EMPTY);
+        worker.start();
+    }
+
+    public void executeSQLScript(DatabaseConnection dc,
+                                 final String script) {
+
+        if (!ConnectionManager.hasConnections()) {
+
+            setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Not Connected");
+            setStatusMessage(ERROR_EXECUTING);
+
+            return;
+        }
+
+        if (querySender == null) {
+
+            querySender = new DefaultStatementExecutor(null, true);
+        }
+
+        if (dc != null) {
+
+            querySender.setDatabaseConnection(dc);
+        }
+
+        querySender.setTransactionIsolation(transactionLevel);
+
+        statementCancelled = false;
+
+        worker = new ThreadWorker() {
+
+            public Object construct() {
+
+                return executeSQLScript(script);
             }
 
             public void finished() {
@@ -777,6 +835,332 @@ public class QueryDispatcher {
             }
             duration = MiscUtils.formatDuration(endAll - startAll);
             */
+
+            duration = formatDuration(totalDuration);
+        }
+
+        return DONE;
+    }
+
+    private Object executeSQLScript(String script) {
+
+        IFBPerformanceInfo before, after;
+        before = null;
+        after = null;
+
+        waiting = false;
+        long totalDuration = 0l;
+
+        try {
+
+            long start = 0l;
+            long end = 0l;
+
+            // check we are executing the whole block of sql text
+
+
+            executing = true;
+
+
+            QueryTokenizer queryTokenizer = new QueryTokenizer();
+            List<DerivedQuery> queries = queryTokenizer.tokenize(script);
+
+            List<DerivedQuery> executableQueries = new ArrayList<DerivedQuery>();
+
+            for (DerivedQuery query : queries) {
+                if (statementCancelled || Thread.interrupted()) {
+
+                    throw new InterruptedException();
+                }
+                if (query.isExecutable()) {
+
+                    executableQueries.add(query);
+                }
+
+            }
+            queries.clear();
+
+            try {
+                DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
+                Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
+                DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
+                Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+
+                if (driver.getClass().getName().contains("FBDriver")) {
+
+                    Connection connection = null;
+                    try {
+                        connection = querySender.getConnection().unwrap(Connection.class);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+
+                    IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(connection, "FBDatabasePerformanceImpl");
+                    try {
+
+                        db.setConnection(connection);
+                        before = db.getPerformanceInfo();
+
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            } catch (Exception e) {
+                // nothing to do
+            }
+            setOutputMessage(
+                    SqlMessages.ACTION_MESSAGE, "Found " + executableQueries.size() + " queries");
+            start = System.currentTimeMillis();
+            boolean stopOnError = SystemProperties.getBooleanProperty("user", "editor.stop.on.error");
+            boolean error = false;
+            for (int i = 0; i < executableQueries.size(); i++) {
+                try {
+                    DerivedQuery query = executableQueries.get(i);
+                    if (i == 156)
+                        setOutputMessage(
+                                SqlMessages.ACTION_MESSAGE, (i + 1) + " query");
+                    setOutputMessage(
+                            SqlMessages.ACTION_MESSAGE, (i + 1) + " query");
+                    if (statementCancelled || Thread.interrupted()) {
+
+                        throw new InterruptedException();
+                    }
+
+                    String queryToExecute = query.getDerivedQuery();
+
+                    int type = query.getQueryType();
+                    if (type != QueryTypes.COMMIT && type != QueryTypes.ROLLBACK) {
+
+                        logExecution(queryToExecute);
+
+                    } else {
+
+                        if (type == QueryTypes.COMMIT) {
+
+                            setOutputMessage(
+                                    SqlMessages.ACTION_MESSAGE,
+                                    COMMITTING_LAST);
+
+                        } else if (type == QueryTypes.ROLLBACK) {
+
+                            setOutputMessage(
+                                    SqlMessages.ACTION_MESSAGE,
+                                    ROLLING_BACK_LAST);
+                        }
+
+                    }
+
+
+                    PreparedStatement statement;
+                    statement = querySender.getPreparedStatement(queryToExecute);
+                    SqlStatementResult result = querySender.execute(type, statement);
+
+                    if (statementCancelled || Thread.interrupted()) {
+
+                        throw new InterruptedException();
+                    }
+
+                    if (result.isResultSet()) {
+
+                        ResultSet rset = result.getResultSet();
+
+                        if (rset == null) {
+
+                            String message = result.getErrorMessage();
+                            if (message == null) {
+
+                                message = result.getMessage();
+                                // if still null dump simple message
+                                if (message == null) {
+
+                                    message = "A NULL result set was returned.";
+                                }
+
+                            }
+
+                            printExecutionPlan(before, after);
+
+                            setOutputMessage(SqlMessages.ERROR_MESSAGE,
+                                    message, true);
+                            setStatusMessage(ERROR_EXECUTING);
+                            error = true;
+
+                        } else {
+
+                            // Trying to get execution plan of firebird statement
+
+                            printPlan(rset);
+
+                            setResultSet(rset, query.getOriginalQuery());
+
+                            printExecutionPlan(before, after);
+                        }
+
+                        end = System.currentTimeMillis();
+
+                    } else {
+
+                        end = System.currentTimeMillis();
+
+                        // check that we executed a 'normal' statement (not a proc)
+                        if (result.getType() != QueryTypes.EXECUTE) {
+
+                            int updateCount = result.getUpdateCount();
+                            if (updateCount == -1) {
+
+                                //printExecutionPlan(before, after);
+
+                                setOutputMessage(SqlMessages.ERROR_MESSAGE,
+                                        result.getErrorMessage(), true);
+                                setStatusMessage(ERROR_EXECUTING);
+                                error = true;
+
+                            } else {
+
+                                if (result.isException()) {
+
+                                    //printExecutionPlan(before, after);
+
+                                    setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage(), true);
+                                    error = true;
+                                } else {
+
+                                    type = result.getType();
+                                    setResultText(updateCount, type);
+
+
+                                    if (type == QueryTypes.COMMIT || type == QueryTypes.ROLLBACK) {
+
+                                        setStatusMessage(" " + result.getMessage());
+                                    }
+
+                                    printExecutionPlan(before, after);
+
+                                }
+                            }
+
+                        } else {
+
+                            @SuppressWarnings("rawtypes")
+                            Map results = (Map) result.getOtherResult();
+
+                            if (results == null) {
+
+                                //printExecutionPlan(before, after);
+
+                                setOutputMessage(SqlMessages.ERROR_MESSAGE, result.getErrorMessage(), true);
+                                setStatusMessage(ERROR_EXECUTING);
+                                error = true;
+
+                            } else {
+
+                                printExecutionPlan(before, after);
+
+                                setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Call executed successfully.");
+                                int updateCount = result.getUpdateCount();
+
+                                if (updateCount > 0) {
+
+                                    setOutputMessage(SqlMessages.PLAIN_MESSAGE,
+                                            updateCount +
+                                                    ((updateCount > 1) ?
+                                                            " rows affected." : " row affected."));
+                                }
+
+                                String SPACE = " = ";
+                                for (Iterator<?> it = results.keySet().iterator(); it.hasNext(); ) {
+
+                                    String key = it.next().toString();
+                                    setOutputMessage(SqlMessages.PLAIN_MESSAGE,
+                                            key + SPACE + results.get(key));
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                    // execution times
+
+
+                } catch (SQLException e) {
+
+                    processException(e);
+                    return "SQLException";
+
+                } catch (InterruptedException e) {
+
+                    //Log.debug("InterruptedException");
+                    statementCancelled = true; // make sure its set
+                    return "Interrupted";
+
+                } catch (OutOfMemoryError e) {
+
+                    setOutputMessage(SqlMessages.ERROR_MESSAGE,
+                            "Resources exhausted while executing query.\n" +
+                                    "The query result set was too large to return.", true);
+
+                    setStatusMessage(ERROR_EXECUTING);
+
+                } catch (Exception e) {
+
+                    if (!statementCancelled) {
+
+
+                        e.printStackTrace();
+
+
+                        processException(e);
+                    }
+
+                } finally {
+
+                    querySender.releaseResources();
+                    if (error && stopOnError)
+                        break;
+                }
+
+            }
+            if (end == 0) {
+
+                end = System.currentTimeMillis();
+            }
+
+            long timeTaken = end - start;
+            totalDuration += timeTaken;
+            logExecutionTime(timeTaken);
+
+            statementExecuted(script);
+
+        } catch (InterruptedException e) {
+
+            //Log.debug("InterruptedException");
+            statementCancelled = true; // make sure its set
+            return "Interrupted";
+
+        } catch (OutOfMemoryError e) {
+
+            setOutputMessage(SqlMessages.ERROR_MESSAGE,
+                    "Resources exhausted while executing query.\n" +
+                            "The query result set was too large to return.", true);
+
+            setStatusMessage(ERROR_EXECUTING);
+
+        } catch (Exception e) {
+
+            if (!statementCancelled) {
+
+                if (Log.isDebugEnabled()) {
+
+                    e.printStackTrace();
+                }
+
+                processException(e);
+            }
+
+        } finally {
 
             duration = formatDuration(totalDuration);
         }

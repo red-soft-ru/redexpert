@@ -384,6 +384,13 @@
             small-icon="/org/executequery/icons/ExecuteSelection16.png"
             execute-class="org.executequery.actions.queryeditor.ExecuteSelectionCommand"/>
 
+    <action id="execute-script-command"
+            name="Execute Script"
+            accel-key="F10"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ExecuteSqlScript16.png"
+            execute-class="org.executequery.actions.queryeditor.ExecuteScriptCommand"/>
+
     <action id="print-plan-command"
             name="Print Plan"
             accel-key="control shift P"

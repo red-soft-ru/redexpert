@@ -133,6 +133,11 @@ public class QueryEditor extends DefaultTabView
     /**
      * the max row count returned field
      */
+    private JCheckBox stopOnErrorCheckBox;
+
+    /**
+     * the max row count returned field
+     */
     private NumberTextField maxRowCountField;
 
     /**
@@ -296,6 +301,14 @@ public class QueryEditor extends DefaultTabView
                 maxRowCountCheckBoxSelected();
             }
         });
+        stopOnErrorCheckBox = new JCheckBox("Stop On Error");
+        stopOnErrorCheckBox.setToolTipText("Enable/disable stopping when error in script");
+        stopOnErrorCheckBox.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                SystemProperties.setBooleanProperty("user", "editor.stop.on.error", stopOnErrorCheckBox.isSelected());
+            }
+        });
 
         maxRowCountField = new MaxRowCountField(this);
 
@@ -371,6 +384,12 @@ public class QueryEditor extends DefaultTabView
         gbc.insets.right = 2;
         gbc.fill = GridBagConstraints.BOTH;
         toolsPanel.add(maxRowCountField, gbc);
+
+        gbc.gridx++;
+        gbc.weightx = 0;
+        gbc.insets.top = 5;
+        gbc.insets.left = 10;
+        toolsPanel.add(stopOnErrorCheckBox, gbc);
 
         splitPane.setBorder(BorderFactory.createEmptyBorder(0, 3, 3, 3));
 
@@ -554,6 +573,7 @@ public class QueryEditor extends DefaultTabView
         int maxRecords = SystemProperties.getIntProperty("user", "editor.max.records");
         maxRowCountCheckBox.setSelected((maxRecords > 0));
         maxRowCountCheckBoxSelected();
+        stopOnErrorCheckBox.setSelected(SystemProperties.getBooleanProperty("user", "editor.stop.on.error"));
     }
 
     private boolean isAutoCompleteOn() {
@@ -1208,6 +1228,20 @@ public class QueryEditor extends DefaultTabView
         boolean executeAsBlock = new SqlParser(query).isExecuteBlock();
 
         delegate.executeQuery(getSelectedConnection(), query, executeAsBlock);
+    }
+
+    public void executeSQLScript(String script) {
+
+        preExecute();
+
+        if (script == null) {
+
+            script = editorPanel.getQueryAreaText();
+        }
+
+        editorPanel.resetExecutingLine();
+
+        delegate.executeScript(getSelectedConnection(), script);
     }
 
     public void printExecutedPlan() {

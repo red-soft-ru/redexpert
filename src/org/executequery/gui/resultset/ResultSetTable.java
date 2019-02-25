@@ -568,5 +568,10 @@ public class ResultSetTable extends JTable implements StandardTable {
         applyUserPreferences();
     }
 
+    public void stopEditing() {
+        if (isEditing())
+            getCellEditor().stopCellEditing();
+    }
+
 }
 

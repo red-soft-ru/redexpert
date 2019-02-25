@@ -68,9 +68,9 @@ import java.awt.image.BufferedImage;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.*;
 import java.util.List;
 import java.util.Timer;
+import java.util.*;
 
 /**
  * @author Takis Diakoumis
@@ -902,6 +902,7 @@ public class TableDataTab extends JPanel
 
 
                 try {
+                    stopEditing();
                     DatabaseObjectChangeProvider docp = new DatabaseObjectChangeProvider(asDatabaseTableObject());
                     if (docp.applyDataChanges())
                         loadDataForTable(databaseObject);
@@ -984,6 +985,10 @@ public class TableDataTab extends JPanel
         GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
         buttonsEditingPanel.add(bar, gbc3);
+    }
+
+    public void stopEditing() {
+        table.stopEditing();
     }
 
     private void initRowCountPanel() {

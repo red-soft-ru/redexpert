@@ -544,7 +544,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             if (source == applyButton) {
 
                 try {
-
+                    if (tabPane.getSelectedComponent() == tableDataPanel)
+                        tableDataPanel.stopEditing();
                     DatabaseObjectChangeProvider docp = new DatabaseObjectChangeProvider(table);
                     docp.applyChanges();
                     if (docp.applied)

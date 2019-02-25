@@ -1386,7 +1386,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
 
     enableButtons(false, false, false, false);
     tree.setSelectionRow(0);
-    tree.setToggleClickCount(2);
+      tree.setToggleClickCount(-1);
   }
 
   public void reloadRowHeight() {

@@ -128,7 +128,9 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
 
     private void jbInit() throws Exception {
         JButton createButton = new DefaultPanelButton(Bundles.get("common.add.button"));
+        createButton.setActionCommand("Add");
         JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
+        createButton.setActionCommand("Cancel");
 
         ActionListener btnListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {

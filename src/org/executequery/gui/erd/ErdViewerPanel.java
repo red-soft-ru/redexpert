@@ -1027,10 +1027,7 @@ public class ErdViewerPanel extends DefaultTabView
 
     public boolean contentCanBeSaved() {
 
-        if (tables.size() > 0)
-            return true;
-        else
-            return false;
+        return tables.size() > 0;
 
     }
 
@@ -1077,7 +1074,8 @@ public class ErdViewerPanel extends DefaultTabView
         ErdSaveFileFormat eqFormat = new ErdSaveFileFormat(fileData, file.getName());
         eqFormat.setColumnNameFont(columnNameFont);
         eqFormat.setTableNameFont(tableNameFont);
-        eqFormat.setTableBackground(tables[0].getTableBackground());
+        if (tables != null && tables.length > 0)
+            eqFormat.setTableBackground(tables[0].getTableBackground());
         eqFormat.setAbsolutePath(file.getAbsolutePath());
 
         if (erdTitlePanel != null) {

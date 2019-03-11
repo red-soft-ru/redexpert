@@ -301,7 +301,9 @@ public class ErdSaveDialog extends AbstractBaseDialog
         base.setPreferredSize(new Dimension(400, 300));
 
         JButton saveButton = new DefaultPanelButton(Bundles.get("common.save.button"));
+        saveButton.setActionCommand("Save");
         JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
+        cancelButton.setActionCommand("Cancel");
 
         cancelButton.addActionListener(this);
         saveButton.addActionListener(this);

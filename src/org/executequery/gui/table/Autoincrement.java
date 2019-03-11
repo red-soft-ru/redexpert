@@ -1,6 +1,8 @@
 package org.executequery.gui.table;
 
-public class Autoincrement {
+import java.io.Serializable;
+
+public class Autoincrement implements Serializable {
     private boolean systemGenerator = false;
     private boolean createGenerator = false;
     private boolean useGenerator = false;

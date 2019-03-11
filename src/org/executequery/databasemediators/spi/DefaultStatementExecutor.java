@@ -38,6 +38,7 @@ import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
+import java.io.Serializable;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.math.BigDecimal;
 import java.sql.*;
@@ -61,7 +62,7 @@ import java.util.regex.Pattern;
  *
  * @author Takis Diakoumis
  */
-public class DefaultStatementExecutor implements StatementExecutor {
+public class DefaultStatementExecutor implements StatementExecutor, Serializable {
 
     /**
      * Whether this object is owned by a QueryEditor instance

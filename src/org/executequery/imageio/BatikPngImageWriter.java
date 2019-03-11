@@ -20,10 +20,9 @@
 
 package org.executequery.imageio;
 
-import org.apache.batik.svggen.ImageHandlerPNGEncoder;
-import org.apache.batik.svggen.SVGGraphics2DIOException;
-
+import javax.imageio.ImageIO;
 import java.io.File;
+import java.io.IOException;
 
 public class BatikPngImageWriter extends AbstractImageWriter {
 
@@ -32,14 +31,10 @@ public class BatikPngImageWriter extends AbstractImageWriter {
         try {
 
             File file = imageWriterInfo.getWriteToFile();
+            ImageIO.write(imageWriterInfo.getBufferedImage(), "png", file);
 
-            ImageHandlerPNGEncoder handler =
-                    new ImageHandlerPNGEncoder(file.getParent(), null);
-            handler.encodeImage(imageWriterInfo.getBufferedImage(), file);
-
-        } catch (SVGGraphics2DIOException e) {
-
-            handleException(e);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
     }

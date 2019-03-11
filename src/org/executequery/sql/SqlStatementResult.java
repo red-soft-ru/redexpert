@@ -22,6 +22,7 @@ package org.executequery.sql;
 
 import org.executequery.Constants;
 
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
@@ -29,7 +30,7 @@ import java.sql.SQLWarning;
 /**
  * @author Takis Diakoumis
  */
-public class SqlStatementResult {
+public class SqlStatementResult implements Serializable {
 
     private int type;
 

@@ -40,8 +40,8 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Main system preferences panel.
@@ -152,7 +152,7 @@ public class PropertiesPanel extends JPanel
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_FILE, "File Tools"));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_EDIT, "Edit Tools"));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_DATABASE, "Database Tools"));
-        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_BROWSER, "Browser Tools"));
+        //node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_BROWSER, "Browser Tools"));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_IMPORT_EXPORT, "Import/Export Tools"));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_SEARCH, "Search Tools"));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_SYSTEM, "System Tools"));

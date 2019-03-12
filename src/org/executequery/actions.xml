@@ -293,6 +293,7 @@
             name="Close Connection"
             mnemonic="C"
             accel-editable="true"
+            small-icon="/org/executequery/icons/disconnected.png"
             large-icon="/org/executequery/icons/DatabaseDisconnect24.png"
             description="Close the database connection associated with the current selection"
             execute-class="org.executequery.actions.databasecommands.DisconnectCommand"/>
@@ -729,6 +730,13 @@
             small-icon="/org/executequery/icons/DatabaseConnect16.png"
             large-icon="/org/executequery/icons/DatabaseConnect24.png"
             execute-class="org.executequery.actions.databasecommands.ConnectCommand"/>
+
+    <action id="connect-to-database-command"
+            name="Connect"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/connected.png"
+            large-icon="/org/executequery/icons/DatabaseConnect24.png"
+            execute-class="org.executequery.actions.databasecommands.ConnectToDatabaseCommand"/>
 
     <action id="import-connections-from-file-command"
             name="Import Connections"

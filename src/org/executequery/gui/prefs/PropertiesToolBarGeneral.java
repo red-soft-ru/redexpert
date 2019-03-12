@@ -96,12 +96,12 @@ public class PropertiesToolBarGeneral extends AbstractPropertiesBasePanel {
                 "Database tool bar",
                 Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
-        key = ToolBarManager.BROWSER_TOOLS;
+        /*key = ToolBarManager.BROWSER_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 "Browser tool bar",
-                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
+                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));*/
 
         key = ToolBarManager.IMPORT_EXPORT_TOOLS;
         list.add(new UserPreference(
@@ -133,7 +133,7 @@ public class PropertiesToolBarGeneral extends AbstractPropertiesBasePanel {
 */
 
         UserPreference[] preferences =
-                (UserPreference[]) list.toArray(new UserPreference[list.size()]);
+                list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
     }

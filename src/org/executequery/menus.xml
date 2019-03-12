@@ -314,13 +314,13 @@
                        action-command="viewDatabaseTools"
                        tool-tip="Displays the database tool bar"/>
 
-            <menu-item name="Browser Tool Bar"
+            <!--<menu-item name="Browser Tool Bar"
                        key="menu.view.tool-bars.browser-tool-bar"
                        class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                        mnemonic="B"
                        action-command="viewBrowserTools"
                        cache-name="viewBrowserTools"
-                       tool-tip="Displays the browser tool bar"/>
+                       tool-tip="Displays the browser tool bar"/>-->
 
             <menu-item name="Import/Export Tool Bar"
                        key="menu.view.tool-bars.import-export-tool-bar"

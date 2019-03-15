@@ -49,25 +49,18 @@ public class PropertiesBrowserTableData extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                "Database table data view tab",
+                bundledString("DatabaseTableDataViewTab"),
                 null));
 
         String key = "browser.max.records";
         list.add(new UserPreference(
                 UserPreference.INTEGER_TYPE,
                 key,
-                "Maximum records returned",
+                bundledString("MaximumRecordsReturned"),
                 SystemProperties.getProperty("user", key)));
 
-        key = "browser.always.show.table.editable.label";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                "Indicate when table data may be edited in-place",
-                SystemProperties.getBooleanProperty("user", key)));
-
         UserPreference[] preferences =
-                (UserPreference[]) list.toArray(new UserPreference[list.size()]);
+                list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
     }

@@ -58,69 +58,69 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel implements
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                "General",
+                bundledString("General"),
                 null));
 
         String key = "system.display.statusbar";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Status bar",
+                bundledString("StatusBar"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "system.display.console";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "System console",
+                bundledString("SystemConsole"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "system.display.connections";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Connections",
+                bundledString("Connections"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "system.display.drivers";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Drivers",
+                bundledString("Drivers"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "system.display.keywords";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "SQL Keywords",
+                bundledString("SQLKeywords"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "system.display.state-codes";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "SQL State Codes",
+                bundledString("SQLStateCodes"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "system.display.systemprops";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "System properties palette",
+                bundledString("SystemPropertiesPalette"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                "Appearance",
+                bundledString("Appearance"),
                 null));
 
         key = "startup.display.lookandfeel";
         list.add(new UserPreference(
                 UserPreference.ENUM_TYPE,
                 key,
-                "Look and feel (requires restart)",
+                bundledString("LookAndFeel"),
                 LookAndFeelType.valueOf(stringUserProperty(key)),
                 lookAndFeelValuePairs()));
 
@@ -128,32 +128,32 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel implements
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Use anti-alias fonts (requires restart)",
+                bundledString("UseAnti-aliasFonts"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "desktop.background.custom.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                "Desktop background",
+                bundledString("DesktopBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
         key = "decorate.dialog.look";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Decorate dialogs",
+                bundledString("DecorateDialogs"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "decorate.frame.look";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Decorate frame",
+                bundledString("DecorateFrame"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         UserPreference[] preferences =
-                (UserPreference[]) list.toArray(new UserPreference[list.size()]);
+                list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
 

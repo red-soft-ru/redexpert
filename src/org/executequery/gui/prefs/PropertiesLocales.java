@@ -124,7 +124,7 @@ public class PropertiesLocales extends AbstractPropertiesBasePanel
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        panel.add(new JLabel("Time Zones:"), gbc);
+        panel.add(new JLabel(bundledString("TimeZones")), gbc);
         gbc.gridy++;
         panel.add(selectedTimeZoneField, gbc);
         gbc.gridy++;
@@ -135,7 +135,7 @@ public class PropertiesLocales extends AbstractPropertiesBasePanel
         gbc.insets.top = 10;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(new JLabel("Language Locales:"), gbc);
+        panel.add(new JLabel(bundledString("LanguageLocales")), gbc);
         gbc.gridy++;
         gbc.insets.top = 0;
         panel.add(selectedLocaleField, gbc);

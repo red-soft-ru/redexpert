@@ -34,9 +34,9 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.*;
 import java.util.List;
 import java.util.Timer;
+import java.util.*;
 
 /**
  * @author Takis Diakoumis
@@ -63,17 +63,17 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         // editor background etc colours
 
         Map<String, String> editorColourKeys = new HashMap<String, String>();
-        editorColourKeys.put("editor.caret.colour", "Caret colour");
-        editorColourKeys.put("editor.linenumber.background", "Gutter background");
-        editorColourKeys.put("editor.linenumber.foreground", "Gutter foreground");
-        editorColourKeys.put("editor.text.background.colour", "Editor background");
-        editorColourKeys.put("editor.text.background.alternate.color", "Editor alternative background");
-        editorColourKeys.put("editor.text.foreground.colour", "Editor foreground");
-        editorColourKeys.put("editor.results.background.colour", "Results panel background");
-        editorColourKeys.put("editor.text.selection.foreground", "Text selection foreground");
-        editorColourKeys.put("editor.text.selection.background", "Text selection background");
-        editorColourKeys.put("editor.text.selection.background.alternative", "Text selection alternative background");
-        editorColourKeys.put("editor.display.linehighlight.colour", "Current Line Highlight");
+        editorColourKeys.put("editor.caret.colour", bundledString("CaretColour"));
+        editorColourKeys.put("editor.linenumber.background", bundledString("GutterBackground"));
+        editorColourKeys.put("editor.linenumber.foreground", bundledString("GutterForeground"));
+        editorColourKeys.put("editor.text.background.colour", bundledString("EditorBackground"));
+        editorColourKeys.put("editor.text.background.alternate.color", bundledString("EditorAlternativeBackground"));
+        editorColourKeys.put("editor.text.foreground.colour", bundledString("EditorForeground"));
+        editorColourKeys.put("editor.results.background.colour", bundledString("ResultsPanelBackground"));
+        editorColourKeys.put("editor.text.selection.foreground", bundledString("TextSelectionForeground"));
+        editorColourKeys.put("editor.text.selection.background", bundledString("TextSelectionBackground"));
+        editorColourKeys.put("editor.text.selection.background.alternative", "TextSelectionAlternativeBackground");
+        editorColourKeys.put("editor.display.linehighlight.colour", bundledString("CurrentLineHighlight"));
 
         List<UserPreference> editorColoursPreferences = new ArrayList<>();
         for (Map.Entry<String, String> entry : editorColourKeys.entrySet()) {
@@ -140,7 +140,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         gbc.insets.bottom = 5;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(new JLabel("Query Editor Colours:"), gbc);
+        panel.add(new JLabel(bundledString("QueryEditorColours")), gbc);
         gbc.weighty = 0.4;
         gbc.gridy++;
         gbc.fill = GridBagConstraints.BOTH;
@@ -149,7 +149,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         gbc.weighty = 0;
         gbc.insets.top = 5;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(new JLabel("Syntax Styles:"), gbc);
+        panel.add(new JLabel(bundledString("SyntaxStyles")), gbc);
         gbc.weighty = 0.5;
         gbc.gridy++;
         gbc.insets.top = 0;
@@ -159,7 +159,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         gbc.weighty = 0;
         gbc.insets.top = 5;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(new JLabel("Editor Sample:"), gbc);
+        panel.add(new JLabel(bundledString("EditorSample")), gbc);
         gbc.gridy++;
         gbc.weighty = 0.4;
         gbc.insets.top = 0;
@@ -186,21 +186,21 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
     private String getLabelText(int index) {
 
         String[] sampleLabels = {
-                "Sample normal text",
-                "Sample selected text",
-                "Sample current line highlight",
-                "Sample keyword text",
-                "Sample quote text",
-                "Sample single line comment text",
-                "Sample multi-line comment text",
-                "Sample number text",
-                "Sample operator text",
-                "Sample braces text",
-                "Sample literal text",
-                "Sample brace match",
-                "Sample brace match error",
-                "Sample objects db",
-                "Sample text"};
+                "SampleNormalText",
+                "SampleSelectedText",
+                "SampleCurrentLineHighlight",
+                "SampleKeywordText",
+                "SampleQuoteText",
+                "SampleSingleLineCommentText",
+                "SampleMulti-lineCommentText",
+                "SampleNumberText",
+                "SampleOperatorText",
+                "SampleBracesText",
+                "SampleLiteralText",
+                "SampleBraceMatch",
+                "SampleBraceMatchError",
+                "SampleObjectsDb",
+                "SampleText"};
 
         return sampleLabels[index];
     }
@@ -311,7 +311,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
                     g.setColor(syntaxColour.color);
                 }
 
-                String text = getLabelText(i);
+                String text = bundledString(getLabelText(i));
                 g.drawString(text, gutterWidth + 5, y1);
 
                 if (showCaret) {
@@ -364,16 +364,16 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
     class SyntaxColorTableModel extends AbstractTableModel {
 
         private Vector<SyntaxColour> syntaxColours;
-        private String[] columnHeaders = {"Syntax Style",
-                "Colour",
-                "Font Style"};
+        private String[] columnHeaders = {bundledString("SyntaxStyle"),
+                bundledString("Colour"),
+                bundledString("FontStyle")};
 
         SyntaxColorTableModel() {
             syntaxColours = new Vector<SyntaxColour>(SYNTAX_TYPES.length);
 
             for (int i = 0; i < SYNTAX_TYPES.length; i++) {
                 addSyntaxColour(
-                        getTableValueText(i),
+                        bundledString(getTableValueText(i)),
                         SystemProperties.getColourProperty("user", STYLE_COLOUR_PREFIX + SYNTAX_TYPES[i]),
                         SystemProperties.getIntProperty("user", STYLE_NAME_PREFIX + SYNTAX_TYPES[i]),
                         SYNTAX_TYPES[i]);
@@ -414,15 +414,15 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
             switch (styleIndex) {
 
                 case 0:
-                    return "Normal Text";
+                    return "NormalText";
                 case 1:
                     return "Keywords";
                 case 2:
-                    return "Quote string";
+                    return "QuoteString";
                 case 3:
-                    return "Single-line comment";
+                    return "Single-lineComment";
                 case 4:
-                    return "Multi-line comment";
+                    return "Multi-lineComment";
                 case 5:
                     return "Number";
                 case 6:
@@ -432,11 +432,11 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
                 case 8:
                     return "Literal";
                 case 9:
-                    return "Braces match";
+                    return "BracesMatch";
                 case 10:
-                    return "Braces error";
+                    return "BracesError";
                 case 11:
-                    return "Objects DB";
+                    return "ObjectsDB";
                 default:
                     return "Text";
 

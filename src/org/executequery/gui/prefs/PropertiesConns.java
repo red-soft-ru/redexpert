@@ -52,64 +52,26 @@ public class PropertiesConns extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                "General",
+                bundledString("General"),
                 null));
 
-        String key = "connection.usepool";
+        String key = "startup.connection.connect";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Use connection pool",
-                new Boolean(SystemProperties.getProperty("user", key))));
-
-        key = "connection.initialcount";
-        list.add(new UserPreference(
-                UserPreference.INTEGER_TYPE,
-                1,
-                key,
-                "Initial open connections",
-                SystemProperties.getProperty("user", key)));
-
-        key = "connection.scheme";
-        list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
-                key,
-                "Connection Scheme",
-                SystemProperties.getProperty("user", key),
-                new String[]{"Dynamic", "Static"}));
-
-        key = "connection.reuse";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                "Reuse connection",
-                Boolean.valueOf(SystemProperties.getProperty("user", key))));
-
-        key = "connection.reuse.count";
-        list.add(new UserPreference(
-                UserPreference.INTEGER_TYPE,
-                2,
-                key,
-                "Connection reuse count",
-                SystemProperties.getProperty("user", key)));
-
-        key = "startup.connection.connect";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                "Connect at startup",
+                bundledString("ConnectAtStartup"),
                 Boolean.valueOf(SystemProperties.getProperty("user", key))));
 
         key = "startup.connection.name";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                "Startup connection",
+                bundledString("StartupConnection"),
                 SystemProperties.getProperty("user", key),
                 connectionNames()));
 
         UserPreference[] preferences =
-                (UserPreference[]) list.toArray(new UserPreference[list.size()]);
+                list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
 

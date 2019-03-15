@@ -65,72 +65,51 @@ public class PropertiesToolBarGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                "Visibility",
+                bundledString("Visibility"),
                 null));
 
         String key = ToolBarManager.FILE_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "File tool bar",
+                bundledString("FileToolBar"),
                 Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
         key = ToolBarManager.EDIT_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Edit tool bar",
+                bundledString("EditToolBar"),
                 Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
         key = ToolBarManager.SEARCH_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Search tool bar",
+                bundledString("SearchToolBar"),
                 Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
         key = ToolBarManager.DATABASE_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Database tool bar",
+                bundledString("DatabaseToolBar"),
                 Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
-        /*key = ToolBarManager.BROWSER_TOOLS;
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                "Browser tool bar",
-                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));*/
 
         key = ToolBarManager.IMPORT_EXPORT_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Import/Export tool bar",
+                bundledString("ImportExportToolBar"),
                 Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
         key = ToolBarManager.SYSTEM_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "System tool bar",
+                bundledString("SystemToolBar"),
                 Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
-/*
-        key = ToolBarManager.WINDOW_TOOLS;
-        list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "Open windows tool bar",
-                    Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
-
-        key = ToolBarManager.COMPONENT_TOOLS;
-        list.add(new UserPreference(
-                    UserPreference.BOOLEAN_TYPE,
-                    key,
-                    "Components tool bar",
-                    Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
-*/
 
         UserPreference[] preferences =
                 list.toArray(new UserPreference[list.size()]);

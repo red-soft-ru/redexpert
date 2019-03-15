@@ -53,112 +53,112 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                "Row and Cell Background Colours",
+                bundledString("RowAndCellBackgroundColours"),
                 null));
 
         String key = "results.table.cell.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                "Default cell background",
+                bundledString("DefaultCellBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
         key = "results.table.cell.null.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                "Null value cell background",
+                bundledString("NullValueCellBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
         key = "results.table.cell.null.adding.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                "Null value cell background when there is adding",
+                bundledString("NullValueCellBackgroundWhenThereIsAdding"),
                 SystemProperties.getColourProperty("user", key)));
 
         key = "results.table.cell.null.deleting.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                "Null value cell background when there is deleting",
+                bundledString("NullValueCellBackgroundWhenThereIsDeleting"),
                 SystemProperties.getColourProperty("user", key)));
 
         key = "results.table.cell.changed.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                "Changed value cell background",
+                bundledString("ChangedValueCellBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
         key = "results.table.cell.deleted.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                "Deleted value cell background",
+                bundledString("DeletedValueCellBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
         key = "results.table.cell.new.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                "New value cell background",
+                bundledString("NewValueCellBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
         key = "results.table.cell.char.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                "Character value cell background",
+                bundledString("CharacterValueCellBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
         key = "results.table.cell.numeric.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                "Numeric value cell background",
+                bundledString("NumericValueCellBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
         key = "results.table.cell.date.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                "Date/time value cell background",
+                bundledString("DateTimeValueCellBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
         key = "results.table.cell.boolean.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                "Boolean value cell background",
+                bundledString("BooleanValueCellBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
         key = "results.table.cell.blob.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                "Binary value cell background",
+                bundledString("BinaryValueCellBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
         key = "results.table.cell.other.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                "Other value cell background",
+                bundledString("OtherValueCellBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
         key = "results.table.focus.row.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                "Focus row background",
+                bundledString("FocusRowBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
         key = "results.alternating.row.background";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                "Alternating row background",
+                bundledString("AlternatingRowBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
         UserPreference[] preferences = list.toArray(new UserPreference[list.size()]);

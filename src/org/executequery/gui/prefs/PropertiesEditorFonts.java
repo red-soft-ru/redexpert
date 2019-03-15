@@ -87,7 +87,7 @@ public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
         gbc.gridy = 0;
         gbc.insets.bottom = 5;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        panel.add(new JLabel("Font Name:"), gbc);
+        panel.add(new JLabel(bundledString("FontName")), gbc);
         gbc.gridy++;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -101,7 +101,7 @@ public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
         gbc.weighty = 0;
         gbc.insets.left = 15;
         gbc.fill = GridBagConstraints.NONE;
-        panel.add(new JLabel("Font Size:"), gbc);
+        panel.add(new JLabel(bundledString("FontSize")), gbc);
         gbc.gridy++;
         gbc.weightx = 0.5;
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -132,7 +132,7 @@ public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weighty = 0;
-        panel.add(new JLabel("Sample Text:"), gbc);
+        panel.add(new JLabel(bundledString("SampleText")), gbc);
         gbc.gridy++;
         gbc.weighty = 0.5;
         gbc.weightx = 1.0;

@@ -54,21 +54,21 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                "General",
+                bundledString("General"),
                 null));
 
         String key = "startup.display.splash";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Display Splash Screen at Startup",
+                bundledString("DisplaySplashScreenAtStartup"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "startup.window.maximized";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Maximise window on startup",
+                bundledString("MaximiseWindowOnStartup"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "recent.files.count";
@@ -76,14 +76,14 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
                 UserPreference.INTEGER_TYPE,
                 1,
                 key,
-                "Recent files to store",
+                bundledString("RecentFilesToStore"),
                 stringUserProperty(key)));
 
         key = "general.line.separator";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                "Line separator",
+                bundledString("LineSeparator"),
                 SystemProperties.getProperty("user", key),
                 new String[]{LineSeparator.DOS.label,
                         LineSeparator.WINDOWS.label,
@@ -93,21 +93,21 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Prompt to save open documents",
+                bundledString("PromptToSaveOpenDocuments"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "startup.version.check";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Check for update on startup",
+                bundledString("CheckForUpdateOnStartup"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "startup.unstableversions.load";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Load unstable versions",
+                bundledString("LoadUnstableVersions"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         if (System.getProperty("os.name").equalsIgnoreCase("Linux")) {
@@ -115,7 +115,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
             list.add(new UserPreference(
                     UserPreference.BOOLEAN_TYPE,
                     key,
-                    "Create desktop link with restart",
+                    bundledString("CreateDesktopLinkWithRestart"),
                     Boolean.valueOf(stringUserProperty(key))));
         }
 
@@ -123,14 +123,14 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Check major versions",
+                bundledString("CheckMajorVersions"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "system.log.level";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                "Output log level",
+                bundledString("OutputLogLevel"),
                 stringUserProperty(key),
                 Constants.LOG_LEVELS));
 
@@ -138,21 +138,21 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Log System.out to console",
+                bundledString("LogOutToConsole"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "system.log.err";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Log System.err to console",
+                bundledString("LogErrToConsole"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "system.file.encoding";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                "Default file encoding",
+                bundledString("DefaultFileEncoding"),
                 encodingValue(),
                 availableCharsets()));
 
@@ -160,46 +160,46 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                "Internet Proxy Settings",
+                bundledString("InternetProxySettings"),
                 null));
 
         key = "internet.proxy.set";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Use proxy server for internet connections",
+                bundledString("UseProxyServer"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "internet.proxy.host";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                "Proxy Host",
+                bundledString("ProxyHost"),
                 stringUserProperty(key)));
 
         key = "internet.proxy.port";
         list.add(new UserPreference(
                 UserPreference.INTEGER_TYPE,
                 key,
-                "Proxy Port",
+                bundledString("ProxyPort"),
                 stringUserProperty(key)));
 
         key = "internet.proxy.user";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                "Proxy User",
+                bundledString("ProxyUser"),
                 stringUserProperty(key)));
 
         key = "internet.proxy.password";
         list.add(new UserPreference(
                 UserPreference.PASSWORD_TYPE,
                 key,
-                "Proxy Password",
+                bundledString("ProxyPassword"),
                 stringUserProperty(key)));
 
         UserPreference[] preferences =
-                (UserPreference[]) list.toArray(new UserPreference[list.size()]);
+                list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
     }

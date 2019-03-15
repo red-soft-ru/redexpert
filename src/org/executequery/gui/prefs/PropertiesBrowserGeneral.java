@@ -47,21 +47,21 @@ public class PropertiesBrowserGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                "General",
+                bundledString("General"),
                 null));
 
         String key = "browser.catalog.schema.defaults.only";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Show only default catalog or schema",
+                bundledString("ShowOnlyDefaultCatalogOrSchema"),
                 SystemProperties.getBooleanProperty("user", key)));
 
         key = "browser.double-click.to.connect";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Connect on double-click",
+                bundledString("ConnectOnDouble-click"),
                 SystemProperties.getBooleanProperty("user", key)));
 
         UserPreference[] preferences =

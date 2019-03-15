@@ -25,7 +25,7 @@ public class PropertiesTreeConnectionsGeneral extends AbstractPropertiesBasePane
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                "General",
+                bundledString("General"),
                 null));
 
         String key = "treeconnection.row.height";
@@ -33,7 +33,7 @@ public class PropertiesTreeConnectionsGeneral extends AbstractPropertiesBasePane
                 UserPreference.INTEGER_TYPE,
                 3,
                 key,
-                "Node height",
+                bundledString("NodeHeight"),
                 stringUserProperty(key)));
 
         UserPreference[] preferences = list.toArray(new UserPreference[list.size()]);

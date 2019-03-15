@@ -29,6 +29,7 @@ import org.executequery.components.table.PropertiesTreeCellRenderer;
 import org.executequery.event.DefaultUserPreferenceEvent;
 import org.executequery.event.UserPreferenceEvent;
 import org.executequery.gui.ActionContainer;
+import org.executequery.localization.Bundles;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.swing.tree.DynamicTree;
 
@@ -135,51 +136,51 @@ public class PropertiesPanel extends JPanel
         // initialise branches
 
         List<PropertyNode> branches = new ArrayList<PropertyNode>();
-        PropertyNode node = new PropertyNode(PropertyTypes.GENERAL, "General");
+        PropertyNode node = new PropertyNode(PropertyTypes.GENERAL, bundledString("General"));
         branches.add(node);
-        node = new PropertyNode(PropertyTypes.LOCALE, "Locale");
+        node = new PropertyNode(PropertyTypes.LOCALE, bundledString("Locale"));
         branches.add(node);
 //        node = new PropertyNode(PropertyTypes.VIEW, "View");
 //        branches.add(node);
-        node = new PropertyNode(PropertyTypes.APPEARANCE, "Display");
+        node = new PropertyNode(PropertyTypes.APPEARANCE, bundledString("Display"));
         branches.add(node);
-        node = new PropertyNode(PropertyTypes.SHORTCUTS, "Shortcuts");
+        node = new PropertyNode(PropertyTypes.SHORTCUTS, bundledString("Shortcuts"));
         branches.add(node);
-        node = new PropertyNode(PropertyTypes.LOOK_PLUGIN, "Look & Feel Plugins");
+        node = new PropertyNode(PropertyTypes.LOOK_PLUGIN, bundledString("LookFeelPlugins"));
         branches.add(node);
 
-        node = new PropertyNode(PropertyTypes.TOOLBAR_GENERAL, "Tool Bar");
-        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_FILE, "File Tools"));
-        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_EDIT, "Edit Tools"));
-        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_DATABASE, "Database Tools"));
+        node = new PropertyNode(PropertyTypes.TOOLBAR_GENERAL, bundledString("ToolBar"));
+        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_FILE, bundledString("FileTools")));
+        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_EDIT, bundledString("EditTools")));
+        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_DATABASE, bundledString("DatabaseTools")));
         //node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_BROWSER, "Browser Tools"));
-        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_IMPORT_EXPORT, "Import/Export Tools"));
-        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_SEARCH, "Search Tools"));
-        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_SYSTEM, "System Tools"));
+        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_IMPORT_EXPORT, bundledString("ImportExportTools")));
+        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_SEARCH, bundledString("SearchTools")));
+        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_SYSTEM, bundledString("SystemTools")));
         branches.add(node);
 
-        node = new PropertyNode(PropertyTypes.EDITOR_GENERAL, "Editor");
-        node.addChild(new PropertyNode(PropertyTypes.EDITOR_FONTS, "Fonts"));
+        node = new PropertyNode(PropertyTypes.EDITOR_GENERAL, bundledString("Editor"));
+        node.addChild(new PropertyNode(PropertyTypes.EDITOR_FONTS, bundledString("Fonts")));
 //        node.addChild(new PropertyNode(PropertyTypes.EDITOR_BACKGROUND, "Colours"));
-        node.addChild(new PropertyNode(PropertyTypes.EDITOR_COLOURS, "Colours"));
+        node.addChild(new PropertyNode(PropertyTypes.EDITOR_COLOURS, bundledString("Colours")));
 //        node.addChild(new PropertyNode(PropertyTypes.EDITOR_SYNTAX, "Syntax Colours"));
         branches.add(node);
 
-        node = new PropertyNode(PropertyTypes.TREE_CONNECTIONS_GENERAL, "Tree Connections");
-        node.addChild(new PropertyNode(PropertyTypes.TREE_CONNECTIONS_FONTS, "Fonts"));
+        node = new PropertyNode(PropertyTypes.TREE_CONNECTIONS_GENERAL, bundledString("TreeConnections"));
+        node.addChild(new PropertyNode(PropertyTypes.TREE_CONNECTIONS_FONTS, bundledString("Fonts")));
         branches.add(node);
 
-        node = new PropertyNode(PropertyTypes.RESULTS, "Result Set Table");
-        node.addChild(new PropertyNode(PropertyTypes.RESULT_SET_CELL_COLOURS, "Colours"));
+        node = new PropertyNode(PropertyTypes.RESULTS, bundledString("ResultSetTable"));
+        node.addChild(new PropertyNode(PropertyTypes.RESULT_SET_CELL_COLOURS, bundledString("Colours")));
         branches.add(node);
-        node = new PropertyNode(PropertyTypes.CONNECTIONS, "Connection");
+        node = new PropertyNode(PropertyTypes.CONNECTIONS, bundledString("Connection"));
         branches.add(node);
-        node = new PropertyNode(PropertyTypes.BROWSER_GENERAL, "Database Browser");
-        node.addChild(new PropertyNode(PropertyTypes.BROWSER_DATA_TAB, "Table Data Panel"));
+        node = new PropertyNode(PropertyTypes.BROWSER_GENERAL, bundledString("DatabaseBrowser"));
+        node.addChild(new PropertyNode(PropertyTypes.BROWSER_DATA_TAB, bundledString("TableDataPanel")));
         branches.add(node);
 
         DefaultMutableTreeNode root =
-                new DefaultMutableTreeNode(new PropertyNode(PropertyTypes.SYSTEM, "Preferences"));
+                new DefaultMutableTreeNode(new PropertyNode(PropertyTypes.SYSTEM, bundledString("Preferences")));
 
         List<PropertyNode> children = null;
         DefaultMutableTreeNode treeNode = null;
@@ -406,6 +407,7 @@ public class PropertiesPanel extends JPanel
                 }
 
             });
+            GUIUtilities.displayInformationMessage(bundledString("restart-message"));
 
         } finally {
 
@@ -428,6 +430,10 @@ public class PropertiesPanel extends JPanel
             panel.stopCaretDisplayTimer();
         }
 
+    }
+
+    private String bundledString(String key) {
+        return Bundles.get("preferences." + key);
     }
 
 }

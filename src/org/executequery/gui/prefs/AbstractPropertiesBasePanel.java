@@ -23,6 +23,7 @@ package org.executequery.gui.prefs;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.actions.othercommands.RestoreDefaultsCommand;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.util.SystemProperties;
 
@@ -114,6 +115,10 @@ abstract class AbstractPropertiesBasePanel extends JPanel
     protected String stringUserProperty(String key) {
 
         return SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, key);
+    }
+
+    protected String bundledString(String key) {
+        return Bundles.get("preferences." + key);
     }
 
 }

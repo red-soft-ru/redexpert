@@ -82,7 +82,7 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets.left = 5;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        panel.add(new JLabel("Keyboard Shortcuts:"), gbc);
+        panel.add(new JLabel(bundledString("KeyboardShortcuts")), gbc);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets.top = 10;
         gbc.gridy = 1;
@@ -136,7 +136,7 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
         Vector<ShortcutKey> shortcuts = tableModel.getShortcuts();
         for (int i = 0, k = shortcuts.size(); i < k; i++) {
 
-            ShortcutKey shortcut = (ShortcutKey) shortcuts.get(i);
+            ShortcutKey shortcut = shortcuts.get(i);
             if (!MiscUtils.isNull(shortcut.keyStrokeText)) {
 
                 userDefinedShortcuts.setProperty(
@@ -161,7 +161,7 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
     class ShortcutsTableModel extends AbstractTableModel {
 
         private Vector<ShortcutKey> shortcuts;
-        private String[] columnHeaders = {"Command", "Shortcut"};
+        private String[] columnHeaders = {bundledString("Command"), bundledString("Shortcut")};
 
         ShortcutsTableModel(Vector<ShortcutKey> shortcuts) {
             this.shortcuts = shortcuts;
@@ -199,7 +199,7 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
         }
 
         public Object getValueAt(int row, int col) {
-            ShortcutKey shortcut = (ShortcutKey) shortcuts.elementAt(row);
+            ShortcutKey shortcut = shortcuts.elementAt(row);
 
             switch (col) {
                 case 0:
@@ -212,7 +212,7 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
         }
 
         public ShortcutKey getShortcut(int index) {
-            return (ShortcutKey) shortcuts.elementAt(index);
+            return shortcuts.elementAt(index);
         }
 
         public void updateShortcut(ShortcutKey shortcut, int row) {
@@ -221,7 +221,7 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
         }
 
         public void setValueAt(Object value, int row, int col) {
-            ShortcutKey shortcut = (ShortcutKey) shortcuts.elementAt(row);
+            ShortcutKey shortcut = shortcuts.elementAt(row);
 
             switch (col) {
                 case 0:
@@ -262,7 +262,7 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
 
             this.row = row;
 
-            shortcutKey = (ShortcutKey) tableModel.getShortcut(row);
+            shortcutKey = tableModel.getShortcut(row);
 
             JButton okButton = new JButton(Bundles.get("common.ok.button"));
             JButton clearButton = new JButton(Bundles.get("common.clear.button"));

@@ -52,14 +52,14 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                "General",
+                bundledString("General"),
                 null));
 
         String key = "editor.tabs.tospaces";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Convert tabs to spaces",
+                bundledString("ConvertTabsToSpaces"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "editor.tab.spaces";
@@ -67,21 +67,21 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 UserPreference.INTEGER_TYPE,
                 1,
                 key,
-                "Tab size",
+                bundledString("TabSize"),
                 stringUserProperty(key)));
 
         key = "editor.autocomplete.keywords.on";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Auto-complete keywords on",
+                bundledString("Auto-completeKeywordsOn"),
                 Boolean.valueOf(SystemProperties.getBooleanProperty("user", key))));
 
         key = "editor.autocomplete.schema.on";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Auto-complete database objects on",
+                bundledString("Auto-completeDatabaseObjectsOn"),
                 Boolean.valueOf(SystemProperties.getBooleanProperty("user", key))));
 
         key = "editor.undo.count";
@@ -89,7 +89,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 UserPreference.INTEGER_TYPE,
                 3,
                 key,
-                "Undo count",
+                bundledString("UndoCount"),
                 stringUserProperty(key)));
 
         key = "editor.history.count";
@@ -97,35 +97,35 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 UserPreference.INTEGER_TYPE,
                 3,
                 key,
-                "History count",
+                bundledString("HistoryCount"),
                 stringUserProperty(key)));
 
         key = "editor.connection.commit";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Default editor auto-commit",
+                bundledString("DefaultEditorAuto-commit"),
                 Boolean.valueOf(SystemProperties.getBooleanProperty("user", key))));
 
         key = "editor.results.metadata";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Retain result set meta data",
+                bundledString("RetainResultSetMetaData"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "editor.results.tabs.single";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Recycle result set tabs",
+                bundledString("RecycleResultSetTabs"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "editor.execute.remove.comments";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Remove comments for execution",
+                bundledString("RemoveCommentsForExecution"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "editor.max.records";
@@ -133,92 +133,92 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 UserPreference.INTEGER_TYPE,
                 -1,
                 key,
-                "Default maximum rows returned",
+                bundledString("DefaultMaximumRowsReturned"),
                 stringUserProperty(key)));
 
         key = "editor.logging.verbose";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Print all SQL to output panel",
+                bundledString("PrintAllSQLToOutputPanel"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "editor.logging.enabled";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Log output to file",
+                bundledString("LogOutputToFile"),
                 Boolean.valueOf(stringUserProperty(key))));
+
+        key = "editor.logging.path";
+        list.add(new UserPreference(
+                UserPreference.FILE_TYPE,
+                key,
+                bundledString("OutputLogFilePath"),
+                stringUserProperty(key)));
 
         key = "editor.logging.backups";
         list.add(new UserPreference(
                 UserPreference.INTEGER_TYPE,
                 1,
                 key,
-                "Maximum rolling log backups",
-                stringUserProperty(key)));
-
-        key = "editor.logging.path";
-        list.add(new UserPreference(
-                UserPreference.FILE_TYPE,
-                key,
-                "Output log file path",
+                bundledString("MaximumRollingLogBackups"),
                 stringUserProperty(key)));
 
         key = "editor.open.on-connect";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Open a new editor for new open connection",
+                bundledString("OpenANewEditorForNewOpenConnection"),
                 Boolean.valueOf(SystemProperties.getBooleanProperty("user", key))));
 
 
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                "Display",
+                bundledString("Display"),
                 null));
 
         key = "editor.display.statusbar";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Status bar",
+                bundledString("StatusBar"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "editor.display.toolsPanel";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Tools panel",
+                bundledString("ToolsPanel"),
                 Boolean.valueOf(SystemProperties.getProperty("user", key))));
 
         key = "editor.display.linenums";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Line numbers",
+                bundledString("LineNumbers"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "editor.display.results";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Results panel",
+                bundledString("ResultsPanel"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "editor.display.linehighlight";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Current line highlight",
+                bundledString("CurrentLineHighlight"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "editor.display.margin";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                "Right margin",
+                bundledString("RightMargin"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "editor.margin.size";
@@ -226,17 +226,17 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 UserPreference.INTEGER_TYPE,
                 3,
                 key,
-                "Right margin column",
+                bundledString("RightMarginColumn"),
                 stringUserProperty(key)));
 
         key = "editor.margin.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                "Right margin colour",
+                bundledString("RightMarginColour"),
                 SystemProperties.getColourProperty("user", key)));
 
-        UserPreference[] preferences = (UserPreference[]) list.toArray(new UserPreference[list.size()]);
+        UserPreference[] preferences = list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
 

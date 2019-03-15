@@ -15,7 +15,11 @@ public class ConnectToDatabaseCommand extends OpenFrameCommand implements BaseCo
 
         GUIUtilities.ensureDockedTabVisible(ConnectionsTreePanel.PROPERTY_KEY);
         ConnectionsTreePanel panel = connectionsPanel();
-        DatabaseConnection connection = panel.getSelectedDatabaseConnection();
+        DatabaseConnection connection = null;
+        try {
+            connection = panel.getSelectedDatabaseConnection();
+        } catch (Exception ex) {
+        }
         if (connection != null && !connection.isConnected()) {
             ((DatabaseHost) panel.getHostNode(connection).getDatabaseObject()).connect();
         }

@@ -275,7 +275,8 @@ public class QueryEditor extends DefaultTabView
         connectionsCombo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                QueryEditorHistory.changedConnectionEditor(oldConnection.getId(), getSelectedConnection().getId(), scriptFile.getAbsolutePath());
+                if (oldConnection != null)
+                    QueryEditorHistory.changedConnectionEditor(oldConnection.getId(), getSelectedConnection().getId(), scriptFile.getAbsolutePath());
                 oldConnection = getSelectedConnection();
             }
         });

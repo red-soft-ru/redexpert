@@ -31,6 +31,7 @@ import org.executequery.log.Log;
 import org.executequery.repository.spi.KeywordRepositoryImpl;
 import org.executequery.sql.DerivedQuery;
 import org.executequery.sql.QueryTable;
+import org.executequery.sql.SqlMessages;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.util.SwingWorker;
 
@@ -126,6 +127,11 @@ public class QueryEditorAutoCompletePopupProvider implements AutoCompletePopupPr
     }
 
     public void reset() {
+
+        if (databaseHost == null) {
+            queryEditor.setOutputMessage(SqlMessages.PLAIN_MESSAGE, "Not Connected");
+            return;
+        }
 
         connectionChanged(databaseHost.getDatabaseConnection());
     }

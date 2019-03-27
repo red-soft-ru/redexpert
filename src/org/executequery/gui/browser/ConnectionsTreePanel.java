@@ -202,10 +202,12 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
   private void enableButtons(boolean enableUpButton,
                              boolean enableDownButton,
                              boolean enableReloadButton,
-                             boolean enableDeleteButton) {
+                             boolean enableDeleteButton,
+                             boolean enableConnect
+  ) {
 
     toolBar.enableButtons(enableUpButton, enableDownButton,
-        enableReloadButton, enableDeleteButton);
+            enableReloadButton, enableDeleteButton, enableConnect, enableReloadButton);
   }
 
   @SuppressWarnings("unchecked")
@@ -560,7 +562,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
       GUIUtils.invokeLater(new Runnable() {
         public void run() {
           controller.selectionChanging();
-          enableButtons(false, false, false, false);
+          enableButtons(false, false, false, false, false);
           tree.setSelectionRow(0);
         }
       });
@@ -1069,7 +1071,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     TreePath selectionPath = tree.getSelectionPath();
     if (selectionPath != null && selectionPath.getLastPathComponent() == node) {
 
-      enableButtons(true, true, true, false);
+      enableButtons(true, true, true, false, true);
     }
 
     nodeStructureChanged(node);
@@ -1086,30 +1088,28 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
 
     DatabaseHostNode host = (DatabaseHostNode) getHostNode(dc);
     host.disconnected();
-
+    nodeStructureChanged(host);
     // check if we select the root node
     if (rootSelectOnDisconnect) {
 
       tree.setSelectionRow(0);
 
-    } else { // otherwise select the host node if not already selected
+    } else {
+      if (tree.getSelectionPath() != null) {
 
-//            if (tree.getSelectionPath().getLastPathComponent() != host) {
-//
-//                // change below to not reselect after disconnect
-//
-//                tree.setSelectionPath(new TreePath(host.getPath()));
-//            }
+        if (tree.getSelectionPath().getLastPathComponent() == host) {
 
-      if (tree.getSelectionPath().getLastPathComponent() == host) {
-
-        enableButtons(true, true, false, true);
-        controller.valueChanged_(host, null);
+          enableButtons(true, true, false, true, true);
+          controller.valueChanged_(host, null);
+        } else
+          enableButtons(false, false, false, false, false);
+      } else {
+        enableButtons(false, false, false, false, false);
       }
 
     }
 
-    nodeStructureChanged(host);
+
   }
 
   public boolean canHandleEvent(ApplicationEvent event) {
@@ -1384,7 +1384,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     // register with the event listener
     EventMediator.registerListener(this);
 
-    enableButtons(false, false, false, false);
+    enableButtons(false, false, false, false, false);
     tree.setSelectionRow(0);
     tree.setToggleClickCount(-1);
   }
@@ -1431,7 +1431,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     if (object == tree.getConnectionsBranchNode()) { // root node
 
       controller.displayConnectionList();
-      enableButtons(false, false, false, false);
+      enableButtons(false, false, false, false, false);
       return;
     }
 
@@ -1439,7 +1439,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     if (node instanceof ConnectionsFolderNode) {
 
       controller.displayConnectionList(((ConnectionsFolderNode) node).getConnectionsFolder());
-      enableButtons(true, true, false, true);
+      enableButtons(true, true, false, true, false);
       return;
 
     } else if (node instanceof DatabaseHostNode) {
@@ -1447,11 +1447,11 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
       DatabaseHostNode hostNode = (DatabaseHostNode) node;
 
       boolean hostConnected = hostNode.isConnected();
-      enableButtons(true, true, hostConnected, !hostConnected);
+      enableButtons(true, true, hostConnected, !hostConnected, true);
 
     } else {
 
-      enableButtons(false, false, true, false);
+      enableButtons(false, false, true, false, true);
     }
 
     if (node.isHostNode()) {
@@ -1766,6 +1766,13 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
 
   protected void connect(DatabaseConnection dc) {
     controller.connect(dc);
+  }
+
+  public void connectDisconnect() {
+
+    if (!getSelectedDatabaseConnection().isConnected())
+      ((DatabaseHost) getHostNode(getSelectedDatabaseConnection()).getDatabaseObject()).connect();
+    else GUIUtilities.closeSelectedConnection();
   }
 
   protected void setTreeSelectionPath(TreePath treePath) {

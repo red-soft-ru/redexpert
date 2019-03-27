@@ -58,7 +58,13 @@ class ConnectionsTreeToolBar extends PanelToolBar {
      */
     private JButton deleteConnectionButton;
 
+    private JButton connectButton;
+
     private ConnectionsTreePanel treePanel;
+
+    private ImageIcon connectedIcon;
+
+    private ImageIcon disconnectedIcon;
 
     public ConnectionsTreeToolBar(ConnectionsTreePanel treePanel) {
 
@@ -68,6 +74,11 @@ class ConnectionsTreeToolBar extends PanelToolBar {
     }
 
     private void init() {
+
+
+        connectButton = addButton(treePanel, "connectDisconnect",
+                GUIUtilities.getAbsoluteIconPath("Connected.png"),
+                Bundles.get("action.connect-to-database"));
 
         newConnectionButton = addButton(
                 treePanel, "newConnection",
@@ -111,13 +122,17 @@ class ConnectionsTreeToolBar extends PanelToolBar {
                 treePanel, "collapseAll",
                 GUIUtilities.getAbsoluteIconPath("Collapse16.png"),
                 bundleString("collapseAll"));
+        connectedIcon = GUIUtilities.loadIcon("Connected.png");
+        disconnectedIcon = GUIUtilities.loadIcon("Disconnected.png");
 
     }
 
     protected void enableButtons(final boolean enableUpButton,
                                  final boolean enableDownButton,
                                  final boolean enableReloadButton,
-                                 final boolean enableDeleteButton) {
+                                 final boolean enableDeleteButton,
+                                 final boolean enableConnected,
+                                 final boolean databaseConnected) {
 
         ThreadUtils.invokeLater(new Runnable() {
 
@@ -127,6 +142,14 @@ class ConnectionsTreeToolBar extends PanelToolBar {
                 downButton.setEnabled(enableDownButton);
                 reloadButton.setEnabled(enableReloadButton);
                 deleteConnectionButton.setEnabled(enableDeleteButton);
+                connectButton.setEnabled(enableConnected);
+                if (enableConnected) {
+                    if (databaseConnected) {
+                        connectButton.setIcon(connectedIcon);
+                    } else {
+                        connectButton.setIcon(disconnectedIcon);
+                    }
+                }
             }
 
         });

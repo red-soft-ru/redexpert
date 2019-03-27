@@ -194,29 +194,20 @@
 
         <buttons>
 
-            <button id="48" action-id="connect-to-database-command">
-                <visible>true</visible>
-                <order>0</order>
-            </button>
-
-            <button id="49" action-id="database-disconnect-command">
-                <visible>true</visible>
-                <order>1</order>
-            </button>
-
             <button id="9" action-id="connect-command">
                 <visible>false</visible>
-                <order>2</order>
+                <order>0</order>
             </button>
 
             <button id="12" action-id="editor-command">
                 <visible>true</visible>
-                <order>3</order>
+                <order>1</order>
             </button>
 
             <button id="20" action-id="create-database-command">
                 <visible>true</visible>
-                <order>4</order>
+                <order>2</order>
+
             </button>
 
             <button id="24" action-id="user-manager-command">

@@ -1351,7 +1351,7 @@ public class QueryDispatcher {
                 IFBDatabasePerformance db = (IFBDatabasePerformance) odb;
                 try {
 
-                    setOutputMessage(SqlMessages.PLAIN_MESSAGE, db.getLastExecutedPlan(statement));
+                    setOutputMessage(SqlMessages.PLAIN_MESSAGE, db.getLastExecutedPlan(statement), true);
 
                 } catch (SQLException e) {
                     e.printStackTrace();

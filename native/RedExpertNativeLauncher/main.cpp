@@ -438,7 +438,7 @@ std::vector<std::string> get_potential_libjvm_paths()
         "/usr/lib/jvm/default",              // alt centos
         "/usr/java/latest",                  // alt centos
     };
-    search_suffixes = {"", "/jre/lib/amd64/server", "jre/lib/amd64"};
+    search_suffixes = {"", "/lib/amd64/server", "/jre/lib/amd64/server", "jre/lib/amd64"};
     file_name = "libjvm.so";
 #endif
     // From direct environment variable
@@ -1148,6 +1148,7 @@ int main(int argc, char *argv[])
         closedir(dir);
     } else
     {
+        err_rep.reportFatalException(std::system_error(ENOENT, std::generic_category(), "No library directory found"));
         exit(EXIT_FAILURE);
     }
 #else

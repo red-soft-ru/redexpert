@@ -3,6 +3,8 @@
 #include <dlfcn.h>
 #include <libgen.h>
 #include <unistd.h>
+#include <string.h>
+#include <system_error>
 #else
 #pragma comment(lib, "user32.lib")
 #include <windows.h>
@@ -404,41 +406,44 @@ std::vector<std::string> get_potential_libjvm_paths()
     search_suffixes = {"/jre/bin/server", "/bin/server"};
     file_name = "jvm.dll";
 #else
-    search_prefixes = {
-        "/usr/lib/jvm/default-java",       // ubuntu / debian distros
-        "/usr/lib/jvm/java",               // rhel6
-        "/usr/lib/jvm",                    // centos6
-        "/usr/lib64/jvm",                  // opensuse 13
-        "/usr/local/lib/jvm/default-java", // alt ubuntu / debian distros
-        "/usr/local/lib/jvm/java",         // alt rhel6
-        "/usr/local/lib/jvm",              // alt centos6
-        "/usr/local/lib64/jvm",            // alt opensuse 13
+    search_prefixes.push_back("/usr/lib/jvm/default-java");       // ubuntu / debian distros
+    search_prefixes.push_back("/usr/lib/jvm/java");               // rhel6
+    search_prefixes.push_back("/usr/lib/jvm");                    // centos6
+    search_prefixes.push_back("/usr/lib64/jvm");                  // opensuse 13
+    search_prefixes.push_back("/usr/local/lib/jvm/default-java"); // alt ubuntu / debian distros
+    search_prefixes.push_back("/usr/local/lib/jvm/java");         // alt rhel6
+    search_prefixes.push_back("/usr/local/lib/jvm");              // alt centos6
+    search_prefixes.push_back("/usr/local/lib64/jvm");            // alt opensuse 13
 
-        "/usr/lib/jvm/java-8-openjdk-amd64",
-        "/usr/local/lib/jvm/java-8-openjdk-amd64",
+    search_prefixes.push_back("/usr/lib/jvm/java-8-openjdk-amd64");
+    search_prefixes.push_back("/usr/local/lib/jvm/java-8-openjdk-amd64");
 
-        "/usr/local/lib/jvm/java-9-openjdk-amd64", // alt ubuntu / debian distros
-        "/usr/lib/jvm/java-9-openjdk-amd64",       // alt ubuntu / debian distros
+    search_prefixes.push_back("/usr/local/lib/jvm/java-9-openjdk-amd64"); // alt ubuntu / debian distros
+    search_prefixes.push_back("/usr/lib/jvm/java-9-openjdk-amd64");       // alt ubuntu / debian distros
 
-        "/usr/lib/jvm/java-10-openjdk-amd64",       // alt ubuntu / debian distros
-        "/usr/local/lib/jvm/java-10-openjdk-amd64", // alt ubuntu / debian distros
+    search_prefixes.push_back("/usr/lib/jvm/java-10-openjdk-amd64");       // alt ubuntu / debian distros
+    search_prefixes.push_back("/usr/local/lib/jvm/java-10-openjdk-amd64"); // alt ubuntu / debian distros
 
-        "/usr/lib/jvm/java-11-openjdk-amd64",       // alt ubuntu / debian distros
-        "/usr/local/lib/jvm/java-11-openjdk-amd64", // alt ubuntu / debian distros
+    search_prefixes.push_back("/usr/lib/jvm/java-11-openjdk-amd64");       // alt ubuntu / debian distros
+    search_prefixes.push_back("/usr/local/lib/jvm/java-11-openjdk-amd64"); // alt ubuntu / debian distros
 
-        "/usr/lib/jvm/java-8-oracle",  // alt ubuntu
-        "/usr/lib/jvm/java-9-oracle",  // alt ubuntu
-        "/usr/lib/jvm/java-10-oracle", // alt ubuntu
-        "/usr/lib/jvm/java-11-oracle", // alt ubuntu
+    search_prefixes.push_back("/usr/lib/jvm/java-8-oracle");  // alt ubuntu
+    search_prefixes.push_back("/usr/lib/jvm/java-9-oracle");  // alt ubuntu
+    search_prefixes.push_back("/usr/lib/jvm/java-10-oracle"); // alt ubuntu
+    search_prefixes.push_back("/usr/lib/jvm/java-11-oracle"); // alt ubuntu
 
-        "/usr/local/lib/jvm/java-8-oracle",  // alt ubuntu
-        "/usr/local/lib/jvm/java-9-oracle",  // alt ubuntu
-        "/usr/local/lib/jvm/java-10-oracle", // alt ubuntu
-        "/usr/local/lib/jvm/java-11-oracle", // alt ubuntu
-        "/usr/lib/jvm/default",              // alt centos
-        "/usr/java/latest",                  // alt centos
-    };
-    search_suffixes = {"", "/lib/amd64/server", "/jre/lib/amd64/server", "jre/lib/amd64"};
+    search_prefixes.push_back("/usr/local/lib/jvm/java-8-oracle");  // alt ubuntu
+    search_prefixes.push_back("/usr/local/lib/jvm/java-9-oracle");  // alt ubuntu
+    search_prefixes.push_back("/usr/local/lib/jvm/java-10-oracle"); // alt ubuntu
+    search_prefixes.push_back("/usr/local/lib/jvm/java-11-oracle"); // alt ubuntu
+    search_prefixes.push_back("/usr/lib/jvm/default");              // alt centos
+    search_prefixes.push_back("/usr/java/latest");                  // alt centos
+
+    search_suffixes.push_back("");
+    search_suffixes.push_back("/lib/amd64/server");
+    search_suffixes.push_back("/jre/lib/amd64/server");
+    search_suffixes.push_back("jre/lib/amd64");
+
     file_name = "libjvm.so";
 #endif
     // From direct environment variable
@@ -473,10 +478,14 @@ std::vector<std::string> get_potential_libjvm_paths()
 
     // Generate cross product between search_prefixes, search_suffixes, and
     // file_name
-    for (const std::string &prefix : search_prefixes)
+    for (std::vector<std::string>::const_iterator it = search_prefixes.begin(), en = search_prefixes.end(); it != en;
+         ++it)
     {
-        for (const std::string &suffix : search_suffixes)
+        for (std::vector<std::string>::iterator it_s = search_suffixes.begin(), en_s = search_suffixes.end(); it_s != en_s;
+             ++it_s)
         {
+            std::string prefix = *it;
+            std::string suffix = *it_s;
             std::string path = prefix + "/" + suffix + "/" + file_name;
             libjvm_potential_paths.push_back(path);
         }
@@ -584,17 +593,19 @@ SharedLibraryHandle openWindowsJvmLibrary(bool isClient, bool isServer)
 #ifdef __linux__
 int try_dlopen(std::vector<std::string> potential_paths, void *&out_handle)
 {
-    for (const std::string &i : potential_paths)
+    for (std::vector<std::string>::iterator it = potential_paths.begin(), en = potential_paths.end(); it != en;
+         ++it)
     {
-        out_handle = dlopen(i.c_str(), RTLD_NOW | RTLD_LOCAL);
+        std::string p_path = *it;
+        out_handle = dlopen(p_path.c_str(), RTLD_NOW | RTLD_LOCAL);
 
-        if (out_handle != nullptr)
+        if (out_handle != 0)
         {
             break;
         }
     }
 
-    if (out_handle == nullptr)
+    if (out_handle == 0)
     {
         return 0;
     }
@@ -610,7 +621,7 @@ SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
     (void)isClient;
     (void)isServer;
     std::vector<std::string> paths = get_potential_libjvm_paths();
-    void *handler = nullptr;
+    void *handler = 0;
     if (try_dlopen(paths, handler))
     {
         return static_cast<SharedLibraryHandle>(handler);
@@ -619,7 +630,7 @@ SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
         std::ostringstream os;
         os << "dlopen failed with "
            << dlerror() << ".";
-        return nullptr;
+        return 0;
     }
 #endif
 }
@@ -756,7 +767,7 @@ private:
 private:
     CreateJavaVM findCreateJavaVM()
     {
-        SharedLibraryHandle sl_handle = nullptr;
+        SharedLibraryHandle sl_handle = 0;
         sl_handle = l_args.openJvmLibrary();
 
         CreateJavaVM jvm = 0;

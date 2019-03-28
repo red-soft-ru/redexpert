@@ -56,6 +56,8 @@ else:unix: {
     # add your own with quoting gyrations to make sure $ORIGIN gets to the command line unexpanded
     QMAKE_LFLAGS += "-Wl,-rpath,\'\$$ORIGIN\'"
 
+    QMAKE_CXXFLAGS += -std=c++11
+
     LIBS += -ldl
 }
 

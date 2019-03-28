@@ -63,6 +63,11 @@
 
 #pragma comment(lib, "advapi32")
 
+#ifndef _MSC_VER
+#define NOEXCEPT noexcept
+#else
+#define NOEXCEPT
+#endif
 
 namespace winreg
 {
@@ -74,7 +79,7 @@ namespace winreg
 // This class is movable but not copyable.
 //
 // This class is designed to be very *efficient* and low-overhead, for example: 
-// non-throwing operations are carefully marked as noexcept, so the C++ compiler 
+// non-throwing operations are carefully marked as NOEXCEPT, so the C++ compiler
 // can emit optimized code.
 // 
 // Moreover, this class just wraps a raw HKEY handle, without any 
@@ -93,10 +98,10 @@ public:
     // 
 
     // Initialize as an empty key handle
-    RegKey() noexcept = default;
+    RegKey() NOEXCEPT = default;
 
     // Take ownership of the input key handle
-    explicit RegKey(HKEY hKey) noexcept;
+    explicit RegKey(HKEY hKey) NOEXCEPT;
 
     // Open the given registry key if it exists, else create a new key.
     // Uses default KEY_READ|KEY_WRITE access.
@@ -114,18 +119,18 @@ public:
 
     // Take ownership of the input key handle.
     // The input key handle wrapper is reset to an empty state.
-    RegKey(RegKey&& other) noexcept;
+    RegKey(RegKey&& other) NOEXCEPT;
 
     // Move-assign from the input key handle.
     // Properly check against self-move-assign (which is safe and does nothing).
-    RegKey& operator=(RegKey&& other) noexcept;
+    RegKey& operator=(RegKey&& other) NOEXCEPT;
 
     // Ban copy
     RegKey(const RegKey&) = delete;
     RegKey& operator=(const RegKey&) = delete;
 
     // Safely close the wrapped key handle (if any)
-    ~RegKey() noexcept;
+    ~RegKey() NOEXCEPT;
 
 
     //
@@ -133,16 +138,16 @@ public:
     // 
 
     // Access the wrapped raw HKEY handle
-    HKEY Get() const noexcept;
+    HKEY Get() const NOEXCEPT;
 
     // Is the wrapped HKEY handle valid?
-    bool IsValid() const noexcept;
+    bool IsValid() const NOEXCEPT;
 
     // Same as IsValid(), but allow a short "if (regKey)" syntax
-    explicit operator bool() const noexcept;
+    explicit operator bool() const NOEXCEPT;
 
     // Is the wrapped handle a predefined handle (e.g.HKEY_CURRENT_USER) ?
-    bool IsPredefined() const noexcept;
+    bool IsPredefined() const NOEXCEPT;
 
 
     //
@@ -152,20 +157,20 @@ public:
     // Close current HKEY handle.
     // If there's no valid handle, do nothing.
     // This method doesn't close predefined HKEY handles (e.g. HKEY_CURRENT_USER).
-    void Close() noexcept;
+    void Close() NOEXCEPT;
 
     // Transfer ownership of current HKEY to the caller.
     // Note that the caller is responsible for closing the key handle!
-    HKEY Detach() noexcept;
+    HKEY Detach() NOEXCEPT;
 
     // Take ownership of the input HKEY handle.
     // Safely close any previously open handle.
     // Input key handle can be nullptr.
-    void Attach(HKEY hKey) noexcept;
+    void Attach(HKEY hKey) NOEXCEPT;
 
     // Non-throwing swap;
     // Note: There's also a non-member swap overload
-    void SwapWith(RegKey& other) noexcept;
+    void SwapWith(RegKey& other) NOEXCEPT;
 
 
     //
@@ -302,7 +307,7 @@ public:
     {}
 
     // Get the error code returned by Windows registry APIs
-    LONG ErrorCode() const noexcept
+    LONG ErrorCode() const NOEXCEPT
     {
         return m_errorCode;
     }
@@ -317,32 +322,32 @@ private:
 //          Overloads of relational comparison operators for RegKey
 //------------------------------------------------------------------------------
 
-inline bool operator==(const RegKey& a, const RegKey& b) noexcept
+inline bool operator==(const RegKey& a, const RegKey& b) NOEXCEPT
 {
     return a.Get() == b.Get();
 }
 
-inline bool operator!=(const RegKey& a, const RegKey& b) noexcept
+inline bool operator!=(const RegKey& a, const RegKey& b) NOEXCEPT
 {
     return a.Get() != b.Get();
 }
 
-inline bool operator<(const RegKey& a, const RegKey& b) noexcept
+inline bool operator<(const RegKey& a, const RegKey& b) NOEXCEPT
 {
     return a.Get() < b.Get();
 }
 
-inline bool operator<=(const RegKey& a, const RegKey& b) noexcept
+inline bool operator<=(const RegKey& a, const RegKey& b) NOEXCEPT
 {
     return a.Get() <= b.Get();
 }
 
-inline bool operator>(const RegKey& a, const RegKey& b) noexcept
+inline bool operator>(const RegKey& a, const RegKey& b) NOEXCEPT
 {
     return a.Get() > b.Get();
 }
 
-inline bool operator>=(const RegKey& a, const RegKey& b) noexcept
+inline bool operator>=(const RegKey& a, const RegKey& b) NOEXCEPT
 {
     return a.Get() >= b.Get();
 }
@@ -352,7 +357,7 @@ inline bool operator>=(const RegKey& a, const RegKey& b) noexcept
 //                          RegKey Inline Methods
 //------------------------------------------------------------------------------
 
-inline RegKey::RegKey(const HKEY hKey) noexcept
+inline RegKey::RegKey(const HKEY hKey) NOEXCEPT
     : m_hKey{ hKey }
 {}
 
@@ -369,7 +374,7 @@ inline RegKey::RegKey(const HKEY hKeyParent, const std::wstring& subKey, REGSAM 
 }
 
 
-inline RegKey::RegKey(RegKey&& other) noexcept
+inline RegKey::RegKey(RegKey&& other) NOEXCEPT
     : m_hKey{ other.m_hKey }
 {
     // Other doesn't own the handle anymore
@@ -377,7 +382,7 @@ inline RegKey::RegKey(RegKey&& other) noexcept
 }
 
 
-inline RegKey& RegKey::operator=(RegKey&& other) noexcept
+inline RegKey& RegKey::operator=(RegKey&& other) NOEXCEPT
 {
     // Prevent self-move-assign
     if ((this != &other) && (m_hKey != other.m_hKey)) 
@@ -393,20 +398,20 @@ inline RegKey& RegKey::operator=(RegKey&& other) noexcept
 }
 
 
-inline RegKey::~RegKey() noexcept
+inline RegKey::~RegKey() NOEXCEPT
 {
     // Release the owned handle (if any)
     Close();
 }
 
 
-inline HKEY RegKey::Get() const noexcept
+inline HKEY RegKey::Get() const NOEXCEPT
 {
     return m_hKey;
 }
 
 
-inline void RegKey::Close() noexcept
+inline void RegKey::Close() NOEXCEPT
 {
     if (IsValid())
     {
@@ -422,19 +427,19 @@ inline void RegKey::Close() noexcept
 }
 
 
-inline bool RegKey::IsValid() const noexcept
+inline bool RegKey::IsValid() const NOEXCEPT
 {
     return m_hKey != nullptr;
 }
 
 
-inline RegKey::operator bool() const noexcept
+inline RegKey::operator bool() const NOEXCEPT
 {
     return IsValid();
 }
 
 
-inline bool RegKey::IsPredefined() const noexcept
+inline bool RegKey::IsPredefined() const NOEXCEPT
 {
     // Predefined keys
     // https://msdn.microsoft.com/en-us/library/windows/desktop/ms724836(v=vs.85).aspx
@@ -456,7 +461,7 @@ inline bool RegKey::IsPredefined() const noexcept
 }
 
 
-inline HKEY RegKey::Detach() noexcept
+inline HKEY RegKey::Detach() NOEXCEPT
 {
     HKEY hKey{ m_hKey };
 
@@ -468,7 +473,7 @@ inline HKEY RegKey::Detach() noexcept
 }
 
 
-inline void RegKey::Attach(const HKEY hKey) noexcept
+inline void RegKey::Attach(const HKEY hKey) NOEXCEPT
 {
     // Prevent self-attach
     if (m_hKey != hKey)
@@ -482,7 +487,7 @@ inline void RegKey::Attach(const HKEY hKey) noexcept
 }
 
 
-inline void RegKey::SwapWith(RegKey& other) noexcept
+inline void RegKey::SwapWith(RegKey& other) NOEXCEPT
 {
     // Enable ADL (not necessary in this case, but good practice)
     using std::swap;
@@ -492,7 +497,7 @@ inline void RegKey::SwapWith(RegKey& other) noexcept
 }
 
 
-inline void swap(RegKey& a, RegKey& b) noexcept
+inline void swap(RegKey& a, RegKey& b) NOEXCEPT
 {
     a.SwapWith(b);
 }

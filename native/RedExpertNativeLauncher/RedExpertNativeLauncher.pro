@@ -60,7 +60,14 @@ else:unix: {
 }
 
 SOURCES += \
-        main.cpp
+    main.cpp
 
-HEADERS +=
+HEADERS += \
+    JniError.h \
+    JniString.h \
+    PortableJni.h \
+    reportFatalErrorViaGui.h \
+    WinReg.hpp \
+    HKEY.h \
+    utils.h
 

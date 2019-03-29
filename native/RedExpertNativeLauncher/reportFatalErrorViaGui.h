@@ -56,9 +56,8 @@ inline std::string getCurrentDateTime()
     return std::string(buf);
 }
 
-inline void printErrorToLogFile(const std::string& app_mess)
-{
-    const char* log_file = "red_expert.log";
+inline void printErrorToLogFile(const char* log_file, const std::string& app_mess)
+{    
     std::ofstream ofs(log_file, std::ofstream::out | std::ofstream::app);
     if(ofs)
     {
@@ -75,30 +74,67 @@ inline void printErrorToLogFile(const std::string& app_mess)
 
 inline void reportFatalErrorViaGui(const std::string& programName, const std::string& applicationMessage, std::string supportAddress)
 {
+    const char* log_file = 0;
+    std::string path;
+#ifdef __linux__
+    char* tmp_env = NULL;
+    if ((tmp_env = getenv("TMPDIR")) != NULL)
+    {
+        path.append(tmp_env);
+    }
+    else
+    {
+#ifdef P_tmpdir
+        path.append(P_tmpdir);
+#endif
+    }
+    if (path.length() == 0)
+        path.append("/tmp/");
+    path.append("/red_expert.log");
+    log_file = path.c_str();
+#else
+    DWORD dw_ret = 0;
+    TCHAR t_path[MAX_PATH];    
+    //  Gets the temp path env string (no guarantee it's a valid path).
+    dw_ret = GetTempPath(MAX_PATH,          // length of the buffer
+                           t_path); // buffer for path
+    if (dw_ret > MAX_PATH || (dw_ret == 0))
+    {
+        std::cerr << "GetTempPath failed";
+        log_file = "red_expert.log";
+    }
+    else
+    {
+        std::wstring w_path = std::wstring(t_path);
+        path = utils::convertUtf16ToUtf8(w_path);
+        path.append("\\red_expert.log");
+        log_file = path.c_str();
+    }
+
+#endif
     if (supportAddress.empty())
     {
         supportAddress = std::string("rdb.support@red-soft.ru");
     }
     std::ostringstream os;
     os << applicationMessage;
-#if USE_MESSAGE_BOX
     os << std::endl;
     os << "Please copy this message to the clipboard with Ctrl-C and mail it to " << supportAddress << ".";
     os << std::endl;
-    os << "(Windows won't let you select the text but Ctrl-C works anyway.)";
-    os << std::endl;
-#endif
     std::string platformMessage(os.str());
+    std::string m_mes("Launch error. Please, check ");
+    m_mes.append(log_file);
+    m_mes.append(" for error details");
 #if USE_MESSAGE_BOX
-    printErrorToLogFile(platformMessage);
-    MessageBox(GetActiveWindow(), utils::convertUtf8ToUtf16("Please, check red_expert.log for error details").c_str(), utils::convertUtf8ToUtf16(programName).c_str(), MB_OK);
+    printErrorToLogFile(log_file, platformMessage);
+    MessageBox(GetActiveWindow(), utils::convertUtf8ToUtf16(m_mes).c_str(), utils::convertUtf8ToUtf16(programName).c_str(), MB_OK);
 #else
     (void)programName;
 #endif
     std::cerr << platformMessage;
-    printErrorToLogFile(platformMessage);
+    printErrorToLogFile(log_file, platformMessage);
 #ifdef __linux__
-    gtkMessageBox(programName.c_str(), "Please, check red_expert.log for error details");
+    gtkMessageBox(programName.c_str(), m_mes.c_str());
 #endif
 }
 

@@ -929,7 +929,7 @@ public:
         env->ExceptionDescribe();
         os << "A Java exception occurred.";
         os << std::endl;
-        jclass str_utl = env->FindClass("org.apache.commons.lang.exception.ExceptionUtils");
+        jclass str_utl = env->FindClass("org/apache/commons/lang/exception/ExceptionUtils");
         if (str_utl == 0)
         {
             os << "FindClass(\"org.apache.commons.lang.exception.ExceptionUtils\") failed.";
@@ -938,7 +938,7 @@ public:
         }
         jmethodID throw_stack =
                 env->GetStaticMethodID(str_utl, "getStackTrace",
-                                       "Ljava/lang/Throwable");
+                                       "(Ljava/lang/Throwable;)Ljava/lang/String;");
         if (throw_stack == 0)
         {
             os << "GetStaticMethodID(org.apache.commons.lang.exception.ExceptionUtils, "
@@ -947,7 +947,7 @@ public:
             return;
         }
         jstring report = static_cast<jstring>(env->CallStaticObjectMethod(
-                                                  str_utl, throw_stack));
+                                                  str_utl, throw_stack, j_exc));
         os << JniString(env, report);
     }
 

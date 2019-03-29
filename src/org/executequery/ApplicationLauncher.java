@@ -565,7 +565,8 @@ public class ApplicationLauncher {
 
                     String binPath = System.getProperty("user.dir");
                     binPath = binPath.replace("/bin", "");
-                    Runtime.getRuntime().exec(binPath +"/createDesktopEntry.sh");
+                    ProcessBuilder pb = new ProcessBuilder(binPath +"/createDesktopEntry.sh");
+                    pb.start();
                 }
             } catch (IOException e) {
                 e.printStackTrace();

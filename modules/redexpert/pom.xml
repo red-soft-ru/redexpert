@@ -291,7 +291,6 @@
                                         <include>red_expert.png</include>
                                         <include>red_expert.ico</include>
                                         <include>redexpert.desktop</include>
-                                        <include>RedExpert.bat</include>
                                         <include>createDesktopEntry.sh</include>
                                         <include>LICENSE.txt</include>
                                     </includes>
@@ -345,8 +344,6 @@
                         <phase>validate</phase>
                         <configuration>
                             <target name="copy and rename file">
-                                <copy file="${pom.basedir}/../../eq.sh" tofile="${pom.basedir}/target/RedExpert.sh"/>
-                                <chmod file="${pom.basedir}/target/RedExpert.sh" perm="755"/>
                                 <chmod file="${pom.basedir}/target/createDesktopEntry.sh" perm="755"/>
                             </target>
                         </configuration>

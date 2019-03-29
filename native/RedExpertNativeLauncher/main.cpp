@@ -706,9 +706,13 @@ public:
             {
                 isServer = true;
             }
-            else
+            else if (startsWith(option, "-D") || startsWith(option, "-X"))
             {
                 jvmArguments.push_back(option);
+            }
+            else
+            {
+                mainArguments.push_back(option);
             }
         }
         if (it == end)

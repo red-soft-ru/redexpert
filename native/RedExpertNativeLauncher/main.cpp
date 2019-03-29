@@ -1201,19 +1201,19 @@ int main(int argc, char *argv[])
 
     NativeArguments launcher_args;
 
-    launcher_args.push_back(class_path);
-    launcher_args.push_back("org/executequery/ExecuteQuery");
-
-    launcher_args.push_back("-exe_path=" + app_exe_path);
-    std::string str_pid = utils::toString(app_pid);
-    launcher_args.push_back("-exe_pid=" + str_pid);
-
     err_rep.ARGV0 = *argv++;
     while (*argv != 0)
     {
         launcher_args.push_back(*argv++);
     }
     err_rep.launcher_args = launcher_args;
+
+    launcher_args.push_back(class_path);
+    launcher_args.push_back("org/executequery/ExecuteQuery");
+
+    launcher_args.push_back("-exe_path=" + app_exe_path);
+    std::string str_pid = utils::toString(app_pid);
+    launcher_args.push_back("-exe_pid=" + str_pid);
 
     return runJvm(launcher_args);
 }

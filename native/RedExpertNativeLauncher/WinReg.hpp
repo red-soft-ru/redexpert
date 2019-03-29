@@ -509,7 +509,7 @@ inline void RegKey::Create(
     const REGSAM                desiredAccess
 )
 {
-    constexpr DWORD kDefaultOptions = REG_OPTION_NON_VOLATILE;
+    DWORD kDefaultOptions = REG_OPTION_NON_VOLATILE;
 
     Create(hKeyParent, subKey, desiredAccess, kDefaultOptions, 
         nullptr, // no security attributes,

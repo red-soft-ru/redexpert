@@ -1,4 +1,4 @@
-package org.executequery.actions.toolscommands;
+package org.executequery.actions.helpcommands;
 
 import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;

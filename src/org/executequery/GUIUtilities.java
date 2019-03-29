@@ -266,7 +266,7 @@ public final class GUIUtilities {
             item.setId("exit-from-account-command");
             JMenuItem toolsMenu = null;
             for (int i = 0; i < menu.getMenuCount(); i++) {
-                if (menu.getMenu(i).getText().contentEquals(Bundles.get("menu.tools"))) {
+                if (menu.getMenu(i).getText().contentEquals(Bundles.get("menu.help"))) {
                     toolsMenu = menu.getMenu(i);
                     break;
                 }
@@ -298,7 +298,7 @@ public final class GUIUtilities {
             item.setId("log-in-account-command");
             JMenuItem toolsMenu = null;
             for (int i = 0; i < menu.getMenuCount(); i++) {
-                if (menu.getMenu(i).getText().contentEquals(Bundles.get("menu.tools"))) {
+                if (menu.getMenu(i).getText().contentEquals(Bundles.get("menu.help"))) {
                     toolsMenu = menu.getMenu(i);
                     break;
                 }

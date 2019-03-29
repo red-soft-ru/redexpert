@@ -882,16 +882,16 @@
 
     <action id="exit-from-account-command"
             name="Exit From Account"
-            mnemonic="TM"
+            mnemonic="EA"
             accel-editable="true"
             description="Exit From Account"
-            execute-class="org.executequery.actions.toolscommands.ExitFromAccountCommand"/>
+            execute-class="org.executequery.actions.helpcommands.ExitFromAccountCommand"/>
 
     <action id="log-in-account-command"
             name="Log In Account"
-            mnemonic="TM"
+            mnemonic="LA"
             accel-editable="true"
             description="Log In Account"
-            execute-class="org.executequery.actions.toolscommands.LogInAccountCommand"/>
+            execute-class="org.executequery.actions.helpcommands.LogInAccountCommand"/>
 
 </actions>

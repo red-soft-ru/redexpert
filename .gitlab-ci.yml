@@ -104,9 +104,12 @@ sources:
     - ./ci/build_native.sh
     - ./ci/build_jar.sh
     - mkdir -p "${DIST}"
+    - mkdir "${DIST}"/guide/
     - mv modules/redexpert/target/bin "${DIST}"
     - mv modules/redexpert/target/config "${DIST}"
     - mv modules/redexpert/target/lib "${DIST}"
+    - cp license/ "${DIST}"
+    - cp guide/RedExpert_Guide-ru.pdf "${DIST}"/guide/
     - mv modules/redexpert/target/createDesktopEntry.sh "${DIST}"
     - mv modules/redexpert/target/LICENSE.txt "${DIST}"
     - mv modules/redexpert/target/red_expert.ico "${DIST}"
@@ -141,6 +144,7 @@ build:linux:x86:
     - $VERSION = (get-content .ci\version -Raw).trim()
     - unzip -q dist-src\RedExpert-$VERSION-src.zip
     - mkdir ${DIST}
+    - mkdir "${DIST}"/guide/
   script:
     - cd ${CI_PROJECT_DIR}\RedExpert-$VERSION
     - powershell -ExecutionPolicy ByPass -file ci\build_native.ps1
@@ -148,6 +152,8 @@ build:linux:x86:
     - mv modules/redexpert/target/bin "${DIST}"
     - mv modules/redexpert/target/config "${DIST}"
     - mv modules/redexpert/target/lib "${DIST}"
+    - cp license/ "${DIST}"
+    - cp guide/RedExpert_Guide-ru.pdf "${DIST}"/guide/
     - mv modules/redexpert/target/createDesktopEntry.sh "${DIST}"
     - mv modules/redexpert/target/LICENSE.txt "${DIST}"
     - mv modules/redexpert/target/red_expert.ico "${DIST}"

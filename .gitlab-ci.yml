@@ -104,7 +104,14 @@ sources:
     - ./ci/build_native.sh
     - ./ci/build_jar.sh
     - mkdir -p "${DIST}"
-    - mv modules/redexpert/target/RedExpert-$VERSION.* "${DIST}"
+    - mv modules/redexpert/target/config "${DIST}"
+    - mv modules/redexpert/target/lib "${DIST}"
+    - mv modules/redexpert/target/createDesktopEntry.sh "${DIST}"
+    - mv modules/redexpert/target/LICENSE.txt "${DIST}"
+    - mv modules/redexpert/target/red_expert.ico "${DIST}"
+    - mv modules/redexpert/target/red_expert.png "${DIST}"
+    - mv modules/redexpert/target/redexpert.desktop "${DIST}"
+    - mv modules/redexpert/target/RedExpert.jar "${DIST}" 
 
 build:linux:x86_64:
   <<: *build_linux_template
@@ -137,7 +144,14 @@ build:linux:x86:
     - cd ${CI_PROJECT_DIR}\RedExpert-$VERSION
     - powershell -ExecutionPolicy ByPass -file ci\build_native.ps1
     - powershell -ExecutionPolicy ByPass -file ci\build_jar.ps1
-    - mv modules/redexpert/target/RedExpert-$VERSION.* "${DIST}"
+    - mv modules/redexpert/target/config "${DIST}"
+    - mv modules/redexpert/target/lib "${DIST}"
+    - mv modules/redexpert/target/createDesktopEntry.sh "${DIST}"
+    - mv modules/redexpert/target/LICENSE.txt "${DIST}"
+    - mv modules/redexpert/target/red_expert.ico "${DIST}"
+    - mv modules/redexpert/target/red_expert.png "${DIST}"
+    - mv modules/redexpert/target/redexpert.desktop "${DIST}"
+    - mv modules/redexpert/target/RedExpert.jar "${DIST}" 
 
 build:windows:x86_64:
   <<: *build_template

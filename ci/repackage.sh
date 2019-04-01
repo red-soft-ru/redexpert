@@ -35,7 +35,7 @@ while [ "$1" != "" ]; do
 		mkdir tmp
 		pushd tmp
 		ls ..
-		tar xf ../RedExpert-$VERSION.tar.gz
+		# tar xf ../RedExpert-$VERSION.tar.gz
 		if [ "$full" = "1" ]; then
 			mv * $TMP_DIR
 		else

@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
+import org.underworldlabs.util.MiscUtils;
 
 import java.util.Vector;
 
@@ -123,7 +124,7 @@ public class NewTableConstraintsPanel extends TableConstraintsPanel
                 name = value;
                 hasName = true;
 
-            } else if (cc.getName() != ColumnConstraint.EMPTY) {
+            } else if (!MiscUtils.isNull(cc.getName())) {
 
                 name = cc.getName();
                 hasName = true;

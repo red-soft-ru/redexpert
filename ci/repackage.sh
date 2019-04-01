@@ -26,14 +26,12 @@ TMP_DIR=`pwd`/tmp
 rm -rf $TMP_DIR
 mkdir $TMP_DIR
 
-echo Unpacking...
+echo Preparing...
 full=1
 while [ "$1" != "" ]; do
 	echo "    $1..."
 	pushd dist/$1
 		rm -rf tmp
-		mkdir tmp
-		pushd tmp
 		ls ..
 		# tar xf ../RedExpert-$VERSION.tar.gz
 		if [ "$full" = "1" ]; then
@@ -41,8 +39,6 @@ while [ "$1" != "" ]; do
 		else
 			mv bin/* "$TMP_DIR/bin"
 		fi
-		popd
-		rm -rf tmp
 	popd
 	shift
 	full=0

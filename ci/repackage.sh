@@ -32,7 +32,7 @@ while [ "$1" != "" ]; do
 	echo "    $1..."
 	pushd dist/$1
 		rm -rf tmp
-		ls ..
+		ls 
 		# tar xf ../RedExpert-$VERSION.tar.gz
 		if [ "$full" = "1" ]; then
 			mv * $TMP_DIR

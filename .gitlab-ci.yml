@@ -145,6 +145,7 @@ build:linux:x86:
     - cd ${CI_PROJECT_DIR}\RedExpert-$VERSION
     - powershell -ExecutionPolicy ByPass -file ci\build_native.ps1
     - powershell -ExecutionPolicy ByPass -file ci\build_jar.ps1
+    - mv native/RedExpertNativeLauncher/bin "${DIST}"
     - mv modules/redexpert/target/config "${DIST}"
     - mv modules/redexpert/target/lib "${DIST}"
     - mv modules/redexpert/target/createDesktopEntry.sh "${DIST}"

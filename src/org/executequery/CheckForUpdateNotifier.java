@@ -230,13 +230,12 @@ public class CheckForUpdateNotifier implements Interruptible {
                     String version = "version=" + updateLoader.getVersion();
                     argsList.add(version);
                     ApplicationContext instance = ApplicationContext.getInstance();
-                    String repo = "-repo=" + instance.getRepo();
-                    argsList.add(repo);
-                    String externalProcessName = instance.getExternalProcessName();
-                    if (externalProcessName != null && !externalProcessName.isEmpty()) {
-                        externalProcessName = "externalProcessName=" + externalProcessName;
-                        argsList.add(externalProcessName);
+                    String repo = "";
+                    if(instance.getRepo() != null && !instance.getRepo().isEmpty()) {
+                        repo = "-repo=" + instance.getRepo();
+                        argsList.add(repo);
                     }
+
                     String[] args = argsList.toArray(new String[0]);
                     String[] run;
                     File file = new File("RedExpert.jar");
@@ -245,7 +244,8 @@ public class CheckForUpdateNotifier implements Interruptible {
                     run = new String[]{"java", "-cp", file.getPath(), "org.executequery.UpdateLoader"};
                     run = (String[]) ArrayUtils.addAll(run, args);
                     try {
-                        Runtime.getRuntime().exec(run);
+                        ProcessBuilder pb = new ProcessBuilder(run);
+                        pb.start();
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }

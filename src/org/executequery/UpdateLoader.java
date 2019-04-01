@@ -209,21 +209,23 @@ public class UpdateLoader extends JFrame {
     }
 
     private void launch() {
-        String repo = repoArg;
-        String externalProcessName = externalArg;
-        String[] run;
-        if (externalProcessName != null && !externalProcessName.isEmpty())
-            run = new String[]{externalProcessName, repo};
-        else {
-            File file = new File("RedExpert.jar");
-            if (!file.exists())
-                file = new File("../RedExpert.jar");
-            run = new String[]{"java", "-jar", file.getAbsolutePath(), repo};
-        }
+        ProcessBuilder pb = null;
         try {
-            Runtime.getRuntime().exec(run);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            StringBuilder sb = new StringBuilder("./RedExpert");
+            if(System.getProperty("os.arch").toLowerCase().contains("amd64"))
+                sb.append("64");
+            if (System.getProperty("os.name").toLowerCase().contains("win"))
+                sb.append(".exe");
+            if (repoArg == null)
+                repoArg = "-repo=";
+            System.out.println("Executing: " + sb.toString());
+            pb = new ProcessBuilder(sb.toString(), repoArg);
+            pb.directory(new File(System.getProperty("user.dir")));
+            pb.start();
+
+        } catch (IOException e) {
+            System.err.println(e);
+            e.printStackTrace();
         }
         System.exit(0);
     }

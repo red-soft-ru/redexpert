@@ -105,6 +105,7 @@ sources:
     - ./ci/build_jar.sh
     - mkdir -p "${DIST}"
     - mkdir "${DIST}"/guide/
+    - chmod +x modules/redexpert/target/bin/*
     - mv modules/redexpert/target/bin "${DIST}"
     - mv modules/redexpert/target/config "${DIST}"
     - mv modules/redexpert/target/lib "${DIST}"

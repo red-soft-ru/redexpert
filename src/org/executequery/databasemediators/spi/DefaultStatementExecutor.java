@@ -1147,9 +1147,8 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             case QueryTypes.SELECT_INTO:
                 return execute(statement);
 
-            /*case QueryTypes.EXECUTE:
-                //return execute(query);
-                return executeProcedure();*/
+            case QueryTypes.EXECUTE:
+                return execute(statement);
 
             case QueryTypes.COMMIT:
                 return commitLast(true);

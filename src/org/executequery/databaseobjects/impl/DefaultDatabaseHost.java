@@ -146,7 +146,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * Recycles the open database connection.
      */
     public void recycleConnection() throws DataSourceException {
-        close();
+        this.disconnect();
+        this.connect();
     }
 
     /**

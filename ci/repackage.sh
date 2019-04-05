@@ -46,6 +46,7 @@ done
 
 echo Archiving...
 pushd $TMP_DIR
+mv bin/RedExpert-$VERSION-installer-* $RESULT_DIR
 tar czf "$RESULT_DIR/RedExpert-$VERSION.tar.gz" *
 zip -qr "$RESULT_DIR/RedExpert-$VERSION.zip" .
 popd

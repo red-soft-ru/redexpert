@@ -1913,6 +1913,8 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
           if (!databaseConnection.isConnected()) {
 
             connect(databaseConnection);
+          } else {
+              disconnect(databaseConnection);
           }
 
         }

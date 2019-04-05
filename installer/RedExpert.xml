@@ -1,0 +1,147 @@
+<project>
+    <shortName>RedExpert</shortName>
+    <fullName>Red Database-RedExpert</fullName>
+    <version>${VERSION}</version>
+    <licenseFile>${redexpert_dir}/LICENSE.txt</licenseFile>
+    <logoImage>logos/red_expert.png</logoImage>
+    <allowLanguageSelection>1</allowLanguageSelection>
+    <componentList>
+        <component>
+            <name>default</name>
+            <description>Default Component</description>
+            <canBeEdited>1</canBeEdited>
+            <selected>1</selected>
+            <show>1</show>
+            <folderList>
+                <folder>
+                    <description>Program Files</description>
+                    <destination>${installdir}</destination>
+                    <name>programfiles</name>
+                    <platforms>all</platforms>
+                    <distributionFileList>
+                        <distributionDirectory allowWildcards="1">
+                            <origin>${redexpert_dir}/*</origin>
+                        </distributionDirectory>
+                    </distributionFileList>
+                    <shortcutList>
+                        <shortcut>
+                            <comment>Uninstall</comment>
+                            <exec>${installdir}/${uninstallerName}</exec>
+                            <icon></icon>
+                            <name>Uninstall ${product_shortname}</name>
+                            <path>${installdir}</path>
+                            <platforms>all</platforms>
+                            <runAsAdmin>0</runAsAdmin>
+                            <runInTerminal>0</runInTerminal>
+                            <windowsExec>${installdir}/${uninstallerName}.exe</windowsExec>
+                            <windowsExecArgs></windowsExecArgs>
+                            <windowsIcon></windowsIcon>
+                            <windowsPath>${installdir}</windowsPath>
+                        </shortcut>
+                    </shortcutList>
+                </folder>
+                <folder>
+                    <description>Program Files</description>
+                    <destination>${installdir}</destination>
+                    <name>programfileslinux</name>
+                    <platforms>linux</platforms>
+                </folder>
+                <folder>
+                    <description>Program Files</description>
+                    <destination>${installdir}</destination>
+                    <name>programfileswindows</name>
+                    <platforms>windows</platforms>
+                </folder>
+                <folder>
+                    <description>Program Files</description>
+                    <destination>${installdir}</destination>
+                    <name>programfilesosx</name>
+                    <platforms>osx</platforms>
+                </folder>
+            </folderList>
+            <desktopShortcutList>
+                <shortcut>
+                    <comment>Launch ${project.shortName}</comment>
+                    <name>${project.shortName}</name>
+                    <platforms>all</platforms>
+                    <exec>${installdir}/bin/${execute_file}</exec>
+                    <path>${installdir}/bin/</path>
+                    <icon>${installdir}/red_expert.png</icon>
+                    <windowsExec>${installdir}/bin/${execute_file}.exe</windowsExec>
+                    <windowsPath>${installdir}/bin/</windowsPath>
+                    <windowsExecArgs></windowsExecArgs>
+                    <windowsIcon>${installdir}/bin/${execute_file}.exe</windowsIcon>
+                    <runAsAdmin>0</runAsAdmin>
+                    <runInTerminal>0</runInTerminal>
+                </shortcut>
+            </desktopShortcutList>
+            <startMenuShortcutList>
+                <startMenuShortcut>
+                    <comment>Uninstall ${product_shortname}</comment>
+                    <name>Uninstall ${product_shortname}</name>
+                    <runAsAdmin>0</runAsAdmin>
+                    <runInTerminal>0</runInTerminal>
+                    <windowsExec>${installdir}/${uninstallerName}.exe</windowsExec>
+                    <windowsExecArgs></windowsExecArgs>
+                    <windowsIcon></windowsIcon>
+                    <windowsPath>${installdir}/</windowsPath>
+                </startMenuShortcut>
+                <startMenuShortcut>
+                    <comment>Launch ${project.shortName}</comment>
+                    <name>${project.shortName}</name>
+                    <platforms>all</platforms>
+                    <exec>${installdir}/bin/${execute_file}</exec>
+                    <path>${installdir}/bin/</path>
+                    <icon>${installdir}/red_expert.png</icon>
+                    <windowsExec>${installdir}/bin/${execute_file}.exe</windowsExec>
+                    <windowsPath>${installdir}/bin/</windowsPath>
+                    <windowsExecArgs></windowsExecArgs>
+                    <windowsIcon>${installdir}/bin/${execute_file}.exe</windowsIcon>
+                    <runAsAdmin>0</runAsAdmin>
+                    <runInTerminal>0</runInTerminal>
+                </startMenuShortcut>
+            </startMenuShortcutList>
+        </component>
+    </componentList>
+    <preBuildActionList>
+        <setInstallerVariable>
+            <name>execute_file</name>
+            <value>${execution_file}</value>
+            <persist>1</persist>
+        </setInstallerVariable>
+        <consoleWrite>
+            <text>${execution_file}</text>
+        </consoleWrite>
+    </preBuildActionList>
+    <allowedLanguages>en ru</allowedLanguages>
+    <enableRollback>1</enableRollback>
+    <enableTimestamp>1</enableTimestamp>
+    <saveRelativePaths>1</saveRelativePaths>
+    <outputDirectory>${output_dir}</outputDirectory>
+    <installerFilename>${installer_name}</installerFilename>
+    <disableSplashScreen>1</disableSplashScreen>
+    <vendor>Red Soft Corporation</vendor>
+    <windows64bitMode>1</windows64bitMode>
+    <parameterList>
+        <directoryParameter>
+            <name>installdir</name>
+            <description>Installer.Parameter.installdir.description</description>
+            <explanation>Installer.Parameter.installdir.explanation</explanation>
+            <value></value>
+            <default>${platform_install_prefix}${platform_path_separator}${project.shortName}</default>
+            <allowEmptyValue>0</allowEmptyValue>
+            <ask>yes</ask>
+            <cliOptionName>prefix</cliOptionName>
+            <mustBeWritable>yes</mustBeWritable>
+            <mustExist>0</mustExist>
+            <width>40</width>
+        </directoryParameter>
+        <stringParameter>
+            <name>execute_file</name>
+            <allowEmptyValue>0</allowEmptyValue>
+            <ask>no</ask>
+            <width>40</width>
+        </stringParameter>
+    </parameterList>
+</project>
+

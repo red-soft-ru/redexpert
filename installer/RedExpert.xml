@@ -122,6 +122,7 @@
     <disableSplashScreen>1</disableSplashScreen>
     <vendor>Red Soft Corporation</vendor>
     <windows64bitMode>1</windows64bitMode>
+    <installationLogFile>${installdir}/RedExpertInstallation.log</installationLogFile>
     <parameterList>
         <directoryParameter>
             <name>installdir</name>

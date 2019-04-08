@@ -6,19 +6,21 @@ RedExpert
 
 RedExpert is based on Execute Query and works on Java. The main features are:
 
-Concurrent work with multiple databases
-Development and executing any SQL queries supported by DBMS in SQL editor. Showing result of selective queries.
-SQL query formatting
-Autocompletions of commands
-Designing database structure in visual constructor of ER-diagrams. Supporting of the Reverse Engineering and exporting the diagrams in different formats.
+* Concurrent work with multiple databases
+* Development and executing any SQL queries supported by DBMS in SQL editor. Showing result of selective queries.
+* SQL query formatting
+* Autocompletions of commands
+* Designing database structure in visual constructor of ER-diagrams. Supporting of the Reverse Engineering and exporting the diagrams in different formats.
+
 In additional to that in RedExpert implemented:
 
-Supports all versions of RedDatabase and Firebird "out of the box"
-Creating and altering any database object with visual editor
-Tracing any actions with database in real time by using trace manager
-User manager
-User and roles privileges manager
-Support of any kind of authentication
+* Supports all versions of RedDatabase and Firebird "out of the box"
+* Creating and altering any database object with visual editor
+* Tracing any actions with database in real time by using trace manager
+* User manager
+* User and roles privileges manager
+* Support of any kind of authentication
+
 Unfortunately documentation is now available only in Russian. Feel free to ask us about English version. It will force us to translate.
 
 for building installer was used InstallBuilder BitRock ![image](installer/logos/installersby_tiny.png) the output is a cross-platform installer

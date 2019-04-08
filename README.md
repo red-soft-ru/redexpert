@@ -76,8 +76,8 @@ Other relevant license files for respective libraries are incldued in this
 directory as well as within the deployed application path. 
 
 ```
-
- Copyright (C) 2002-2015 Takis Diakoumis
+ Copyright (C) 2002-2019 Takis Diakoumis
+ Copyright (C) 2018-2019 RED SOFT
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License

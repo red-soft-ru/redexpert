@@ -1,66 +1,35 @@
-ExecuteQuery
+![image](red_expert.png)
+
+RedExpert 
 ============
 
-ExecuteQuery is a database query and introspection utility. Written entirely in 
-Java, ExecuteQuery uses the flexibility and power and provided by Java Database 
-Connectivity API (JDBC), to provide a simple and consistent way to interact with 
-almost any database from simple queries to table creation and import/export of 
-an entire schema/catalog's data.
 
-ExecuteQuery was started many (many!) years ago to solve the basic problem at 
-the time of jumping between different database applications and having to learn
-different tool sets and techniques for interaction and development. Beginning as
-not much more than a simple query and result application, ExecuteQuery slowly 
-evolved to include a number of useful features supporting software developers 
-and database administrators. 
+RedExpert is based on Execute Query and works on Java. The main features are:
 
-Further information on ExecuteQuery and its features can be found at 
-http://executequery.org with screenshots at http://executequery.org/screenshots
+Concurrent work with multiple databases
+Development and executing any SQL queries supported by DBMS in SQL editor. Showing result of selective queries.
+SQL query formatting
+Autocompletions of commands
+Designing database structure in visual constructor of ER-diagrams. Supporting of the Reverse Engineering and exporting the diagrams in different formats.
+In additional to that in RedExpert implemented:
 
-## Running ExecuteQuery
+Supports all versions of RedDatabase and Firebird "out of the box"
+Creating and altering any database object with visual editor
+Tracing any actions with database in real time by using trace manager
+User manager
+User and roles privileges manager
+Support of any kind of authentication
+Unfortunately documentation is now available only in Russian. Feel free to ask us about English version. It will force us to translate.
 
-ExecuteQuery requires a minimum of Java 7 installed.
+for building installer was used InstallBuilder BitRock ![image](installer/logos/installersby_tiny.png) the output is a cross-platform installer
+## Download RedExpert
 
-Current version build and installable packages (as well as bundled source 
-archives) can be downloaded from http://executequery.org/download
+http://reddatabase.ru/downloads/redexpert/
 
-ExecuteQuery is available in the following package formats:
 
-* OS independant installable JAR file
-* ZIP archive
-* DEB package
-* Gzip archive
-* Gzip source archive
+## Building RedExpert from source
 
-## Building ExecuteQuery from source
-
-ExecuteQuery requires at least a Java 7 JDK installed and the current build uses
-ant which can be downloaded from http://ant.apache.org
-
-Run the build by simply executing `ant` from the source directory. 
-
-A build should only take seconds and the resulting `eq.jar` file will be found 
-in the current directory ready to use.
-
-Start ExecuteQuery by either using the relevant start script for your OS - 
-`eq.sh` or `eq.exe`. Mac users are probably best installing from the JAR 
-installer and then incorporating any snapshot changes from this source after as 
-this will provide the correct structure within `/Applications` including the 
-correct `icns` icon file for ExecuteQuery.
-
-Alternatively, simply start as follows:
-
-```
-  $ java -jar eq.jar
-```
-
-## Alternative experimental maven build
-
-To build a ExecuteQuery:
-
-```sh
-$ mvn clean compile
-```
+RedExpert requires at least a Java 8 JDK installed and maven
 
 To create a jar file:
 
@@ -68,21 +37,16 @@ To create a jar file:
 $ mvn package
 ```
 
-To run ExecuteQuery go to target directory and run:
+To run RedExpert go to target directory and run:
 
 ```sh
-$ java -jar ExecuteQuery-4.3.jar
+$ java -jar RedExpert.jar
 ```
 
 ## Feedback
 
-Feedback is very welcome and encouraged. Please use either the form at 
-http://executequery.org/feedback or the feedback dialog within the application
+Feedback is very welcome and encouraged. Please use  the feedback dialog within the application
 itself at Help | Feedback. 
-
-We have set up ExecuteQuery on Google Groups to help consolidate queries and 
-issues as well as provide an indexed support forum and mailing list. Please 
-visit us at http://groups.google.com/group/executequery
 
 If submitting a bug, please include any exception stack traces and other 
 relevant information so that the issue can be more promptly resolved (ie. 
@@ -93,12 +57,12 @@ received with information that needs to be clarified. Your name and contact
 details are held with the strictest confidence. Its also much easier to service
 any submission if you can be easily raeched.
 
-Please do not hesitate to submit any comments, bugs or feature requests. I 
+Please do not hesitate to submit any comments, bugs or feature requests. We
 respond to ALL submissions.
 
 ## License
 
-Execute Query is available completely free of charge and will remain so under 
+RedExpert is available completely free of charge and will remain so under 
 the GNU Public License - http://www.gnu.org/copyleft/gpl.html
 
 Other relevant license files for respective libraries are incldued in this 

@@ -25,6 +25,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.gui.SimpleValueSelectionDialog;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.executequery.plaf.LookAndFeelDefinition;
 import org.executequery.repository.LookAndFeelProperties;
 import org.underworldlabs.swing.FileSelector;
@@ -121,8 +122,8 @@ public class PropertiesLookPlugins extends JPanel
         skinCheck = new JCheckBox("Skin Look and Feel");
         installedCheck = new JCheckBox("Install");
 
-        newButton = new JButton("New");
-        deleteButton = new JButton("Delete");
+        newButton = new JButton(Bundles.getCommon("add.button"));
+        deleteButton = new JButton(Bundles.getCommon("delete.button"));
 
         newButton.addActionListener(this);
         deleteButton.addActionListener(this);

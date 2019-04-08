@@ -64,7 +64,9 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
      * @return the object type
      */
     public int getType() {
-        return FUNCTION;
+        if (isSystem()) {
+            return SYSTEM_FUNCTION;
+        } else return FUNCTION;
     }
 
     /**

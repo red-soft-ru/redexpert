@@ -24,8 +24,8 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseCatalog;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.gui.browser.nodes.DatabaseCatalogNode;
-import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.menu.MenuItemFactory;
@@ -53,6 +53,7 @@ class BrowserTreePopupMenu extends JPopupMenu {
     private JMenuItem delete;
     private JMenuItem recycleConnection;
     private JMenuItem copyName;
+    private JMenuItem moveToFolder;
 
     private JCheckBoxMenuItem showDefaultCatalogsAndSchemas;
 
@@ -70,16 +71,10 @@ class BrowserTreePopupMenu extends JPopupMenu {
         add(connect);
         disconnect = createMenuItem(bundleString("disconnect"), "disconnect", listener);
         add(disconnect);
-
-        addSeparator();
-
         reload = createMenuItem(bundleString("reload"), "reload", listener);
         add(reload);
         recycleConnection = createMenuItem(bundleString("recycle"), "recycle", listener);
         add(recycleConnection);
-
-        addSeparator();
-
         createObject = createMenuItem(bundleString("create"), "createObject", listener);
         add(createObject);
         editObject = createMenuItem(bundleString("edit"), "editObject", listener);
@@ -89,12 +84,10 @@ class BrowserTreePopupMenu extends JPopupMenu {
 
         addSeparator();
 
-        showDefaultCatalogsAndSchemas = createCheckBoxMenuItem(
+        /*showDefaultCatalogsAndSchemas = createCheckBoxMenuItem(
                 bundleString("switchDefaultCatalogAndSchemaDisplay"),
                 "switchDefaultCatalogAndSchemaDisplay", listener);
-        add(showDefaultCatalogsAndSchemas);
-
-        addSeparator();
+        add(showDefaultCatalogsAndSchemas);*/
 
         addNewConnection = createMenuItem(bundleString("addNewConnection"), "addNewConnection", listener);
         add(addNewConnection);
@@ -110,12 +103,13 @@ class BrowserTreePopupMenu extends JPopupMenu {
         copyName = createMenuItem(bundleString("copyName"), "copyName", listener);
         add(copyName);
 
+        addSeparator();
+
         createSqlMenu(listener);
         createExportMenu(listener);
         createImportMenu(listener);
-
-        addSeparator();
-        add(createMenuItem(bundleString("moveToFolder"), "moveToFolder", listener));
+        moveToFolder = createMenuItem(bundleString("moveToFolder"), "moveToFolder", listener);
+        add(moveToFolder);
         add(createMenuItem(bundleString("properties"), "properties", listener));
     }
 
@@ -146,9 +140,10 @@ class BrowserTreePopupMenu extends JPopupMenu {
 
     private void setToConnect(boolean canConnect) {
 
-        connect.setEnabled(canConnect);
-        disconnect.setEnabled(!canConnect);
-        delete.setEnabled(canConnect);
+        connect.setVisible(canConnect);
+        disconnect.setVisible(!canConnect);
+        delete.setVisible(canConnect);
+        reload.setVisible(!canConnect);
 
         String label = null;
         DefaultMutableTreeNode currentPathComponent = (DefaultMutableTreeNode) listener.getCurrentPathComponent();
@@ -165,35 +160,32 @@ class BrowserTreePopupMenu extends JPopupMenu {
                 if (node.isHostNode()) {
 
                     //reload.setEnabled(false);
-                    sql.setEnabled(false);
-                    exportData.setEnabled(false);
-                    importData.setEnabled(false);
+                    sql.setVisible(false);
+                    exportData.setVisible(false);
+                    importData.setVisible(false);
 
-                    showDefaultCatalogsAndSchemas.setEnabled(true);
-                    showDefaultCatalogsAndSchemas.setSelected(
-                            ((DatabaseHostNode) node).isDefaultCatalogsAndSchemasOnly());
-
-                    recycleConnection.setEnabled(!canConnect);
-                    deleteObject.setEnabled(false);
-                    createObject.setEnabled(false);
-                    editObject.setEnabled(false);
+                    recycleConnection.setVisible(!canConnect);
+                    deleteObject.setVisible(false);
+                    createObject.setVisible(false);
+                    editObject.setVisible(false);
                 } else {
 
                     label = node.toString();
-
-                    reload.setEnabled(true);
-                    recycleConnection.setEnabled(false);
-                    showDefaultCatalogsAndSchemas.setEnabled(false);
+                    disconnect.setVisible(false);
+                    reload.setVisible(true);
+                    recycleConnection.setVisible(false);
+                    moveToFolder.setVisible(false);
+                    duplicate.setVisible(false);
                     int type = node.getType();
                     boolean deleteObjectEnabled = type >= 0 && type < NamedObject.META_TYPES.length;
                     if (deleteObjectEnabled)
-                        deleteObjectEnabled = !NamedObject.META_TYPES[type].contains("SYSTEM");
+                        deleteObjectEnabled = !node.isSystem();
                     boolean createObjectEnabled = deleteObjectEnabled || type == NamedObject.META_TAG;
                     if (type == NamedObject.META_TAG)
-                        createObjectEnabled = !node.getName().contains("SYSTEM");
-                    deleteObject.setEnabled(deleteObjectEnabled);
-                    createObject.setEnabled(createObjectEnabled);
-                    editObject.setEnabled(deleteObjectEnabled);
+                        createObjectEnabled = !NamedObject.META_TYPES[((DefaultDatabaseMetaTag) node.getDatabaseObject()).getSubType()].contains("SYSTEM");
+                    deleteObject.setVisible(deleteObjectEnabled);
+                    createObject.setVisible(createObjectEnabled);
+                    editObject.setVisible(deleteObjectEnabled);
                     if (deleteObjectEnabled) {
                         deleteObject.setText(bundleString("delete") + " " + node.toString());
                         editObject.setText(bundleString("edit") + " " + node.toString());
@@ -209,9 +201,7 @@ class BrowserTreePopupMenu extends JPopupMenu {
 
 
                     boolean importExport = (node.getType() == NamedObject.TABLE);
-                    sql.setEnabled(importExport);
-                    exportData.setEnabled(importExport);
-                    importData.setEnabled(importExport);
+                    sql.setVisible(importExport);
                 }
             }
         }
@@ -228,13 +218,13 @@ class BrowserTreePopupMenu extends JPopupMenu {
             // eeekkk...
             if (isCatalog(currentPathComponent) && asDatabaseCatalog(currentPathComponent).getHost().supportsCatalogsInTableDefinitions()) {
 
-                duplicateWithSource.setEnabled(true);
+                duplicateWithSource.setVisible(true);
                 duplicateWithSource.setText(bundleString("duplicateWithSourceText1", currentPathComponent.toString()));
 
             } else {
 
                 duplicateWithSource.setText(bundleString("duplicateWithSourceText2"));
-                duplicateWithSource.setEnabled(false);
+                duplicateWithSource.setVisible(false);
             }
 
             if (label != null) {

@@ -381,6 +381,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
             rs = getTablesResultSet(metaDataKey);
 
+
             while (rs.next()) {
 
                 tableName = rs.getString(1);
@@ -389,6 +390,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 object.setSchemaName("");
                 object.setName(tableName);
                 object.setRemarks(rs.getString(2));
+                if (metaDataKey.contains("SYSTEM"))
+                    object.setSystemFlag(true);
                 tables.add(object);
 
             }
@@ -1209,6 +1212,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             while (rs.next()) {
 
                 DefaultDatabaseDomain domain = new DefaultDatabaseDomain(this, rs.getString(1));
+                domain.setSystemFlag(true);
                 list.add(domain);
             }
 
@@ -1236,6 +1240,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 DefaultDatabaseIndex index = new DefaultDatabaseIndex(this, rs.getString(1).trim());
                 index.setHost(this.getHost());
+                index.setSystemFlag(true);
                 list.add(index);
             }
 
@@ -1262,6 +1267,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             while (rs.next()) {
 
                 DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this, rs.getString(1));
+                trigger.setSystemFlag(true);
                 list.add(trigger);
             }
 
@@ -1289,6 +1295,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
                         rs.getString(1).trim());
+                trigger.setSystemFlag(true);
                 list.add(trigger);
             }
 

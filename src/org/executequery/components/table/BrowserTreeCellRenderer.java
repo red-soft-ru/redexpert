@@ -318,6 +318,16 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 setIcon(icons.get(BrowserConstants.SYSTEM_TRIGGER_IMAGE));
                 break;
 
+            case NamedObject.SYSTEM_INDEX:
+                setIcon(icons.get(BrowserConstants.SYSTEM_INDEX_IMAGE));
+                break;
+
+            case NamedObject.SYSTEM_DOMAIN:
+                setIcon(icons.get(BrowserConstants.SYSTEM_DOMAIN_IMAGE));
+                break;
+
+
+
             case NamedObject.TABLE_COLUMN:
 
                 DatabaseColumn databaseColumn = (DatabaseColumn) databaseObject;

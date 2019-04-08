@@ -55,6 +55,7 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
     public DefaultDatabaseObject(DatabaseHost host, String metaDataKey) {
         super(host);
         this.metaDataKey = metaDataKey;
+        setSystemFlag(false);
     }
 
     @Override

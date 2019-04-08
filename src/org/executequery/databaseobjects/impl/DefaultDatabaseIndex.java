@@ -284,11 +284,13 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     }
 
     public int getType() {
-        return INDEX;
+        if (isSystem()) {
+            return SYSTEM_INDEX;
+        } else return INDEX;
     }
 
     public String getMetaDataKey() {
-        return META_TYPES[INDEX];
+        return META_TYPES[getType()];
     }
 
     protected void getObjectInfo() {

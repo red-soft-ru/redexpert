@@ -1111,6 +1111,10 @@ public class UserManagerPanel extends JPanel {
     public boolean getUseCustomServer() {
         return useCustomServer;
     }
+
+    public DatabaseConnection getSelectedDatabaseConnection() {
+        return dbc;
+    }
 }
 
 

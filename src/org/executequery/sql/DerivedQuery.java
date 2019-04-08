@@ -255,6 +255,10 @@ public final class DerivedQuery {
 
             type = QueryTypes.COMMENT;
 
+        } else if (query.indexOf("CREATE DATABASE") == 0) {
+
+            type = QueryTypes.CREATE_DATABASE;
+
         } else {
 
             type = QueryTypes.UNKNOWN;

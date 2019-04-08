@@ -75,6 +75,8 @@ public class BaseDatabaseObject implements NamedObject {
 
     private boolean useInQuery;
 
+    private boolean isSystem;
+
     public BaseDatabaseObject() {
         useInQuery = true;
     }
@@ -202,6 +204,14 @@ public class BaseDatabaseObject implements NamedObject {
      */
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
+    }
+
+    public boolean isSystem() {
+        return isSystem;
+    }
+
+    public void setSystemFlag(boolean flag) {
+        isSystem = flag;
     }
 
 }

@@ -79,6 +79,15 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         return true;
     }
 
+    public int getType() {
+        if (isSystem()) {
+            return SYSTEM_VIEW;
+        } else return VIEW;
+    }
+
+    public String getMetaDataKey() {
+        return META_TYPES[getType()];
+    }
 }
 
 

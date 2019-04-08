@@ -53,7 +53,9 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
      * @return the object type
      */
     public int getType() {
-        return DOMAIN;
+        if (isSystem()) {
+            return SYSTEM_DOMAIN;
+        } else return DOMAIN;
     }
 
     /**
@@ -62,7 +64,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
      * @return the meta data key name.
      */
     public String getMetaDataKey() {
-        return META_TYPES[DOMAIN];
+        return META_TYPES[getType()];
     }
 
     public List<DatabaseColumn> getDomainData() {

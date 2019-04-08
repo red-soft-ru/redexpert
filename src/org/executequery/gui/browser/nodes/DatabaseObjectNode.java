@@ -311,5 +311,9 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
         return Bundles.get(getClass(), key);
     }
 
+    public boolean isSystem() {
+        return databaseObject.isSystem();
+    }
+
 }
 

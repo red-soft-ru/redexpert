@@ -55,8 +55,10 @@ public abstract class AbstractNamedObject implements NamedObject,
 
     private boolean keepAlive;
 
+    private boolean isSystem;
+
     public AbstractNamedObject() {
-        keepAlive = true;//need change
+        keepAlive = true;
     }
 
     /**
@@ -297,6 +299,14 @@ public abstract class AbstractNamedObject implements NamedObject,
             nextException.printStackTrace();
         }
 
+    }
+
+    public boolean isSystem() {
+        return isSystem;
+    }
+
+    public void setSystemFlag(boolean flag) {
+        isSystem = flag;
     }
 
 }

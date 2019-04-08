@@ -197,6 +197,10 @@ public interface NamedObject extends Named, java.io.Serializable {
 
     String getDescription();
 
+    boolean isSystem();
+
+    void setSystemFlag(boolean flag);
+
 }
 
 

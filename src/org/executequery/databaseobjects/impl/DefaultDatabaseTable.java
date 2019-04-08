@@ -555,7 +555,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
    * @return the object type
    */
   public int getType() {
-    return TABLE;
+    if (isSystem()) {
+      return SYSTEM_TABLE;
+    } else return TABLE;
   }
 
   /**
@@ -564,7 +566,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
    * @return the meta data key name.
    */
   public String getMetaDataKey() {
-    return "TABLE";
+    return META_TYPES[getType()];
   }
 
   /**

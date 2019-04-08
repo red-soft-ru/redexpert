@@ -23,7 +23,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     private int intTriggerType;
     private long longTriggerType;
 
-    private static String DDL_TRIGGER_ACTION_NAMES[][] =
+    private static String[][] DDL_TRIGGER_ACTION_NAMES =
             {
                     {null, null},
                     {"CREATE", "TABLE"},
@@ -73,7 +73,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
                     {"DROP", "MAPPING"}
             };
 
-    final String Trigger_prefix_types[] =
+    final String[] Trigger_prefix_types =
             {
                     "BEFORE",            // keyword
                     "AFTER"                // keyword
@@ -174,9 +174,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
      * @return the meta data key name.
      */
     public String getMetaDataKey() {
-        if (getParent().getMetaDataKey() == META_TYPES[6])
-            return META_TYPES[TRIGGER];
-        return META_TYPES[SYSTEM_DATABASE_TRIGGER];
+        return META_TYPES[getType()];
     }
 
     public String getTriggerSourceCode() {

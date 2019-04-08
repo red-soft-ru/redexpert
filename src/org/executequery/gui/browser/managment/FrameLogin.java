@@ -27,8 +27,8 @@ public class FrameLogin extends JFrame {
      * Creates new form NewJFrame
      */
     public FrameLogin(UserManagerPanel userManagerPanel) {
-        initComponents();
         this.userManagerPanel = userManagerPanel;
+        initComponents();
         this.setSize(800, this.getHeight());
         useCustomServer = false;
     }
@@ -45,6 +45,7 @@ public class FrameLogin extends JFrame {
     }
 
     private void initComponents() {
+        setTitle(bundleString("Connect", userManagerPanel.getSelectedDatabaseConnection().getName()));
         frameLogin = this;
         passwordField = new JPasswordField();
         usernameField = new JTextField();
@@ -79,6 +80,7 @@ public class FrameLogin extends JFrame {
             }
         });
         bottomButtonPanel.setCancelButtonText(Bundles.getCommon("cancel.button"));
+        bottomButtonPanel.setHelpButtonVisible(false);
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createEtchedBorder());
         panel.add(usernameLabel, new GridBagConstraints(0, 0,
@@ -130,6 +132,10 @@ public class FrameLogin extends JFrame {
 
     private String bundleString(String key) {
         return Bundles.get(UserManagerPanel.class, key);
+    }
+
+    private String bundleString(String key, Object... args) {
+        return Bundles.get(UserManagerPanel.class, key, args);
     }
 
     public void setUseCustomServer(boolean useCustomServer) {

@@ -55,7 +55,7 @@ public class PropertiesPanel extends JPanel
         PreferenceChangeListener,
         TreeSelectionListener {
 
-    public static final String TITLE = "Preferences";
+    public static final String TITLE = Bundles.get("preferences.Preferences");
     public static final String FRAME_ICON = "Preferences16.png";
 
     /**

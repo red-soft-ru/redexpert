@@ -22,6 +22,7 @@ package org.executequery.gui.prefs;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.swing.actions.ReflectiveAction;
 import org.underworldlabs.swing.toolbar.ButtonComparator;
@@ -97,13 +98,13 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
 
         addSeparatorButton = ActionUtilities.createButton(
                 action,
-                "Add Separator",
+                bundledString("AddSeparator"),
                 "addSeparator");
         addSeparatorButton.setToolTipText("Adds a separator above the selection");
 
         removeSeparatorButton = ActionUtilities.createButton(
                 action,
-                "Remove Separator",
+                bundledString("RemoveSeparator"),
                 "removeSeparator");
         removeSeparatorButton.setToolTipText("Removes the selected separator");
 
@@ -157,7 +158,7 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
         gbc2.gridy++;
         gbc2.insets.bottom = 5;
         gbc2.insets.top = 5;
-        movePanel.add(new JLabel("Move"), gbc2);
+        movePanel.add(new JLabel(Bundles.getCommon("move")), gbc2);
         gbc2.gridy++;
         gbc2.insets.bottom = 10;
         movePanel.add(moveDownButton, gbc2);
@@ -328,10 +329,7 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
         }
 
         public boolean isCellEditable(int row, int col) {
-            if (col == 0)
-                return true;
-            else
-                return false;
+            return col == 0;
         }
 
         public Class getColumnClass(int col) {

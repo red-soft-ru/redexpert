@@ -59,7 +59,7 @@
                     <platforms>osx</platforms>
                 </folder>
                 <folder>
-                    <destination>$HOME/.local/share/applications</destination>
+                    <destination>${user_home_directory}/.local/share/applications</destination>
                     <platforms>linux</platforms>
                     <shortcutList>
                         <shortcut>

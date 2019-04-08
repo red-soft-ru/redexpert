@@ -4,7 +4,7 @@ RedExpert
 ============
 
 
-RedExpert is based on Execute Query and works on Java. The main features are:
+RedExpert is based on [Execute Query](http://executequery.org/index.php) and works on Java. The main features are:
 
 * Concurrent work with multiple databases
 * Development and executing any SQL queries supported by DBMS in SQL editor. Showing result of selective queries.
@@ -21,9 +21,14 @@ In additional to that in RedExpert implemented:
 * User and roles privileges manager
 * Support of any kind of authentication
 
-Unfortunately documentation is now available only in Russian. Feel free to ask us about English version. It will force us to translate.
+Unfortunately [documentation](http://reddatabase.ru/documentation/) is now available only in Russian. Feel free to ask us about English version. It will force us to translate.
 
-for building installer was used InstallBuilder BitRock ![image](installer/logos/installersby_tiny.png) the output is a cross-platform installer
+## Acknowledgements
+
+Cross platform installer was built with InstallBuilder [InstallBuilder](https://installbuilder.bitrock.com/) provided by [BitRock](https://bitrock.com/).
+
+[![image](installer/logos/installersby_tiny.png)](https://installbuilder.bitrock.com/)
+
 ## Download RedExpert
 
 http://reddatabase.ru/downloads/redexpert/

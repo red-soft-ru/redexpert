@@ -18,4 +18,5 @@ if ($ARCH -eq "amd64")
 echo "Src=$SRC_DIR"
 echo "Dist=$DIST"
 cd $SRC_DIR/installer
-builder-cli.exe build redexpert.xml --verbose --setvars redexpert_dir=$DIST output_dir=$DIST/bin installer_name=$INSTALLER_NAME execution_file=$exec_file VERSION=$VERSION
+$env:LICENSE_INSTALLBUILDER | out-file license.xml
+builder-cli.exe build redexpert.xml --license --license ~/license.xml --verbose --setvars redexpert_dir=$DIST output_dir=$DIST/bin installer_name=$INSTALLER_NAME execution_file=$exec_file VERSION=$VERSION

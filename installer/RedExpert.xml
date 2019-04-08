@@ -1,6 +1,6 @@
 <project>
     <shortName>RedExpert</shortName>
-    <fullName>Red Database-RedExpert</fullName>
+    <fullName>Red Expert</fullName>
     <version>${VERSION}</version>
     <licenseFile>${redexpert_dir}/LICENSE.txt</licenseFile>
     <logoImage>logos/red_expert.png</logoImage>

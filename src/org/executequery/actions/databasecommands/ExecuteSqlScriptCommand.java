@@ -35,10 +35,10 @@ public class ExecuteSqlScriptCommand extends OpenFrameCommand
 
     public void execute(ActionEvent e) {
 
-        if (!isConnected()) {
-
-            return;
-        }
+//        if (!isConnected()) {
+//
+//            return;
+//        }
 
         try {
 

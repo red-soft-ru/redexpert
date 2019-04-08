@@ -28,10 +28,13 @@ import org.executequery.base.DefaultTabViewActionPanel;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.components.MinimumWidthActionButton;
 import org.executequery.components.TableSelectionCombosGroup;
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.event.DefaultKeywordEvent;
+import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.sql.ActionOnError;
 import org.executequery.sql.ExecutionController;
 import org.executequery.sql.SqlScriptRunner;
@@ -42,12 +45,15 @@ import org.underworldlabs.swing.AbstractStatusBarPanel;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.ProgressBar;
 import org.underworldlabs.swing.ProgressBarFactory;
+import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 
 /**
@@ -68,6 +74,8 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
     private JTextField fileNameField;
 
     private TableSelectionCombosGroup combosGroup;
+
+    private SimpleSqlTextPanel sqlText;
 
     private LoggingOutputPanel outputPanel;
 
@@ -105,8 +113,14 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
     private void init() throws Exception {
 
         fileNameField = WidgetFactory.createTextField();
+        fileNameField.setActionCommand("fileNameChanged");
+        fileNameField.addActionListener(this);
         connectionsCombo = WidgetFactory.createComboBox();
         combosGroup = new TableSelectionCombosGroup(connectionsCombo);
+
+        sqlText = new SimpleSqlTextPanel();
+        sqlText.setBorder(null);
+        sqlText.setScrollPaneBorder(BorderFactory.createMatteBorder(1, 1, 0, 1, UIUtils.getDefaultBorderColour()));
 
         actionOnErrorCombo = WidgetFactory.createComboBox();
 
@@ -191,6 +205,16 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         gbc.insets.bottom = 0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.BOTH;
+        mainPanel.add(sqlText, gbc);
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.weighty = 1.0;
+        gbc.weightx = 1.0;
+        gbc.insets.top = 5;
+        gbc.insets.left = 10;
+        gbc.insets.bottom = 0;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.fill = GridBagConstraints.BOTH;
         mainPanel.add(outputPanel, gbc);
         gbc.gridy++;
         gbc.gridx = 0;
@@ -224,12 +248,22 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         EventMediator.registerListener(this);
     }
 
+    public void fileNameChanged() {
+        File file = new File(fileNameField.getText());
+
+        try {
+            sqlText.setSQLText(FileUtils.loadFile(file.getPath()));
+        } catch (IOException e) {
+            GUIUtilities.displayErrorMessage("Unable to load an input file");
+        }
+    }
+
     public boolean logOutput() {
 
         return logOutputCheckBox.isSelected();
     }
 
-    public void browse() {
+    public void browse() throws IOException {
 
         FileChooserDialog fileChooser = new FileChooserDialog();
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -246,6 +280,8 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
         File file = fileChooser.getSelectedFile();
         fileNameField.setText(file.getAbsolutePath());
+
+        sqlText.setSQLText(FileUtils.loadFile(file.getPath()));
     }
 
     private boolean fieldsValid() {
@@ -464,9 +500,14 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
             statusBar.setStatusText("Executing...");
             statusBar.startProgressBar();
 
+            DatabaseHost selectedHost = combosGroup.getSelectedHost();
+            DatabaseConnection connection = null;
+            if (selectedHost != null)
+                connection = selectedHost.getDatabaseConnection();
+
             sqlStatementResult = sqlScriptRunner.execute(
-                    combosGroup.getSelectedHost().getDatabaseConnection(),
-                    fileNameField.getText(),
+                    connection,
+                    sqlText.getSQLText(),
                     (ActionOnError) actionOnErrorCombo.getSelectedItem());
 
         } finally {
@@ -515,7 +556,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
     /**
      * Indicates a connection has been established.
      *
-     * @param the encapsulating event
+     * @param connectionEvent encapsulating event
      */
     public void connected(ConnectionEvent connectionEvent) {
 
@@ -525,7 +566,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
     /**
      * Indicates a connection has been closed.
      *
-     * @param the encapsulating event
+     * @param connectionEvent encapsulating event
      */
     public void disconnected(ConnectionEvent connectionEvent) {
 

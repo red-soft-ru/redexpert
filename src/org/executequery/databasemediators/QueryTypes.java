@@ -139,6 +139,8 @@ public final class QueryTypes {
 
     public static final int COMMENT = 34;
 
+    public static final int CREATE_DATABASE = 42;
+
     private QueryTypes() {
     }
 

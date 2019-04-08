@@ -58,6 +58,22 @@
                     <name>programfilesosx</name>
                     <platforms>osx</platforms>
                 </folder>
+                <folder>
+                    <destination>$HOME/.local/share/applications</destination>
+                    <platforms>linux</platforms>
+                    <shortcutList>
+                        <shortcut>
+                            <comment>Launch ${project.shortName}</comment>
+                            <name>${project.shortName}</name>
+                            <platforms>linux</platforms>
+                            <exec>${installdir}/bin/${execute_file}</exec>
+                            <path>${installdir}/bin/</path>
+                            <icon>${installdir}/red_expert.png</icon>
+                            <runAsAdmin>0</runAsAdmin>
+                            <runInTerminal>0</runInTerminal>
+                        </shortcut>
+                    </shortcutList>
+                </folder>
             </folderList>
             <desktopShortcutList>
                 <shortcut>
@@ -99,6 +115,7 @@
                     <windowsIcon>${installdir}/bin/${execute_file}.exe</windowsIcon>
                     <runAsAdmin>0</runAsAdmin>
                     <runInTerminal>0</runInTerminal>
+                    <noPinToStart>0</noPinToStart>
                 </startMenuShortcut>
             </startMenuShortcutList>
         </component>

@@ -148,6 +148,7 @@ build:linux:x86:
   before_script:
     - $VERSION = (get-content .ci\version -Raw).trim()
     - $env:RE_VERSION = $VERSION
+    - $env:Path="c:\Program Files (x86)\BitRock InstallBuilder Enterprise 17.10.0\bin;" + $env:Path
     - unzip -q dist-src\RedExpert-$VERSION-src.zip
     - mkdir ${DIST}
     - mkdir ${DIST}/guide/

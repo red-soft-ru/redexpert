@@ -1,6 +1,4 @@
 echo "Building installer"
-$env:Path="c:\Program Files (x86)\BitRock InstallBuilder Enterprise 17.10.0\bin;" + $env:Path
-#$env:Path = "C:\Program Files (x86)\BitRock InstallBuilder Enterprise 19.2.0\bin;" + $env:Path
 $SRC_DIR="$PSScriptRoot\.."
 if (-Not(Test-Path Env:\RE_VERSION))
 {

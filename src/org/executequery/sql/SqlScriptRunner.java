@@ -269,7 +269,17 @@ public class SqlScriptRunner {
         String pageSize = null;
         String charSet = null;
 
-        database = StringUtils.substringBetween(derivedQuery, "'", "'");
+        int idx = -1;
+        Pattern pat = Pattern.compile("create\\s+database\\s+", Pattern.CASE_INSENSITIVE);
+        Matcher m = pat.matcher(derivedQuery);
+        if ( m.find() ) {
+            idx = m.end();
+        }
+        if (idx == -1)
+            throw new SQLException("Cannot create database. Check creating database syntax: " + derivedQuery);
+        database = derivedQuery.substring(idx).trim();
+        String sym = String.valueOf(database.charAt(0));
+        database = StringUtils.substringBetween(database, sym, sym);
         int separatorIdx = database.indexOf(":");
         if (separatorIdx != -1) {
             if (database.charAt(separatorIdx + 1) != '\\') {
@@ -279,31 +289,34 @@ public class SqlScriptRunner {
         }
 
         derivedQuery = derivedQuery.substring(derivedQuery.lastIndexOf(database) + database.length()).trim();
-        int idx = -1;
-
-        if (StringUtils.indexOf(derivedQuery, "USER") != -1) {
-            user = derivedQuery.substring(derivedQuery.lastIndexOf("USER") + "USER".length()).trim();
+        idx = StringUtils.indexOfIgnoreCase(derivedQuery, "USER");
+        if (idx != -1) {
+            user = derivedQuery.substring(idx + "USER".length()).trim();
             user = user.replaceAll("'", "");
+            user = user.replaceAll("\"", "");
             idx = getFirstWhitespaceIndex(user);
             if (idx > 0)
                 user = user.substring(0, idx);
         }
-        if (StringUtils.indexOf(derivedQuery, "PASSWORD") != -1) {
-            password = derivedQuery.substring(derivedQuery.lastIndexOf("PASSWORD") + "PASSWORD".length()).trim();
+        idx = StringUtils.indexOfIgnoreCase(derivedQuery, "PASSWORD");
+        if (idx != -1) {
+            password = derivedQuery.substring(idx + "PASSWORD".length()).trim();
             password = password.replaceAll("'", "");
+            password = password.replaceAll("\"", "");
             idx = getFirstWhitespaceIndex(password);
             if (idx > 0)
                 password = password.substring(0, idx);
         }
-        if (StringUtils.indexOf(derivedQuery, "PAGE_SIZE") != -1) {
-            pageSize = derivedQuery.substring(derivedQuery.lastIndexOf("PAGE_SIZE") + "PAGE_SIZE".length()).trim();
+        idx = StringUtils.indexOfIgnoreCase(derivedQuery, "PAGE_SIZE");
+        if (idx != -1) {
+            pageSize = derivedQuery.substring(idx + "PAGE_SIZE".length()).trim();
             idx = getFirstWhitespaceIndex(pageSize);
             if (idx > 0)
                 pageSize = pageSize.substring(0, idx);
         }
-        if (StringUtils.indexOf(derivedQuery, "DEFAULT CHARACTER SET") != -1) {
-            charSet = derivedQuery.substring(derivedQuery.lastIndexOf("DEFAULT CHARACTER SET")
-                    + "DEFAULT CHARACTER SET".length()).trim();
+        idx = StringUtils.indexOfIgnoreCase(derivedQuery, "DEFAULT CHARACTER SET");
+        if (idx != -1) {
+            charSet = derivedQuery.substring(idx + "DEFAULT CHARACTER SET".length()).trim();
             idx = getFirstWhitespaceIndex(charSet);
             if (idx > 0)
                 charSet = charSet.substring(0, idx);

@@ -25,15 +25,19 @@ import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.components.BottomButtonPanel;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
+import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.table.CreateTableFunctionPanel;
 import org.underworldlabs.jdbc.DataSourceException;
 
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -63,6 +67,9 @@ public class CreateTablePanel extends CreateTableFunctionPanel
      * the parent container
      */
     private ActionContainer parent;
+
+    private ConnectionsTreePanel treePanel;
+    private TreePath currentPath;
 
     /**
      * <p> Constructs a new instance.
@@ -194,6 +201,14 @@ public class CreateTablePanel extends CreateTableFunctionPanel
         createTable();
     }
 
+    public static String getTITLE() {
+        return TITLE;
+    }
+
+    public String toString() {
+        return TITLE;
+    }
+
     private void createTable() {
         try {
             if (!checkFullType())
@@ -202,8 +217,17 @@ public class CreateTablePanel extends CreateTableFunctionPanel
             ExecuteQueryDialog eqd = new ExecuteQueryDialog("Creating table", querys, getSelectedConnection(), true, "^");
             eqd.display();
             boolean commit = eqd.getCommit();
-            if (commit)
+            if (commit) {
+                if (treePanel != null && currentPath != null) {
+                    DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
+                    if (node.getDatabaseObject() instanceof DefaultDatabaseMetaTag)
+                        treePanel.reloadPath(currentPath);
+                    else
+                        treePanel.reloadPath(currentPath.getParentPath());
+                }
                 parent.finished();
+
+            }
 
         } catch (Exception exc) {
             GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc);
@@ -211,9 +235,20 @@ public class CreateTablePanel extends CreateTableFunctionPanel
 
     }
 
-    public String toString() {
-        return TITLE;
+    public ConnectionsTreePanel getTreePanel() {
+        return treePanel;
     }
 
+    public void setTreePanel(ConnectionsTreePanel treePanel) {
+        this.treePanel = treePanel;
+    }
+
+    public TreePath getCurrentPath() {
+        return currentPath;
+    }
+
+    public void setCurrentPath(TreePath currentPath) {
+        this.currentPath = currentPath;
+    }
 }
 

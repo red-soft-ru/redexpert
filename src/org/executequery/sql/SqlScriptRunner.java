@@ -163,6 +163,28 @@ public class SqlScriptRunner {
                         connection.commit();
                         continue;
                     }
+
+                    Pattern pat = Pattern.compile("commit\\s+work", Pattern.CASE_INSENSITIVE);
+                    Matcher m = pat.matcher(derivedQuery);
+                    if ( m.find() ) {
+                        connection.commit();
+                        continue;
+                    }
+
+                    pat = Pattern.compile("set\\s+autoddl\\s+off", Pattern.CASE_INSENSITIVE);
+                    m = pat.matcher(derivedQuery);
+                    if ( m.find() ) {
+//                        connection.setAutoCommit(false);
+                        continue;
+                    }
+
+                    pat = Pattern.compile("set\\s+autoddl\\s+on", Pattern.CASE_INSENSITIVE);
+                    m = pat.matcher(derivedQuery);
+                    if ( m.find() ) {
+//                        connection.setAutoCommit(true);
+                        continue;
+                    }
+
                     statement = connection.createStatement();
                     start = System.currentTimeMillis();
                     thisResult = statement.executeUpdate(derivedQuery);

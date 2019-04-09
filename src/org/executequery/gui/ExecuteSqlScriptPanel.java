@@ -148,6 +148,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         button.setMnemonic('r');
 
         logOutputCheckBox = new JCheckBox("Print running statements (This can slow down the process significantly)");
+        logOutputCheckBox.setSelected(true);
 
         useConnection = new JCheckBox("Use connection");
         useConnection.addItemListener(new ItemListener() {

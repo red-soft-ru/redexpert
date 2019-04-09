@@ -419,6 +419,9 @@
         <menu-item id="export-resultset-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
+        <menu-item id="execute-sql-script-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         <menu name="Generate ERD"
               key="menu.database.generate-erd"
               class="org.underworldlabs.swing.menu.MainMenu"

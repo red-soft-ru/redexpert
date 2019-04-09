@@ -27,6 +27,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.base.DefaultTabViewActionPanel;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.components.MinimumWidthActionButton;
+import org.executequery.components.SplitPaneFactory;
 import org.executequery.components.TableSelectionCombosGroup;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseHost;
@@ -35,6 +36,8 @@ import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.gui.text.SimpleSqlTextPanel;
+import org.executequery.gui.text.TextFileWriter;
+import org.executequery.gui.text.TextUtilities;
 import org.executequery.sql.ActionOnError;
 import org.executequery.sql.ExecutionController;
 import org.executequery.sql.SqlScriptRunner;
@@ -89,6 +92,8 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
     private JCheckBox useConnection;
 
+    private JButton saveButton;
+
     private JButton startButton;
 
     private JButton rollbackButton;
@@ -142,9 +147,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         statusBar = new SqlTextPaneStatusBar();
         statusBar.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 1));
 
-        JButton button = WidgetFactory.createInlineFieldButton("Browse");
-        button.setActionCommand("browse");
-        button.addActionListener(this);
+        JButton button = new MinimumWidthActionButton(85, this, "Browse", "browse");
         button.setMnemonic('r');
 
         logOutputCheckBox = new JCheckBox("Print running statements (This can slow down the process significantly)");
@@ -159,6 +162,9 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
             }
         });
         useConnection.setSelected(false);
+
+        saveButton = new MinimumWidthActionButton(85, this,
+                "Save script", "saveScript");
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
 
@@ -211,6 +217,10 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         gbc.insets.left = 10;
         gbc.gridwidth = 2;
         mainPanel.add(logOutputCheckBox, gbc);
+        gbc.gridx = 2;
+        gbc.gridwidth = 1;
+        gbc.insets.left = 0;
+        mainPanel.add(saveButton, gbc);
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.weighty = 1.0;
@@ -220,17 +230,12 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         gbc.insets.bottom = 0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.BOTH;
-        mainPanel.add(sqlText, gbc);
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.weighty = 1.0;
-        gbc.weightx = 1.0;
-        gbc.insets.top = 5;
-        gbc.insets.left = 10;
-        gbc.insets.bottom = 0;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.BOTH;
-        mainPanel.add(outputPanel, gbc);
+        JSplitPane splitPane = new SplitPaneFactory().create(JSplitPane.VERTICAL_SPLIT,
+                new JScrollPane(sqlText), outputPanel);
+        splitPane.setResizeWeight(0.5);
+        splitPane.setDividerLocation(500);
+        splitPane.setDividerSize(5);
+        mainPanel.add(splitPane, gbc);
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.weighty = 0;
@@ -261,6 +266,13 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 
         EventMediator.registerListener(this);
+    }
+
+    public int saveScript() {
+        TextFileWriter writer = new TextFileWriter(sqlText.getSQLText());
+        int result = writer.write();
+        writer = null;
+        return result;
     }
 
     public void activateConnUsage() {

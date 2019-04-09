@@ -108,9 +108,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             BaseDialog dialog =
                                     new BaseDialog(CreateTablePanel.TITLE, false);
                             CreateTablePanel panel = new CreateTablePanel(currentSelection, dialog, false);
-                            dialog.addDisplayComponentWithEmptyBorder(panel);
-                            dialog.display();
-                            treePanel.reloadPath(currentPath.getParentPath());
+                            showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
                         }
@@ -140,9 +138,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             BaseDialog dialog =
                                     new BaseDialog(CreateGeneratorPanel.CREATE_TITLE, false);
                             CreateGeneratorPanel panel = new CreateGeneratorPanel(currentSelection, dialog);
-                            dialog.addDisplayComponentWithEmptyBorder(panel);
-                            dialog.display();
-                            treePanel.reloadPath(currentPath.getParentPath());
+                            showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
                         }
@@ -159,9 +155,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             BaseDialog dialog =
                                     new BaseDialog(CreateViewPanel.TITLE, false);
                             CreateViewPanel panel = new CreateViewPanel(currentSelection, dialog);
-                            dialog.addDisplayComponentWithEmptyBorder(panel);
-                            dialog.display();
-                            treePanel.reloadPath(currentPath.getParentPath());
+                            showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
                         }
@@ -178,9 +172,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             BaseDialog dialog =
                                     new BaseDialog(CreateDomainPanel.CREATE_TITLE, false);
                             CreateDomainPanel panel = new CreateDomainPanel(currentSelection, dialog);
-                            dialog.addDisplayComponentWithEmptyBorder(panel);
-                            dialog.display();
-                            treePanel.reloadPath(currentPath.getParentPath());
+                            showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
                         }
@@ -197,9 +189,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             BaseDialog dialog =
                                     new BaseDialog(CreateProcedurePanel.TITLE, false);
                             CreateProcedurePanel panel = new CreateProcedurePanel(currentSelection, dialog);
-                            dialog.addDisplayComponentWithEmptyBorder(panel);
-                            dialog.display();
-                            treePanel.reloadPath(currentPath.getParentPath());
+                            showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
                         }
@@ -217,9 +207,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                                     new BaseDialog(CreateTriggerPanel.CREATE_TITLE, false);
                             CreateTriggerPanel panel = new CreateTriggerPanel(currentSelection, dialog,
                                     NamedObject.TRIGGER);
-                            dialog.addDisplayComponentWithEmptyBorder(panel);
-                            dialog.display();
-                            treePanel.reloadPath(currentPath.getParentPath());
+                            showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
                         }
@@ -237,9 +225,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                                     new BaseDialog(CreateTriggerPanel.CREATE_TITLE, false);
                             CreateTriggerPanel panel = new CreateTriggerPanel(currentSelection, dialog,
                                     NamedObject.SYSTEM_DATABASE_TRIGGER);
-                            dialog.addDisplayComponentWithEmptyBorder(panel);
-                            dialog.display();
-                            treePanel.reloadPath(currentPath.getParentPath());
+                            showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
                         }
@@ -256,9 +242,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             BaseDialog dialog =
                                     new BaseDialog(CreateExceptionPanel.CREATE_TITLE, false);
                             CreateExceptionPanel panel = new CreateExceptionPanel(currentSelection, dialog);
-                            dialog.addDisplayComponentWithEmptyBorder(panel);
-                            dialog.display();
-                            treePanel.reloadPath(currentPath.getParentPath());
+                            showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
                         }
@@ -275,9 +259,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             BaseDialog dialog =
                                     new BaseDialog(CreateIndexPanel.CREATE_TITLE, false);
                             CreateIndexPanel panel = new CreateIndexPanel(currentSelection, dialog);
-                            dialog.addDisplayComponentWithEmptyBorder(panel);
-                            dialog.display();
-                            treePanel.reloadPath(currentPath.getParentPath());
+                            showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
                         }
@@ -294,9 +276,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             BaseDialog dialog =
                                     new BaseDialog(CreateFunctionPanel.CREATE_TITLE, false);
                             CreateFunctionPanel panel = new CreateFunctionPanel(currentSelection, dialog);
-                            dialog.addDisplayComponentWithEmptyBorder(panel);
-                            dialog.display();
-                            treePanel.reloadPath(currentPath.getParentPath());
+                            showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
                         }
@@ -313,9 +293,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             BaseDialog dialog =
                                     new BaseDialog(CreateUDFPanel.CREATE_TITLE, false);
                             CreateUDFPanel panel = new CreateUDFPanel(currentSelection, dialog);
-                            dialog.addDisplayComponentWithEmptyBorder(panel);
-                            dialog.display();
-                            treePanel.reloadPath(currentPath.getParentPath());
+                            showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
                         }
@@ -332,9 +310,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             BaseDialog dialog =
                                     new BaseDialog(CreatePackagePanel.CREATE_TITLE, false);
                             CreatePackagePanel panel = new CreatePackagePanel(currentSelection, dialog);
-                            dialog.addDisplayComponentWithEmptyBorder(panel);
-                            dialog.display();
-                            treePanel.reloadPath(currentPath.getParentPath());
+                            showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
                         }
@@ -351,9 +327,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             BaseDialog dialog =
                                     new BaseDialog(CreateTablePanel.TITLE, false);
                             CreateTablePanel panel = new CreateTablePanel(currentSelection, dialog, true);
-                            dialog.addDisplayComponentWithEmptyBorder(panel);
-                            dialog.display();
-                            treePanel.reloadPath(currentPath.getParentPath());
+                            showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
                         }
@@ -850,6 +824,13 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     }
 
     protected void showDialogCreateObject(AbstractCreateObjectPanel panel, BaseDialog dialog) {
+        panel.setTreePanel(treePanel);
+        panel.setCurrentPath(currentPath);
+        dialog.addDisplayComponentWithEmptyBorder(panel);
+        dialog.display();
+    }
+
+    protected void showDialogCreateObject(CreateTablePanel panel, BaseDialog dialog) {
         panel.setTreePanel(treePanel);
         panel.setCurrentPath(currentPath);
         dialog.addDisplayComponentWithEmptyBorder(panel);

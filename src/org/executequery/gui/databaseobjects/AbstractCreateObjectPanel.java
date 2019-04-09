@@ -6,11 +6,13 @@ import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
+import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 
@@ -172,8 +174,11 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         eqd.display();
         if (eqd.getCommit()) {
             commit = true;
-            if (editing) {
-                if (treePanel != null && currentPath != null)
+            if (treePanel != null && currentPath != null) {
+                DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
+                if (node.getDatabaseObject() instanceof DefaultDatabaseMetaTag)
+                    treePanel.reloadPath(currentPath);
+                else
                     treePanel.reloadPath(currentPath.getParentPath());
             }
             parent.finished();

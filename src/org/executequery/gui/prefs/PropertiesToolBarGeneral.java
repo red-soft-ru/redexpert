@@ -97,12 +97,12 @@ public class PropertiesToolBarGeneral extends AbstractPropertiesBasePanel {
                 Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
 
-        key = ToolBarManager.IMPORT_EXPORT_TOOLS;
+        /*key = ToolBarManager.IMPORT_EXPORT_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledString("ImportExportToolBar"),
-                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
+                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));*/
 
         key = ToolBarManager.SYSTEM_TOOLS;
         list.add(new UserPreference(

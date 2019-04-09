@@ -52,6 +52,8 @@ import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -85,6 +87,8 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
     private JCheckBox logOutputCheckBox;
 
+    private JCheckBox useConnection;
+
     private JButton startButton;
 
     private JButton rollbackButton;
@@ -94,6 +98,8 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
     private JButton stopButton;
 
     private SqlScriptRunner sqlScriptRunner;
+
+    private boolean resetButtons;
 
     public ExecuteSqlScriptPanel() {
 
@@ -117,6 +123,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         fileNameField.addActionListener(this);
         connectionsCombo = WidgetFactory.createComboBox();
         combosGroup = new TableSelectionCombosGroup(connectionsCombo);
+        connectionsCombo.setEnabled(false);
 
         sqlText = new SimpleSqlTextPanel();
         sqlText.setBorder(null);
@@ -140,7 +147,17 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         button.addActionListener(this);
         button.setMnemonic('r');
 
-        logOutputCheckBox = new JCheckBox("<html>&nbsp;&nbsp;<i>Note:</i> This can slow down the process significantly </html>");
+        logOutputCheckBox = new JCheckBox("Print running statements (This can slow down the process significantly)");
+
+        useConnection = new JCheckBox("Use connection");
+        useConnection.addItemListener(new ItemListener() {
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                activateConnUsage();
+            }
+        });
+        useConnection.setSelected(false);
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
 
@@ -153,7 +170,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         gbc.insets.right = 10;
         gbc.insets.left = 10;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        mainPanel.add(new JLabel("Connection:"), gbc);
+        mainPanel.add(useConnection, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.insets.top = 5;
@@ -189,12 +206,9 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         mainPanel.add(button, gbc);
         gbc.gridy++;
         gbc.gridx = 0;
-        gbc.insets.top = 5;
-        gbc.insets.left = 10;
-        mainPanel.add(new JLabel("Log output:"), gbc);
-        gbc.gridx = 1;
         gbc.insets.top = 2;
-        gbc.insets.left = 0;
+        gbc.insets.left = 10;
+        gbc.gridwidth = 2;
         mainPanel.add(logOutputCheckBox, gbc);
         gbc.gridy++;
         gbc.gridx = 0;
@@ -246,6 +260,13 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 
         EventMediator.registerListener(this);
+    }
+
+    public void activateConnUsage() {
+        if (useConnection.isSelected())
+            connectionsCombo.setEnabled(true);
+        else
+            connectionsCombo.setEnabled(false);
     }
 
     public void fileNameChanged() {
@@ -379,6 +400,8 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
         if (!executing) {
 
+            resetButtons = false;
+
             if (fieldsValid()) {
 
                 enableButtons(false, true, false, false);
@@ -402,7 +425,11 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
                         } finally {
 
                             executing = false;
-                            enableButtons(false, false, true, true);
+                            // if connected to database from script, connection will be committed from script executor
+                            if (resetButtons)
+                                enableButtons(true, false, false, false);
+                            else
+                                enableButtons(false, false, true, true);
                         }
                     }
                 };
@@ -494,16 +521,18 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         outputPanel.clear();
         long startTime = System.currentTimeMillis();
         SqlStatementResult sqlStatementResult = null;
+        DatabaseConnection connection = null;
 
         try {
 
             statusBar.setStatusText("Executing...");
             statusBar.startProgressBar();
 
-            DatabaseHost selectedHost = combosGroup.getSelectedHost();
-            DatabaseConnection connection = null;
-            if (selectedHost != null)
-                connection = selectedHost.getDatabaseConnection();
+            if (useConnection.isSelected()) {
+                DatabaseHost selectedHost = combosGroup.getSelectedHost();
+                if (selectedHost != null)
+                    connection = selectedHost.getDatabaseConnection();
+            }
 
             sqlStatementResult = sqlScriptRunner.execute(
                     connection,
@@ -531,6 +560,12 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
             statusBar.stopProgressBar();
 
             outputPanel.append("Total duration: " + MiscUtils.formatDuration(endTime - startTime));
+
+            // if connected to database from script, connection will be committed from script executor
+            if (sqlScriptRunner.isNeedCloseDatabase()) {
+                resetButtons = true;
+            }
+
             GUIUtilities.scheduleGC();
         }
 

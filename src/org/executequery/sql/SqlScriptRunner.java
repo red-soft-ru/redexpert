@@ -35,6 +35,7 @@ import org.omg.CORBA.SystemException;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
+import javax.resource.ResourceException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -56,6 +57,10 @@ public class SqlScriptRunner {
 
     private boolean cancel;
 
+    private SimpleDataSource localDataSource;
+
+    boolean needCloseDatabase;
+
     public SqlScriptRunner(ExecutionController executionController) {
 
         super();
@@ -75,7 +80,7 @@ public class SqlScriptRunner {
 
         Statement statement = null;
         SqlStatementResult sqlStatementResult = new SqlStatementResult();
-        boolean needCloseDatabase = false;
+        needCloseDatabase = false;
 
         try {
 
@@ -114,7 +119,8 @@ public class SqlScriptRunner {
             queries.clear();
 
             if (createDBQuery != null) {
-                connection = createDatabase(createDBQuery);
+                localDataSource = createDatabase(createDBQuery);
+                connection = localDataSource.getConnection();
                 connection.setAutoCommit(false);
                 createDBQuery = null;
                 needCloseDatabase = true;
@@ -145,7 +151,6 @@ public class SqlScriptRunner {
 
                         executionController.message("Executing query " + count + ":");
                         executionController.queryMessage(query.getDerivedQuery());
-//                        executionController.queryMessage(query.getLoggingQuery());
                     }
 
                     if (StringUtils.equalsIgnoreCase(derivedQuery, "commit")) {
@@ -192,11 +197,6 @@ public class SqlScriptRunner {
 
             }
 
-//        } catch (IOException e) {
-//
-//            sqlStatementResult.setOtherException(e);
-//            executionController.errorMessage("Error opening script file:\n" + e.getMessage());
-
         } catch (SQLException e) {
 
             sqlStatementResult.setSqlException(e);
@@ -212,8 +212,8 @@ public class SqlScriptRunner {
         } finally {
             if (needCloseDatabase) {
                 try {
-                    connection.close();
-                } catch (SQLException e) {
+                    localDataSource.close();
+                } catch (ResourceException e) {
                     e.printStackTrace();
                 }
             }
@@ -226,7 +226,11 @@ public class SqlScriptRunner {
         return sqlStatementResult;
     }
 
-    private Connection createDatabase(DerivedQuery query) throws SQLException {
+    public boolean isNeedCloseDatabase() {
+        return needCloseDatabase;
+    }
+
+    private SimpleDataSource createDatabase(DerivedQuery query) throws SQLException {
         String derivedQuery = query.getDerivedQuery();
 
         String database = null;
@@ -347,7 +351,7 @@ public class SqlScriptRunner {
         driver.setURL("jdbc:firebirdsql://[host]:[port]/[source]");
         temp.setJDBCDriver(driver);
 
-        return new SimpleDataSource(temp).getConnection();
+        return new SimpleDataSource(temp);
     }
 
     private int getFirstWhitespaceIndex(String s) {

@@ -65,40 +65,26 @@ public class NewTableConstraintsPanel extends TableConstraintsPanel
 
             case 0:
             case 1:
-                return;
-
-            case 2:
                 setCellEditor(3, new ComboBoxCellEditor(
                         creator.getTableColumnDataVector()));
 
                 if (cc.getType() != -1 && cc.getTypeName() == ColumnConstraint.FOREIGN) {
-                    Vector schemas = creator.getHostedSchemasVector();
-                    setCellEditor(4, new ComboBoxCellEditor(schemas));
-
-                    if (schemas == null || schemas.size() == 0)
-                        setCellEditor(5, new ComboBoxCellEditor(
-                                creator.getSchemaTables(value)));
+                    setCellEditor(4, new ComboBoxCellEditor(
+                            creator.getSchemaTables(value)));
 
                 }
                 break;
 
+            case 2:
+                return;
             case 3:
                 break;
 
             case 4:
-                setCellEditor(5, new ComboBoxCellEditor(
-                        creator.getSchemaTables(value)));
-                break;
-
-            case 5:
-                String schema = cc.getRefSchema();
-                if (schema == null || schema.length() == 0) {
-                    schema = "";
-                }
 
                 try {
-                    setCellEditor(6, new ComboBoxCellEditor(
-                            creator.getColumnNamesVector(value, schema)));
+                    setCellEditor(5, new ComboBoxCellEditor(
+                            creator.getColumnNamesVector(value, null)));
                 } catch (NullPointerException nullExc) {
                 } // i forget why
                 break;

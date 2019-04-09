@@ -22,7 +22,6 @@ package org.executequery.sql;
 
 import biz.redsoft.IFBCreateDatabase;
 import org.apache.commons.lang.StringUtils;
-import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databasemediators.QueryTypes;
@@ -31,12 +30,9 @@ import org.executequery.databasemediators.spi.DefaultDatabaseDriver;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.SimpleDataSource;
 import org.executequery.log.Log;
-import org.omg.CORBA.SystemException;
-import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.resource.ResourceException;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -46,6 +42,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -98,6 +95,7 @@ public class SqlScriptRunner {
 
             List<DerivedQuery> executableQueries = new ArrayList<DerivedQuery>();
             DerivedQuery createDBQuery = null;
+            String sqlDialect = "3";
 
             for (DerivedQuery query : queries) {
 
@@ -110,6 +108,14 @@ public class SqlScriptRunner {
                     createDBQuery = query;
                     continue;
                 }
+                if (query.getQueryType() == QueryTypes.SQL_DIALECT) {
+                    Pattern pattern = Pattern.compile("\\d",
+                            Pattern.CASE_INSENSITIVE);
+                    Matcher matcher = pattern.matcher(query.getDerivedQuery());
+                    if (matcher.find())
+                        sqlDialect = matcher.group().trim();
+                    continue;
+                }
                 if (query.isExecutable()) {
 
                     executableQueries.add(query);
@@ -119,7 +125,7 @@ public class SqlScriptRunner {
             queries.clear();
 
             if (createDBQuery != null) {
-                localDataSource = createDatabase(createDBQuery);
+                localDataSource = createDatabase(createDBQuery, sqlDialect);
                 connection = localDataSource.getConnection();
                 connection.setAutoCommit(false);
                 createDBQuery = null;
@@ -230,7 +236,7 @@ public class SqlScriptRunner {
         return needCloseDatabase;
     }
 
-    private SimpleDataSource createDatabase(DerivedQuery query) throws SQLException {
+    private SimpleDataSource createDatabase(DerivedQuery query, String sqlDialect) throws SQLException {
         String derivedQuery = query.getDerivedQuery();
 
         String database = null;
@@ -242,6 +248,14 @@ public class SqlScriptRunner {
         String charSet = null;
 
         database = StringUtils.substringBetween(derivedQuery, "'", "'");
+        int separatorIdx = database.indexOf(":");
+        if (separatorIdx != -1) {
+            if (database.charAt(separatorIdx + 1) != '\\') {
+                server = database.substring(0, separatorIdx);
+                database = database.substring(separatorIdx + 1);
+            }
+        }
+
         derivedQuery = derivedQuery.substring(derivedQuery.lastIndexOf(database) + database.length()).trim();
         int idx = -1;
 
@@ -345,6 +359,11 @@ public class SqlScriptRunner {
         temp.setUserName(user);
         temp.setPassword(password);
         temp.setCharset(charSet);
+        Properties properties = new Properties();
+        properties.setProperty("sqlDialect", sqlDialect);
+        if (StringUtils.isNotEmpty(charSet))
+            properties.setProperty("lc_ctype", charSet);
+        temp.setJdbcProperties(properties);
         DatabaseDriver driver = new DefaultDatabaseDriver();
         driver.setPath("./lib/jaybird-full.jar");
         driver.setClassName("org.firebirdsql.jdbc.FBDriver");

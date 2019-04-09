@@ -231,7 +231,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.BOTH;
         JSplitPane splitPane = new SplitPaneFactory().create(JSplitPane.VERTICAL_SPLIT,
-                new JScrollPane(sqlText), outputPanel);
+                sqlText, outputPanel);
         splitPane.setResizeWeight(0.5);
         splitPane.setDividerLocation(500);
         splitPane.setDividerSize(5);

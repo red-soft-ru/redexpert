@@ -174,7 +174,7 @@ public abstract class TableConstraintsPanel extends JPanel
 
         if (keysEmpty || fillCombos) {
             try {
-                table.getColumnModel().getColumn(2).setCellEditor(keysCombo);
+                table.getColumnModel().getColumn(1).setCellEditor(keysCombo);
                 table.getColumnModel().getColumn(3).setCellEditor(
                         new ComboBoxCellEditor(getTableColumnData()));
             } catch (ArrayIndexOutOfBoundsException e) { // TODO: what is this - test
@@ -231,16 +231,15 @@ public abstract class TableConstraintsPanel extends JPanel
         tcm.getColumn(0).setPreferredWidth(25);
         //tcm.getColumn(0).setMinWidth(25);
         tcm.getColumn(0).setMaxWidth(25);
-        tcm.getColumn(1).setPreferredWidth(125);
-        tcm.getColumn(2).setPreferredWidth(75);
+        tcm.getColumn(2).setPreferredWidth(125);
+        tcm.getColumn(1).setPreferredWidth(75);
         tcm.getColumn(3).setPreferredWidth(110);
         tcm.getColumn(4).setPreferredWidth(120);
         tcm.getColumn(5).setPreferredWidth(120);
-        tcm.getColumn(6).setPreferredWidth(120);
 
         tcm.getColumn(0).setCellRenderer(new ConstraintCellRenderer());
-        tcm.getColumn(1).setCellEditor(strEditor);
-        tcm.getColumn(2).setCellEditor(keysCombo);
+        tcm.getColumn(2).setCellEditor(strEditor);
+        tcm.getColumn(1).setCellEditor(keysCombo);
     }
 
     public boolean tableHasFocus(JTable _table) {
@@ -259,7 +258,7 @@ public abstract class TableConstraintsPanel extends JPanel
     /**
      * <p>Adds the specified focus listener to the table.
      *
-     * @param the listener to add to the table
+     * @param  listener to add to the table
      */
     public void addTableFocusListener(FocusListener listener) {
         table.addFocusListener(listener);
@@ -268,7 +267,7 @@ public abstract class TableConstraintsPanel extends JPanel
     /**
      * <p>Sets the specified table model to the table.
      *
-     * @param the table model
+     * @param   model
      */
     public void setModel(AbstractTableModel model) {
         table.setModel(model);
@@ -281,10 +280,9 @@ public abstract class TableConstraintsPanel extends JPanel
     class ColumnConstraintModel extends AbstractTableModel {
 
         private String[] header = {"",
-                "Name",
                 "Type",
+                "Name",
                 "Table Column",
-                "Reference Schema",
                 "Reference Table",
                 "Reference Column"};
 
@@ -327,22 +325,17 @@ public abstract class TableConstraintsPanel extends JPanel
                 case 0:
                     return cc;
                 case 1:
-                    return cc.getName();
-                case 2:
                     return cc.getTypeName();
+                case 2:
+                    return cc.getName();
                 case 3:
                     return cc.getColumn();
                 case 4:
                     if (!canHaveReference) {
                         return null;
                     }
-                    return cc.getRefSchema();
-                case 5:
-                    if (!canHaveReference) {
-                        return null;
-                    }
                     return cc.getRefTable();
-                case 6:
+                case 5:
                     if (!canHaveReference) {
                         return null;
                     }
@@ -364,10 +357,6 @@ public abstract class TableConstraintsPanel extends JPanel
                 case 0:
                     return;
                 case 1:
-                    cc.setName((String) value);
-                    columnValuesChanged(col, row, cc.getName());
-                    break;
-                case 2:
                     String colType = (String) value;
                     if (colType == ColumnConstraint.PRIMARY) {
                         cc.setType(ColumnConstraint.PRIMARY_KEY);
@@ -387,26 +376,18 @@ public abstract class TableConstraintsPanel extends JPanel
                     cc.setRefTable(Constants.EMPTY);
                     cc.setRefColumn(Constants.EMPTY);
                     if (MiscUtils.isNull(cc.getName()) || generatedName) {
-                        setValueAt(generateName(colType), row, 1);
+                        setValueAt(generateName(colType), row, 2);
                     }
+                    break;
+                case 2:
+                    cc.setName((String) value);
+                    columnValuesChanged(col, row, cc.getName());
                     break;
                 case 3:
                     cc.setColumn(value != null ? value.toString() : "");
                     columnValuesChanged(col, row, null);
                     break;
                 case 4:
-                    String schema = (String) value;
-                    cc.setRefSchema(schema);
-                    cc.setRefTable(Constants.EMPTY);
-                    cc.setRefColumn(Constants.EMPTY);
-
-                    if (schema != null) {
-                        updateCellEditor(col, row, schema);
-                        columnValuesChanged(col, row, null);
-                    }
-
-                    break;
-                case 5:
                     String tbl = (String) value;
                     cc.setRefColumn(Constants.EMPTY);
                     cc.setRefTable(tbl);
@@ -414,12 +395,10 @@ public abstract class TableConstraintsPanel extends JPanel
                         updateCellEditor(col, row, tbl);
                         columnValuesChanged(col, row, null);
                     }
-
                     break;
-                case 6:
+                case 5:
                     cc.setRefColumn((String) value);
                     columnValuesChanged(col, row, null);
-
                     break;
             }
 
@@ -444,12 +423,11 @@ public abstract class TableConstraintsPanel extends JPanel
                         return true;
                     case 4:
                     case 5:
-                    case 6:
                         return (cc.getType() != ColumnConstraint.UNIQUE_KEY &&
                                 cc.getType() != ColumnConstraint.PRIMARY_KEY);
                 }
             } else {
-                if (col == 1) {
+                if (col == 2) {
                     return true;
                 }
 

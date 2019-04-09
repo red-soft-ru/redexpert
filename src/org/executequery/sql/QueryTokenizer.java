@@ -138,7 +138,7 @@ public class QueryTokenizer {
                 String substring = query.substring(lastIndex, index);
 
                 // if substring includes a set term command
-                Pattern p = Pattern.compile("Set(.\\s?)term(.+?)", Pattern.CASE_INSENSITIVE);
+                Pattern p = Pattern.compile("Set(\\s+)term(\\s+)", Pattern.CASE_INSENSITIVE);
 
                 Matcher m = p.matcher(substring);
 

@@ -141,6 +141,8 @@ public final class QueryTypes {
 
     public static final int CREATE_DATABASE = 42;
 
+    public static final int SQL_DIALECT = 43;
+
     private QueryTypes() {
     }
 

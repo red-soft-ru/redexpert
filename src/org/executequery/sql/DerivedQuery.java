@@ -259,6 +259,10 @@ public final class DerivedQuery {
 
             type = QueryTypes.CREATE_DATABASE;
 
+        } else if (query.indexOf("SET SQL DIALECT") == 0) {
+
+            type = QueryTypes.SQL_DIALECT;
+
         } else {
 
             type = QueryTypes.UNKNOWN;

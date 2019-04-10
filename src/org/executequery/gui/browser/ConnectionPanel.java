@@ -54,9 +54,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
@@ -216,6 +214,17 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         // initialise the fields
         nameField = createTextField();
+        nameField.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                checkNameUpdate();
+            }
+        });
         passwordField = createPasswordField();
         hostField = createTextField();
         hostField.setText("localhost");
@@ -861,14 +870,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private boolean connectionNameExists() {
 
         String name = nameField.getText().trim();
-        if (databaseConnectionRepository().nameExists(databaseConnection, name)) {
+        return databaseConnectionRepository().nameExists(databaseConnection, name);
 
-            GUIUtilities.displayErrorMessage(bundleString("error.nameExist1") + name
-                    + bundleString("error.nameExist2"));
-            return true;
-        }
-
-        return false;
     }
 
     private DatabaseConnectionRepository databaseConnectionRepository() {
@@ -1065,6 +1068,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private void checkNameUpdate() {
 
         if (connectionNameExists()) {
+            GUIUtilities.displayErrorMessage(bundleString("error.nameExist1") + nameField.getText().trim()
+                    + bundleString("error.nameExist2"));
             focusNameField();
             return;
         }
@@ -1457,7 +1462,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         getTransactionIsolationLevel();
 
         // check if the name has to update the tree display
-        checkNameUpdate();
+        //checkNameUpdate();
     }
 
     /**

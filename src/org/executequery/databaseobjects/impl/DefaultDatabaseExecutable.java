@@ -22,16 +22,21 @@ package org.executequery.databaseobjects.impl;
 
 import biz.redsoft.IFBDatabaseMetadata;
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledDatabaseMetaData;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.sql.*;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +58,8 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
     private String procedureSourceCode;
 
+    private DefaultStatementExecutor sender;
+
     public DefaultDatabaseExecutable() {
         super((DatabaseMetaTag) null);
     }
@@ -66,6 +73,8 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         if (metaTagParent.getSchema() != null) {
             setSchemaName(metaTagParent.getSchema().getName());
         }
+        sender = new DefaultStatementExecutor(metaTagParent.getHost().getDatabaseConnection(), true);
+
 
     }
 
@@ -197,7 +206,6 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 }
 
             }
-
             rs = getProcedureParameters(getName());
 
             while (rs.next()) {
@@ -243,7 +251,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
         } finally {
 
-            releaseResources(rs);
+            sender.releaseResources();
         }
     }
 
@@ -254,11 +262,8 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
      */
     private ResultSet getProcedureParameters(String name) throws SQLException {
 
-        Connection connection = this.getMetaTagParent().getHost().getConnection();
-        Statement statement = connection.createStatement();
-
         String sql;
-        if (getDatabaseVersion() >= 3)
+        if (getDatabaseMajorVersion() >= 3)
             sql = "select prc.rdb$procedure_name,\n" +
                 "prc.rdb$procedure_source,\n" +
                 "prc.rdb$description, \n" +
@@ -298,7 +303,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 "where prc.rdb$procedure_name = '" + name + "'\n" +
                 "and (prc.rdb$package_name is null) \n" +
                 "order by pp.rdb$parameter_number";
-        else
+        else if (getDatabaseMinorVersion() >= 5)
             sql = "select prc.rdb$procedure_name,\n" +
                     "prc.rdb$procedure_source,\n" +
                     "prc.rdb$description, \n" +
@@ -334,7 +339,47 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                     "left join rdb$collations co2 on ((pp.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
                     "where prc.rdb$procedure_name = '" + name + "'\n" +
                     "order by pp.rdb$parameter_number";
-        return statement.executeQuery(sql);
+        else
+            sql = "select prc.rdb$procedure_name,\n" +
+                    "prc.rdb$procedure_source,\n" +
+                    "prc.rdb$description, \n" +
+                    "pp.rdb$parameter_name,\n" +
+                    "pp.rdb$parameter_type,\n" +
+                    "fs.rdb$field_name, \n" +
+                    "fs.rdb$field_type, \n" +
+                    "fs.rdb$field_length, \n" +
+                    "fs.rdb$field_scale, \n" +
+                    "fs.rdb$field_sub_type, \n" +
+                    "fs.rdb$segment_length as segment_length, \n" +
+                    "fs.rdb$dimensions, \n" +
+                    "cr.rdb$character_set_name as character_set_name, \n" +
+                    "co.rdb$collation_name, \n" +
+                    "pp.rdb$parameter_number,\n" +
+                    "fs.rdb$character_length, \n" +
+                    "pp.rdb$description,\n" +
+                    "pp.rdb$default_source as default_source,\n" +
+                    "fs.rdb$field_precision, \n" +
+                    "pp.rdb$parameter_mechanism as AM,\n" +
+                    "pp.rdb$field_source as FS,\n" +
+                    "fs.rdb$default_source, \n" +
+                    "pp.rdb$null_flag as null_flag,\n" +
+                    "null as RN,\n" +
+                    "null as FN,\n" +
+                    "co2.rdb$collation_name, \n" +
+                    "cr.rdb$default_collate_name \n" +
+                    "from rdb$procedures prc\n" +
+                    "join rdb$procedure_parameters pp on pp.rdb$procedure_name = prc.rdb$procedure_name\n" +
+                    "left join rdb$fields fs on fs.rdb$field_name = pp.rdb$field_source\n" +
+                    "left join rdb$character_sets cr on fs.rdb$character_set_id = cr.rdb$character_set_id \n" +
+                    "left join rdb$collations co on ((fs.rdb$collation_id = co.rdb$collation_id) and (fs.rdb$character_set_id = co.rdb$character_set_id)) \n" +
+                    "left join rdb$collations co2 on ((pp.rdb$collation_id = co2.rdb$collation_id) and (fs.rdb$character_set_id = co2.rdb$character_set_id))\n" +
+                    "where prc.rdb$procedure_name = '" + name + "'\n" +
+                    "order by pp.rdb$parameter_number";
+        SqlStatementResult result = sender.getResultSet(sql);
+        if (result.isException()) {
+            result.getSqlException();
+        }
+        return result.getResultSet();
     }
 
     /**

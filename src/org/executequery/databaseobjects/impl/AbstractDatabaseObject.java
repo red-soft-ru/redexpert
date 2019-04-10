@@ -563,9 +563,18 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         return "";
     }
 
-    public int getDatabaseVersion() {
+    public int getDatabaseMajorVersion() {
         try {
             return host.getDatabaseMetaData().getDatabaseMajorVersion();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    public int getDatabaseMinorVersion() {
+        try {
+            return host.getDatabaseMetaData().getDatabaseMinorVersion();
         } catch (SQLException e) {
             e.printStackTrace();
             return 0;

@@ -248,9 +248,11 @@ public class FB3UserManagerImpl implements IFBUserManager {
     }
 
     private void execute_query(String query) throws SQLException {
-
         Statement state = con.createStatement();
         state.executeUpdate(query);
+        if (!con.getAutoCommit())
+            con.commit();
         state.close();
+
     }
 }

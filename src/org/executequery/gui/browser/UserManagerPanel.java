@@ -686,7 +686,7 @@ public class UserManagerPanel extends JPanel {
                     act = Action.REFRESH;
                     executeThread();
                 } catch (Exception e) {
-                    GUIUtilities.displayErrorMessage(e.getMessage());
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
                     System.out.println(e.toString());
                 } finally {
                     if(!state.isClosed())
@@ -804,7 +804,7 @@ public class UserManagerPanel extends JPanel {
                 act = Action.GET_MEMBERSHIP;
                 executeThread();
             } catch (Exception e) {
-                GUIUtilities.displayErrorMessage(e.getMessage());
+                GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
             } finally {
                 if(!st.isClosed())
                     st.close();
@@ -822,7 +822,7 @@ public class UserManagerPanel extends JPanel {
                 act = Action.GET_MEMBERSHIP;
                 executeThread();
             } catch (Exception e) {
-                GUIUtilities.displayErrorMessage(e.getMessage());
+                GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
             } finally {
                 if (!st.isClosed())
                     st.close();
@@ -837,7 +837,7 @@ public class UserManagerPanel extends JPanel {
                 st = con.createStatement();
                 st.execute("REVOKE \"" + role_names.elementAt(col) + "\" FROM \"" + user_names.elementAt(row) + "\";");
             } catch (Exception e) {
-                GUIUtilities.displayErrorMessage(e.getMessage());
+                GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
             } finally {
                 if (!st.isClosed())
                     st.close();
@@ -1022,9 +1022,9 @@ public class UserManagerPanel extends JPanel {
             } catch (ArrayIndexOutOfBoundsException e) {
                 Log.error("Error index  out of bounds");
             } catch (SQLException e) {
-                Log.error(e.getMessage());
+                e.printStackTrace();
             } catch (Exception e) {
-                Log.error(e.getMessage());
+                e.printStackTrace();
             } finally {
                 try {
                     if (!statement.isClosed())

@@ -60,7 +60,6 @@ public class UserManagerPanel extends JPanel {
     public IFBUserManager userManager;
     public BrowserController controller;
     public IFBUser userAdd;
-    public DatabaseConnection dbc;
     boolean execute_w;
     boolean enableElements;
     Icon gr, no, adm;
@@ -75,7 +74,7 @@ public class UserManagerPanel extends JPanel {
     private JButton addUserButton;
     private JButton addRoleButton;
     private JButton adminButton;
-    private JComboBox<String> databaseBox;
+    private JComboBox<DatabaseConnection> databaseBox;
     private JLabel databaseLabel;
     private JButton deleteUserButton;
     private JButton deleteRoleButton;
@@ -134,18 +133,19 @@ public class UserManagerPanel extends JPanel {
         enableElements = true;
         boolean selected = false;
         for (DatabaseConnection dc : listConnections) {
-            databaseBox.addItem(dc.getName());
+            databaseBox.addItem(dc);
             if (dc.isConnected() && !selected) {
                 execute_w = true;
-                databaseBox.setSelectedItem(dc.getName());
+                databaseBox.setSelectedItem(dc);
                 selected = true;
             }
         }
         if (!execute_w) {
             if (databaseBox.getItemCount() == 0)
-                databaseBox.addItem("");
-            execute_w = true;
+                databaseBox.addItem(null);
             databaseBox.setSelectedIndex(0);
+            execute_w = true;
+
         }
     }
 
@@ -190,12 +190,11 @@ public class UserManagerPanel extends JPanel {
         connectButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int selectedIndex = databaseBox.getSelectedIndex();
                 FrameLogin frameLogin;
-                if (selectedIndex != -1) {
+                if (getSelectedDatabaseConnection() != null) {
                     frameLogin = new FrameLogin(UserManagerPanel.this,
-                            listConnections.get(selectedIndex).getUserName(),
-                            listConnections.get(selectedIndex).getUnencryptedPassword());
+                            getSelectedDatabaseConnection().getUserName(),
+                            getSelectedDatabaseConnection().getUnencryptedPassword());
                 } else {
                     frameLogin = new FrameLogin(UserManagerPanel.this,
                             "",
@@ -223,9 +222,11 @@ public class UserManagerPanel extends JPanel {
         serverLabel.setText(bundleString("server"));
 
         databaseBox.setEditable(true);
-        databaseBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                databaseBoxActionPerformed(evt);
+        databaseBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent evt) {
+                if (evt.getStateChange() == ItemEvent.SELECTED)
+                    databaseBoxActionPerformed(evt);
             }
         });
 
@@ -566,7 +567,7 @@ public class UserManagerPanel extends JPanel {
             URL[] urls = new URL[0];
             Class clazzdb = null;
             Object odb = null;
-            DatabaseHost host = new DefaultDatabaseHost(dbc);
+            DatabaseHost host = new DefaultDatabaseHost(getSelectedDatabaseConnection());
             version = host.getDatabaseMetaData().getDatabaseMajorVersion();
 
             urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
@@ -592,55 +593,31 @@ public class UserManagerPanel extends JPanel {
         }
     }
 
-    private void databaseBoxActionPerformed(ActionEvent evt) {
+    private void databaseBoxActionPerformed(ItemEvent evt) {
 
-        if (execute_w) {
+
             if (listConnections.size() > 0) {
                 int selectedIndex = databaseBox.getSelectedIndex();
                 if (selectedIndex == -1)
                     return;
-                dbc = listConnections.get(selectedIndex);
-                if (listConnections.get(databaseBox.getSelectedIndex()).isConnected()) {
+                if (getSelectedDatabaseConnection().isConnected()) {
                     act = Action.REFRESH;
                     executeThread();
 
                 } else {
-                    if (jTabbedPane1.getTabCount() > 1) {
-                        jTabbedPane1.remove(rolesPanel);
-                        jTabbedPane1.remove(membershipPanel);
+                    initNotConnected();
+                    if (execute_w) {
+                        JFrame frameLogin = new FrameLogin(this, getSelectedDatabaseConnection().getUserName(),
+                                getSelectedDatabaseConnection().getUnencryptedPassword());
+                        frameLogin.setVisible(true);
+                        int width = Toolkit.getDefaultToolkit().getScreenSize().width;
+                        int height = Toolkit.getDefaultToolkit().getScreenSize().height;
+                        frameLogin.setLocation(width / 2 - frameLogin.getWidth() / 2, height / 2 - frameLogin.getHeight() / 2);
                     }
-                    usersTable.setModel(new RoleTableModel(
-                            new Object[][]{
-
-                            },
-                            bundleStrings(new String[]{
-                                    "UserName", "FirstName", "MiddleName", "LastName"
-                            })
-                    ));
-                    JFrame frameLogin = new FrameLogin(this, listConnections.get(databaseBox.getSelectedIndex()).getUserName(),
-                            listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
-                    frameLogin.setVisible(true);
-                    int width = Toolkit.getDefaultToolkit().getScreenSize().width;
-                    int height = Toolkit.getDefaultToolkit().getScreenSize().height;
-                    frameLogin.setLocation(width / 2 - frameLogin.getWidth() / 2, height / 2 - frameLogin.getHeight() / 2);
                 }
             } else {
-                usersTable.setModel(new RoleTableModel(
-                        new Object[][]{
-
-                        },
-                        bundleStrings(new String[]{
-                                "UserName", "FirstName", "MiddleName", "LastName"
-                        })
-                ));
-                JFrame frameLogin = new FrameLogin(this, "",
-                        "");
-                frameLogin.setVisible(true);
-                int width = Toolkit.getDefaultToolkit().getScreenSize().width;
-                int height = Toolkit.getDefaultToolkit().getScreenSize().height;
-                frameLogin.setLocation(width / 2 - frameLogin.getWidth() / 2, height / 2 - frameLogin.getHeight() / 2);
+                initNotConnected();
             }
-        }
     }
 
     private void cancelButtonActionPerformed(ActionEvent evt) {
@@ -671,7 +648,7 @@ public class UserManagerPanel extends JPanel {
             GUIUtilities.showWaitCursor();
             BaseDialog dialog =
                     new BaseDialog(WindowAddRole.TITLE, true);
-            WindowAddRole panel = new WindowAddRole(dialog, dbc);
+            WindowAddRole panel = new WindowAddRole(dialog, getSelectedDatabaseConnection());
             dialog.addDisplayComponentWithEmptyBorder(panel);
             dialog.display();
             act = Action.REFRESH;
@@ -906,28 +883,28 @@ public class UserManagerPanel extends JPanel {
                 jTabbedPane1.remove(membershipPanel);
             }
         } else {
-            if (databaseBox.getItemAt(databaseBox.getSelectedIndex()) != "") {
+            if (getSelectedDatabaseConnection() != null) {
                 serverBox.removeAllItems();
-                serverBox.addItem(listConnections.get(databaseBox.getSelectedIndex()).getHost());
-                portField.setText(listConnections.get(databaseBox.getSelectedIndex()).getPort());
+                serverBox.addItem(getSelectedDatabaseConnection().getHost());
+                portField.setText(getSelectedDatabaseConnection().getPort());
             }
             if (listConnections.size() > 0) {
-                userManager.setDatabase(listConnections.get(databaseBox.getSelectedIndex()).getSourceName());
-                userManager.setHost(listConnections.get(databaseBox.getSelectedIndex()).getHost());
-                userManager.setPort(listConnections.get(databaseBox.getSelectedIndex()).getPortInt());
+                userManager.setDatabase(getSelectedDatabaseConnection().getSourceName());
+                userManager.setHost(getSelectedDatabaseConnection().getHost());
+                userManager.setPort(getSelectedDatabaseConnection().getPortInt());
 
-                if (listConnections.get(databaseBox.getSelectedIndex()).isConnected()) {
+                if (getSelectedDatabaseConnection().isConnected()) {
                     if (jTabbedPane1.getTabCount() < 2) {
                         jTabbedPane1.addTab(bundleString("Roles"), rolesPanel);
                         jTabbedPane1.addTab(bundleString("Membership"), membershipPanel);
                     }
-                    con = ConnectionManager.getConnection(listConnections.get(databaseBox.getSelectedIndex()));
+                    con = ConnectionManager.getConnection(getSelectedDatabaseConnection());
                     initUserManager();
-                    userManager.setDatabase(listConnections.get(databaseBox.getSelectedIndex()).getSourceName());
-                    userManager.setHost(listConnections.get(databaseBox.getSelectedIndex()).getHost());
-                    userManager.setPort(listConnections.get(databaseBox.getSelectedIndex()).getPortInt());
-                    userManager.setUser(listConnections.get(databaseBox.getSelectedIndex()).getUserName());
-                    userManager.setPassword(listConnections.get(databaseBox.getSelectedIndex()).getUnencryptedPassword());
+                    userManager.setDatabase(getSelectedDatabaseConnection().getSourceName());
+                    userManager.setHost(getSelectedDatabaseConnection().getHost());
+                    userManager.setPort(getSelectedDatabaseConnection().getPortInt());
+                    userManager.setUser(getSelectedDatabaseConnection().getUserName());
+                    userManager.setPassword(getSelectedDatabaseConnection().getUnencryptedPassword());
                     getUsersPanel();
                     getRoles();
                     createMembership();
@@ -1104,6 +1081,21 @@ public class UserManagerPanel extends JPanel {
             setEnableElements(true);
     }
 
+    public void initNotConnected() {
+        if (jTabbedPane1.getTabCount() > 1) {
+            jTabbedPane1.remove(rolesPanel);
+            jTabbedPane1.remove(membershipPanel);
+        }
+        usersTable.setModel(new RoleTableModel(
+                new Object[][]{
+
+                },
+                bundleStrings(new String[]{
+                        "UserName", "FirstName", "MiddleName", "LastName"
+                })
+        ));
+    }
+
     public void setUseCustomServer(boolean useCustomServer) {
         this.useCustomServer = useCustomServer;
     }
@@ -1113,7 +1105,7 @@ public class UserManagerPanel extends JPanel {
     }
 
     public DatabaseConnection getSelectedDatabaseConnection() {
-        return dbc;
+        return (DatabaseConnection) databaseBox.getSelectedItem();
     }
 }
 

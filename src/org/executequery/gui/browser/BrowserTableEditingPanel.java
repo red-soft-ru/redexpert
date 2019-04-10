@@ -621,6 +621,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             worker = null;
         }
 
+        tableDataPanel.closeResultSet();
         referencesPanel.cleanup();
         EventMediator.deregisterListener(this);
     }

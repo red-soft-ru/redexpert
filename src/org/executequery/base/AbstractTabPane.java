@@ -20,6 +20,7 @@
 
 package org.executequery.base;
 
+import org.executequery.gui.browser.BrowserViewPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.plaf.UIUtils;
 
@@ -546,6 +547,10 @@ public abstract class AbstractTabPane extends JPanel
             ((DockedTabView)tabComponent.getComponent()).tabViewClosing();
         }
          */
+        TabComponent tabComponent = (TabComponent)e.getSource();
+        if (tabComponent.getComponent() instanceof BrowserViewPanel) {
+            ((BrowserViewPanel)tabComponent.getComponent()).getCurrentView().cleanup();
+        }
         parent.fireTabClosed(e);
     }
 

@@ -754,7 +754,6 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel implements Con
         setEnableGrant(true);
         EventMediator.deregisterListener(this);
 
-
     }
 
     @Override

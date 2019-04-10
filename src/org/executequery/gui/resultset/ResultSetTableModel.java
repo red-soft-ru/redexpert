@@ -290,7 +290,6 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
         fireTableStructureChanged();
 
-
     }
 
     public void setFetchAll(boolean fetchAll) {
@@ -1107,6 +1106,10 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     }
 
+    public void closeResultSet() throws SQLException {
+        if (rs != null && !rs.isClosed())
+            rs.close();
+    }
 }
 
 

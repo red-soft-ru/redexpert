@@ -445,7 +445,7 @@ public class WindowAddUser extends javax.swing.JPanel {
                         ump.editUser();
                         GUIUtilities.closeSelectedTab();
                     } catch (Exception e) {
-                        GUIUtilities.displayErrorMessage(e.getMessage());
+                        GUIUtilities.displayExceptionErrorDialog("Failed to edit user", e);
 
                     }
 
@@ -456,7 +456,7 @@ public class WindowAddUser extends javax.swing.JPanel {
                             ump.addUser();
                             GUIUtilities.closeSelectedTab();
                         } catch (Exception e) {
-                            GUIUtilities.displayErrorMessage(e.getMessage());
+                            GUIUtilities.displayExceptionErrorDialog("Failed to add user", e);
                         }
 
                     } else {

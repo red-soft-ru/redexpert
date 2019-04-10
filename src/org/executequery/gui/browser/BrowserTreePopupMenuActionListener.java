@@ -72,6 +72,23 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     public void deleteObject(ActionEvent e) {
         if (currentPath != null && currentSelection != null) {
             DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
+            DatabaseObject object = (DatabaseObject) node.getUserObject();
+            StringBuilder sb = new StringBuilder();
+            sb.append(node.getDisplayName());
+            sb.append(":");
+            sb.append(node.getMetaDataKey());
+            sb.append(":");
+            sb.append(object.getHost());
+            if (GUIUtilities.getOpenFrame(sb.toString()) != null) {
+                sb = new StringBuilder();
+                sb.append("Object ");
+                sb.append("'");
+                sb.append(node.getDisplayName());
+                sb.append("' ");
+                sb.append("is in use and cannot be deleted until it is closed.");
+                GUIUtilities.displayErrorMessage(sb.toString());
+                return;
+            }
             String type;
             if (node.getType() == NamedObject.GLOBAL_TEMPORARY)
                 type = NamedObject.META_TYPES[NamedObject.TABLE];

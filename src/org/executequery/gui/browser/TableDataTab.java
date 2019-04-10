@@ -1156,6 +1156,15 @@ public class TableDataTab extends JPanel
                 Constants.USER_PROPERTIES_KEY, "browser.always.show.table.editable.label");
     }
 
+    public void closeResultSet() {
+        try {
+            if (tableModel != null)
+                tableModel.closeResultSet();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     class InterruptibleProcessPanel extends JPanel implements ActionListener {
 

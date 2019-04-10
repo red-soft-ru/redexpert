@@ -8,16 +8,16 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class RowHeaderRenderer extends JLabel implements ListCellRenderer {
-    private static final Border SAFE_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
-    private static final Border DEFAULT_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
+    protected static final Border SAFE_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
+    protected static final Border DEFAULT_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
     protected static Border noFocusBorder = DEFAULT_NO_FOCUS_BORDER;
 
     // We need a place to store the color the JLabel should be returned
     // to after its foreground and background colors have been set
     // to the selection background color.
     // These ivars will be made protected when their names are finalized.
-    private Color unselectedForeground;
-    private Color unselectedBackground;
+    protected Color unselectedForeground;
+    protected Color unselectedBackground;
 
     /**
      * Creates a default table cell renderer.

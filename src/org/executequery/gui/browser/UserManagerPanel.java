@@ -10,7 +10,6 @@ import biz.redsoft.IFBUserManager;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
-import org.executequery.components.table.RowHeaderRenderer;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.DatabaseHost;
@@ -18,10 +17,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.DefaultNumberTextField;
-import org.executequery.gui.browser.managment.FrameLogin;
-import org.executequery.gui.browser.managment.ThreadOfUserManager;
-import org.executequery.gui.browser.managment.WindowAddRole;
-import org.executequery.gui.browser.managment.WindowAddUser;
+import org.executequery.gui.browser.managment.*;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -66,7 +62,7 @@ public class UserManagerPanel extends JPanel {
     Connection con;
     List<DatabaseConnection> listConnections;
     Map<String, IFBUser> users;
-    Vector<String> user_names;
+    Vector<UserRole> user_names;
     Vector<String> role_names;
     ResultSet result;
     int version;
@@ -112,7 +108,7 @@ public class UserManagerPanel extends JPanel {
         no = GUIUtilities.loadIcon(BrowserConstants.NO_GRANT_IMAGE);
         adm = GUIUtilities.loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
         execute_w = false;
-        user_names = new Vector<String>();
+        user_names = new Vector<UserRole>();
         role_names = new Vector<String>();
         initComponents();
         setEnableElements(true);
@@ -863,7 +859,7 @@ public class UserManagerPanel extends JPanel {
             user_names.clear();
             for (IFBUser u : users.values()) {
                 if (userRoleBox.isSelected())
-                    user_names.add(u.getUserName().trim());
+                    user_names.add(new UserRole(u.getUserName().trim(), true));
                 Object[] rowData = new Object[]{u.getUserName(), u.getFirstName(), u.getMiddleName(), u.getLastName()};
                 ((RoleTableModel) usersTable.getModel()).addRow(rowData);
             }
@@ -945,7 +941,7 @@ public class UserManagerPanel extends JPanel {
                 String rol = result.getString(1).trim();
                 role_names.add(rol);
                 if (roleRoleBox.isSelected())
-                    user_names.add(rol);
+                    user_names.add(new UserRole(rol, false));
                 Object[] roleData = new Object[]{rol, result.getObject(2)};
                 ((RoleTableModel) rolesTable.getModel()).addRow(roleData);
             }
@@ -983,7 +979,7 @@ public class UserManagerPanel extends JPanel {
             try {
                 statement = con.createStatement();
                 resultSet = statement.executeQuery("select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION,rdb$Relation_name from RDB$USER_PRIVILEGES\n" +
-                        "where (RDB$USER='" + user_names.elementAt(i) + "') and (rdb$object_type=8 or rdb$object_type=13)");
+                        "where (RDB$USER='" + user_names.elementAt(i).name + "') and (rdb$object_type=8 or rdb$object_type=13)");
                 Vector<Object> roleData = new Vector<Object>();
                 for (String u : role_names) {
                     roleData.add(no);
@@ -1014,7 +1010,7 @@ public class UserManagerPanel extends JPanel {
                     JList rowHeader = new JList(user_names);
                     rowHeader.setFixedCellWidth(150);
                     rowHeader.setFixedCellHeight(membershipTable.getRowHeight());
-                    rowHeader.setCellRenderer(new RowHeaderRenderer(membershipTable));
+                    rowHeader.setCellRenderer(new MembershipListCellRenderer(membershipTable));
                     jScrollPane3.setRowHeaderView(rowHeader);
                     int wid = jScrollPane3.getPreferredSize().width;
                     if (sizer > wid)
@@ -1107,6 +1103,17 @@ public class UserManagerPanel extends JPanel {
     public DatabaseConnection getSelectedDatabaseConnection() {
         return (DatabaseConnection) databaseBox.getSelectedItem();
     }
+
+    public class UserRole {
+        public String name;
+        public boolean isUser;
+
+        public UserRole(String name, boolean isUser) {
+            this.name = name;
+            this.isUser = isUser;
+        }
+    }
+
 }
 
 

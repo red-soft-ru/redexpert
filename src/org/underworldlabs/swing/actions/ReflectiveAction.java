@@ -105,5 +105,10 @@ public class ReflectiveAction extends AbstractAction {
         return Bundles.get(getClass(), key);
     }
 
+    protected String bundledString(String key, Object... args) {
+
+        return Bundles.get(getClass(), key, args);
+    }
+
 }
 

@@ -123,7 +123,7 @@ public class EditTableConstraintsPanel extends TableConstraintsPanel {
                         schemas[i] = (String) hostedSchemas.elementAt(i);
                     }
 
-                    setCellEditor(4, new ComboBoxCellEditor(schemas));
+                    //setCellEditor(4, new ComboBoxCellEditor(schemas));
 
                 }
 

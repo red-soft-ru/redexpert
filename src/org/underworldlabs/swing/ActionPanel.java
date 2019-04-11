@@ -20,6 +20,8 @@
 
 package org.underworldlabs.swing;
 
+import org.executequery.localization.Bundles;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -78,6 +80,10 @@ public abstract class ActionPanel extends JPanel
             ex.printStackTrace();
         }
 
+    }
+
+    protected String bundleString(String key) {
+        return Bundles.get(getClass(), key);
     }
 
 }

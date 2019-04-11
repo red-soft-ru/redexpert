@@ -80,13 +80,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             sb.append(":");
             sb.append(object.getHost());
             if (GUIUtilities.getOpenFrame(sb.toString()) != null) {
-                sb = new StringBuilder();
-                sb.append("Object ");
-                sb.append("'");
-                sb.append(node.getDisplayName());
-                sb.append("' ");
-                sb.append("is in use and cannot be deleted until it is closed.");
-                GUIUtilities.displayErrorMessage(sb.toString());
+                GUIUtilities.displayErrorMessage(bundledString("messageInUse", node.getDisplayName()));
                 return;
             }
             String type;

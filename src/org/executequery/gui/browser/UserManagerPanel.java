@@ -800,7 +800,8 @@ public class UserManagerPanel extends JPanel {
             Statement st = null;
             try {
                 st = con.createStatement();
-                st.execute("GRANT \"" + role_names.elementAt(col) + "\" TO \"" + user_names.elementAt(row) + "\" WITH ADMIN OPTION;");
+                st.execute("GRANT \"" + role_names.elementAt(col) + "\" TO \"" +
+                        user_names.elementAt(row).getName() + "\" WITH ADMIN OPTION;");
                 act = Action.GET_MEMBERSHIP;
                 executeThread();
             } catch (Exception e) {
@@ -817,7 +818,8 @@ public class UserManagerPanel extends JPanel {
             Statement st = null;
             try {
                 st = con.createStatement();
-                String query = "GRANT \"" + role_names.elementAt(col) + "\" TO \"" + user_names.elementAt(row) + "\";";
+                String query = "GRANT \"" + role_names.elementAt(col) + "\" TO \"" +
+                        user_names.elementAt(row).getName() + "\";";
                 st.execute(query);
                 act = Action.GET_MEMBERSHIP;
                 executeThread();
@@ -835,7 +837,8 @@ public class UserManagerPanel extends JPanel {
             Statement st = null;
             try {
                 st = con.createStatement();
-                st.execute("REVOKE \"" + role_names.elementAt(col) + "\" FROM \"" + user_names.elementAt(row) + "\";");
+                st.execute("REVOKE \"" + role_names.elementAt(col) + "\" FROM \"" +
+                        user_names.elementAt(row).getName() + "\";");
             } catch (Exception e) {
                 GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
             } finally {
@@ -1105,12 +1108,20 @@ public class UserManagerPanel extends JPanel {
     }
 
     public class UserRole {
-        public String name;
-        public boolean isUser;
+        private String name;
+        private boolean isUser;
 
         public UserRole(String name, boolean isUser) {
             this.name = name;
             this.isUser = isUser;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean isUser() {
+            return isUser;
         }
     }
 

@@ -122,6 +122,10 @@ public class BrowserTableCellRenderer extends JLabel
             return this;
         }
 
+        if (value == null) {
+            value = table.getModel().getValueAt(row, column);
+        }
+
         Color fg = null;
         Color bg = null;
         if (value.getClass().equals(Object[].class)) {

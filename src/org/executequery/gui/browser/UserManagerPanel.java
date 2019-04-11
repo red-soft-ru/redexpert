@@ -827,7 +827,8 @@ public class UserManagerPanel extends JPanel {
                 String type = "";
                 if (user_names.elementAt(row).isUser())
                     type = "USER";
-                else type = "ROLE";
+                else if (version >= 3)
+                    type = "ROLE";
                 String query = "GRANT \"" + role_names.elementAt(col) + "\" TO " + type + " \"" +
                         user_names.elementAt(row).getName() + "\" WITH ADMIN OPTION;";
                 Log.info("Execution:" + query);
@@ -851,7 +852,8 @@ public class UserManagerPanel extends JPanel {
                 String type = "";
                 if (user_names.elementAt(row).isUser())
                     type = "USER";
-                else type = "ROLE";
+                else if (version >= 3)
+                    type = "ROLE";
                 String query = "GRANT \"" + role_names.elementAt(col) + "\" TO " + type + " \"" +
                         user_names.elementAt(row).getName() + "\";";
                 Log.info("Execution:" + query);
@@ -875,7 +877,8 @@ public class UserManagerPanel extends JPanel {
                 String type = "";
                 if (user_names.elementAt(row).isUser())
                     type = "USER";
-                else type = "ROLE";
+                else if (version >= 3)
+                    type = "ROLE";
                 String query = "REVOKE \"" + role_names.elementAt(col) + "\" FROM " + type + " \"" +
                         user_names.elementAt(row).getName() + "\";";
                 Log.info("Execution:" + query);

@@ -69,13 +69,13 @@ public class UserManagerPanel extends JPanel {
     Action act;
     private JButton addUserButton;
     private JButton addRoleButton;
-    private JButton adminButton;
+    private JLabel adminButton;
     private JComboBox<DatabaseConnection> databaseBox;
     private JLabel databaseLabel;
     private JButton deleteUserButton;
     private JButton deleteRoleButton;
     private JButton editUserButton;
-    private JButton grantButton;
+    private JLabel grantButton;
     private JPanel connectPanel;
     private JPanel interruptPanel;
     private JScrollPane jScrollPane1;
@@ -84,7 +84,7 @@ public class UserManagerPanel extends JPanel {
     private JTabbedPane jTabbedPane1;
     private JPanel membershipPanel;
     private JTable membershipTable;
-    private JButton no_grantButton;
+    private JLabel no_grantButton;
     private JButton refreshUsersButton;
     private JPanel rolesPanel;
     private JComboBox<String> serverBox;
@@ -171,9 +171,9 @@ public class UserManagerPanel extends JPanel {
         rolesPanel = new JPanel();
         membershipPanel = new JPanel();
         membershipTable = new JTable();
-        grantButton = new JButton();
-        adminButton = new JButton();
-        no_grantButton = new JButton();
+        grantButton = new JLabel();
+        adminButton = new JLabel();
+        no_grantButton = new JLabel();
         jProgressBar1 = new JProgressBar();
         cancelButton = new JButton();
         connectButton = new JButton();
@@ -404,40 +404,13 @@ public class UserManagerPanel extends JPanel {
         });
 
         grantButton.setIcon(gr);
-        grantButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                try {
-                    grantButtonActionPerformed(evt);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        grantButton.setToolTipText("GRANT ROLE");
+        grantButton.setText("GRANT ROLE");
 
         adminButton.setIcon(adm);
-        adminButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                try {
-                    adminButtonActionPerformed(evt);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        adminButton.setToolTipText("GRANT ROLE WITH ADMIN OPTION");
+        adminButton.setText("GRANT ROLE WITH ADMIN OPTION");
 
         no_grantButton.setIcon(no);
-        no_grantButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                try {
-                    no_grantButtonActionPerformed(evt);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        no_grantButton.setToolTipText("REVOKE ROLE");
+        no_grantButton.setText("REVOKE ROLE");
 
         userRoleBox.setSelected(true);
         userRoleBox.addItemListener(new ItemListener() {
@@ -800,8 +773,14 @@ public class UserManagerPanel extends JPanel {
             Statement st = null;
             try {
                 st = con.createStatement();
-                st.execute("GRANT \"" + role_names.elementAt(col) + "\" TO \"" +
-                        user_names.elementAt(row).getName() + "\" WITH ADMIN OPTION;");
+                String type = "";
+                if (user_names.elementAt(row).isUser())
+                    type = "USER";
+                else type = "ROLE";
+                String query = "GRANT \"" + role_names.elementAt(col) + "\" TO " + type + " \"" +
+                        user_names.elementAt(row).getName() + "\" WITH ADMIN OPTION;";
+                Log.info("Execution:" + query);
+                st.execute(query);
                 act = Action.GET_MEMBERSHIP;
                 executeThread();
             } catch (Exception e) {
@@ -818,8 +797,13 @@ public class UserManagerPanel extends JPanel {
             Statement st = null;
             try {
                 st = con.createStatement();
-                String query = "GRANT \"" + role_names.elementAt(col) + "\" TO \"" +
+                String type = "";
+                if (user_names.elementAt(row).isUser())
+                    type = "USER";
+                else type = "ROLE";
+                String query = "GRANT \"" + role_names.elementAt(col) + "\" TO " + type + " \"" +
                         user_names.elementAt(row).getName() + "\";";
+                Log.info("Execution:" + query);
                 st.execute(query);
                 act = Action.GET_MEMBERSHIP;
                 executeThread();
@@ -837,8 +821,14 @@ public class UserManagerPanel extends JPanel {
             Statement st = null;
             try {
                 st = con.createStatement();
-                st.execute("REVOKE \"" + role_names.elementAt(col) + "\" FROM \"" +
-                        user_names.elementAt(row).getName() + "\";");
+                String type = "";
+                if (user_names.elementAt(row).isUser())
+                    type = "USER";
+                else type = "ROLE";
+                String query = "REVOKE \"" + role_names.elementAt(col) + "\" FROM " + type + " \"" +
+                        user_names.elementAt(row).getName() + "\";";
+                Log.info("Execution:" + query);
+                st.execute(query);
             } catch (Exception e) {
                 GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
             } finally {
@@ -981,8 +971,11 @@ public class UserManagerPanel extends JPanel {
             ResultSet resultSet = null;
             try {
                 statement = con.createStatement();
+                String type = "13";
+                if (user_names.elementAt(i).isUser())
+                    type = "8";
                 resultSet = statement.executeQuery("select distinct RDB$PRIVILEGE,RDB$GRANT_OPTION,rdb$Relation_name from RDB$USER_PRIVILEGES\n" +
-                        "where (RDB$USER='" + user_names.elementAt(i).name + "') and (rdb$object_type=8 or rdb$object_type=13)");
+                        "where (RDB$USER='" + user_names.elementAt(i).getName() + "') and (rdb$object_type=8 or rdb$object_type=13) and rdb$user_type=" + type);
                 Vector<Object> roleData = new Vector<Object>();
                 for (String u : role_names) {
                     roleData.add(no);

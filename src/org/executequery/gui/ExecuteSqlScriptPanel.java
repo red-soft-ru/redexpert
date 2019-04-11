@@ -37,7 +37,7 @@ import org.executequery.event.ConnectionListener;
 import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextFileWriter;
-import org.executequery.gui.text.TextUtilities;
+import org.executequery.localization.Bundles;
 import org.executequery.sql.ActionOnError;
 import org.executequery.sql.ExecutionController;
 import org.executequery.sql.SqlScriptRunner;
@@ -71,7 +71,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         ExecutionController,
         ConnectionListener {
 
-    public static final String TITLE = "Execute SQL Script ";
+    public static final String TITLE = Bundles.get(ExecuteSqlScriptPanel.class, "title");
     public static final String FRAME_ICON = "ExecuteSqlScript16.png";
 
     private JComboBox connectionsCombo;
@@ -147,13 +147,13 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         statusBar = new SqlTextPaneStatusBar();
         statusBar.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 1));
 
-        JButton button = new MinimumWidthActionButton(85, this, "Browse", "browse");
+        JButton button = new MinimumWidthActionButton(85, this, bundleString("Browse"), "browse");
         button.setMnemonic('r');
 
-        logOutputCheckBox = new JCheckBox("Print running statements (This can slow down the process significantly)");
+        logOutputCheckBox = new JCheckBox(bundleString("logOutput"));
         logOutputCheckBox.setSelected(true);
 
-        useConnection = new JCheckBox("Use connection");
+        useConnection = new JCheckBox(bundleString("UseConnection"));
         useConnection.addItemListener(new ItemListener() {
 
             @Override
@@ -164,7 +164,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         useConnection.setSelected(false);
 
         saveButton = new MinimumWidthActionButton(85, this,
-                "Save script", "saveScript");
+                bundleString("SaveScript"), "saveScript");
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
 
@@ -189,7 +189,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         gbc.weightx = 0;
         gbc.gridwidth = 1;
         gbc.insets.top = 5;
-        mainPanel.add(new JLabel("Action on Error:"), gbc);
+        mainPanel.add(new JLabel(bundleString("ActionOnError")), gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -201,7 +201,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         gbc.weightx = 0;
         gbc.gridwidth = 1;
         gbc.insets.top = 5;
-        mainPanel.add(new JLabel("Input File:"), gbc);
+        mainPanel.add(new JLabel(bundleString("InputFile")), gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.insets.top = 0;
@@ -288,7 +288,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         try {
             sqlText.setSQLText(FileUtils.loadFile(file.getPath()));
         } catch (IOException e) {
-            GUIUtilities.displayErrorMessage("Unable to load an input file");
+            GUIUtilities.displayErrorMessage(bundleString("error.load-file"));
         }
     }
 
@@ -303,10 +303,10 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(false);
 
-        fileChooser.setDialogTitle("Select SQL Script");
+        fileChooser.setDialogTitle(bundleString("title.file-chooser"));
         fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
 
-        int result = fileChooser.showDialog(GUIUtilities.getInFocusDialogOrWindow(), "Select");
+        int result = fileChooser.showDialog(GUIUtilities.getInFocusDialogOrWindow(), bundleString("Select"));
         if (result == JFileChooser.CANCEL_OPTION) {
 
             return;
@@ -323,7 +323,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         String fileName = fileNameField.getText();
         if (StringUtils.isBlank(fileName)) {
 
-            GUIUtilities.displayErrorMessage("Please select an input file");
+            GUIUtilities.displayErrorMessage(bundleString("error.select-input-file"));
             return false;
 
         } else {

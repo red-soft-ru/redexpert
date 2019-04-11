@@ -35,6 +35,7 @@ import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.table.CreateTableFunctionPanel;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import javax.swing.tree.TreePath;
@@ -56,7 +57,7 @@ public class CreateTablePanel extends CreateTableFunctionPanel
     /**
      * This objects title as an internal frame
      */
-    public static final String TITLE = "Create Table";
+    public static final String TITLE = Bundles.get(CreateTablePanel.class, "title");
 
     /**
      * This objects icon as an internal frame
@@ -96,7 +97,7 @@ public class CreateTablePanel extends CreateTableFunctionPanel
     private void jbInit() throws Exception {
 
         addButtonsPanel(new BottomButtonPanel(
-                this, "Create", "create-table", parent.isDialog()));
+                this, bundleString("Create"), "create-table", parent.isDialog()));
         setPreferredSize(new Dimension(750, 480));
         EventMediator.registerListener(this);
     }
@@ -157,9 +158,8 @@ public class CreateTablePanel extends CreateTableFunctionPanel
             return metaData.getSchemaTables(schemaName);
         } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
-                    "Error retrieving the table list for the " +
-                            "selected catalog/schema.\n\nThe system returned:\n" +
-                            e.getExtendedMessage(), e);
+                    bundleString("error.retrieving", bundleString("table"), bundleString("selected-connection"), e.getExtendedMessage())
+                    , e);
             return new Vector<String>(0);
         }
     }
@@ -169,9 +169,8 @@ public class CreateTablePanel extends CreateTableFunctionPanel
             return metaData.getColumnNamesVector(tableName, schemaName);
         } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
-                    "Error retrieving the column names for the " +
-                            "selected table.\n\nThe system returned:\n" +
-                            e.getExtendedMessage(), e);
+                    bundleString("error.retrieving", bundleString("column-names"), bundleString("selected-table"), e.getExtendedMessage())
+                    , e);
             return new Vector<String>(0);
         }
     }
@@ -195,7 +194,7 @@ public class CreateTablePanel extends CreateTableFunctionPanel
         DatabaseConnection dc = getSelectedConnection();
         if (dc == null) {
             GUIUtilities.displayErrorMessage(
-                    "No database connection is available.");
+                    bundleString("message.notConnected"));
             return;
         }
         createTable();
@@ -214,7 +213,7 @@ public class CreateTablePanel extends CreateTableFunctionPanel
             if (!checkFullType())
                 return;
             String querys = getSQLText();
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog("Creating table", querys, getSelectedConnection(), true, "^");
+            ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundleString("title"), querys, getSelectedConnection(), true, "^");
             eqd.display();
             boolean commit = eqd.getCommit();
             if (commit) {

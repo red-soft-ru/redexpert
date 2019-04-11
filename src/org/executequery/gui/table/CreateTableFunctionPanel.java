@@ -33,6 +33,7 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DynamicComboBoxModel;
@@ -169,7 +170,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
         // create the column definition panel
         // and add this to the tabbed pane
         tablePanel = new NewTablePanel(this);
-        tableTabs.add("Columns", tablePanel);
+        tableTabs.add(bundleString("Columns"), tablePanel);
 
         // create the constraints table and model
         JPanel constraintsPanel = new JPanel(new GridBagLayout());
@@ -189,7 +190,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
                 GridBagConstraints.BOTH,
                 new Insets(2, 2, 2, 2), 0, 0));
 
-        tableTabs.add("Constraints", constraintsPanel);
+        tableTabs.add(bundleString("Constraints"), constraintsPanel);
 
         sqlText = new SimpleSqlTextPanel();
         tools = new CreateTableToolBar(this);
@@ -200,11 +201,11 @@ public abstract class CreateTableFunctionPanel extends JPanel
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.NORTHWEST;
 
-        WidgetFactory.addLabelFieldPair(mainPanel, "Connection:", connectionsCombo, gbc);
+        WidgetFactory.addLabelFieldPair(mainPanel, bundleString("Connection"), connectionsCombo, gbc);
         //WidgetFactory.addLabelFieldPair(mainPanel, "Schema:", schemaCombo, gbc);
-        WidgetFactory.addLabelFieldPair(mainPanel, "Table Name:", nameField, gbc);
+        WidgetFactory.addLabelFieldPair(mainPanel, bundleString("TableName"), nameField, gbc);
         if (temporary)
-            WidgetFactory.addLabelFieldPair(mainPanel, "Type Temporary Table:", typeTemporaryBox, gbc);
+            WidgetFactory.addLabelFieldPair(mainPanel, bundleString("TypeTemporaryTable"), typeTemporaryBox, gbc);
 
         JPanel definitionPanel = new JPanel(new GridBagLayout());
         gbc.gridwidth = 1;
@@ -401,9 +402,8 @@ public abstract class CreateTableFunctionPanel extends JPanel
             populateDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
         } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
-                    "Error retrieving the data types for the " +
-                            "selected connection.\n\nThe system returned:\n" +
-                            e.getExtendedMessage(), e);
+                    bundleString("error.retrieving", bundleString("data-types"), bundleString("selected-connection"), e.getExtendedMessage()),
+                    e);
             populateDataTypes(new String[0], new int[0]);
         }
 
@@ -597,7 +597,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
     protected boolean checkFullType() {
         for (int i = 0; i < getTableColumnData().length; i++) {
             if (getTableColumnData()[i].getColumnType() == null) {
-                GUIUtilities.displayErrorMessage("Select type for all columns");
+                GUIUtilities.displayErrorMessage(bundleString("error.select-type"));
                 tableTabs.setSelectedIndex(0);
                 return false;
             }
@@ -725,6 +725,14 @@ public abstract class CreateTableFunctionPanel extends JPanel
      */
     public TextEditor getTextEditor() {
         return sqlText;
+    }
+
+    protected String bundleString(String key) {
+        return Bundles.get(getClass(), key);
+    }
+
+    protected String bundleString(String key, Object... args) {
+        return Bundles.get(getClass(), key, args);
     }
 
 }

@@ -178,8 +178,8 @@ public class UserManagerPanel extends JPanel {
         cancelButton = new JButton();
         connectButton = new JButton();
         portField = new DefaultNumberTextField();
-        userRoleBox = new JCheckBox("User->Role");
-        roleRoleBox = new JCheckBox("Role->Role");
+        userRoleBox = new JCheckBox(bundleString("UserRole"));
+        roleRoleBox = new JCheckBox(bundleString("RoleRole"));
         portField.setText("3050");
 
         connectButton.setText(bundleString("connectButton"));

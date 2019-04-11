@@ -69,13 +69,15 @@ public class UserManagerPanel extends JPanel {
     Action act;
     private JButton addUserButton;
     private JButton addRoleButton;
-    private JLabel adminButton;
+    private JButton adminButton;
+    private JLabel adminLabel;
     private JComboBox<DatabaseConnection> databaseBox;
     private JLabel databaseLabel;
     private JButton deleteUserButton;
     private JButton deleteRoleButton;
     private JButton editUserButton;
-    private JLabel grantButton;
+    private JButton grantButton;
+    private JLabel grantLabel;
     private JPanel connectPanel;
     private JPanel interruptPanel;
     private JScrollPane jScrollPane1;
@@ -84,7 +86,8 @@ public class UserManagerPanel extends JPanel {
     private JTabbedPane jTabbedPane1;
     private JPanel membershipPanel;
     private JTable membershipTable;
-    private JLabel no_grantButton;
+    private JButton no_grantButton;
+    private JLabel no_grantLabel;
     private JButton refreshUsersButton;
     private JPanel rolesPanel;
     private JComboBox<String> serverBox;
@@ -171,9 +174,12 @@ public class UserManagerPanel extends JPanel {
         rolesPanel = new JPanel();
         membershipPanel = new JPanel();
         membershipTable = new JTable();
-        grantButton = new JLabel();
-        adminButton = new JLabel();
-        no_grantButton = new JLabel();
+        grantButton = new JButton();
+        adminButton = new JButton();
+        no_grantButton = new JButton();
+        grantLabel = new JLabel();
+        adminLabel = new JLabel();
+        no_grantLabel = new JLabel();
         jProgressBar1 = new JProgressBar();
         cancelButton = new JButton();
         connectButton = new JButton();
@@ -404,13 +410,43 @@ public class UserManagerPanel extends JPanel {
         });
 
         grantButton.setIcon(gr);
-        grantButton.setText("GRANT ROLE");
+        grantButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    grantButtonActionPerformed(evt);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        grantButton.setToolTipText("GRANT ROLE");
+        grantLabel.setText("GRANT ROLE");
 
         adminButton.setIcon(adm);
-        adminButton.setText("GRANT ROLE WITH ADMIN OPTION");
+        adminButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    adminButtonActionPerformed(evt);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        adminButton.setToolTipText("GRANT ROLE WITH ADMIN OPTION");
+        adminLabel.setText("GRANT ROLE WITH ADMIN OPTION");
 
         no_grantButton.setIcon(no);
-        no_grantButton.setText("REVOKE ROLE");
+        no_grantButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    no_grantButtonActionPerformed(evt);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        no_grantButton.setToolTipText("REVOKE ROLE");
+        no_grantLabel.setText("REVOKE ROLE");
 
         userRoleBox.setSelected(true);
         userRoleBox.addItemListener(new ItemListener() {
@@ -444,9 +480,18 @@ public class UserManagerPanel extends JPanel {
                         .addGroup(GroupLayout.Alignment.TRAILING, membershipPanelLayout.createSequentialGroup()
                                 .addGap(18, 18, 18)
                                 .addGroup(membershipPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addComponent(grantButton)
-                                        .addComponent(adminButton)
-                                        .addComponent(no_grantButton)
+                                        .addGroup(membershipPanelLayout.createSequentialGroup()
+                                                .addComponent(grantButton)
+                                                .addGap(5)
+                                                .addComponent(grantLabel))
+                                        .addGroup(membershipPanelLayout.createSequentialGroup()
+                                                .addComponent(adminButton)
+                                                .addGap(5)
+                                                .addComponent(adminLabel))
+                                        .addGroup(membershipPanelLayout.createSequentialGroup()
+                                                .addComponent(no_grantButton)
+                                                .addGap(5)
+                                                .addComponent(no_grantLabel))
                                         .addComponent(userRoleBox)
                                         .addComponent(roleRoleBox))
                                 .addGap(32, 32, 32)
@@ -459,11 +504,17 @@ public class UserManagerPanel extends JPanel {
                                 .addContainerGap()
                                 .addGroup(membershipPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                         .addGroup(membershipPanelLayout.createSequentialGroup()
-                                                .addComponent(grantButton)
+                                                .addGroup(membershipPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                        .addComponent(grantButton)
+                                                        .addComponent(grantLabel))
                                                 .addGap(18, 18, 18)
-                                                .addComponent(adminButton)
+                                                .addGroup(membershipPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                        .addComponent(adminButton)
+                                                        .addComponent(adminLabel))
                                                 .addGap(18, 18, 18)
-                                                .addComponent(no_grantButton)
+                                                .addGroup(membershipPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                        .addComponent(no_grantButton)
+                                                        .addComponent(no_grantLabel))
                                                 .addGap(18, 18, 18)
                                                 .addComponent(userRoleBox)
                                                 .addGap(18, 18, 18)

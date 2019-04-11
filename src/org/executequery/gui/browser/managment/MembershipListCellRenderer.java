@@ -90,8 +90,8 @@ public class MembershipListCellRenderer extends RowHeaderRenderer {
         }
         if (value.getClass().equals(UserManagerPanel.UserRole.class)) {
             UserManagerPanel.UserRole userRole = (UserManagerPanel.UserRole) value;
-            setText(userRole.name);
-            if (userRole.isUser)
+            setText(userRole.getName());
+            if (userRole.isUser())
                 setIcon(userIcon);
             else setIcon(roleIcon);
         }

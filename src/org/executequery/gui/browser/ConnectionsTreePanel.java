@@ -1037,6 +1037,8 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
     // return the parent connection meta object
     DatabaseObjectNode node = (DatabaseObjectNode) object;
     DatabaseObjectNode parent = getParentNode(node);
+    if (parent == null)
+      return null;
     return ((DatabaseHost) parent.getDatabaseObject());
   }
 

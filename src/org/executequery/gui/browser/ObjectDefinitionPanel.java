@@ -21,6 +21,7 @@
 package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
@@ -363,7 +364,12 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
                     if (e.getClickCount() > 1) {
                         if (currentObjectView instanceof DefaultDatabaseView) {
                             BaseDialog dialog = new BaseDialog("Edit View", true);
-                            CreateViewPanel panel = new CreateViewPanel(controller.getDatabaseConnection(), dialog, (DefaultDatabaseView) currentObjectView);
+                            DatabaseConnection databaseConnection = controller.getDatabaseConnection();
+                            if (databaseConnection == null) {
+                                databaseConnection = currentObjectView.getHost().getDatabaseConnection();
+                            }
+                            CreateViewPanel panel = new CreateViewPanel(databaseConnection,
+                                    dialog, (DefaultDatabaseView) currentObjectView);
                             dialog.addDisplayComponent(panel);
                             dialog.display();
                         }

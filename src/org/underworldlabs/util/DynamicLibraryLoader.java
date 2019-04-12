@@ -85,7 +85,7 @@ public class DynamicLibraryLoader extends URLClassLoader {
     public static Object loadingObjectFromClassLoader(Object unwrapObject, String shortClassName)
             throws ClassNotFoundException {
         return loadingObjectFromClassLoader(unwrapObject, "biz.redsoft."
-                + shortClassName, "./lib/fbplugin-impl.jar");
+                + shortClassName, "./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
     }
 
     public static Object loadingObjectFromClassLoader(Object unwrapObject, String className, String jarPath)

@@ -561,7 +561,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                 Class clazzdb = null;
                                 Object odb = null;
                                 try {
-                                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
                                     ClassLoader cl = new URLClassLoader(urls, resultSet.getStatement().getConnection().getClass().getClassLoader());
                                     clazzdb = cl.loadClass("biz.redsoft.FBClobImpl");
                                     odb = clazzdb.newInstance();
@@ -597,7 +597,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                 Class clazzdb = null;
                                 Object odb = null;
                                 try {
-                                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
                                     ClassLoader cl = new URLClassLoader(urls, resultSet.getStatement().getConnection().getClass().getClassLoader());
                                     clazzdb = cl.loadClass("biz.redsoft.FBBlobImpl");
                                     odb = clazzdb.newInstance();

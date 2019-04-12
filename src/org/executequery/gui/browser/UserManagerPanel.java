@@ -552,9 +552,13 @@ public class UserManagerPanel extends JPanel {
             DatabaseDriver dd = null;
             List<DatabaseDriver> dds = driverRepository().findAll();
             for (DatabaseDriver d : dds) {
-                if (d.getClassName().contains("FBDriver"))
+                if (d.getClassName().contains("FBDriver")) {
                     dd = d;
-                break;
+                    break;
+                }
+            }
+            if (dd == null) {
+                throw new SQLException("There are no drivers to initialize the user manager.");
             }
             URL[] urlDriver = new URL[0];
             Class clazzDriver = null;

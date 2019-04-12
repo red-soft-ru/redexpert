@@ -170,7 +170,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
         // create the column definition panel
         // and add this to the tabbed pane
         tablePanel = new NewTablePanel(this);
-        tableTabs.add(bundleString("Columns"), tablePanel);
+        tableTabs.add(bundledString("Columns"), tablePanel);
 
         // create the constraints table and model
         JPanel constraintsPanel = new JPanel(new GridBagLayout());
@@ -190,7 +190,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
                 GridBagConstraints.BOTH,
                 new Insets(2, 2, 2, 2), 0, 0));
 
-        tableTabs.add(bundleString("Constraints"), constraintsPanel);
+        tableTabs.add(bundledString("Constraints"), constraintsPanel);
 
         sqlText = new SimpleSqlTextPanel();
         tools = new CreateTableToolBar(this);
@@ -201,11 +201,11 @@ public abstract class CreateTableFunctionPanel extends JPanel
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.NORTHWEST;
 
-        WidgetFactory.addLabelFieldPair(mainPanel, bundleString("Connection"), connectionsCombo, gbc);
+        WidgetFactory.addLabelFieldPair(mainPanel, bundledString("Connection"), connectionsCombo, gbc);
         //WidgetFactory.addLabelFieldPair(mainPanel, "Schema:", schemaCombo, gbc);
-        WidgetFactory.addLabelFieldPair(mainPanel, bundleString("TableName"), nameField, gbc);
+        WidgetFactory.addLabelFieldPair(mainPanel, bundledString("TableName"), nameField, gbc);
         if (temporary)
-            WidgetFactory.addLabelFieldPair(mainPanel, bundleString("TypeTemporaryTable"), typeTemporaryBox, gbc);
+            WidgetFactory.addLabelFieldPair(mainPanel, bundledString("TypeTemporaryTable"), typeTemporaryBox, gbc);
 
         JPanel definitionPanel = new JPanel(new GridBagLayout());
         gbc.gridwidth = 1;
@@ -402,7 +402,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
             populateDataTypes(metaData.getDataTypesArray(), metaData.getIntDataTypesArray());
         } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
-                    bundleString("error.retrieving", bundleString("data-types"), bundleString("selected-connection"), e.getExtendedMessage()),
+                    bundledString("error.retrieving", bundledString("data-types"), bundledString("selected-connection"), e.getExtendedMessage()),
                     e);
             populateDataTypes(new String[0], new int[0]);
         }
@@ -597,7 +597,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
     protected boolean checkFullType() {
         for (int i = 0; i < getTableColumnData().length; i++) {
             if (getTableColumnData()[i].getColumnType() == null) {
-                GUIUtilities.displayErrorMessage(bundleString("error.select-type"));
+                GUIUtilities.displayErrorMessage(bundledString("error.select-type"));
                 tableTabs.setSelectedIndex(0);
                 return false;
             }
@@ -733,6 +733,14 @@ public abstract class CreateTableFunctionPanel extends JPanel
 
     protected String bundleString(String key, Object... args) {
         return Bundles.get(getClass(), key, args);
+    }
+
+    private String bundledString(String key) {
+        return Bundles.get(CreateTableFunctionPanel.class, key);
+    }
+
+    private String bundledString(String key, Object... args) {
+        return Bundles.get(CreateTableFunctionPanel.class, key, args);
     }
 
 }

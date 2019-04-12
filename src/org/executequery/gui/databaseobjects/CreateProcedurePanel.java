@@ -96,7 +96,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
             URL[] urls;
             Class clazzdb;
             Object odb;
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
             ClassLoader cl = new URLClassLoader(urls, dMetaData.getClass().getClassLoader());
             clazzdb = cl.loadClass("biz.redsoft.FBDatabaseMetadataImpl");
             odb = clazzdb.newInstance();

@@ -1158,6 +1158,11 @@ int main(int argc, char *argv[])
     {
         while ((ent = readdir(dir)) != NULL)
         {
+            int res = strcmp(ent->d_name, "fbplugin-impl.jar");
+            int res2 = strcmp(ent->d_name, "jaybird-full.jar");
+            int res3 = strcmp(ent->d_name, "jaybird-cryptoapi.jar");
+            if (!res || !res2 || !res3)
+                continue;
             paths.append(lib_dir + "/" + ent->d_name);
             paths.append(separator);
         }
@@ -1183,6 +1188,11 @@ int main(int argc, char *argv[])
             WideCharToMultiByte(CP_ACP, 0, data.cFileName, -1, buffer, 260, &def_char,
                                 NULL);
             std::string conv_file(buffer);
+            int res = strcmp(conv_file.c_str(), "fbplugin-impl.jar");
+            int res2 = strcmp(conv_file.c_str(), "jaybird-full.jar");
+            int res3 = strcmp(conv_file.c_str(), "jaybird-cryptoapi.jar");
+            if (!res || !res2 || !res3)
+                continue;
             if (conv_file != "." && conv_file != "..")
             {
                 paths.append(lib_dir + "\\");

@@ -1280,7 +1280,7 @@ public class QueryDispatcher {
             Class clazzdb = null;
             Object odb = null;
             try {
-                urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
                 ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
                 clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformanceImpl");
                 odb = clazzdb.newInstance();
@@ -1335,7 +1335,7 @@ public class QueryDispatcher {
                 Class clazzdb = null;
                 Object odb = null;
                 try {
-                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
                     ClassLoader cl = new URLClassLoader(urls, resultSet.getClass().getClassLoader());
                     clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformanceImpl");
                     odb = clazzdb.newInstance();
@@ -1386,7 +1386,7 @@ public class QueryDispatcher {
                 Class clazzdb = null;
                 Object odb = null;
                 try {
-                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
                     ClassLoader cl = new URLClassLoader(urls, statement.getClass().getClassLoader());
                     clazzdb = cl.loadClass("biz.redsoft.FBDatabasePerformanceImpl");
                     odb = clazzdb.newInstance();

@@ -568,14 +568,14 @@ public class UserManagerPanel extends JPanel {
             clazzDriver = clD.loadClass(dd.getClassName());
             o = clazzDriver.newInstance();
 
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
             ClassLoader cl = new URLClassLoader(urls, o.getClass().getClassLoader());
             clazzdb = cl.loadClass("biz.redsoft.FBUserImpl");
             odb = clazzdb.newInstance();
 
             userAdd = (IFBUser) odb;
 
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
             cl = new URLClassLoader(urls, o.getClass().getClassLoader());
             clazzdb = cl.loadClass("biz.redsoft.FBUserManagerImpl");
             odb = clazzdb.newInstance();
@@ -590,7 +590,7 @@ public class UserManagerPanel extends JPanel {
             DatabaseHost host = new DefaultDatabaseHost(getSelectedDatabaseConnection());
             version = host.getDatabaseMetaData().getDatabaseMajorVersion();
 
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
             ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
             clazzdb = cl.loadClass("biz.redsoft.FBUserImpl");
             odb = clazzdb.newInstance();
@@ -602,7 +602,7 @@ public class UserManagerPanel extends JPanel {
                 loadedClass = "biz.redsoft.FB3UserManagerImpl";
             else
                 loadedClass = "biz.redsoft.FBUserManagerImpl";
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
             cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
             clazzdb = cl.loadClass(loadedClass);
             if (version >= 3)

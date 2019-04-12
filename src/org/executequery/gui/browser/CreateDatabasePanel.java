@@ -756,7 +756,7 @@ public class CreateDatabasePanel extends ActionPanel
                 return;
             }
 
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
             ClassLoader cl = new URLClassLoader(urls, o.getClass().getClassLoader());
             clazzdb = cl.loadClass("biz.redsoft.FBCreateDatabaseImpl");
             odb = clazzdb.newInstance();

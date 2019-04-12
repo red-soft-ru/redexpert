@@ -456,7 +456,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 Class clazzdb = null;
                 Object odb = null;
                 try {
-                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                    urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
                     ClassLoader cl = new URLClassLoader(urls, dMetaData.getClass().getClassLoader());
                     clazzdb = cl.loadClass("biz.redsoft.FBDatabaseMetadataImpl");
                     odb = clazzdb.newInstance();

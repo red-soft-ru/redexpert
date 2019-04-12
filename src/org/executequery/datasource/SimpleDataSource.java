@@ -128,7 +128,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                         try {
                             Object odb = DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
                                     "biz.redsoft.FBCryptoPluginInitImpl",
-                                    "./lib/fbplugin-impl.jar;./lib/jaybird-cryptoapi.jar");
+                                    "./lib/fbplugin-impl.jar;./lib/jaybird-cryptoapi.jar;../lib/fbplugin-impl.jar;../lib/jaybird-cryptoapi.jar");
                             cryptoPlugin = (IFBCryptoPluginInit) odb;
                             cryptoPlugin.init();
 

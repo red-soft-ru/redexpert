@@ -1446,7 +1446,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
         if (driver.getClass().getName().contains("FBDriver")) {
             Connection conn = connection.unwrap(Connection.class);
-            URL[] urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+            URL[] urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
             ClassLoader cl = new URLClassLoader(urls, conn.getClass().getClassLoader());
             IFBDatabaseConnection db;
             Class clazzdb;

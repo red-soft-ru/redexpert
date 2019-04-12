@@ -105,7 +105,7 @@ public class AutoCompleteSelectionsFactory {
                     Class clazzdb = null;
                     Object odb = null;
                     try {
-                        urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                        urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
                         ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
                         clazzdb = cl.loadClass("biz.redsoft.FBDatabaseConnectionImpl");
                         odb = clazzdb.newInstance();
@@ -186,7 +186,7 @@ public class AutoCompleteSelectionsFactory {
                     Class clazzdb = null;
                     Object odb = null;
                     try {
-                        urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar");
+                        urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
                         ClassLoader cl = new URLClassLoader(urls, connection.getClass().getClassLoader());
                         clazzdb = cl.loadClass("biz.redsoft.FBDatabaseConnectionImpl");
                         odb = clazzdb.newInstance();

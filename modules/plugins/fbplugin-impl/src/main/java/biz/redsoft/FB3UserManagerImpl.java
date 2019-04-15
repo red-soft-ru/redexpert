@@ -174,85 +174,99 @@ public class FB3UserManagerImpl implements IFBUserManager {
     public Map<String, IFBUser> getUsers() throws SQLException {
         Map<String, IFBUser> mUsers = new TreeMap<>();
 
-        Statement state = con.createStatement();
-        String query = "SELECT * FROM SEC$USERS";
-        ResultSet result = state.executeQuery(query);
-        while (result.next()) {
-            // do code
-            String key = result.getString(1).trim();
-            FBUserImpl value = new FBUserImpl();
-            value.setUserName(key);
-            value.setPassword("");
-            try {
-                value.setFirstName(result.getString(2).trim());
-            } catch (NullPointerException e) {
-                value.setFirstName("");
+        Statement state = null;
+        try {
+            state = con.createStatement();
+            String query = "SELECT * FROM SEC$USERS";
+            ResultSet result = state.executeQuery(query);
+            while (result.next()) {
+                // do code
+                String key = result.getString(1).trim();
+                FBUserImpl value = new FBUserImpl();
+                value.setUserName(key);
+                value.setPassword("");
+                try {
+                    value.setFirstName(result.getString(2).trim());
+                } catch (NullPointerException e) {
+                    value.setFirstName("");
+                }
+                try {
+                    value.setMiddleName(result.getString(3).trim());
+                } catch (NullPointerException e) {
+                    value.setMiddleName("");
+                }
+                try {
+                    value.setLastName(result.getString(4).trim());
+                } catch (NullPointerException e) {
+                    value.setLastName("");
+                }
+                try {
+                    value.setActive(result.getBoolean(5));
+                } catch (NullPointerException e) {
+                    value.setActive(false);
+                }
+                try {
+                    value.setAdministrator(result.getBoolean(6));
+                } catch (NullPointerException e) {
+                    value.setAdministrator(false);
+                }
+                try {
+                    value.setDescription(result.getString(7));
+                } catch (NullPointerException e) {
+                    value.setDescription("");
+                }
+                try {
+                    value.setPlugin(result.getString(8).trim());
+                } catch (NullPointerException e) {
+                    value.setPlugin("");
+                }
+                //value.setTags(getTags(key,value.getPlugin()));
+                mUsers.put(key + ":" + value.getPlugin(), value);
             }
-            try {
-                value.setMiddleName(result.getString(3).trim());
-            } catch (NullPointerException e) {
-                value.setMiddleName("");
-            }
-            try {
-                value.setLastName(result.getString(4).trim());
-            } catch (NullPointerException e) {
-                value.setLastName("");
-            }
-            try {
-                value.setActive(result.getBoolean(5));
-            } catch (NullPointerException e) {
-                value.setActive(false);
-            }
-            try {
-                value.setAdministrator(result.getBoolean(6));
-            } catch (NullPointerException e) {
-                value.setAdministrator(false);
-            }
-            try {
-                value.setDescription(result.getString(7));
-            } catch (NullPointerException e) {
-                value.setDescription("");
-            }
-            try {
-                value.setPlugin(result.getString(8).trim());
-            } catch (NullPointerException e) {
-                value.setPlugin("");
-            }
-            //value.setTags(getTags(key,value.getPlugin()));
-            mUsers.put(key + ":" + value.getPlugin(), value);
+        } finally {
+            if (state != null && !state.isClosed())
+                state.close();
         }
-        state.close();
         for (IFBUser u : mUsers.values()) {
             u.setTags(getTags(u.getUserName(), u.getPlugin()));
         }
-
         return mUsers;
     }
 
     private Map<String, String> getTags(String name, String Plugin) {
         Map<String, String> tags = new HashMap<>();
+        Statement state1 = null;
         try {
-
-            Statement state1 = con.createStatement();
+            state1 = con.createStatement();
             String query = "SELECT * FROM SEC$USER_ATTRIBUTES WHERE SEC$USER_NAME = '" + name + "' and SEC$PLUGIN = '" + Plugin + "'";
             ResultSet result1 = state1.executeQuery(query);
             while (result1.next()) {
                 tags.put(result1.getString(2), result1.getString(3));
             }
-            state1.close();
-            return tags;
-
         } catch (Exception e) {
-            return tags;
+            e.printStackTrace();
+        } finally {
+            try {
+                if (state1 != null && !state1.isClosed())
+                    state1.close();
+            } catch (SQLException e) {
+                // nothing to do
+            }
         }
+        return tags;
     }
 
     private void execute_query(String query) throws SQLException {
-        Statement state = con.createStatement();
-        state.executeUpdate(query);
-        if (!con.getAutoCommit())
-            con.commit();
-        state.close();
+        Statement state = null;
+        try {
+            state = con.createStatement();
+            state.executeUpdate(query);
+            if (!con.getAutoCommit())
+                con.commit();
+        } finally {
+            if (state != null && !state.isClosed())
+                state.close();
+        }
 
     }
 }

@@ -8,6 +8,7 @@ import org.underworldlabs.swing.NumberTextField;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.HashMap;
@@ -16,36 +17,36 @@ import java.util.Map;
 /**
  * Created by mikhan808 on 20.02.2017.
  */
-public class WindowAddUser extends javax.swing.JPanel {
+public class WindowAddUser extends JPanel {
 
     UserManagerPanel ump;
     int version;
     IFBUser user;
     boolean edit;
-    private javax.swing.JButton cancelButton;
-    private javax.swing.JPasswordField confirmField;
-    private javax.swing.JTextArea descriptionField;
-    private javax.swing.JTextField firstNameField;
+    private JButton cancelButton;
+    private JPasswordField confirmField;
+    private JTextArea descriptionField;
+    private JTextField firstNameField;
     private NumberTextField groupIDField;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
-    private javax.swing.JLabel tagLabel;
+    private JLabel jLabel1;
+    private JLabel jLabel2;
+    private JLabel jLabel3;
+    private JLabel jLabel4;
+    private JLabel jLabel5;
+    private JLabel jLabel6;
+    private JLabel jLabel7;
+    private JLabel jLabel8;
+    private JLabel jLabel9;
+    private JLabel tagLabel;
     private JLabel pluginLabel;
     private JTextField pluginField;
     private JCheckBox adminBox;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField lastNameField;
-    private javax.swing.JTextField middleNameField;
-    private javax.swing.JTextField nameTextField;
-    private javax.swing.JButton okButton;
-    private javax.swing.JPasswordField passTextField;
+    private JScrollPane jScrollPane1;
+    private JTextField lastNameField;
+    private JTextField middleNameField;
+    private JTextField nameTextField;
+    private JButton okButton;
+    private JPasswordField passTextField;
     private NumberTextField userIDField;
     private JTable tagTable;
     private JScrollPane tagScrol;
@@ -90,7 +91,7 @@ public class WindowAddUser extends javax.swing.JPanel {
 
     private void initComponents() {
 
-        nameTextField = new javax.swing.JTextField();
+        nameTextField = new JTextField();
         nameTextField.setTransferHandler(null);
         nameTextField.addKeyListener(new KeyListener() {
 
@@ -111,7 +112,7 @@ public class WindowAddUser extends javax.swing.JPanel {
             }
 
         });
-        passTextField = new javax.swing.JPasswordField();
+        passTextField = new JPasswordField();
         passTextField.setTransferHandler(null);
         passTextField.addKeyListener(new KeyListener() {
 
@@ -131,7 +132,7 @@ public class WindowAddUser extends javax.swing.JPanel {
 
             }
         });
-        confirmField = new javax.swing.JPasswordField();
+        confirmField = new JPasswordField();
         confirmField.setTransferHandler(null);
         confirmField.addKeyListener(new KeyListener() {
 
@@ -152,25 +153,25 @@ public class WindowAddUser extends javax.swing.JPanel {
             }
 
         });
-        firstNameField = new javax.swing.JTextField();
-        middleNameField = new javax.swing.JTextField();
-        lastNameField = new javax.swing.JTextField();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        descriptionField = new javax.swing.JTextArea();
+        firstNameField = new JTextField();
+        middleNameField = new JTextField();
+        lastNameField = new JTextField();
+        jScrollPane1 = new JScrollPane();
+        descriptionField = new JTextArea();
         userIDField = new NumberTextField();
         groupIDField = new NumberTextField();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
+        jLabel1 = new JLabel();
+        jLabel2 = new JLabel();
+        jLabel3 = new JLabel();
+        jLabel4 = new JLabel();
+        jLabel5 = new JLabel();
+        jLabel6 = new JLabel();
+        jLabel7 = new JLabel();
+        jLabel8 = new JLabel();
+        jLabel9 = new JLabel();
         tagLabel = new JLabel();
-        okButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
+        okButton = new JButton();
+        cancelButton = new JButton();
         tagTable = new JTable();
         tagScrol = new JScrollPane();
         activeBox = new JCheckBox();
@@ -180,26 +181,14 @@ public class WindowAddUser extends javax.swing.JPanel {
         pluginField = new JTextField();
         adminBox = new JCheckBox();
 
-        //setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-        descriptionField.setColumns(20);
-        descriptionField.setRows(5);
         jScrollPane1.setViewportView(descriptionField);
         tagScrol.setViewportView(tagTable);
 
         addTag.setText(bundleString("addTag"));
-        addTag.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addTagActionPerformed(evt);
-            }
-        });
+        addTag.addActionListener(evt -> addTagActionPerformed(evt));
 
         deleteTag.setText(bundleString("deleteTag"));
-        deleteTag.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deleteTagActionPerformed(evt);
-            }
-        });
+        deleteTag.addActionListener(evt -> deleteTagActionPerformed(evt));
 
         userIDField.setText("0");
 
@@ -230,18 +219,10 @@ public class WindowAddUser extends javax.swing.JPanel {
         tagLabel.setText(bundleString("Tags"));
 
         okButton.setText(bundleString("OK"));
-        okButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                okButtonActionPerformed(evt);
-            }
-        });
+        okButton.addActionListener(evt -> okButtonActionPerformed(evt));
 
         cancelButton.setText(bundleString("Cancel"));
-        cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
-            }
-        });
+        cancelButton.addActionListener(evt -> cancelButtonActionPerformed(evt));
 
         tagTable.setModel(new DefaultTableModel(new Object[][]{
 
@@ -251,147 +232,114 @@ public class WindowAddUser extends javax.swing.JPanel {
 
         activeBox.setText(bundleString("active"));
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addContainerGap()
-                                                        .addComponent(jLabel1))
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addContainerGap()
-                                                        .addComponent(jLabel2))
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addContainerGap()
-                                                        .addComponent(jLabel3))
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addContainerGap()
-                                                        .addComponent(jLabel4))
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addContainerGap()
-                                                        .addComponent(jLabel5))
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addContainerGap()
-                                                        .addComponent(jLabel6))
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addContainerGap()
-                                                        .addComponent(jLabel7))
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addContainerGap()
-                                                        .addComponent(jLabel8))
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addContainerGap()
-                                                        .addComponent(pluginLabel))
-                                        )
-                                        .addGap(18, 18, 18)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                .addComponent(nameTextField)
-                                                .addComponent(passTextField)
-                                                .addComponent(confirmField)
-                                                .addComponent(firstNameField)
-                                                .addComponent(middleNameField)
-                                                .addComponent(lastNameField, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
-                                                .addComponent(userIDField)
-                                                .addComponent(groupIDField)
-                                                .addComponent(pluginField)
-                                                .addComponent(activeBox)
-                                                .addComponent(adminBox)
-                                        ))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                                        .addComponent(jLabel9)
-                                                                        .addComponent(tagLabel)))
-                                                        .addGap(18, 18, 18)
-                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                                        .addComponent(jScrollPane1)
-                                                                        .addComponent(tagScrol))
-                                                        )))
-                                        .addGroup(layout.createSequentialGroup()
-                                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(addTag, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(deleteTag, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(cancelButton)
-                                                .addGap(19, 19, 19))))
+        JPanel panel = new JPanel(new GridBagLayout());
 
-        );
-        layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addGap(20, 20, 20)
-                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                                .addComponent(nameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                .addComponent(jLabel1))
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                                .addComponent(passTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                .addComponent(jLabel2))
-                                                        .addGap(18, 18, 18)
-                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                                .addComponent(confirmField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                .addComponent(jLabel3))
-                                                        .addGap(18, 18, 18)
-                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                                .addComponent(firstNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                .addComponent(jLabel4))
-                                                        .addGap(18, 18, 18)
-                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                                .addComponent(middleNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                .addComponent(jLabel5))
-                                                        .addGap(18, 18, 18)
-                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                                .addComponent(lastNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                .addComponent(jLabel6))
-                                                        .addGap(18, 18, 18)
-                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                                .addComponent(userIDField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                .addComponent(jLabel7))
-                                                        .addGap(18, 18, 18)
-                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                                .addComponent(groupIDField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                .addComponent(jLabel8))
-                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                                .addComponent(pluginField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                .addComponent(pluginLabel))
-                                                        .addGap(18, 18, 18)
-                                                        .addComponent(activeBox)
-                                                        .addGap(18, 18, 18)
-                                                        .addComponent(adminBox)
-                                                ))
-                                        .addGroup(layout.createSequentialGroup()
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                        .addComponent(jLabel9)
-                                                        .addComponent(jScrollPane1))
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                        .addComponent(tagLabel)
-                                                        .addComponent(tagScrol))
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                        .addComponent(cancelButton)
-                                                        .addComponent(okButton)
-                                                        .addComponent(deleteTag)
-                                                        .addComponent(addTag)
-                                                )
-                                                .addGap(10, 10, 10))))
+        GridBagConstraints gbConst = new GridBagConstraints(
+                0, 0, 1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST,
+                GridBagConstraints.NONE,
+                new Insets(2, 2, 2, 2), 0, 0);
+        panel.add(jLabel1, gbConst);
+        gbConst.gridy++;
+        panel.add(jLabel2, gbConst);
+        gbConst.gridy++;
+        panel.add(jLabel3, gbConst);
+        gbConst.gridy++;
+        panel.add(jLabel4, gbConst);
+        gbConst.gridy++;
+        panel.add(jLabel5, gbConst);
+        gbConst.gridy++;
+        panel.add(jLabel6, gbConst);
+        gbConst.gridy++;
+        panel.add(jLabel7, gbConst);
+        gbConst.gridy++;
+        panel.add(jLabel8, gbConst);
+        gbConst.gridy++;
+        panel.add(pluginLabel, gbConst);
+        gbConst.weightx = 0.5;
+        gbConst.gridx = 1;
+        gbConst.gridy = 0;
+        gbConst.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(nameTextField, gbConst);
+        gbConst.gridy++;
+        panel.add(passTextField, gbConst);
+        gbConst.gridy++;
+        panel.add(confirmField, gbConst);
+        gbConst.gridy++;
+        panel.add(firstNameField, gbConst);
+        gbConst.gridy++;
+        panel.add(middleNameField, gbConst);
+        gbConst.gridy++;
+        panel.add(lastNameField, gbConst);
+        gbConst.gridy++;
+        panel.add(userIDField, gbConst);
+        gbConst.gridy++;
+        panel.add(groupIDField, gbConst);
+        gbConst.gridy++;
+        panel.add(pluginField, gbConst);
+        gbConst.gridy++;
+        panel.add(activeBox, gbConst);
+        gbConst.gridy++;
+        panel.add(adminBox, gbConst);
 
-        );
+        gbConst.fill = GridBagConstraints.NONE;
+        gbConst.weightx = 0;
+        gbConst.gridy = 0;
+        gbConst.gridx = 2;
+        panel.add(jLabel9, gbConst);
+
+        gbConst.fill = GridBagConstraints.BOTH;
+        gbConst.weightx = 0;
+        gbConst.weighty = 0;
+        gbConst.gridx = 3;
+        gbConst.gridheight = 3;
+        panel.add(jScrollPane1, gbConst);
+
+        gbConst.fill = GridBagConstraints.NONE;
+        gbConst.weightx = 0;
+        gbConst.weighty = 0;
+        gbConst.gridy = 3;
+        gbConst.gridx = 2;
+        gbConst.gridheight = 1;
+        panel.add(tagLabel, gbConst);
+
+        gbConst.gridy++;
+        panel.add(addTag, gbConst);
+
+        gbConst.gridy++;
+        panel.add(deleteTag, gbConst);
+
+        gbConst.fill = GridBagConstraints.BOTH;
+        gbConst.weightx = 1;
+        gbConst.gridy = 3;
+        gbConst.gridx = 3;
+        gbConst.gridheight = 8;
+        gbConst.weighty = 1;
+        panel.add(tagScrol, gbConst);
+
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx++;
+        gbc.weightx = 0.5;
+        gbc.insets.top = 5;
+        gbc.anchor = GridBagConstraints.EAST;
+        buttonPanel.add(okButton, gbc);
+        gbc.weightx = 0;
+        gbc.gridx++;
+        gbc.insets.left = 5;
+        buttonPanel.add(cancelButton, gbc);
+
+        gbConst.fill = GridBagConstraints.HORIZONTAL;
+        gbConst.gridy = 11;
+        gbConst.gridx = 3;
+        gbConst.gridheight = 1;
+        gbConst.weightx = 0;
+        gbConst.weighty = 0;
+        panel.add(buttonPanel, gbConst);
+
+        setLayout(new GridLayout());
+        add(panel);
         initVersion();
-        //pack();
     }
 
     private void initVersion() {

@@ -798,12 +798,18 @@ private:
             // Hopefully our caller will report something more useful than the shared
             // library handle.
 #ifdef __linux__
-            os << "GetProcAddress(" << sl_handle
-               << ", JNI_CreateJavaVM) failed with " << dlerror() << ".";
+            os << "dlsym(" << sl_handle
+               << ", JNI_CreateJavaVM) failed with " << dlerror() << ".\n";
 #else
             os << "dlsym(" << sl_handle
-               << ", JNI_CreateJavaVM) failed with " << GetLastError() << ".";
+               << ", JNI_CreateJavaVM) failed with " << GetLastError() << ".\n";
 #endif
+            if (sl_handle == 0)
+                os << "A Java Runtime Environment (JRE) or Java Development Kit (JDK) must be available in order to run Red Expert. " <<
+                      "No Java virtual machine was found.\n" <<
+                      "If the required Java Runtime Environment is not installed, you can download it from from the website:\n" <<
+                      "http://java.com/\n" <<
+                      "then try again.";
             throw std::runtime_error(os.str());
         }
         return jvm;

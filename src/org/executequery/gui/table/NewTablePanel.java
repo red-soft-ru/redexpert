@@ -101,7 +101,7 @@ public class NewTablePanel extends TableDefinitionPanel
             return;
         }
 
-        ColumnData cd = (ColumnData) tableVector.get(row);
+        ColumnData cd = tableVector.get(row);
         switch (col) {
             case NAME_COLUMN:
                 cd.setColumnName(value);
@@ -143,10 +143,10 @@ public class NewTablePanel extends TableDefinitionPanel
      */
     private void updateScript(int row, int col) {
         line.setLength(0);
-        ColumnData cd = (ColumnData) tableVector.get(row);
+        ColumnData cd = tableVector.get(row);
         line.setLength(0);
         line.append(NEW_LINE_2).
-                append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnName()).
+                append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnNameInQuotes()).
                 append(SPACE);
         if (MiscUtils.isNull(cd.getComputedBy())) {
             if (MiscUtils.isNull(cd.getDomain())) {
@@ -154,7 +154,7 @@ public class NewTablePanel extends TableDefinitionPanel
                     line.append(cd.getFormattedDataType());
                 }
             } else {
-                line.append(cd.getDomain());
+                line.append(cd.getDomainInQuotes());
             }
             if (!MiscUtils.isNull(cd.getDefaultValue())) {
                 String value = "";
@@ -216,24 +216,24 @@ public class NewTablePanel extends TableDefinitionPanel
         descriptions = new ArrayList<>();
         AutoincrementSQLText = "";
         for (int i = 0, k = tableVector.size(); i < k; i++) {
-            ColumnData cd = (ColumnData) tableVector.elementAt(i);
+            ColumnData cd = tableVector.elementAt(i);
             AutoincrementSQLText += cd.getAutoincrement().getSqlAutoincrement();
             if (cd.isPrimaryKey()) {
                 if (primary)
                     primaryText.append(", ");
                 else primaryText.append(" ");
-                primaryText.append(cd.getColumnName());
+                primaryText.append(cd.getColumnNameInQuotes());
                 primary = true;
             }
             if (!MiscUtils.isNull(cd.getDescription())) {
-                descriptions.add(cd.getColumnName() + " is '" + cd.getDescription() + "'");
+                descriptions.add(cd.getColumnNameInQuotes() + " is '" + cd.getDescription() + "'");
             }
             if (i == row) {
                 sqlText.append(line);
             } else if (!cd.isNewColumn()) {
 
                 sqlText.append(NEW_LINE_2).append(
-                        cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnName()).
+                        cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnNameInQuotes()).
                         append(SPACE);
                 if (MiscUtils.isNull(cd.getComputedBy())) {
                     if (MiscUtils.isNull(cd.getDomain())) {
@@ -265,7 +265,7 @@ public class NewTablePanel extends TableDefinitionPanel
 
                         }
                     } else {
-                        sqlText.append(cd.getDomain());
+                        sqlText.append(cd.getDomainInQuotes());
                     }
                     if (!MiscUtils.isNull(cd.getDefaultValue())) {
                         String value = "";

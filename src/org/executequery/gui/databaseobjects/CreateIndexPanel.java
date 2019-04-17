@@ -310,17 +310,17 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                 if (activeBox.isSelected())
                     act = "ACTIVE";
                 else act = "INACTIVE";
-                query = "ALTER INDEX " + nameField.getText() + " " + act + ";";
+                query = "ALTER INDEX " + getNameInQuotes() + " " + act + ";";
             }
         } else {
             if (editing)
-                query = "DROP INDEX " + nameField.getText() + ";";
+                query = "DROP INDEX " + getNameInQuotes() + ";";
             query += "CREATE ";
             if (uniqueBox.isSelected())
                 query += "UNIQUE ";
             if (sortingBox.getSelectedIndex() == 1)
                 query += "DESCENDING ";
-            query += "INDEX " + nameField.getText() +
+            query += "INDEX " + getNameInQuotes() +
                     " ON " + tableName.getSelectedItem() + " ";
             if (computedBox.isSelected()) {
                 query += "COMPUTED BY (" + computedPanel.getSQLText() + ");";
@@ -341,10 +341,10 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                 query += fieldss + ");";
             }
             if (!activeBox.isSelected())
-                query += "ALTER INDEX " + nameField.getText() + " INACTIVE;";
+                query += "ALTER INDEX " + getNameInQuotes() + " INACTIVE;";
         }
         if (!MiscUtils.isNull(description.getTextAreaComponent().getText()))
-            query += new StringBuilder().append("COMMENT ON INDEX ").append(nameField.getText()).append(" IS '").append(description.getTextAreaComponent().getText()).append("'").toString();
+            query += new StringBuilder().append("COMMENT ON INDEX ").append(getNameInQuotes()).append(" IS '").append(description.getTextAreaComponent().getText()).append("'").toString();
         displayExecuteQueryDialog(query, ";");
 
     }

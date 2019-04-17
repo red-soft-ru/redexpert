@@ -181,9 +181,9 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         sb.setLength(0);
         if (editing) {
             if (columnData.isChanged()) {
-                sb.append("ALTER DOMAIN ").append(domain).append("\n");
+                sb.append("ALTER DOMAIN ").append(MiscUtils.wordInQuotes(domain)).append("\n");
                 if (columnData.isNameChanged()) {
-                    sb.append("TO ").append(columnData.getColumnName()).append("\n");
+                    sb.append("TO ").append(columnData.getColumnNameInQuotes()).append("\n");
                 }
                 if (columnData.isDefaultChanged()) {
                     if (MiscUtils.isNull(columnData.getDefaultValue()))
@@ -219,7 +219,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
                 }
                 sb.append(";");
                 if (columnData.isDescriptionChanged()) {
-                    sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getColumnName()).append(" IS ");
+                    sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getColumnNameInQuotes()).append(" IS ");
                     if (!MiscUtils.isNull(columnData.getDescription())) {
 
                         sb.append("'").append(columnData.getDescription()).append("'");
@@ -231,7 +231,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
                 sqlTextPane.setText(sb.toString());
             }
         } else {
-            sb.append("CREATE DOMAIN ").append(columnData.getColumnName()).append(" as ").append(columnData.getFormattedDataType()).append("\n");
+            sb.append("CREATE DOMAIN ").append(columnData.getColumnNameInQuotes()).append(" as ").append(columnData.getFormattedDataType()).append("\n");
             if (!MiscUtils.isNull(columnData.getDefaultValue())) {
                 sb.append(" DEFAULT ").append(MiscUtils.formattedSQLValue(columnData.getDefaultValue(), columnData.getSQLType()));
             }
@@ -241,7 +241,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
             }
             sb.append(";");
             if (!MiscUtils.isNull(columnData.getDescription())) {
-                sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getColumnName()).append(" IS '")
+                sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getColumnNameInQuotes()).append(" IS '")
                         .append(columnData.getDescription()).append("';");
             }
             sqlTextPane.setText(sb.toString());

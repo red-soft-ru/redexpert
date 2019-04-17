@@ -197,6 +197,8 @@ public class CreateTablePanel extends CreateTableFunctionPanel
                     bundleString("message.notConnected"));
             return;
         }
+        tablePanel.stopEditing();
+        consPanel.stopEditing();
         createTable();
     }
 

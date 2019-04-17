@@ -220,7 +220,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
         {
             StringBuilder sb = new StringBuilder();
             sb.append("create or alter procedure ");
-            sb.append(nameField.getText());
+            sb.append(getNameInQuotes());
             sb.append(" (");
             sb.append(formattedParameters(inputParametersPanel.getProcedureParameterModel().getTableVector(), false));
             sb.append(")\n");
@@ -242,7 +242,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
             if (text != null && !text.isEmpty()) {
                 sb.append("\n");
                 sb.append("COMMENT ON PROCEDURE ");
-                sb.append(nameField.getText());
+                sb.append(getNameInQuotes());
                 sb.append(" IS '");
                 sb.append(text);
                 sb.append("'");
@@ -255,8 +255,8 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
                 if (cdText != null && !cdText.isEmpty()) {
                     sb.append("\n");
                     sb.append("COMMENT ON PARAMETER ");
-                    sb.append(nameField.getText()).append(".");
-                    sb.append(cd.getColumnName());
+                    sb.append(getNameInQuotes()).append(".");
+                    sb.append(cd.getColumnNameInQuotes());
                     sb.append(" IS '");
                     sb.append(cdText);
                     sb.append("'\n");
@@ -270,8 +270,8 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
                 if (cdText != null && !cdText.isEmpty()) {
                     sb.append("\n");
                     sb.append("COMMENT ON PARAMETER ");
-                    sb.append(nameField.getText()).append(".");
-                    sb.append(cd.getColumnName());
+                    sb.append(getNameInQuotes()).append(".");
+                    sb.append(cd.getColumnNameInQuotes());
                     sb.append(" IS '");
                     sb.append(cdText);
                     sb.append("'\n");

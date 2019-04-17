@@ -41,6 +41,7 @@ import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.actions.ReflectiveAction;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.tree.TreePath;
@@ -88,7 +89,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 type = NamedObject.META_TYPES[NamedObject.TABLE];
             else
                 type = NamedObject.META_TYPES[node.getType()];
-            String query = "DROP " + type + " " + node.getName();
+            String query = "DROP " + type + " " + MiscUtils.wordInQuotes(node.getName());
             ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, currentSelection, true);
             eqd.display();
             if (eqd.getCommit())

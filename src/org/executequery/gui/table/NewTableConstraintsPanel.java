@@ -123,16 +123,16 @@ public class NewTableConstraintsPanel extends TableConstraintsPanel
             if (hasName) {
 
                 sqlBuffer.append(COMMA).append(NEW_LINE_2).append(CONSTRAINT);
-                sqlBuffer.append(name).append(SPACE);
+                sqlBuffer.append(MiscUtils.wordInQuotes(name)).append(SPACE);
 
                 if (cc.getType() != -1) {
 
                     if (cc.getType() == ColumnConstraint.UNIQUE_KEY) {
                         sqlBuffer.append(ColumnConstraint.UNIQUE).append(B_OPEN);
-                        sqlBuffer.append(cc.getColumn()).append(B_CLOSE);
+                        sqlBuffer.append(MiscUtils.wordInQuotes(cc.getColumn())).append(B_CLOSE);
                     } else {
                         sqlBuffer.append(cc.getTypeName()).append(KEY).append(B_OPEN);
-                        sqlBuffer.append(cc.getColumn());
+                        sqlBuffer.append(MiscUtils.wordInQuotes(cc.getColumn()));
                         sqlBuffer.append(B_CLOSE);
 
                         if (cc.getType() == ColumnConstraint.FOREIGN_KEY) {
@@ -141,8 +141,8 @@ public class NewTableConstraintsPanel extends TableConstraintsPanel
                             if (cc.hasSchema())
                                 sqlBuffer.append(cc.getRefSchema()).append(DOT);
 
-                            sqlBuffer.append(cc.getRefTable()).
-                                    append(B_OPEN).append(cc.getRefColumn()).
+                            sqlBuffer.append(MiscUtils.wordInQuotes(cc.getRefTable())).
+                                    append(B_OPEN).append(MiscUtils.wordInQuotes(cc.getRefColumn())).
                                     append(B_CLOSE);
                         }
 

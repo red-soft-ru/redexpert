@@ -7,7 +7,6 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
 import org.executequery.gui.ActionContainer;
-import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.text.SimpleTextArea;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.MiscUtils;
@@ -121,16 +120,16 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
         if (!MiscUtils.isNull(nameField.getText().trim())) {
             String query;
             if (getVersion() == 3) {
-                query = "CREATE OR ALTER SEQUENCE " + nameField.getText() + " START WITH " + startValueText.getStringValue()
+                query = "CREATE OR ALTER SEQUENCE " + getNameInQuotes() + " START WITH " + startValueText.getStringValue()
                         + " INCREMENT BY " + incrementText.getStringValue() + ";";
             } else {
                 if (!editing)
-                    query = "CREATE SEQUENCE " + nameField.getText() + ";";
+                    query = "CREATE SEQUENCE " + getNameInQuotes() + ";";
                 else query = "";
-                query += "\nALTER SEQUENCE " + nameField.getText() + " RESTART WITH " + startValueText.getStringValue() + ";";
+                query += "\nALTER SEQUENCE " + getNameInQuotes() + " RESTART WITH " + startValueText.getStringValue() + ";";
             }
             if (!MiscUtils.isNull(description.getTextAreaComponent().getText().trim()))
-                query += "\nCOMMENT ON SEQUENCE " + nameField.getText() + " IS '" + description.getTextAreaComponent().getText() + "'";
+                query += "\nCOMMENT ON SEQUENCE " + getNameInQuotes() + " IS '" + description.getTextAreaComponent().getText() + "'";
 
             displayExecuteQueryDialog(query, ";");
         } else

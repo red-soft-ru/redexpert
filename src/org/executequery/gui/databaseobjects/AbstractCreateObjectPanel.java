@@ -15,6 +15,7 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.tree.TreePath;
@@ -156,6 +157,10 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
     public abstract void setDatabaseObject(Object databaseObject);
 
     public abstract void setParameters(Object[] params);
+
+    public String getNameInQuotes() {
+        return MiscUtils.wordInQuotes(nameField.getText());
+    }
 
     public String bundleString(String key) {
         return Bundles.get(getClass(), key);

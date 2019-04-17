@@ -510,7 +510,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
         if (tablePanel.descriptions != null)
             for (String d : tablePanel.descriptions) {
                 description.append("COMMENT ON COLUMN ");
-                description.append(nameField.getText());
+                description.append(MiscUtils.wordInQuotes(nameField.getText()));
                 description.append("." + d);
                 description.append("^");
 
@@ -526,7 +526,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
             }
         }
 
-        sqlBuffer.append(nameField.getText()).
+        sqlBuffer.append(MiscUtils.wordInQuotes(nameField.getText())).
                 append(CreateTableSQLSyntax.SPACE).
                 append(CreateTableSQLSyntax.B_OPEN);
 

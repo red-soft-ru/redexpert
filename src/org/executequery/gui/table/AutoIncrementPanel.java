@@ -4,6 +4,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.text.SQLTextPane;
 import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -179,12 +180,12 @@ public class AutoIncrementPanel extends JPanel {
                 ai.setCreateTrigger(createTriggerBox.isSelected());
                 triggerScroll.setVisible(ai.isCreateTrigger());
                 if (ai.isCreateTrigger()) {
-                    String sql = "create trigger " + tableName + "_bi for " + tableName + "\n" +
+                    String sql = "create trigger " + MiscUtils.wordInQuotes(tableName + "_bi") + " for " + MiscUtils.wordInQuotes(tableName) + "\n" +
                             "active before insert position 0\n" +
                             "as\n" +
                             "begin\n" +
-                            "if (new." + ai.getFieldName() + " is null) then\n" +
-                            "new." + ai.getFieldName() + " = gen_id(" + ai.getGeneratorName() + ",1);\n" +
+                            "if (new." + MiscUtils.wordInQuotes(ai.getFieldName()) + " is null) then\n" +
+                            "new." + MiscUtils.wordInQuotes(ai.getFieldName()) + " = gen_id(" + MiscUtils.wordInQuotes(ai.getGeneratorName()) + ",1);\n" +
                             "end";
                     triggerSQLPane.setText(sql);
                 }
@@ -319,10 +320,10 @@ public class AutoIncrementPanel extends JPanel {
     public void generateAI() {
         String sql = "";
         if (ai.isCreateGenerator()) {
-            sql += "\nCREATE SEQUENCE " + ai.getGeneratorName() + "^";
+            sql += "\nCREATE SEQUENCE " + MiscUtils.wordInQuotes(ai.getGeneratorName()) + "^";
             ai.setStartValue(createStartValue.getValue());
             if (ai.getStartValue() != 0) {
-                sql += "\nALTER SEQUENCE " + ai.getGeneratorName() + " RESTART WITH " + ai.getStartValue() + "^";
+                sql += "\nALTER SEQUENCE " + MiscUtils.wordInQuotes(ai.getGeneratorName()) + " RESTART WITH " + ai.getStartValue() + "^";
             }
         }
         if (ai.isCreateTrigger()) {

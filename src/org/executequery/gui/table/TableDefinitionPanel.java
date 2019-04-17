@@ -298,7 +298,7 @@ public abstract class TableDefinitionPanel extends JPanel
             };
 
             loadCharsets();
-            final JComboBox charsetEditor = new JComboBox((String[]) charsets.toArray(new String[charsets.size()]));
+            final JComboBox charsetEditor = new JComboBox(charsets.toArray(new String[charsets.size()]));
             DefaultCellEditor charsetCellEditor = new DefaultCellEditor(charsetEditor);
 
             tcm.getColumn(SIZE_COLUMN).setCellEditor(szEditor);
@@ -738,6 +738,10 @@ public abstract class TableDefinitionPanel extends JPanel
     /**
      * The table view display.
      */
+
+    public void stopEditing() {
+        table.stopEditing();
+    }
     private class DatabaseTable extends DefaultTable
             implements MouseListener {
 
@@ -789,6 +793,11 @@ public abstract class TableDefinitionPanel extends JPanel
         }
 
         public void mouseReleased(MouseEvent e) {
+        }
+
+        public void stopEditing() {
+            if (isEditing())
+                getCellEditor().stopCellEditing();
         }
 
     } // class DatabaseTable

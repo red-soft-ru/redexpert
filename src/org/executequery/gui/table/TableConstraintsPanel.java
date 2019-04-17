@@ -150,6 +150,11 @@ public abstract class TableConstraintsPanel extends JPanel
         }
     }
 
+    public void stopEditing() {
+        if (table.isEditing())
+            table.getCellEditor().stopCellEditing();
+    }
+
     public void setData(Vector keys, boolean fillCombos) {
 
         boolean keysEmpty = keys.isEmpty();

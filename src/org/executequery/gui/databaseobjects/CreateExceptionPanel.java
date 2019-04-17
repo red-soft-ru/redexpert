@@ -68,8 +68,8 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
     }
 
     void generateScript() {
-        String query = "CREATE OR ALTER EXCEPTION " + nameField.getText() + " '" + textExceptionPanel.getTextAreaComponent().getText() + "'^";
-        query += "COMMENT ON EXCEPTION " + nameField.getText() + " IS '" + descriptionPanel.getTextAreaComponent().getText() + "'";
+        String query = "CREATE OR ALTER EXCEPTION " + getNameInQuotes() + " '" + textExceptionPanel.getTextAreaComponent().getText() + "'^";
+        query += "COMMENT ON EXCEPTION " + getNameInQuotes() + " IS '" + descriptionPanel.getTextAreaComponent().getText() + "'";
         displayExecuteQueryDialog(query, "^");
     }
 

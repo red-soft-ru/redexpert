@@ -200,7 +200,7 @@ public final class MiscUtils {
             list.add(st.nextToken());
         }
 
-        String[] values = (String[]) list.toArray(new String[list.size()]);
+        String[] values = list.toArray(new String[list.size()]);
         return values;
     }
 
@@ -262,13 +262,13 @@ public final class MiscUtils {
     }
 
     public static String[] findImplementingClasses(
-            String interfaceName, String paths) throws MalformedURLException, IOException {
+            String interfaceName, String paths) throws IOException {
         return findImplementingClasses(interfaceName, paths, true);
     }
 
     public static String[] findImplementingClasses(
             String interfaceName, String paths, boolean interfaceOnly)
-            throws MalformedURLException, IOException {
+            throws IOException {
 
         URL[] urls = loadURLs(paths);
         URLClassLoader loader = new URLClassLoader(urls, ClassLoader.getSystemClassLoader());
@@ -344,7 +344,7 @@ public final class MiscUtils {
         }
 
         loader.close();
-        return (String[]) clazzes.toArray(new String[clazzes.size()]);
+        return clazzes.toArray(new String[clazzes.size()]);
     }
 
     public static boolean implementsClass(Class<?> clazz, String implementation) {
@@ -363,12 +363,9 @@ public final class MiscUtils {
         }
 
         Class<?> superClazz = clazz.getSuperclass();
-        if (superClazz != null && !superClazz.isInterface()
-                && implementsClass(superClazz, implementation)) {
-            return true;
-        }
+        return superClazz != null && !superClazz.isInterface()
+                && implementsClass(superClazz, implementation);
 
-        return false;
     }
 
 
@@ -411,7 +408,7 @@ public final class MiscUtils {
 
         URL[] urls = new URL[pathsVector.size()];
         for (int i = 0; i < urls.length; i++) {
-            File f = new File((String) pathsVector.elementAt(i));
+            File f = new File(pathsVector.elementAt(i));
             urls[i] = f.toURI().toURL();
         }
         return urls;
@@ -597,11 +594,8 @@ public final class MiscUtils {
         }
 
         _version = Integer.parseInt(installed[1]);
-        if (_version < minor) {
-            return false;
-        }
+        return _version >= minor;
 
-        return true;
     }
 
     /**
@@ -704,6 +698,10 @@ public final class MiscUtils {
         b = b.replace("\f", ".");
         b = b.replace("\r", ".");
         return b;
+    }
+
+    public static String wordInQuotes(String world) {
+        return "\"" + world + "\"";
     }
 
 }

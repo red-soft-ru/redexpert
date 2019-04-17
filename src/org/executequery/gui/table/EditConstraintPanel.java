@@ -8,6 +8,7 @@ import org.executequery.gui.databaseobjects.AbstractCreateObjectPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.CheckBoxPanel;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -335,9 +336,9 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
     public void createObject() {
         StringBuilder sb = new StringBuilder();
         if (editing)
-            sb.append("ALTER TABLE ").append(table.getName().trim()).append(" DROP CONSTRAINT ").append(nameField.getText()).append("^");
-        sb.append("ALTER TABLE ").append(table.getName().trim()).append("\n");
-        String name_constraint = nameField.getText();
+            sb.append("ALTER TABLE ").append(MiscUtils.wordInQuotes(table.getName().trim())).append(" DROP CONSTRAINT ").append(getNameInQuotes()).append("^");
+        sb.append("ALTER TABLE ").append(MiscUtils.wordInQuotes(table.getName().trim())).append("\n");
+        String name_constraint = getNameInQuotes();
         if (generate_name) {
             name_constraint = generateName();
         }
@@ -378,14 +379,14 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                     }
                 }
                 sb.append(")\n");
-                sb.append("REFERENCES ").append(referenceTable.getSelectedItem()).append("(");
+                sb.append("REFERENCES ").append(MiscUtils.wordInQuotes((String) referenceTable.getSelectedItem())).append("(");
                 first = true;
                 for (String key : referenceColumn.getCheckBoxMap().keySet()) {
                     if (referenceColumn.getCheckBoxMap().get(key).isSelected()) {
                         if (!first)
                             sb.append(", ");
                         first = false;
-                        sb.append(key);
+                        sb.append(MiscUtils.wordInQuotes(key));
                     }
                 }
                 sb.append(")\n");
@@ -396,7 +397,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                     } else {
                         sorting = "DESCENDING";
                     }
-                    sb.append("USING ").append(sorting).append(" INDEX ").append(foreignIndexField.getText());
+                    sb.append("USING ").append(sorting).append(" INDEX ").append(MiscUtils.wordInQuotes(foreignIndexField.getText()));
                 }
                 break;
             case ColumnConstraint.UNIQUE:
@@ -418,7 +419,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                     } else {
                         sorting = "DESCENDING";
                     }
-                    sb.append("USING ").append(sorting).append(" INDEX ").append(primaryIndexField.getText());
+                    sb.append("USING ").append(sorting).append(" INDEX ").append(MiscUtils.wordInQuotes(primaryIndexField.getText()));
                 }
                 break;
             case ColumnConstraint.CHECK:

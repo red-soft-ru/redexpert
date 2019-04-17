@@ -100,7 +100,7 @@ public class CreateTableScriptsGenerator {
                                     ".\nDo you wish to view the generated script?", "Finished");
 
                     if (yesno == JOptionPane.YES_OPTION) {
-                        final String script = (String) result.get("script");
+                        final String script = result.get("script");
                         //String fileName = (String)result.get("Done");
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
@@ -253,7 +253,7 @@ public class CreateTableScriptsGenerator {
                             sb_spaces_2.append(SPACE);
                         }
 
-                        sb.append(column.getColumnName()).
+                        sb.append(column.getColumnNameInQuotes()).
                                 append(sb_spaces_2).
                                 append(column.getFormattedDataType());
 

@@ -208,8 +208,8 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
     public void createObject() {
         StringBuilder sb = new StringBuilder();
         if (editing)
-            sb.append("DROP EXTERNAL FUNCTION ").append("\"").append(nameField.getText()).append("\"").append(";\n");
-        sb.append("DECLARE EXTERNAL FUNCTION ").append("\"").append(nameField.getText()).append("\"").append("\n");
+            sb.append("DROP EXTERNAL FUNCTION ").append(getNameInQuotes()).append(";\n");
+        sb.append("DECLARE EXTERNAL FUNCTION ").append(getNameInQuotes()).append("\n");
         Vector<ColumnData> params = parametersPanel.getTableColumnDataVector();
         for (int i = 0; i < params.size(); i++) {
             ColumnData param = params.elementAt(i);
@@ -258,7 +258,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         sb.append("MODULE_NAME '").append(nameModuleField.getText()).append("';\n");
         String text = descriptionPanel.getTextAreaComponent().getText();
         if (!MiscUtils.isNull(text) && !text.trim().isEmpty()) {
-            sb.append("COMMENT ON EXTERNAL FUNCTION \"").append(nameField.getText()).append("\" IS '");
+            sb.append("COMMENT ON EXTERNAL FUNCTION ").append(getNameInQuotes()).append(" IS '");
             text = text.replace("'", "''");
             sb.append(text).append("'");
         }

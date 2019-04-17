@@ -252,7 +252,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
                                 if (fieldName.contains(".")){
                                     variable.setRelationName(fieldName.substring(0, fieldName.lastIndexOf('.')));
-                                    variable.setFieldName(fieldName.substring(fieldName.lastIndexOf('.') + 1, fieldName.length()));
+                                    variable.setFieldName(fieldName.substring(fieldName.lastIndexOf('.') + 1));
                                     variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
                                 } else {
                                     variable.setDomain(fieldName);
@@ -448,7 +448,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
     private String formattedParameter(ColumnData cd) {
         StringBuilder sb = new StringBuilder();
-        sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnName()).
+        sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnNameInQuotes()).
                 append(" ");
         if (MiscUtils.isNull(cd.getComputedBy())) {
             if (MiscUtils.isNull(cd.getDomain())) {
@@ -459,7 +459,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                 if (cd.isTypeOf())
                     sb.append(cd.getFormattedDataType());
                 else
-                    sb.append(cd.getDomain());
+                    sb.append(cd.getDomainInQuotes());
             }
             sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
             if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue())) {

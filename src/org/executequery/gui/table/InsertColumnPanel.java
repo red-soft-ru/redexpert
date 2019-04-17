@@ -275,26 +275,27 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
     void generateSQL() {
         sb.setLength(0);
         if (editing) {
+            columnData.setColumnName(nameField.getText());
             column.makeCopy();
             column.setTypeInt(columnData.getSQLType());
             column.setTypeName(columnData.getColumnType());
             column.setColumnSize(columnData.getColumnSize());
             column.setColumnScale(columnData.getColumnScale());
-            sb.append(statementGenerator.alterColumn(column, table).replace(";", "^"));
+            sb.append(alterColumn().replace(";", "^"));
             if (columnData.isAutoincrement()) {
                 sb.append(columnData.getAutoincrement().getSqlAutoincrement());
             }
             sqlPanel.setSQLText(sb.toString());
         } else {
             columnData.setColumnName(nameField.getText());
-            sb.append("ALTER TABLE ").append(table.getName()).append("\nADD ").append(columnData.getColumnName()).append("\n");
+            sb.append("ALTER TABLE ").append(MiscUtils.wordInQuotes(table.getName())).append("\nADD ").append(columnData.getColumnNameInQuotes()).append("\n");
             if (MiscUtils.isNull(columnData.getComputedBy())) {
                 if (MiscUtils.isNull(columnData.getDomain())) {
                     if (columnData.getColumnType() != null) {
                         sb.append(columnData.getFormattedDataType());
                     }
                 } else {
-                    sb.append(columnData.getDomain());
+                    sb.append(columnData.getDomainInQuotes());
                 }
                 if (!MiscUtils.isNull(columnData.getDefaultValue())) {
                     String value = "";
@@ -334,7 +335,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
             }
             sb.append("^");
             if (!MiscUtils.isNull(columnData.getDescription())) {
-                sb.append("\nCOMMENT ON COLUMN ").append(table.getName()).append(".").append(columnData.getColumnName()).append(" IS '")
+                sb.append("\nCOMMENT ON COLUMN ").append(MiscUtils.wordInQuotes(table.getName())).append(".").append(columnData.getColumnNameInQuotes()).append(" IS '")
                         .append(columnData.getDescription()).append("'^");
             }
             autoIncrementPanel.generateAI();
@@ -343,5 +344,60 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
             }
             sqlPanel.setSQLText(sb.toString());
         }
+    }
+
+    private String alterColumn() {
+        StringBuilder sb = new StringBuilder();
+
+        if (column.isNameChanged()) {
+
+            sb.append("ALTER TABLE ").append(MiscUtils.wordInQuotes(table.getName()))
+                    .append(" ALTER COLUMN ").append(MiscUtils.wordInQuotes(column.getOriginalColumn().getName())).append(" TO ").append(columnData.getColumnNameInQuotes()).append(";\n");
+        }
+
+        if (column.isDataTypeChanged()) {
+
+            sb.append("ALTER TABLE ").append(MiscUtils.wordInQuotes(table.getName()))
+                    .append(" ALTER COLUMN ").append(columnData.getColumnNameInQuotes()).append(" TYPE ").append(columnData.getFormattedDataType()).append(";\n");
+        }
+
+        if (column.isRequiredChanged()) {
+
+            if (column.isRequired()) {
+
+                sb.append("ALTER TABLE " + MiscUtils.wordInQuotes(table.getName()) +
+                        " ALTER COLUMN " + columnData.getColumnNameInQuotes() + " SET NOT NULL;\n");
+
+            } else {
+
+                sb.append("ALTER TABLE " + MiscUtils.wordInQuotes(table.getName()) +
+                        " ALTER COLUMN " + columnData.getColumnNameInQuotes() + " DROP NOT NULL;\n");
+            }
+
+        }
+
+        if (column.isDefaultValueChanged()) {
+
+            sb.append("ALTER TABLE " + MiscUtils.wordInQuotes(table.getName()) +
+                    " ALTER COLUMN " + columnData.getColumnNameInQuotes() + " SET DEFAULT " + columnData.getDefaultValue() + ";\n");
+        }
+
+        if (column.isComputedChanged()) {
+            sb.append("ALTER TABLE " + MiscUtils.wordInQuotes(table.getName()) +
+                    "\nALTER COLUMN " + columnData.getColumnNameInQuotes() + " COMPUTED BY " + column.getComputedSource() + ";\n");
+        }
+
+        if (column.isDescriptionChanged()) {
+            sb.append("COMMENT ON COLUMN " + MiscUtils.wordInQuotes(table.getName()) + "."
+                    + columnData.getColumnNameInQuotes() +
+                    " IS '" + column.getColumnDescription() + "';\n");
+        }
+
+        if (column.isDomainChanged()) {
+            sb.append("ALTER TABLE " + MiscUtils.wordInQuotes(table.getName()) +
+                    "\nALTER COLUMN " + columnData.getColumnNameInQuotes() + " TYPE " + columnData.getDomainInQuotes() + ";\n");
+        }
+
+        return sb.toString();
     }
 }

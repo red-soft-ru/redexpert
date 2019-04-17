@@ -649,8 +649,8 @@ public class ColumnData implements Serializable {
 
         if (typeOf) {
             if (getTypeOfFrom() == TYPE_OF_FROM_DOMAIN) {
-                return "TYPE OF " + domain;
-            } else return "TYPE OF COLUMN " + table + "." + columnTable;
+                return "TYPE OF " + getDomainInQuotes();
+            } else return "TYPE OF COLUMN " + getTableInQuotes() + "." + getColumnTableInQuotes();
         }
         String typeString = getColumnType();
         if (StringUtils.isBlank(typeString)) {
@@ -903,12 +903,20 @@ public class ColumnData implements Serializable {
         return table;
     }
 
+    public String getTableInQuotes() {
+        return MiscUtils.wordInQuotes(table);
+    }
+
     public void setTable(int tableIndex) {
         setTable(getTables().get(tableIndex));
     }
 
     public String getColumnTable() {
         return columnTable;
+    }
+
+    public String getColumnTableInQuotes() {
+        return MiscUtils.wordInQuotes(columnTable);
     }
 
     public void setColumnTable(String columnTable) {
@@ -960,6 +968,14 @@ public class ColumnData implements Serializable {
 
     public void setCstring(boolean cstring) {
         this.cstring = cstring;
+    }
+
+    public String getDomainInQuotes() {
+        return MiscUtils.wordInQuotes(domain);
+    }
+
+    public String getColumnNameInQuotes() {
+        return MiscUtils.wordInQuotes(columnName);
     }
 }
 

@@ -30,6 +30,7 @@ import org.executequery.sql.SQLFormatter;
 import org.executequery.sql.SqlStatementResult;
 import org.executequery.sql.StatementGenerator;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -1236,7 +1237,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     StringBuilder sb = new StringBuilder();
     sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
     for (String column : columns) {
-      sb.append(column).append(" = ?,");
+      sb.append(MiscUtils.wordInQuotes(column)).append(" = ?,");
     }
 
     sb.deleteCharAt(sb.length() - 1);
@@ -1246,7 +1247,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     List<DatabaseColumn> cols = getColumns();
     for (int i = 0; i < cols.size(); i++) {
       DatabaseColumn column = cols.get(i);
-      String col = cols.get(i).getName();
+      String col = MiscUtils.wordInQuotes(cols.get(i).getName());
       RecordDataItem rdi = changes.get(i);
       if (column.isGenerated())
         rdi.setGenerated(true);
@@ -1278,7 +1279,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     List<DatabaseColumn> cols = getColumns();
     for (int i = 0; i < cols.size(); i++) {
       DatabaseColumn column = cols.get(i);
-      String col = cols.get(i).getName();
+      String col = MiscUtils.wordInQuotes(cols.get(i).getName());
       RecordDataItem rdi = changes.get(i);
       if (column.isGenerated())
         rdi.setGenerated(true);
@@ -1311,7 +1312,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     List<DatabaseColumn> cols = getColumns();
     for (int i = 0; i < cols.size(); i++) {
       DatabaseColumn column = cols.get(i);
-      String col = cols.get(i).getName();
+      String col = MiscUtils.wordInQuotes(cols.get(i).getName());
       RecordDataItem rdi = changes.get(i);
       if (column.isGenerated())
         rdi.setGenerated(true);
@@ -1338,7 +1339,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     StringBuilder sb = new StringBuilder();
     sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
     for (String column : columns) {
-      sb.append(column).append(" = ?,");
+      sb.append(MiscUtils.wordInQuotes(column)).append(" = ?,");
     }
     sb.deleteCharAt(sb.length() - 1);
     sb.append(" WHERE ");
@@ -1347,7 +1348,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       if (applied) {
         sb.append(" AND ");
       }
-      sb.append(primaryKey).append(" = ? ");
+      sb.append(MiscUtils.wordInQuotes(primaryKey)).append(" = ? ");
       applied = true;
     }
     sb.deleteCharAt(sb.length() - 1);
@@ -1368,7 +1369,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
         sb.append(" AND ");
       }
-      sb.append(primaryKey).append(" = ? ");
+      sb.append(MiscUtils.wordInQuotes(primaryKey)).append(" = ? ");
       applied = true;
     }
 

@@ -507,16 +507,16 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     public final String getNameForQuery() {
 
         String name = getName();
-        if (name.contains(" ") // eg. access db allows this
+        /*if (name.contains(" ") // eg. access db allows this
                 || (isLowerCase(name) && host.storesLowerCaseQuotedIdentifiers())
                 || (isUpperCase(name) && host.storesUpperCaseQuotedIdentifiers())
                 || (isMixedCase(name) && (host.storesMixedCaseQuotedIdentifiers()
-                || host.supportsMixedCaseQuotedIdentifiers()))) {
+                || host.supportsMixedCaseQuotedIdentifiers()))) {*/
 
             return quotedDatabaseObjectName(name);
-        }
+        //}
 
-        return name;
+        //return name;
     }
 
     private String quotedDatabaseObjectName(String name) {

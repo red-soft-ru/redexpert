@@ -130,7 +130,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
                 query += "\nALTER SEQUENCE " + nameField.getText() + " RESTART WITH " + startValueText.getStringValue() + ";";
             }
             if (!MiscUtils.isNull(description.getTextAreaComponent().getText().trim()))
-                query += "\nCOMMENT ON SEQUENCE " + getNameInQuotes() + " IS '" + description.getTextAreaComponent().getText() + "'";
+                query += "\nCOMMENT ON SEQUENCE " + nameField.getText() + " IS '" + description.getTextAreaComponent().getText() + "'";
 
             displayExecuteQueryDialog(query, ";");
         } else

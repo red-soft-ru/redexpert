@@ -448,7 +448,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
     private String formattedParameter(ColumnData cd) {
         StringBuilder sb = new StringBuilder();
-        sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnNameInQuotes()).
+        sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnName()).
                 append(" ");
         if (MiscUtils.isNull(cd.getComputedBy())) {
             if (MiscUtils.isNull(cd.getDomain())) {

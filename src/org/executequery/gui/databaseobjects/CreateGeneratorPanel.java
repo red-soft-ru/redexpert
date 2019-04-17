@@ -130,12 +130,9 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
                 query += "\nALTER SEQUENCE " + nameField.getText() + " RESTART WITH " + startValueText.getStringValue() + ";";
             }
             if (!MiscUtils.isNull(description.getTextAreaComponent().getText().trim()))
-                query += "\nCOMMENT ON SEQUENCE " + nameField.getText() + " IS '" + description.getTextAreaComponent().getText() + "'";
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog(CREATE_TITLE, query, connection, true);
-            eqd.display();
-            if (eqd.getCommit()) {
-                parent.finished();
-            }
+                query += "\nCOMMENT ON SEQUENCE " + getNameInQuotes() + " IS '" + description.getTextAreaComponent().getText() + "'";
+
+            displayExecuteQueryDialog(query, ";");
         } else
             GUIUtilities.displayErrorMessage("Name can not be empty");
     }

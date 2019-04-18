@@ -229,7 +229,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                         !param.getMechanism().contains("BY BLOB DESCRIPTOR"))
                     sb.append(param.getMechanism()).append(" ");
             }
-            if (param.isRequired() && !param.getMechanism().contains("BY BLOB DESCRIPTOR"))
+            if (param.isRequired() && param.getMechanism() != null && !param.getMechanism().contains("BY BLOB DESCRIPTOR"))
                 sb.append(" NULL ");
             if (i < params.size() - 1)
                 sb.append(",");

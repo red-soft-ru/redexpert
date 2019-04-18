@@ -353,7 +353,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                         if (!first)
                             sb.append(", ");
                         first = false;
-                        sb.append(key);
+                        sb.append(MiscUtils.wordInQuotes(key));
                     }
                 }
                 sb.append(")");
@@ -375,7 +375,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                         if (!first)
                             sb.append(", ");
                         first = false;
-                        sb.append(key);
+                        sb.append(MiscUtils.wordInQuotes(key));
                     }
                 }
                 sb.append(")\n");
@@ -408,7 +408,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                         if (!first)
                             sb.append(", ");
                         first = false;
-                        sb.append(key);
+                        sb.append(MiscUtils.wordInQuotes(key));
                     }
                 }
                 sb.append(")");

@@ -401,7 +401,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         if (triggerType == NamedObject.SYSTEM_DATABASE_TRIGGER)
             selectedIndex++;
         if (selectedIndex == 0)
-            query.append(" FOR ").append(tablesCombo.getSelectedItem());
+            query.append(" FOR ").append(MiscUtils.wordInQuotes(((String) tablesCombo.getSelectedItem()).trim()));
         query.append("\n");
         if (activeBox.isSelected())
             query.append("ACTIVE ");

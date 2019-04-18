@@ -321,7 +321,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             if (sortingBox.getSelectedIndex() == 1)
                 query += "DESCENDING ";
             query += "INDEX " + getNameInQuotes() +
-                    " ON " + MiscUtils.wordInQuotes((String) tableName.getSelectedItem()) + " ";
+                    " ON " + MiscUtils.wordInQuotes(((String) tableName.getSelectedItem()).trim()) + " ";
             if (computedBox.isSelected()) {
                 query += "COMPUTED BY (" + computedPanel.getSQLText() + ");";
             } else {

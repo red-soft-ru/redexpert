@@ -22,6 +22,7 @@ package org.executequery.gui.browser;
 
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.TablePrivilege;
@@ -1181,6 +1182,11 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     public Vector<ColumnData> getTableColumnDataVector() {
         return null;
         //return columnDataTable.getTableColumnDataVector();
+    }
+
+    @Override
+    public DatabaseConnection getSelectedConnection() {
+        return table.getHost().getDatabaseConnection();
     }
 
     /**

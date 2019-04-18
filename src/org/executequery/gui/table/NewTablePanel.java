@@ -144,6 +144,8 @@ public class NewTablePanel extends TableDefinitionPanel
     private void updateScript(int row, int col) {
         line.setLength(0);
         ColumnData cd = tableVector.get(row);
+        if (creator.getSelectedConnection().isNamesToUpperCase() && !MiscUtils.isNull(cd.getColumnName()))
+            cd.setColumnName(cd.getColumnName().toUpperCase());
         line.setLength(0);
         line.append(NEW_LINE_2).
                 append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnNameInQuotes()).
@@ -217,6 +219,8 @@ public class NewTablePanel extends TableDefinitionPanel
         AutoincrementSQLText = "";
         for (int i = 0, k = tableVector.size(); i < k; i++) {
             ColumnData cd = tableVector.elementAt(i);
+            if (creator.getSelectedConnection().isNamesToUpperCase() && !MiscUtils.isNull(cd.getColumnName()))
+                cd.setColumnName(cd.getColumnName().toUpperCase());
             AutoincrementSQLText += cd.getAutoincrement().getSqlAutoincrement();
             if (cd.isPrimaryKey()) {
                 if (primary)

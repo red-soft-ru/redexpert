@@ -493,6 +493,8 @@ public abstract class CreateTableFunctionPanel extends JPanel
     }
 
     public void setSQLText(String values, int type) {
+        if (getSelectedConnection().isNamesToUpperCase())
+            nameField.setText(nameField.getText().toUpperCase());
         sqlBuffer.setLength(0);
         if (temporary)
             sqlBuffer.append(CreateTableSQLSyntax.CREATE_GLOBAL_TEMPORARY_TABLE);

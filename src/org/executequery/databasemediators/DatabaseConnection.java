@@ -200,6 +200,10 @@ public interface DatabaseConnection extends Serializable {
     int getServerVersion();
 
     void setServerVersion(int serverVersion);
+
+    boolean isNamesToUpperCase();
+
+    void setNamesToUpperCase(boolean flag);
 }
 
 

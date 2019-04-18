@@ -29,8 +29,6 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
     private JPanel topPanel;
     protected JPanel centralPanel;
     protected JTabbedPane tabbedPane;
-    private JButton okButton;
-    private JButton cancelButton;
     protected DatabaseConnection connection;
     protected JComboBox connectionsCombo;
     private DynamicComboBoxModel connectionsModel;
@@ -70,10 +68,6 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         nameField.setText("NEW_" + getTypeObject());
         tabbedPane = new JTabbedPane();
         tabbedPane.setPreferredSize(new Dimension(700, 400));
-        okButton = new JButton(Bundles.getCommon("ok.button"));
-        okButton.addActionListener(actionEvent -> createObject());
-        cancelButton = new JButton(Bundles.getCommon("cancel.button"));
-        cancelButton.addActionListener(actionEvent -> parent.finished());
         Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
         connectionsModel = new DynamicComboBoxModel(connections);
         connectionsCombo = WidgetFactory.createComboBox(connectionsModel);
@@ -116,6 +110,8 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         bottomButtonPanel.setOkButtonAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (connection.isNamesToUpperCase())
+                    nameField.setText(nameField.getText().toUpperCase());
                 createObject();
             }
         });

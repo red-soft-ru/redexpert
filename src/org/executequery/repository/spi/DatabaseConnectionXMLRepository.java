@@ -234,6 +234,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
     private static final String SSH_PASSWORD = "sshpassword";
     private static final String SSH_PORT = "sshport";
     private static final String SSH_STORE_PASSWORD = "sshstorepassword";
+    private static final String NAMES_TO_UPPER_CASE = "namestouppercase";
 
     class DatabaseConnectionHandler extends AbstractXMLRepositoryHandler<DatabaseConnection> {
 
@@ -465,6 +466,12 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                     databaseConnection.setJdbcProperties(advancedProperties);
                 }
 
+            } else if (localNameIsKey(localName, NAMES_TO_UPPER_CASE)) {
+                if (hasContents()) {
+
+                    databaseConnection.setNamesToUpperCase(contentsAsBoolean());
+                }
+
             } else if (localNameIsKey(localName, CONNECTION)) {
 
                 if (databaseConnection != null) {
@@ -649,6 +656,8 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
 
                 writeXML(SSH_PORT,
                         valueToString(connection.getSshPort()), INDENT_TWO);
+                writeXML(NAMES_TO_UPPER_CASE,
+                        valueToString(connection.isNamesToUpperCase()), INDENT_TWO);
 
                 if (connection.isSshPasswordStored()) {
 

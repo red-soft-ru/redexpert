@@ -187,7 +187,7 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     private int serverVersion;
 
-    private boolean namesToUpperCase;
+    private boolean namesToUpperCase = true;
 
     @Override
     public boolean isNamesToUpperCase() {

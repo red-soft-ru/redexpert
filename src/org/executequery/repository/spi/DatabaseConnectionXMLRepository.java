@@ -470,6 +470,8 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                 if (hasContents()) {
 
                     databaseConnection.setNamesToUpperCase(contentsAsBoolean());
+                } else {
+                    databaseConnection.setNamesToUpperCase(true);
                 }
 
             } else if (localNameIsKey(localName, CONNECTION)) {

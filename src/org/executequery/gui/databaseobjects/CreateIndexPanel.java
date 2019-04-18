@@ -321,7 +321,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             if (sortingBox.getSelectedIndex() == 1)
                 query += "DESCENDING ";
             query += "INDEX " + getNameInQuotes() +
-                    " ON " + tableName.getSelectedItem() + " ";
+                    " ON " + MiscUtils.wordInQuotes((String) tableName.getSelectedItem()) + " ";
             if (computedBox.isSelected()) {
                 query += "COMPUTED BY (" + computedPanel.getSQLText() + ");";
             } else {
@@ -335,7 +335,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                         if (!first)
                             fieldss.append(",");
                         first = false;
-                        fieldss.append(item.label);
+                        fieldss.append(MiscUtils.wordInQuotes(item.label));
                     }
                 }
                 query += fieldss + ");";

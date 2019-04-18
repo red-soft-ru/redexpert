@@ -87,6 +87,8 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             String type;
             if (node.getType() == NamedObject.GLOBAL_TEMPORARY)
                 type = NamedObject.META_TYPES[NamedObject.TABLE];
+            else if (node.getType() == NamedObject.SYSTEM_DATABASE_TRIGGER)
+                type = NamedObject.META_TYPES[NamedObject.TRIGGER];
             else
                 type = NamedObject.META_TYPES[node.getType()];
             String query = "DROP " + type + " " + MiscUtils.wordInQuotes(node.getName());

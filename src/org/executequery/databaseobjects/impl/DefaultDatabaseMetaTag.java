@@ -1295,7 +1295,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
                         rs.getString(1).trim());
-                trigger.setSystemFlag(true);
                 list.add(trigger);
             }
 

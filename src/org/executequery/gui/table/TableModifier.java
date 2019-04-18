@@ -20,6 +20,8 @@
 
 package org.executequery.gui.table;
 
+import org.executequery.databasemediators.DatabaseConnection;
+
 /**
  * defines those objects with table functions requiring sql output
  *
@@ -51,6 +53,8 @@ public interface TableModifier extends CreateTableSQLSyntax {
      * @return the table name
      */
     String getTableName();
+
+    DatabaseConnection getSelectedConnection();
 
 }
 

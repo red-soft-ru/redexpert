@@ -121,6 +121,8 @@ public class NewTableConstraintsPanel extends TableConstraintsPanel
             }
 
             if (hasName) {
+                if (creator.getSelectedConnection().isNamesToUpperCase())
+                    name = name.toUpperCase();
 
                 sqlBuffer.append(COMMA).append(NEW_LINE_2).append(CONSTRAINT);
                 sqlBuffer.append(MiscUtils.wordInQuotes(name)).append(SPACE);

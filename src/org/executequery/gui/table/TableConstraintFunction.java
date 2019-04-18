@@ -20,6 +20,7 @@
 
 package org.executequery.gui.table;
 
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.browser.ColumnData;
 
 import java.util.Vector;
@@ -29,15 +30,17 @@ import java.util.Vector;
  */
 public interface TableConstraintFunction extends TableFunction {
 
-    public Vector getHostedSchemasVector();
+    Vector getHostedSchemasVector();
 
-    public Vector getSchemaTables(String schemaName);
+    Vector getSchemaTables(String schemaName);
 
-    public Vector getColumnNamesVector(String tableName, String schemaName);
+    Vector getColumnNamesVector(String tableName, String schemaName);
 
-    public ColumnData[] getTableColumnData();
+    ColumnData[] getTableColumnData();
 
-    public Vector getTableColumnDataVector();
+    Vector getTableColumnDataVector();
+
+    DatabaseConnection getSelectedConnection();
 
 }
 

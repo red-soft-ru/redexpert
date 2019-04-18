@@ -97,6 +97,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private JPasswordField containerPasswordField;
     private JCheckBox saveContPwdCheck;
     private JCheckBox verifyServerCertCheck;
+    private JCheckBox namesToUpperBox;
 
     private JComboBox authCombo;
     private JComboBox methodCombo;
@@ -246,9 +247,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         savePwdCheck = ActionUtilities.createCheckBox(bundleString("StorePassword"), "setStorePassword");
         encryptPwdCheck = ActionUtilities.createCheckBox(bundleString("EncryptPassword"), "setEncryptPassword");
+        namesToUpperBox = ActionUtilities.createCheckBox(bundleString("namesToUpperCase"), "namesToUpperCase");
+        namesToUpperBox.setSelected(true);
 
         savePwdCheck.addActionListener(this);
         encryptPwdCheck.addActionListener(this);
+        namesToUpperBox.addActionListener(this);
 
         // retrieve the drivers
         buildDriversList();
@@ -507,6 +511,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
         sgbc.insets.left = 5;
         sgbc.weightx = 0.5;
         standardPanel.add(roleField, sgbc);
+
+        sgbc.gridy++;
+        sgbc.gridx = 0;
+        sgbc.weightx = 0;
+        sgbc.anchor = GridBagConstraints.NORTHWEST;
+        standardPanel.add(namesToUpperBox, sgbc);
 
         gbc.gridy++;
         gbc.gridx = 0;
@@ -1289,6 +1299,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
         encryptPwdCheck.setEnabled(store);
     }
 
+    public void namesToUpperCase() {
+
+        boolean store = namesToUpperBox.isSelected();
+        databaseConnection.setNamesToUpperCase(store);
+    }
+
     public void setStoreContainerPassword() {
 
         boolean store = saveContPwdCheck.isSelected();
@@ -1378,6 +1394,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         verifyServerCertCheck.setSelected(databaseConnection.isVerifyServerCertCheck());
         authCombo.setSelectedItem(databaseConnection.getAuthMethod());
         methodCombo.setSelectedItem(databaseConnection.getConnectionMethod());
+        namesToUpperBox.setSelected(databaseConnection.isNamesToUpperCase());
 
         // assign as the current connection
         this.databaseConnection = databaseConnection;
@@ -1426,7 +1443,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         databaseConnection.setCharset(charsetsCombo.getSelectedItem().toString());
         databaseConnection.setAuthMethod(authCombo.getSelectedItem().toString());
         databaseConnection.setConnectionMethod(methodCombo.getSelectedItem().toString());
-
+        databaseConnection.setNamesToUpperCase(namesToUpperBox.isSelected());
         // jdbc driver selection
         int driverIndex = driverCombo.getSelectedIndex();
         if (driverIndex >= jdbcDrivers.size() + 1) {

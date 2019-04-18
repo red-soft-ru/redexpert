@@ -20,6 +20,7 @@
 
 package org.executequery.gui.erd;
 
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.browser.ColumnConstraint;
@@ -270,6 +271,11 @@ public class ErdEditTableDialog extends ErdPrintableDialog
 
     public String getTableName() {
         return erdTable.getTableName();
+    }
+
+    @Override
+    public DatabaseConnection getSelectedConnection() {
+        return null;
     }
 
     /**

@@ -6,6 +6,7 @@
 
 TEMPLATE = app
 CONFIG += console c++11
+CONFIG += static
 CONFIG -= app_bundle
 CONFIG -= qt
 
@@ -31,6 +32,11 @@ win32: {
     QMAKE_CFLAGS_RELEASE -= -Zc:strictStrings
     QMAKE_CFLAGS -= -Zc:strictStrings
     QMAKE_CXXFLAGS -= -Zc:strictStrings
+    
+    QMAKE_CXXFLAGS_RELEASE = -O2 -MT
+    QMAKE_CFLAGS_RELEASE = -O2 -MT
+    QMAKE_CFLAGS = -O2 -MT
+    QMAKE_CXXFLAGS = -O2 -MT
 
     RC_ICONS += red_expert.ico
 }

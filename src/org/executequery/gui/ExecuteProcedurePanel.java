@@ -488,7 +488,7 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
                                 sql += ":" + function.getFunctionArguments().get(i).getName();
                             }
                         }
-                        sql = sql + ") from rdb$database";
+                        sql = sql + ") as \"< Return Value >\" from rdb$database";
                     } else {
                         queryType = QueryTypes.EXECUTE;
                         DefaultDatabaseProcedure procedure = (DefaultDatabaseProcedure) databaseExecutable;
@@ -701,7 +701,7 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
         private String INOUT = "INOUT";
         private String OUT = "OUT";
 
-        private String[] columns = {"Parameter", "Data Type", "Mode", "Value"};
+        private String[] columns = {"Parameter", "Data Type", "Mode"};
         private org.executequery.databaseobjects.Parameter[] values;
 
         public ParameterTableModel() {

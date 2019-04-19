@@ -427,15 +427,20 @@ std::vector<std::string> get_potential_libjvm_paths()
     search_prefixes.push_back("/usr/lib/jvm/java-11-openjdk-amd64");       // alt ubuntu / debian distros
     search_prefixes.push_back("/usr/local/lib/jvm/java-11-openjdk-amd64"); // alt ubuntu / debian distros
 
+    search_prefixes.push_back("/usr/lib/jvm/java-12-openjdk-amd64");       // alt ubuntu / debian distros
+    search_prefixes.push_back("/usr/local/lib/jvm/java-12-openjdk-amd64"); // alt ubuntu / debian distros
+
     search_prefixes.push_back("/usr/lib/jvm/java-8-oracle");  // alt ubuntu
     search_prefixes.push_back("/usr/lib/jvm/java-9-oracle");  // alt ubuntu
     search_prefixes.push_back("/usr/lib/jvm/java-10-oracle"); // alt ubuntu
     search_prefixes.push_back("/usr/lib/jvm/java-11-oracle"); // alt ubuntu
+    search_prefixes.push_back("/usr/lib/jvm/java-12-oracle"); // alt ubuntu
 
     search_prefixes.push_back("/usr/local/lib/jvm/java-8-oracle");  // alt ubuntu
     search_prefixes.push_back("/usr/local/lib/jvm/java-9-oracle");  // alt ubuntu
     search_prefixes.push_back("/usr/local/lib/jvm/java-10-oracle"); // alt ubuntu
     search_prefixes.push_back("/usr/local/lib/jvm/java-11-oracle"); // alt ubuntu
+    search_prefixes.push_back("/usr/local/lib/jvm/java-12-oracle"); // alt ubuntu
     search_prefixes.push_back("/usr/lib/jvm/default");              // alt centos
     search_prefixes.push_back("/usr/java/latest");                  // alt centos
 

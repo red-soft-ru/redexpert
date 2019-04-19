@@ -60,6 +60,11 @@ public final class QueryTypes {
     public static final int EXECUTE = 11;
 
     /**
+     * An SQL CALL procedure
+     */
+    public static final int CALL = 44;
+
+    /**
      * An SQL DROP TABLE statement
      */
     public static final int DROP_TABLE = 20;

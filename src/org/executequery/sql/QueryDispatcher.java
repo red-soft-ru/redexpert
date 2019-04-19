@@ -602,7 +602,7 @@ public class QueryDispatcher {
                 if (queryToExecute.toLowerCase().trim().contentEquals("commit") || queryToExecute.toLowerCase().trim().contentEquals("rollback"))
                     statement = querySender.getPreparedStatement(queryToExecute);
                 else {
-                    if (query.getQueryType() != QueryTypes.EXECUTE) {
+                    if (query.getQueryType() != QueryTypes.CALL) {
                         statement = prepareStatementWithParameters(queryToExecute, "");
                     } else {
                         callableStatement = prepareCallableStatementWithParameters(queryToExecute, "");

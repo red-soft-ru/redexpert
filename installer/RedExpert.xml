@@ -130,6 +130,11 @@
             <text>${execution_file}</text>
         </consoleWrite>
     </preBuildActionList>
+    <preUninstallationActionList>
+        <deleteFile path="${installdir}/bin"/>
+        <deleteFile path="${installdir}/lib"/>
+        <deleteFile path="${installdir}/RedExpertInstallation.log"/>
+    </preUninstallationActionList>
     <allowedLanguages>en ru</allowedLanguages>
     <enableRollback>1</enableRollback>
     <enableTimestamp>1</enableTimestamp>

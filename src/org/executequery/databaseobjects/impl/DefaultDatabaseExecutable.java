@@ -60,6 +60,9 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
     private DefaultStatementExecutor sender;
 
+    private List<ProcedureParameter> procedureInputParameters;
+    private List<ProcedureParameter> procedureOutputParameters;
+
     public DefaultDatabaseExecutable() {
         super((DatabaseMetaTag) null);
     }
@@ -180,7 +183,8 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
             DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
             parameters = new ArrayList<ProcedureParameter>();
-
+            procedureInputParameters = new ArrayList<ProcedureParameter>();
+            procedureOutputParameters = new ArrayList<ProcedureParameter>();
             String _catalog = getCatalogName();
             String _schema = getSchemaName();
 
@@ -241,7 +245,10 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 if (characterSet != null && !characterSet.isEmpty() && !characterSet.contains("NONE"))
                     pp.setEncoding(characterSet.trim());
                 pp.setDefaultValue(rs.getString("default_source"));
-
+                if (pp.getType() == DatabaseMetaData.procedureColumnIn)
+                    procedureInputParameters.add(pp);
+                else if (pp.getType() == DatabaseMetaData.procedureColumnOut)
+                    procedureOutputParameters.add(pp);
                 parameters.add(pp);
             }
 
@@ -493,6 +500,13 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         }
     }
 
+    public List<ProcedureParameter> getProcedureInputParameters() {
+        return procedureInputParameters;
+    }
+
+    public List<ProcedureParameter> getProcedureOutputParameters() {
+        return procedureOutputParameters;
+    }
 }
 
 

@@ -45,6 +45,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     public DefaultDatabaseProcedure() {
     }
 
+
     /**
      * Creates a new instance of DefaultDatabaseProcedure
      */
@@ -73,8 +74,10 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     /**
      * Returns the meta data key name of this object.
      *
-     * @return the meta data key name.
+     * @return the meta data key name
      */
+
+
     public String getMetaDataKey() {
         return META_TYPES[PROCEDURE];
     }

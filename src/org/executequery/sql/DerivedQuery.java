@@ -215,9 +215,13 @@ public final class DerivedQuery {
 
             type = QueryTypes.GRANT;
 
-        } else if (query.indexOf("EXECUTE ") == 0 || query.indexOf("CALL ") == 0) {
+        } else if (query.indexOf("EXECUTE ") == 0) {
 
             type = QueryTypes.EXECUTE;
+
+        } else if (query.indexOf("CALL ") == 0) {
+
+            type = QueryTypes.CALL;
 
         } else if (query.indexOf("COMMIT") == 0) {
 

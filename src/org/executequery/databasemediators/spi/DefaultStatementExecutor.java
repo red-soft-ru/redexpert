@@ -1145,9 +1145,8 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
             case QueryTypes.UNKNOWN:
             case QueryTypes.SELECT_INTO:
-                return execute(statement);
-
             case QueryTypes.EXECUTE:
+            case QueryTypes.CALL:
                 return execute(statement);
 
             case QueryTypes.COMMIT:

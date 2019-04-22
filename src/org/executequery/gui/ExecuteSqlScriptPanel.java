@@ -321,12 +321,12 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
     private boolean fieldsValid() {
 
         String fileName = fileNameField.getText();
-        if (StringUtils.isBlank(fileName)) {
+        if (StringUtils.isBlank(fileName) && StringUtils.isEmpty(sqlText.getSQLText())) {
 
             GUIUtilities.displayErrorMessage(bundleString("error.select-input-file"));
             return false;
 
-        } else {
+        } else if (StringUtils.isNotEmpty(fileName)){
 
             File file = new File(fileName);
 

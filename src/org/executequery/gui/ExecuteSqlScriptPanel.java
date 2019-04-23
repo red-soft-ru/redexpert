@@ -233,7 +233,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         JSplitPane splitPane = new SplitPaneFactory().create(JSplitPane.VERTICAL_SPLIT,
                 sqlText, outputPanel);
         splitPane.setResizeWeight(0.5);
-        splitPane.setDividerLocation(500);
+        splitPane.setDividerLocation(400);
         splitPane.setDividerSize(5);
         mainPanel.add(splitPane, gbc);
         gbc.gridy++;

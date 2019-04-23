@@ -135,6 +135,10 @@ public class SqlScriptRunner {
             executionController.message("Found " + executableQueries.size() + " executable queries");
             executionController.message("Executing...");
 
+            if (connection == null)
+                throw new SQLException("There is no connection. Select a connection from the available connections " +
+                        "list or add a database creation statement.");
+
             long start = 0L;
             long end = 0L;
             int thisResult = 0;

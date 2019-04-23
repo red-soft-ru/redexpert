@@ -112,7 +112,8 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         if (driver != null) {
 
             // If used jaybird
-            if (databaseConnection.getJDBCDriver().getClassName().contains("FBDriver")) {
+            if (databaseConnection.getJDBCDriver().getClassName().contains("FBDriver") &&
+                !StringUtils.equalsIgnoreCase(databaseConnection.getConnectionMethod(), "jdbc")) {
 
                 try {
 

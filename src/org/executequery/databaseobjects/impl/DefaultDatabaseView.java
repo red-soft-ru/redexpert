@@ -60,7 +60,7 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         sb.append("(\n");
 
         for (int i = 0; i < columns.size(); i++) {
-            sb.append("\n");
+            sb.append("\t");
             sb.append(columns.get(i).getName());
             if (i != columns.size() - 1)
                 sb.append(",\n");
@@ -82,7 +82,9 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
     public int getType() {
         if (isSystem()) {
             return SYSTEM_VIEW;
-        } else return VIEW;
+        } else {
+            return VIEW;
+        }
     }
 
     public String getMetaDataKey() {

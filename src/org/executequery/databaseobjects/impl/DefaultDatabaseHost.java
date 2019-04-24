@@ -31,6 +31,7 @@ import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -1435,6 +1436,12 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             DatabaseConnection databaseConnection = metaTag.getHost().getDatabaseConnection();
             if (supportedObject(i))
                 metaObjects.add(metaTag);
+            metaObjects.sort(new Comparator<DatabaseMetaTag>() {
+                @Override
+                public int compare(DatabaseMetaTag o1, DatabaseMetaTag o2) {
+                    return o1.getName().compareTo(o2.getName());
+                }
+            });
 
         }
     }
@@ -1481,7 +1488,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                     }
             }
         }
-        return true;
+        return !NamedObject.META_TYPES[type].contains("SYSTEM") || SystemProperties.getBooleanProperty("user", "browser.show.system.objects");
     }
 
     private DefaultDatabaseMetaTag createDatabaseMetaTag(

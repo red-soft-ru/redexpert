@@ -530,17 +530,18 @@ public class UserManagerPanel extends JPanel {
         layout.setHorizontalGroup(
                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(connectPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(interruptPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jTabbedPane1)
+                        .addComponent(interruptPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
                                 .addComponent(connectPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addContainerGap()
-                                .addComponent(interruptPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jTabbedPane1, GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
                                 .addContainerGap()
-                                .addComponent(jTabbedPane1, GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
+                                .addComponent(interruptPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        )
         );
 
         jTabbedPane1.getAccessibleContext().setAccessibleName(bundleString("Users"));
@@ -795,11 +796,10 @@ public class UserManagerPanel extends JPanel {
         grantButton.setEnabled(enable);
         adminButton.setEnabled(enable);
         no_grantButton.setEnabled(enable);
-        cancelButton.setVisible(!enable);
+        //cancelButton.setVisible(!enable);
         cancelButton.setEnabled(!enable);
-        jProgressBar1.setVisible(!enable);
-        if (enable)
-            jProgressBar1.setValue(0);
+        jProgressBar1.setEnabled(!enable);
+        jProgressBar1.setValue(0);
     }
 
     public void run() {

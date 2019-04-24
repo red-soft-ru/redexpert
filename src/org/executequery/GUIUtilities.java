@@ -1507,17 +1507,16 @@ public final class GUIUtilities {
 
         // grab the selected connection from the
         // connections tree docked panel and close it
-        JPanel panel = getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+        ConnectionsTreePanel panel = (ConnectionsTreePanel) getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
 
         if (panel != null) {
 
-            DatabaseConnection dc = ((ConnectionsTreePanel) panel).
-                    getSelectedDatabaseConnection();
+            DatabaseConnection dc = panel.getSelectedDatabaseConnection();
 
             if (dc != null && dc.isConnected()) {
 
                 try {
-
+                    panel.setSelectedConnection(dc);
                     ConnectionMediator.getInstance().disconnect(dc);
 
                 } catch (DataSourceException e) {

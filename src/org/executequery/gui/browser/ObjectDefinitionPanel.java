@@ -20,6 +20,7 @@
 
 package org.executequery.gui.browser;
 
+import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
@@ -32,6 +33,7 @@ import org.executequery.event.DefaultKeywordEvent;
 import org.executequery.event.KeywordEvent;
 import org.executequery.event.KeywordListener;
 import org.executequery.gui.BaseDialog;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.databaseobjects.CreateViewPanel;
 import org.executequery.gui.databaseobjects.DefaultDatabaseObjectTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
@@ -48,6 +50,8 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.print.Printable;
@@ -132,6 +136,8 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
     private SimpleSqlTextPanel sqlTextPanel;
 
+    private JButton formatSqlButton;
+
     public ObjectDefinitionPanel(BrowserController controller) {
         super();
         this.controller = controller;
@@ -185,12 +191,35 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         metaDataPanel = new DatabaseObjectMetaDataPanel();
 
         sqlTextPanel = new SimpleSqlTextPanel();
+        formatSqlButton = WidgetFactory.createButton(Bundles.getCommon("FormatSQL"));
+        formatSqlButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                formatSql();
+            }
+        });
+
+        JPanel sqlPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints sqlGbc = new GridBagConstraints();
+        Insets sqlIns = new Insets(10, 5, 5, 5);
+        sqlGbc.insets = sqlIns;
+        sqlGbc.anchor = GridBagConstraints.NORTHWEST;
+        sqlGbc.fill = GridBagConstraints.NONE;
+        sqlGbc.gridx = 0;
+        sqlGbc.gridy = 0;
+        sqlPanel.add(formatSqlButton, sqlGbc);
+        sqlGbc.gridy++;
+        sqlGbc.fill = GridBagConstraints.BOTH;
+        sqlGbc.weighty = 1;
+        sqlGbc.weightx = 1;
+        sqlPanel.add(sqlTextPanel, sqlGbc);
+
 
         tabPane = new JTabbedPane();
         tabPane.add(Bundles.getCommon("description"), descBottomPanel);
         tabPane.add(Bundles.getCommon("privileges"), tablePrivilegePanel);
         tabPane.add(Bundles.getCommon("data"), tableDataPanel);
-        tabPane.add(Bundles.getCommon("SQL"), sqlTextPanel);
+        tabPane.add(Bundles.getCommon("SQL"), sqlPanel);
         tabPane.add(Bundles.getCommon("metadata"), metaDataPanel);
 
         // add the tab pane
@@ -455,7 +484,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
                 descBottomPanel.add(tableDescriptionPanel, BorderLayout.CENTER);
             }
 
-            sqlTextPanel.setSQLText(new SQLFormatter(currentObjectView.getCreateSQLText()).format());
+            sqlTextPanel.setSQLText(currentObjectView.getCreateSQLText());
 
         } catch (DataSourceException e) {
 
@@ -465,6 +494,13 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
         stateChanged(null);
         repaint();
+    }
+
+    private void formatSql() {
+        if (StringUtils.isNotEmpty(sqlTextPanel.getSQLText())) {
+            String sqlText = sqlTextPanel.getSQLText();
+            sqlTextPanel.setSQLText(new SQLFormatter(sqlText).format());
+        }
     }
 
     public void refresh() {

@@ -1,16 +1,21 @@
 package org.executequery.gui.databaseobjects;
 
+import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.gui.ActionContainer;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.editor.autocomplete.DefaultAutoCompletePopupProvider;
 import org.executequery.gui.text.SQLTextPane;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
+import org.executequery.localization.Bundles;
+import org.executequery.sql.SQLFormatter;
 import org.underworldlabs.swing.GUIUtils;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.*;
 
 public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusListener, KeyListener {
@@ -18,6 +23,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     public static final String EDIT_TITLE = "Alter View";
     private static final String AUTO_COMPLETE_POPUP_ACTION_KEY = "autoCompletePopupActionKey";
     private SimpleSqlTextPanel sqlTextPanel;
+    private JButton formatSqlButton;
     private SimpleTextArea descriptionTextArea;
     private static final String replacing_name = "<view_name>";
     String notChangedText;
@@ -41,9 +47,32 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     }
 
     protected void init() {
+        formatSqlButton = WidgetFactory.createButton(Bundles.getCommon("FormatSQL"));
+        formatSqlButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                formatSql();
+            }
+        });
         sqlTextPanel = new SimpleSqlTextPanel();
         sqlTextPanel.addFocusListener(this);
         sqlTextPanel.getTextPane().addKeyListener(this);
+
+        JPanel sqlPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints sqlGbc = new GridBagConstraints();
+        Insets sqlIns = new Insets(10, 5, 5, 5);
+        sqlGbc.insets = sqlIns;
+        sqlGbc.anchor = GridBagConstraints.NORTHWEST;
+        sqlGbc.fill = GridBagConstraints.NONE;
+        sqlGbc.gridx = 0;
+        sqlGbc.gridy = 0;
+        sqlPanel.add(formatSqlButton, sqlGbc);
+        sqlGbc.gridy++;
+        sqlGbc.fill = GridBagConstraints.BOTH;
+        sqlGbc.weighty = 1;
+        sqlGbc.weightx = 1;
+        sqlPanel.add(sqlTextPanel, sqlGbc);
+
         descriptionTextArea = new SimpleTextArea();
         this.autoCompletePopup = new DefaultAutoCompletePopupProvider(connection, sqlTextPanel.getTextPane());
         String sql;
@@ -54,6 +83,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
                     "as\n" +
                     "select _fields_ from _table_name_\n" +
                     "where _conditions_";
+            formatSqlButton.setVisible(false);
         }
         sqlTextPanel.setSQLText(sql);
 
@@ -65,7 +95,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
         });
 
         //create location elements
-        tabbedPane.add(bundlesString("SQL"), sqlTextPanel);
+        tabbedPane.add(bundlesString("SQL"), sqlPanel);
         tabbedPane.add(bundlesString("description"), descriptionTextArea);
 
 
@@ -149,8 +179,15 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     @Override
     public void keyReleased(KeyEvent e) {
         SQLTextPane textPane = (SQLTextPane) e.getSource();
-        if (!textPane.getText().contains(" " + replacing_name + "\n"))
+        if (!textPane.getText().contains(" " + replacing_name + "\n") && !editing)
             textPane.setText(notChangedText);
         released = true;
+    }
+
+    private void formatSql() {
+        if (StringUtils.isNotEmpty(sqlTextPanel.getSQLText())) {
+            String sqlText = sqlTextPanel.getSQLText();
+            sqlTextPanel.setSQLText(new SQLFormatter(sqlText).format());
+        }
     }
 }

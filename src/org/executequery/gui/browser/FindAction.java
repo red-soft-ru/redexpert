@@ -271,6 +271,9 @@ public abstract class FindAction<T> extends AbstractAction
 
             setFirstListItemSelectedAndFocus();
         }
+        if (keyCode == KeyEvent.VK_ALT) {
+            keyEvent.setKeyCode(KeyEvent.VK_CONTROL);
+        }
     }
 
     private void setFirstListItemSelectedAndFocus() {
@@ -284,9 +287,15 @@ public abstract class FindAction<T> extends AbstractAction
     }
 
     public void keyTyped(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_ALT) {
+            e.consume();
+        }
     }
 
     public void keyReleased(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_ALT) {
+            e.consume();
+        }
     }
 
     /*--------------[ Installation ]--------------*/

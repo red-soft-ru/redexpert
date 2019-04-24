@@ -135,6 +135,10 @@ public class SqlScriptRunner {
             executionController.message("Found " + executableQueries.size() + " executable queries");
             executionController.message("Executing...");
 
+            if (connection == null)
+                throw new SQLException("There is no connection. Select a connection from the available connections " +
+                        "list or add a database creation statement.");
+
             long start = 0L;
             long end = 0L;
             int thisResult = 0;
@@ -328,7 +332,7 @@ public class SqlScriptRunner {
         Class clazzdb = null;
         Object odb = null;
         try {
-            urlDriver = MiscUtils.loadURLs("./lib/jaybird-full.jar");
+            urlDriver = MiscUtils.loadURLs("./lib/jaybird-full.jar;../lib/jaybird-full.jar");
             ClassLoader clD = new URLClassLoader(urlDriver);
             clazzDriver = clD.loadClass("org.firebirdsql.jdbc.FBDriver");
             Object o = clazzDriver.newInstance();
@@ -400,7 +404,7 @@ public class SqlScriptRunner {
             properties.setProperty("lc_ctype", charSet);
         temp.setJdbcProperties(properties);
         DatabaseDriver driver = new DefaultDatabaseDriver();
-        driver.setPath("./lib/jaybird-full.jar");
+        driver.setPath("./lib/jaybird-full.jar;../lib/jaybird-full.jar");
         driver.setClassName("org.firebirdsql.jdbc.FBDriver");
         driver.setURL("jdbc:firebirdsql://[host]:[port]/[source]");
         temp.setJDBCDriver(driver);

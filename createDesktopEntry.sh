@@ -11,5 +11,5 @@ then
 else
     echo "Exec=\"$EXE_PATH/bin/RedExpert\"">>$HOME/.local/share/applications/redexpert.desktop
 fi
-
+echo "Path=\"$EXE_PATH/bin\"">>$HOME/.local/share/applications/redexpert.desktop
 echo "Icon=$EXE_PATH/red_expert.png">>$HOME/.local/share/applications/redexpert.desktop

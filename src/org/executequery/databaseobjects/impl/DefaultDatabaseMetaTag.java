@@ -1829,6 +1829,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return 0;
     }
 
+    @Override
+    public boolean allowsChildren() {
+        return true;
+    }
+
     public void setCatalog(DatabaseCatalog catalog) {
         this.catalog = catalog;
     }

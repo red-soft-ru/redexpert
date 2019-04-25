@@ -425,6 +425,11 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
         return super.getParent();
     }
 
+    @Override
+    public boolean allowsChildren() {
+        return false;
+    }
+
     /**
      * The executable (procedure) type:<br>
      * <ul>

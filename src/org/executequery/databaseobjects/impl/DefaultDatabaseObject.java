@@ -110,6 +110,11 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
         return null;
     }
 
+    @Override
+    public boolean allowsChildren() {
+        return getType() == NamedObject.SYSTEM_TABLE;
+    }
+
     /**
      * Returns the database object type.
      *

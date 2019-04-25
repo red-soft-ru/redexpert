@@ -101,6 +101,11 @@ public class TableColumnIndex extends AbstractDatabaseObjectElement {
     return 0;
   }
 
+    @Override
+    public boolean allowsChildren() {
+        return false;
+    }
+
   public void addIndexedColumn(String column) {
     columns.add(column);
   }

@@ -90,6 +90,10 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
     public String getMetaDataKey() {
         return META_TYPES[getType()];
     }
+
+    public boolean allowsChildren() {
+        return true;
+    }
 }
 
 

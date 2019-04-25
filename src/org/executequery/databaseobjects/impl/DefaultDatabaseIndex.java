@@ -293,6 +293,11 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
         return META_TYPES[getType()];
     }
 
+    @Override
+    public boolean allowsChildren() {
+        return false;
+    }
+
     protected void getObjectInfo() {
         try {
             super.getObjectInfo();

@@ -118,6 +118,11 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     return objects;
   }
 
+  @Override
+  public boolean allowsChildren() {
+    return true;
+  }
+
   public List<String> getColumnNames() {
     List<String> names = new ArrayList<>();
     for (DatabaseColumn column : getColumns()) {

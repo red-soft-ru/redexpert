@@ -589,6 +589,11 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
         return 0;
     }
 
+    @Override
+    public boolean allowsChildren() {
+        return false;
+    }
+
     /**
      * Returns the parent named object of this object.
      *

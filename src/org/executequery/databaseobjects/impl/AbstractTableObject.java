@@ -174,6 +174,10 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
 
     public boolean hasTableDataChanges() {
 
-        return tableDataChanges != null ? !tableDataChanges.isEmpty() : false;
+        return tableDataChanges != null && !tableDataChanges.isEmpty();
+    }
+
+    public boolean allowsChildren() {
+        return true;
     }
 }

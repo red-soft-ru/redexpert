@@ -102,6 +102,11 @@ public class DefaultTableIndex extends AbstractDatabaseObjectElement
         return 0;
     }
 
+    @Override
+    public boolean allowsChildren() {
+        return false;
+    }
+
     private List<DatabaseColumn> columns() {
 
         if (columns == null) {

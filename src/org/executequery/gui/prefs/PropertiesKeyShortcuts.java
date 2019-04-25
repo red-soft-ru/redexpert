@@ -267,6 +267,9 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
             JButton okButton = new JButton(Bundles.get("common.ok.button"));
             JButton clearButton = new JButton(Bundles.get("common.clear.button"));
             JButton cancelButton = new JButton(Bundles.get("common.cancel.button"));
+            okButton.setActionCommand("OK");
+            clearButton.setActionCommand("Clear");
+            cancelButton.setActionCommand("Cancel");
 
             okButton.addActionListener(this);
             clearButton.addActionListener(this);

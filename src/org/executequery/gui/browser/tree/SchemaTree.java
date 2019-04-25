@@ -179,7 +179,7 @@ public class SchemaTree extends DynamicTree
             if (selectionPath == null)
                 return;
             DatabaseObjectNode node = (DatabaseObjectNode) selectionPath.getLastPathComponent();
-            if (!node.isRoot())
+            if (!node.isCatalog())
                 panel.valueChanged(node);
         }
     }

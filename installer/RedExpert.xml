@@ -80,7 +80,7 @@
                     <comment>Launch ${project.shortName}</comment>
                     <name>${project.shortName}</name>
                     <platforms>all</platforms>
-                    <exec>bash -c "cd ${installdir}/bin &amp;&amp; ${installdir}/bin/${execute_file}"</exec>
+                    <exec>/bin/bash -c "cd ${installdir}/bin &amp;&amp; ${installdir}/bin/${execute_file}"</exec>
                     <path>${installdir}/bin/</path>
                     <icon>${installdir}/red_expert.png</icon>
                     <windowsExec>${installdir}/bin/${execute_file}.exe</windowsExec>

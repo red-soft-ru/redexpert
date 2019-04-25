@@ -335,8 +335,13 @@ public class TraceManagerPanel extends JPanel implements TabView {
                     timer.start();
                     try {
                         String conf;
-                        if (useBuildConfBox.isSelected())
+                        if (useBuildConfBox.isSelected()) {
+                            if (fileConfField.getText().isEmpty()) {
+                                GUIUtilities.displayErrorMessage("Please select configuration file");
+                                return;
+                            }
                             conf = traceManager.loadConfigurationFromFile(fileConfField.getText());
+                        }
                         else conf = confPanel.getConfig();
                         traceManager.startTraceSession(sessionField.getText(), conf);
                         startStopSessionButton.setText(bundleString("Stop"));

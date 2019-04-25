@@ -71,6 +71,13 @@ public class PropertiesBrowserGeneral extends AbstractPropertiesBasePanel {
                 bundledString("ShowSystemObjects"),
                 SystemProperties.getBooleanProperty("user", key)));
 
+        key = "browser.search.in.columns";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledString("SearchInColumns"),
+                SystemProperties.getBooleanProperty("user", key)));
+
 
         UserPreference[] preferences =
                 list.toArray(new UserPreference[list.size()]);

@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.tree.SchemaTree;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -46,12 +47,13 @@ import java.util.regex.Pattern;
  * @author Santhosh Kumar, Takis Diakoumis
  */
 public class TreeFindAction extends FindAction<TreePath> {
-
+    private boolean searchInCols;
     public TreeFindAction() {
 
         super();
 
         putValue(Action.SHORT_DESCRIPTION, Bundles.get("BrowserTreeRootPopupMenu.searchNodes"));
+        searchInCols = SystemProperties.getBooleanProperty("user", "browser.search.in.columns");
     }
 
     protected boolean changed(JComponent comp, String searchString, Position.Bias bias) {
@@ -140,8 +142,11 @@ public class TreeFindAction extends FindAction<TreePath> {
 
                 matchedPaths.add(path.pathByAddingChild(node));
             }
-            if (node.getType() != NamedObject.SYSTEM_TABLE && node.getType() != NamedObject.TABLE && node.getType() != NamedObject.VIEW)
-                findOnTree(path.pathByAddingChild(node), matchedPaths, matcher);
+            if (!searchInCols) {
+                if (node.getType() != NamedObject.SYSTEM_TABLE && node.getType() != NamedObject.TABLE && node.getType() != NamedObject.VIEW)
+                    findOnTree(path.pathByAddingChild(node), matchedPaths, matcher);
+            } else findOnTree(path.pathByAddingChild(node), matchedPaths, matcher);
+
         }
     }
 

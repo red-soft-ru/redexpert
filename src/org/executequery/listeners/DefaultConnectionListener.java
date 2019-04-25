@@ -22,6 +22,7 @@ package org.executequery.listeners;
 
 import org.executequery.GUIUtilities;
 import org.executequery.components.StatusBarPanel;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
@@ -29,17 +30,19 @@ import org.executequery.event.ConnectionListener;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.underworldlabs.swing.util.SwingWorker;
+import org.underworldlabs.util.SystemProperties;
 
 import java.util.Enumeration;
 
 public class DefaultConnectionListener implements ConnectionListener {
-
+    private boolean searchInCols;
     public void connected(ConnectionEvent connectionEvent) {
 
         updateStatusBarDataSourceCounter();
         SwingWorker worker = new SwingWorker() {
             @Override
             public Object construct() {
+                searchInCols = SystemProperties.getBooleanProperty("user", "browser.search.in.columns");
                 ConnectionsTreePanel panel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
                 DatabaseObjectNode hostNode = panel.getHostNode(connectionEvent.getDatabaseConnection());
                 populate(hostNode);
@@ -71,7 +74,10 @@ public class DefaultConnectionListener implements ConnectionListener {
         Enumeration<DatabaseObjectNode> nodes = root.children();
         while (nodes.hasMoreElements()) {
             DatabaseObjectNode node = nodes.nextElement();
-            populate(node);
+            if (!searchInCols) {
+                if (node.getType() != NamedObject.SYSTEM_TABLE && node.getType() != NamedObject.TABLE && node.getType() != NamedObject.VIEW)
+                    populate(node);
+            } else populate(node);
         }
     }
 

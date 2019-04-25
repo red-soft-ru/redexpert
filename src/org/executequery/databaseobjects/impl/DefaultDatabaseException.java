@@ -53,6 +53,11 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
         return META_TYPES[EXCEPTION];
     }
 
+    @Override
+    public boolean allowsChildren() {
+        return false;
+    }
+
     public String getID() {
         checkOnReload(exceptionID);
         return exceptionID;

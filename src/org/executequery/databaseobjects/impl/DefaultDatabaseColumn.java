@@ -407,6 +407,11 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
         return 0;
     }
 
+    @Override
+    public boolean allowsChildren() {
+        return false;
+    }
+
     /**
      * Override to clear the meta data.
      */

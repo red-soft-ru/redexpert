@@ -214,6 +214,11 @@ public class BaseDatabaseObject implements NamedObject {
         isSystem = flag;
     }
 
+    @Override
+    public boolean allowsChildren() {
+        return true;
+    }
+
 }
 
 

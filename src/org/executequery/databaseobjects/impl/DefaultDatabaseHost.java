@@ -1669,6 +1669,11 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         return 0;
     }
 
+    @Override
+    public boolean allowsChildren() {
+        return true;
+    }
+
     /**
      * Returns NULL.
      */

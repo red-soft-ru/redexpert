@@ -264,6 +264,11 @@ public class DefaultDatabaseSchema extends AbstractDatabaseSource
         return "SCHEMA: " + getName();
     }
 
+    @Override
+    public boolean allowsChildren() {
+        return false;
+    }
+
 
 }
 

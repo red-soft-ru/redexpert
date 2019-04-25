@@ -221,7 +221,9 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
      * @return true | false
      */
     public boolean allowsChildren() {
-        return true;
+        if (databaseObject != null)
+            return databaseObject.allowsChildren();
+        else return true;
     }
 
     /**
@@ -238,7 +240,9 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
                     || type == NamedObject.FOREIGN_KEY
                     || type == NamedObject.PRIMARY_KEY
                     || type == NamedObject.UNIQUE_KEY
-                    || type == NamedObject.TABLE_INDEX)
+                    || type == NamedObject.TABLE_INDEX
+                    || type == NamedObject.DOMAIN
+            )
 
                 return true;
         }

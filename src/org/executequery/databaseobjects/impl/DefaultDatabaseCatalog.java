@@ -179,6 +179,11 @@ public class DefaultDatabaseCatalog extends AbstractDatabaseSource
         return "CATALOG: " + getName();
     }
 
+    @Override
+    public boolean allowsChildren() {
+        return true;
+    }
+
 }
 
 

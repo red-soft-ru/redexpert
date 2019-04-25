@@ -67,6 +67,11 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
         return META_TYPES[getType()];
     }
 
+    @Override
+    public boolean allowsChildren() {
+        return false;
+    }
+
     public List<DatabaseColumn> getDomainData() {
         checkOnReload(columns);
         return columns;

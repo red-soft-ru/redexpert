@@ -201,6 +201,8 @@ public interface NamedObject extends Named, java.io.Serializable {
 
     void setSystemFlag(boolean flag);
 
+    boolean allowsChildren();
+
 }
 
 

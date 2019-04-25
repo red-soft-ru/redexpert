@@ -91,6 +91,11 @@ public class DefaultSystemFunctionMetaTag extends AbstractDatabaseObject
         return objects;
     }
 
+    @Override
+    public boolean allowsChildren() {
+        return true;
+    }
+
     /**
      * Returns the parent meta tag object.
      *

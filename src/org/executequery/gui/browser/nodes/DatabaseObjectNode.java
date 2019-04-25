@@ -315,5 +315,9 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
         return databaseObject.isSystem();
     }
 
+    public boolean isCatalog() {
+        return this instanceof RootDatabaseObjectNode;
+    }
+
 }
 

@@ -17,6 +17,7 @@ import org.executequery.gui.DefaultTable;
 import org.executequery.gui.FormPanelButton;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.drivers.DialogDriverPanel;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
@@ -58,7 +59,7 @@ public class CreateDatabasePanel extends ActionPanel
     /**
      * This objects title as an internal frame
      */
-    public static final String TITLE = "Create Database";
+    public static final String TITLE = Bundles.get(ConnectionPanel.class, "CreateDatabase");
 
     /**
      * This objects icon as an internal frame
@@ -147,7 +148,7 @@ public class CreateDatabasePanel extends ActionPanel
     private void init() {
 
         gradientLabel = new GradientLabel();
-        gradientLabel.setText("Create Database");
+        gradientLabel.setText(bundledString("CreateDatabase"));
 
         add(gradientLabel, BorderLayout.NORTH);
 
@@ -168,8 +169,8 @@ public class CreateDatabasePanel extends ActionPanel
 
         portField.setText("3050");
 
-        savePwdCheck = ActionUtilities.createCheckBox("Store Password", "setStorePassword");
-        encryptPwdCheck = ActionUtilities.createCheckBox("Encrypt Password", "setEncryptPassword");
+        savePwdCheck = ActionUtilities.createCheckBox(bundledString("StorePassword"), "setStorePassword");
+        encryptPwdCheck = ActionUtilities.createCheckBox(bundledString("EncryptPassword"), "setEncryptPassword");
 
         savePwdCheck.addActionListener(this);
         encryptPwdCheck.addActionListener(this);
@@ -198,8 +199,8 @@ public class CreateDatabasePanel extends ActionPanel
 
         addDriverFields(mainPanel, gbc);
         gbc.insets.bottom = 5;
-        addLabelFieldPair(mainPanel, "Connection Name:",
-                nameField, "A friendly name for this connection", gbc);
+        addLabelFieldPair(mainPanel, bundledString("nameField"),
+                nameField, bundledString("nameField.tool-tip"), gbc);
 
         gbc.gridy++;
         gbc.gridx = 0;
@@ -212,7 +213,7 @@ public class CreateDatabasePanel extends ActionPanel
         bgbc.anchor = GridBagConstraints.NORTHWEST;
         bgbc.insets = new Insets(5, 5, 5, 5);
 
-        JLabel userLabel = new DefaultFieldLabel("User Name:");
+        JLabel userLabel = new DefaultFieldLabel(bundledString("userField"));
         bgbc.gridx = 0;
         bgbc.gridwidth = 1;
         bgbc.weightx = 0;
@@ -223,7 +224,7 @@ public class CreateDatabasePanel extends ActionPanel
         bgbc.weightx = 0.25;
         basicPanel.add(userField, bgbc);
 
-        JLabel passwordLabel = new DefaultFieldLabel("Password:");
+        JLabel passwordLabel = new DefaultFieldLabel(bundledString("passwordField"));
         bgbc.gridx = 2;
         bgbc.gridwidth = 1;
         bgbc.weightx = 0;
@@ -235,23 +236,22 @@ public class CreateDatabasePanel extends ActionPanel
         bgbc.gridwidth = 4;
         basicPanel.add(passwordField, bgbc);
 
-        JButton showPassword = new LinkButton("Show Password");
+        JButton showPassword = new LinkButton(bundledString("ShowPassword"));
         showPassword.setActionCommand("showPassword");
         showPassword.addActionListener(this);
 
         JPanel passwordOptionsPanel = new JPanel(new GridBagLayout());
         addComponents(passwordOptionsPanel,
-                new ComponentToolTipPair[]{
-                        new ComponentToolTipPair(savePwdCheck, "Store the password with the connection information"),
-                        new ComponentToolTipPair(encryptPwdCheck, "Encrypt the password when saving"),
-                        new ComponentToolTipPair(showPassword, "Show the password in plain text")});
+                new ComponentToolTipPair(savePwdCheck, bundledString("StorePassword.tool-tip")),
+                new ComponentToolTipPair(encryptPwdCheck, bundledString("EncryptPassword.tool-tip")),
+                new ComponentToolTipPair(showPassword, bundledString("ShowPassword.tool-tip")));
         bgbc.gridx = 3;
         bgbc.gridy = 1;
         bgbc.insets.left = 5;
         bgbc.weightx = 0.1;
         basicPanel.add(passwordOptionsPanel, bgbc);
 
-        JLabel charsetLabel = new DefaultFieldLabel("Character Set:");
+        JLabel charsetLabel = new DefaultFieldLabel(bundledString("CharacterSet"));
         bgbc.gridy = 2;
         bgbc.gridx = 0;
         bgbc.gridwidth = 1;
@@ -264,7 +264,7 @@ public class CreateDatabasePanel extends ActionPanel
         bgbc.weightx = 0.25;
         basicPanel.add(charsetsCombo, bgbc);
 
-        JLabel pageSizeLabel = new DefaultFieldLabel("Page Size:");
+        JLabel pageSizeLabel = new DefaultFieldLabel(bundledString("PageSize"));
         bgbc.gridy = 2;
         bgbc.gridx = 2;
         bgbc.gridwidth = 1;
@@ -283,7 +283,7 @@ public class CreateDatabasePanel extends ActionPanel
         sgbc.anchor = GridBagConstraints.NORTHWEST;
         sgbc.insets = new Insets(5, 5, 5, 5);
 
-        JLabel hostLabel = new DefaultFieldLabel("Server(Host) Name:");
+        JLabel hostLabel = new DefaultFieldLabel(bundledString("hostField"));
         sgbc.gridx = 0;
         sgbc.gridwidth = 1;
         sgbc.weightx = 0;
@@ -294,7 +294,7 @@ public class CreateDatabasePanel extends ActionPanel
         sgbc.weightx = 0.25;
         standardPanel.add(hostField, sgbc);
 
-        JLabel portLabel = new DefaultFieldLabel("Port:");
+        JLabel portLabel = new DefaultFieldLabel(bundledString("portField"));
         sgbc.gridx = 2;
         sgbc.insets.left = 5;
         sgbc.weightx = 0;
@@ -305,13 +305,13 @@ public class CreateDatabasePanel extends ActionPanel
         sgbc.weightx = 0.1;
         standardPanel.add(portField, sgbc);
 
-        JLabel dataSourceLabel = new DefaultFieldLabel("Database File:");
+        JLabel dataSourceLabel = new DefaultFieldLabel(bundledString("sourceField"));
         sgbc.gridx = 4;
         sgbc.insets.left = 5;
         sgbc.weightx = 0;
         standardPanel.add(dataSourceLabel, sgbc);
 
-        JButton saveFile = new JButton("Choose file");
+        JButton saveFile = new JButton(bundledString("ChooseFile"));
         saveFile.addActionListener(new ActionListener() {
             FileChooserDialog fileChooser = new FileChooserDialog();
 
@@ -346,7 +346,7 @@ public class CreateDatabasePanel extends ActionPanel
 
         mainPanel.add(standardPanel, gbc);
 
-        createButton = createButton("Create", CREATE_ACTION_COMMAND, 'T');
+        createButton = createButton(bundledString("Create"), CREATE_ACTION_COMMAND, 'T');
 
         JPanel buttons = new JPanel(new GridBagLayout());
         gbc.gridy++;
@@ -386,7 +386,7 @@ public class CreateDatabasePanel extends ActionPanel
 
         // advanced jdbc properties
         JPanel advPropsPanel = new JPanel(new GridBagLayout());
-        advPropsPanel.setBorder(BorderFactory.createTitledBorder("JDBC Properties"));
+        advPropsPanel.setBorder(BorderFactory.createTitledBorder(bundledString("JDBCProperties")));
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
@@ -398,10 +398,10 @@ public class CreateDatabasePanel extends ActionPanel
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         advPropsPanel.add(
-                new DefaultFieldLabel("Enter any key/value pair properties for this connection"), gbc);
+                new DefaultFieldLabel(bundledString("advPropsPanel.text1")), gbc);
         gbc.gridy++;
         advPropsPanel.add(
-                new DefaultFieldLabel("Refer to the relevant JDBC driver documentation for possible entries"), gbc);
+                new DefaultFieldLabel(bundledString("advPropsPanel.text2")), gbc);
         gbc.gridy++;
         gbc.insets.bottom = 10;
         gbc.weighty = 1.0;
@@ -409,8 +409,8 @@ public class CreateDatabasePanel extends ActionPanel
         advPropsPanel.add(scroller, gbc);
 
         // transaction isolation
-        txApplyButton = WidgetFactory.createInlineFieldButton("Apply", "transactionLevelChanged");
-        txApplyButton.setToolTipText("Apply this level to all open connections of this type");
+        txApplyButton = WidgetFactory.createInlineFieldButton(Bundles.get("common.apply.button"), "transactionLevelChanged");
+        txApplyButton.setToolTipText(bundledString("txApplyButton.tool-tip"));
         txApplyButton.setEnabled(false);
         txApplyButton.addActionListener(this);
 
@@ -423,7 +423,7 @@ public class CreateDatabasePanel extends ActionPanel
         txCombo = WidgetFactory.createComboBox(txLevels);
 
         JPanel advTxPanel = new JPanel(new GridBagLayout());
-        advTxPanel.setBorder(BorderFactory.createTitledBorder("Transaction Isolation"));
+        advTxPanel.setBorder(BorderFactory.createTitledBorder(bundledString("TransactionIsolation")));
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.insets.top = 0;
@@ -436,19 +436,18 @@ public class CreateDatabasePanel extends ActionPanel
         gbc.fill = GridBagConstraints.BOTH;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         advTxPanel.add(
-                new DefaultFieldLabel("Default transaction isolation level for this connection"), gbc);
+                new DefaultFieldLabel(bundledString("advTxPanel.Text1")), gbc);
         gbc.gridy++;
         gbc.insets.bottom = 10;
         advTxPanel.add(
-                new DefaultFieldLabel("Note: the selected isolation level " +
-                        "will apply to ALL open connections of this type."), gbc);
+                new DefaultFieldLabel(bundledString("advTxPanel.Text2")), gbc);
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.gridwidth = 1;
         gbc.insets.top = 0;
         gbc.insets.left = 10;
         gbc.weightx = 0;
-        advTxPanel.add(new DefaultFieldLabel("Isolation Level:"), gbc);
+        advTxPanel.add(new DefaultFieldLabel(bundledString("IsolationLevel")), gbc);
         gbc.gridx = 1;
         gbc.insets.left = 5;
         gbc.weightx = 1.0;
@@ -470,8 +469,8 @@ public class CreateDatabasePanel extends ActionPanel
         scrollPane.setBorder(null);
 
         tabPane = new JTabbedPane(JTabbedPane.BOTTOM);
-        tabPane.addTab("Basic", scrollPane);
-        tabPane.addTab("Advanced", advancedPanel);
+        tabPane.addTab(bundledString("Basic"), scrollPane);
+        tabPane.addTab(bundledString("Advanced"), advancedPanel);
 
         add(tabPane, BorderLayout.CENTER);
 
@@ -524,7 +523,6 @@ public class CreateDatabasePanel extends ActionPanel
                 return nameField.getPreferredSize();
             }
 
-            ;
         };
         formatTextField(textField);
 
@@ -1190,7 +1188,7 @@ public class CreateDatabasePanel extends ActionPanel
 
         if (driverIndex > 0) {
 
-            DatabaseDriver driver = (DatabaseDriver) jdbcDrivers.get(driverIndex - 1);
+            DatabaseDriver driver = jdbcDrivers.get(driverIndex - 1);
 
             databaseConnection.setJDBCDriver(driver);
             databaseConnection.setDriverName(driver.getName());
@@ -1248,6 +1246,10 @@ public class CreateDatabasePanel extends ActionPanel
     private void focusNameField() {
         nameField.requestFocusInWindow();
         nameField.selectAll();
+    }
+
+    private String bundledString(String key) {
+        return Bundles.get(ConnectionPanel.class, key);
     }
 
     private class JdbcPropertiesTableModel extends AbstractTableModel {
@@ -1374,7 +1376,7 @@ public class CreateDatabasePanel extends ActionPanel
         gbc.insets.top = 0;
         gbc.insets.left = 10;
         gbc.weightx = 0;
-        panel.add(new DefaultFieldLabel("JDBC Driver:"), gbc);
+        panel.add(new DefaultFieldLabel(bundledString("driverField")), gbc);
         gbc.gridx = 1;
         gbc.insets.left = 5;
         gbc.insets.right = 5;
@@ -1382,9 +1384,9 @@ public class CreateDatabasePanel extends ActionPanel
         gbc.insets.top = 0;
         panel.add(driverCombo, gbc);
 
-        driverCombo.setToolTipText("The JDBC driver to be used for this database");
+        driverCombo.setToolTipText(bundledString("driverField.tool-tip"));
 
-        JButton button = WidgetFactory.createInlineFieldButton("New Driver");
+        JButton button = WidgetFactory.createInlineFieldButton(bundledString("addNewDriver"));
         button.setActionCommand("addNewDriver");
         button.addActionListener(this);
         button.setMnemonic('r');

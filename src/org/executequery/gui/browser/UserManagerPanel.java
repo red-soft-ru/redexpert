@@ -460,7 +460,7 @@ public class UserManagerPanel extends JPanel {
                 }
             }
         });
-        roleRoleBox.setSelected(true);
+        roleRoleBox.setSelected(false);
         roleRoleBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {

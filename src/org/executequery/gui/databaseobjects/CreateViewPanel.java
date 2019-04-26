@@ -154,6 +154,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
     private String replaceName(String source) {
         source = source.trim();
         String name = view.getName().trim();
+        source = source.replace(" " + name + "(", " " + replacing_name + "(");
         source = source.replace(" " + name + " ", " " + replacing_name + "\n");
         source = source.replace(" " + name + "\n", " " + replacing_name + "\n");
         source = source.replace("\n" + name + "\n", " " + replacing_name + "\n");

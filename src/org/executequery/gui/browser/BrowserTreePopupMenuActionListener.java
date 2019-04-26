@@ -75,13 +75,13 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
             DatabaseObject object = (DatabaseObject) node.getUserObject();
             StringBuilder sb = new StringBuilder();
-            sb.append(node.getDisplayName());
+            sb.append(node.getShortName());
             sb.append(":");
             sb.append(node.getMetaDataKey());
             sb.append(":");
             sb.append(object.getHost());
             if (GUIUtilities.getOpenFrame(sb.toString()) != null) {
-                GUIUtilities.displayErrorMessage(bundledString("messageInUse", node.getDisplayName()));
+                GUIUtilities.displayErrorMessage(bundledString("messageInUse", node.getShortName()));
                 return;
             }
             String type;

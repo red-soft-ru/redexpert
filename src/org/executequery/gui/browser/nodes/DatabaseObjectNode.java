@@ -291,6 +291,12 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
      * Propagates the call to the underlying database object.
      */
     public String getDisplayName() {
+        if (getType() == NamedObject.META_TAG)
+            return databaseObject.getDescription();
+        return getShortName();
+    }
+
+    public String getShortName() {
         return databaseObject.getShortName().trim();
     }
 
@@ -308,11 +314,10 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
         String metadatakey = getMetaDataKey();
         if (metadatakey != null) {
             if (getType() == NamedObject.TABLE_COLUMN) {
-                return ((DatabaseTableColumn) databaseObject).getTable().getName().trim() + "." + getDisplayName() + ":" + "COLUMN";
+                return ((DatabaseTableColumn) databaseObject).getTable().getName().trim() + "." + getShortName() + ":" + "COLUMN";
             } else
-                return getDisplayName() + ":" + getMetaDataKey();
-        }
-        else return getDisplayName();
+                return getShortName() + ":" + getMetaDataKey();
+        } else return getShortName();
     }
 
     protected String bundleString(String key) {

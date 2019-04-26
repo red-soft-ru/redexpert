@@ -264,7 +264,7 @@ public class BrowserController {
                 connection = getDatabaseConnection();
             if (node.isHostNode() || node.getType() == NamedObject.CATALOG)
                 panel.setObjectName(null);
-            else panel.setObjectName(node.getDisplayName().trim() + ":" + type + ":" + connection.getName());
+            else panel.setObjectName(node.getShortName().trim() + ":" + type + ":" + connection.getName());
             panel.setDatabaseConnection(connection);
             if (panel != null) {
 

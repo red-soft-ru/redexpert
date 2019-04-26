@@ -226,7 +226,7 @@ public abstract class AbstractNamedObject implements NamedObject,
             }
         }
         if (getObjects() != null)
-            return getName() + "(" + getObjects().size() + ")";
+            return getName() + " (" + getObjects().size() + ")";
         else return getName();
     }
 

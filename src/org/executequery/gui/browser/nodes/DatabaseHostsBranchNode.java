@@ -79,6 +79,10 @@ public class DatabaseHostsBranchNode extends DatabaseObjectNode {
         return getName();
     }
 
+    public String getShortName() {
+        return getName().trim();
+    }
+
     /**
      * Propagates the call to the underlying database object.
      */

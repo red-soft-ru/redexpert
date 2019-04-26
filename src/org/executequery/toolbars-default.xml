@@ -212,17 +212,22 @@
 
             <button id="24" action-id="user-manager-command">
                 <visible>true</visible>
-                <order>7</order>
+                <order>8</order>
             </button>
 
             <button id="46" action-id="grant-manager-command">
                 <visible>true</visible>
-                <order>8</order>
+                <order>9</order>
             </button>
 
             <button id="47" action-id="comparerDB-command">
                 <visible>true</visible>
-                <order>9</order>
+                <order>10</order>
+            </button>
+
+            <button id="48" action-id="execute-sql-script-command">
+                <visible>true</visible>
+                <order>6</order>
             </button>
 
             <button id="22" action-id="generate-scripts-command">
@@ -232,7 +237,7 @@
 
             <button id="41" action-id="execute-object">
                 <visible>true</visible>
-                <order>6</order>
+                <order>7</order>
             </button>
 
             <button id="42" action-id="compare-data-types">

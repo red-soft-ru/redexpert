@@ -35,11 +35,6 @@ public class ExecuteSqlScriptCommand extends OpenFrameCommand
 
     public void execute(ActionEvent e) {
 
-//        if (!isConnected()) {
-//
-//            return;
-//        }
-
         try {
 
             GUIUtilities.showWaitCursor();

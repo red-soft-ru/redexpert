@@ -684,7 +684,7 @@
             mnemonic="S"
             description="Open and execute an SQL script"
             accel-editable="false"
-            small-icon="/org/executequery/icons/ExportDelimited16.png"
+            small-icon="/org/executequery/icons/ExecuteSqlScript16.png"
             execute-class="org.executequery.actions.databasecommands.ExecuteSqlScriptCommand"/>
 
     <action id="execute-object"

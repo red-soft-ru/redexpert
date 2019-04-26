@@ -29,6 +29,8 @@ import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
+import org.executequery.log.Log;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.SystemProperties;
 
@@ -45,7 +47,13 @@ public class DefaultConnectionListener implements ConnectionListener {
                 searchInCols = SystemProperties.getBooleanProperty("user", "browser.search.in.columns");
                 ConnectionsTreePanel panel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
                 DatabaseObjectNode hostNode = panel.getHostNode(connectionEvent.getDatabaseConnection());
-                populate(hostNode);
+                try {
+                    populate(hostNode);
+                } catch (DataSourceException e) {
+                    if (e.wasConnectionClosed())
+                        Log.info("connection was closed");
+                    else e.printStackTrace();
+                }
                 return null;
             }
         };

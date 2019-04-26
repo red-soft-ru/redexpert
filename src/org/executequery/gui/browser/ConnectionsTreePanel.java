@@ -1773,7 +1773,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
   public void connectDisconnect() {
 
     if (!getSelectedDatabaseConnection().isConnected())
-      ((DatabaseHost) getHostNode(getSelectedDatabaseConnection()).getDatabaseObject()).connect();
+      connect(getSelectedDatabaseConnection());
     else GUIUtilities.closeSelectedConnection();
   }
 

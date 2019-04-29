@@ -308,7 +308,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                 for (int i = 0; i < fetchSize && !rsClose; i++) {
                     fetchOneRecord(rs, count);
                 }
-                fireTableStructureChanged();
+                fireTableDataChanged();
             }
         } catch (Exception e) {
             rsClose = true;
@@ -317,7 +317,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                 fetchAll = false;
             } else
                 GUIUtilities.displayExceptionErrorDialog("Error loading data", e);
-            fireTableStructureChanged();
+            fireTableDataChanged();
         }
     }
 

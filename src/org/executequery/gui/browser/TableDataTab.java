@@ -392,22 +392,11 @@ public class TableDataTab extends JPanel
             sorter.addSortingListener(new SortingListener() {
                 @Override
                 public void presorting(SortingEvent e) {
-                    GUIUtilities.showWaitCursor();
-                    SwingWorker worker = new SwingWorker() {
-                        @Override
-                        public Object construct() {
                             tableModel.setFetchAll(true);
                             tableModel.fetchMoreData();
                             if (displayRowCount) {
                                 rowCountField.setText(String.valueOf(tableModel.getRowCount()));
                             }
-                            GUIUtilities.showNormalCursor();
-                            return "done";
-                        }
-                    };
-                    worker.start();
-                    if (worker.get() == "done")
-                        return;
                 }
 
                 @Override

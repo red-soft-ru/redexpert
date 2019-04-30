@@ -30,10 +30,7 @@ import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.*;
-import org.executequery.event.ApplicationEvent;
-import org.executequery.event.DefaultUserPreferenceEvent;
-import org.executequery.event.UserPreferenceEvent;
-import org.executequery.event.UserPreferenceListener;
+import org.executequery.event.*;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.editor.ResultSetTableContainer;
@@ -392,6 +389,37 @@ public class TableDataTab extends JPanel
             tableModel.setNonEditableColumns(nonEditableCols);
 
             TableSorter sorter = new TableSorter(tableModel);
+            sorter.addSortingListener(new SortingListener() {
+                @Override
+                public void presorting(SortingEvent e) {
+                    GUIUtilities.showWaitCursor();
+                    SwingWorker worker = new SwingWorker() {
+                        @Override
+                        public Object construct() {
+                            tableModel.setFetchAll(true);
+                            tableModel.fetchMoreData();
+                            if (displayRowCount) {
+                                rowCountField.setText(String.valueOf(tableModel.getRowCount()));
+                            }
+                            GUIUtilities.showNormalCursor();
+                            return "done";
+                        }
+                    };
+                    worker.start();
+                    if (worker.get() == "done")
+                        return;
+                }
+
+                @Override
+                public void postsorting(SortingEvent e) {
+
+                }
+
+                @Override
+                public boolean canHandleEvent(ApplicationEvent event) {
+                    return false;
+                }
+            });
             table.setModel(sorter);
             sorter.setTableHeader(table.getTableHeader());
 

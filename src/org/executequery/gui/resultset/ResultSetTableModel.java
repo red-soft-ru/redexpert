@@ -301,24 +301,25 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     }
 
     public void fetchMoreData() {
-        try {
-            if (fetchAll) {
-                fetchAllRecords(rs, count);
-            } else {
-                for (int i = 0; i < fetchSize && !rsClose; i++) {
-                    fetchOneRecord(rs, count);
+        if (!rsClose)
+            try {
+                if (fetchAll) {
+                    fetchAllRecords(rs, count);
+                } else {
+                    for (int i = 0; i < fetchSize && !rsClose; i++) {
+                        fetchOneRecord(rs, count);
+                    }
+                    fireTableDataChanged();
                 }
+            } catch (Exception e) {
+                rsClose = true;
+                if (cancelled) {
+                    cancelled = false;
+                    fetchAll = false;
+                } else
+                    GUIUtilities.displayExceptionErrorDialog("Error loading data", e);
                 fireTableDataChanged();
             }
-        } catch (Exception e) {
-            rsClose = true;
-            if (cancelled) {
-                cancelled = false;
-                fetchAll = false;
-            } else
-                GUIUtilities.displayExceptionErrorDialog("Error loading data", e);
-            fireTableDataChanged();
-        }
     }
 
     private void fetchOneRecord(ResultSet resultSet, int count) throws SQLException, InterruptedException {
@@ -333,7 +334,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     private void fetchAllRecords(ResultSet resultSet, int count) throws SQLException, InterruptedException {
         while (resultSet.next())
             addingRecord(resultSet, count);
-        fireTableStructureChanged();
+        fireTableDataChanged();
         resultSet.close();
         rsClose = true;
     }

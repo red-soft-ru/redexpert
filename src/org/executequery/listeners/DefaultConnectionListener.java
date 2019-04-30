@@ -51,7 +51,7 @@ public class DefaultConnectionListener implements ConnectionListener {
                     populate(hostNode);
                 } catch (DataSourceException e) {
                     if (e.wasConnectionClosed())
-                        Log.info("connection was closed");
+                        Log.info("Connection was closed");
                     else e.printStackTrace();
                 }
                 return null;

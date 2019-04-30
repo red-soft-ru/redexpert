@@ -20,6 +20,9 @@
 
 package org.underworldlabs.swing.table;
 
+import org.executequery.event.DefaultSortingEvent;
+import org.executequery.event.SortingEvent;
+import org.executequery.event.SortingListener;
 import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
@@ -30,8 +33,8 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * TableSorter is a decorator for TableModels; adding sorting
@@ -87,6 +90,8 @@ import java.util.List;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class TableSorter extends AbstractTableModel {
 
+    private List<SortingListener> sortingListeners;
+
     protected SortableTableModel tableModel;
 
     public static final int DESCENDING = -1;
@@ -128,6 +133,7 @@ public class TableSorter extends AbstractTableModel {
         this.mouseListener = new MouseHandler();
         this.tableModelListener = new TableModelHandler();
         this.headerRenderer = new SortableHeaderRenderer(this);
+        sortingListeners = new ArrayList<>();
 
         if (tableHeader != null) {
 
@@ -384,6 +390,18 @@ public class TableSorter extends AbstractTableModel {
         }
 
         tableModel.setValueAt(aValue, modelIndex, column);
+    }
+
+    public void addSortingListener(SortingListener listener) {
+        sortingListeners.add(listener);
+    }
+
+    public void removeSortingListener(SortingListener listener) {
+        sortingListeners.remove(listener);
+    }
+
+    public void clearSortingListeners() {
+        sortingListeners.clear();
     }
 
     // Helper classes
@@ -696,9 +714,15 @@ public class TableSorter extends AbstractTableModel {
                     SwingWorker worker = new SwingWorker() {
                         public Object construct() {
                             setSortingStatus(column, status);
+                            for (SortingListener listener : sortingListeners) {
+                                listener.postsorting(new DefaultSortingEvent(TableSorter.this, SortingEvent.POSTSORTING));
+                            }
                             return "done";
                         }
                     };
+                    for (SortingListener listener : sortingListeners) {
+                        listener.presorting(new DefaultSortingEvent(TableSorter.this, SortingEvent.PRESORTING));
+                    }
                     worker.start();
 
                 }

@@ -677,7 +677,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * @param table   the database object name
      * @return the columns
      */
-    public List<DatabaseColumn> getColumns(String catalog, String schema, String table)
+    public synchronized List<DatabaseColumn> getColumns(String catalog, String schema, String table)
             throws DataSourceException {
 
         ResultSet rs = null;

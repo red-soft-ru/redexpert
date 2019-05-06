@@ -602,6 +602,10 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             getObjectInfo();
         }
     }
+
+    public void resetRowsCount() {
+        dataRowCount = -1;
+    }
 }
 
 

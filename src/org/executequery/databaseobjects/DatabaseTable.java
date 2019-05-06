@@ -198,6 +198,7 @@ public interface DatabaseTable extends DatabaseTableObject {
 
     boolean hasTableDefinitionChanges();
 
+    void resetRowsCount();
 }
 
 

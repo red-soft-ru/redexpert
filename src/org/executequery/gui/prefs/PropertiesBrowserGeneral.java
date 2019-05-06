@@ -78,6 +78,12 @@ public class PropertiesBrowserGeneral extends AbstractPropertiesBasePanel {
                 bundledString("SearchInColumns"),
                 SystemProperties.getBooleanProperty("user", key)));
 
+        key = "browser.query.row.count";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledString("QueryForRowsCount"),
+                SystemProperties.getBooleanProperty("user", key)));
 
         UserPreference[] preferences =
                 list.toArray(new UserPreference[list.size()]);

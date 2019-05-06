@@ -170,6 +170,11 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     private JButton cancelButton;
 
     /**
+     * the button to get count os table rows
+     */
+    private JButton rowsCountButton;
+
+    /**
      * the browser's control object
      */
     private BrowserController controller;
@@ -397,6 +402,9 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         applyButton.addActionListener(this);
         cancelButton.addActionListener(this);
 
+        rowsCountButton = new DefaultPanelButton(Bundles.getCommon("get-rows-count"));
+        rowsCountButton.addActionListener(this);
+
         // add to the base panel
         JPanel base = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -444,7 +452,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.WEST;
-        base.add(new JLabel(bundleString("row-count")), gbc);
+        base.add(rowsCountButton, gbc);
         gbc.gridx = 2;
         gbc.insets.top = 0;
         gbc.weightx = 1.0;
@@ -565,6 +573,12 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         }
 
+        if (event.getSource() == rowsCountButton) {
+
+            table.resetRowsCount();
+            updateRowCount(bundleString("quering"));
+            reloadDataRowCount();
+        }
     }
 
     public String getLayoutName() {

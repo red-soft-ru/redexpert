@@ -39,6 +39,7 @@ import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.gui.resultset.ResultSetColumnHeader;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -1018,7 +1019,7 @@ public class TableDataTab extends JPanel
         gbc.gridx = 0;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.WEST;
-        rowCountPanel.add(new JLabel("Data Row Count:"), gbc);
+        rowCountPanel.add(new JLabel(Bundles.getCommon("fetched")), gbc);
         gbc.gridx = 2;
         gbc.insets.bottom = 2;
         gbc.insets.left = 5;

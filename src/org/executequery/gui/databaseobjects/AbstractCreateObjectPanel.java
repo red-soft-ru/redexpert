@@ -71,7 +71,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (GUIUtilities.displayConfirmDialog("Exit without saving changes?") == JOptionPane.YES_OPTION) {
+                if (GUIUtilities.displayConfirmDialog(Bundles.getCommon("confirmation-request")) == JOptionPane.YES_OPTION) {
                     dialog.finished();
                 }
 

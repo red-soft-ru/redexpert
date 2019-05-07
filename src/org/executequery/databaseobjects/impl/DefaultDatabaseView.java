@@ -56,12 +56,16 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         List<DatabaseColumn> columns = this.getColumns();
 
         sb.append("CREATE OR ALTER VIEW ");
+        sb.append("\"");
         sb.append(getName());
+        sb.append("\"");
         sb.append("(\n");
 
         for (int i = 0; i < columns.size(); i++) {
             sb.append("\t");
+            sb.append("\"");
             sb.append(columns.get(i).getName());
+            sb.append("\"");
             if (i != columns.size() - 1)
                 sb.append(",\n");
         }

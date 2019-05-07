@@ -1,5 +1,6 @@
 package org.executequery.gui.databaseobjects;
 
+import org.executequery.GUIUtilities;
 import org.executequery.components.BottomButtonPanel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
@@ -9,6 +10,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
+import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -21,7 +23,9 @@ import javax.swing.*;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import java.util.Vector;
 
@@ -55,12 +59,28 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
             setParameters(params);
         editing = databaseObject != null;
         init();
-        if (editing)
+        if (editing) {
             try {
                 initEdited();
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+
+        ActionListener escListener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (GUIUtilities.displayConfirmDialog("Exit without saving changes?") == JOptionPane.YES_OPTION) {
+                    dialog.finished();
+                }
+
+            }
+        };
+
+        this.registerKeyboardAction(escListener,
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
     private void initComponents() {

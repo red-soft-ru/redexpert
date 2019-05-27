@@ -10,7 +10,6 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
-import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -136,6 +135,15 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
             }
         });
         bottomButtonPanel.setOkButtonText("OK");
+        bottomButtonPanel.setCancelButtonAction(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (GUIUtilities.displayConfirmDialog(Bundles.getCommon("confirmation-request")) == JOptionPane.YES_OPTION) {
+                    parent.finished();
+                }
+            }
+        });
+        bottomButtonPanel.setCancelButtonText(Bundles.getCommon("cancel.button"));
 
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createEtchedBorder());

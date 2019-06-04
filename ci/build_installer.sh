@@ -17,6 +17,7 @@ check_variable DIST
 check_variable ARCH
 DIST=${DIST:=dist}
 INSTALLBUILDER_BINARY=${INSTALLBUILDER_BINARY:=/opt/installbuilder/bin/builder}
+echo $LICENSE_INSTALLBUILDER > /opt/installbuilder/license.xml
 SRC_DIR=$(readlink -f `dirname $0`/..)
 INSTALLER_SRC_DIR=$SRC_DIR/installer
 INSTALLER_COMPONENTS=$DIST

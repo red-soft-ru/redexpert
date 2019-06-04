@@ -801,9 +801,9 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
      * Indicates a query is about to be executed
      */
     public void preExecute() {
-        if (indexOfTab(OUTPUT_TAB_TITLE) == -1)
-            setSelectedIndex(indexOfTab(OUTPUT_TAB_TITLE));
+
         addTextOutputTab();
+        setSelectedIndex(indexOfTab(OUTPUT_TAB_TITLE));
     }
 
     /**

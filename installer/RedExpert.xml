@@ -58,37 +58,20 @@
                     <name>programfilesosx</name>
                     <platforms>osx</platforms>
                 </folder>
-                <folder>
-                    <destination>${user_home_directory}/.local/share/applications</destination>
-                    <platforms>linux</platforms>
-                    <shortcutList>
-                        <shortcut>
-                            <comment>Launch ${project.shortName}</comment>
-                            <name>${project.shortName}</name>
-                            <platforms>linux</platforms>
-                            <exec>${installdir}/bin/${execute_file}</exec>
-                            <path>${installdir}/bin/</path>
-                            <icon>${installdir}/red_expert.png</icon>
-                            <runAsAdmin>0</runAsAdmin>
-                            <runInTerminal>0</runInTerminal>
-                        </shortcut>
-                    </shortcutList>
-                </folder>
             </folderList>
             <desktopShortcutList>
                 <shortcut>
                     <comment>Launch ${project.shortName}</comment>
                     <name>${project.shortName}</name>
                     <platforms>all</platforms>
-                    <exec>/bin/bash -c "cd ${installdir}/bin &amp;&amp; ${installdir}/bin/${execute_file}"</exec>
-                    <path>${installdir}/bin/</path>
+                    <exec>${installdir}/bin/${execute_file}</exec>
+                    <path>${installdir}</path>
                     <icon>${installdir}/red_expert.png</icon>
                     <windowsExec>${installdir}/bin/${execute_file}.exe</windowsExec>
                     <windowsPath>${installdir}/bin/</windowsPath>
                     <windowsExecArgs></windowsExecArgs>
                     <windowsIcon>${installdir}/bin/${execute_file}.exe</windowsIcon>
                     <runAsAdmin>0</runAsAdmin>
-                    <runInTerminal>0</runInTerminal>
                 </shortcut>
             </desktopShortcutList>
             <startMenuShortcutList>
@@ -135,6 +118,28 @@
         <deleteFile path="${installdir}/lib"/>
         <deleteFile path="${installdir}/RedExpertInstallation.log"/>
     </preUninstallationActionList>
+    <postInstallationActionList>
+        <createShortcuts>
+            <destination>${user_home_directory}/.local/share/applications</destination>
+            <shortcutList>
+                <shortcut>
+                    <comment>Launches ${project.fullName}</comment>
+                    <name>${project.shortName}</name>
+                    <platforms>linux</platforms>
+                    <exec>${installdir}/bin/${execute_file}</exec>
+                    <path>${installdir}</path>
+                    <icon>${installdir}/red_expert.png</icon>
+                    <runAsAdmin>0</runAsAdmin>
+                </shortcut>
+            </shortcutList>
+        </createShortcuts>
+        <iniFileSet>
+            <file>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</file>
+            <section>Desktop Entry</section>
+            <key>Categories</key>
+            <value>Development;IDE;</value>
+        </iniFileSet>
+    </postInstallationActionList>
     <allowedLanguages>en ru</allowedLanguages>
     <enableRollback>1</enableRollback>
     <enableTimestamp>1</enableTimestamp>

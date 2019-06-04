@@ -42,7 +42,6 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.*;
@@ -71,8 +70,6 @@ public class ApplicationLauncher {
 
                 System.exit(0);
             }
-
-            createDesktopEntry();
 
             System.setProperty("executequery.minor.version",
                     stringApplicationProperty("re.version"));
@@ -555,24 +552,6 @@ public class ApplicationLauncher {
 
     }
 
-    private void createDesktopEntry() {
-        String system = System.getProperty("os.name");
-        if (system.equalsIgnoreCase("Linux") && booleanUserProperty("startup.create.desktop.entry")) {
-            try {
-                userProperties().setBooleanProperty("startup.create.desktop.entry", false);
-                int result = GUIUtilities.displayConfirmDialog("Create desktop link?");
-                if (result == JOptionPane.YES_OPTION) {
-
-                    String binPath = System.getProperty("user.dir");
-                    binPath = binPath.replace("/bin", "");
-                    ProcessBuilder pb = new ProcessBuilder(binPath +"/createDesktopEntry.sh");
-                    pb.start();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
 
 }

@@ -290,8 +290,6 @@
                                         <include>**/gss.login.conf</include>
                                         <include>red_expert.png</include>
                                         <include>red_expert.ico</include>
-                                        <include>redexpert.desktop</include>
-                                        <include>createDesktopEntry.sh</include>
                                         <include>LICENSE.txt</include>
                                     </includes>
                                 </resource>

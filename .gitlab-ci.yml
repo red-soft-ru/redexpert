@@ -111,11 +111,9 @@ sources:
     - mv modules/redexpert/target/lib "${DIST}"
     - cp -r license/ "${DIST}"
     - cp guide/RedExpert_Guide-ru.pdf "${DIST}"/guide/
-    - mv modules/redexpert/target/createDesktopEntry.sh "${DIST}"
     - mv modules/redexpert/target/LICENSE.txt "${DIST}"
     - mv modules/redexpert/target/red_expert.ico "${DIST}"
     - mv modules/redexpert/target/red_expert.png "${DIST}"
-    - mv modules/redexpert/target/redexpert.desktop "${DIST}"
     - mv modules/redexpert/target/RedExpert.jar "${DIST}"
     - ./ci/build_installer.sh
 
@@ -160,11 +158,9 @@ build:linux:x86:
     - mv modules/redexpert/target/lib "${DIST}"
     - cp -r license/ "${DIST}"
     - cp guide/RedExpert_Guide-ru.pdf ${DIST}/guide/
-    - mv modules/redexpert/target/createDesktopEntry.sh "${DIST}"
     - mv modules/redexpert/target/LICENSE.txt "${DIST}"
     - mv modules/redexpert/target/red_expert.ico "${DIST}"
     - mv modules/redexpert/target/red_expert.png "${DIST}"
-    - mv modules/redexpert/target/redexpert.desktop "${DIST}"
     - mv modules/redexpert/target/RedExpert.jar "${DIST}"
     - powershell -ExecutionPolicy ByPass -file ci\build_installer.ps1
 

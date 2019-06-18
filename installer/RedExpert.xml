@@ -138,6 +138,11 @@
             <section>Desktop Entry</section>
             <key>Categories</key>
             <value>Development;IDE;</value>
+            <ruleList>
+                <fileExists>
+                    <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>>
+                </fileExists>
+            </ruleList>
         </iniFileSet>
     </postInstallationActionList>
     <allowedLanguages>en ru</allowedLanguages>

@@ -127,6 +127,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     private boolean isUnique;
     private String expression;
     private String constraint_type;
+    private boolean markedReloadActive;
 
     public DefaultDatabaseIndex(DatabaseMetaTag metaTagParent, String name) {
         super(metaTagParent, name);
@@ -161,13 +162,14 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     }
 
     public boolean isActive() {
-        if (isMarkedForReload())
+        if (isMarkedReloadActive())
             getObjectInfo();
         return isActive;
     }
 
     public void setActive(boolean active) {
         isActive = active;
+        setMarkedReloadActive(false);
     }
 
     public boolean isUnique() {
@@ -225,6 +227,14 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
                     Log.error("Error closing statement in method loadColumns of DefaultDatabaseIndex class", e);
                 }
         }
+    }
+
+    public boolean isMarkedReloadActive() {
+        return markedReloadActive;
+    }
+
+    public void setMarkedReloadActive(boolean markedReloadActive) {
+        this.markedReloadActive = markedReloadActive;
     }
 
     public void setExpression(String expression) {
@@ -309,5 +319,10 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
         } finally {
             setMarkedForReload(false);
         }
+    }
+
+    public void reset() {
+        super.reset();
+        setMarkedReloadActive(true);
     }
 }

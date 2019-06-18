@@ -966,6 +966,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 DefaultDatabaseIndex index = new DefaultDatabaseIndex(this, rs.getString(1).trim());
                 index.setHost(this.getHost());
+                index.setActive(rs.getInt(2) != 1);
                 list.add(index);
             }
 
@@ -1028,6 +1029,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
                         rs.getString(1).trim());
+                trigger.setTriggerActive(rs.getInt(2) != 1);
                 list.add(trigger);
             }
 
@@ -1295,6 +1297,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
                         rs.getString(1).trim());
+                trigger.setTriggerActive(rs.getInt(2) != 1);
                 list.add(trigger);
             }
 
@@ -1375,7 +1378,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         Statement statement = dmd.getConnection().createStatement();
 
         ResultSet resultSet = statement.executeQuery("select " +
-                "I.RDB$INDEX_NAME\n " +
+                "I.RDB$INDEX_NAME,\n" +
+                "I.RDB$INDEX_INACTIVE\n" +
                 "FROM RDB$INDICES AS I LEFT JOIN rdb$relation_constraints as c on i.rdb$index_name=c.rdb$index_name\n" +
                 "where I.RDB$SYSTEM_FLAG = 0 \n" +
                 "ORDER BY I.RDB$INDEX_NAME");
@@ -1410,7 +1414,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
-        ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name\n" +
+        ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name,\n" +
+                "t.rdb$trigger_inactive\n" +
                 "from rdb$triggers t\n" +
                 "where t.rdb$system_flag = 0\n" +
                 "and t.rdb$trigger_type <= 114 \n" +
@@ -1564,7 +1569,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
-        ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name\n" +
+        ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name,\n" +
+                "t.rdb$trigger_inactive\n" +
                 "from rdb$triggers t\n" +
                 "where t.rdb$system_flag = 0" +
                 "and t.rdb$trigger_type > 114 \n" +

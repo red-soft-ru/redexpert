@@ -22,6 +22,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     private String triggerType;
     private int intTriggerType;
     private long longTriggerType;
+    private boolean isMarkedReloadActive;
 
     private static String[][] DDL_TRIGGER_ACTION_NAMES =
             {
@@ -184,7 +185,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     }
 
     public boolean isTriggerActive() {
-        if (isMarkedForReload())
+        if (isMarkedReloadActive())
             getObjectInfo();
         return triggerActive;
     }
@@ -209,6 +210,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
 
     public void setTriggerActive(boolean triggerActive) {
         this.triggerActive = triggerActive;
+        setMarkedReloadActive(false);
     }
 
     public void setTableName(String tableName) {
@@ -217,6 +219,14 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
 
     public void setTriggerDescription(String triggerDescription) {
         this.triggerDescription = triggerDescription;
+    }
+
+    public boolean isMarkedReloadActive() {
+        return isMarkedReloadActive;
+    }
+
+    public void setMarkedReloadActive(boolean markedReloadActive) {
+        isMarkedReloadActive = markedReloadActive;
     }
 
     public int getTriggerSequence() {
@@ -406,6 +416,11 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
             setTriggerSourceCode(rs.getString(2));
             setRemarks(rs.getString(7));
         }
+    }
+
+    public void reset() {
+        super.reset();
+        setMarkedReloadActive(true);
     }
 
 }

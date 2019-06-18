@@ -43,9 +43,7 @@ import javax.swing.tree.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.util.*;
 
 /**
@@ -53,7 +51,7 @@ import java.util.*;
  */
 public class SchemaTree extends DynamicTree
         implements TreeExpansionListener,
-        TreeSelectionListener, MouseListener {
+        TreeSelectionListener, MouseListener, KeyListener {
 
     private static final int ROW_HEIGHT = 26;
 
@@ -67,6 +65,8 @@ public class SchemaTree extends DynamicTree
         addTreeSelectionListener(this);
         addTreeExpansionListener(this);
         addMouseListener(this);
+        addKeyListener(this);
+
 
         DefaultTreeCellRenderer renderer = new BrowserTreeCellRenderer(loadIcons());
         setCellRenderer(renderer);
@@ -209,6 +209,32 @@ public class SchemaTree extends DynamicTree
 
     public ConnectionsTreePanel getConnectionsTreePanel() {
         return panel;
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            TreePath selectionPath = getSelectionPath();
+            if (selectionPath == null)
+                return;
+            DatabaseObjectNode node = (DatabaseObjectNode) selectionPath.getLastPathComponent();
+            if (e.isControlDown()) {
+                expandSelectedRow();
+            } else {
+                if (!node.isCatalog())
+                    panel.valueChanged(node);
+            }
+        }
     }
 
     class TreeTransferHandler extends TransferHandler {

@@ -25,6 +25,8 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
+import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
@@ -236,7 +238,11 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
             case NamedObject.INDEX:
             case NamedObject.TABLE_INDEX:
-                setIcon(icons.get(BrowserConstants.INDEXES_IMAGE));
+                DefaultDatabaseIndex index = (DefaultDatabaseIndex) databaseObject;
+                if (index.isActive())
+                    setIcon(icons.get(BrowserConstants.INDEXES_ACTIVE_IMAGE));
+                else
+                    setIcon(icons.get(BrowserConstants.INDEXES_IMAGE));
                 break;
 
             case NamedObject.PROCEDURE:
@@ -264,7 +270,11 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 break;
 
             case NamedObject.TRIGGER:
-                setIcon(icons.get(BrowserConstants.TABLE_TRIGGER_IMAGE));
+                DefaultDatabaseTrigger trigger = (DefaultDatabaseTrigger) databaseObject;
+                if (trigger.isTriggerActive())
+                    setIcon(icons.get(BrowserConstants.TABLE_TRIGGER_ACTIVE_IMAGE));
+                else
+                    setIcon(icons.get(BrowserConstants.TABLE_TRIGGER_IMAGE));
                 break;
 
             case NamedObject.PACKAGE:
@@ -311,7 +321,11 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 break;
 
             case NamedObject.SYSTEM_DATABASE_TRIGGER:
-                setIcon(icons.get(BrowserConstants.SYSTEM_DATABASE_TRIGGER_IMAGE));
+                trigger = (DefaultDatabaseTrigger) databaseObject;
+                if (trigger.isTriggerActive())
+                    setIcon(icons.get(BrowserConstants.SYSTEM_DATABASE_TRIGGER_ACTIVE_IMAGE));
+                else
+                    setIcon(icons.get(BrowserConstants.SYSTEM_DATABASE_TRIGGER_IMAGE));
                 break;
 
             case NamedObject.SYSTEM_TRIGGER:

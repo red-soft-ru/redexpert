@@ -272,6 +272,14 @@ public class BrowserConstants {
     public static final String PACKAGE_IMAGE = "package16.png";
 
     public static final String ROLE_IMAGE = "user_manager_16.png";
+
+    public static final String SYSTEM_DATABASE_TRIGGER_ACTIVE_IMAGE = "SystemDatabaseTrigger_active.png";
+
+    public static final String INDEXES_ACTIVE_IMAGE = "TableIndex16_active.png";
+
+    public static final String TABLE_TRIGGER_ACTIVE_IMAGE = "Trigger_active.png";
+
+
     public static final String GRANT_IMAGE = "grant.png";
     public static final String NO_GRANT_IMAGE = "no_grant.png";
     public static final String ADMIN_OPTION_IMAGE = "admin_option.png";
@@ -311,7 +319,10 @@ public class BrowserConstants {
             SYSTEM_TRIGGER_IMAGE,
             SYSTEM_DATABASE_TRIGGER_IMAGE,
             PACKAGE_IMAGE,
-            ROLE_IMAGE
+            ROLE_IMAGE,
+            SYSTEM_DATABASE_TRIGGER_ACTIVE_IMAGE,
+            INDEXES_ACTIVE_IMAGE,
+            TABLE_TRIGGER_ACTIVE_IMAGE
     };
 
     private static String bundleString(String key) {

@@ -13,6 +13,7 @@ import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.log.Log;
+import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.GUIUtils;
 
 import javax.swing.*;
@@ -120,7 +121,7 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel implements Con
         allGrantsButton = new javax.swing.JButton();
         allAdminOptionButton = new javax.swing.JButton();
         noAllGrantsButton = new javax.swing.JButton();
-        cancelWait = new JButton();
+        cancelWait = new DefaultButton();
         progressBar = new JProgressBar();
         BrowserTableCellRenderer cellRenderer = new BrowserTableCellRenderer();
         rolesTable.setDefaultRenderer(Object.class, cellRenderer);

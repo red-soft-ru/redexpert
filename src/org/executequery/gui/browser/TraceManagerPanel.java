@@ -17,6 +17,7 @@ import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.CheckBoxPanel;
+import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.DynamicLibraryLoader;
@@ -97,10 +98,10 @@ public class TraceManagerPanel extends JPanel implements TabView {
             }
         });
         sb = new StringBuilder();
-        fileLogButton = new JButton("...");
-        fileDatabaseButton = new JButton("...");
-        fileConfButton = new JButton("...");
-        openFileLog = new JButton("...");
+        fileLogButton = new DefaultButton("...");
+        fileDatabaseButton = new DefaultButton("...");
+        fileConfButton = new DefaultButton("...");
+        openFileLog = new DefaultButton("...");
         fileLogField = new JTextField();
         fileDatabaseField = new JTextField();
         fileConfField = new JTextField();
@@ -171,8 +172,8 @@ public class TraceManagerPanel extends JPanel implements TabView {
                 }
             }
         });
-        startStopSessionButton = new JButton(bundleString("Start"));
-        clearTableButton = new JButton(bundleString("ClearTable"));
+        startStopSessionButton = new DefaultButton(bundleString("Start"));
+        clearTableButton = new DefaultButton(bundleString("ClearTable"));
         clearTableButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -362,7 +363,7 @@ public class TraceManagerPanel extends JPanel implements TabView {
             }
         });
 
-        hideShowTabPaneButton = new JButton(bundleString("HideTopPanel"));
+        hideShowTabPaneButton = new DefaultButton(bundleString("HideTopPanel"));
         hideShowTabPaneButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

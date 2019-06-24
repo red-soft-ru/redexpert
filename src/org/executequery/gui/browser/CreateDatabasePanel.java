@@ -311,7 +311,7 @@ public class CreateDatabasePanel extends ActionPanel
         sgbc.weightx = 0;
         standardPanel.add(dataSourceLabel, sgbc);
 
-        JButton saveFile = new JButton(bundledString("ChooseFile"));
+        JButton saveFile = new DefaultButton(bundledString("ChooseFile"));
         saveFile.addActionListener(new ActionListener() {
             FileChooserDialog fileChooser = new FileChooserDialog();
 
@@ -1441,7 +1441,7 @@ public class CreateDatabasePanel extends ActionPanel
 
             super(checkBox);
             this.table = table;
-            button = new JButton();
+            button = new DefaultButton();
             button.setOpaque(true);
             button.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {

@@ -4,6 +4,7 @@ import biz.redsoft.IFBTraceManager;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.browser.TraceManagerPanel;
 import org.executequery.gui.browser.managment.tracemanager.net.SessionInfo;
+import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 
 import javax.swing.*;
@@ -65,7 +66,7 @@ public class SessionManagerPanel extends JPanel {
         userField.setEditable(false);
         datetimeField = new JTextField();
         datetimeField.setEditable(false);
-        stopButton = new JButton(TraceManagerPanel.bundleString("Stop"));
+        stopButton = new DefaultButton(TraceManagerPanel.bundleString("Stop"));
         stopButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -88,7 +89,7 @@ public class SessionManagerPanel extends JPanel {
             }
         });
 
-        refreshButton = new JButton(TraceManagerPanel.bundleString("Refresh"));
+        refreshButton = new DefaultButton(TraceManagerPanel.bundleString("Refresh"));
         refreshButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

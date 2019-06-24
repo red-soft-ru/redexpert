@@ -3,6 +3,7 @@ package org.executequery.gui.browser.managment.tracemanager;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.gui.browser.TraceManagerPanel;
+import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.NumberTextField;
 
 import javax.swing.*;
@@ -128,7 +129,7 @@ public class BuildConfigurationPanel extends JPanel {
         filtersPanel = new JPanel();
         filtersPanel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Filters",
                 TitledBorder.LEADING, TitledBorder.TOP, null, null));
-        saveFileButton = new JButton("...");
+        saveFileButton = new DefaultButton("...");
         saveFileButton.addActionListener(new ActionListener() {
             FileChooserDialog fileChooser = new FileChooserDialog();
 
@@ -155,7 +156,7 @@ public class BuildConfigurationPanel extends JPanel {
             }
         });
         saveFileField = new JTextField();
-        saveButton = new JButton(TraceManagerPanel.bundleString("Save"));
+        saveButton = new DefaultButton(TraceManagerPanel.bundleString("Save"));
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

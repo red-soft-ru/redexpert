@@ -236,8 +236,12 @@ public class ToolBar extends AbstractToolBarPanel
             obj = toolButtons.get(i);
 
             if (obj == SEPARATOR) {
-                gbc.insets.left = SEPARATOR_WIDTH;
-                continue;
+                JSeparator sep = new JSeparator();
+                sep.setOrientation(JSeparator.VERTICAL);
+                sep.setMinimumSize(new Dimension(SEPARATOR_WIDTH, 16));
+                sep.setPreferredSize(new Dimension(SEPARATOR_WIDTH, 16));
+                sep.setMaximumSize(new Dimension(SEPARATOR_WIDTH, 16));
+                obj = sep;
             } else if (obj instanceof JComboBox) {
                 gbc.insets.top = 1;
             }

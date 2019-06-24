@@ -4,6 +4,7 @@ import biz.redsoft.IFBUser;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.browser.UserManagerPanel;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.NumberTextField;
 
 import javax.swing.*;
@@ -170,13 +171,13 @@ public class WindowAddUser extends JPanel {
         jLabel8 = new JLabel();
         jLabel9 = new JLabel();
         tagLabel = new JLabel();
-        okButton = new JButton();
-        cancelButton = new JButton();
+        okButton = new DefaultButton();
+        cancelButton = new DefaultButton();
         tagTable = new JTable();
         tagScrol = new JScrollPane();
         activeBox = new JCheckBox();
-        addTag = new JButton();
-        deleteTag = new JButton();
+        addTag = new DefaultButton();
+        deleteTag = new DefaultButton();
         pluginLabel = new JLabel();
         pluginField = new JTextField();
         adminBox = new JCheckBox();

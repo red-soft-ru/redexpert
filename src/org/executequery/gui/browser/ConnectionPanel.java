@@ -362,7 +362,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         sgbc.weightx = 0.05;
         standardPanel.add(portField, sgbc);
 
-        JButton openFile = new JButton(bundleString("ChooseFile"));
+        JButton openFile = new DefaultButton(bundleString("ChooseFile"));
         openFile.addActionListener(new ActionListener() {
             FileChooserDialog fileChooser = new FileChooserDialog();
 
@@ -429,7 +429,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         fileChooser.addChoosableFileFilter(
                 new FileNameExtensionFilter("Certificate file (X.509)", "cer"));
 
-        JButton openCertFile = new JButton("Choose file");
+        JButton openCertFile = new DefaultButton("Choose file");
         openCertFile.addActionListener(new ActionListener() {
 
             @Override
@@ -1668,7 +1668,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
             super(checkBox);
             this.table = table;
-            button = new JButton();
+            button = new DefaultButton();
             button.setOpaque(true);
             button.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {

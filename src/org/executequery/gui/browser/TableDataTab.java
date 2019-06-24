@@ -793,14 +793,14 @@ public class TableDataTab extends JPanel
         gbc.gridy++;
         gbcLabel.weightx = 0;
         gbcLabel.fill = GridBagConstraints.HORIZONTAL;
-        JButton b_cancel = new JButton("Cancel");
+        JButton b_cancel = new DefaultButton("Cancel");
         b_cancel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 dialog.finished();
             }
         });
-        JButton b_ok = new JButton("Ok");
+        JButton b_ok = new DefaultButton("Ok");
         b_ok.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {

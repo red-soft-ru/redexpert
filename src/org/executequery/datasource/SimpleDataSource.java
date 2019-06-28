@@ -31,16 +31,12 @@ import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
-import org.underworldlabs.util.SystemProperties;
 
 import javax.resource.ResourceException;
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.Iterator;
 import java.util.Map;
@@ -121,20 +117,22 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                     Class<?> aClass = driver.getClass().getClassLoader().loadClass("org.firebirdsql.jca.FBSADataSource");
 
                     // ...rdb jaybird
-                    // in multifactor authentication case, need to load firebird
-                    // plugin to initialize crypto plugin, otherwise get an error message
-                    if (advancedProperties.containsKey("isc_dpb_trusted_auth")
-                            && advancedProperties.containsKey("isc_dpb_multi_factor_auth")
-                            && cryptoPlugin == null) {
+                    // in multifactor authentication case, need to initialize crypto plugin,
+                    // otherwise get a message, that multifactor authentication will be unavailable
+                    if (cryptoPlugin == null) {
                         try {
                             Object odb = DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
                                     "biz.redsoft.FBCryptoPluginInitImpl",
                                     "./lib/fbplugin-impl.jar;./lib/jaybird-cryptoapi.jar;../lib/fbplugin-impl.jar;../lib/jaybird-cryptoapi.jar");
                             cryptoPlugin = (IFBCryptoPluginInit) odb;
+                            // try to initialize crypto plugin
                             cryptoPlugin.init();
 
                         } catch (Exception e) {
-                            throw new SQLException(e.getMessage());
+                            Log.warning("Unable to initialize cryptographic plugin. " +
+                                    "Authentication using cryptographic mechanisms will not be available. " +
+                                    "Please install the crypto pro library to enable cryptographic modules.");
+                            advancedProperties.put("excludeCryptoPlugins", "Multifactor,GostPassword,Certificate");
                         }
                     }
 

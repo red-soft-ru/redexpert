@@ -395,17 +395,18 @@
                 <artifactId>native2ascii-maven-plugin</artifactId>
                 <version>2.0.1</version>
                 <configuration>
-                    <dest>${project.build.directory}</dest>
-                    <src>${pom.basedir}/../../src</src>
+                    <targetDir>${project.build.directory}</targetDir>
+                    <srcDir>${pom.basedir}/../../src</srcDir>
                 </configuration>
                 <executions>
                     <execution>
                         <id>native2ascii-utf8</id>
                         <goals>
-                            <goal>resources</goal>
+                            <goal>inplace</goal>
                         </goals>
                         <configuration>
-                            <encoding>UTF8</encoding>
+                            <dir>${project.build.directory}/classes</dir>
+                            <encoding>utf-8</encoding>
                             <includes>
                                 <include>**/*.properties</include>
                             </includes>

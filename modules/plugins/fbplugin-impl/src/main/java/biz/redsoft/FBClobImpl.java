@@ -23,7 +23,6 @@ public class FBClobImpl implements IFBClob {
     @Override
     public void detach(Clob clob) throws SQLException {
         FBClob fbClob = (FBClob) clob;
-        fbClob.free();
         detached = fbClob.getWrappedBlob().detach();
         buffer = ((FBBlob) detached).getGdsHelper().getDatabaseParameterBuffer();
     }
@@ -43,7 +42,7 @@ public class FBClobImpl implements IFBClob {
         if (transaction == null)
             return;
         transaction.commit();
-        ((FBBlob)detached).free();
+        detached.free();
         ((FBBlob) detached).getGdsHelper().setCurrentTransaction(null);
     }
 }

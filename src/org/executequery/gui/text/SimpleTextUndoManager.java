@@ -20,10 +20,13 @@
 
 package org.executequery.gui.text;
 
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
+import org.apache.commons.lang.StringUtils;
+import org.executequery.GUIUtilities;
+import org.executequery.gui.UndoableComponent;
+import org.executequery.log.Log;
+import org.underworldlabs.swing.actions.ActionBuilder;
 
-import javax.swing.Action;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentEvent.EventType;
 import javax.swing.event.DocumentListener;
@@ -36,12 +39,8 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
-
-import org.apache.commons.lang.StringUtils;
-import org.executequery.GUIUtilities;
-import org.executequery.gui.UndoableComponent;
-import org.executequery.log.Log;
-import org.underworldlabs.swing.actions.ActionBuilder;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
 /**
  * Undo manager for text components. 
@@ -146,9 +145,6 @@ public class SimpleTextUndoManager extends UndoManager implements FocusListener 
     
                 remove(edit);
                 
-            } else if (eventType == EventType.CHANGE) {
-                
-                change(edit);            
             }
 
         } else {

@@ -848,6 +848,7 @@
             large-icon="/org/executequery/icons/user_manager_32.png"
             description="User Manager"
             execute-class="org.executequery.actions.toolscommands.UserManagerCommands"/>
+
     <action id="grant-manager-command"
             name="Grant Manager"
             mnemonic="GM"
@@ -856,6 +857,13 @@
             large-icon="/org/executequery/icons/grant_manager_32.png"
             description="Grant Manager"
             execute-class="org.executequery.actions.toolscommands.GrantManagerCommands"/>
+
+    <action id="generator-test-data-command"
+            name="Generator Test Data"
+            mnemonic="GT"
+            accel-editable="true"
+            description="Generator Test Data"
+            execute-class="org.executequery.actions.toolscommands.GeneratorTestDataCommands"/>
 
     <action id="comparerDB-command"
             name="Comparer DB"

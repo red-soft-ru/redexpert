@@ -46,8 +46,11 @@ import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -106,6 +109,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     private TransactionIsolationCombobox txCombo;
     private JButton txApplyButton;
+    private Border redBorder;
+    private Border blackBorder;
+    private DocumentListener userNameDocumentListener;
+    private DocumentListener passwordDocumentListener;
+
 
     JPanel basicPanel;
     JPanel standardPanel;
@@ -175,6 +183,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
         // ---------------------------------
         // create the basic props panel
 
+        redBorder = BorderFactory.createLineBorder(Color.RED);
+        blackBorder = new JTextField().getBorder();
         List<String> auth = new ArrayList<>();
         auth.add(bundleString("BasicAu"));
         auth.add("GSS");
@@ -184,12 +194,28 @@ public class ConnectionPanel extends AbstractConnectionPanel
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 Object selectedItem = e.getItem();
                 if (selectedItem.toString().equalsIgnoreCase(bundleString("BasicAu"))) {
+                    if (userNameDocumentListener == null) {
+                        userNameDocumentListener = addCheckEmptyField(userField);
+                    }
+                    if (passwordDocumentListener == null) {
+                        passwordDocumentListener = addCheckEmptyField(passwordField);
+                    }
                     basicPanel.setVisible(true);
                     multifactorPanel.setVisible(false);
                 } else if (selectedItem.toString().equalsIgnoreCase("gss")) {
                     basicPanel.setVisible(false);
                     multifactorPanel.setVisible(false);
                 } else if (selectedItem.toString().equalsIgnoreCase("multifactor")) {
+                    if (userNameDocumentListener != null) {
+                        userField.getDocument().removeDocumentListener(userNameDocumentListener);
+                        userField.setBorder(blackBorder);
+                        userNameDocumentListener = null;
+                    }
+                    if (passwordDocumentListener != null) {
+                        passwordField.getDocument().removeDocumentListener(passwordDocumentListener);
+                        passwordField.setBorder(blackBorder);
+                        passwordDocumentListener = null;
+                    }
                     basicPanel.setVisible(true);
                     multifactorPanel.setVisible(true);
                 }
@@ -215,6 +241,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         // initialise the fields
         nameField = createTextField();
+        addCheckEmptyField(nameField);
         nameField.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -227,13 +254,18 @@ public class ConnectionPanel extends AbstractConnectionPanel
             }
         });
         passwordField = createPasswordField();
+        passwordDocumentListener = addCheckEmptyField(passwordField);
         hostField = createTextField();
+        addCheckEmptyField(hostField);
         hostField.setText("localhost");
         portField = createNumberTextField();
+        addCheckEmptyField(portField);
         portField.setText("3050");
         sourceField = createMatchedWidthTextField();
+        addCheckEmptyField(sourceField);
         roleField = createTextField();
         userField = createTextField();
+        userNameDocumentListener = addCheckEmptyField(userField);
         urlField = createMatchedWidthTextField();
 
         certificateFileField = createMatchedWidthTextField();
@@ -819,6 +851,17 @@ public class ConnectionPanel extends AbstractConnectionPanel
             DynamicComboBoxModel comboModel = new DynamicComboBoxModel();
             comboModel.setElements(driverNames);
             driverCombo = WidgetFactory.createComboBox(comboModel);
+            driverCombo.setBorder(redBorder);
+            driverCombo.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    if (e.getStateChange() == ItemEvent.SELECTED) {
+                        if (driverCombo.getSelectedIndex() > 0)
+                            driverCombo.setBorder(blackBorder);
+                        else driverCombo.setBorder(redBorder);
+                    }
+                }
+            });
 
         } else {
 
@@ -1531,6 +1574,35 @@ public class ConnectionPanel extends AbstractConnectionPanel
             }
         };
         SwingUtilities.invokeLater(update);
+    }
+
+    private DocumentListener addCheckEmptyField(JTextField field) {
+        checkEmptyTextField(field);
+        DocumentListener documentListener = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                checkEmptyTextField(field);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                checkEmptyTextField(field);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                checkEmptyTextField(field);
+            }
+        };
+        field.getDocument().addDocumentListener(documentListener);
+        return documentListener;
+    }
+
+    private void checkEmptyTextField(JTextField field) {
+        if (field.getText().isEmpty()) {
+            field.setBorder(redBorder);
+        } else field.setBorder(blackBorder);
+        repaint();
     }
 
     private class JdbcPropertiesTableModel extends AbstractTableModel {

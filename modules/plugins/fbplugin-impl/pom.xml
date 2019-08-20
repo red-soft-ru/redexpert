@@ -35,12 +35,12 @@
     <dependency>
       <groupId>ru.red-soft.jdbc</groupId>
       <artifactId>jaybird-full-jdk18</artifactId>
-      <version>3.0.7-SNAPSHOT.26</version>
+      <version>3.0.7-SNAPSHOT.41</version>
     </dependency>
     <dependency>
       <groupId>ru.red-soft.jdbc</groupId>
       <artifactId>jaybird-cryptoapi-jdk18</artifactId>
-      <version>3.0.7-SNAPSHOT.26</version>
+      <version>3.0.7-SNAPSHOT.41</version>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>

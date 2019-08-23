@@ -480,6 +480,45 @@ public class FileUtils {
         }
     }
 
+    public static byte[] readBytes(File source)
+            throws IOException {
+        if (null == source)
+            throw new IllegalArgumentException("Source can't be null.");
+
+        try (FileInputStream fileInputStream = new FileInputStream(source)) {
+            return readBytes(fileInputStream);
+        }
+    }
+
+    public static byte[] readBytes(InputStream inputStream)
+            throws IOException {
+        if (null == inputStream)
+            throw new IllegalArgumentException("InputStream can't be null.");
+
+        return readStream(inputStream).toByteArray();
+    }
+
+    public static ByteArrayOutputStream readStream(InputStream inputStream)
+            throws IOException {
+        if (null == inputStream)
+            throw new IllegalArgumentException("InputStream can't be null.");
+
+        byte[] buffer = new byte[1024];
+        try (ByteArrayOutputStream output_stream = new ByteArrayOutputStream(buffer.length);
+             InputStream input = inputStream)
+        {
+            int return_value = input.read(buffer);
+
+            while (-1 != return_value)
+            {
+                output_stream.write(buffer, 0, return_value);
+                return_value = input.read(buffer);
+            }
+
+            return output_stream;
+        }
+    }
+
 }
 
 

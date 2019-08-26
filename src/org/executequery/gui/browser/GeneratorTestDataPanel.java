@@ -71,7 +71,7 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
 
     @Override
     public boolean tabViewClosing() {
-        return false;
+        return true;
     }
 
     @Override

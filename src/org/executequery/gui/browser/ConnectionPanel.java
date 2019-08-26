@@ -36,9 +36,11 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.drivers.DialogDriverPanel;
 import org.executequery.gui.editor.TransactionIsolationCombobox;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
+import org.executequery.util.Base64;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.actions.ActionUtilities;
@@ -59,6 +61,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -443,7 +446,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         multifactorPanel = new JPanel(new GridBagLayout());
         multifactorPanel.setVisible(false);
         GridBagConstraints mCons = new GridBagConstraints();
-        JLabel certLabel = new DefaultFieldLabel("Certificate file (X.509 format):");
+        JLabel certLabel = new DefaultFieldLabel("Certificate file X.509 (CER, DER):");
         mCons.gridy = 0;
         mCons.gridx = 0;
         mCons.insets = new Insets(0, 0, 5, 5);
@@ -459,7 +462,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         FileChooserDialog fileChooser = new FileChooserDialog();
         fileChooser.setAcceptAllFileFilterUsed(false);
         fileChooser.addChoosableFileFilter(
-                new FileNameExtensionFilter("Certificate file (X.509)", "cer"));
+                new FileNameExtensionFilter("Certificate file X.509 (CER, DER)", "cer", "der"));
 
         JButton openCertFile = new DefaultButton("Choose file");
         openCertFile.addActionListener(new ActionListener() {
@@ -1175,7 +1178,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
                         || key.equalsIgnoreCase("roleName")
                         || key.equalsIgnoreCase("isc_dpb_trusted_auth")
                         || key.equalsIgnoreCase("isc_dpb_multi_factor_auth")
-                        || key.equalsIgnoreCase("isc_dpb_certificate"))
+                        || key.equalsIgnoreCase("isc_dpb_certificate_base64"))
                     continue;
                 properties.setProperty(key, value);
             }
@@ -1199,7 +1202,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         }
         if (!certificateFileField.getText().isEmpty()
                 && authCombo.getSelectedItem().toString().equalsIgnoreCase("multifactor"))
-            properties.setProperty("isc_dpb_certificate", certificateFileField.getText());
+            loadCertificate(properties, certificateFileField.getText());
 
         if (containerPasswordField.getPassword() != null && containerPasswordField.getPassword().length != 0
                 && authCombo.getSelectedItem().toString().equalsIgnoreCase("multifactor"))
@@ -1233,6 +1236,47 @@ public class ConnectionPanel extends AbstractConnectionPanel
     }
 
     /**
+     * Loads the certificate from a file. If it is in the der format,
+     * it converts it to base64.
+     *
+     * @param properties connection properties
+     * @param certificatePath path to x509 certificate file
+     */
+    private void loadCertificate(Properties properties, String certificatePath) {
+        try {
+            byte[] bytes = FileUtils.readBytes(new File(certificatePath));
+            String base64cert = new String(bytes);
+
+            if (checkBase64Format(base64cert)) {
+                // If the certificate is in the BASE64 format, then add to properties
+                properties.setProperty("isc_dpb_certificate_base64", base64cert);
+            } else {
+                // Convert from the DER to BASE64
+                base64cert = Base64.encodeBytes(bytes);
+                StringBuilder sb = new StringBuilder();
+                sb.append("-----BEGIN CERTIFICATE-----");
+                sb.append("\n");
+                sb.append(base64cert);
+                sb.append("\n");
+                sb.append("-----END CERTIFICATE-----");
+                base64cert = sb.toString();
+                properties.setProperty("isc_dpb_certificate_base64", base64cert);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Return true if the certificate is in the BASE64 format, otherwise false.
+     *
+     * @param certificate certificate body
+     */
+    private boolean checkBase64Format(String certificate) {
+        return StringUtils.contains(certificate, "-----BEGIN CERTIFICATE-----") ? true : false;
+    }
+
+    /**
      * Sets the values of the current database connection
      * within the jdbc properties table.
      */
@@ -1254,7 +1298,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
                     && !name.equalsIgnoreCase("roleName")
                     && !name.equalsIgnoreCase("isc_dpb_trusted_auth")
                     && !name.equalsIgnoreCase("isc_dpb_multi_factor_auth")
-                    && !name.equalsIgnoreCase("isc_dpb_certificate")
+                    && !name.equalsIgnoreCase("isc_dpb_certificate_base64")
                     && !name.equalsIgnoreCase("isc_dpb_repository_pin")
                     && !name.equalsIgnoreCase("isc_dpb_verify_server")) {
                 advancedProperties[count][0] = name;

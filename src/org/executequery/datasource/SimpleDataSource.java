@@ -133,6 +133,11 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                                     "Authentication using cryptographic mechanisms will not be available. " +
                                     "Please install the crypto pro library to enable cryptographic modules.");
                             advancedProperties.put("excludeCryptoPlugins", "Multifactor,GostPassword,Certificate");
+                        } catch (UnsatisfiedLinkError e) {
+                            Log.warning("Unable to initialize cryptographic plugin. " +
+                                    "Authentication using cryptographic mechanisms will not be available. " +
+                                    "Please install the crypto pro library to enable cryptographic modules.");
+                            advancedProperties.put("excludeCryptoPlugins", "Multifactor,GostPassword,Certificate");
                         }
                     }
 

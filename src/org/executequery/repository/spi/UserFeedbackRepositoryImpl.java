@@ -55,7 +55,7 @@ public class UserFeedbackRepositoryImpl implements UserFeedbackRepository {
 
             if (siteAvailable()) {
                 Map<String, String> params = userFeedback.asMap();
-                String res = JSONAPI.postJsonObject("http://reddatabase.ru/api/website/feedbacks/", params, null);
+                String res = JSONAPI.postJsonObject("https://reddatabase.ru/api/website/feedbacks/", params, null);
                 if (res.startsWith("Server return error"))
                     return Integer.parseInt(res.split("\n")[1]);
                 Log.info(res);

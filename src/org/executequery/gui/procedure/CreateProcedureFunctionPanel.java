@@ -146,12 +146,12 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         String fullProcedureBody = getFullSourceBody();
 
         if (fullProcedureBody != null && !fullProcedureBody.isEmpty()) {
-            fullProcedureBody = fullProcedureBody.toUpperCase();
-            sqlBodyText.setSQLText(fullProcedureBody.substring(fullProcedureBody.indexOf("BEGIN")));
+            String upFullProcedureBody = fullProcedureBody.toUpperCase();
+            sqlBodyText.setSQLText(fullProcedureBody.substring(upFullProcedureBody.indexOf("BEGIN")));
 
-            if (!fullProcedureBody.contains("DECLARE"))// no variables
+            if (!upFullProcedureBody.contains("DECLARE"))// no variables
                 return;
-            String declaredVariables = fullProcedureBody.substring(fullProcedureBody.indexOf("DECLARE"), fullProcedureBody.indexOf("BEGIN"));
+            String declaredVariables = upFullProcedureBody.substring(upFullProcedureBody.indexOf("DECLARE"), upFullProcedureBody.indexOf("BEGIN"));
             if (!declaredVariables.isEmpty()) {
                 variablesPanel.deleteEmptyRow();
                 String[] split = declaredVariables.split("\n");

@@ -48,7 +48,7 @@ extern "C"
 #ifdef __linux__
 typedef jint (*CreateJavaVM)(JavaVM **, void **, void *);
 typedef jint (*CreateJvmFuncPtr) (JavaVM**, void**, JavaVMInitArgs*);
-#elif
+#else
 typedef jint (_stdcall *CreateJavaVM)(JavaVM **, void **, void *);
 typedef jint (_stdcall *CreateJvmFuncPtr) (JavaVM**, void**, JavaVMInitArgs*);
 #endif

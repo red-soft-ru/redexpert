@@ -45,8 +45,8 @@ typedef std::deque<std::string> NativeArguments;
 
 extern "C"
 {
-typedef jint (*CreateJavaVM)(JavaVM **, void **, void *);
-typedef jint (*CreateJvmFuncPtr) (JavaVM**, void**, JavaVMInitArgs*);
+typedef jint (_stdcall *CreateJavaVM)(JavaVM **, void **, void *);
+typedef jint (_stdcall *CreateJvmFuncPtr) (JavaVM**, void**, JavaVMInitArgs*);
 }
 
 struct ErrorReporter
@@ -403,7 +403,7 @@ std::vector<std::string> get_potential_libjvm_paths()
     // From heuristics
 #ifdef _WIN32
     search_prefixes = {""};
-    search_suffixes = {"/jre/bin/server", "/bin/server"};
+    search_suffixes = {"/jre/bin/server", "/bin/server", "/bin/client" };
     file_name = "jvm.dll";
 #else
     search_prefixes.push_back("/usr/lib/jvm/default-java");       // ubuntu / debian distros

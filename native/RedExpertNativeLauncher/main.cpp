@@ -45,8 +45,13 @@ typedef std::deque<std::string> NativeArguments;
 
 extern "C"
 {
+#ifdef __linux__
+typedef jint (*CreateJavaVM)(JavaVM **, void **, void *);
+typedef jint (*CreateJvmFuncPtr) (JavaVM**, void**, JavaVMInitArgs*);
+#elif
 typedef jint (_stdcall *CreateJavaVM)(JavaVM **, void **, void *);
 typedef jint (_stdcall *CreateJvmFuncPtr) (JavaVM**, void**, JavaVMInitArgs*);
+#endif
 }
 
 struct ErrorReporter

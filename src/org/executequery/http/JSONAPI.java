@@ -1,5 +1,6 @@
 package org.executequery.http;
 
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -88,7 +89,14 @@ public class JSONAPI {
         HostParams hostParams = config.getParams();
         hostParams.setParameter("http.protocol.content-charset", "UTF8");
         int cod = client.executeMethod(get);
+        if (cod >= 300 && cod < 400) {
+            String redirectLocation = null;
+            Header locationHeader = get.getResponseHeader("location");
+            if (locationHeader != null)
+                redirectLocation = locationHeader.getValue();
+            return postJsonObject(redirectLocation, parameters, headers);
 
+        }
         BufferedReader br = new BufferedReader(
                 new InputStreamReader(get.getResponseBodyAsStream()));
         String inputLine;
@@ -97,6 +105,7 @@ public class JSONAPI {
         }
 
         br.close();
+
 
         if (cod < 200 || cod > 300) {
             text.insert(0, "Server return error:\n" + cod + "\n");

@@ -181,8 +181,8 @@ openSharedLibrary(const std::string &sl_file)
     executeCmdEx(cmd.c_str(), out);
     if(out.find("Property settings")==std::string :: npos)
     {
-        os << "File "<<sl_f<<" not_found";
-        throw os;
+        std::string err = "File "+sl_f+" not_found";
+        throw err;
     }
     std::regex jarch_regex("os\\.arch\\s\\=\\s(([\\w+\\s\\\\\\-:\\.])+)\\n");
     std::smatch match;
@@ -195,8 +195,8 @@ openSharedLibrary(const std::string &sl_file)
     if(!support)
     {
 
-        os << "File "<<sl_f<<" not support arch this application! this application need in java with arch"<<arch;
-        throw os;
+        std::string err = "File "+ sl_f+" not support arch this application! this application need in java with arch: " +arch;
+        throw err;
     }
     void *sl_handle = LoadLibraryA(sl_file.c_str());
     if (sl_handle == 0)
@@ -382,9 +382,9 @@ SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
             std::string jvm_location = jre_bin + "\\" + jvm_dir + "\\jvm.dll";
             return openSharedLibrary(jvm_location);
         }
-        catch (std::ostringstream  &ex)
+        catch (std::string  &ex)
         {
-            os << ex.str();
+            os << ex;
             os << std::endl;
         }
         catch (const std::exception &ex)
@@ -407,9 +407,9 @@ SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
         {
             return openSharedLibrary(p_jvm);
         }
-        catch (std::ostringstream &ex)
+        catch (std::string &ex)
         {
-            os << ex.str();
+            os << ex;
             os << std::endl;
         }
         catch (const std::exception &ex)

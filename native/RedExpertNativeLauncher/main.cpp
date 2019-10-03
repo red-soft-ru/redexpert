@@ -12,6 +12,7 @@
 #include <regex>
 #include <WinReg.hpp>
 #include "HKEY.h"
+#include <cstdint>
 #endif
 
 #include "utils.h"
@@ -104,6 +105,56 @@ std::string getSelfPath()
 }
 #endif
 
+int executeCmdEx(const char* cmd, std::string &result)
+{
+    char buffer[128];
+    int ret_code = -1; // -1 if error ocurs.
+    std::string command(cmd);
+    command.append(" 2>&1"); // also redirect stderr to stdout
+
+    result = "";
+    FILE* pipe;
+#ifdef __linux__
+    pipe = popen(command.c_str(), "r");
+#else
+    pipe = _popen(command.c_str(), "r");
+#endif
+    if (pipe != NULL) {
+        try {
+            while (!feof(pipe)) {
+                if (fgets(buffer, 128, pipe) != NULL)
+                    result += buffer;
+            }
+        }
+        catch (...) {
+#ifdef __linux__
+            ret_code = pclose(pipe);
+#else
+            ret_code = _pclose(pipe);
+#endif
+            throw;
+        }
+#ifdef __linux__
+        ret_code = pclose(pipe);
+#else
+        ret_code = _pclose(pipe);
+#endif
+    }
+    return ret_code;
+}
+
+
+std::string
+replaceFirstOccurrence(
+    std::string& s,
+    const std::string& toReplace,
+    const std::string& replaceWith)
+{
+    std::size_t pos = s.find(toReplace);
+    if (pos == std::string::npos) return s;
+    return s.replace(pos, toReplace.length(), replaceWith);
+}
+
 typedef void *SharedLibraryHandle;
 
 SharedLibraryHandle
@@ -111,6 +162,42 @@ openSharedLibrary(const std::string &sl_file)
 {
     std::ostringstream os;
 #ifdef _WIN32
+    std::string arch;
+	#if INTPTR_MAX == INT32_MAX
+    arch = "x86";
+	#elif INTPTR_MAX == INT64_MAX
+    arch = "amd64";
+	#else
+	#error "Environment not 32 or 64-bit."
+	#endif
+    std::string out;
+    std::string server_jvm = "server/jvm.dll";
+    std::string client_jvm = "client/jvm.dll";
+    std::string java_exe = "java.exe";
+    std::string sl_f = sl_file;
+    std::string path_to_java = replaceFirstOccurrence(sl_f,server_jvm,java_exe);
+    path_to_java = replaceFirstOccurrence(path_to_java,client_jvm,java_exe);
+    std::string cmd = "\"" +path_to_java +"\"" + " -XshowSettings:properties -version";
+    executeCmdEx(cmd.c_str(), out);
+    if(out.find("Property settings")==std::string :: npos)
+    {
+        os << "File "<<sl_f<<" not_found";
+        throw os;
+    }
+    std::regex jarch_regex("os\\.arch\\s\\=\\s(([\\w+\\s\\\\\\-:\\.])+)\\n");
+    std::smatch match;
+    bool support = false;
+    if(std::regex_search(out, match, jarch_regex))
+    {
+        std::string str = match[1].str();
+        support = str==arch;
+    }
+    if(!support)
+    {
+
+        os << "File "<<sl_f<<" not support arch this application! this application need in java with arch"<<arch;
+        throw os;
+    }
     void *sl_handle = LoadLibraryA(sl_file.c_str());
     if (sl_handle == 0)
     {
@@ -295,11 +382,17 @@ SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
             std::string jvm_location = jre_bin + "\\" + jvm_dir + "\\jvm.dll";
             return openSharedLibrary(jvm_location);
         }
+        catch (std::ostringstream  &ex)
+        {
+            os << ex.str();
+            os << std::endl;
+        }
         catch (const std::exception &ex)
         {
             os << ex.what();
             os << std::endl;
         }
+
         os << "]";
         os << std::endl;
     }
@@ -313,6 +406,11 @@ SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
         try
         {
             return openSharedLibrary(p_jvm);
+        }
+        catch (std::ostringstream &ex)
+        {
+            os << ex.str();
+            os << std::endl;
         }
         catch (const std::exception &ex)
         {
@@ -359,43 +457,6 @@ SharedLibraryHandle tryHives(const char *jvm_dir, const char *java_vendor,
 
 #endif
 
-int executeCmdEx(const char* cmd, std::string &result)
-{
-    char buffer[128];
-    int ret_code = -1; // -1 if error ocurs.
-    std::string command(cmd);
-    command.append(" 2>&1"); // also redirect stderr to stdout
-
-    result = "";
-    FILE* pipe;
-#ifdef __linux__
-    pipe = popen(command.c_str(), "r");
-#else
-    pipe = _popen(command.c_str(), "r");
-#endif
-    if (pipe != NULL) {
-        try {
-            while (!feof(pipe)) {
-                if (fgets(buffer, 128, pipe) != NULL)
-                    result += buffer;
-            }
-        }
-        catch (...) {
-#ifdef __linux__
-            ret_code = pclose(pipe);
-#else
-            ret_code = _pclose(pipe);
-#endif
-            throw;
-        }
-#ifdef __linux__
-        ret_code = pclose(pipe);
-#else
-        ret_code = _pclose(pipe);
-#endif
-    }
-    return ret_code;
-}
 
 std::vector<std::string> get_potential_libjvm_paths()
 {
@@ -474,6 +535,10 @@ std::vector<std::string> get_potential_libjvm_paths()
         if(std::regex_search(out, match, jhome_regex))
         {
             std::string str = match[1].str();
+            std::string str86 = replaceFirstOccurrence(str,"Program Files\\","Program Files (x86)\\");
+            std::string str64 = replaceFirstOccurrence(str,"Program Files (x86)\\","Program Files\\");
+            search_prefixes.insert(search_prefixes.begin(), strdup(str86.c_str()));
+            search_prefixes.insert(search_prefixes.begin(), strdup(str64.c_str()));
             search_prefixes.insert(search_prefixes.begin(), strdup(str.c_str()));
         }
 #elif __linux__

@@ -27,6 +27,7 @@ import org.executequery.gui.InformationDialog;
 import org.executequery.gui.PulsatingCircle;
 import org.executequery.http.JSONAPI;
 import org.executequery.http.ReddatabaseAPI;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.LatestVersionRepository;
 import org.executequery.repository.RepositoryCache;
@@ -437,7 +438,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         progressDialog = new InterruptibleProgressDialog(
                 GUIUtilities.getParentFrame(),
                 "Check for update",
-                "Checking for updated version",
+                bundledString("checkingUpdatesMessage"),
                 this);
     }
 
@@ -567,10 +568,7 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
 
     private String noUpdateMessage() {
-        return "No update available.\n" +
-                "This version of Red Expert is up to date.\n" +
-                "Please check back here periodically to ensure you have " +
-                "the latest version.";
+        return bundledString("noUpdateMessage");
     }
 
     private String getCurrentBuild() {
@@ -606,6 +604,9 @@ public class CheckForUpdateNotifier implements Interruptible {
         }
     }
 
+    protected String bundledString(String key) {
+        return Bundles.get(this.getClass(), key);
+    }
 }
 
 

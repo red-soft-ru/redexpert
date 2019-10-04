@@ -26,6 +26,8 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.BasicPopupMenuListener;
 import org.executequery.components.TextAreaLogAppender;
 import org.executequery.log.Log;
+import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
@@ -78,6 +80,7 @@ public class SystemOutputPanel extends AbstractDockedTabPanel implements ReadOnl
         scroller.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         add(scroller, BorderLayout.CENTER);
+        reloadFont();
     }
 
     public Icon getIcon() {
@@ -153,6 +156,21 @@ public class SystemOutputPanel extends AbstractDockedTabPanel implements ReadOnl
     public JTextComponent getTextComponent() {
 
         return textArea;
+    }
+
+    public void setTextFont(Font font) {
+        textArea.setFont(font);
+    }
+
+    public void reloadFont() {
+        String nameFont = SystemProperties.getProperty("user", "console.font.name");
+        if (!MiscUtils.isNull(nameFont)) {
+            setTextFont(new Font(nameFont, Font.PLAIN, Integer.parseInt(SystemProperties.getProperty("user", "console.font.size"))));
+        } else {
+            Font consoleFont = UIManager.getDefaults().getFont("TextArea.font");
+            SystemProperties.setProperty("user", "console.font.name", consoleFont.getFontName());
+            reloadFont();
+        }
     }
 
 }

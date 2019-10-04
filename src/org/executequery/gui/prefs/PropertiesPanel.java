@@ -178,6 +178,9 @@ public class PropertiesPanel extends JPanel
         node = new PropertyNode(PropertyTypes.BROWSER_GENERAL, bundledString("DatabaseBrowser"));
         node.addChild(new PropertyNode(PropertyTypes.BROWSER_DATA_TAB, bundledString("TableDataPanel")));
         branches.add(node);
+        node = new PropertyNode(PropertyTypes.OUTPUT_CONSOLE, bundledString("OutputConsole"));
+        node.addChild(new PropertyNode(PropertyTypes.CONSOLE_FONTS, bundledString("Fonts")));
+        branches.add(node);
 
         DefaultMutableTreeNode root =
                 new DefaultMutableTreeNode(new PropertyNode(PropertyTypes.SYSTEM, bundledString("Preferences")));
@@ -361,6 +364,12 @@ public class PropertiesPanel extends JPanel
                 break;
             case PropertyTypes.TREE_CONNECTIONS_GENERAL:
                 panel = new PropertiesTreeConnectionsGeneral();
+                break;
+            case PropertyTypes.OUTPUT_CONSOLE:
+                panel = new PropertiesOutputConsole();
+                break;
+            case PropertyTypes.CONSOLE_FONTS:
+                panel = new PropertiesConsoleFonts();
                 break;
         }
 

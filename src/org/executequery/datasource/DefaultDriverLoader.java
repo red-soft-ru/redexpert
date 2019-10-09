@@ -25,11 +25,9 @@ import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
-import org.underworldlabs.util.SystemProperties;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -72,6 +70,12 @@ public class DefaultDriverLoader implements DriverLoader {
                 if (!MiscUtils.isNull(path)) {
 
                     URL[] urls = MiscUtils.loadURLs(path);
+                    if (urls != null) {
+                        Log.info("paths for searching of driver:");
+                        for (int i = 0; i < urls.length; i++) {
+                            Log.info(urls[i].getPath());
+                        }
+                    }
                     DynamicLibraryLoader loader = new DynamicLibraryLoader(urls);
                     clazz = loader.loadLibrary(driverName);
 

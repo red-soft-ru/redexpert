@@ -21,7 +21,7 @@ Red Expert обладает рядом полезных компонентов: 
 \begin{enumerate}[leftmargin=15pt]
 	\item Установите JDK не ниже 1.8.
 	\item Скачайте дистрибутив Red Expert для соответствующей операционной системы и ее разрядности с официального сайта СУБД Ред Базы Данных --- \href{http://reddatabase.ru/downloads/redexpert/}{reddatabase.ru}. Загрузка доступна только авторизованному пользователю. 
-	\item Запустите установку Red Expert с помощью файла \ttt{red\_expert\_installer-1.0.4-xxxxxx}. Инсталляция Red Expert осуществляется с помощью стандартного мастера установки программ. 
+	\item Запустите установку Red Expert с помощью файла \ttt{red\_expert\_installer-1.0.6-xxxxxx}. Инсталляция Red Expert осуществляется с помощью стандартного мастера установки программ. 
 	
 	В начале Вам предложат выбрать язык установки. Предусмотрена установка на русском и английском языках. Далее Вы увидите подобные окна:
 
@@ -85,6 +85,8 @@ Red Expert обладает рядом полезных компонентов: 
 
 \item По окончании обновления перезапустите Red Expert.
 \end{enumerate}	
+
+Проверять наличие обновлений можно также через пункт меню \textit{Справка} $\rightarrow$ \textit{Проверить обновления}.
 
 \newpage
 \section{Обзор графического интерфейса}\label{sec:overview}
@@ -230,7 +232,7 @@ Red Expert обладает рядом полезных компонентов: 
 
 \anonsubsubsection{Консоль вывода}
 
-Основным журналом вывода системы является файл \ttt{system.log}. Консоль вывода приложения, обычно расположенная в виде прикрепленного компонента в нижней части окна приложения (выберите меню \textit{Вид} $\rightarrow$ \textit{Консоль вывода}, если она не видна) выводит записи из этого файла журнала.
+Основным журналом вывода системы является файл \ttt{system.log} (\ttt{\$HOME/.redexpert/logs}). Консоль вывода приложения, обычно расположенная в виде прикрепленного компонента в нижней части окна приложения (выберите меню \textit{Вид} $\rightarrow$ \textit{Консоль вывода}, если она не видна) выводит записи из этого файла журнала.
 
 \begin{redremark}
 Пожалуйста, используйте содержимое файла журнала, сообщая о любых ошибках приложения.
@@ -241,82 +243,22 @@ Red Expert обладает рядом полезных компонентов: 
 	\includegraphics[width = 0.95\linewidth]{img/output_console.png}
 \end{figure}
 
+ В \textit{Настройках} можно задать уровень вывода для ограничения содержащейся в логе информации.
+
 \anonsubsubsection{Панель Подключения}
 
 На боковой панели \textit{Подключения} отображены имена всех ранее устанавливаемых соединений (см. раздел \hyperref[sec:connections]{«Подключение к базе данных»}). 
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width = 0.4\linewidth]{img/connections.png}
+	\includegraphics[width = 0.6\linewidth]{img/connections.png}
 \end{figure}
 
-
-
-После подключения к базе данных на этой панели появляется структура дерева, узлы которого представляют собой объекты базы данных:
-
-
-
-
-\begin{longtable}[c]{|m{5mm}|m{6cm}|m{5mm}|m{8cm}|}
-	\hline
-	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/TableIndex16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ИНДЕКСЫ & \begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/udf16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ВНЕШНИЕ ФУНКЦИИ
-	\\\hline
-	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/Procedure16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ПРОЦЕДУРЫ & \begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/Function16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ФУНКЦИИ
-	\\\hline
-	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/Sequence16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ГЕНЕРАТОРЫ & 
-	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/GlobalTable16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ГЛОБАЛЬНЫЕ ВРЕМЕННЫЕ ТАБЛИЦЫ \\\hline
-	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/PlainTable16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ТАБЛИЦЫ & \begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/package16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ПАКЕТЫ
-	\\\hline
-	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/Trigger.png}} at (0pt,0pt)
-	\end{tikzpicture} & ТРИГГЕРЫ & \begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/user_manager_16.png}} at (0pt,0pt)
-	\end{tikzpicture} & РОЛИ
-	\\\hline
-	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/SystemDatabaseTrigger.png}} at (0pt,0pt)
-	\end{tikzpicture} & ТРИГГЕРЫ 	БАЗЫ ДАННЫХ & \begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/SystemTable16.png}} at (0pt,0pt)
-	\end{tikzpicture} & СИСТЕМНЫЕ ТАБЛИЦЫ 
-	\\\hline
-	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/TableView16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ПРЕДСТАВЛЕНИЯ & \begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/SystemDomain16.png}} at (0pt,0pt)
-	\end{tikzpicture} & СИСТЕМНЫЕ ДОМЕНЫ
-	\\\hline
-	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/domain16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ДОМЕНЫ & \begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/SystemIndex16.png}} at (0pt,0pt)
-	\end{tikzpicture} & СИСТЕМНЫЕ ИНДЕКСЫ
-	\\\hline
-	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/exception16.png}} at (0pt,0pt)
-	\end{tikzpicture} & ИСКЛЮЧЕНИЯ & \begin{tikzpicture}
-	\pgftext{\includegraphics[width=12pt]{img/SystemTrigger.png}} at (0pt,0pt)
-	\end{tikzpicture} & СИСТЕМНЫЕ ТРИГГЕРЫ \\\hline
-\end{longtable}
+После подключения к базе данных на этой панели появляется структура дерева, узлы которого представляют собой объекты базы данных. В скобках указано количество объектов каждого вида.
 
 Щелчок правой кнопкой мыши на любом узле вызовет всплывающее меню с доступными действиями. Оно включает в себя перезагрузку выбранного узла, создание, редактирование и удаление объекта и многое другое.
 
-Двойной клик по узлу откроет вкладку на главной панели с детальным описанием каждого объекта (см. раздел \hyperref[sec:objects]{«Объекты»}). Например, двойной клик по узлу с названием конкретной процедуры отобразит таблицу с ее входными и выходными параметрами, их типами, тело процедуры и SQL команду создания этой процедуры.
+Двойной клик по узлу или нажатие на Enter  откроет вкладку на главной панели с детальным описанием каждого объекта (см. раздел \hyperref[sec:objects]{«Объекты»}). Например, двойной клик (или Enter) по узлу с названием конкретной процедуры отобразит таблицу с ее входными и выходными параметрами, их типами, тело процедуры и SQL команду создания этой процедуры.
 
 \begin{figure}[H]
 	\centering
@@ -2454,21 +2396,6 @@ ER-диаграмма визуализирует табличные связи, 
 	&  \\\hline 
 	Проверять мажорные версии
 	&  \\\hline
-	Уровень лога событий
-	& Уровень вывода в \hyperref[sec:logout]{журнал состояния вывода} и в консоль вывода:
-	\begin{enumerate}[leftmargin=10pt]
-		\item \ttt{FATAL} -- фиксирует очень серьезные ошибки, которые, по-видимому, приведут к прекращению использования приложения;
-		\item \ttt{ERROR} -- фиксирует серьезные ошибки, нуждающаяся в проверке, но не прекращающая работу приложения;
-		\item \ttt{WARN} -- фиксирует потенциально опасные ситуации;
-		\item \ttt{INFO} -- информирует о событиях работы приложения на высоком уровне;
-		\item \ttt{DEBUG} -- информирует о событиях на более низком уровне для отладки приложения (для разработчиков);
-		\item \ttt{TRACE} -- подробное ведение журнала для очень низкоуровневой отладки;
-		\item \ttt{ALL} -- все вышеперечисленные уровни.
-	\end{enumerate} Уровни упорядочены и каждый следующий включает в себя предыдущие уровни.\\\hline 
-	Системный вывод в консоль
-	& Выводить поток System.out в консоль\\\hline
-	Вывод системных ошибок в консоль
-	& Выводить поток System.err в консоль \\\hline
 	Кодировка файлов по умолчанию
 	&   \\\hline
 	\rowcolor[gray]{.9}\multicolumn{2}{|m{15.25cm}|}{\bfseries Настройка прокси}\\\hline 
@@ -2807,7 +2734,46 @@ ER-диаграмма визуализирует табличные связи, 
 	Максимальное количество возвращаемых записей  &  \\\hline
 \end{longtable}
 
+\anonsubsection{Консоль}
+
+\begin{longtable}[r]{|>{\ttfamily}m{5cm}|m{10.5cm}|}
+	\hline
+	\centering\normalfont\bfseries Параметр &
+	\centering\arraybslash\bfseries Комментарий\\\hline
+	\endfirsthead
+	\centering\normalfont\bfseries Параметр &
+	\centering\arraybslash\bfseries Комментарий\\\hline
+	\endhead
+	Отображать системную консоль & \\\hline
+	Уровень лога событий
+	& Уровень вывода в \hyperref[sec:logout]{журнал состояния вывода} и в консоль вывода:
+	\begin{enumerate}[leftmargin=10pt]
+		\item \ttt{FATAL} -- фиксирует очень серьезные ошибки, которые, по-видимому, приведут к прекращению использования приложения;
+		\item \ttt{ERROR} -- фиксирует серьезные ошибки, нуждающаяся в проверке, но не прекращающая работу приложения;
+		\item \ttt{WARN} -- фиксирует потенциально опасные ситуации;
+		\item \ttt{INFO} -- информирует о событиях работы приложения на высоком уровне;
+		\item \ttt{DEBUG} -- информирует о событиях на более низком уровне для отладки приложения (для разработчиков);
+		\item \ttt{TRACE} -- подробное ведение журнала для очень низкоуровневой отладки;
+		\item \ttt{ALL} -- все вышеперечисленные уровни.
+	\end{enumerate} Уровни упорядочены и каждый следующий включает в себя предыдущие уровни.\\\hline 
+	Системный вывод в консоль
+	& Выводить поток System.out в консоль\\\hline
+	Вывод системных ошибок в консоль
+	& Выводить поток System.err в консоль \\\hline
+\end{longtable}
+
+\anonsubsubsection{Шрифты}
+
+Измените шрифт и его размер для текста консоли.
+
 \newpage
+
+\section{Обратная связь}
+
+Вы можете связаться с нами через форму обратной связи в приложении (\textit{Справка} $\rightarrow$ \textit{Обратная связь}) или отправив письмо по адресу \href{mailto:rdb.support@red-soft.ru}{rdb.support@red-soft.ru}. В письме Вы можете оставить отзыв о работе программы, сообщить нам об ошибке или предложить новый функционал. 
+
+Мы будем рады Вам помочь.
+
 
 \appendix
 

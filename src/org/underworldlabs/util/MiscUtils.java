@@ -20,6 +20,7 @@
 
 package org.underworldlabs.util;
 
+import org.executequery.ApplicationContext;
 import org.executequery.util.StringBundle;
 
 import javax.swing.*;
@@ -396,6 +397,11 @@ public final class MiscUtils {
     public static URL[] loadURLs(String paths) throws MalformedURLException {
         String token = ";";
         Vector<String> pathsVector = new Vector<String>();
+        String exe_path = ApplicationContext.getInstance().getExternalProcessName();
+        if (exe_path != null && !exe_path.isEmpty()) {
+            exe_path = exe_path.substring(0, exe_path.lastIndexOf("bin"));
+
+        }
 
         if (paths.indexOf(token) != -1) {
             StringTokenizer st = new StringTokenizer(paths, token);
@@ -406,11 +412,25 @@ public final class MiscUtils {
             pathsVector.add(paths);
         }
 
-        URL[] urls = new URL[pathsVector.size()];
-        for (int i = 0; i < urls.length; i++) {
+        URL[] urls;
+        if (exe_path != null && !exe_path.isEmpty()) {
+            urls = new URL[pathsVector.size() * 2];
+        } else {
+            urls = new URL[pathsVector.size()];
+        }
+        for (int i = 0; i < pathsVector.size(); i++) {
             File f = new File(pathsVector.elementAt(i));
             urls[i] = f.toURI().toURL();
         }
+        if (exe_path != null && !exe_path.isEmpty())
+            for (int i = pathsVector.size(); i < urls.length; i++) {
+                try {
+                    File f = new File(exe_path + pathsVector.elementAt(i - pathsVector.size()));
+                    urls[i] = f.toURI().toURL();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         return urls;
     }
 

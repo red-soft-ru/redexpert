@@ -85,7 +85,7 @@ public class SqlScriptRunner {
 
             executionController.message("Scanning and tokenizing queries...");
             QueryTokenizer queryTokenizer = new QueryTokenizer();
-            List<DerivedQuery> queries = queryTokenizer.tokenize(script);
+            //List<DerivedQuery> queries =
 
             close();
             if (databaseConnection != null) {
@@ -96,41 +96,10 @@ public class SqlScriptRunner {
             List<DerivedQuery> executableQueries = new ArrayList<DerivedQuery>();
             DerivedQuery createDBQuery = null;
             String sqlDialect = "3";
+            String delimiter = ";";
+            //queries.clear();
 
-            for (DerivedQuery query : queries) {
 
-                if (shouldNotContinue()) {
-
-                    throw new InterruptedException();
-                }
-
-                if (query.getQueryType() == QueryTypes.CREATE_DATABASE) {
-                    createDBQuery = query;
-                    continue;
-                }
-                if (query.getQueryType() == QueryTypes.SQL_DIALECT) {
-                    Pattern pattern = Pattern.compile("\\d",
-                            Pattern.CASE_INSENSITIVE);
-                    Matcher matcher = pattern.matcher(query.getDerivedQuery());
-                    if (matcher.find())
-                        sqlDialect = matcher.group().trim();
-                    continue;
-                }
-                if (query.isExecutable()) {
-
-                    executableQueries.add(query);
-                }
-
-            }
-            queries.clear();
-
-            if (createDBQuery != null) {
-                localDataSource = createDatabase(createDBQuery, sqlDialect);
-                connection = localDataSource.getConnection();
-                connection.setAutoCommit(false);
-                createDBQuery = null;
-                needCloseDatabase = true;
-            }
 
             executionController.message("Found " + executableQueries.size() + " executable queries");
             executionController.message("Executing...");
@@ -142,16 +111,42 @@ public class SqlScriptRunner {
             long start = 0L;
             long end = 0L;
             int thisResult = 0;
-
             boolean logOutput = executionController.logOutput();
-
-            for (DerivedQuery query : executableQueries) {
-
+            int startIndex = 0;
+            String lowQuery = script.toLowerCase();
+            executionController.message("Start extracting comments and String constants");
+            queryTokenizer.extractTokens(script);
+            executionController.message("Finish extracting comments and String constants");
+            while (script!=null &&!script.isEmpty()) {
+                QueryTokenizer.QueryTokenized fquery=queryTokenizer.tokenizeFirstQuery(script,lowQuery,startIndex,delimiter);
+                script= fquery.script;
+                delimiter = fquery.delimiter;
+                DerivedQuery query =  fquery.query;
+                lowQuery = fquery.lowScript;
+                startIndex = fquery.startIndex;
+                if(query==null||!query.isExecutable())
+                    continue;
                 if (shouldNotContinue()) {
 
                     throw new InterruptedException();
                 }
-
+                if (query.getQueryType() == QueryTypes.CREATE_DATABASE) {
+                    createDBQuery = query;
+                    localDataSource = createDatabase(createDBQuery, sqlDialect);
+                    connection = localDataSource.getConnection();
+                    connection.setAutoCommit(false);
+                    createDBQuery = null;
+                    needCloseDatabase = true;
+                    continue;
+                }
+                if (query.getQueryType() == QueryTypes.SQL_DIALECT) {
+                    Pattern pattern = Pattern.compile("\\d",
+                            Pattern.CASE_INSENSITIVE);
+                    Matcher matcher = pattern.matcher(query.getDerivedQuery());
+                    if (matcher.find())
+                        sqlDialect = matcher.group().trim();
+                    continue;
+                }
                 String derivedQuery = query.getDerivedQuery();
                 try {
 

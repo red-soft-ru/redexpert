@@ -106,6 +106,8 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
     private boolean resetButtons;
 
+    private String script = null;
+
     public ExecuteSqlScriptPanel() {
 
         super(new BorderLayout());
@@ -314,8 +316,8 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
         File file = fileChooser.getSelectedFile();
         fileNameField.setText(file.getAbsolutePath());
-
-        sqlText.setSQLText(FileUtils.loadFile(file.getPath()));
+        script = FileUtils.loadFile(file.getPath());
+        //sqlText.setSQLText();
     }
 
     private boolean fieldsValid() {
@@ -549,7 +551,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
             sqlStatementResult = sqlScriptRunner.execute(
                     connection,
-                    sqlText.getSQLText(),
+                    script,
                     (ActionOnError) actionOnErrorCombo.getSelectedItem());
 
         } finally {

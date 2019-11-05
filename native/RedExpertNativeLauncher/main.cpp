@@ -403,6 +403,10 @@ SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
          ++it)
     {
         std::string p_jvm = *it;
+        os << "Trying potential path \"";
+        os << p_jvm;
+        os << "\" [";
+        os << std::endl;
         try
         {
             return openSharedLibrary(p_jvm);
@@ -418,6 +422,8 @@ SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
             os << ex.what();
             os << std::endl;
         }
+        os << "]";
+        os << std::endl;
     }
 
     std::ostringstream err_os;
@@ -530,11 +536,14 @@ std::vector<std::string> get_potential_libjvm_paths()
         std::string out;
         executeCmdEx("java -XshowSettings:properties -version", out);
 #ifdef _WIN32
+        std::ostream &os = err_rep.progress_os;
+        os<<out;
         std::regex jhome_regex("java\\.home\\s\\=\\s(([\\w+\\s\\\\\\-:\\.])+)\\n");
         std::smatch match;
         if(std::regex_search(out, match, jhome_regex))
         {
             std::string str = match[1].str();
+            os<<"java.home = "<<str;
             std::string str86 = replaceFirstOccurrence(str,"Program Files\\","Program Files (x86)\\");
             std::string str64 = replaceFirstOccurrence(str,"Program Files (x86)\\","Program Files\\");
             search_prefixes.insert(search_prefixes.begin(), strdup(str86.c_str()));

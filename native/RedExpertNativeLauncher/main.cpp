@@ -538,7 +538,7 @@ std::vector<std::string> get_potential_libjvm_paths()
 #ifdef _WIN32
         std::ostream &os = err_rep.progress_os;
         os<<out;
-        std::regex jhome_regex("java\\.home\\s\\=\\s(([\\w+\\s\\\\\\-:\\.])+)\\n");
+        std::regex jhome_regex("java\\.home\\s\\=\\s(([\\w+\\s\\\\\\-:\\.\\(\\)])+)\\n");
         std::smatch match;
         if(std::regex_search(out, match, jhome_regex))
         {

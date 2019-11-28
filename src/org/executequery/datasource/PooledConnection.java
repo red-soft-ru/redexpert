@@ -20,7 +20,12 @@
 
 package org.executequery.datasource;
 
+import biz.redsoft.IFBSQLException;
+import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.ConnectionMediator;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.log.Log;
+import org.underworldlabs.util.DynamicLibraryLoader;
 
 import java.sql.*;
 import java.util.*;
@@ -65,6 +70,7 @@ public class PooledConnection implements Connection {
      * the real JDBC connection that this object wraps
      */
     private Connection realConnection;
+    private DatabaseConnection databaseConnection;
 
     private List<PooledConnectionListener> listeners;
 
@@ -73,9 +79,10 @@ public class PooledConnection implements Connection {
      * specified connection as the source.
      *
      * @param realConnection real java.sql.Connection
+     *
      */
-    public PooledConnection(Connection realConnection) {
-        this(realConnection, false);
+    public PooledConnection(Connection realConnection, DatabaseConnection databaseConnection) {
+        this(realConnection, databaseConnection, false);
     }
 
     /**
@@ -84,8 +91,8 @@ public class PooledConnection implements Connection {
      *
      * @param realConnection real java.sql.Connection
      */
-    public PooledConnection(Connection realConnection, boolean closeOnReturn) {
-
+    public PooledConnection(Connection realConnection, DatabaseConnection databaseConnection, boolean closeOnReturn) {
+        this.databaseConnection = databaseConnection;
         mutex = new Semaphore(1);
         useCount = 0;
         this.realConnection = realConnection;
@@ -105,6 +112,10 @@ public class PooledConnection implements Connection {
 
     public String getId() {
         return id;
+    }
+
+    public DatabaseConnection getDatabaseConnection() {
+        return databaseConnection;
     }
 
     public void addPooledConnectionListener(PooledConnectionListener pooledConnectionListener) {
@@ -217,6 +228,15 @@ public class PooledConnection implements Connection {
     }
 
     protected void handleException(SQLException e) throws SQLException {
+        try {
+            IFBSQLException ex = (IFBSQLException) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(realConnection, "FBSQLExceptionImpl", new DynamicLibraryLoader.Parameter(SQLException.class, e));
+            if (ex.isFBSQLException())
+                if (ex.getVendorCode() > 335544720 && ex.getVendorCode() < 335544728) {
+                    closeDatabaseConnection();
+                }
+        } catch (ClassNotFoundException exc) {
+            throw e;
+        }
         throw e;
     }
 
@@ -230,7 +250,8 @@ public class PooledConnection implements Connection {
         } catch (SQLException e) {
             if (statement == null)
                 lock(false);
-            throw e;
+            handleException(e);
+            return null;
         }
 
     }
@@ -246,7 +267,8 @@ public class PooledConnection implements Connection {
         } catch (SQLException e) {
             if (statement == null)
                 lock(false);
-            throw e;
+            handleException(e);
+            return null;
         }
     }
 
@@ -260,7 +282,8 @@ public class PooledConnection implements Connection {
         } catch (SQLException e) {
             if (statement == null)
                 lock(false);
-            throw e;
+            handleException(e);
+            return null;
         }
     }
 
@@ -277,7 +300,8 @@ public class PooledConnection implements Connection {
         } catch (SQLException e) {
             if (statement == null)
                 lock(false);
-            throw e;
+            handleException(e);
+            return null;
         }
     }
 
@@ -291,7 +315,8 @@ public class PooledConnection implements Connection {
         } catch (SQLException e) {
             if (statement == null)
                 lock(false);
-            throw e;
+            handleException(e);
+            return null;
         }
     }
 
@@ -308,7 +333,8 @@ public class PooledConnection implements Connection {
         } catch (SQLException e) {
             if (statement == null)
                 lock(false);
-            throw e;
+            handleException(e);
+            return null;
         }
     }
 
@@ -472,6 +498,17 @@ public class PooledConnection implements Connection {
         if (realConnection == null) {
             throw new SQLException("Connection is closed.");
         }
+        /*try {
+            realConnection.createStatement().executeQuery("SELECT * FROM RDB$DATABASE");
+        } catch (SQLException e){
+            GUIUtilities.displayErrorMessage("lost connection to server");
+            ConnectionMediator.getInstance().disconnect(databaseConnection);
+        }*/
+    }
+
+    public void closeDatabaseConnection() {
+        GUIUtilities.displayErrorMessage("lost connection to server");
+        ConnectionMediator.getInstance().disconnect(databaseConnection);
     }
 
     public int getHoldability() throws SQLException {
@@ -838,7 +875,8 @@ public class PooledConnection implements Connection {
             pooledStatement.setIndividual(true);
             return pooledStatement;
         } catch (SQLException e) {
-            throw e;
+            handleException(e);
+            return null;
         }
     }
 }

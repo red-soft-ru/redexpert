@@ -1005,7 +1005,8 @@ public class QueryEditor extends DefaultTabView
      */
     public boolean tabViewClosing() {
 
-        if (isExecuting()) {
+        if (isExecuting() && oldConnection.isConnected()) {
+
 
             if (MiscUtils.isMinJavaVersion(1, 6)) {
 

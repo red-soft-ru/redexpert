@@ -1600,14 +1600,16 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         ResultSet resultSet = null;
         if (metaDataKey.equals("TABLE")) {
             resultSet = statement.executeQuery("select rdb$relation_name, \n" +
-                    "rdb$description\n" +
+                    "rdb$description,\n" +
+                    "rdb$view_source\n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is null \n" +
                     "and (rdb$system_flag is null or rdb$system_flag = 0) and rdb$relation_type=0 or rdb$relation_type=2\n" +
                     "order by rdb$relation_name");
         } else if (metaDataKey.equals("SYSTEM TABLE")) {
             resultSet = statement.executeQuery("select rdb$relation_name, \n" +
-                    "rdb$description\n" +
+                    "rdb$description,\n" +
+                    "rdb$view_source\n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is null \n" +
                     "and (rdb$system_flag is not null and rdb$system_flag = 1) \n" +
@@ -1630,7 +1632,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     "order by rdb$relation_name");
         } else if (metaDataKey.equals("GLOBAL TEMPORARY")) {
             resultSet = statement.executeQuery("select r.rdb$relation_name, \n" +
-                    "r.rdb$description\n" +
+                    "r.rdb$description,\n" +
+                    "rdb$view_source\n" +
                     "from rdb$relations r\n" +
                     "join rdb$types t on r.rdb$relation_type = t.rdb$type \n" +
                     "where\n" +

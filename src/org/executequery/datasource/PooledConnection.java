@@ -234,6 +234,12 @@ public class PooledConnection implements Connection {
                 if (ex.getVendorCode() > 335544720 && ex.getVendorCode() < 335544728) {
                     closeDatabaseConnection();
                 }
+            if (e instanceof SQLSyntaxErrorException) {
+                SQLSyntaxErrorException sqlex = (SQLSyntaxErrorException) e;
+                if (sqlex.getMessage().contains("335544856")) {
+                    closeDatabaseConnection();
+                }
+            }
         } catch (ClassNotFoundException exc) {
             throw e;
         }

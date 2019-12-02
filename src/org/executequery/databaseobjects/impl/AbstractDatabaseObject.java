@@ -79,6 +79,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
     protected DatabaseMetaTag metaTagParent;
 
+    protected String source;
+
     public AbstractDatabaseObject(DatabaseHost host) {
         setHost(host);
         querySender = new DefaultStatementExecutor(host.getDatabaseConnection(), true);
@@ -605,6 +607,15 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
     public void resetRowsCount() {
         dataRowCount = -1;
+    }
+
+    @Override
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 }
 

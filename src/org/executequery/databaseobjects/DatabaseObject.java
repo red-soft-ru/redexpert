@@ -136,6 +136,8 @@ public interface DatabaseObject extends NamedObject {
 
     String getCreateSQLText() throws DataSourceException;
 
+    String getSource();
+
 }
 
 

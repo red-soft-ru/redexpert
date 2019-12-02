@@ -390,6 +390,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 object.setSchemaName("");
                 object.setName(tableName);
                 object.setRemarks(rs.getString(2));
+                object.setSource(rs.getString(3));
                 if (metaDataKey.contains("SYSTEM"))
                     object.setSystemFlag(true);
                 tables.add(object);
@@ -1613,14 +1614,16 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     "order by rdb$relation_name");
         } else if (metaDataKey.equals("VIEW")) {
             resultSet = statement.executeQuery("select rdb$relation_name, \n" +
-                    "rdb$description\n" +
+                    "rdb$description,\n" +
+                    "rdb$view_source\n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is not null \n" +
                     "and (rdb$system_flag is null or rdb$system_flag = 0) \n" +
                     "order by rdb$relation_name");
         } else if (metaDataKey.equals("SYSTEM VIEW")) {
             resultSet = statement.executeQuery("select rdb$relation_name, \n" +
-                    "rdb$description\n" +
+                    "rdb$description,\n" +
+                    "rdb$view_source\n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is not null \n" +
                     "and (rdb$system_flag is not null and rdb$system_flag = 1) \n" +

@@ -26,6 +26,7 @@ import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.log.Log;
 import org.underworldlabs.util.DynamicLibraryLoader;
+import org.underworldlabs.util.SystemProperties;
 
 import java.sql.*;
 import java.util.*;
@@ -74,6 +75,11 @@ public class PooledConnection implements Connection {
 
     private List<PooledConnectionListener> listeners;
 
+    private Timer timer;
+    private TimerTask task;
+    private int timeoutShutdown;
+
+
     /**
      * Creates a new PooledConnection object with the
      * specified connection as the source.
@@ -95,8 +101,16 @@ public class PooledConnection implements Connection {
         this.databaseConnection = databaseConnection;
         mutex = new Semaphore(1);
         useCount = 0;
+        timeoutShutdown = SystemProperties.getIntProperty("user", "connection.shutdown.timeout");
         this.realConnection = realConnection;
         this.closeOnReturn = closeOnReturn;
+        timer = new Timer();
+        task = new TimerTask() {
+            @Override
+            public void run() {
+                checkConnectionToServer();
+            }
+        };
 
         try {
 
@@ -228,22 +242,18 @@ public class PooledConnection implements Connection {
     }
 
     protected void handleException(SQLException e) throws SQLException {
-        try {
-            IFBSQLException ex = (IFBSQLException) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(realConnection, "FBSQLExceptionImpl", new DynamicLibraryLoader.Parameter(SQLException.class, e));
-            if (ex.isFBSQLException())
-                if (ex.getVendorCode() > 335544720 && ex.getVendorCode() < 335544728) {
-                    closeDatabaseConnection();
-                }
-            if (e instanceof SQLSyntaxErrorException) {
-                SQLSyntaxErrorException sqlex = (SQLSyntaxErrorException) e;
-                if (sqlex.getMessage().contains("335544856")) {
-                    closeDatabaseConnection();
-                }
-            }
-        } catch (ClassNotFoundException exc) {
-            throw e;
-        }
+        checkConnectionToServer();
         throw e;
+    }
+
+    public void checkConnectionToServer()
+    {
+        try {
+            realConnection.createStatement().executeQuery("SELECT * FROM RDB$DATABASE");
+        } catch (SQLException e)
+        {
+            closeDatabaseConnection();
+        }
     }
 
     public Statement createStatement() throws SQLException {
@@ -860,11 +870,19 @@ public class PooledConnection implements Connection {
                 for (int i = 0; i < stack.length; i++)
                     Log.debug(stack[stack.length - 1 - i]);
                 Log.debug("---------------------------------Connection is locked.----------------------------------\n\n\n");
+                task = new TimerTask() {
+                    @Override
+                    public void run() {
+                        checkConnectionToServer();
+                    }
+                };
+                timer.schedule(task,timeoutShutdown);
             } catch (InterruptedException e) {
                 throw new SQLException(e);
             }
         }
         else {
+            timer.purge();
             mutex.release();
             Log.debug("---------------------------------Connection is released.----------------------------------\n\n\n");
         }

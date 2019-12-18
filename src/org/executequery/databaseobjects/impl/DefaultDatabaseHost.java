@@ -700,11 +700,9 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
             if (isFirebirdConnection) {
                 String identity = null;
-                if(getDatabaseMetaData().getDatabaseMajorVersion()>=3)
-                {
+                if (getDatabaseMetaData().getDatabaseMajorVersion() >= 3) {
                     identity = "    RF.RDB$IDENTITY_TYPE AS IDENTITY\n";
-                }
-                else{
+                } else {
                     identity = "    CAST(NULL AS INTEGER) AS IDENTITY\n";
                 }
                 String firebirdSql = "SELECT\n" +
@@ -943,7 +941,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 column.setDefaultValue(column_def);
             }
 
-            column.setIdentity(rs.getInt("IDENTITY")==1);
+            column.setIdentity(rs.getInt("IDENTITY") == 1);
 
             columns.add(column);
         }

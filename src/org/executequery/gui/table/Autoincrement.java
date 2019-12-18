@@ -20,7 +20,7 @@ public class Autoincrement implements Serializable {
     }
 
     public boolean isAutoincrement() {
-        return systemGenerator || (createGenerator || useGenerator) && (createTrigger || createProcedure) || createTrigger || createProcedure||identity;
+        return systemGenerator || (createGenerator || useGenerator) && (createTrigger || createProcedure) || createTrigger || createProcedure || identity;
     }
 
     public String getFieldName() {

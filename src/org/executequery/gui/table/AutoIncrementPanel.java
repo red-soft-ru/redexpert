@@ -59,7 +59,7 @@ public class AutoIncrementPanel extends JPanel {
         createGeneratorPanel.setVisible(false);
         systemGeneratorPanel.setVisible(false);
         useGeneratorPanel.setVisible(false);
-        if(getDatabaseVersion()<3)
+        if (getDatabaseVersion() < 3)
             useIdentityBox.setVisible(false);
         useIdentityPanel.setVisible(false);
         if (parent == null) {
@@ -292,11 +292,11 @@ public class AutoIncrementPanel extends JPanel {
         GridBagLayout useIdentityPanelLayout = new GridBagLayout();
         useIdentityPanel.setLayout(useIdentityPanelLayout);
         label = new JLabel("Start Value");
-        useIdentityPanel.add(label,new GridBagConstraints(0, 0,
+        useIdentityPanel.add(label, new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
                 0, 0));
-        useIdentityPanel.add(identityStartValue,new GridBagConstraints(1, 0,
+        useIdentityPanel.add(identityStartValue, new GridBagConstraints(1, 0,
                 1, 1, 1, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
@@ -384,7 +384,7 @@ public class AutoIncrementPanel extends JPanel {
 
     public void generateAI() {
         String sql = "";
-        if(ai.isIdentity())
+        if (ai.isIdentity())
             ai.setStartValue(identityStartValue.getValue());
         if (ai.isCreateGenerator()) {
             sql += "\nCREATE SEQUENCE " + MiscUtils.wordInQuotes(ai.getGeneratorName()) + "^";

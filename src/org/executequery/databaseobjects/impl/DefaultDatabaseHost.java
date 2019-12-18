@@ -699,6 +699,14 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             Statement statement = null;
 
             if (isFirebirdConnection) {
+                String identity = null;
+                if(getDatabaseMetaData().getDatabaseMajorVersion()>=3)
+                {
+                    identity = "    RF.RDB$IDENTITY_TYPE AS IDENTITY\n";
+                }
+                else{
+                    identity = "    CAST(NULL AS INTEGER) AS IDENTITY\n";
+                }
                 String firebirdSql = "SELECT\n" +
                         "    '' AS CATALOG,\n" +
                         "    '' AS SCHEME,\n" +
@@ -718,8 +726,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         "    F.RDB$NULL_FLAG AS SOURCE_NULL_FLAG,\n" +
                         "    F.RDB$COMPUTED_BLR AS COMPUTED_BLR,\n" +
                         "    F.RDB$CHARACTER_SET_ID,\n" +
-                        "    'NO' AS IS_IDENTITY,\n" +
-                        "    CAST(NULL AS VARCHAR(10)) AS JB_IDENTITY_TYPE\n" +
+                        identity +
                         "FROM\n" +
                         "    RDB$RELATION_FIELDS RF,\n" +
                         "    RDB$FIELDS F\n" +
@@ -936,7 +943,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 column.setDefaultValue(column_def);
             }
 
-            final boolean isIdentity = Objects.equals("YES", rs.getString("IS_IDENTITY"));
+            column.setIdentity(rs.getInt("IDENTITY")==1);
 
             columns.add(column);
         }

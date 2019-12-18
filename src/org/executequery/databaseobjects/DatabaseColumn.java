@@ -141,6 +141,10 @@ public interface DatabaseColumn extends DatabaseObjectElement {
 
     String getColumnDescription();
 
+    boolean isIdentity();
+
+    void setIdentity(boolean flag);
+
 }
 
 

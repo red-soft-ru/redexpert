@@ -111,7 +111,7 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
             DatabaseColumn column = cols.get(i);
             String col = cols.get(i).getName();
             RecordDataItem rdi = changes.get(i);
-            if (column.isGenerated())
+            if (column.isGenerated() || rdi.isNewValueNull() && column.isIdentity())
                 rdi.setGenerated(true);
             else {
                 if (applied) {

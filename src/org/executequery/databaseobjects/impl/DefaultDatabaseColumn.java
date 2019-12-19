@@ -189,7 +189,7 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     }
 
     public boolean isGenerated() {
-        return isGenerated || identity;
+        return isGenerated;
     }
 
     public void setGenerated(boolean generated) {

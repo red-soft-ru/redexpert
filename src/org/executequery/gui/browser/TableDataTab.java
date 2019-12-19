@@ -379,7 +379,7 @@ public class TableDataTab extends JPanel
             }
             createResultSetTable();
             List<String> nonEditableCols = new ArrayList<>();
-            nonEditableCols.addAll(primaryKeyColumns);
+            //nonEditableCols.addAll(primaryKeyColumns);
             if (isDatabaseTableObject())
                 for (DatabaseColumn databaseColumn : asDatabaseTableObject().getColumns()) {
                     if (!nonEditableCols.contains(databaseColumn.getName())) {

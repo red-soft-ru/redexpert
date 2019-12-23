@@ -71,9 +71,9 @@ public class DefaultDriverLoader implements DriverLoader {
 
                     URL[] urls = MiscUtils.loadURLs(path);
                     if (urls != null) {
-                        Log.info("paths for searching of driver:");
+                        Log.debug("paths for searching of driver:");
                         for (int i = 0; i < urls.length; i++) {
-                            Log.info(urls[i].getPath());
+                            Log.debug(urls[i].getPath());
                         }
                     }
                     DynamicLibraryLoader loader = new DynamicLibraryLoader(urls);

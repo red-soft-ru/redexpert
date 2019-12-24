@@ -20,7 +20,7 @@
 
 package org.executequery.datasource;
 
-import biz.redsoft.IFBSQLException;
+import biz.redsoft.IFBDatabasePerformance;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -28,7 +28,9 @@ import org.executequery.log.Log;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
 import java.sql.*;
+import java.util.Timer;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Semaphore;
@@ -76,6 +78,7 @@ public class PooledConnection implements Connection {
     private List<PooledConnectionListener> listeners;
 
     private Timer timer;
+    private Timer timerDelay;
     private TimerTask task;
     private int timeoutShutdown;
 
@@ -105,13 +108,14 @@ public class PooledConnection implements Connection {
         this.realConnection = realConnection;
         this.closeOnReturn = closeOnReturn;
         timer = new Timer();
+        timerDelay = new Timer();
         task = new TimerTask() {
             @Override
             public void run() {
                 checkConnectionToServer();
             }
         };
-
+        timer.schedule(task, timeoutShutdown);
         try {
 
             originalAutoCommit = realConnection.getAutoCommit();
@@ -249,10 +253,36 @@ public class PooledConnection implements Connection {
     public void checkConnectionToServer()
     {
         try {
-            realConnection.createStatement().executeQuery("SELECT * FROM RDB$DATABASE");
+            IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(realConnection, "FBDatabasePerformanceImpl");
+            db.setConnection(realConnection);
+            TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    if (databaseConnection.isConnected()) {
+                        if (GUIUtilities.displayConfirmDialog("The server is not responding. do you want to close the connection?") == JOptionPane.OK_OPTION) {
+                            closeDatabaseConnection();
+                            timerDelay.cancel();
+                        }
+                    } else
+                        timerDelay.cancel();
+                }
+            };
+            timerDelay = new Timer();
+            timerDelay.schedule(task, timeoutShutdown);
+            db.getPerformanceInfo();
+            timerDelay.cancel();
         } catch (SQLException e)
         {
-            closeDatabaseConnection();
+            if (databaseConnection.isConnected())
+                closeDatabaseConnection();
+            timerDelay.cancel();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            if (databaseConnection.isConnected())
+                if (GUIUtilities.displayConfirmDialog("The server is not responding. do you want to close the connection?") == JOptionPane.OK_OPTION) {
+                    closeDatabaseConnection();
+                }
+            timerDelay.cancel();
         }
     }
 
@@ -525,6 +555,7 @@ public class PooledConnection implements Connection {
     public void closeDatabaseConnection() {
         GUIUtilities.displayErrorMessage("lost connection to server");
         ConnectionMediator.getInstance().disconnect(databaseConnection);
+        timer.cancel();
     }
 
     public int getHoldability() throws SQLException {
@@ -641,7 +672,7 @@ public class PooledConnection implements Connection {
         }
     }
 
-    public PreparedStatement prepareStatement(String sql, int columnIndexes[]) throws SQLException {
+    public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
         checkOpen();
         try {
             lock(true);
@@ -653,7 +684,7 @@ public class PooledConnection implements Connection {
         }
     }
 
-    public PreparedStatement prepareStatement(String sql, String columnNames[]) throws SQLException {
+    public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
         checkOpen();
         try {
             lock(true);
@@ -870,19 +901,11 @@ public class PooledConnection implements Connection {
                 for (int i = 0; i < stack.length; i++)
                     Log.debug(stack[stack.length - 1 - i]);
                 Log.debug("---------------------------------Connection is locked.----------------------------------\n\n\n");
-                task = new TimerTask() {
-                    @Override
-                    public void run() {
-                        checkConnectionToServer();
-                    }
-                };
-                timer.schedule(task,timeoutShutdown);
             } catch (InterruptedException e) {
                 throw new SQLException(e);
             }
         }
         else {
-            timer.purge();
             mutex.release();
             Log.debug("---------------------------------Connection is released.----------------------------------\n\n\n");
         }

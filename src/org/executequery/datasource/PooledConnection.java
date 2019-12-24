@@ -277,7 +277,6 @@ public class PooledConnection implements Connection {
                 closeDatabaseConnection();
             timerDelay.cancel();
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
             if (databaseConnection.isConnected())
                 if (GUIUtilities.displayConfirmDialog("The server is not responding. do you want to close the connection?") == JOptionPane.OK_OPTION) {
                     closeDatabaseConnection();

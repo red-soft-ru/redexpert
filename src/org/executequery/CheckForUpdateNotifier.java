@@ -110,8 +110,9 @@ public class CheckForUpdateNotifier implements Interruptible {
             if (releaseHub) {
                 try {
                     checkFromReleaseHub(unstable);
+                } catch (IOException e) {
+                    Log.warning(String.format("Cannot check for updates: %s", e.getMessage()));
                 } catch (Exception e) {
-                    //Log.error("No access:" + e.getMessage());
                     checkFromReddatabase(unstable);
                 }
 

@@ -152,7 +152,7 @@ public class TreeFindAction extends FindAction<TreePath> {
 
     private void changeSelection(JTree tree, TreePath path) {
         SchemaTree schemaTree = (SchemaTree) tree;
-        ConnectionsTreePanel connectionsTreePanel = schemaTree.getConnectionsTreePanel();
+        ConnectionsTreePanel connectionsTreePanel = (ConnectionsTreePanel) schemaTree.getTreePanel();
         TreePath parent = path.getParentPath();
         boolean expand = true;
         if (parent != null)

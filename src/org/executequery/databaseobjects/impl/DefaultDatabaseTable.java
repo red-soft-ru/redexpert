@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
+import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.log.Log;
 import org.executequery.sql.SQLFormatter;
@@ -67,6 +68,11 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
   /**
    * Creates a new instance of DatabaseTable
    */
+
+  private int typeTree;
+
+  private DatabaseObject dependObject;
+
   public DefaultDatabaseTable(DatabaseObject object) {
 
     this(object.getHost());
@@ -75,16 +81,32 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     setSchemaName(object.getSchemaName());
     setName(object.getName());
     setRemarks(object.getRemarks());
+    if (object instanceof DefaultDatabaseObject) {
+      DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
+      setTypeTree(ddo.getTypeTree());
+      setDependObject(ddo.getDependObject());
+    } else {
+      typeTree = TreePanel.DEFAULT;
+      setDependObject(null);
+    }
   }
 
     public DefaultDatabaseTable(DatabaseObject object, String metaDataKey) {
 
-        this(object.getHost(), metaDataKey);
+      this(object.getHost(), metaDataKey);
 
-        setCatalogName(object.getCatalogName());
-        setSchemaName(object.getSchemaName());
-        setName(object.getName());
-        setRemarks(object.getRemarks());
+      setCatalogName(object.getCatalogName());
+      setSchemaName(object.getSchemaName());
+      setName(object.getName());
+      setRemarks(object.getRemarks());
+      if (object instanceof DefaultDatabaseObject) {
+        DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
+        setTypeTree(ddo.getTypeTree());
+        setDependObject(ddo.getDependObject());
+      } else {
+        typeTree = TreePanel.DEFAULT;
+        setDependObject(null);
+      }
     }
 
   /**
@@ -157,49 +179,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
   public boolean hasReferenceTo(DatabaseTable anotherTable) {
 
-        /*
-        try {
 
-            DatabaseMetaData metaData = getHost().getDatabaseMetaData();
-
-            int FKTABLE_NAME_INDEX = 3;
-
-            ResultSet rs = metaData.getImportedKeys(getCatalogName(), getSchemaName(), getName());
-
-            try {
-
-                String anotherTableName = anotherTable.getName();
-
-                while (rs.next()) {
-
-                    System.out.println("table: " + getName() +
-                            " fktable: "+rs.getString(FKTABLE_NAME_INDEX));
-
-                    if (anotherTableName.equalsIgnoreCase(
-                            rs.getString(FKTABLE_NAME_INDEX))) {
-
-                        return true;
-                    }
-
-                }
-
-            } finally {
-
-                if (rs != null) {
-
-                    rs.close();
-                }
-
-            }
-
-            return false;
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-
-        */
 
     List<ColumnConstraint> constraints = getConstraints();
 
@@ -257,11 +237,13 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       ResultSet rs = null;
       try {
 
-        List<DatabaseColumn> _columns =
-            host.getColumns(getCatalogName(),
-                getSchemaName(),
-                getName());
-
+        List<DatabaseColumn> _columns = null;
+        if (typeTree == TreePanel.DEFAULT)
+          _columns = host.getColumns(getCatalogName(),
+                  getSchemaName(),
+                  getName());
+        if (typeTree == TreePanel.DEPENDED_ON)
+          _columns = getDependedColumns();
         if (_columns != null) {
 
           columns = databaseColumnListWithSize(_columns.size());
@@ -1403,6 +1385,142 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     return names;
 
   }
+
+  @Override
+  public int getTypeTree() {
+    return typeTree;
+  }
+
+  @Override
+  public void setTypeTree(int typeTree) {
+    this.typeTree = typeTree;
+  }
+
+  @Override
+  public DatabaseObject getDependObject() {
+    return dependObject;
+  }
+
+  public void setDependObject(DatabaseObject dependObject) {
+    this.dependObject = dependObject;
+  }
+
+  private List<DatabaseColumn> getDependedColumns() {
+    ResultSet rs = null;
+
+    List<DatabaseColumn> columns = new ArrayList<DatabaseColumn>();
+
+    try {
+      DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+      String packageField = "";
+      if (dmd.getDatabaseMajorVersion() > 2)
+        packageField = "and (T1.RDB$PACKAGE_NAME IS NULL)\n";
+      Connection connection = dmd.getConnection();
+      Statement statement = null;
+      String firebirdSql = "select distinct \n" +
+              "D.RDB$FIELD_NAME as FK_Field\n" +
+              "from RDB$REF_CONSTRAINTS B, RDB$RELATION_CONSTRAINTS A, RDB$RELATION_CONSTRAINTS C,\n" +
+              "RDB$INDEX_SEGMENTS D, RDB$INDEX_SEGMENTS E, RDB$INDICES I\n" +
+              "where (A.RDB$CONSTRAINT_TYPE = 'FOREIGN KEY') and\n" +
+              "(A.RDB$CONSTRAINT_NAME = B.RDB$CONSTRAINT_NAME) and\n" +
+              "(B.RDB$CONST_NAME_UQ=C.RDB$CONSTRAINT_NAME) and (C.RDB$INDEX_NAME=D.RDB$INDEX_NAME) and\n" +
+              "(A.RDB$INDEX_NAME=E.RDB$INDEX_NAME) and\n" +
+              "(A.RDB$INDEX_NAME=I.RDB$INDEX_NAME)\n" +
+              "and (A.RDB$RELATION_NAME = '" + dependObject.getName() + "')\n" +
+              "and (C.RDB$RELATION_NAME = '" + getName() + "')\n" +
+              "union all\n" +
+              "select cast(t1.RDB$FIELD_NAME as varchar(64))\n" +
+              "from RDB$DEPENDENCIES t1 where (t1.RDB$DEPENDENT_NAME = '" + dependObject.getName() + "')\n" +
+              "and (t1.RDB$DEPENDENT_TYPE = 0)\n" +
+              packageField +
+              "and (T1.RDB$DEPENDED_ON_NAME = '" + getName() + "')\n" +
+              "union all\n" +
+              "select distinct cast(d.rdb$field_name as varchar(64))\n" +
+              "from rdb$dependencies d, rdb$relation_fields f\n" +
+              "where (d.rdb$dependent_type = 3) and\n" +
+              "(d.rdb$dependent_name = f.rdb$field_source)\n" +
+              "and (f.rdb$relation_name = '" + dependObject.getName() + "')\n" +
+              "and (d.RDB$DEPENDED_ON_NAME = '" + getName() + "')\n" +
+              "order by 1";
+
+      statement = connection.createStatement();
+      rs = statement.executeQuery(firebirdSql);
+
+
+      while (rs.next()) {
+
+        DefaultDatabaseColumn column = new DefaultDatabaseColumn();
+
+        column.setName(rs.getString(1));
+
+        columns.add(column);
+      }
+      releaseResources(rs);
+
+      int columnCount = columns.size();
+      if (columnCount > 0) {
+
+        // check for primary keys
+        rs = dmd.getPrimaryKeys(null, null, getName());
+        while (rs.next()) {
+
+          String pkColumn = rs.getString(4);
+
+          // find the pk column in the previous list
+          for (int i = 0; i < columnCount; i++) {
+
+            DatabaseColumn column = columns.get(i);
+            String columnName = column.getName();
+
+            if (columnName.equalsIgnoreCase(pkColumn)) {
+              ((DefaultDatabaseColumn) column).setPrimaryKey(true);
+              break;
+            }
+
+          }
+
+        }
+        releaseResources(rs);
+
+        // check for foreign keys
+        rs = dmd.getImportedKeys(null, null, getName());
+        while (rs.next()) {
+          String fkColumn = rs.getString(8);
+
+          // find the fk column in the previous list
+          for (int i = 0; i < columnCount; i++) {
+            DatabaseColumn column = columns.get(i);
+            String columnName = column.getName();
+            if (columnName.equalsIgnoreCase(fkColumn)) {
+              ((DefaultDatabaseColumn) column).setForeignKey(true);
+              break;
+            }
+          }
+
+        }
+
+      }
+
+      return columns;
+
+    } catch (SQLException e) {
+
+      if (Log.isDebugEnabled()) {
+
+        Log.error("Error retrieving column data for table " + getName()
+                + " using connection " + getHost().getDatabaseConnection(), e);
+      }
+
+      return columns;
+
+//            throw new DataSourceException(e);
+
+    } finally {
+
+      releaseResources(rs);
+    }
+  }
+
 
   static final long serialVersionUID = -963831243178078154L;
 

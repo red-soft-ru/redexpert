@@ -1,5 +1,11 @@
 package org.executequery.gui.procedure;
 
+import org.antlr.v4.runtime.ANTLRErrorListener;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ConsoleErrorListener;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
@@ -17,6 +23,9 @@ import org.executequery.gui.text.TextEditorContainer;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.traceparser.ProcedureParserBaseListener;
+import org.underworldlabs.traceparser.ProcedureParserLexer;
+import org.underworldlabs.traceparser.ProcedureParserParser;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -28,8 +37,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author vasiliy
@@ -144,178 +151,76 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
         // remove first empty row
 
         String fullProcedureBody = getFullSourceBody();
-
         if (fullProcedureBody != null && !fullProcedureBody.isEmpty()) {
-            fullProcedureBody = fullProcedureBody.toUpperCase();
-            sqlBodyText.setSQLText(fullProcedureBody.substring(fullProcedureBody.indexOf("BEGIN")));
-
-            if (!fullProcedureBody.contains("DECLARE"))// no variables
-                return;
-            String declaredVariables = fullProcedureBody.substring(fullProcedureBody.indexOf("DECLARE"), fullProcedureBody.indexOf("BEGIN"));
-            if (!declaredVariables.isEmpty()) {
-                variablesPanel.deleteEmptyRow();
-                String[] split = declaredVariables.split("\n");
-                for (String varString :
-                        split) {
-
-                    varString = varString.replace("DECLARE VARIABLE", "");
-                    ProcedureParameter variable = new ProcedureParameter("", DatabaseMetaData.procedureColumnUnknown,
-                            0, "", 0, 0);
-
-                    String pattern = "([A-Z])\\w+"; // to find variable name and domain
-
-                    // Create a Pattern object
-                    Pattern r = Pattern.compile(pattern);
-
-                    // Now create matcher object.
-                    Matcher m = r.matcher(varString);
-                    int matchesCount = 0;
-                    while (m.find()) {
-                        if (matchesCount == 0) { // find name
-                            variable.setName(m.group(0));
-                            varString = varString.replace(m.group(0), "");
-                        } else if (matchesCount == 1) { // find domain
-                            String domain = m.group(0);
-                            // check for type
-                            if (!containsType(domain, metaData.getDataTypesArray())) {
-                                variable.setDomain(domain);
-                                varString = varString.replace(domain, "");
-                            }
-                        }
-                        matchesCount++;
-                        if (matchesCount == 2)
-                            break;
-                    }
-
-                    // if the variable is a domain type, do not need to parse further
-                    if (variable.getDomain() == null || variable.getDomain().isEmpty()) {
-                        pattern = "([A-Z])\\w+"; // to find variable type
-
-                        // Create a Pattern object
-                        r = Pattern.compile(pattern);
-
-                        // Now create matcher object.
-                        m = r.matcher(varString);
-
-                        String type = "";
-                        if (m.find()) {
-                            type = m.group(0);
-                        }
-                        // need to find blob subtype
-                        switch (type) {
-                            case "BLOB":
-                                matchesCount = 0;
-                                if (varString.contains("BLOB SUB_TYPE TEXT")) {
-                                    matchesCount = 1;
-                                    variable.setSubType(1);
-                                } else if (varString.contains("BLOB SUB_TYPE BINARY")) {
-                                    matchesCount = 1;
-                                    variable.setSubType(1);
-                                }
-                                pattern = "(-?[0-9]\\d*(\\.\\d+)?)";
-                                r = Pattern.compile(pattern);
-                                m = r.matcher(varString);
-                                while (m.find()) {
-                                    if (matchesCount == 0)  // subtype
-                                        variable.setSubType(Integer.valueOf(m.group(0)));
-                                    else if (matchesCount == 1) // segment size
-                                        variable.setSize(Integer.valueOf(m.group(0)));
-                                    matchesCount++;
-                                }
-
-                                if (variable.getSubType() < 0)
-                                    type = "BLOB SUB_TYPE <0";
-                                else if (variable.getSubType() == 0)
-                                    type = "BLOB SUB_TYPE BINARY";
-                                else
-                                    type = "BLOB SUB_TYPE TEXT";
-
-
-                                break;
-                            case "TYPE":
-                                variable.setTypeOf(true);
-                                type = "TYPE OF";
-                                varString = varString.replace("TYPE OF", "");
-                                varString = varString.replace("COLUMN", "");
-                                pattern = "([A-z])\\w+(\\.\\w+)|(([A-z])\\w+)"; // to find type of
-
-                                // Create a Pattern object
-                                r = Pattern.compile(pattern);
-
-                                // Now create matcher object.
-                                m = r.matcher(varString);
-
-                                String fieldName = "";
-                                if (m.find()) {
-                                    fieldName = m.group(0);
-                                }
-
-                                if (fieldName.contains(".")){
-                                    variable.setRelationName(fieldName.substring(0, fieldName.lastIndexOf('.')));
-                                    variable.setFieldName(fieldName.substring(fieldName.lastIndexOf('.') + 1));
-                                    variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
-                                } else {
-                                    variable.setDomain(fieldName);
-                                    variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_DOMAIN);
-                                }
-
-                                break;
-                            default:
-                                pattern = "(?<=\\()\\d+(?:\\.\\d+)?(?=\\))"; // pattern for size of varchar and etc.
-
-                                r = Pattern.compile(pattern);
-                                m = r.matcher(varString);
-                                if (m.find())
-                                    variable.setSize(Integer.valueOf(m.group(0)));
-
-                                pattern = "(?<=\\()\\d+(?:\\.\\d+)?(?=,)"; // pattern for size of decimal and etc.
-
-                                r = Pattern.compile(pattern);
-                                m = r.matcher(varString);
-                                if (m.find())
-                                    variable.setSize(Integer.valueOf(m.group(0)));
-
-                                pattern = "(?<=,)\\d+(?:\\.\\d+)?(?=\\))"; // pattern for scale of decimal and etc.
-
-                                r = Pattern.compile(pattern);
-                                m = r.matcher(varString);
-                                if (m.find())
-                                    variable.setScale(Integer.valueOf(m.group(0)));
-                                break;
-                        }
-
-                        pattern = "/\\*(.*?)\\*/"; // pattern for comment
-                        r = Pattern.compile(pattern);
-                        m = r.matcher(varString);
-                        if (m.find()) {
-                            String description = m.group(0);
-                            description = description.replace("/*", "");
-                            description = description.replace("*/", "");
-                            variable.setDescription(description);
-                        }
-                        variable.setSqlType(type);
-
-                    }
-
-                    if (varString.contains("CHARACTER SET")) {
-                        pattern = "(CHARACTER\\sSET)\\s*([A-Z]\\w+)"; // pattern for encoding
-                        r = Pattern.compile(pattern);
-                        m = r.matcher(varString);
-                        if (m.find()) {
-                            String encoding = m.group(2);
-
-                            variable.setEncoding(encoding);
-                        }
-                    }
-
-                    if (varString.contains("NOT NULL"))
-                        variable.setNullable(0);
-                    else
-                        variable.setNullable(1);
-
-                    variablesPanel.addRow(variable);
-                }
+            ProcedureParserLexer lexer = new ProcedureParserLexer(CharStreams.fromString(fullProcedureBody));
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            ProcedureParserParser sqlparser = new ProcedureParserParser(tokens);
+            List<? extends ANTLRErrorListener> listeners = sqlparser.getErrorListeners();
+            for (int i = 0; i < listeners.size(); i++) {
+                if (listeners.get(i) instanceof ConsoleErrorListener)
+                    sqlparser.removeErrorListener(listeners.get(i));
             }
+            ParseTree tree = sqlparser.declare_block_without_params();
+            ParseTreeWalker walker = new ParseTreeWalker();
+            walker.walk(new ProcedureParserBaseListener() {
+                @Override
+                public void enterDeclare_block_without_params(ProcedureParserParser.Declare_block_without_paramsContext ctx) {
+                    ProcedureParserParser.Full_bodyContext bodyContext = ctx.full_body();
+                    sqlBodyText.setSQLText(bodyContext.getText());
+                    List<ProcedureParserParser.Local_variableContext> vars = ctx.local_variable();
+                    if (!vars.isEmpty()) {
+                        variablesPanel.deleteEmptyRow();
+                        for (int i = 0; i < vars.size(); i++) {
+                            ProcedureParserParser.Local_variableContext var = vars.get(i);
+                            ProcedureParameter variable = new ProcedureParameter("", DatabaseMetaData.procedureColumnUnknown,
+                                    0, "", 0, 0);
+                            variable.setName(var.variable_name().getText());
+                            ProcedureParserParser.DatatypeContext type = var.datatype();
+                            if (type != null && !type.isEmpty()) {
+                                if (type.domain_name() != null && !type.domain_name().isEmpty()) {
+                                    variable.setDomain(type.domain_name().getText());
+                                }
+                                if (type.datatypeSQL() != null && !type.datatypeSQL().isEmpty()) {
+                                    variable.setSqlType(type.datatypeSQL().getText());
+                                    if (type.datatypeSQL().type_size() != null && type.datatypeSQL().type_size().isEmpty()) {
+                                        variable.setSize(Integer.parseInt(type.datatypeSQL().type_size().getText()));
+                                    }
+                                    if (type.datatypeSQL().scale() != null && type.datatypeSQL().scale().isEmpty()) {
+                                        variable.setScale(Integer.parseInt(type.datatypeSQL().scale().getText()));
+                                    }
+                                    if (type.datatypeSQL().subtype() != null && type.datatypeSQL().subtype().isEmpty()) {
+                                        if (type.datatypeSQL().subtype().any_name() != null && !type.datatypeSQL().subtype().any_name().isEmpty()) {
+                                            variable.setSubType(1);
+                                        }
+                                        if (type.datatypeSQL().subtype().int_number() != null && !type.datatypeSQL().subtype().int_number().isEmpty()) {
+                                            variable.setSubType(Integer.parseInt(type.datatypeSQL().subtype().int_number().getText()));
+                                        }
+                                    }
+                                    if (type.datatypeSQL().charset_name() != null && type.datatypeSQL().charset_name().isEmpty()) {
+                                        variable.setEncoding(type.datatypeSQL().charset_name().getText());
+                                    }
+                                }
+                                if (type.type_of() != null && !type.type_of().isEmpty()) {
+                                    if (type.type_of().domain_name() != null && !type.type_of().domain_name().isEmpty()) {
+                                        variable.setDomain(type.type_of().domain_name().getText());
+                                        variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_DOMAIN);
+                                    }
+                                    if (type.type_of().column_name() != null && !type.type_of().column_name().isEmpty()) {
+                                        variable.setRelationName(type.type_of().table_name().getText());
+                                        variable.setFieldName(type.type_of().column_name().getText());
+                                        variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+                                    }
+                                }
+                            }
+                            if (var.notnull() != null && !var.notnull().isEmpty()) {
+                                variable.setNullable(0);
+                            } else variable.setNullable(1);
+                            variablesPanel.addRow(variable);
+                        }
+                    }
+                }
+            }, tree);
+
         }
     }
 

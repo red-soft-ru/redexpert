@@ -1,5 +1,6 @@
 package org.executequery.http;
 
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -13,6 +14,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JSONAPI {
 
@@ -35,10 +38,17 @@ public class JSONAPI {
 
         br.close();
 
-        if (text.length() == 0)
+        if (text != null && text.length() != 0) {
+            Pattern pattern;
+            pattern = Pattern.compile("\"\\d+\\.\\d+\\.\\d+\\.\\d+\\\"");
+            Matcher m = pattern.matcher(text);
+            if (!m.find())
+                throw new IOException(String.format("Server returned HTML or some other non-JSON string: %s", text));
+        } else {
             text.append("{\n" +
                     "    \"version\": \"0.0.0.0\"\n" +
                     "}");
+        }
 
         return new JSONObject(text.toString());
     }
@@ -88,7 +98,14 @@ public class JSONAPI {
         HostParams hostParams = config.getParams();
         hostParams.setParameter("http.protocol.content-charset", "UTF8");
         int cod = client.executeMethod(get);
+        if (cod >= 300 && cod < 400) {
+            String redirectLocation = null;
+            Header locationHeader = get.getResponseHeader("location");
+            if (locationHeader != null)
+                redirectLocation = locationHeader.getValue();
+            return postJsonObject(redirectLocation, parameters, headers);
 
+        }
         BufferedReader br = new BufferedReader(
                 new InputStreamReader(get.getResponseBodyAsStream()));
         String inputLine;
@@ -97,6 +114,7 @@ public class JSONAPI {
         }
 
         br.close();
+
 
         if (cod < 200 || cod > 300) {
             text.insert(0, "Server return error:\n" + cod + "\n");

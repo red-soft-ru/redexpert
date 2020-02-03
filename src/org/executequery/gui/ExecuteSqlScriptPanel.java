@@ -73,6 +73,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
     public static final String TITLE = Bundles.get(ExecuteSqlScriptPanel.class, "title");
     public static final String FRAME_ICON = "ExecuteSqlScript16.png";
+    public static final int MAX_LENGTH_TEXT_PANE = 1000000;
 
     private JComboBox connectionsCombo;
 
@@ -105,6 +106,8 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
     private SqlScriptRunner sqlScriptRunner;
 
     private boolean resetButtons;
+
+    private String script = null;
 
     public ExecuteSqlScriptPanel() {
 
@@ -314,8 +317,10 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
         File file = fileChooser.getSelectedFile();
         fileNameField.setText(file.getAbsolutePath());
-
-        sqlText.setSQLText(FileUtils.loadFile(file.getPath()));
+        script = FileUtils.loadFile(file.getPath());
+        if(script.length()<MAX_LENGTH_TEXT_PANE)
+            sqlText.setSQLText(script);
+        else sqlText.setSQLText("'File is very big.It can not opened in editor'");
     }
 
     private boolean fieldsValid() {
@@ -546,10 +551,11 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
                 if (selectedHost != null)
                     connection = selectedHost.getDatabaseConnection();
             }
-
+            if(script.length()<MAX_LENGTH_TEXT_PANE)
+                script = sqlText.getSQLText();
             sqlStatementResult = sqlScriptRunner.execute(
                     connection,
-                    sqlText.getSQLText(),
+                    script,
                     (ActionOnError) actionOnErrorCombo.getSelectedItem());
 
         } finally {

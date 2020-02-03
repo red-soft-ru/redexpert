@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class ReddatabaseAPI {
 
-    public static final String URL_OF_REGISTRATION = "http://reddatabase.ru/user/register/";
+    public static final String URL_OF_REGISTRATION = "https://reddatabase.ru/user/register/";
 
 
     public static boolean getToken() {

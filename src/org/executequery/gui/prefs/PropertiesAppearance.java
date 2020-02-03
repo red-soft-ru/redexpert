@@ -68,13 +68,6 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel implements
                 bundledString("StatusBar"),
                 Boolean.valueOf(stringUserProperty(key))));
 
-        key = "system.display.console";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("SystemConsole"),
-                Boolean.valueOf(stringUserProperty(key))));
-
         key = "system.display.connections";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,

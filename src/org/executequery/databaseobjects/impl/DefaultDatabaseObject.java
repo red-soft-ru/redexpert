@@ -22,7 +22,9 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.sql.StatementGenerator;
 import org.executequery.sql.StatementGeneratorFactory;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -36,6 +38,10 @@ import java.util.List;
  * @author Takis Diakoumis
  */
 public class DefaultDatabaseObject extends AbstractDatabaseObject {
+
+    private int typeTree;
+
+    private DatabaseObject dependObject;
 
     /**
      * the meta data key name for this object
@@ -54,8 +60,16 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
      */
     public DefaultDatabaseObject(DatabaseHost host, String metaDataKey) {
         super(host);
+        typeTree = TreePanel.DEFAULT;
+        dependObject = null;
         this.metaDataKey = metaDataKey;
         setSystemFlag(false);
+    }
+
+    public DefaultDatabaseObject(DatabaseHost host, String metaDataKey, int typeTree, DatabaseObject dependObject) {
+        this(host, metaDataKey);
+        this.typeTree = typeTree;
+        this.dependObject = dependObject;
     }
 
     @Override
@@ -71,6 +85,22 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
     @Override
     protected void getObjectInfo() {
 
+    }
+
+    public int getTypeTree() {
+        return typeTree;
+    }
+
+    public void setTypeTree(int typeTree) {
+        this.typeTree = typeTree;
+    }
+
+    public DatabaseObject getDependObject() {
+        return dependObject;
+    }
+
+    public void setDependObject(DatabaseObject dependObject) {
+        this.dependObject = dependObject;
     }
 
     /**

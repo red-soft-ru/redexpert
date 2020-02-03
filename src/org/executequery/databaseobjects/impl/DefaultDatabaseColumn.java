@@ -111,6 +111,8 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
 
     private String domain;
 
+    private boolean identity;
+
     public DefaultDatabaseColumn() {
     }
 
@@ -126,6 +128,16 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
     @Override
     public String getColumnDescription() {
         return getRemarks();
+    }
+
+    @Override
+    public boolean isIdentity() {
+        return identity;
+    }
+
+    @Override
+    public void setIdentity(boolean flag) {
+        identity = flag;
     }
 
     public int getColumnSize() {

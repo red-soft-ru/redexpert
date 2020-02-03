@@ -23,7 +23,6 @@ package org.executequery.gui.browser.tree;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTreeCellRenderer;
 import org.executequery.gui.browser.BrowserConstants;
-import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
@@ -53,11 +52,9 @@ public class SchemaTree extends DynamicTree
         implements TreeExpansionListener,
         TreeSelectionListener, MouseListener, KeyListener {
 
-    private static final int ROW_HEIGHT = 26;
+    private TreePanel panel;
 
-    private ConnectionsTreePanel panel;
-
-    public SchemaTree(DefaultMutableTreeNode root, ConnectionsTreePanel panel) {
+    public SchemaTree(DefaultMutableTreeNode root, TreePanel panel) {
 
         super(root);
         this.panel = panel;
@@ -108,8 +105,6 @@ public class SchemaTree extends DynamicTree
 
     @Override
     protected void processMouseEvent(MouseEvent e) {
-
-        panel.schemaTreeMouseEvent(e);
         super.processMouseEvent(e);
     }
 
@@ -207,7 +202,7 @@ public class SchemaTree extends DynamicTree
 
     // nice example: http://www.coderanch.com/t/346509/GUI/java/JTree-drag-drop-inside-one
 
-    public ConnectionsTreePanel getConnectionsTreePanel() {
+    public TreePanel getTreePanel() {
         return panel;
     }
 

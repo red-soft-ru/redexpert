@@ -249,7 +249,7 @@ public class BrowserController {
      * //@param the connection host parent object
      * //@param the selected node
      */
-    public synchronized void valueChanged_(DatabaseObjectNode node, DatabaseConnection connection) {
+    public void valueChanged_(DatabaseObjectNode node, DatabaseConnection connection) {
 
         treePanel.setInProcess(true);
 
@@ -267,7 +267,6 @@ public class BrowserController {
             else panel.setObjectName(node.getShortName().trim() + ":" + type + ":" + connection.getName());
             panel.setDatabaseConnection(connection);
             if (panel != null) {
-
                 viewPanel.setView(panel);
                 checkBrowserPanel();
             }

@@ -141,7 +141,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         gbc.insets.top = 7;
         gbc.insets.right = 10;
         gbc.fill = GridBagConstraints.NONE;
-        basePanel.add(new JLabel("Name:"), gbc);
+        basePanel.add(new JLabel(Bundles.getCommon("name")), gbc);
         gbc.gridx++;
         gbc.insets.left = 0;
         gbc.weightx = 1.0;
@@ -156,7 +156,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         gbc.insets.left = 5;
         gbc.fill = GridBagConstraints.NONE;
         gbc.insets.right = 10;
-        basePanel.add(new JLabel("Email:"), gbc);
+        basePanel.add(new JLabel("Email"), gbc);
         gbc.gridx++;
         gbc.insets.left = 0;
         gbc.weightx = 1.0;
@@ -260,24 +260,20 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
 
         switch (feedbackType) {
             case BUG_REPORT:
-                sb.append("Please provide as much information on what ");
-                sb.append("you were doing when the error occurred as well ");
-                sb.append("as what database you are connected to and any ");
-                sb.append("exception stack traces that may be available.");
+                sb.append(bundledString("bugReport"));
                 break;
             case FEATURE_REQUEST:
             case USER_COMMENTS:
             default:
-                sb.append("Please complete the fields below.");
+                sb.append(bundledString("completeFields"));
                 break;
         }
 
         sb.append("</td></tr><tr><td>");
-        sb.append("If you wish to send feedback with ");
-        sb.append("attachments, please send an email to ");
-        sb.append("rdb.support@red-soft.ru instead of completing this form.");
-        sb.append("</td></tr><tr><td>This feature requires an active ");
-        sb.append("internet connection.</td></tr>");
+        sb.append(bundledString("infoAttachments"));
+        sb.append("</td></tr><tr><td>");
+        sb.append(bundledString("warningInternetConnection"));
+        sb.append("</td></tr>");
         sb.append(Constants.TABLE_TAG_END);
         sb.append("</html>");
 
@@ -323,8 +319,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
                     closeProgressDialog();
 
                     GUIUtilities.displayInformationMessage(
-                            "Your remarks were successfully posted to " +
-                                    "rdb.support@red-soft.ru.\nThank you for your feedback.");
+                            bundledString("messageSuccess"));
 
                 } else if (cancelled || result == Constants.WORKER_FAIL ||
                         result == Constants.WORKER_CANCEL) {
@@ -348,8 +343,8 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
 
         progressDialog = new InterruptibleProgressDialog(
                 GUIUtilities.getParentFrame(),
-                "Posting Feedback",
-                "Posting feedback report to rdb.support@red-soft.ru",
+                bundledString("postingFeedback"),
+                bundledString("postingFeedbackMessage"),
                 this);
 
         worker.start();
@@ -388,15 +383,15 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
     }
 
     private String noRemarksErrorMessage() {
-        return "Please enter your remarks in the text area provided.";
+        return bundledString("noRemarksErrorMessage");
     }
 
     private String noNameErrorMessage() {
-        return "Please enter your name or nickname in the text field provided.";
+        return bundledString("noNameErrorMessage");
     }
 
     private String noEmailErrorMessage() {
-        return "Please enter your e-mail in the text field provided.";
+        return bundledString("noEmailErrorMessage");
     }
 
     private Object doWork() {
@@ -518,6 +513,10 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
      */
     public Component getDefaultFocusComponent() {
         return nameField;
+    }
+
+    protected String bundledString(String key) {
+        return Bundles.get(this.getClass(), key);
     }
 
 

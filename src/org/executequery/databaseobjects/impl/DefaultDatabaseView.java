@@ -24,7 +24,6 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseView;
-import org.executequery.sql.StatementGenerator;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.util.List;
@@ -39,6 +38,7 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
         setSchemaName(object.getSchemaName());
         setName(object.getName());
         setRemarks(object.getRemarks());
+        setSource(object.getSource());
     }
 
     public DefaultDatabaseView(DatabaseHost host) {
@@ -48,8 +48,7 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
 
     public String getCreateSQLText() throws DataSourceException {
 
-        StatementGenerator statementGenerator = createStatementGenerator();
-        String sql = statementGenerator.viewDefinition(databaseProductName(), this);
+        String sql = getSource();
 
         StringBuilder sb = new StringBuilder();
 
@@ -98,6 +97,7 @@ public class DefaultDatabaseView extends AbstractTableObject implements Database
     public boolean allowsChildren() {
         return true;
     }
+
 }
 
 

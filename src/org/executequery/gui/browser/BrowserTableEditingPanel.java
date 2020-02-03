@@ -180,6 +180,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     private BrowserController controller;
 
     private DatabaseObjectMetaDataPanel metaDataPanel;
+    DependenciesPanel dependenciesPanel;
 
     /**
      * the last focused editor
@@ -309,7 +310,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                         try {
                             table.reset();
                             setValues(table);
-
                         } catch (DataSourceException ex) {
                             GUIUtilities.displayExceptionErrorDialog(ex.getMessage(), ex);
                         }
@@ -379,6 +379,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         VetoableSingleSelectionModel model = new VetoableSingleSelectionModel();
         model.addVetoableChangeListener(this);
+        dependenciesPanel = new DependenciesPanel();
+        //dependenciesPanel.setDatabaseObject(table);
 
         // create the tabbed pane
         tabPane = new JTabbedPane();
@@ -392,6 +394,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         tabPane.add(Bundles.getCommon("data"), tableDataPanel);
         tabPane.add(Bundles.getCommon("SQL"), splitPane);
         tabPane.add(Bundles.getCommon("metadata"), metaDataPanel);
+        tabPane.add(Bundles.getCommon("dependencies"), dependenciesPanel);
+        //dependenciesPanel.load();
 
         tabPane.addChangeListener(this);
 
@@ -921,6 +925,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             descriptionTable.setDatabaseTable(table);
             constraintsTable.setDatabaseTable(table);
             loadIndexes();
+            dependenciesPanel.setDatabaseObject(table);
 
             alterSqlText.setSQLText(EMPTY);
             try {

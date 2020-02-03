@@ -1,16 +1,20 @@
 package org.executequery.gui.table;
 
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.text.SQLTextPane;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.sql.SQLException;
 
 public class AutoIncrementPanel extends JPanel {
 
@@ -20,17 +24,20 @@ public class AutoIncrementPanel extends JPanel {
     JPanel systemGeneratorPanel;
     JPanel createGeneratorPanel;
     JPanel useGeneratorPanel;
+    JPanel useIdentityPanel;
     JPanel triggerPanel;
     JPanel procedurePanel;
     JCheckBox systemGeneratorBox;
     JCheckBox createGeneratorBox;
     JCheckBox useGeneratorBox;
+    JCheckBox useIdentityBox;
     JCheckBox createTriggerBox;
     JCheckBox createProcedureBox;
     JButton okButton;
     JButton cancelButton;
     NumberTextField systemStartValue;
     NumberTextField createStartValue;
+    NumberTextField identityStartValue;
     JTextField createGeneratorName;
     JComboBox comboGenerators;
     JScrollPane triggerScroll;
@@ -52,11 +59,24 @@ public class AutoIncrementPanel extends JPanel {
         createGeneratorPanel.setVisible(false);
         systemGeneratorPanel.setVisible(false);
         useGeneratorPanel.setVisible(false);
+        if (getDatabaseVersion() < 3)
+            useIdentityBox.setVisible(false);
+        useIdentityPanel.setVisible(false);
         if (parent == null) {
             okButton.setVisible(false);
             cancelButton.setVisible(false);
         }
 
+    }
+
+    protected int getDatabaseVersion() {
+        DatabaseHost host = new DefaultDatabaseHost(connection);
+        try {
+            return host.getDatabaseMetaData().getDatabaseMajorVersion();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     void init() {
@@ -67,10 +87,12 @@ public class AutoIncrementPanel extends JPanel {
         procedurePanel = new JPanel();
         systemGeneratorPanel = new JPanel();
         createGeneratorPanel = new JPanel();
+        useIdentityPanel = new JPanel();
         useGeneratorPanel = new JPanel();
         triggerPanel = new JPanel();
         systemGeneratorBox = new JCheckBox("System Generator");
         createGeneratorBox = new JCheckBox("Create Sequence");
+        useIdentityBox = new JCheckBox("Use Identity");
         useGeneratorBox = new JCheckBox("Use Existed Sequence");
         createTriggerBox = new JCheckBox("Create Trigger");
         createProcedureBox = new JCheckBox("Create Procedure");
@@ -78,6 +100,7 @@ public class AutoIncrementPanel extends JPanel {
         cancelButton = new JButton("Cancel");
         systemStartValue = new NumberTextField(0);
         createStartValue = new NumberTextField(0);
+        identityStartValue = new NumberTextField(0);
         createGeneratorName = new JTextField();
         comboGenerators = new JComboBox(generators);
         triggerSQLPane = new SQLTextPane();
@@ -117,6 +140,7 @@ public class AutoIncrementPanel extends JPanel {
                     createGeneratorPanel.setVisible(false);
                     useGeneratorPanel.setVisible(false);
                     createGeneratorBox.setSelected(false);
+                    useIdentityBox.setSelected(false);
                     useGeneratorBox.setSelected(false);
                 } else {
                     systemGeneratorPanel.setVisible(false);
@@ -132,12 +156,32 @@ public class AutoIncrementPanel extends JPanel {
                     systemGeneratorPanel.setVisible(false);
                     createGeneratorPanel.setVisible(true);
                     useGeneratorPanel.setVisible(false);
+                    useIdentityPanel.setVisible(false);
                     systemGeneratorBox.setSelected(false);
                     useGeneratorBox.setSelected(false);
+                    useIdentityBox.setSelected(false);
                     createGeneratorName.setText("SEQ_" + tableName + "_" + ai.getFieldName());
                     ai.setGeneratorName(createGeneratorName.getText());
                 } else {
                     createGeneratorPanel.setVisible(false);
+                }
+            }
+        });
+
+        useIdentityBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                ai.setIdentity(useIdentityBox.isSelected());
+                if (ai.isIdentity()) {
+                    systemGeneratorPanel.setVisible(false);
+                    createGeneratorPanel.setVisible(false);
+                    useGeneratorPanel.setVisible(false);
+                    useIdentityPanel.setVisible(true);
+                    systemGeneratorBox.setSelected(false);
+                    useGeneratorBox.setSelected(false);
+                    createGeneratorBox.setSelected(false);
+                } else {
+                    useIdentityPanel.setVisible(false);
                 }
             }
         });
@@ -150,8 +194,10 @@ public class AutoIncrementPanel extends JPanel {
                     systemGeneratorPanel.setVisible(false);
                     createGeneratorPanel.setVisible(false);
                     useGeneratorPanel.setVisible(true);
+                    useIdentityPanel.setVisible(false);
                     createGeneratorBox.setSelected(false);
                     systemGeneratorBox.setSelected(false);
+                    useIdentityBox.setSelected(false);
                     ai.setCreateGenerator(false);
                     ai.setGeneratorName((String) comboGenerators.getSelectedItem());
                 } else {
@@ -229,6 +275,7 @@ public class AutoIncrementPanel extends JPanel {
                 )
         );
 
+
         createGeneratorPanelLayout.setVerticalGroup(createGeneratorPanelLayout.createSequentialGroup()
                 .addGap(10)
                 .addGroup(createGeneratorPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -241,6 +288,19 @@ public class AutoIncrementPanel extends JPanel {
                         .addComponent(label)
                 )
         );
+
+        GridBagLayout useIdentityPanelLayout = new GridBagLayout();
+        useIdentityPanel.setLayout(useIdentityPanelLayout);
+        label = new JLabel("Start Value");
+        useIdentityPanel.add(label, new GridBagConstraints(0, 0,
+                1, 1, 0, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
+                0, 0));
+        useIdentityPanel.add(identityStartValue, new GridBagConstraints(1, 0,
+                1, 1, 1, 0,
+                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
+                0, 0));
+
 
         label = new JLabel("Generators:");
         GroupLayout useGeneratorPanelLayout = new GroupLayout(useGeneratorPanel);
@@ -262,9 +322,11 @@ public class AutoIncrementPanel extends JPanel {
                 .addComponent(systemGeneratorBox)
                 .addComponent(createGeneratorBox)
                 .addComponent(useGeneratorBox)
+                .addComponent(useIdentityBox)
                 .addComponent(systemGeneratorPanel)
                 .addComponent(createGeneratorPanel)
                 .addComponent(useGeneratorPanel)
+                .addComponent(useIdentityPanel)
         );
 
         generatorLayout.setVerticalGroup(generatorLayout.createSequentialGroup()
@@ -275,9 +337,12 @@ public class AutoIncrementPanel extends JPanel {
                 .addGap(10)
                 .addComponent(useGeneratorBox)
                 .addGap(10)
+                .addComponent(useIdentityBox)
+                .addGap(10)
                 .addComponent(systemGeneratorPanel)
                 .addComponent(createGeneratorPanel)
                 .addComponent(useGeneratorPanel)
+                .addComponent(useIdentityPanel)
         );
 
         tabPanel.add("Generator", generatorPanel);
@@ -319,6 +384,8 @@ public class AutoIncrementPanel extends JPanel {
 
     public void generateAI() {
         String sql = "";
+        if (ai.isIdentity())
+            ai.setStartValue(identityStartValue.getValue());
         if (ai.isCreateGenerator()) {
             sql += "\nCREATE SEQUENCE " + MiscUtils.wordInQuotes(ai.getGeneratorName()) + "^";
             ai.setStartValue(createStartValue.getValue());

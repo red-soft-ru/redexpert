@@ -28,6 +28,7 @@ import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
+import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
@@ -47,6 +48,8 @@ import java.util.*;
  */
 public class DefaultDatabaseHost extends AbstractNamedObject
         implements DatabaseHost {
+
+    private int typeTree;
 
     /**
      * the database connection wrapper for this host
@@ -72,6 +75,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * the schemas of this host
      */
     private List<DatabaseSchema> schemas;
+    private DatabaseObject dependObject;
 
     /**
      * Creates a new instance of DefaultDatabaseHost with the
@@ -79,8 +83,20 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      *
      * @param databaseConnection the connection wrapper
      */
+
     public DefaultDatabaseHost(DatabaseConnection databaseConnection) {
+        this(databaseConnection, TreePanel.DEFAULT);
+    }
+
+    public DefaultDatabaseHost(DatabaseConnection databaseConnection, int typeTree) {
         this.databaseConnection = databaseConnection;
+        this.typeTree = typeTree;
+    }
+
+    public DefaultDatabaseHost(DatabaseConnection databaseConnection, int typeTree, DatabaseObject dependObject) {
+        this.databaseConnection = databaseConnection;
+        this.typeTree = typeTree;
+        this.dependObject = dependObject;
     }
 
     /**
@@ -699,6 +715,12 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             Statement statement = null;
 
             if (isFirebirdConnection) {
+                String identity = null;
+                if (getDatabaseMetaData().getDatabaseMajorVersion() >= 3) {
+                    identity = "    RF.RDB$IDENTITY_TYPE AS IDENTITY\n";
+                } else {
+                    identity = "    CAST(NULL AS INTEGER) AS IDENTITY\n";
+                }
                 String firebirdSql = "SELECT\n" +
                         "    '' AS CATALOG,\n" +
                         "    '' AS SCHEME,\n" +
@@ -718,8 +740,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         "    F.RDB$NULL_FLAG AS SOURCE_NULL_FLAG,\n" +
                         "    F.RDB$COMPUTED_BLR AS COMPUTED_BLR,\n" +
                         "    F.RDB$CHARACTER_SET_ID,\n" +
-                        "    'NO' AS IS_IDENTITY,\n" +
-                        "    CAST(NULL AS VARCHAR(10)) AS JB_IDENTITY_TYPE\n" +
+                        identity +
                         "FROM\n" +
                         "    RDB$RELATION_FIELDS RF,\n" +
                         "    RDB$FIELDS F\n" +
@@ -738,20 +759,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             } else {
                 rs = dmd.getColumns(_catalog, _schema, table, null);
             }
-            
-            /*
-            if (Log.isDebugEnabled()) {
-
-                Log.debug("Meta data on columns for table - " + table);
-                
-                ResultSetMetaData metaData = rs.getMetaData();
-                int columnCount = metaData.getColumnCount();
-                for (int i = 0; i < columnCount; i++) {
-                    
-                    Log.debug("Column: [ " + (i + 1) + " ] " + metaData.getColumnName(i + 1));                    
-                }
-            }
-            */
 
             if (isFirebirdConnection) {
                 columns = createColumns(rs, table);
@@ -936,7 +943,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 column.setDefaultValue(column_def);
             }
 
-            final boolean isIdentity = Objects.equals("YES", rs.getString("IS_IDENTITY"));
+            column.setIdentity(rs.getInt("IDENTITY") == 1);
 
             columns.add(column);
         }
@@ -1074,7 +1081,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     final static int CS_BINARY  = 1; /* BINARY BYTES */
     final static int CS_dynamic = 127; // Pseudo number for runtime charset (see intl\charsets.h and references to it in Firebird)
 
-    private static int getDataType(int fieldType, int fieldSubType, int fieldScale, int characterSetId) {
+    public static int getDataType(int fieldType, int fieldSubType, int fieldScale, int characterSetId) {
 
         // TODO Preserved for backwards compatibility, is this really necessary?
         if (fieldType == blob_type && fieldSubType > 1) {
@@ -1493,8 +1500,11 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     private DefaultDatabaseMetaTag createDatabaseMetaTag(
             DatabaseCatalog catalog, DatabaseSchema schema, String type) {
-
-        return new DefaultDatabaseMetaTag(this, catalog, schema, type);
+        DefaultDatabaseMetaTag tag = null;
+        if (typeTree != TreePanel.DEFAULT) {
+            tag = new DefaultDatabaseMetaTag(this, catalog, schema, type, typeTree, dependObject);
+        } else tag = new DefaultDatabaseMetaTag(this, catalog, schema, type);
+        return tag;
     }
 
     /**

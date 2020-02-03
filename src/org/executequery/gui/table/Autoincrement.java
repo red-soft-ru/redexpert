@@ -8,6 +8,7 @@ public class Autoincrement implements Serializable {
     private boolean useGenerator = false;
     private boolean createTrigger = false;
     private boolean createProcedure = false;
+    private boolean identity = false;
     private String generatorName = "";
     private int startValue = 0;
     private String fieldName = "";
@@ -19,7 +20,7 @@ public class Autoincrement implements Serializable {
     }
 
     public boolean isAutoincrement() {
-        return systemGenerator || (createGenerator || useGenerator) && (createTrigger || createProcedure) || createTrigger || createProcedure;
+        return systemGenerator || (createGenerator || useGenerator) && (createTrigger || createProcedure) || createTrigger || createProcedure || identity;
     }
 
     public String getFieldName() {
@@ -108,5 +109,13 @@ public class Autoincrement implements Serializable {
 
     public void setUseGenerator(boolean useGenerator) {
         this.useGenerator = useGenerator;
+    }
+
+    public boolean isIdentity() {
+        return identity;
+    }
+
+    public void setIdentity(boolean identity) {
+        this.identity = identity;
     }
 }

@@ -1,6 +1,8 @@
 package org.executequery.datasource;
 
+import biz.redsoft.IFBSQLException;
 import org.executequery.log.Log;
+import org.underworldlabs.util.DynamicLibraryLoader;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -42,1070 +44,2116 @@ public class PooledStatement implements CallableStatement {
         return statement;
     }
 
+    protected void handleException(SQLException e) throws SQLException {
+        connection.checkConnectionToServer();
+        throw e;
+    }
+
     @Override
     public ResultSet executeQuery(String sql) throws SQLException {
-        return new PooledResultSet(this, statement.executeQuery(sql));
+        try {
+            return new PooledResultSet(this, statement.executeQuery(sql));
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public int executeUpdate(String s) throws SQLException {
-        return statement.executeUpdate(s);
+        try {
+            return statement.executeUpdate(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     private boolean individual = false;
 
     @Override
     public int getMaxFieldSize() throws SQLException {
-        return statement.getMaxFieldSize();
+        try {
+            return statement.getMaxFieldSize();
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public void setMaxFieldSize(int i) throws SQLException {
-        statement.setMaxFieldSize(i);
+        try {
+            statement.setMaxFieldSize(i);
+        } catch (SQLException e) {
+            handleException(e);
+        }
     }
 
     @Override
     public int getMaxRows() throws SQLException {
-        return statement.getMaxRows();
+        try {
+            return statement.getMaxRows();
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public void setMaxRows(int i) throws SQLException {
-        statement.setMaxRows(i);
+        try {
+            statement.setMaxRows(i);
+        } catch (SQLException e) {
+            handleException(e);
+        }
     }
 
     @Override
     public void setEscapeProcessing(boolean b) throws SQLException {
-        statement.setEscapeProcessing(b);
+        try {
+            statement.setEscapeProcessing(b);
+        } catch (SQLException e) {
+            handleException(e);
+        }
     }
 
     @Override
     public int getQueryTimeout() throws SQLException {
-        return statement.getQueryTimeout();
+        try {
+            return statement.getQueryTimeout();
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public void setQueryTimeout(int i) throws SQLException {
-        statement.setQueryTimeout(i);
+        try {
+            statement.setQueryTimeout(i);
+        } catch (SQLException e) {
+            handleException(e);
+        }
     }
 
     @Override
     public void cancel() throws SQLException {
-        statement.cancel();
+        try {
+            statement.cancel();
+        } catch (SQLException e) {
+            handleException(e);
+        }
     }
 
     @Override
     public SQLWarning getWarnings() throws SQLException {
-        return statement.getWarnings();
+        try {
+            return statement.getWarnings();
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public void clearWarnings() throws SQLException {
-        statement.clearWarnings();
+        try {
+            statement.clearWarnings();
+        } catch (SQLException e) {
+            handleException(e);
+        }
     }
 
     @Override
     public void setCursorName(String s) throws SQLException {
-        statement.setCursorName(s);
+        try {
+            statement.setCursorName(s);
+        } catch (SQLException e) {
+            handleException(e);
+        }
     }
 
     @Override
     public boolean execute(String s) throws SQLException {
-        return statement.execute(s);
+        try {
+            return statement.execute(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return false;
+        }
     }
 
     @Override
     public ResultSet getResultSet() throws SQLException {
-        return new PooledResultSet(this, statement.getResultSet());
+        try {
+            return new PooledResultSet(this, statement.getResultSet());
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public int getUpdateCount() throws SQLException {
-        return statement.getUpdateCount();
+        try {
+            return statement.getUpdateCount();
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public boolean getMoreResults() throws SQLException {
-        return statement.getMoreResults();
-    }
-
-    @Override
-    public void setFetchDirection(int i) throws SQLException {
-        statement.setFetchDirection(i);
+        try {
+            return statement.getMoreResults();
+        } catch (SQLException e) {
+            handleException(e);
+            return false;
+        }
     }
 
     @Override
     public int getFetchDirection() throws SQLException {
-        return statement.getFetchDirection();
+        try {
+            return statement.getFetchDirection();
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
-    public void setFetchSize(int i) throws SQLException {
-        statement.setFetchSize(i);
+    public void setFetchDirection(int i) throws SQLException {
+        try {
+            statement.setFetchDirection(i);
+        } catch (SQLException e) {
+            handleException(e);
+        }
     }
 
     @Override
     public int getFetchSize() throws SQLException {
-        return statement.getFetchSize();
+        try {
+            return statement.getFetchSize();
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
+    }
+
+    @Override
+    public void setFetchSize(int i) throws SQLException {
+        try {
+            statement.setFetchSize(i);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public int getResultSetConcurrency() throws SQLException {
-        return statement.getResultSetConcurrency();
+        try {
+            return statement.getResultSetConcurrency();
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public int getResultSetType() throws SQLException {
-        return statement.getResultSetType();
+        try {
+            return statement.getResultSetType();
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public void addBatch(String s) throws SQLException {
-        statement.addBatch(s);
+        try {
+            statement.addBatch(s);
+        } catch (SQLException e) {
+            handleException(e);
+        }
     }
 
     @Override
     public void clearBatch() throws SQLException {
-        statement.clearBatch();
+        try {
+            statement.clearBatch();
+        } catch (SQLException e) {
+            handleException(e);
+        }
     }
 
     @Override
     public int[] executeBatch() throws SQLException {
-        return statement.executeBatch();
+        try {
+            return statement.executeBatch();
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Connection getConnection() throws SQLException {
-        return statement.getConnection();
+        try {
+            return statement.getConnection();
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public boolean getMoreResults(int i) throws SQLException {
-        return statement.getMoreResults(i);
+        try {
+            return statement.getMoreResults(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return false;
+        }
     }
 
     @Override
     public ResultSet getGeneratedKeys() throws SQLException {
-        return new PooledResultSet(this, statement.getGeneratedKeys());
+        try {
+            return new PooledResultSet(this, statement.getGeneratedKeys());
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public int executeUpdate(String s, int i) throws SQLException {
-        return statement.executeUpdate(s);
+        try {
+            return statement.executeUpdate(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public int executeUpdate(String s, int[] ints) throws SQLException {
-        return statement.executeUpdate(s, ints);
+        try {
+            return statement.executeUpdate(s, ints);
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public int executeUpdate(String s, String[] strings) throws SQLException {
-        return statement.executeUpdate(s, strings);
+        try {
+            return statement.executeUpdate(s, strings);
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public boolean execute(String s, int i) throws SQLException {
-        return statement.execute(s, i);
+        try {
+            return statement.execute(s, i);
+        } catch (SQLException e) {
+            handleException(e);
+            return false;
+        }
     }
 
     @Override
     public boolean execute(String s, int[] ints) throws SQLException {
-        return statement.execute(s, ints);
+        try {
+            return statement.execute(s, ints);
+        } catch (SQLException e) {
+            handleException(e);
+            return false;
+        }
     }
+
 
     @Override
     public boolean execute(String s, String[] strings) throws SQLException {
-        return statement.execute(s, strings);
+        try {
+            return statement.execute(s, strings);
+        } catch (SQLException e) {
+            handleException(e);
+            return false;
+        }
     }
 
     @Override
     public int getResultSetHoldability() throws SQLException {
-        return statement.getResultSetHoldability();
+        try {
+            return statement.getResultSetHoldability();
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public void close() throws SQLException {
-        if (!closed) {
-            if (statement != null)
-                if (!statement.isClosed())
-                    statement.close();
-            connection.lock(false);
-            closed = true;
-        } else {
-            if (!individual)
-                Log.info("Trying to close connection a second time.");
+        try {
+            if (!closed) {
+                if (statement != null)
+                    if (!statement.isClosed())
+                        statement.close();
+                connection.lock(false);
+                closed = true;
+            } else {
+                if (!individual)
+                    Log.info("Trying to close connection a second time.");
+            }
+        } catch (SQLException e) {
+            handleException(e);
+        }
+    }
+
+    @Override
+    public boolean isPoolable() throws SQLException {
+        try {
+            return statement.isPoolable();
+        } catch (SQLException e) {
+            handleException(e);
+            return false;
         }
     }
 
     @Override
     public void setPoolable(boolean b) throws SQLException {
-        statement.setPoolable(b);
-    }
-
-    @Override
-    public boolean isPoolable() throws SQLException {
-        return statement.isPoolable();
+        try {
+            statement.setPoolable(b);
+        } catch (SQLException e) {
+            handleException(e);
+        }
     }
 
     @Override
     public void closeOnCompletion() throws SQLException {
-        statement.closeOnCompletion();
+        try {
+            statement.closeOnCompletion();
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public boolean isCloseOnCompletion() throws SQLException {
-        return statement.isCloseOnCompletion();
+        try {
+            return statement.isCloseOnCompletion();
+        } catch (SQLException e) {
+            handleException(e);
+            return false;
+        }
     }
 
     @Override
     public <T> T unwrap(Class<T> aClass) throws SQLException {
-        return statement.unwrap(aClass);
+        try {
+            return statement.unwrap(aClass);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public boolean isWrapperFor(Class<?> aClass) throws SQLException {
-        return statement.isWrapperFor(aClass);
+        try {
+            return statement.isWrapperFor(aClass);
+        } catch (SQLException e) {
+            handleException(e);
+            return false;
+        }
     }
 
     @Override
     public ResultSet executeQuery() throws SQLException {
-        return new PooledResultSet(this, preparedStatement.executeQuery());
+        try {
+            return new PooledResultSet(this, preparedStatement.executeQuery());
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public int executeUpdate() throws SQLException {
-        return preparedStatement.executeUpdate();
+        try {
+            return preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public void setNull(int i, int i1) throws SQLException {
-        preparedStatement.setNull(i, i1);
+        try {
+            preparedStatement.setNull(i, i1);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setBoolean(int i, boolean b) throws SQLException {
-        preparedStatement.setBoolean(i, b);
+        try {
+            preparedStatement.setBoolean(i, b);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setByte(int i, byte b) throws SQLException {
-        preparedStatement.setByte(i, b);
+        try {
+            preparedStatement.setByte(i, b);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setShort(int i, short i1) throws SQLException {
-        preparedStatement.setShort(i, i1);
+        try {
+            preparedStatement.setShort(i, i1);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setInt(int i, int i1) throws SQLException {
-        preparedStatement.setInt(i, i1);
+        try {
+            preparedStatement.setInt(i, i1);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setLong(int i, long l) throws SQLException {
-        preparedStatement.setLong(i, l);
+        try {
+            preparedStatement.setLong(i, l);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setFloat(int i, float v) throws SQLException {
-        preparedStatement.setFloat(i, v);
+        try {
+            preparedStatement.setFloat(i, v);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setDouble(int i, double v) throws SQLException {
-        preparedStatement.setDouble(i, v);
+        try {
+            preparedStatement.setDouble(i, v);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setBigDecimal(int i, BigDecimal bigDecimal) throws SQLException {
-        preparedStatement.setBigDecimal(i, bigDecimal);
+        try {
+            preparedStatement.setBigDecimal(i, bigDecimal);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setString(int i, String s) throws SQLException {
-        preparedStatement.setString(i, s);
+        try {
+            preparedStatement.setString(i, s);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setBytes(int i, byte[] bytes) throws SQLException {
-        preparedStatement.setBytes(i, bytes);
+        try {
+            preparedStatement.setBytes(i, bytes);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setDate(int i, Date date) throws SQLException {
-        preparedStatement.setDate(i, date);
+        try {
+            preparedStatement.setDate(i, date);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setTime(int i, Time time) throws SQLException {
-        preparedStatement.setTime(i, time);
+        try {
+            preparedStatement.setTime(i, time);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setTimestamp(int i, Timestamp timestamp) throws SQLException {
-        preparedStatement.setTimestamp(i, timestamp);
+        try {
+            preparedStatement.setTimestamp(i, timestamp);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setAsciiStream(int i, InputStream inputStream, int i1) throws SQLException {
-        preparedStatement.setAsciiStream(i, inputStream, i1);
+        try {
+            preparedStatement.setAsciiStream(i, inputStream, i1);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setUnicodeStream(int i, InputStream inputStream, int i1) throws SQLException {
-        preparedStatement.setUnicodeStream(i, inputStream, i1);
+        try {
+            preparedStatement.setUnicodeStream(i, inputStream, i1);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setBinaryStream(int i, InputStream inputStream, int i1) throws SQLException {
-        preparedStatement.setBinaryStream(i, inputStream, i1);
+        try {
+            preparedStatement.setBinaryStream(i, inputStream, i1);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void clearParameters() throws SQLException {
-        preparedStatement.clearParameters();
+        try {
+            preparedStatement.clearParameters();
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setObject(int i, Object o, int i1) throws SQLException {
-        preparedStatement.setObject(i, o, i1);
+        try {
+            preparedStatement.setObject(i, o, i1);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setObject(int i, Object o) throws SQLException {
-        preparedStatement.setObject(i, o);
+        try {
+            preparedStatement.setObject(i, o);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public boolean execute() throws SQLException {
-        return preparedStatement.execute();
+        try {
+            return preparedStatement.execute();
+        } catch (SQLException e) {
+            handleException(e);
+            return false;
+        }
     }
 
     @Override
     public void addBatch() throws SQLException {
-        preparedStatement.addBatch();
+        try {
+            preparedStatement.addBatch();
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setCharacterStream(int i, Reader reader, int i1) throws SQLException {
-        preparedStatement.setCharacterStream(i, reader, i1);
+        try {
+            preparedStatement.setCharacterStream(i, reader, i1);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setRef(int i, Ref ref) throws SQLException {
-        preparedStatement.setRef(i, ref);
+        try {
+            preparedStatement.setRef(i, ref);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setBlob(int i, Blob blob) throws SQLException {
-        preparedStatement.setBlob(i, blob);
+        try {
+            preparedStatement.setBlob(i, blob);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setClob(int i, Clob clob) throws SQLException {
-        preparedStatement.setClob(i, clob);
+        try {
+            preparedStatement.setClob(i, clob);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setArray(int i, Array array) throws SQLException {
-        preparedStatement.setArray(i, array);
+        try {
+            preparedStatement.setArray(i, array);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public ResultSetMetaData getMetaData() throws SQLException {
-        return preparedStatement.getMetaData();
+        try {
+            return preparedStatement.getMetaData();
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public void setDate(int i, Date date, Calendar calendar) throws SQLException {
-        preparedStatement.setDate(i, date, calendar);
+        try {
+            preparedStatement.setDate(i, date, calendar);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setTime(int i, Time time, Calendar calendar) throws SQLException {
-        preparedStatement.setTime(i, time, calendar);
+        try {
+            preparedStatement.setTime(i, time, calendar);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setTimestamp(int i, Timestamp timestamp, Calendar calendar) throws SQLException {
-        preparedStatement.setTimestamp(i, timestamp, calendar);
+        try {
+            preparedStatement.setTimestamp(i, timestamp, calendar);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setNull(int i, int i1, String s) throws SQLException {
-        preparedStatement.setNull(i, i1, s);
+        try {
+            preparedStatement.setNull(i, i1, s);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setURL(int i, URL url) throws SQLException {
-        preparedStatement.setURL(i, url);
+        try {
+            preparedStatement.setURL(i, url);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public ParameterMetaData getParameterMetaData() throws SQLException {
-        return preparedStatement.getParameterMetaData();
+        try {
+            return preparedStatement.getParameterMetaData();
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public void setRowId(int i, RowId rowId) throws SQLException {
-        preparedStatement.setRowId(i, rowId);
+        try {
+            preparedStatement.setRowId(i, rowId);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setNString(int i, String s) throws SQLException {
-        preparedStatement.setNString(i, s);
+        try {
+            preparedStatement.setNString(i, s);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setNCharacterStream(int i, Reader reader, long l) throws SQLException {
-        preparedStatement.setNCharacterStream(i, reader, l);
+        try {
+            preparedStatement.setNCharacterStream(i, reader, l);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setNClob(int i, NClob nClob) throws SQLException {
-        preparedStatement.setNClob(i, nClob);
+        try {
+            preparedStatement.setNClob(i, nClob);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setClob(int i, Reader reader, long l) throws SQLException {
-        preparedStatement.setClob(i, reader, l);
+        try {
+            preparedStatement.setClob(i, reader, l);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setBlob(int i, InputStream inputStream, long l) throws SQLException {
-        preparedStatement.setBlob(i, inputStream, l);
+        try {
+            preparedStatement.setBlob(i, inputStream, l);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setNClob(int i, Reader reader, long l) throws SQLException {
-        preparedStatement.setNClob(i, reader, l);
+        try {
+            preparedStatement.setNClob(i, reader, l);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setSQLXML(int i, SQLXML sqlxml) throws SQLException {
-        preparedStatement.setSQLXML(i, sqlxml);
+        try {
+            preparedStatement.setSQLXML(i, sqlxml);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setObject(int i, Object o, int i1, int i2) throws SQLException {
-        preparedStatement.setObject(i, o, i1, i2);
+        try {
+            preparedStatement.setObject(i, o, i1, i2);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setAsciiStream(int i, InputStream inputStream, long l) throws SQLException {
-        preparedStatement.setAsciiStream(i, inputStream, l);
+        try {
+            preparedStatement.setAsciiStream(i, inputStream, l);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setBinaryStream(int i, InputStream inputStream, long l) throws SQLException {
-        preparedStatement.setBinaryStream(i, inputStream, l);
+        try {
+            preparedStatement.setBinaryStream(i, inputStream, l);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setCharacterStream(int i, Reader reader, long l) throws SQLException {
-        preparedStatement.setCharacterStream(i, reader, l);
+        try {
+            preparedStatement.setCharacterStream(i, reader, l);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setAsciiStream(int i, InputStream inputStream) throws SQLException {
-        preparedStatement.setAsciiStream(i, inputStream);
+        try {
+            preparedStatement.setAsciiStream(i, inputStream);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setBinaryStream(int i, InputStream inputStream) throws SQLException {
-        preparedStatement.setBinaryStream(i, inputStream);
+        try {
+            preparedStatement.setBinaryStream(i, inputStream);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setCharacterStream(int i, Reader reader) throws SQLException {
-        preparedStatement.setCharacterStream(i, reader);
+        try {
+            preparedStatement.setCharacterStream(i, reader);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setNCharacterStream(int i, Reader reader) throws SQLException {
-        preparedStatement.setNCharacterStream(i, reader);
+        try {
+            preparedStatement.setNCharacterStream(i, reader);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setClob(int i, Reader reader) throws SQLException {
-        preparedStatement.setClob(i, reader);
+        try {
+            preparedStatement.setClob(i, reader);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setBlob(int i, InputStream inputStream) throws SQLException {
-        preparedStatement.setBlob(i, inputStream);
+        try {
+            preparedStatement.setBlob(i, inputStream);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setNClob(int i, Reader reader) throws SQLException {
-        preparedStatement.setNClob(i, reader);
+        try {
+            preparedStatement.setNClob(i, reader);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void registerOutParameter(int i, int i1) throws SQLException {
-        callableStatement.registerOutParameter(i, i1);
+        try {
+            callableStatement.registerOutParameter(i, i1);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void registerOutParameter(int i, int i1, int i2) throws SQLException {
-        callableStatement.registerOutParameter(i, i1, i2);
+        try {
+            callableStatement.registerOutParameter(i, i1, i2);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public boolean wasNull() throws SQLException {
-        return callableStatement.wasNull();
+        try {
+            return callableStatement.wasNull();
+        } catch (SQLException e) {
+            handleException(e);
+            return false;
+        }
     }
 
     @Override
     public String getString(int i) throws SQLException {
-        return callableStatement.getString(i);
+        try {
+            return callableStatement.getString(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public boolean getBoolean(int i) throws SQLException {
-        return callableStatement.getBoolean(i);
+        try {
+            return callableStatement.getBoolean(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return false;
+        }
     }
 
     @Override
     public byte getByte(int i) throws SQLException {
-        return callableStatement.getByte(i);
+        try {
+            return callableStatement.getByte(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public short getShort(int i) throws SQLException {
-        return callableStatement.getShort(i);
+        try {
+            return callableStatement.getShort(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public int getInt(int i) throws SQLException {
-        return callableStatement.getInt(i);
+        try {
+            return callableStatement.getInt(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public long getLong(int i) throws SQLException {
-        return callableStatement.getLong(i);
+        try {
+            return callableStatement.getLong(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public float getFloat(int i) throws SQLException {
-        return callableStatement.getFloat(i);
+        try {
+            return callableStatement.getFloat(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public double getDouble(int i) throws SQLException {
-        return callableStatement.getDouble(i);
+        try {
+            return callableStatement.getDouble(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public BigDecimal getBigDecimal(int i, int i1) throws SQLException {
-        return callableStatement.getBigDecimal(i, i1);
+        try {
+            return callableStatement.getBigDecimal(i, i1);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public byte[] getBytes(int i) throws SQLException {
-        return callableStatement.getBytes(i);
+        try {
+            return callableStatement.getBytes(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Date getDate(int i) throws SQLException {
-        return callableStatement.getDate(i);
+        try {
+            return callableStatement.getDate(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Time getTime(int i) throws SQLException {
-        return callableStatement.getTime(i);
+        try {
+            return callableStatement.getTime(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Timestamp getTimestamp(int i) throws SQLException {
-        return callableStatement.getTimestamp(i);
+        try {
+            return callableStatement.getTimestamp(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Object getObject(int i) throws SQLException {
-        return callableStatement.getObject(i);
+        try {
+            return callableStatement.getObject(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public BigDecimal getBigDecimal(int i) throws SQLException {
-        return callableStatement.getBigDecimal(i);
+        try {
+            return callableStatement.getBigDecimal(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Object getObject(int i, Map<String, Class<?>> map) throws SQLException {
-        return callableStatement.getObject(i, map);
+        try {
+            return callableStatement.getObject(i, map);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Ref getRef(int i) throws SQLException {
-        return callableStatement.getRef(i);
+        try {
+            return callableStatement.getRef(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Blob getBlob(int i) throws SQLException {
-        return callableStatement.getBlob(i);
+        try {
+            return callableStatement.getBlob(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Clob getClob(int i) throws SQLException {
-        return callableStatement.getClob(i);
+        try {
+            return callableStatement.getClob(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Array getArray(int i) throws SQLException {
-        return callableStatement.getArray(i);
+        try {
+            return callableStatement.getArray(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Date getDate(int i, Calendar calendar) throws SQLException {
-        return callableStatement.getDate(i, calendar);
+        try {
+            return callableStatement.getDate(i, calendar);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Time getTime(int i, Calendar calendar) throws SQLException {
-        return callableStatement.getTime(i, calendar);
+        try {
+            return callableStatement.getTime(i, calendar);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Timestamp getTimestamp(int i, Calendar calendar) throws SQLException {
-        return callableStatement.getTimestamp(i, calendar);
+        try {
+            return callableStatement.getTimestamp(i, calendar);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public void registerOutParameter(int i, int i1, String s) throws SQLException {
-        callableStatement.registerOutParameter(i, i1, s);
+        try {
+            callableStatement.registerOutParameter(i, i1, s);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void registerOutParameter(String s, int i) throws SQLException {
-        callableStatement.registerOutParameter(s, i);
+        try {
+            callableStatement.registerOutParameter(s, i);
+        } catch (SQLException e) {
+            handleException(e);
+        }
     }
 
     @Override
     public void registerOutParameter(String s, int i, int i1) throws SQLException {
-        callableStatement.registerOutParameter(s, i, i1);
+        try {
+            callableStatement.registerOutParameter(s, i, i1);
+        } catch (SQLException e) {
+            handleException(e);
+        }
     }
 
     @Override
     public void registerOutParameter(String s, int i, String s1) throws SQLException {
-        callableStatement.registerOutParameter(s, i, s1);
+        try {
+            callableStatement.registerOutParameter(s, i, s1);
+        } catch (SQLException e) {
+            handleException(e);
+        }
     }
 
     @Override
     public URL getURL(int i) throws SQLException {
-        return callableStatement.getURL(i);
+        try {
+            return callableStatement.getURL(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public void setURL(String s, URL url) throws SQLException {
-        callableStatement.setURL(s, url);
+        try {
+            callableStatement.setURL(s, url);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setNull(String s, int i) throws SQLException {
-        callableStatement.setNull(s, i);
+        try {
+            callableStatement.setNull(s, i);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setBoolean(String s, boolean b) throws SQLException {
-        callableStatement.setBoolean(s, b);
+        try {
+            callableStatement.setBoolean(s, b);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setByte(String s, byte b) throws SQLException {
-        callableStatement.setByte(s, b);
+        try {
+            callableStatement.setByte(s, b);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setShort(String s, short i) throws SQLException {
-        callableStatement.setShort(s, i);
+        try {
+            callableStatement.setShort(s, i);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setInt(String s, int i) throws SQLException {
-        callableStatement.setInt(s, i);
+        try {
+            callableStatement.setInt(s, i);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setLong(String s, long l) throws SQLException {
-        callableStatement.setLong(s, l);
+        try {
+            callableStatement.setLong(s, l);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setFloat(String s, float v) throws SQLException {
-        callableStatement.setFloat(s, v);
+        try {
+            callableStatement.setFloat(s, v);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setDouble(String s, double v) throws SQLException {
-        callableStatement.setDouble(s, v);
+        try {
+            callableStatement.setDouble(s, v);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setBigDecimal(String s, BigDecimal bigDecimal) throws SQLException {
-        callableStatement.setBigDecimal(s, bigDecimal);
+        try {
+            callableStatement.setBigDecimal(s, bigDecimal);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setString(String s, String s1) throws SQLException {
-        callableStatement.setString(s, s1);
+        try {
+            callableStatement.setString(s, s1);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setBytes(String s, byte[] bytes) throws SQLException {
-        callableStatement.setBytes(s, bytes);
+        try {
+            callableStatement.setBytes(s, bytes);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setDate(String s, Date date) throws SQLException {
-        callableStatement.setDate(s, date);
+        try {
+            callableStatement.setDate(s, date);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setTime(String s, Time time) throws SQLException {
-        callableStatement.setTime(s, time);
+        try {
+            callableStatement.setTime(s, time);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setTimestamp(String s, Timestamp timestamp) throws SQLException {
-        callableStatement.setTimestamp(s, timestamp);
+        try {
+            callableStatement.setTimestamp(s, timestamp);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setAsciiStream(String s, InputStream inputStream, int i) throws SQLException {
-        callableStatement.setAsciiStream(s, inputStream, i);
+        try {
+            callableStatement.setAsciiStream(s, inputStream, i);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setBinaryStream(String s, InputStream inputStream, int i) throws SQLException {
-        callableStatement.setBinaryStream(s, inputStream, i);
+        try {
+            callableStatement.setBinaryStream(s, inputStream, i);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setObject(String s, Object o, int i, int i1) throws SQLException {
-        callableStatement.setObject(s, o, i, i1);
+        try {
+            callableStatement.setObject(s, o, i, i1);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setObject(String s, Object o, int i) throws SQLException {
-        callableStatement.setObject(s, o, i);
+        try {
+            callableStatement.setObject(s, o, i);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setObject(String s, Object o) throws SQLException {
-        callableStatement.setObject(s, o);
+        try {
+            callableStatement.setObject(s, o);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setCharacterStream(String s, Reader reader, int i) throws SQLException {
-        callableStatement.setCharacterStream(s, reader, i);
+        try {
+            callableStatement.setCharacterStream(s, reader, i);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setDate(String s, Date date, Calendar calendar) throws SQLException {
-        callableStatement.setDate(s, date, calendar);
+        try {
+            callableStatement.setDate(s, date, calendar);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setTime(String s, Time time, Calendar calendar) throws SQLException {
-        callableStatement.setTime(s, time, calendar);
+        try {
+            callableStatement.setTime(s, time, calendar);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setTimestamp(String s, Timestamp timestamp, Calendar calendar) throws SQLException {
-        callableStatement.setTimestamp(s, timestamp, calendar);
+        try {
+            callableStatement.setTimestamp(s, timestamp, calendar);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setNull(String s, int i, String s1) throws SQLException {
-        callableStatement.setNull(s, i, s1);
+        try {
+            callableStatement.setNull(s, i, s1);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public String getString(String s) throws SQLException {
-        return callableStatement.getString(s);
+        try {
+            return callableStatement.getString(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public boolean getBoolean(String s) throws SQLException {
-        return callableStatement.getBoolean(s);
+        try {
+            return callableStatement.getBoolean(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return false;
+        }
     }
 
     @Override
     public byte getByte(String s) throws SQLException {
-        return callableStatement.getByte(s);
+        try {
+            return callableStatement.getByte(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public short getShort(String s) throws SQLException {
-        return callableStatement.getShort(s);
+        try {
+            return callableStatement.getShort(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public int getInt(String s) throws SQLException {
-        return callableStatement.getInt(s);
+        try {
+            return callableStatement.getInt(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public long getLong(String s) throws SQLException {
-        return callableStatement.getLong(s);
+        try {
+            return callableStatement.getLong(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public float getFloat(String s) throws SQLException {
-        return callableStatement.getFloat(s);
+        try {
+            return callableStatement.getFloat(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public double getDouble(String s) throws SQLException {
-        return callableStatement.getDouble(s);
+        try {
+            return callableStatement.getDouble(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return 0;
+        }
     }
 
     @Override
     public byte[] getBytes(String s) throws SQLException {
-        return callableStatement.getBytes(s);
+        try {
+            return callableStatement.getBytes(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Date getDate(String s) throws SQLException {
-        return callableStatement.getDate(s);
+        try {
+            return callableStatement.getDate(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Time getTime(String s) throws SQLException {
-        return callableStatement.getTime(s);
+        try {
+            return callableStatement.getTime(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Timestamp getTimestamp(String s) throws SQLException {
-        return callableStatement.getTimestamp(s);
+        try {
+            return callableStatement.getTimestamp(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Object getObject(String s) throws SQLException {
-        return callableStatement.getObject(s);
+        try {
+            return callableStatement.getObject(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public BigDecimal getBigDecimal(String s) throws SQLException {
-        return callableStatement.getBigDecimal(s);
+        try {
+            return callableStatement.getBigDecimal(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Object getObject(String s, Map<String, Class<?>> map) throws SQLException {
-        return callableStatement.getObject(s, map);
+        try {
+            return callableStatement.getObject(s, map);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Ref getRef(String s) throws SQLException {
-        return callableStatement.getRef(s);
+        try {
+            return callableStatement.getRef(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Blob getBlob(String s) throws SQLException {
-        return callableStatement.getBlob(s);
+        try {
+            return callableStatement.getBlob(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Clob getClob(String s) throws SQLException {
-        return callableStatement.getClob(s);
+        try {
+            return callableStatement.getClob(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Array getArray(String s) throws SQLException {
-        return callableStatement.getArray(s);
+        try {
+            return callableStatement.getArray(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Date getDate(String s, Calendar calendar) throws SQLException {
-        return callableStatement.getDate(s, calendar);
+        try {
+            return callableStatement.getDate(s, calendar);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Time getTime(String s, Calendar calendar) throws SQLException {
-        return callableStatement.getTime(s, calendar);
+        try {
+            return callableStatement.getTime(s, calendar);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Timestamp getTimestamp(String s, Calendar calendar) throws SQLException {
-        return callableStatement.getTimestamp(s, calendar);
+        try {
+            return callableStatement.getTimestamp(s, calendar);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public URL getURL(String s) throws SQLException {
-        return callableStatement.getURL(s);
+        try {
+            return callableStatement.getURL(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public RowId getRowId(int i) throws SQLException {
-        return callableStatement.getRowId(i);
+        try {
+            return callableStatement.getRowId(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public RowId getRowId(String s) throws SQLException {
-        return callableStatement.getRowId(s);
+        try {
+            return callableStatement.getRowId(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public void setRowId(String s, RowId rowId) throws SQLException {
-        callableStatement.setRowId(s, rowId);
+        try {
+            callableStatement.setRowId(s, rowId);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setNString(String s, String s1) throws SQLException {
-        callableStatement.setNString(s, s1);
+        try {
+            callableStatement.setNString(s, s1);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setNCharacterStream(String s, Reader reader, long l) throws SQLException {
-        callableStatement.setNCharacterStream(s, reader, l);
+        try {
+            callableStatement.setNCharacterStream(s, reader, l);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setNClob(String s, NClob nClob) throws SQLException {
-        callableStatement.setNClob(s, nClob);
+        try {
+            callableStatement.setNClob(s, nClob);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setClob(String s, Reader reader, long l) throws SQLException {
-        callableStatement.setClob(s, reader, l);
+        try {
+            callableStatement.setClob(s, reader, l);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setBlob(String s, InputStream inputStream, long l) throws SQLException {
-        callableStatement.setBlob(s, inputStream, l);
+        try {
+            callableStatement.setBlob(s, inputStream, l);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setNClob(String s, Reader reader, long l) throws SQLException {
-        callableStatement.setNClob(s, reader, l);
+        try {
+            callableStatement.setNClob(s, reader, l);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public NClob getNClob(int i) throws SQLException {
-        return callableStatement.getNClob(i);
+        try {
+            return callableStatement.getNClob(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public NClob getNClob(String s) throws SQLException {
-        return callableStatement.getNClob(s);
+        try {
+            return callableStatement.getNClob(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public void setSQLXML(String s, SQLXML sqlxml) throws SQLException {
-        callableStatement.setSQLXML(s, sqlxml);
+        try {
+            callableStatement.setSQLXML(s, sqlxml);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public SQLXML getSQLXML(int i) throws SQLException {
-        return callableStatement.getSQLXML(i);
+        try {
+            return callableStatement.getSQLXML(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public SQLXML getSQLXML(String s) throws SQLException {
-        return callableStatement.getSQLXML(s);
+        try {
+            return callableStatement.getSQLXML(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public String getNString(int i) throws SQLException {
-        return callableStatement.getNString(i);
+        try {
+            return callableStatement.getNString(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public String getNString(String s) throws SQLException {
-        return callableStatement.getNString(s);
+        try {
+            return callableStatement.getNString(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Reader getNCharacterStream(int i) throws SQLException {
-        return callableStatement.getNCharacterStream(i);
+        try {
+            return callableStatement.getNCharacterStream(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Reader getNCharacterStream(String s) throws SQLException {
-        return callableStatement.getNCharacterStream(s);
+        try {
+            return callableStatement.getNCharacterStream(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Reader getCharacterStream(int i) throws SQLException {
-        return callableStatement.getCharacterStream(i);
+        try {
+            return callableStatement.getCharacterStream(i);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public Reader getCharacterStream(String s) throws SQLException {
-        return callableStatement.getCharacterStream(s);
+        try {
+            return callableStatement.getCharacterStream(s);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public void setBlob(String s, Blob blob) throws SQLException {
-        callableStatement.setBlob(s, blob);
+        try {
+            callableStatement.setBlob(s, blob);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setClob(String s, Clob clob) throws SQLException {
-        callableStatement.setClob(s, clob);
+        try {
+            callableStatement.setClob(s, clob);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setAsciiStream(String s, InputStream inputStream, long l) throws SQLException {
-        callableStatement.setAsciiStream(s, inputStream, l);
+        try {
+            callableStatement.setAsciiStream(s, inputStream, l);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setBinaryStream(String s, InputStream inputStream, long l) throws SQLException {
-        callableStatement.setBinaryStream(s, inputStream, l);
+        try {
+            callableStatement.setBinaryStream(s, inputStream, l);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setCharacterStream(String s, Reader reader, long l) throws SQLException {
-        callableStatement.setCharacterStream(s, reader, l);
+        try {
+            callableStatement.setCharacterStream(s, reader, l);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setAsciiStream(String s, InputStream inputStream) throws SQLException {
-        callableStatement.setAsciiStream(s, inputStream);
+        try {
+            callableStatement.setAsciiStream(s, inputStream);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setBinaryStream(String s, InputStream inputStream) throws SQLException {
-        callableStatement.setBinaryStream(s, inputStream);
+        try {
+            callableStatement.setBinaryStream(s, inputStream);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setCharacterStream(String s, Reader reader) throws SQLException {
-        callableStatement.setCharacterStream(s, reader);
+        try {
+            callableStatement.setCharacterStream(s, reader);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setNCharacterStream(String s, Reader reader) throws SQLException {
-        callableStatement.setNCharacterStream(s, reader);
+        try {
+            callableStatement.setNCharacterStream(s, reader);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setClob(String s, Reader reader) throws SQLException {
-        callableStatement.setClob(s, reader);
+        try {
+            callableStatement.setClob(s, reader);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setBlob(String s, InputStream inputStream) throws SQLException {
-        callableStatement.setBlob(s, inputStream);
+        try {
+            callableStatement.setBlob(s, inputStream);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public void setNClob(String s, Reader reader) throws SQLException {
-        callableStatement.setNClob(s, reader);
+        try {
+            callableStatement.setNClob(s, reader);
+        } catch (SQLException e) {
+            handleException(e);
+
+        }
     }
 
     @Override
     public <T> T getObject(int i, Class<T> aClass) throws SQLException {
-        return callableStatement.getObject(i, aClass);
+        try {
+            return callableStatement.getObject(i, aClass);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override
     public <T> T getObject(String s, Class<T> aClass) throws SQLException {
-        return callableStatement.getObject(s, aClass);
+        try {
+            return callableStatement.getObject(s, aClass);
+        } catch (SQLException e) {
+            handleException(e);
+            return null;
+        }
     }
 
     @Override

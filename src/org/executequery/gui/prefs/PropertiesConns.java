@@ -62,6 +62,13 @@ public class PropertiesConns extends AbstractPropertiesBasePanel {
                 bundledString("ConnectAtStartup"),
                 Boolean.valueOf(SystemProperties.getProperty("user", key))));
 
+        key = "connection.shutdown.timeout";
+        list.add(new UserPreference(
+                UserPreference.INTEGER_TYPE,
+                key,
+                bundledString("Connection.shutdown.timeout"),
+                Integer.valueOf(SystemProperties.getProperty("user", key))));
+
         key = "startup.connection.name";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,

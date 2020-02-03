@@ -20,9 +20,17 @@
 
 package org.executequery.datasource;
 
+import biz.redsoft.IFBDatabasePerformance;
+import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.ConnectionMediator;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.log.Log;
+import org.underworldlabs.util.DynamicLibraryLoader;
+import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.*;
 import java.sql.*;
+import java.util.Timer;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Semaphore;
@@ -65,17 +73,25 @@ public class PooledConnection implements Connection {
      * the real JDBC connection that this object wraps
      */
     private Connection realConnection;
+    private DatabaseConnection databaseConnection;
 
     private List<PooledConnectionListener> listeners;
+
+    private Timer timer;
+    private Timer timerDelay;
+    private TimerTask task;
+    private int timeoutShutdown;
+
 
     /**
      * Creates a new PooledConnection object with the
      * specified connection as the source.
      *
      * @param realConnection real java.sql.Connection
+     *
      */
-    public PooledConnection(Connection realConnection) {
-        this(realConnection, false);
+    public PooledConnection(Connection realConnection, DatabaseConnection databaseConnection) {
+        this(realConnection, databaseConnection, false);
     }
 
     /**
@@ -84,13 +100,22 @@ public class PooledConnection implements Connection {
      *
      * @param realConnection real java.sql.Connection
      */
-    public PooledConnection(Connection realConnection, boolean closeOnReturn) {
-
+    public PooledConnection(Connection realConnection, DatabaseConnection databaseConnection, boolean closeOnReturn) {
+        this.databaseConnection = databaseConnection;
         mutex = new Semaphore(1);
         useCount = 0;
+        timeoutShutdown = SystemProperties.getIntProperty("user", "connection.shutdown.timeout");
         this.realConnection = realConnection;
         this.closeOnReturn = closeOnReturn;
-
+        timer = new Timer();
+        timerDelay = new Timer();
+        task = new TimerTask() {
+            @Override
+            public void run() {
+                checkConnectionToServer();
+            }
+        };
+        timer.schedule(task, timeoutShutdown);
         try {
 
             originalAutoCommit = realConnection.getAutoCommit();
@@ -105,6 +130,10 @@ public class PooledConnection implements Connection {
 
     public String getId() {
         return id;
+    }
+
+    public DatabaseConnection getDatabaseConnection() {
+        return databaseConnection;
     }
 
     public void addPooledConnectionListener(PooledConnectionListener pooledConnectionListener) {
@@ -217,7 +246,43 @@ public class PooledConnection implements Connection {
     }
 
     protected void handleException(SQLException e) throws SQLException {
+        checkConnectionToServer();
         throw e;
+    }
+
+    public void checkConnectionToServer()
+    {
+        try {
+            IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(realConnection, "FBDatabasePerformanceImpl");
+            db.setConnection(realConnection);
+            TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    if (databaseConnection.isConnected()) {
+                        if (GUIUtilities.displayConfirmDialog("The server is not responding. do you want to close the connection?") == JOptionPane.OK_OPTION) {
+                            closeDatabaseConnection();
+                            timerDelay.cancel();
+                        }
+                    } else
+                        timerDelay.cancel();
+                }
+            };
+            timerDelay = new Timer();
+            timerDelay.schedule(task, timeoutShutdown);
+            db.getPerformanceInfo();
+            timerDelay.cancel();
+        } catch (SQLException e)
+        {
+            if (databaseConnection.isConnected())
+                closeDatabaseConnection();
+            timerDelay.cancel();
+        } catch (ClassNotFoundException e) {
+            if (databaseConnection.isConnected())
+                if (GUIUtilities.displayConfirmDialog("The server is not responding. do you want to close the connection?") == JOptionPane.OK_OPTION) {
+                    closeDatabaseConnection();
+                }
+            timerDelay.cancel();
+        }
     }
 
     public Statement createStatement() throws SQLException {
@@ -230,7 +295,8 @@ public class PooledConnection implements Connection {
         } catch (SQLException e) {
             if (statement == null)
                 lock(false);
-            throw e;
+            handleException(e);
+            return null;
         }
 
     }
@@ -246,7 +312,8 @@ public class PooledConnection implements Connection {
         } catch (SQLException e) {
             if (statement == null)
                 lock(false);
-            throw e;
+            handleException(e);
+            return null;
         }
     }
 
@@ -260,7 +327,8 @@ public class PooledConnection implements Connection {
         } catch (SQLException e) {
             if (statement == null)
                 lock(false);
-            throw e;
+            handleException(e);
+            return null;
         }
     }
 
@@ -277,7 +345,8 @@ public class PooledConnection implements Connection {
         } catch (SQLException e) {
             if (statement == null)
                 lock(false);
-            throw e;
+            handleException(e);
+            return null;
         }
     }
 
@@ -291,7 +360,8 @@ public class PooledConnection implements Connection {
         } catch (SQLException e) {
             if (statement == null)
                 lock(false);
-            throw e;
+            handleException(e);
+            return null;
         }
     }
 
@@ -308,7 +378,8 @@ public class PooledConnection implements Connection {
         } catch (SQLException e) {
             if (statement == null)
                 lock(false);
-            throw e;
+            handleException(e);
+            return null;
         }
     }
 
@@ -472,6 +543,18 @@ public class PooledConnection implements Connection {
         if (realConnection == null) {
             throw new SQLException("Connection is closed.");
         }
+        /*try {
+            realConnection.createStatement().executeQuery("SELECT * FROM RDB$DATABASE");
+        } catch (SQLException e){
+            GUIUtilities.displayErrorMessage("lost connection to server");
+            ConnectionMediator.getInstance().disconnect(databaseConnection);
+        }*/
+    }
+
+    public void closeDatabaseConnection() {
+        GUIUtilities.displayErrorMessage("lost connection to server");
+        ConnectionMediator.getInstance().disconnect(databaseConnection);
+        timer.cancel();
     }
 
     public int getHoldability() throws SQLException {
@@ -588,7 +671,7 @@ public class PooledConnection implements Connection {
         }
     }
 
-    public PreparedStatement prepareStatement(String sql, int columnIndexes[]) throws SQLException {
+    public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
         checkOpen();
         try {
             lock(true);
@@ -600,7 +683,7 @@ public class PooledConnection implements Connection {
         }
     }
 
-    public PreparedStatement prepareStatement(String sql, String columnNames[]) throws SQLException {
+    public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
         checkOpen();
         try {
             lock(true);
@@ -838,7 +921,8 @@ public class PooledConnection implements Connection {
             pooledStatement.setIndividual(true);
             return pooledStatement;
         } catch (SQLException e) {
-            throw e;
+            handleException(e);
+            return null;
         }
     }
 }

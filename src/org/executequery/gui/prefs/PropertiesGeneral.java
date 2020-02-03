@@ -21,7 +21,6 @@
 package org.executequery.gui.prefs;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.Constants;
 import org.executequery.gui.text.LineSeparator;
 import org.underworldlabs.util.SystemProperties;
 
@@ -115,28 +114,6 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledString("CheckMajorVersions"),
-                Boolean.valueOf(stringUserProperty(key))));
-
-        key = "system.log.level";
-        list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
-                key,
-                bundledString("OutputLogLevel"),
-                stringUserProperty(key),
-                Constants.LOG_LEVELS));
-
-        key = "system.log.out";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("LogOutToConsole"),
-                Boolean.valueOf(stringUserProperty(key))));
-
-        key = "system.log.err";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("LogErrToConsole"),
                 Boolean.valueOf(stringUserProperty(key))));
 
         key = "system.file.encoding";

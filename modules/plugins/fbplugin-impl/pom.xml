@@ -34,13 +34,13 @@
     </dependency>
     <dependency>
       <groupId>ru.red-soft.jdbc</groupId>
-      <artifactId>jaybird-full-jdk18</artifactId>
-      <version>3.0.7-SNAPSHOT.26</version>
+      <artifactId>jaybird-jdk18</artifactId>
+      <version>3.0.9</version>
     </dependency>
     <dependency>
       <groupId>ru.red-soft.jdbc</groupId>
       <artifactId>jaybird-cryptoapi-jdk18</artifactId>
-      <version>3.0.7-SNAPSHOT.26</version>
+      <version>3.0.9</version>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
@@ -87,7 +87,7 @@
               <artifactItems>
                 <artifactItem>
                   <groupId>ru.red-soft.jdbc</groupId>
-                  <artifactId>jaybird-full-jdk18</artifactId>
+                  <artifactId>jaybird-jdk18</artifactId>
                   <type>jar</type>
                   <outputDirectory>../../../lib</outputDirectory>
                   <destFileName>jaybird-full.jar</destFileName>
@@ -111,7 +111,7 @@
               <artifactItems>
                 <artifactItem>
                   <groupId>ru.red-soft.jdbc</groupId>
-                  <artifactId>jaybird-full-jdk18</artifactId>
+                  <artifactId>jaybird-jdk18</artifactId>
                   <type>jar</type>
                   <outputDirectory>../../redexpert/target/lib</outputDirectory>
                   <destFileName>jaybird-full.jar</destFileName>

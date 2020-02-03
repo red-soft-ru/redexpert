@@ -51,7 +51,8 @@ public class QueryTokenizer {
 
     private static final String QUOTE_REGEX = "'((\\?>[^']*\\+)(\\?>'{2}[^']*\\+)*\\+)'|'.*'";//"'((?>[^']*+)(?>'{2}[^']*+)*+)'|'.*";
 
-    private static final String MULTILINE_COMMENT_REGEX = "/\\*(?:.|[\\n\\r])*?\\*/|/\\*.*";
+    private static final String MULTILINE_COMMENT_REGEX = "/\\*.*?\\*/";
+    //                                                    "/\\*(?:.|[\\n\\r])*?\\*/|/\\*.*";
 //                                                        "/\\*((?>[^\\*/]*+)*+)\\*/|/\\*.*";
 
     public QueryTokenizer() {
@@ -95,6 +96,15 @@ public class QueryTokenizer {
         }
 
         return derivedQueries;
+    }
+
+    public QueryTokenized tokenizeFirstQuery(String query,String lowQuery,int startQueryIndex, String delimiter) {
+
+        QueryTokenized fquery = firstQuery(query,delimiter,startQueryIndex,lowQuery);
+        String noCommentsQuery = removeAllCommentsFromQuery(fquery.query.getOriginalQuery());
+        fquery.query.setDerivedQuery(noCommentsQuery.trim());
+
+        return fquery;
     }
 
     private String removeAllCommentsFromQuery(String query) {
@@ -162,6 +172,54 @@ public class QueryTokenizer {
         return queries;
     }
 
+    private QueryTokenized firstQuery(String query, String delimiter, int startIndexQuery, String lowQuery) {
+
+        int index = 0;
+        int lastIndex = 0;
+
+
+        if (lowQuery.startsWith("create")) {
+            return new QueryTokenized(new DerivedQuery(query), "", "", startIndexQuery + query.length(), delimiter);
+        }
+        index = query.indexOf(delimiter);
+        boolean cycleContinue = true;
+
+        while ((index != -1)&&cycleContinue) {
+            cycleContinue=false;
+
+            if (Thread.interrupted()) {
+
+                throw new InterruptedException();
+            }
+
+            if (notInAnyToken(index + startIndexQuery)) {
+
+                String substring = query.substring(lastIndex, index);
+
+                // if substring includes a set term command
+                Pattern p = Pattern.compile("Set(\\s+)term(\\s+)", Pattern.CASE_INSENSITIVE);
+
+                Matcher m = p.matcher(substring);
+
+                if (m.find()) {
+                    delimiter = substring.substring(m.end(), substring.length()).trim();
+                    lastIndex = index + (substring.length() - m.end());
+                    return new QueryTokenized(null, query.substring(lastIndex),lowQuery.substring(lastIndex),startIndexQuery+lastIndex, delimiter);
+                }
+                lastIndex = index + delimiter.length();/*1;*/
+                return new QueryTokenized(new DerivedQuery(substring), query.substring(lastIndex),lowQuery.substring(lastIndex), startIndexQuery+lastIndex, delimiter);
+            } else {
+                cycleContinue = true;
+                index = query.indexOf(delimiter,index+1);
+            }
+
+        }
+        return new QueryTokenized(new DerivedQuery(query), "","",lastIndex+startIndexQuery, delimiter);
+    }
+
+
+
+
     private boolean notInAnyToken(int index) {
 
         return !(withinMultiLineComment(index, index))
@@ -179,15 +237,25 @@ public class QueryTokenizer {
         addTokensForMatcherWhenNotInString(multiLineCommentMatcher, query, multiLineCommentTokens);
     }
 
+    public void extractTokens(String query)
+    {
+        extractQuotedStringTokens(query);
+        extractSingleLineCommentTokens(query);
+        extractMultiLineCommentTokens(query);
+    }
+
     private void addTokensForMatcherWhenNotInString(Matcher matcher, String query, List<Token> tokens) {
 
         tokens.clear();
         matcher.reset(query);
+        int startIndex=0;
 
         while (matcher.find()) {
-
-            int start = matcher.start();
+            int start = matcher.start()+startIndex;
             int end = matcher.end();
+            query = query.substring(end);
+            end = end+startIndex;
+            startIndex = end;
 
             int endOffset = end;
 
@@ -200,6 +268,7 @@ public class QueryTokenizer {
 
                 tokens.add(new Token(TokenTypes.COMMENT, start, end));
             }
+            matcher.reset(query);
 
         }
 
@@ -286,6 +355,22 @@ public class QueryTokenizer {
                     stringMatcher.start(), stringMatcher.end()));
         }
 
+    }
+    public class QueryTokenized
+    {
+        public DerivedQuery query;
+        public String script;
+        public String lowScript;
+        public int startIndex;
+        public String delimiter;
+
+        public QueryTokenized(DerivedQuery query, String script, String lowScript, int startIndex, String delimiter) {
+            this.query = query;
+            this.script = script;
+            this.lowScript = lowScript;
+            this.startIndex = startIndex;
+            this.delimiter = delimiter;
+        }
     }
 
 }

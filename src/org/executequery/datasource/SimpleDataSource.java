@@ -31,16 +31,12 @@ import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
-import org.underworldlabs.util.SystemProperties;
 
 import javax.resource.ResourceException;
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.Iterator;
 import java.util.Map;
@@ -133,6 +129,11 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                             cryptoPlugin.init();
 
                         } catch (Exception e) {
+                            Log.warning("Unable to initialize cryptographic plugin. " +
+                                    "Authentication using cryptographic mechanisms will not be available. " +
+                                    "Please install the crypto pro library to enable cryptographic modules.");
+                            advancedProperties.put("excludeCryptoPlugins", "Multifactor,GostPassword,Certificate");
+                        } catch (UnsatisfiedLinkError e) {
                             Log.warning("Unable to initialize cryptographic plugin. " +
                                     "Authentication using cryptographic mechanisms will not be available. " +
                                     "Please install the crypto pro library to enable cryptographic modules.");

@@ -31,12 +31,12 @@ import org.executequery.databaseobjects.DatabaseObjectFactory;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.event.*;
-import org.executequery.gui.AbstractDockedTabActionPanel;
 import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
 import org.executequery.gui.browser.tree.SchemaTree;
+import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.repository.ConnectionFoldersRepository;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -63,10 +63,10 @@ import java.util.List;
 /**
  * @author Takis Diakoumis
  */
-public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
-    implements ConnectionListener,
-    ConnectionRepositoryListener,
-    UserPreferenceListener {
+public class ConnectionsTreePanel extends TreePanel
+        implements ConnectionListener,
+        ConnectionRepositoryListener,
+        UserPreferenceListener {
 
   public static final String TITLE = Bundles.get(ConnectionsTreePanel.class, "Connections");
 
@@ -1950,21 +1950,7 @@ public class ConnectionsTreePanel extends AbstractDockedTabActionPanel
 
 //    private boolean shouldChangeView = true;
 
-  public void schemaTreeMouseEvent(MouseEvent e) {
 
-        /*
-
-        shouldChangeView = true;
-        int clickCount = e.getClickCount();
-
-        System.out.println("schemaTreeMouseEvent clicks : " + clickCount);
-
-        if (clickCount >= 2 && doubleClickHostToConnect()) {
-
-            shouldChangeView = false;
-        }
-        */
-  }
 
   public void connectionNameChanged(String name) {
 

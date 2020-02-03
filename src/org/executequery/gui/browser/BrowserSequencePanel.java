@@ -22,6 +22,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
     public static final String NAME = "BrowserSequencePanel";
 
+    private DependenciesPanel dependenciesPanel;
     private DisabledField sequenceNameField;
 
     private JLabel objectNameLabel;
@@ -52,6 +53,8 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
     }
 
     private void init() {
+
+        dependenciesPanel = new DependenciesPanel();
 
         JPanel panel = new JPanel();
 
@@ -93,6 +96,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         sqlPanel.add(sqlPane, BorderLayout.CENTER);
 
         tabs.add("Sql", sqlPanel);
+        tabs.add(Bundles.getCommon("dependencies"), dependenciesPanel);
 
         objectNameLabel = new JLabel();
         sequenceNameField = new DisabledField();
@@ -151,7 +155,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
     }
 
     public void setValues(DefaultDatabaseSequence sequence) {
-
+        dependenciesPanel.setDatabaseObject(sequence);
         objectNameLabel.setText(bundleString("SequenceName"));
         setHeaderText(bundleString("DatabaseSequence"));
         setHeaderIcon(GUIUtilities.loadIcon("Sequence16.png", true));

@@ -26,6 +26,8 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
 
     public static final String NAME = "BrowserFunctionPanel";
 
+    private DependenciesPanel dependenciesPanel;
+
     private DisabledField funcNameField;
     //private DisabledField schemaNameField;
 
@@ -58,6 +60,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
 
     private void init() {
         model = new BrowserFunctionPanel.FunctionTableModel();
+        dependenciesPanel = new DependenciesPanel();
         table = new DefaultTable(model);
         table.getTableHeader().setReorderingAllowed(false);
         table.setCellSelectionEnabled(true);
@@ -96,6 +99,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
         sqlPanel.add(new JScrollPane(createSqlPane), BorderLayout.CENTER);
 
         tabs.add("Sql", sqlPanel);
+        tabs.add(Bundles.getCommon("dependencies"), dependenciesPanel);
 
 
 //        tabs.add("Source", sourcePanel);
@@ -172,7 +176,7 @@ public class BrowserFunctionPanel extends AbstractFormObjectViewPanel {
     }
 
     public void setValues(DefaultDatabaseFunction defaultDatabaseFunction) {
-
+        dependenciesPanel.setDatabaseObject(defaultDatabaseFunction);
         objectNameLabel.setText(bundleString("function-name"));
         setHeaderText(bundleString("function"));
         setHeaderIcon(GUIUtilities.loadIcon("Function24.png", true));

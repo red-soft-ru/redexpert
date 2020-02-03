@@ -45,6 +45,8 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
 
     private JTextPane sqlPane;
 
+    private DependenciesPanel dependenciesPanel;
+
     private Map cache;
 
     /**
@@ -66,7 +68,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
 
     private void init() {
         JPanel descPanel = new JPanel(new GridBagLayout());
-
+        dependenciesPanel = new DependenciesPanel();
         idField = new JTextField();
 
         exceptionTextPane = new JTextPane();
@@ -112,6 +114,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
         sqlPanel.add(sqlPane, BorderLayout.CENTER);
 
         tabPane.add("Sql", sqlPanel);
+        tabPane.add(Bundles.getCommon("dependencies"), dependenciesPanel);
 
         objectNameLabel = new JLabel();
         exceptionNameField = new DisabledField();
@@ -171,7 +174,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
     public void setValues(DefaultDatabaseException exception) {
 
         currentObjectView = exception;
-
+        dependenciesPanel.setDatabaseObject(currentObjectView);
         objectNameLabel.setText(bundleString("ExceptionName"));
         setHeaderText(bundleString("DatabaseException"));
         setHeaderIcon(GUIUtilities.loadIcon("exception16.png", true));

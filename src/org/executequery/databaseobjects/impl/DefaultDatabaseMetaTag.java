@@ -177,8 +177,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 children = loadTriggers();
 
             } else if (isSequence()) {
-                if (typeTree != TreePanel.DEFAULT)
-                    return new ArrayList<>();
                 children = loadSequences();
 
             } else if (isDomain()) {
@@ -1093,7 +1091,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
                         rs.getString(1).trim());
-                trigger.setTriggerActive(rs.getInt(2) != 1);
+                if (typeTree == TreePanel.DEFAULT)
+                    trigger.setTriggerActive(rs.getInt(2) != 1);
                 list.add(trigger);
             }
 
@@ -1505,10 +1504,14 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
+        String query = "select rdb$generator_name from rdb$generators where rdb$system_flag is distinct from 1\n" +
+                "     order by  rdb$generator_name";
+        if (typeTree == TreePanel.DEPENDED_ON)
+            query = getDependOnQuery(14);
+        else if (typeTree == TreePanel.DEPENDENT)
+            query = getDependentQuery(14);
 
-        ResultSet resultSet = statement.executeQuery(
-                "select rdb$generator_name from rdb$generators where rdb$system_flag is distinct from 1\n" +
-                        "     order by  rdb$generator_name");
+        ResultSet resultSet = statement.executeQuery(query);
 
         return resultSet;
     }
@@ -1982,6 +1985,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             list.add(9);
         if (databaseObject instanceof DefaultDatabaseIndex)
             list.add(10);
+        if (databaseObject instanceof DefaultDatabaseSequence)
+            list.add(14);
         if (databaseObject instanceof DefaultDatabaseFunction)
             list.add(15);
         if (databaseObject instanceof DefaultDatabasePackage) {
@@ -2009,7 +2014,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "(B.RDB$CONST_NAME_UQ=C.RDB$CONSTRAINT_NAME) and (C.RDB$INDEX_NAME=D.RDB$INDEX_NAME) and\n" +
                 "(A.RDB$INDEX_NAME=E.RDB$INDEX_NAME) and\n" +
                 "(A.RDB$INDEX_NAME=I.RDB$INDEX_NAME)\n" +
-                "and (A.RDB$RELATION_NAME = 'EMPLOYEE')\n" +
+                "and (A.RDB$RELATION_NAME = '" + dependedObject.getName() + "')\n" +
                 "union all\n";
         String condition = "";
         if (version > 2)
@@ -2030,7 +2035,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             comparing += union + " (t1.RDB$DEPENDENT_TYPE = " + list.get(i) + ")\n";
         }
         comparing += ")";
-        query = "select t1.RDB$DEPENDED_ON_NAME, cast(t1.RDB$FIELD_NAME as varchar(64)), CAST(T1.RDB$DEPENDED_ON_TYPE AS INTEGER)\n" +
+        query = "select distinct t1.RDB$DEPENDED_ON_NAME, null, CAST(T1.RDB$DEPENDED_ON_TYPE AS INTEGER)\n" +
                 "from RDB$DEPENDENCIES t1 where (t1.RDB$DEPENDENT_NAME = '" + dependedObject.getName() + "')\n" +
                 comparing +
                 condition +
@@ -2062,7 +2067,16 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "left join rdb$relations r2 on ((f2.rdb$relation_name = r2.rdb$relation_name) and (not (r2.Rdb$View_Blr is null)))\n" +
                 "where (d2.rdb$dependent_type = 3) and\n" +
                 "(d2.rdb$dependent_name = f2.rdb$field_source)\n" +
-                "and (d2.rdb$depended_on_name = '" + dependedObject.getName() + "')\n";
+                "and (d2.rdb$depended_on_name = '" + dependedObject.getName() + "')\n" +
+                "union all\n" +
+                "select distinct A.RDB$RELATION_NAME\n" +
+                "from RDB$REF_CONSTRAINTS B, RDB$RELATION_CONSTRAINTS A, RDB$RELATION_CONSTRAINTS C,\n" +
+                "RDB$INDEX_SEGMENTS D, RDB$INDEX_SEGMENTS E\n" +
+                "where (A.RDB$CONSTRAINT_TYPE = 'FOREIGN KEY') and\n" +
+                "(A.RDB$CONSTRAINT_NAME = B.RDB$CONSTRAINT_NAME) and\n" +
+                "(B.RDB$CONST_NAME_UQ=C.RDB$CONSTRAINT_NAME) and (C.RDB$INDEX_NAME=D.RDB$INDEX_NAME) and\n" +
+                "(A.RDB$INDEX_NAME=E.RDB$INDEX_NAME)\n" +
+                "and (C.RDB$RELATION_NAME = '" + dependedObject.getName() + "')\n";
         String comparing = "";
         for (int i = 0; i < list.size(); i++) {
             String union = "or";

@@ -28,6 +28,8 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
     public static final String NAME = "BrowserIndexPanel";
 
+    private DependenciesPanel dependenciesPanel;
+
     private DisabledField indexNameField;
 
     private JLabel objectNameLabel;
@@ -77,7 +79,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
     private void init() {
         JPanel fieldsPanel = new JPanel(new GridBagLayout());
-
+        dependenciesPanel = new DependenciesPanel();
         model = new DefaultDatabaseIndex.IndexColumnsModel(columns);
         table = new JTable(model);
 
@@ -99,6 +101,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
         descriptionPanel.add(descriptionPane, BorderLayout.CENTER);
 
         tabPane.add(Bundles.getCommon("description"), descriptionPanel);
+        tabPane.add(Bundles.getCommon("dependencies"), dependenciesPanel);
 
         objectNameLabel = new JLabel();
         indexNameField = new DisabledField();
@@ -210,7 +213,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
     }
 
     public void setValues(DefaultDatabaseIndex index) {
-
+        dependenciesPanel.setDatabaseObject(index);
         if (index.getParent().getMetaDataKey() != NamedObject.META_TYPES[NamedObject.SYSTEM_INDEX]) {
             DefaultDatabaseMetaTag metaTag = (DefaultDatabaseMetaTag) index.getParent();
             currentObjectView = metaTag.getIndexFromName(index.getName());

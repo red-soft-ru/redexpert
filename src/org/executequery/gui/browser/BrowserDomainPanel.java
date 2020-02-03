@@ -53,6 +53,8 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
 
     private JTextPane sqlPane;
 
+    private DependenciesPanel dependenciesPanel;
+
     private Map cache;
 
     /**
@@ -82,6 +84,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
                         GridBagConstraints.BOTH,
                         new Insets(2, 2, 2, 2), 0, 0));
 
+        dependenciesPanel = new DependenciesPanel();
         tabPane = new JTabbedPane(JTabbedPane.TOP);
         tabPane.add(bundleString("Domain"), descPanel);
         JPanel descriptionPanel = new JPanel(new BorderLayout());
@@ -106,6 +109,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel = new JLabel();
         domainNameField = new DisabledField();
+        tabPane.add(Bundles.getCommon("dependencies"), dependenciesPanel);
 
         tableDescriptionTable.addMouseListener(new MouseListener() {
             @Override
@@ -206,7 +210,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
 
         currentObjectView = domain;
         currentObjectView.setHost(((DatabaseMetaTag) domain.getParent()).getHost());
-
+        dependenciesPanel.setDatabaseObject(currentObjectView);
         objectNameLabel.setText(bundleString("DomainName"));
         setHeaderText(bundleString("DatabaseDomain"));
         setHeaderIcon(GUIUtilities.loadIcon("domain16.png", true));

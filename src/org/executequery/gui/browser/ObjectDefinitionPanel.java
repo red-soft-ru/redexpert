@@ -66,6 +66,8 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
     public static final String NAME = "ObjectDefinitionPanel";
 
+    private DependenciesPanel dependenciesPanel;
+
     /**
      * The table data display
      */
@@ -151,6 +153,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
     private void jbInit() {
 
+        dependenciesPanel = new DependenciesPanel();
         noResultsLabel = new JLabel("No information for this object is available.",
                 JLabel.CENTER);
 
@@ -221,6 +224,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         tabPane.add(Bundles.getCommon("data"), tableDataPanel);
         tabPane.add(Bundles.getCommon("SQL"), sqlPanel);
         tabPane.add(Bundles.getCommon("metadata"), metaDataPanel);
+        tabPane.add(Bundles.getCommon("dependencies"), dependenciesPanel);
 
         // add the tab pane
         gbc.gridy = 2;
@@ -451,8 +455,11 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         // header values
         if (object.getType() == NamedObject.VIEW) {
             setHeaderText(bundleString("DatabaseView"));
-        } else
+            dependenciesPanel.setDatabaseObject(object);
+        } else {
             setHeaderText("Database " + MiscUtils.firstLetterToUpper(object.getMetaDataKey()));
+            tabPane.remove(dependenciesPanel);
+        }
         tableNameField.setText(object.getName());
         //schemaNameField.setText(object.getSchemaName());
 

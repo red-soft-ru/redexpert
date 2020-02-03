@@ -394,7 +394,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         tabPane.add(Bundles.getCommon("data"), tableDataPanel);
         tabPane.add(Bundles.getCommon("SQL"), splitPane);
         tabPane.add(Bundles.getCommon("metadata"), metaDataPanel);
-        tabPane.add("Dependencies", dependenciesPanel);
+        tabPane.add(Bundles.getCommon("dependencies"), dependenciesPanel);
         //dependenciesPanel.load();
 
         tabPane.addChangeListener(this);

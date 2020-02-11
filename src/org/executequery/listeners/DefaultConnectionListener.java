@@ -34,6 +34,7 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.SystemProperties;
 
+import javax.swing.tree.TreeNode;
 import java.util.Enumeration;
 
 public class DefaultConnectionListener implements ConnectionListener {
@@ -79,9 +80,9 @@ public class DefaultConnectionListener implements ConnectionListener {
 
     void populate(DatabaseObjectNode root) {
         root.populateChildren();
-        Enumeration<DatabaseObjectNode> nodes = root.children();
+        Enumeration<TreeNode> nodes = root.children();
         while (nodes.hasMoreElements()) {
-            DatabaseObjectNode node = nodes.nextElement();
+            DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
             if (!searchInCols) {
                 if (node.getType() != NamedObject.SYSTEM_TABLE && node.getType() != NamedObject.TABLE && node.getType() != NamedObject.VIEW)
                     populate(node);

@@ -30,6 +30,7 @@ import org.underworldlabs.util.SystemProperties;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.text.Position;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.util.ArrayList;
@@ -129,9 +130,9 @@ public class TreeFindAction extends FindAction<TreePath> {
     private void findOnTree(TreePath path, List<TreePath> matchedPaths, Matcher matcher) {
         DatabaseObjectNode root = (DatabaseObjectNode) path.getLastPathComponent();
         root.populateChildren();
-        Enumeration<DatabaseObjectNode> nodes = root.children();
+        Enumeration<TreeNode> nodes = root.children();
         while (nodes.hasMoreElements()) {
-            DatabaseObjectNode node = nodes.nextElement();
+            DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
             String text = node.getName().trim();
             if (ignoreCase()) {
 

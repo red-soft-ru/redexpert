@@ -34,6 +34,7 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.resource.ResourceException;
 import javax.sql.DataSource;
+import javax.swing.tree.TreeNode;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -97,9 +98,9 @@ public final class ConnectionManager {
 
     public static void loadTree(DatabaseObjectNode root) {
         root.populateChildren();
-        Enumeration<DatabaseObjectNode> nodes = root.children();
+        Enumeration<TreeNode> nodes = root.children();
         while (nodes.hasMoreElements()) {
-            DatabaseObjectNode node = nodes.nextElement();
+            DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
             if (node.isHostNode() || node.getType() == NamedObject.META_TAG)
                 loadTree(node);
         }

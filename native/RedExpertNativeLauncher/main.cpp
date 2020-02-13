@@ -519,7 +519,12 @@ std::vector<std::string> get_potential_libjvm_paths()
     search_suffixes.push_back("");
     search_suffixes.push_back("/lib/amd64/server");
     search_suffixes.push_back("/jre/lib/amd64/server");
+    search_suffixes.push_back("/lib/amd64/client");
+    search_suffixes.push_back("/jre/lib/amd64/client");
     search_suffixes.push_back("jre/lib/amd64");
+    search_suffixes.push_back("/lib/server");
+    search_suffixes.push_back("/lib/client");
+
 
     file_name = "libjvm.so";
 #endif

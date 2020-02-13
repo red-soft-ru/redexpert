@@ -447,6 +447,7 @@ public class ResultSetTable extends JTable implements StandardTable {
         RecordDataItem value = (RecordDataItem) getValueAt(row, column);
         if (isComboColumn(column)) {
             JComboBox comboBox = new JComboBox(((JComboBox) ((DefaultCellEditor) columnModel.getComboColumn(column).getCellEditor()).getComponent()).getModel());
+            comboBox.setEditable(true);
             if (value.getValue() == null)
                 comboBox.setSelectedIndex(0);
             else

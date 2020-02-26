@@ -2,17 +2,21 @@ package org.executequery.gui.browser.generatortestdata.methodspanels;
 
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.gui.text.SimpleTextArea;
+import org.underworldlabs.swing.EQTimePicker;
 import org.underworldlabs.swing.NumberTextField;
 
 import javax.swing.*;
 import java.awt.*;
 import java.math.BigInteger;
+import java.time.LocalTime;
 import java.util.Random;
 
 public class RandomMethodPanel extends AbstractMethodPanel {
     private JPanel settingsPanel;
     private JTextField maxField;
     private JTextField minField;
+    private EQTimePicker minTime;
+    private EQTimePicker maxTime;
     private NumberTextField countSymbolsAfterComma;
     private JCheckBox useOnlyThisSymbolsBox;
     private SimpleTextArea useOnlyThisSymbolsField;
@@ -85,6 +89,22 @@ public class RandomMethodPanel extends AbstractMethodPanel {
                         GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
             }
 
+        }
+        if (col.getFormattedDataType().contentEquals("TIME")) {
+            minTime = new EQTimePicker();
+            minTime.setTime(LocalTime.MIN);
+            maxTime = new EQTimePicker();
+            maxTime.setTime(LocalTime.MAX);
+            JLabel label = new JLabel("Min");
+            settingsPanel.add(label, new GridBagConstraints(0, 0, 1, 1, 0, 0,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+            settingsPanel.add(minTime, new GridBagConstraints(1, 0, 1, 1, 1, 0,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+            label = new JLabel("Max");
+            settingsPanel.add(label, new GridBagConstraints(2, 0, 1, 1, 0, 0,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 20, 5, 5), 0, 0));
+            settingsPanel.add(maxTime, new GridBagConstraints(3, 0, 1, 1, 1, 0,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
         }
         if (col.getFormattedDataType().contains("CHAR")) {
             maxField = new NumberTextField();
@@ -179,6 +199,22 @@ public class RandomMethodPanel extends AbstractMethodPanel {
                 bigint = min.add(bigint.mod(diapason));
             }
             return bigint;
+        }
+        if (col.getFormattedDataType().contentEquals("TIME")) {
+            minTime = new EQTimePicker();
+            minTime.setTime(LocalTime.MIN);
+            maxTime = new EQTimePicker();
+            maxTime.setTime(LocalTime.MAX);
+            JLabel label = new JLabel("Min");
+            settingsPanel.add(label, new GridBagConstraints(0, 0, 1, 1, 0, 0,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+            settingsPanel.add(minTime, new GridBagConstraints(1, 0, 1, 1, 1, 0,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+            label = new JLabel("Max");
+            settingsPanel.add(label, new GridBagConstraints(2, 0, 1, 1, 0, 0,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 20, 5, 5), 0, 0));
+            settingsPanel.add(maxTime, new GridBagConstraints(3, 0, 1, 1, 1, 0,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
         }
         if (col.getFormattedDataType().contentEquals("INTEGER") || col.getFormattedDataType().contentEquals("SMALLINT")) {
             int value = new Random().nextInt();

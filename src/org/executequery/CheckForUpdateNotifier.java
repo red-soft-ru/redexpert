@@ -165,7 +165,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         if (checkmajor && !MiscUtils.isNull(SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "branch.next.major.version")))
             branch = SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "branch.next.major.version");
         else branch = SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "branch");
-        url = "http://builds.red-soft.biz/api/builds/latest/?project=red_expert&branch=" + branch;
+        url = "http://builds.red-soft.biz/api/v1/builds/latest/?project=red_expert&branch=" + branch;
         if (unstable)
             url += "&stage=0";
         else

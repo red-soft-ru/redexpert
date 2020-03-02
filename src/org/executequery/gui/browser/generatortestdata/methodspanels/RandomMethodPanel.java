@@ -1,14 +1,22 @@
 package org.executequery.gui.browser.generatortestdata.methodspanels;
 
+import com.github.lgooddatepicker.components.DatePicker;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.gui.text.SimpleTextArea;
+import org.underworldlabs.swing.EQDateTimePicker;
 import org.underworldlabs.swing.EQTimePicker;
 import org.underworldlabs.swing.NumberTextField;
 
 import javax.swing.*;
 import java.awt.*;
 import java.math.BigInteger;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Random;
 
 public class RandomMethodPanel extends AbstractMethodPanel {
@@ -17,6 +25,10 @@ public class RandomMethodPanel extends AbstractMethodPanel {
     private JTextField minField;
     private EQTimePicker minTime;
     private EQTimePicker maxTime;
+    private EQDateTimePicker minDateTime;
+    private EQDateTimePicker maxDateTime;
+    private DatePicker maxDate;
+    private DatePicker minDate;
     private NumberTextField countSymbolsAfterComma;
     private JCheckBox useOnlyThisSymbolsBox;
     private SimpleTextArea useOnlyThisSymbolsField;
@@ -104,6 +116,38 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             settingsPanel.add(label, new GridBagConstraints(2, 0, 1, 1, 0, 0,
                     GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 20, 5, 5), 0, 0));
             settingsPanel.add(maxTime, new GridBagConstraints(3, 0, 1, 1, 1, 0,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+        }
+        if (col.getFormattedDataType().contentEquals("DATE")) {
+            minDate = new DatePicker();
+            minDate.setDate(LocalDate.of(0, 1, 1));
+            maxDate = new DatePicker();
+            maxDate.setDate(LocalDate.of(9999, 1, 1));
+            JLabel label = new JLabel("Min");
+            settingsPanel.add(label, new GridBagConstraints(0, 0, 1, 1, 0, 0,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+            settingsPanel.add(minDate, new GridBagConstraints(1, 0, 1, 1, 1, 0,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+            label = new JLabel("Max");
+            settingsPanel.add(label, new GridBagConstraints(2, 0, 1, 1, 0, 0,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 20, 5, 5), 0, 0));
+            settingsPanel.add(maxDate, new GridBagConstraints(3, 0, 1, 1, 1, 0,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+        }
+        if (col.getFormattedDataType().contentEquals("TIMESTAMP")) {
+            minDateTime = new EQDateTimePicker();
+            minDateTime.setDateTimePermissive(LocalDateTime.MIN);
+            maxDateTime = new EQDateTimePicker();
+            maxDateTime.setDateTimePermissive(LocalDateTime.MAX);
+            JLabel label = new JLabel("Min");
+            settingsPanel.add(label, new GridBagConstraints(0, 0, 1, 1, 0, 0,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+            settingsPanel.add(minDateTime, new GridBagConstraints(1, 0, 1, 1, 1, 0,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+            label = new JLabel("Max");
+            settingsPanel.add(label, new GridBagConstraints(2, 0, 1, 1, 0, 0,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 20, 5, 5), 0, 0));
+            settingsPanel.add(maxDateTime, new GridBagConstraints(3, 0, 1, 1, 1, 0,
                     GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
         }
         if (col.getFormattedDataType().contains("CHAR")) {
@@ -201,20 +245,50 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             return bigint;
         }
         if (col.getFormattedDataType().contentEquals("TIME")) {
-            minTime = new EQTimePicker();
-            minTime.setTime(LocalTime.MIN);
-            maxTime = new EQTimePicker();
-            maxTime.setTime(LocalTime.MAX);
-            JLabel label = new JLabel("Min");
-            settingsPanel.add(label, new GridBagConstraints(0, 0, 1, 1, 0, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
-            settingsPanel.add(minTime, new GridBagConstraints(1, 0, 1, 1, 1, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
-            label = new JLabel("Max");
-            settingsPanel.add(label, new GridBagConstraints(2, 0, 1, 1, 0, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 20, 5, 5), 0, 0));
-            settingsPanel.add(maxTime, new GridBagConstraints(3, 0, 1, 1, 1, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+            long value = new Random().nextLong();
+            if (value < 0)
+                value *= -1;
+            long max = Timestamp.valueOf(maxTime.getTime()).getTime();
+            long min = Timestamp.valueOf(minTime.getTime()).getTime();
+            long diapason = max - min;
+            if (diapason == 0) {
+                value = max;
+            } else
+                value = (min + (value % diapason));
+            Timestamp v = new Timestamp(value);
+            Time t = new Time(v.getTime());
+            return t;
+        }
+        if (col.getFormattedDataType().contentEquals("DATE")) {
+            long value = new Random().nextLong();
+            if (value < 0)
+                value *= -1;
+            long max = ChronoUnit.DAYS.between(maxDate.getDate(), LocalDate.of(0, 1, 1));
+            long min = ChronoUnit.DAYS.between(minDate.getDate(), LocalDate.of(0, 1, 1));
+            long diapason = max - min;
+            if (diapason == 0) {
+                value = max;
+            } else
+                value = (min + (value % diapason));
+            LocalDate temp = LocalDate.of(0, 1, 1);
+            temp = temp.plusDays(value);
+            Date date = Date.valueOf(temp);
+            return date;
+        }
+        if (col.getFormattedDataType().contentEquals("TIMESTAMP")) {
+            long value = new Random().nextLong();
+            if (value < 0)
+                value *= -1;
+            long max = Timestamp.valueOf(maxDateTime.getStringValue()).getTime();
+            long min = Timestamp.valueOf(minDateTime.getStringValue()).getTime();
+            long diapason = max - min;
+            if (diapason == 0) {
+                value = max;
+            } else
+                value = (min + (value % diapason));
+            Timestamp v = new Timestamp(value);
+            Time t = new Time(v.getTime());
+            return t;
         }
         if (col.getFormattedDataType().contentEquals("INTEGER") || col.getFormattedDataType().contentEquals("SMALLINT")) {
             int value = new Random().nextInt();

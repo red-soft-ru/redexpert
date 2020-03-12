@@ -1,5 +1,6 @@
 package org.executequery.gui.browser.generatortestdata;
 
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 
 public class FieldGenerator {
@@ -7,9 +8,9 @@ public class FieldGenerator {
     private boolean selectedField;
     private DatabaseColumn column;
 
-    public FieldGenerator(DatabaseColumn column) {
+    public FieldGenerator(DatabaseColumn column, DefaultStatementExecutor executor) {
         this.column = column;
-        methodGeneratorPanel = new MethodGeneratorPanel(column);
+        methodGeneratorPanel = new MethodGeneratorPanel(column, executor);
     }
 
     public boolean isSelectedField() {

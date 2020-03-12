@@ -1,7 +1,9 @@
 package org.executequery.gui.browser.generatortestdata;
 
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.gui.browser.generatortestdata.methodspanels.AbstractMethodPanel;
+import org.executequery.gui.browser.generatortestdata.methodspanels.GetFromOtherTablePanel;
 import org.executequery.gui.browser.generatortestdata.methodspanels.RandomMethodPanel;
 
 import javax.swing.*;
@@ -19,9 +21,11 @@ public class MethodGeneratorPanel extends JPanel implements ActionListener {
     private JRadioButton getFromListButton;
     private JRadioButton autoincrementButton;
     private JPanel bottomPanel;
+    private DefaultStatementExecutor executor;
 
-    public MethodGeneratorPanel(DatabaseColumn column) {
+    public MethodGeneratorPanel(DatabaseColumn column, DefaultStatementExecutor executor) {
         this.column = column;
+        this.executor = executor;
         init();
     }
 
@@ -61,6 +65,12 @@ public class MethodGeneratorPanel extends JPanel implements ActionListener {
         bottomPanel.removeAll();
         if (randomButton.isSelected()) {
             methodPanel = new RandomMethodPanel(column);
+            bottomPanel.add(methodPanel, new GridBagConstraints(0, 0, 1, 1, 1, 1,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+
+        }
+        if (getFromOtherTableButton.isSelected()) {
+            methodPanel = new GetFromOtherTablePanel(column, executor);
             bottomPanel.add(methodPanel, new GridBagConstraints(0, 0, 1, 1, 1, 1,
                     GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
 

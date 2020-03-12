@@ -1,0 +1,133 @@
+package org.executequery.gui.browser.generatortestdata.methodspanels;
+
+import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.NamedObject;
+import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.sql.SqlStatementResult;
+import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.NumberTextField;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Random;
+import java.util.Vector;
+
+public class GetFromOtherTablePanel extends AbstractMethodPanel {
+    NumberTextField countRowsField;
+    DefaultStatementExecutor executor;
+    private JPanel settingsPanel;
+    private JComboBox tableBox;
+    private JComboBox colBox;
+    private DynamicComboBoxModel tableBoxModel;
+    private DynamicComboBoxModel colBoxModel;
+
+
+    public GetFromOtherTablePanel(DatabaseColumn col, DefaultStatementExecutor executor) {
+        super(col);
+        this.executor = executor;
+        init();
+    }
+
+    private void init() {
+        setLayout(new GridBagLayout());
+        tableBoxModel = new DynamicComboBoxModel();
+        tableBoxModel.setElements(fillTables());
+        colBoxModel = new DynamicComboBoxModel();
+        tableBox = new JComboBox(tableBoxModel);
+        tableBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    colBoxModel.setElements(fillCols());
+                }
+            }
+        });
+        colBox = new JComboBox(colBoxModel);
+        countRowsField = new NumberTextField();
+        countRowsField.setValue(1);
+        JLabel label = new JLabel("Table/View");
+
+        add(label, new GridBagConstraints(0, 0, 1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+
+        add(tableBox, new GridBagConstraints(1, 0, 1, 1, 1, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+
+        label = new JLabel("Column");
+
+        add(label, new GridBagConstraints(0, 1, 1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+
+        add(colBox, new GridBagConstraints(1, 1, 1, 1, 1, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+
+        label = new JLabel("Count rows");
+
+        add(label, new GridBagConstraints(0, 2, 1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+
+        add(countRowsField, new GridBagConstraints(1, 2, 1, 1, 1, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+
+        colBoxModel.setElements(fillCols());
+
+    }
+
+    @Override
+    public Object getTestDataObject() {
+        String query = "Select first " + countRowsField.getStringValue() + " \n" + ((DatabaseColumn) colBox.getSelectedItem()).getName() + " from " + tableBox.getSelectedItem();
+        try {
+            ResultSet rs = executor.getResultSet(query).getResultSet();
+            Random random = new Random();
+            int rand = random.nextInt(countRowsField.getValue());
+            for (int i = 1; i <= rand && rs.next(); i++) {
+                if (i == rand)
+                    return rs.getObject(1);
+            }
+            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            executor.releaseResources();
+        }
+    }
+
+    private Vector<String> fillTables() {
+        Vector<String> tables = new Vector<>();
+        SqlStatementResult result = null;
+        try {
+            String query = "select rdb$relation_name\n" +
+                    "from rdb$relations\n" +
+                    "where \n" +
+                    "(rdb$system_flag is null or rdb$system_flag = 0) and rdb$relation_type=0 or rdb$relation_type=1 or rdb$relation_type=2\n" +
+                    "order by rdb$relation_name";
+            result = executor.getResultSet(query);
+            ResultSet rs = result.getResultSet();
+            while (rs.next()) {
+                tables.add(rs.getString(1).trim());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        } finally {
+            executor.releaseResources();
+        }
+        return tables;
+    }
+
+    private List<DatabaseColumn> fillCols() {
+        NamedObject object = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(executor.getDatabaseConnection()).getDatabaseObject();
+        DatabaseHost host = (DatabaseHost) object;
+        return host.getColumns(null, null, (String) tableBox.getSelectedItem());
+    }
+}

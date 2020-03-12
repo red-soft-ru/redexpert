@@ -274,7 +274,7 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
         List<DatabaseColumn> cols = host.getColumns(null, null, (String) tableBox.getSelectedItem());
         List<FieldGenerator> fieldGenerators = new ArrayList<>();
         for (int i = 0; i < cols.size(); i++) {
-            fieldGenerators.add(new FieldGenerator(cols.get(i)));
+            fieldGenerators.add(new FieldGenerator(cols.get(i), executor));
         }
         if (fieldsPanel == null) {
             fieldsPanel = new FieldsPanel(fieldGenerators);

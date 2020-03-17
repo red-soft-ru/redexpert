@@ -114,6 +114,8 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
                             String values = "";
                             boolean first = true;
                             for (int g = 0; g < fieldGenerators.size(); g++) {
+                                if (i == 0)
+                                    fieldGenerators.get(g).setFirst();
                                 if (fieldGenerators.get(g).isSelectedField()) {
                                     selectedFields.add(fieldGenerators.get(g));
                                     if (!first) {

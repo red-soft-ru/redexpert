@@ -33,6 +33,10 @@ public class FieldGenerator {
         return methodGeneratorPanel;
     }
 
+    public void setFirst() {
+        methodGeneratorPanel.setFirst();
+    }
+
     public void setMethodGeneratorPanel(MethodGeneratorPanel methodGeneratorPanel) {
         this.methodGeneratorPanel = methodGeneratorPanel;
     }

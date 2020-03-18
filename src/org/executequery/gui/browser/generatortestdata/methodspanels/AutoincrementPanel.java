@@ -128,7 +128,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             startValueDateTime.setDateTimePermissive(LocalDateTime.MIN);
             iterationDate = new DateDifferenceSetter();
             iterationTime = new EQTimePicker();
-            iterationTime.setTime(LocalTime.of(1, 1, 1));
+            iterationTime.setTime(LocalTime.of(0, 0, 0));
             JLabel label = new JLabel("Start value");
             settingsPanel.add(label, new GridBagConstraints(0, 0, 1, 1, 0, 0,
                     GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));

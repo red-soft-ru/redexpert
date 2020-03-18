@@ -223,12 +223,12 @@ public class AutoincrementPanel extends AbstractMethodPanel {
         }
         if (col.getFormattedDataType().contentEquals("INTEGER") || col.getFormattedDataType().contentEquals("SMALLINT")) {
             if (first) {
-                current_value = Long.valueOf(startValueField.getText());
+                current_value = Long.parseLong(startValueField.getText());
                 first = false;
             }
             if (plusMinusBox.getSelectedIndex() == 0)
-                current_value += Long.valueOf(iterationField.getText());
-            else current_value -= Long.valueOf(iterationField.getText());
+                current_value += Long.parseLong(iterationField.getText());
+            else current_value -= Long.parseLong(iterationField.getText());
             if (col.getFormattedDataType().contentEquals("SMALLINT"))
                 return (short) current_value;
             return (int) current_value;
@@ -238,12 +238,12 @@ public class AutoincrementPanel extends AbstractMethodPanel {
                 || col.getFormattedDataType().startsWith("DECIMAL")
                 || col.getFormattedDataType().startsWith("NUMERIC")) {
             if (first) {
-                current_double = Double.valueOf(startValueField.getText());
+                current_double = Double.parseDouble(startValueField.getText());
                 first = false;
             }
             if (plusMinusBox.getSelectedIndex() == 0)
-                current_double += Double.valueOf(iterationField.getText());
-            else current_double -= Double.valueOf(iterationField.getText());
+                current_double += Double.parseDouble(iterationField.getText());
+            else current_double -= Double.parseDouble(iterationField.getText());
             return current_double;
         }
 

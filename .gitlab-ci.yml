@@ -39,7 +39,7 @@ prepare:snapshot:
     - mkdir .ci
     - VERSION=$(date +"%Y.%m")
     - BUILDNO=$(relmanager_client genbuildno ${RELEASE_HUB_PROJECT} ${VERSION}-SNAPSHOT)
-    - export VERSION=${VERSION}-SNAPSHOT.${BUILDNO}
+    - export VERSION=${VERSION}.${BUILDNO}
     - export BRANCH=${CI_COMMIT_REF_NAME}
     - export CONTEXT=commit
   except:

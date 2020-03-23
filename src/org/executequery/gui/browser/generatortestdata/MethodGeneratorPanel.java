@@ -2,10 +2,7 @@ package org.executequery.gui.browser.generatortestdata;
 
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.gui.browser.generatortestdata.methodspanels.AbstractMethodPanel;
-import org.executequery.gui.browser.generatortestdata.methodspanels.AutoincrementPanel;
-import org.executequery.gui.browser.generatortestdata.methodspanels.GetFromOtherTablePanel;
-import org.executequery.gui.browser.generatortestdata.methodspanels.RandomMethodPanel;
+import org.executequery.gui.browser.generatortestdata.methodspanels.*;
 import org.executequery.log.Log;
 
 import javax.swing.*;
@@ -77,6 +74,14 @@ public class MethodGeneratorPanel extends JPanel implements ActionListener {
                     GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
 
         }
+
+        if (getFromListButton.isSelected()) {
+            methodPanel = new GetFromListPanel(column);
+            bottomPanel.add(methodPanel, new GridBagConstraints(0, 0, 1, 1, 1, 1,
+                    GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+
+        }
+
         if (autoincrementButton.isSelected()) {
             methodPanel = new AutoincrementPanel(column);
             bottomPanel.add(methodPanel, new GridBagConstraints(0, 0, 1, 1, 1, 1,

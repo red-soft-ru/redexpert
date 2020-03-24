@@ -15,6 +15,7 @@ import org.executequery.gui.components.OpenConnectionsComboboxPanel;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
@@ -158,71 +159,56 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
         countRecordsField = new NumberTextField();
 
         tableBoxModel.setElements(fillTables());
-        setLayout(new GridBagLayout());
+        JPanel topPanel = new JPanel();
+        JPanel bottomPanel = new JPanel();
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, topPanel, bottomPanel);
+
+
+        GridBagHelper gbh = new GridBagHelper();
 
         //ConnectionCombobox
-        GridBagConstraints gbc = new GridBagConstraints(0, 0, 3, 1, 1, 0,
+        GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
-        add(comboboxPanel, gbc);
+        gbh.setDefaults(gbc);
 
-        //Label Table
+        topPanel.setLayout(new GridBagLayout());
+
+
+        topPanel.add(comboboxPanel, gbh.defaults().spanX().fillHorizontally().setInsets(0, 0, 0, 0).get());
+
         JLabel label = new JLabel("Table");
-        gbc.gridwidth = 1;
-        gbc.gridy++;
-        gbc.weightx = 0;
-        add(label, gbc);
+        topPanel.add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
 
-        //Table Combobox
-        gbc.gridx++;
-        gbc.gridwidth = 2;
-        gbc.weightx = 1;
-        add(tableBox, gbc);
+        topPanel.add(tableBox, gbh.defaults().nextCol().spanX().get());
 
-        label = new JLabel("Count records");
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.gridwidth = 1;
-        gbc.weightx = 0;
-        add(label, gbc);
+        label = new JLabel("Count Records");
+        topPanel.add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
 
-        gbc.gridx++;
-        gbc.gridwidth = 2;
-        add(countRecordsField, gbc);
+        topPanel.add(countRecordsField, gbh.defaults().nextCol().spanX().get());
 
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.gridwidth = 3;
-        gbc.weighty = 0;
-        gbc.weightx = 1;
-        add(progressBar, gbc);
+        topPanel.add(progressBar, gbh.defaults().nextRowFirstCol().spanX().get());
 
-        //TableFields
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.gridwidth = 3;
-        gbc.weighty = 1;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        add(fieldsPanel, gbc);
+        topPanel.add(fieldsPanel, gbh.defaults().nextRowFirstCol().spanX().setMaxWeightY().fillBoth().get());
 
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.gridwidth = 1;
-        gbc.weightx = 0;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        add(startButton, gbc);
+        topPanel.add(startButton, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
 
-        gbc.gridx++;
-        add(stopButton, gbc);
+        topPanel.add(stopButton, gbh.defaults().nextCol().setLabelDefault().get());
 
-        gbc.gridy++;
-        gbc.weightx = 1;
-        gbc.gridx = 0;
-        gbc.gridwidth = 3;
-        gbc.weighty = 1;
-        gbc.fill = GridBagConstraints.BOTH;
-        add(new JScrollPane(logPanel), gbc);
+        topPanel.add(new JPanel(), gbh.defaults().nextCol().spanX().get());
 
+        bottomPanel.setLayout(new GridBagLayout());
 
+        gbh.setXY(0, 0);
+
+        bottomPanel.add(new JScrollPane(logPanel), gbh.defaults().spanX().spanY().fillBoth().get());
+
+        setLayout(new GridBagLayout());
+
+        gbh.setXY(0, 0);
+
+        add(splitPane, gbh.defaults().spanX().spanY().fillBoth().get());
+
+        splitPane.setResizeWeight(0.7);
 
 
     }

@@ -9,6 +9,7 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,7 +24,6 @@ import java.util.Vector;
 public class GetFromOtherTablePanel extends AbstractMethodPanel {
     NumberTextField countRowsField;
     DefaultStatementExecutor executor;
-    private JPanel settingsPanel;
     private JComboBox tableBox;
     private JComboBox colBox;
     private DynamicComboBoxModel tableBoxModel;
@@ -53,29 +53,28 @@ public class GetFromOtherTablePanel extends AbstractMethodPanel {
         colBox = new JComboBox(colBoxModel);
         countRowsField = new NumberTextField();
         countRowsField.setValue(1);
+        GridBagHelper gbh = new GridBagHelper();
+        GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
+        gbh.setDefaults(gbc);
+
         JLabel label = new JLabel("Table/View");
 
-        add(label, new GridBagConstraints(0, 0, 1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+        add(label, gbh.defaults().setLabelDefault().get());
 
-        add(tableBox, new GridBagConstraints(1, 0, 1, 1, 1, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+        add(tableBox, gbh.defaults().nextCol().spanX().get());
 
         label = new JLabel("Column");
 
-        add(label, new GridBagConstraints(0, 1, 1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+        add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
 
-        add(colBox, new GridBagConstraints(1, 1, 1, 1, 1, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+        add(colBox, gbh.defaults().nextCol().spanX().get());
 
         label = new JLabel("Count rows");
 
-        add(label, new GridBagConstraints(0, 2, 1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+        add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
 
-        add(countRowsField, new GridBagConstraints(1, 2, 1, 1, 1, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+        add(countRowsField, gbh.defaults().nextCol().spanX().get());
 
         colBoxModel.setElements(fillCols());
 

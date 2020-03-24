@@ -33,8 +33,8 @@ public class FieldsPanel extends JPanel {
             public void valueChanged(ListSelectionEvent e) {
                 rightPanel.removeAll();
                 if (tableFields.getSelectedRow() >= 0)
-                    rightPanel.add(fieldGenerators.get(tableFields.getSelectedRow()).getMethodGeneratorPanel(), new GridBagConstraints(0, 0, 1, 1, 1, 1,
-                            GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+                    rightPanel.add(fieldGenerators.get(tableFields.getSelectedRow()).getMethodGeneratorPanel(), new GridBagConstraints(0, 0, GridBagConstraints.REMAINDER, GridBagConstraints.REMAINDER, 1, 1,
+                            GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
                 rightPanel.updateUI();
             }
         });
@@ -42,10 +42,12 @@ public class FieldsPanel extends JPanel {
 
 
         setLayout(new GridBagLayout());
-        add(scroll, new GridBagConstraints(0, 0, 1, 1, 1, 1,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
-        add(rightPanel, new GridBagConstraints(1, 0, 1, 1, 1, 1,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scroll, rightPanel);
+        add(splitPane, new GridBagConstraints(0, 0, GridBagConstraints.REMAINDER, GridBagConstraints.REMAINDER, 1, 1,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+        splitPane.setResizeWeight(0.6);
     }
 
     public List<FieldGenerator> getFieldGenerators() {

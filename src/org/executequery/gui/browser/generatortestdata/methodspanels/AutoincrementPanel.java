@@ -6,6 +6,7 @@ import org.underworldlabs.swing.DateDifferenceSetter;
 import org.underworldlabs.swing.EQDateTimePicker;
 import org.underworldlabs.swing.EQTimePicker;
 import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -45,6 +46,10 @@ public class AutoincrementPanel extends AbstractMethodPanel {
         });
 
         settingsPanel.setLayout(new GridBagLayout());
+        GridBagHelper gbh = new GridBagHelper();
+        GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
+        gbh.setDefaults(gbc);
         if (col.getFormattedDataType().contentEquals("BIGINT")
                 || col.getFormattedDataType().contentEquals("INTEGER")
                 || col.getFormattedDataType().contentEquals("SMALLINT")
@@ -79,17 +84,13 @@ public class AutoincrementPanel extends AbstractMethodPanel {
                 }
             }
 
-
+            gbh.setXY(0, 0);
             JLabel label = new JLabel("Start value");
-            settingsPanel.add(label, new GridBagConstraints(0, 0, 1, 1, 0, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
-            settingsPanel.add(startValueField, new GridBagConstraints(1, 0, 1, 1, 1, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+            settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
+            settingsPanel.add(startValueField, gbh.defaults().nextCol().setMaxWeightX().get());
             label = new JLabel("Iteration");
-            settingsPanel.add(label, new GridBagConstraints(2, 0, 1, 1, 0, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 20, 5, 5), 0, 0));
-            settingsPanel.add(iterationField, new GridBagConstraints(3, 0, 1, 1, 1, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+            settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
+            settingsPanel.add(iterationField, gbh.defaults().nextCol().setMaxWeightX().get());
 
         }
         if (col.getFormattedDataType().contentEquals("TIME")) {
@@ -97,31 +98,28 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             startValueTime.setTime(LocalTime.MIN);
             iterationTime = new EQTimePicker();
             iterationTime.setTime(LocalTime.of(1, 1, 1));
+
+            gbh.setXY(0, 0);
+
             JLabel label = new JLabel("Start value");
-            settingsPanel.add(label, new GridBagConstraints(0, 0, 1, 1, 0, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
-            settingsPanel.add(startValueTime, new GridBagConstraints(1, 0, 1, 1, 1, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+            settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
+            settingsPanel.add(startValueTime, gbh.defaults().nextCol().setMaxWeightX().get());
             label = new JLabel("Iteration");
-            settingsPanel.add(label, new GridBagConstraints(2, 0, 1, 1, 0, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 20, 5, 5), 0, 0));
-            settingsPanel.add(iterationTime, new GridBagConstraints(3, 0, 1, 1, 1, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+            settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
+            settingsPanel.add(iterationTime, gbh.defaults().nextCol().setMaxWeightX().get());
         }
         if (col.getFormattedDataType().contentEquals("DATE")) {
             startValueDate = new DatePicker();
             startValueDate.setDate(LocalDate.of(0, 1, 1));
             iterationDate = new DateDifferenceSetter();
+
+
             JLabel label = new JLabel("Start value");
-            settingsPanel.add(label, new GridBagConstraints(0, 0, 1, 1, 0, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
-            settingsPanel.add(startValueDate, new GridBagConstraints(1, 0, 1, 1, 1, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+            settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
+            settingsPanel.add(startValueDate, gbh.defaults().nextCol().setMaxWeightX().get());
             label = new JLabel("Iteration");
-            settingsPanel.add(label, new GridBagConstraints(2, 0, 1, 1, 0, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 20, 5, 5), 0, 0));
-            settingsPanel.add(iterationDate, new GridBagConstraints(3, 0, 1, 1, 1, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+            settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
+            settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
         }
         if (col.getFormattedDataType().contentEquals("TIMESTAMP")) {
             startValueDateTime = new EQDateTimePicker();
@@ -129,24 +127,20 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             iterationDate = new DateDifferenceSetter();
             iterationTime = new EQTimePicker();
             iterationTime.setTime(LocalTime.of(0, 0, 0));
+
+            gbh.setXY(0, 0);
             JLabel label = new JLabel("Start value");
-            settingsPanel.add(label, new GridBagConstraints(0, 0, 1, 1, 0, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
-            settingsPanel.add(startValueDateTime, new GridBagConstraints(1, 0, 1, 1, 1, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+            settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
+            settingsPanel.add(startValueDateTime, gbh.defaults().nextCol().setMaxWeightX().get());
             label = new JLabel("Iteration");
-            settingsPanel.add(label, new GridBagConstraints(2, 0, 1, 1, 0, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 20, 5, 5), 0, 0));
-            settingsPanel.add(iterationDate, new GridBagConstraints(3, 0, 1, 1, 1, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
-            settingsPanel.add(iterationTime, new GridBagConstraints(3, 1, 1, 1, 1, 0,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+            settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
+            settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
+            settingsPanel.add(iterationTime, gbh.defaults().nextRow().setMaxWeightX().get());
         }
         setLayout(new GridBagLayout());
-        add(plusMinusBox, new GridBagConstraints(0, 0, 1, 1, 1, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
-        add(settingsPanel, new GridBagConstraints(0, 1, 1, 1, 1, 1,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+        gbh.setXY(0, 0);
+        add(plusMinusBox, gbh.defaults().spanX().get());
+        add(settingsPanel, gbh.defaults().spanX().spanY().fillBoth().get());
     }
 
     public Object getTestDataObject() {

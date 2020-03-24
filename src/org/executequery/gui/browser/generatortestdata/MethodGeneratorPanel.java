@@ -4,6 +4,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.gui.browser.generatortestdata.methodspanels.*;
 import org.executequery.log.Log;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,46 +47,44 @@ public class MethodGeneratorPanel extends JPanel implements ActionListener {
         buttonGroup.add(autoincrementButton);
 
         setLayout(new GridBagLayout());
+        GridBagHelper gbh = new GridBagHelper();
+        GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
+        gbh.setDefaults(gbc);
 
-        add(randomButton, new GridBagConstraints(0, 0, 1, 1, 1, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
-        add(getFromOtherTableButton, new GridBagConstraints(0, 1, 1, 1, 1, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
-        add(getFromListButton, new GridBagConstraints(0, 2, 1, 1, 1, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
-        add(autoincrementButton, new GridBagConstraints(0, 3, 1, 1, 1, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
-        add(bottomPanel, new GridBagConstraints(0, 4, 1, 1, 1, 1,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+        add(randomButton, gbh.defaults().spanX().get());
+        add(getFromOtherTableButton, gbh.defaults().nextRowFirstCol().spanX().get());
+        add(getFromListButton, gbh.defaults().nextRowFirstCol().spanX().get());
+        if (!column.getFormattedDataType().contains("CHAR") && !column.getFormattedDataType().contains("BLOB"))
+            add(autoincrementButton, gbh.defaults().nextRowFirstCol().spanX().get());
+        add(bottomPanel, gbh.defaults().fillBoth().nextRowFirstCol().spanX().spanY().get());
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         bottomPanel.removeAll();
+        GridBagConstraints gbc = new GridBagConstraints(0, 0, GridBagConstraints.REMAINDER, GridBagConstraints.REMAINDER, 1, 1,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0);
         if (randomButton.isSelected()) {
             methodPanel = new RandomMethodPanel(column);
-            bottomPanel.add(methodPanel, new GridBagConstraints(0, 0, 1, 1, 1, 1,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+            bottomPanel.add(methodPanel, gbc);
 
         }
         if (getFromOtherTableButton.isSelected()) {
             methodPanel = new GetFromOtherTablePanel(column, executor);
-            bottomPanel.add(methodPanel, new GridBagConstraints(0, 0, 1, 1, 1, 1,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+            bottomPanel.add(methodPanel, gbc);
 
         }
 
         if (getFromListButton.isSelected()) {
             methodPanel = new GetFromListPanel(column);
-            bottomPanel.add(methodPanel, new GridBagConstraints(0, 0, 1, 1, 1, 1,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+            bottomPanel.add(methodPanel, gbc);
 
         }
 
         if (autoincrementButton.isSelected()) {
             methodPanel = new AutoincrementPanel(column);
-            bottomPanel.add(methodPanel, new GridBagConstraints(0, 0, 1, 1, 1, 1,
-                    GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+            bottomPanel.add(methodPanel, gbc);
 
         }
         updateUI();

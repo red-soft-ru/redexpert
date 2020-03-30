@@ -59,6 +59,10 @@ public class EQDateTimePicker extends JPanel {
         }
     }
 
+    public LocalDateTime getDateTime() {
+        return LocalDateTime.of(datePicker.getDate(), timePicker.getTime().toLocalTime());
+    }
+
     public void clear() {
         datePicker.clear();
         timePicker.setEnabled(false);

@@ -2,6 +2,7 @@ package org.executequery.gui.browser.generatortestdata;
 
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.gui.browser.GeneratorTestDataPanel;
 import org.executequery.gui.browser.generatortestdata.methodspanels.*;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -32,13 +33,13 @@ public class MethodGeneratorPanel extends JPanel implements ActionListener {
     private void init() {
         bottomPanel = new JPanel();
         bottomPanel.setLayout(new GridBagLayout());
-        randomButton = new JRadioButton("Random");
+        randomButton = new JRadioButton(bundledString("Random"));
         randomButton.addActionListener(this);
-        getFromOtherTableButton = new JRadioButton("get from other table");
+        getFromOtherTableButton = new JRadioButton(bundledString("getFromOtherTable"));
         getFromOtherTableButton.addActionListener(this);
-        getFromListButton = new JRadioButton("get from list");
+        getFromListButton = new JRadioButton(bundledString("getFromList"));
         getFromListButton.addActionListener(this);
-        autoincrementButton = new JRadioButton("Autoincrement");
+        autoincrementButton = new JRadioButton(bundledString("Autoincrement"));
         autoincrementButton.addActionListener(this);
         buttonGroup = new ButtonGroup();
         buttonGroup.add(randomButton);
@@ -100,5 +101,9 @@ public class MethodGeneratorPanel extends JPanel implements ActionListener {
 
     public Object getTestDataObject() {
         return methodPanel.getTestDataObject();
+    }
+
+    private String bundledString(String key) {
+        return GeneratorTestDataPanel.bundles(key);
     }
 }

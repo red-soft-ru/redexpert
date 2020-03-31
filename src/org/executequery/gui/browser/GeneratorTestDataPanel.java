@@ -12,6 +12,7 @@ import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.browser.generatortestdata.FieldGenerator;
 import org.executequery.gui.browser.generatortestdata.FieldsPanel;
 import org.executequery.gui.components.OpenConnectionsComboboxPanel;
+import org.executequery.localization.Bundles;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.NumberTextField;
@@ -33,7 +34,7 @@ import java.util.Vector;
 
 public class GeneratorTestDataPanel extends JPanel implements TabView {
 
-    public final static String TITLE = "Generator Test Data";
+    public final static String TITLE = bundles("TITLE");
 
     private OpenConnectionsComboboxPanel comboboxPanel;
 
@@ -61,6 +62,66 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
         init();
     }
 
+    public static String bundles(String key) {
+        return Bundles.get(GeneratorTestDataPanel.class, key);
+    }
+
+    @Override
+    public boolean tabViewClosing() {
+        return true;
+    }
+
+    @Override
+    public boolean tabViewSelected() {
+        return true;
+    }
+
+    @Override
+    public boolean tabViewDeselected() {
+        return true;
+    }
+
+    public DatabaseConnection getSelectedConnection() {
+        return comboboxPanel.getSelectedConnection();
+    }
+
+    private Vector<String> fillTables() {
+        Vector<String> tables = new Vector<>();
+        SqlStatementResult result = null;
+        try {
+            String query = "select rdb$relation_name\n" +
+                    "from rdb$relations\n" +
+                    "where rdb$view_blr is null \n" +
+                    "and (rdb$system_flag is null or rdb$system_flag = 0) and rdb$relation_type=0 or rdb$relation_type=2\n" +
+                    "order by rdb$relation_name";
+            result = executor.getResultSet(query);
+            ResultSet rs = result.getResultSet();
+            while (rs.next()) {
+                tables.add(rs.getString(1).trim());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        } finally {
+            executor.releaseResources();
+        }
+        return tables;
+    }
+
+    private void fillCols() {
+        NamedObject object = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(getSelectedConnection()).getDatabaseObject();
+        DatabaseHost host = (DatabaseHost) object;
+        List<DatabaseColumn> cols = host.getColumns(null, null, (String) tableBox.getSelectedItem());
+        List<FieldGenerator> fieldGenerators = new ArrayList<>();
+        for (int i = 0; i < cols.size(); i++) {
+            fieldGenerators.add(new FieldGenerator(cols.get(i), executor));
+        }
+        if (fieldsPanel == null) {
+            fieldsPanel = new FieldsPanel(fieldGenerators);
+        } else fieldsPanel.setFieldGenerators(fieldGenerators);
+    }
+
     private void init() {
         executor = new DefaultStatementExecutor();
         progressBar = new JProgressBar();
@@ -86,7 +147,7 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
                 }
             }
         });
-        stopButton = new JButton("Stop");
+        stopButton = new JButton(bundles("Stop"));
         stopButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -94,7 +155,7 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
             }
         });
 
-        startButton = new JButton("Start");
+        startButton = new JButton(bundles("Start"));
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -176,12 +237,12 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
 
         topPanel.add(comboboxPanel, gbh.defaults().spanX().fillHorizontally().setInsets(0, 0, 0, 0).get());
 
-        JLabel label = new JLabel("Table");
+        JLabel label = new JLabel(bundles("Table"));
         topPanel.add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
 
         topPanel.add(tableBox, gbh.defaults().nextCol().spanX().get());
 
-        label = new JLabel("Count Records");
+        label = new JLabel(bundles("CountRecords"));
         topPanel.add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
 
         topPanel.add(countRecordsField, gbh.defaults().nextCol().spanX().get());
@@ -213,59 +274,4 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
 
     }
 
-    @Override
-    public boolean tabViewClosing() {
-        return true;
-    }
-
-    @Override
-    public boolean tabViewSelected() {
-        return true;
-    }
-
-    @Override
-    public boolean tabViewDeselected() {
-        return true;
-    }
-
-    public DatabaseConnection getSelectedConnection() {
-        return comboboxPanel.getSelectedConnection();
-    }
-
-    private Vector<String> fillTables() {
-        Vector<String> tables = new Vector<>();
-        SqlStatementResult result = null;
-        try {
-            String query = "select rdb$relation_name\n" +
-                    "from rdb$relations\n" +
-                    "where rdb$view_blr is null \n" +
-                    "and (rdb$system_flag is null or rdb$system_flag = 0) and rdb$relation_type=0 or rdb$relation_type=2\n" +
-                    "order by rdb$relation_name";
-            result = executor.getResultSet(query);
-            ResultSet rs = result.getResultSet();
-            while (rs.next()) {
-                tables.add(rs.getString(1).trim());
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        } finally {
-            executor.releaseResources();
-        }
-        return tables;
-    }
-
-    private void fillCols() {
-        NamedObject object = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(getSelectedConnection()).getDatabaseObject();
-        DatabaseHost host = (DatabaseHost) object;
-        List<DatabaseColumn> cols = host.getColumns(null, null, (String) tableBox.getSelectedItem());
-        List<FieldGenerator> fieldGenerators = new ArrayList<>();
-        for (int i = 0; i < cols.size(); i++) {
-            fieldGenerators.add(new FieldGenerator(cols.get(i), executor));
-        }
-        if (fieldsPanel == null) {
-            fieldsPanel = new FieldsPanel(fieldGenerators);
-        } else fieldsPanel.setFieldGenerators(fieldGenerators);
-    }
 }

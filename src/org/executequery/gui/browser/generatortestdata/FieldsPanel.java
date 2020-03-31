@@ -1,5 +1,8 @@
 package org.executequery.gui.browser.generatortestdata;
 
+import org.executequery.gui.browser.GeneratorTestDataPanel;
+import org.executequery.localization.Bundles;
+
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -13,7 +16,7 @@ public class FieldsPanel extends JPanel {
     public final static int TYPE_FIELD = 2;
     private JTable tableFields;
     private List<FieldGenerator> fieldGenerators;
-    private String[] colNames = {"Selected", "Name", "Type"};
+    private String[] colNames = Bundles.get(GeneratorTestDataPanel.class, new String[]{"Selected", "Name", "Type"});
     private FieldGeneratorModel model;
     private JPanel rightPanel;
 
@@ -24,7 +27,7 @@ public class FieldsPanel extends JPanel {
 
     private void init() {
         rightPanel = new JPanel();
-        rightPanel.setBorder(BorderFactory.createTitledBorder("Generator method"));
+        rightPanel.setBorder(BorderFactory.createTitledBorder(bundledString("GeneratorMethod")));
         rightPanel.setLayout(new GridBagLayout());
         model = new FieldGeneratorModel();
         tableFields = new JTable(model);
@@ -57,6 +60,10 @@ public class FieldsPanel extends JPanel {
     public void setFieldGenerators(List<FieldGenerator> fieldGenerators) {
         this.fieldGenerators = fieldGenerators;
         model.fireTableDataChanged();
+    }
+
+    private String bundledString(String key) {
+        return GeneratorTestDataPanel.bundles(key);
     }
 
     public class FieldGeneratorModel extends AbstractTableModel {
@@ -108,5 +115,7 @@ public class FieldsPanel extends JPanel {
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return columnIndex == SELECTED_FIELD;
         }
+
+
     }
 }

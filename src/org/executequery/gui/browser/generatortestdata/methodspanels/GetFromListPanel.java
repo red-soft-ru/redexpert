@@ -1,7 +1,9 @@
 package org.executequery.gui.browser.generatortestdata.methodspanels;
 
 import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.gui.browser.GeneratorTestDataPanel;
 import org.executequery.gui.text.SimpleTextArea;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
@@ -47,12 +49,12 @@ public class GetFromListPanel extends AbstractMethodPanel {
         textArea = new SimpleTextArea();
         textArea.getTextAreaComponent().setColumns(20);
         delimiterField = new JTextField(";");
-        orderBox = new JComboBox(new String[]{
-                "In order", "Random"
-        });
-        sourceBox = new JComboBox(new String[]{
-                "From text area", "From file"
-        });
+        orderBox = new JComboBox(Bundles.get(GeneratorTestDataPanel.class, new String[]{
+                "InOrder", "Random"
+        }));
+        sourceBox = new JComboBox(Bundles.get(GeneratorTestDataPanel.class, new String[]{
+                "FromTextArea", "FromFile"
+        }));
         sourceBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
@@ -85,12 +87,12 @@ public class GetFromListPanel extends AbstractMethodPanel {
         GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
         gbh.setDefaults(gbc);
-        String labelStr = "Choose directory";
+        String labelStr = bundles("ChooseDirectory");
         if (!col.getFormattedDataType().contains("BLOB")) {
-            JLabel label = new JLabel("source");
+            JLabel label = new JLabel(bundles("Source"));
             add(label, gbh.defaults().setLabelDefault().get());
             add(sourceBox, gbh.defaults().nextCol().spanX().get());
-            labelStr = "Choose file";
+            labelStr = bundles("ChooseFile");
         }
         labelFile = new JLabel(labelStr);
         if (!col.getFormattedDataType().contains("BLOB")) {
@@ -99,11 +101,11 @@ public class GetFromListPanel extends AbstractMethodPanel {
             fileSelectButton.setVisible(false);
 
         }
-        JLabel label = new JLabel("method");
+        JLabel label = new JLabel(bundles("Method"));
         add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
         add(orderBox, gbh.defaults().nextCol().spanX().get());
         if (!col.getFormattedDataType().contains("BLOB")) {
-            label = new JLabel("Delimiter");
+            label = new JLabel(bundles("Delimiter"));
             add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
             add(delimiterField, gbh.defaults().nextCol().spanX().get());
         }

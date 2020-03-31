@@ -86,18 +86,18 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             }
 
 
-            JLabel label = new JLabel("Min");
+            JLabel label = new JLabel(bundles("Min"));
             settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
             settingsPanel.add(minField, gbh.defaults().nextCol().setMaxWeightX().get());
 
-            label = new JLabel("Max");
+            label = new JLabel(bundles("Max"));
             settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(maxField, gbh.defaults().nextCol().setMaxWeightX().get());
             if (col.getFormattedDataType().contentEquals("DOUBLE PRECISION")
                     || col.getFormattedDataType().contentEquals("FLOAT")
                     || col.getFormattedDataType().startsWith("DECIMAL")
                     || col.getFormattedDataType().startsWith("NUMERIC")) {
-                label = new JLabel("Count Digits After Comma");
+                label = new JLabel(bundles("CountDigitsAfterComma"));
                 settingsPanel.add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
                 settingsPanel.add(countSymbolsAfterComma, gbh.defaults().nextCol().spanX().get());
             }
@@ -108,10 +108,10 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             minTime.setTime(LocalTime.MIN);
             maxTime = new EQTimePicker();
             maxTime.setTime(LocalTime.MAX);
-            JLabel label = new JLabel("Min");
+            JLabel label = new JLabel(bundles("Min"));
             settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
             settingsPanel.add(minTime, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel("Max");
+            label = new JLabel(bundles("Max"));
             settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(maxTime, gbh.defaults().nextCol().setMaxWeightX().get());
         }
@@ -120,10 +120,10 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             minDate.setDate(LocalDate.of(0, 1, 1));
             maxDate = new DatePicker();
             maxDate.setDate(LocalDate.of(9999, 1, 1));
-            JLabel label = new JLabel("Min");
+            JLabel label = new JLabel(bundles("Min"));
             settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
             settingsPanel.add(minDate, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel("Max");
+            label = new JLabel(bundles("Max"));
             settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(maxDate, gbh.defaults().nextCol().setMaxWeightX().get());
         }
@@ -132,10 +132,10 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             minDateTime.setDateTimePermissive(LocalDateTime.MIN);
             maxDateTime = new EQDateTimePicker();
             maxDateTime.setDateTimePermissive(LocalDateTime.MAX);
-            JLabel label = new JLabel("Min");
+            JLabel label = new JLabel(bundles("Min"));
             settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
             settingsPanel.add(minDateTime, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel("Max");
+            label = new JLabel(bundles("Max"));
             settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(maxDateTime, gbh.defaults().nextCol().setMaxWeightX().get());
         }
@@ -144,17 +144,17 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             minField = new NumberTextField();
             maxField.setText("" + col.getColumnSize());
             minField.setText("0");
-            useOnlyThisSymbolsBox = new JCheckBox("Use only this symbols");
+            useOnlyThisSymbolsBox = new JCheckBox(bundles("UseOnlyThisSymbols"));
             useOnlyThisSymbolsField = new SimpleTextArea();
 
             //scrollSymbols = new JScrollPane(useOnlyThisSymbolsField);
             //scrollSymbols.setVerticalScrollBar(scrollSymbols.createVerticalScrollBar());
 
-            JLabel label = new JLabel("Min length");
+            JLabel label = new JLabel(bundles("MinLength"));
 
             settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
             settingsPanel.add(minField, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel("Max length");
+            label = new JLabel(bundles("MaxLength"));
             settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(maxField, gbh.defaults().nextCol().setMaxWeightX().get());
             settingsPanel.add(useOnlyThisSymbolsBox, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
@@ -173,26 +173,28 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             minByteField.setText("0");
 
 
-            JLabel label = new JLabel("Min Length");
+            JLabel label = new JLabel(bundles("MinLength"));
 
             settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
             settingsPanel.add(minField, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel("Max Length");
+            label = new JLabel(bundles("MaxLength"));
             settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(maxField, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel("Min Byte");
+            label = new JLabel(bundles("MinByte"));
 
             settingsPanel.add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
             settingsPanel.add(minByteField, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel("Max Byte");
+            label = new JLabel(bundles("MaxByte"));
             settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(maxByteField, gbh.defaults().nextCol().setMaxWeightX().get());
 
 
         }
         setLayout(new GridBagLayout());
-        add(settingsPanel, new GridBagConstraints(0, 0, 1, 1, 1, 1,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+        gbh.setXY(0, 0);
+        add(settingsPanel, gbh.defaults().spanX().get());
+        add(new JPanel(), gbh.defaults().nextRowFirstCol().spanX().spanY().get());
+
     }
 
     public Object getTestDataObject() {

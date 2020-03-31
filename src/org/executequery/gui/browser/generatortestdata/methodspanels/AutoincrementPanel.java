@@ -85,10 +85,10 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             }
 
             gbh.setXY(0, 0);
-            JLabel label = new JLabel("Start value");
+            JLabel label = new JLabel(bundles("StartValue"));
             settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
             settingsPanel.add(startValueField, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel("Iteration");
+            label = new JLabel(bundles("Iteration"));
             settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(iterationField, gbh.defaults().nextCol().setMaxWeightX().get());
 
@@ -101,10 +101,10 @@ public class AutoincrementPanel extends AbstractMethodPanel {
 
             gbh.setXY(0, 0);
 
-            JLabel label = new JLabel("Start value");
+            JLabel label = new JLabel(bundles("StartValue"));
             settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
             settingsPanel.add(startValueTime, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel("Iteration");
+            label = new JLabel(bundles("Iteration"));
             settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(iterationTime, gbh.defaults().nextCol().setMaxWeightX().get());
         }
@@ -114,10 +114,10 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             iterationDate = new DateDifferenceSetter();
 
 
-            JLabel label = new JLabel("Start value");
+            JLabel label = new JLabel(bundles("StartValue"));
             settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
             settingsPanel.add(startValueDate, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel("Iteration");
+            label = new JLabel(bundles("Iteration"));
             settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
         }
@@ -129,10 +129,10 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             iterationTime.setTime(LocalTime.of(0, 0, 0));
 
             gbh.setXY(0, 0);
-            JLabel label = new JLabel("Start value");
+            JLabel label = new JLabel(bundles("StartValue"));
             settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
             settingsPanel.add(startValueDateTime, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel("Iteration");
+            label = new JLabel(bundles("Iteration"));
             settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
             settingsPanel.add(iterationTime, gbh.defaults().nextRow().setMaxWeightX().get());
@@ -140,7 +140,8 @@ public class AutoincrementPanel extends AbstractMethodPanel {
         setLayout(new GridBagLayout());
         gbh.setXY(0, 0);
         add(plusMinusBox, gbh.defaults().spanX().get());
-        add(settingsPanel, gbh.defaults().spanX().spanY().fillBoth().get());
+        add(settingsPanel, gbh.defaults().nextRowFirstCol().spanX().fillBoth().get());
+        add(new JPanel(), gbh.defaults().nextRowFirstCol().spanX().spanY().fillBoth().get());
     }
 
     public Object getTestDataObject() {

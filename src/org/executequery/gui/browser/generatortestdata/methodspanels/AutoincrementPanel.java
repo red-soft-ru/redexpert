@@ -150,9 +150,10 @@ public class AutoincrementPanel extends AbstractMethodPanel {
                 cur_bigint = new BigInteger(startValueField.getText());
                 first = false;
             }
+            BigInteger iterationBig = new BigInteger(iterationField.getText());
             if (plusMinusBox.getSelectedIndex() == 0)
-                cur_bigint.add(new BigInteger(iterationField.getText()));
-            else cur_bigint.subtract(new BigInteger(iterationField.getText()));
+                cur_bigint = cur_bigint.add(iterationBig);
+            else cur_bigint = cur_bigint.subtract(iterationBig);
             return cur_bigint;
         }
         if (col.getFormattedDataType().contentEquals("TIME")) {

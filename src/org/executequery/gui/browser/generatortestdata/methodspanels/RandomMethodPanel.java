@@ -273,11 +273,11 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             int value = new Random().nextInt();
             if (value < 0)
                 value *= -1;
-            int max = ((NumberTextField) maxField).getValue();
-            int min = ((NumberTextField) minField).getValue();
+            long max = ((NumberTextField) maxField).getValue();
+            long min = ((NumberTextField) minField).getValue();
             long diapason = max - min;
             if (diapason == 0) {
-                value = max;
+                value = (int) max;
             } else
                 value = (int) (min + (value % diapason));
             if (col.getFormattedDataType().contentEquals("SMALLINT"))

@@ -157,10 +157,8 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             label = new JLabel(bundles("MaxLength"));
             settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(maxField, gbh.defaults().nextCol().setMaxWeightX().get());
-            settingsPanel.add(useOnlyThisSymbolsBox, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
-            settingsPanel.add(useOnlyThisSymbolsField, gbh.defaults().nextCol().setMaxWeightX().get());
-
-
+            settingsPanel.add(useOnlyThisSymbolsBox, gbh.defaults().nextRowFirstCol().spanX().get());
+            settingsPanel.add(useOnlyThisSymbolsField, gbh.defaults().nextRowFirstCol().fillBoth().spanX().spanY().get());
         }
         if (col.getFormattedDataType().contains("BLOB")) {
             maxField = new NumberTextField();
@@ -192,8 +190,12 @@ public class RandomMethodPanel extends AbstractMethodPanel {
         }
         setLayout(new GridBagLayout());
         gbh.setXY(0, 0);
-        add(settingsPanel, gbh.defaults().spanX().get());
-        add(new JPanel(), gbh.defaults().nextRowFirstCol().spanX().spanY().get());
+        if (col.getFormattedDataType().contains("CHAR")) {
+            add(settingsPanel, gbh.defaults().fillBoth().spanX().spanY().get());
+        } else {
+            add(settingsPanel, gbh.defaults().spanX().get());
+            add(new JPanel(), gbh.defaults().nextRowFirstCol().spanX().spanY().get());
+        }
 
     }
 

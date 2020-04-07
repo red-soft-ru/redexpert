@@ -105,8 +105,10 @@ public class RandomMethodPanel extends AbstractMethodPanel {
         }
         if (col.getFormattedDataType().contentEquals("TIME")) {
             minTime = new EQTimePicker();
+            minTime.setVisibleNullBox(false);
             minTime.setTime(LocalTime.MIN);
             maxTime = new EQTimePicker();
+            maxTime.setVisibleNullBox(false);
             maxTime.setTime(LocalTime.MAX);
             JLabel label = new JLabel(bundles("Min"));
             settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
@@ -129,15 +131,17 @@ public class RandomMethodPanel extends AbstractMethodPanel {
         }
         if (col.getFormattedDataType().contentEquals("TIMESTAMP")) {
             minDateTime = new EQDateTimePicker();
-            minDateTime.setDateTimePermissive(LocalDateTime.MIN);
+            minDateTime.setVisibleNullBox(false);
+            minDateTime.setDateTimePermissive(LocalDateTime.of(LocalDate.of(0, 1, 1), LocalTime.of(0, 0, 0)));
             maxDateTime = new EQDateTimePicker();
-            maxDateTime.setDateTimePermissive(LocalDateTime.MAX);
+            maxDateTime.setVisibleNullBox(false);
+            maxDateTime.setDateTimePermissive(LocalDateTime.of(LocalDate.of(9999, 12, 31), LocalTime.of(23, 59, 59)));
             JLabel label = new JLabel(bundles("Min"));
             settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
-            settingsPanel.add(minDateTime, gbh.defaults().nextCol().setMaxWeightX().get());
+            settingsPanel.add(minDateTime, gbh.defaults().nextCol().spanX().get());
             label = new JLabel(bundles("Max"));
-            settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
-            settingsPanel.add(maxDateTime, gbh.defaults().nextCol().setMaxWeightX().get());
+            settingsPanel.add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
+            settingsPanel.add(maxDateTime, gbh.defaults().nextCol().spanX().get());
         }
         if (col.getFormattedDataType().contains("CHAR")) {
             maxField = new NumberTextField();

@@ -67,4 +67,8 @@ public class EQDateTimePicker extends JPanel {
         datePicker.clear();
         timePicker.setEnabled(false);
     }
+
+    public void setVisibleNullBox(boolean flag) {
+        timePicker.setVisibleNullBox(flag);
+    }
 }

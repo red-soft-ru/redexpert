@@ -76,7 +76,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
                 iterationField = new NumberTextField();
                 startValueField = new NumberTextField();
                 if (col.getFormattedDataType().contentEquals("INTEGER")) {
-                    iterationField.setText("" + Integer.MAX_VALUE);
+                    iterationField.setText("" + 1);
                     startValueField.setText("" + Integer.MIN_VALUE);
                 } else {
                     iterationField.setText("" + 1);
@@ -95,8 +95,10 @@ public class AutoincrementPanel extends AbstractMethodPanel {
         }
         if (col.getFormattedDataType().contentEquals("TIME")) {
             startValueTime = new EQTimePicker();
+            startValueTime.setVisibleNullBox(false);
             startValueTime.setTime(LocalTime.MIN);
             iterationTime = new EQTimePicker();
+            iterationTime.setVisibleNullBox(false);
             iterationTime.setTime(LocalTime.of(1, 1, 1));
 
             gbh.setXY(0, 0);
@@ -126,6 +128,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             startValueDateTime.setDateTimePermissive(LocalDateTime.MIN);
             iterationDate = new DateDifferenceSetter();
             iterationTime = new EQTimePicker();
+            iterationTime.setVisibleNullBox(false);
             iterationTime.setTime(LocalTime.of(0, 0, 0));
 
             gbh.setXY(0, 0);

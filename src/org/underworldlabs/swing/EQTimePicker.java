@@ -73,10 +73,15 @@ public class EQTimePicker extends JPanel {
             nullBox.setSelected(true);
         }
     }
+
     public void setEnable(boolean enable) {
         setEnabled(enable);
         nullBox.setSelected(!enable);
         nullBox.setEnabled(enable);
         timeSpinner.setEnabled(enable);
+    }
+
+    public void setVisibleNullBox(boolean flag) {
+        nullBox.setVisible(flag);
     }
 }

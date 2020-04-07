@@ -164,52 +164,67 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
                     public Object construct() {
                         stop = false;
                         int count = countRecordsField.getValue();
-                        progressBar.setMinimum(0);
-                        progressBar.setMaximum(count);
-                        for (int i = 0; i < count; i++) {
-                            if (stop)
-                                break;
-                            progressBar.setValue(i);
-                            List<FieldGenerator> fieldGenerators = fieldsPanel.getFieldGenerators();
-                            List<FieldGenerator> selectedFields = new ArrayList<>();
-                            String sql = "INSERT INTO " + tableBox.getSelectedItem() + " (";
-                            String values = "";
-                            boolean first = true;
-                            for (int g = 0; g < fieldGenerators.size(); g++) {
-                                if (i == 0)
-                                    fieldGenerators.get(g).setFirst();
-                                if (fieldGenerators.get(g).isSelectedField()) {
-                                    selectedFields.add(fieldGenerators.get(g));
-                                    if (!first) {
-                                        sql += ",";
-                                        values += ",";
-                                    } else first = false;
-                                    sql += " " + fieldGenerators.get(g).getColumn().getName();
-                                    values += "? ";
+                        if (count <= 0)
+                            GUIUtilities.displayErrorMessage("the number of records to be added must be greater than zero");
+                        else {
+                            progressBar.setMinimum(0);
+                            progressBar.setMaximum(count);
+                            int countSuccess = 0;
+                            int countError = 0;
+                            for (int i = 0; i < count; i++) {
+                                if (stop)
+                                    break;
+                                progressBar.setValue(i);
+                                List<FieldGenerator> fieldGenerators = fieldsPanel.getFieldGenerators();
+                                List<FieldGenerator> selectedFields = new ArrayList<>();
+                                String sql = "INSERT INTO " + tableBox.getSelectedItem() + " (";
+                                String values = "";
+                                boolean first = true;
+                                for (int g = 0; g < fieldGenerators.size(); g++) {
+                                    if (i == 0)
+                                        fieldGenerators.get(g).setFirst();
+                                    if (fieldGenerators.get(g).isSelectedField()) {
+                                        selectedFields.add(fieldGenerators.get(g));
+                                        if (!first) {
+                                            sql += ",";
+                                            values += ",";
+                                        } else first = false;
+                                        sql += " " + fieldGenerators.get(g).getColumn().getName();
+                                        values += "? ";
 
+                                    }
+                                }
+                                sql += ") VALUES (" + values + ");";
+                                String params = "\nparams:\n";
+                                //logPanel.append(sql);
+
+                                try {
+                                    PreparedStatement statement = executor.getPreparedStatement(sql);
+                                    for (int g = 0; g < selectedFields.size(); g++) {
+                                        Object param = selectedFields.get(g).getMethodGeneratorPanel().getTestDataObject();
+                                        if (selectedFields.get(g).getColumn().getFormattedDataType().contains("BLOB")) {
+                                            params += "parameter №" + (g + 1) + " = <BLOB DATA>\n";
+                                        } else
+                                            params += "parameter №" + (g + 1) + " = " + param.toString() + "\n";
+                                        statement.setObject(g + 1, param);
+                                    }
+                                    SqlStatementResult result = executor.execute(QueryTypes.INSERT, statement);
+                                    String message = sql + params;
+                                    if (result.isException()) {
+                                        message += result.getSqlException().getMessage();
+                                        countError++;
+                                    } else countSuccess++;
+                                    logPanel.append(i + ":" + message);
+
+                                } catch (SQLException ex) {
+                                    ex.printStackTrace();
+                                } finally {
+                                    executor.releaseResources();
                                 }
                             }
-                            sql += ") VALUES (" + values + ");";
-                            //logPanel.append(sql);
-                            try {
-                                PreparedStatement statement = executor.getPreparedStatement(sql);
-                                for (int g = 0; g < selectedFields.size(); g++) {
-                                    statement.setObject(g + 1, selectedFields.get(g).getMethodGeneratorPanel().getTestDataObject());
-                                }
-                                SqlStatementResult result = executor.execute(QueryTypes.INSERT, statement);
-                                String message = sql + "\n";
-                                if (result.isException()) {
-                                    message += result.getSqlException().getMessage();
-                                }
-                                logPanel.append(i + ":" + message);
-
-                            } catch (SQLException ex) {
-                                ex.printStackTrace();
-                            } finally {
-                                executor.releaseResources();
-                            }
+                            GUIUtilities.displayInformationMessage(countSuccess + " records added successfully\n" + countError + " queries failed");
+                            progressBar.setValue(0);
                         }
-                        progressBar.setValue(0);
                         return null;
                     }
                 };

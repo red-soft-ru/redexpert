@@ -192,7 +192,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     public Connection getTemporaryConnection() {
 
-        return ConnectionManager.getConnection(getDatabaseConnection());
+        return ConnectionManager.getTemporaryConnection(getDatabaseConnection());
     }
 
     /**

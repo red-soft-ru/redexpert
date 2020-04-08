@@ -135,6 +135,32 @@ public final class ConnectionManager {
 
     }
 
+    public static Connection getTemporaryConnection(DatabaseConnection databaseConnection) {
+
+        if (databaseConnection == null) {
+
+            return null;
+        }
+
+        synchronized (databaseConnection) {
+
+            if (connectionPools == null || !connectionPools.containsKey(databaseConnection)) {
+
+                createDataSource(databaseConnection);
+            }
+
+            ConnectionPool pool = connectionPools.get(databaseConnection);
+            DataSource dataSource = getDataSource(databaseConnection);
+            try {
+                return new PooledConnection(dataSource.getConnection(), databaseConnection);
+            } catch (SQLException e) {
+                Log.error("Error get connection", e);
+                return pool.getConnection();
+            }
+        }
+
+    }
+
     public static String getURL(DatabaseConnection databaseConnection) {
         if (databaseConnection == null) {
 

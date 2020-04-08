@@ -58,6 +58,9 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
 
     private JProgressBar progressBar;
 
+    private JCheckBox logBox;
+
+
     public GeneratorTestDataPanel() {
         init();
     }
@@ -85,6 +88,8 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
         return comboboxPanel.getSelectedConnection();
     }
 
+    private NumberTextField commitAfterField;
+
     private Vector<String> fillTables() {
         Vector<String> tables = new Vector<>();
         SqlStatementResult result = null;
@@ -99,6 +104,10 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
             while (rs.next()) {
                 tables.add(rs.getString(1).trim());
             }
+            if (tables.size() == 0) {
+                tables.add("");
+                GUIUtilities.displayErrorMessage("there is no table in the database");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         } catch (NullPointerException e) {
@@ -110,16 +119,18 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
     }
 
     private void fillCols() {
-        NamedObject object = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(getSelectedConnection()).getDatabaseObject();
-        DatabaseHost host = (DatabaseHost) object;
-        List<DatabaseColumn> cols = host.getColumns(null, null, (String) tableBox.getSelectedItem());
-        List<FieldGenerator> fieldGenerators = new ArrayList<>();
-        for (int i = 0; i < cols.size(); i++) {
-            fieldGenerators.add(new FieldGenerator(cols.get(i), executor));
+        if (tableBox.getSelectedItem() != "") {
+            NamedObject object = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(getSelectedConnection()).getDatabaseObject();
+            DatabaseHost host = (DatabaseHost) object;
+            List<DatabaseColumn> cols = host.getColumns(null, null, (String) tableBox.getSelectedItem());
+            List<FieldGenerator> fieldGenerators = new ArrayList<>();
+            for (int i = 0; i < cols.size(); i++) {
+                fieldGenerators.add(new FieldGenerator(cols.get(i), executor));
+            }
+            if (fieldsPanel == null) {
+                fieldsPanel = new FieldsPanel(fieldGenerators);
+            } else fieldsPanel.setFieldGenerators(fieldGenerators);
         }
-        if (fieldsPanel == null) {
-            fieldsPanel = new FieldsPanel(fieldGenerators);
-        } else fieldsPanel.setFieldGenerators(fieldGenerators);
     }
 
     private void init() {
@@ -154,6 +165,7 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
                 stop = true;
             }
         });
+        stopButton.setEnabled(false);
 
         startButton = new JButton(bundles("Start"));
         startButton.addActionListener(new ActionListener() {
@@ -167,65 +179,98 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
                         if (count <= 0)
                             GUIUtilities.displayErrorMessage("the number of records to be added must be greater than zero");
                         else {
+                            boolean outlog = logBox.isSelected();
+                            startButton.setEnabled(false);
+                            stopButton.setEnabled(true);
+                            long startTime = System.currentTimeMillis();
                             progressBar.setMinimum(0);
                             progressBar.setMaximum(count);
+                            int commitAfter = commitAfterField.getValue();
                             int countSuccess = 0;
                             int countError = 0;
-                            for (int i = 0; i < count; i++) {
-                                if (stop)
-                                    break;
-                                progressBar.setValue(i);
-                                List<FieldGenerator> fieldGenerators = fieldsPanel.getFieldGenerators();
-                                List<FieldGenerator> selectedFields = new ArrayList<>();
-                                String sql = "INSERT INTO " + tableBox.getSelectedItem() + " (";
-                                String values = "";
-                                boolean first = true;
-                                for (int g = 0; g < fieldGenerators.size(); g++) {
-                                    if (i == 0)
-                                        fieldGenerators.get(g).setFirst();
-                                    if (fieldGenerators.get(g).isSelectedField()) {
-                                        selectedFields.add(fieldGenerators.get(g));
-                                        if (!first) {
-                                            sql += ",";
-                                            values += ",";
-                                        } else first = false;
-                                        sql += " " + fieldGenerators.get(g).getColumn().getName();
-                                        values += "? ";
+                            List<FieldGenerator> fieldGenerators = fieldsPanel.getFieldGenerators();
+                            List<FieldGenerator> selectedFields = new ArrayList<>();
+                            String sql = "INSERT INTO " + tableBox.getSelectedItem() + " (";
+                            String values = "";
+                            boolean first = true;
+                            for (int g = 0; g < fieldGenerators.size(); g++) {
+                                if (fieldGenerators.get(g).isSelectedField()) {
+                                    selectedFields.add(fieldGenerators.get(g));
+                                    if (!first) {
+                                        sql += ",";
+                                        values += ",";
+                                    } else first = false;
+                                    sql += " " + fieldGenerators.get(g).getColumn().getName();
+                                    values += "? ";
 
-                                    }
                                 }
-                                sql += ") VALUES (" + values + ");";
-                                String params = "\nparams:\n";
-                                //logPanel.append(sql);
-
-                                try {
-                                    PreparedStatement statement = executor.getPreparedStatement(sql);
+                            }
+                            sql += ") VALUES (" + values + ");";
+                            logPanel.append("execute:\n");
+                            logPanel.append(sql);
+                            try {
+                                executor.setCommitMode(false);
+                                executor.setKeepAlive(true);
+                                PreparedStatement statement = executor.getPreparedStatement(sql);
+                                boolean lastError = false;
+                                String lastMessage = "";
+                                int i = 0;
+                                for (; i < count; i++) {
+                                    if (stop)
+                                        break;
+                                    if (i % commitAfter == 0 && i != 0) {
+                                        executor.getConnection().commit();
+                                    }
+                                    progressBar.setValue(i);
                                     for (int g = 0; g < selectedFields.size(); g++) {
                                         Object param = selectedFields.get(g).getMethodGeneratorPanel().getTestDataObject();
-                                        if (selectedFields.get(g).getColumn().getFormattedDataType().contains("BLOB")) {
-                                            params += "parameter №" + (g + 1) + " = <BLOB DATA>\n";
-                                        } else
-                                            params += "parameter №" + (g + 1) + " = " + param.toString() + "\n";
                                         statement.setObject(g + 1, param);
                                     }
                                     SqlStatementResult result = executor.execute(QueryTypes.INSERT, statement);
-                                    String message = sql + params;
+                                    String message = sql;// + params;
                                     if (result.isException()) {
-                                        message += result.getSqlException().getMessage();
+                                        if (outlog) {
+                                            String errorMessage = result.getSqlException().getMessage();
+                                            if (!lastError) {
+                                                if (!errorMessage.contentEquals(lastMessage)) {
+                                                    message += errorMessage;
+                                                    lastMessage = message;
+                                                    logPanel.appendError(message);
+                                                }
+                                                logPanel.appendError("failed from " + i);
+                                                lastError = true;
+                                            }
+                                        }
                                         countError++;
-                                    } else countSuccess++;
-                                    logPanel.append(i + ":" + message);
-
-                                } catch (SQLException ex) {
-                                    ex.printStackTrace();
-                                } finally {
-                                    executor.releaseResources();
+                                    } else {
+                                        countSuccess++;
+                                        if (outlog && lastError) {
+                                            logPanel.appendError("to " + (i - 1));
+                                            lastError = false;
+                                        }
+                                    }
                                 }
+                                if (outlog && lastError) {
+                                    logPanel.appendError("to " + (i - 1));
+                                }
+                                executor.getConnection().commit();
+                                logPanel.append("Execution time: " + (System.currentTimeMillis() - startTime) + " ms");
+                            } catch (SQLException ex) {
+                                ex.printStackTrace();
+                            } finally {
+                                executor.releaseResources();
                             }
                             GUIUtilities.displayInformationMessage(countSuccess + " records added successfully\n" + countError + " queries failed");
+                            logPanel.append(countSuccess + " records added successfully\n" + countError + " queries failed");
                             progressBar.setValue(0);
                         }
                         return null;
+                    }
+
+                    @Override
+                    public void finished() {
+                        startButton.setEnabled(true);
+                        stopButton.setEnabled(false);
                     }
                 };
                 worker.start();
@@ -233,6 +278,13 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
             }
         });
         countRecordsField = new NumberTextField();
+        countRecordsField.setValue(100);
+
+        commitAfterField = new NumberTextField();
+        commitAfterField.setValue(100);
+
+        logBox = new JCheckBox(bundles("OutputLog"));
+
 
         tableBoxModel.setElements(fillTables());
         JPanel topPanel = new JPanel();
@@ -261,6 +313,13 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
         topPanel.add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
 
         topPanel.add(countRecordsField, gbh.defaults().nextCol().spanX().get());
+
+        label = new JLabel(bundles("AfterCommit"));
+        topPanel.add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
+
+        topPanel.add(commitAfterField, gbh.defaults().nextCol().spanX().get());
+
+        topPanel.add(logBox, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
 
         topPanel.add(progressBar, gbh.defaults().nextRowFirstCol().spanX().get());
 

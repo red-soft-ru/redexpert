@@ -17,6 +17,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Vector;
@@ -28,13 +29,8 @@ public class GetFromOtherTablePanel extends AbstractMethodPanel {
     private JComboBox colBox;
     private DynamicComboBoxModel tableBoxModel;
     private DynamicComboBoxModel colBoxModel;
-
-
-    public GetFromOtherTablePanel(DatabaseColumn col, DefaultStatementExecutor executor) {
-        super(col);
-        this.executor = executor;
-        init();
-    }
+    Random random;
+    private List<Object> objList;
 
     private void init() {
         setLayout(new GridBagLayout());
@@ -80,24 +76,34 @@ public class GetFromOtherTablePanel extends AbstractMethodPanel {
 
     }
 
+    public GetFromOtherTablePanel(DatabaseColumn col, DefaultStatementExecutor executor) {
+        super(col);
+        this.executor = new DefaultStatementExecutor(executor.getDatabaseConnection());
+        init();
+    }
+
     @Override
     public Object getTestDataObject() {
-        String query = "Select first " + countRowsField.getStringValue() + " \n" + ((DatabaseColumn) colBox.getSelectedItem()).getName() + " from " + tableBox.getSelectedItem();
-        try {
-            ResultSet rs = executor.getResultSet(query).getResultSet();
-            Random random = new Random();
-            int rand = random.nextInt(countRowsField.getValue());
-            for (int i = 1; i <= rand && rs.next(); i++) {
-                if (i == rand)
-                    return rs.getObject(1);
+        if (first) {
+            first = false;
+            objList = new ArrayList<>();
+            String query = "Select first " + countRowsField.getStringValue() + " \n" + ((DatabaseColumn) colBox.getSelectedItem()).getName() + " from " + tableBox.getSelectedItem();
+            try {
+                ResultSet rs = executor.getResultSet(query).getResultSet();
+                random = new Random();
+                int count = countRowsField.getValue();
+                for (int i = 0; i < count && rs.next(); i++) {
+                    objList.add(rs.getObject(1));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            } finally {
+                executor.releaseResources();
             }
-            return null;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            executor.releaseResources();
         }
+        int rand = random.nextInt(objList.size());
+        return objList.get(rand);
     }
 
     private Vector<String> fillTables() {

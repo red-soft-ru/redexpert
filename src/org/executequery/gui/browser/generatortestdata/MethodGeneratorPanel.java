@@ -59,6 +59,8 @@ public class MethodGeneratorPanel extends JPanel implements ActionListener {
         if (!column.getFormattedDataType().contains("CHAR") && !column.getFormattedDataType().contains("BLOB"))
             add(autoincrementButton, gbh.defaults().nextRowFirstCol().spanX().get());
         add(bottomPanel, gbh.defaults().fillBoth().nextRowFirstCol().spanX().spanY().get());
+        randomButton.setSelected(true);
+        actionPerformed(null);
     }
 
     @Override

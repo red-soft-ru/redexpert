@@ -152,6 +152,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             if (first) {
                 cur_bigint = new BigInteger(startValueField.getText());
                 first = false;
+                return cur_bigint;
             }
             BigInteger iterationBig = new BigInteger(iterationField.getText());
             if (plusMinusBox.getSelectedIndex() == 0)
@@ -163,6 +164,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             if (first) {
                 current_date_time = startValueTime.getTime();
                 first = false;
+                return new Time(Timestamp.valueOf(current_date_time).getTime());
             }
             LocalTime iteration = iterationTime.getTime().toLocalTime();
             if (plusMinusBox.getSelectedIndex() == 0) {
@@ -182,6 +184,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             if (first) {
                 current_date_time = LocalDateTime.of(startValueDate.getDate(), LocalTime.of(0, 0, 0));
                 first = false;
+                return new Date(Timestamp.valueOf(current_date_time).getTime());
             }
             if (plusMinusBox.getSelectedIndex() == 0) {
                 current_date_time = current_date_time.plusYears(iterationDate.getYears());
@@ -198,6 +201,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             if (first) {
                 current_date_time = startValueDateTime.getDateTime();
                 first = false;
+                return Timestamp.valueOf(current_date_time);
             }
             LocalTime iteration = iterationTime.getTime().toLocalTime();
             if (plusMinusBox.getSelectedIndex() == 0) {
@@ -224,6 +228,9 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             if (first) {
                 current_value = Long.parseLong(startValueField.getText());
                 first = false;
+                if (col.getFormattedDataType().contentEquals("SMALLINT"))
+                    return (short) current_value;
+                return (int) current_value;
             }
             if (plusMinusBox.getSelectedIndex() == 0)
                 current_value += Long.parseLong(iterationField.getText());
@@ -239,6 +246,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             if (first) {
                 current_double = Double.parseDouble(startValueField.getText());
                 first = false;
+                return current_double;
             }
             if (plusMinusBox.getSelectedIndex() == 0)
                 current_double += Double.parseDouble(iterationField.getText());

@@ -44,11 +44,10 @@ public class GetFromListPanel extends AbstractMethodPanel {
     }
 
     private void init() {
-        //if(col.getFormattedDataType().contains("BLOB"))
         openFileDialog = new JFileChooser();
         textArea = new SimpleTextArea();
         textArea.getTextAreaComponent().setColumns(20);
-        delimiterField = new JTextField(";");
+        delimiterField = new JTextField("\\n");
         orderBox = new JComboBox(Bundles.get(GeneratorTestDataPanel.class, new String[]{
                 "InOrder", "Random"
         }));

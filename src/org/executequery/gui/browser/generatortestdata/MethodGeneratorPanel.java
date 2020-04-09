@@ -17,12 +17,15 @@ public class MethodGeneratorPanel extends JPanel implements ActionListener {
     DatabaseColumn column;
     AbstractMethodPanel methodPanel;
     private ButtonGroup buttonGroup;
-    private JRadioButton randomButton;
-    private JRadioButton getFromOtherTableButton;
-    private JRadioButton getFromListButton;
-    private JRadioButton autoincrementButton;
+    public final static int COUNT_METHODS = 4;
     private JPanel bottomPanel;
     private DefaultStatementExecutor executor;
+    public final static int RANDOM = 0;
+    public final static int FROM_TABLE = 1;
+    public final static int FROM_LIST = 2;
+    public final static int AUTOINCREMENT = 3;
+    AbstractMethodPanel[] methodPanels;
+    private JRadioButton[] radioButtons;
 
     public MethodGeneratorPanel(DatabaseColumn column, DefaultStatementExecutor executor) {
         this.column = column;
@@ -31,35 +34,33 @@ public class MethodGeneratorPanel extends JPanel implements ActionListener {
     }
 
     private void init() {
+        methodPanels = new AbstractMethodPanel[COUNT_METHODS];
+        radioButtons = new JRadioButton[COUNT_METHODS];
+        radioButtons[RANDOM] = new JRadioButton(bundledString("Random"));
+        radioButtons[FROM_TABLE] = new JRadioButton(bundledString("getFromOtherTable"));
+        radioButtons[FROM_LIST] = new JRadioButton(bundledString("getFromList"));
+        radioButtons[AUTOINCREMENT] = new JRadioButton(bundledString("Autoincrement"));
+        buttonGroup = new ButtonGroup();
+        for (int i = 0; i < methodPanels.length; i++) {
+            methodPanels[i] = null;
+            radioButtons[i].addActionListener(this);
+            buttonGroup.add(radioButtons[i]);
+        }
         bottomPanel = new JPanel();
         bottomPanel.setLayout(new GridBagLayout());
-        randomButton = new JRadioButton(bundledString("Random"));
-        randomButton.addActionListener(this);
-        getFromOtherTableButton = new JRadioButton(bundledString("getFromOtherTable"));
-        getFromOtherTableButton.addActionListener(this);
-        getFromListButton = new JRadioButton(bundledString("getFromList"));
-        getFromListButton.addActionListener(this);
-        autoincrementButton = new JRadioButton(bundledString("Autoincrement"));
-        autoincrementButton.addActionListener(this);
-        buttonGroup = new ButtonGroup();
-        buttonGroup.add(randomButton);
-        buttonGroup.add(getFromOtherTableButton);
-        buttonGroup.add(getFromListButton);
-        buttonGroup.add(autoincrementButton);
 
         setLayout(new GridBagLayout());
         GridBagHelper gbh = new GridBagHelper();
         GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
         gbh.setDefaults(gbc);
-
-        add(randomButton, gbh.defaults().spanX().get());
-        add(getFromOtherTableButton, gbh.defaults().nextRowFirstCol().spanX().get());
-        add(getFromListButton, gbh.defaults().nextRowFirstCol().spanX().get());
-        if (!column.getFormattedDataType().contains("CHAR") && !column.getFormattedDataType().contains("BLOB"))
-            add(autoincrementButton, gbh.defaults().nextRowFirstCol().spanX().get());
+        gbh.setXY(0, -1);
+        for (int i = 0; i < radioButtons.length; i++) {
+            if (i != AUTOINCREMENT || (!column.getFormattedDataType().contains("CHAR") && !column.getFormattedDataType().contains("BLOB")))
+                add(radioButtons[i], gbh.defaults().nextRowFirstCol().spanX().get());
+        }
         add(bottomPanel, gbh.defaults().fillBoth().nextRowFirstCol().spanX().spanY().get());
-        randomButton.setSelected(true);
+        radioButtons[RANDOM].setSelected(true);
         actionPerformed(null);
     }
 
@@ -68,28 +69,31 @@ public class MethodGeneratorPanel extends JPanel implements ActionListener {
         bottomPanel.removeAll();
         GridBagConstraints gbc = new GridBagConstraints(0, 0, GridBagConstraints.REMAINDER, GridBagConstraints.REMAINDER, 1, 1,
                 GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0);
-        if (randomButton.isSelected()) {
-            methodPanel = new RandomMethodPanel(column);
-            bottomPanel.add(methodPanel, gbc);
-
+        for (int i = 0; i < radioButtons.length; i++) {
+            if (radioButtons[i].isSelected()) {
+                if (methodPanels[i] != null)
+                    methodPanel = methodPanels[i];
+                else {
+                    switch (i) {
+                        case RANDOM:
+                            methodPanel = new RandomMethodPanel(column);
+                            break;
+                        case FROM_TABLE:
+                            methodPanel = new GetFromOtherTablePanel(column, executor);
+                            break;
+                        case FROM_LIST:
+                            methodPanel = new GetFromListPanel(column);
+                            break;
+                        case AUTOINCREMENT:
+                            methodPanel = new AutoincrementPanel(column);
+                            break;
+                    }
+                    methodPanels[i] = methodPanel;
+                }
+                break;
+            }
         }
-        if (getFromOtherTableButton.isSelected()) {
-            methodPanel = new GetFromOtherTablePanel(column, executor);
-            bottomPanel.add(methodPanel, gbc);
-
-        }
-
-        if (getFromListButton.isSelected()) {
-            methodPanel = new GetFromListPanel(column);
-            bottomPanel.add(methodPanel, gbc);
-
-        }
-
-        if (autoincrementButton.isSelected()) {
-            methodPanel = new AutoincrementPanel(column);
-            bottomPanel.add(methodPanel, gbc);
-
-        }
+        bottomPanel.add(methodPanel, gbc);
         updateUI();
     }
 

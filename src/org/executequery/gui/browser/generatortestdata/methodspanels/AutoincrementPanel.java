@@ -112,7 +112,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
         }
         if (col.getFormattedDataType().contentEquals("DATE")) {
             startValueDate = new DatePicker();
-            startValueDate.setDate(LocalDate.of(0, 1, 1));
+            startValueDate.setDate(LocalDate.now());
             iterationDate = new DateDifferenceSetter();
 
 
@@ -120,12 +120,13 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
             settingsPanel.add(startValueDate, gbh.defaults().nextCol().setMaxWeightX().get());
             label = new JLabel(bundles("Iteration"));
-            settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
+            settingsPanel.add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
             settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
         }
         if (col.getFormattedDataType().contentEquals("TIMESTAMP")) {
             startValueDateTime = new EQDateTimePicker();
-            startValueDateTime.setDateTimePermissive(LocalDateTime.MIN);
+            startValueDateTime.setVisibleNullBox(false);
+            startValueDateTime.setDateTimePermissive(LocalDateTime.now());
             iterationDate = new DateDifferenceSetter();
             iterationTime = new EQTimePicker();
             iterationTime.setVisibleNullBox(false);
@@ -136,7 +137,7 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
             settingsPanel.add(startValueDateTime, gbh.defaults().nextCol().setMaxWeightX().get());
             label = new JLabel(bundles("Iteration"));
-            settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
+            settingsPanel.add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
             settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
             settingsPanel.add(iterationTime, gbh.defaults().nextRow().setMaxWeightX().get());
         }

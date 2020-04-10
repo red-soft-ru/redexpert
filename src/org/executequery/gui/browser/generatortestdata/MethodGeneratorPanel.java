@@ -56,16 +56,20 @@ public class MethodGeneratorPanel extends JPanel implements ActionListener {
         gbh.setDefaults(gbc);
         gbh.setXY(0, -1);
         for (int i = 0; i < radioButtons.length; i++) {
-            if (i != AUTOINCREMENT || (!column.getFormattedDataType().contains("CHAR") && !column.getFormattedDataType().contains("BLOB")))
+            if (i != AUTOINCREMENT || (!column.getFormattedDataType().contains("CHAR") && !column.getFormattedDataType().contains("BLOB") && !column.getFormattedDataType().contains("BOOLEAN")))
                 add(radioButtons[i], gbh.defaults().nextRowFirstCol().spanX().get());
         }
         add(bottomPanel, gbh.defaults().fillBoth().nextRowFirstCol().spanX().spanY().get());
         radioButtons[RANDOM].setSelected(true);
-        actionPerformed(null);
+        refresh();
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        refresh();
+    }
+
+    private void refresh() {
         bottomPanel.removeAll();
         GridBagConstraints gbc = new GridBagConstraints(0, 0, GridBagConstraints.REMAINDER, GridBagConstraints.REMAINDER, 1, 1,
                 GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0);

@@ -7,6 +7,9 @@ import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,6 +26,7 @@ import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Random;
+import java.util.regex.Pattern;
 
 public class GetFromListPanel extends AbstractMethodPanel {
     private SimpleTextArea textArea;
@@ -47,7 +51,9 @@ public class GetFromListPanel extends AbstractMethodPanel {
         openFileDialog = new JFileChooser();
         textArea = new SimpleTextArea();
         textArea.getTextAreaComponent().setColumns(20);
-        delimiterField = new JTextField("\\n");
+        delimiterField = new JTextField();
+        delimiterField.setDocument(new JTextFieldLimit(1));
+        delimiterField.setText("\\n");
         orderBox = new JComboBox(Bundles.get(GeneratorTestDataPanel.class, new String[]{
                 "InOrder", "Random"
         }));
@@ -141,12 +147,15 @@ public class GetFromListPanel extends AbstractMethodPanel {
                 list[i] = files[i].getAbsolutePath();
             }
         } else {
+            String delimiter = delimiterField.getText();
+            if (!delimiter.startsWith("\\"))
+                delimiter = Pattern.quote(delimiter);
             if (sourceBox.getSelectedIndex() == 0)
-                list = textArea.getTextAreaComponent().getText().split(delimiterField.getText());
+                list = textArea.getTextAreaComponent().getText().trim().split(delimiter);
             else {
                 try {
                     String s = new String(Files.readAllBytes(Paths.get(fileField.getText())));
-                    list = s.split(delimiterField.getText());
+                    list = s.trim().split(delimiter);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -193,6 +202,32 @@ public class GetFromListPanel extends AbstractMethodPanel {
                 e.printStackTrace();
             }
         }
+        if (col.getFormattedDataType().contentEquals("BOOLEAN")) {
+            return Boolean.valueOf(str);
+        }
         return null;
+    }
+
+    class JTextFieldLimit extends PlainDocument {
+        private int limit;
+
+        JTextFieldLimit(int limit) {
+            super();
+            this.limit = limit;
+        }
+
+        JTextFieldLimit(int limit, boolean upper) {
+            super();
+            this.limit = limit;
+        }
+
+        public void insertString(int offset, String str, AttributeSet attr) throws BadLocationException {
+            if (str == null)
+                return;
+
+            if ((getLength() + str.length()) <= limit || getText(0, 1).startsWith("\\") || getLength() == 0 && str.startsWith("\\")) {
+                super.insertString(offset, str, attr);
+            }
+        }
     }
 }

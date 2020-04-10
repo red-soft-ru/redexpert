@@ -47,7 +47,7 @@ public class GetFromOtherTablePanel extends AbstractMethodPanel {
             }
         });
         colBox = new JComboBox(colBoxModel);
-        countRowsField = new NumberTextField();
+        countRowsField = new NumberTextField(false);
         countRowsField.setValue(1);
         GridBagHelper gbh = new GridBagHelper();
         GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 0,

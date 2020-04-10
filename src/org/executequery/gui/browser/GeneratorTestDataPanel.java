@@ -190,7 +190,7 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
                             int countError = 0;
                             List<FieldGenerator> fieldGenerators = fieldsPanel.getFieldGenerators();
                             List<FieldGenerator> selectedFields = new ArrayList<>();
-                            String sql = "INSERT INTO " + tableBox.getSelectedItem() + " (";
+                            String sql = "INSERT INTO \"" + tableBox.getSelectedItem() + "\" (";
                             String values = "";
                             boolean first = true;
                             for (int g = 0; g < fieldGenerators.size(); g++) {
@@ -200,8 +200,9 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
                                         sql += ",";
                                         values += ",";
                                     } else first = false;
-                                    sql += " " + fieldGenerators.get(g).getColumn().getName();
+                                    sql += " \"" + fieldGenerators.get(g).getColumn().getName() + "\"\n";
                                     values += "? ";
+                                    fieldGenerators.get(g).setFirst();
 
                                 }
                             }
@@ -255,8 +256,9 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
                                 }
                                 executor.getConnection().commit();
                                 logPanel.append("Execution time: " + (System.currentTimeMillis() - startTime) + " ms");
-                            } catch (SQLException ex) {
+                            } catch (Exception ex) {
                                 ex.printStackTrace();
+                                GUIUtilities.displayExceptionErrorDialog("generation error: " + ex.getMessage(), ex);
                             } finally {
                                 executor.releaseResources();
                             }
@@ -277,11 +279,12 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
 
             }
         });
-        countRecordsField = new NumberTextField();
-        countRecordsField.setValue(100);
+        countRecordsField = new NumberTextField(false);
+        countRecordsField.setText("100");
 
-        commitAfterField = new NumberTextField();
-        commitAfterField.setValue(100);
+        commitAfterField = new NumberTextField(false);
+        commitAfterField.setText("500");
+
 
         logBox = new JCheckBox(bundles("OutputLog"));
 

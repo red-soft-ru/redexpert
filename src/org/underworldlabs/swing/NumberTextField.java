@@ -39,15 +39,22 @@ public class NumberTextField extends JTextField {
     private NumberFormat integerFormatter;
     private WholeNumberDocument numberDocument;
     private int digits;
+    private boolean negativeNumbers;
 
     public NumberTextField() {
+        this(true);
+    }
+
+    public NumberTextField(boolean negativeNumbers) {
 
         super();
 
+        this.negativeNumbers = negativeNumbers;
         this.digits = -1;
-
-        this.numberDocument = new WholeNumberDocument();
+        if (numberDocument == null)
+            this.numberDocument = new WholeNumberDocument();
         numberDocument.setDigits(digits);
+        numberDocument.setEnableNegativeNumbers(this.negativeNumbers);
 
         this.integerFormatter = NumberFormat.getNumberInstance();
         integerFormatter.setParseIntegerOnly(true);
@@ -57,6 +64,14 @@ public class NumberTextField extends JTextField {
         this();
         numberDocument.setDigits(digits);
         this.digits = digits;
+    }
+
+    public boolean isEnableNegativeNumbers() {
+        return numberDocument.isEnableNegativeNumbers();
+    }
+
+    public void setEnableNegativeNumbers(boolean enableNegativeNumbers) {
+        numberDocument.setEnableNegativeNumbers(enableNegativeNumbers);
     }
 
     public void setDigits(int digits) {
@@ -115,7 +130,7 @@ public class NumberTextField extends JTextField {
 
         if (numberDocument == null)
             numberDocument = new WholeNumberDocument();
-
+        numberDocument.setEnableNegativeNumbers(negativeNumbers);
         return numberDocument;
 
     }
@@ -128,8 +143,19 @@ class WholeNumberDocument extends PlainDocument {
     private Toolkit toolkit;
     private int digits;
 
+    private boolean enableNegativeNumbers;
+
     public WholeNumberDocument() {
         toolkit = Toolkit.getDefaultToolkit();
+        enableNegativeNumbers = true;
+    }
+
+    public boolean isEnableNegativeNumbers() {
+        return enableNegativeNumbers;
+    }
+
+    public void setEnableNegativeNumbers(boolean enableNegativeNumbers) {
+        this.enableNegativeNumbers = enableNegativeNumbers;
     }
 
     public int getDigits() {
@@ -158,7 +184,7 @@ class WholeNumberDocument extends PlainDocument {
 
         for (int i = 0; i < result.length; i++) {
 
-            if (Character.isDigit(source[i]) ||
+            if (Character.isDigit(source[i]) || enableNegativeNumbers &&
                     (offs == 0 && i == 0 && source[i] == '-')) {
                 result[j++] = source[i];
             } else {

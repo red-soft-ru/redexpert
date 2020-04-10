@@ -3,6 +3,7 @@ package org.executequery.gui.browser.generatortestdata.methodspanels;
 import com.github.lgooddatepicker.components.DatePicker;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.gui.text.SimpleTextArea;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.EQDateTimePicker;
 import org.underworldlabs.swing.EQTimePicker;
 import org.underworldlabs.swing.NumberTextField;
@@ -36,6 +37,7 @@ public class RandomMethodPanel extends AbstractMethodPanel {
     //private JScrollPane scrollSymbols;
     private JTextField maxByteField;
     private JTextField minByteField;
+    private JCheckBox nullBox;
 
     public RandomMethodPanel(DatabaseColumn col) {
         super(col);
@@ -44,6 +46,8 @@ public class RandomMethodPanel extends AbstractMethodPanel {
 
     private void init() {
         countSymbolsAfterComma = new NumberTextField();
+        countSymbolsAfterComma.setText("1");
+        nullBox = new JCheckBox(bundles("UseNull"));
         settingsPanel = new JPanel();
         settingsPanel.setLayout(new GridBagLayout());
         GridBagHelper gbh = new GridBagHelper();
@@ -70,7 +74,7 @@ public class RandomMethodPanel extends AbstractMethodPanel {
                     maxField.setText("9223372036854775807");
                     minField.setText("-9223372036854775808");
                 } else {
-                    maxField.setText("0");
+                    maxField.setText("1");
                     minField.setText("0");
                 }
             } else {
@@ -194,20 +198,27 @@ public class RandomMethodPanel extends AbstractMethodPanel {
         }
         setLayout(new GridBagLayout());
         gbh.setXY(0, 0);
+        add(nullBox, gbh.defaults().spanX().get());
         if (col.getFormattedDataType().contains("CHAR")) {
-            add(settingsPanel, gbh.defaults().fillBoth().spanX().spanY().get());
+            add(settingsPanel, gbh.defaults().nextRowFirstCol().fillBoth().spanX().spanY().get());
         } else {
-            add(settingsPanel, gbh.defaults().spanX().get());
+            add(settingsPanel, gbh.defaults().nextRowFirstCol().spanX().get());
             add(new JPanel(), gbh.defaults().nextRowFirstCol().spanX().spanY().get());
         }
 
     }
 
     public Object getTestDataObject() {
+        if (nullBox.isSelected()) {
+            if (new Random().nextInt(10) == 0)
+                return null;
+        }
         if (col.getFormattedDataType().contentEquals("BIGINT")) {
             BigInteger bigint = new BigInteger(62, new Random());
             BigInteger max = new BigInteger(maxField.getText());
             BigInteger min = new BigInteger(minField.getText());
+            if (max.compareTo(min) == -1)
+                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
             BigInteger zero = new BigInteger("0");
             BigInteger diapason;
             if (min.compareTo(zero) < 0 && max.compareTo(zero) > 0) {
@@ -233,6 +244,8 @@ public class RandomMethodPanel extends AbstractMethodPanel {
                 value *= -1;
             long max = Timestamp.valueOf(maxTime.getTime()).getTime();
             long min = Timestamp.valueOf(minTime.getTime()).getTime();
+            if (min > max)
+                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
             long diapason = max - min;
             if (diapason == 0) {
                 value = max;
@@ -248,6 +261,8 @@ public class RandomMethodPanel extends AbstractMethodPanel {
                 value *= -1;
             long max = ChronoUnit.DAYS.between(maxDate.getDate(), LocalDate.of(0, 1, 1));
             long min = ChronoUnit.DAYS.between(minDate.getDate(), LocalDate.of(0, 1, 1));
+            if (min > max)
+                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
             long diapason = max - min;
             if (diapason == 0) {
                 value = max;
@@ -264,6 +279,8 @@ public class RandomMethodPanel extends AbstractMethodPanel {
                 value *= -1;
             long max = Timestamp.valueOf(maxDateTime.getStringValue()).getTime();
             long min = Timestamp.valueOf(minDateTime.getStringValue()).getTime();
+            if (min > max)
+                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
             long diapason = max - min;
             if (diapason == 0) {
                 value = max;
@@ -279,6 +296,8 @@ public class RandomMethodPanel extends AbstractMethodPanel {
                 value *= -1;
             long max = ((NumberTextField) maxField).getValue();
             long min = ((NumberTextField) minField).getValue();
+            if (min > max)
+                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
             long diapason = max - min;
             if (diapason == 0) {
                 value = (int) max;
@@ -298,6 +317,8 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             long power = (long) Math.pow(10, countSymbolsAfterComma.getLongValue());
             long max = Long.parseLong(maxField.getText()) * power;
             long min = Long.parseLong(minField.getText()) * power;
+            if (min > max)
+                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
             long diapason = max - min;
             if (diapason == 0) {
                 value = max;
@@ -311,6 +332,8 @@ public class RandomMethodPanel extends AbstractMethodPanel {
                 n *= -1;
             long max = ((NumberTextField) maxField).getLongValue() + 1;
             long min = ((NumberTextField) minField).getLongValue();
+            if (min > max)
+                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
             long diapason = max - min;
             if (diapason == 0) {
                 n = max;
@@ -338,6 +361,8 @@ public class RandomMethodPanel extends AbstractMethodPanel {
                 n *= -1;
             int max = ((NumberTextField) maxField).getValue() + 1;
             int min = ((NumberTextField) minField).getValue();
+            if (min > max)
+                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
             int diapason = max - min;
             if (diapason == 0) {
                 n = max;
@@ -345,6 +370,8 @@ public class RandomMethodPanel extends AbstractMethodPanel {
                 n = (min + (n % diapason));
             max = ((NumberTextField) maxByteField).getValue() + 1;
             min = ((NumberTextField) minByteField).getValue();
+            if (min > max)
+                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
             diapason = max - min;
             byte[] bytes = new byte[n];
             for (int i = 0; i < n; i++) {
@@ -357,6 +384,9 @@ public class RandomMethodPanel extends AbstractMethodPanel {
                 bytes[i] = (byte) x;
             }
             return bytes;
+        }
+        if (col.getFormattedDataType().contains("BOOLEAN")) {
+            return new Random().nextInt(2) == 1;
         }
         return null;
     }

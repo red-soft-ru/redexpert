@@ -154,12 +154,12 @@ public class ConnectionHistory extends AbstractXMLResourceReaderWriter<String[]>
           }
           if (g < mas.length - 1) {
             node.populateChildren();
-            Enumeration<DatabaseObjectNode> childs = node.children();
+            Enumeration<TreeNode> childs = node.children();
             if (!childs.hasMoreElements()) {
               equal = false;
             } else
               for (; childs.hasMoreElements(); ) {
-                DatabaseObjectNode x = childs.nextElement();
+                DatabaseObjectNode x = (DatabaseObjectNode)childs.nextElement();
                 if (x.getName().equals(mas[g + 1])) {
                   node = x;
                   break;

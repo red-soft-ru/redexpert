@@ -706,14 +706,20 @@ public class LiquibaseStatementGenerator implements StatementGenerator {
     }
 
     private String dropColumnChange(DatabaseTableColumn tableColumn, Database database) {
+        if (database instanceof FirebirdDatabase) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("ALTER TABLE \"").append(tableColumn.getTable().getName()).append("\" DROP \"").append(tableColumn.getName()).append("\";");
+            return sb.toString();
+        } else {
 
-        DropColumnChange columnChange = new DropColumnChange();
+            DropColumnChange columnChange = new DropColumnChange();
 
-        //columnChange.setSchemaName(tableColumn.getSchemaName());
-        columnChange.setTableName(tableColumn.getTable().getName());
-        columnChange.setColumnName(tableColumn.getName());
+            //columnChange.setSchemaName(tableColumn.getSchemaName());
+            columnChange.setTableName(tableColumn.getTable().getName());
+            columnChange.setColumnName(tableColumn.getName());
 
-        return generateStatements(columnChange, database);
+            return generateStatements(columnChange, database);
+        }
     }
 
     private String renameColumnChange(DatabaseTableColumn tableColumn, Database database) {

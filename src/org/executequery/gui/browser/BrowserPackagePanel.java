@@ -4,6 +4,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.impl.DefaultDatabasePackage;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextPane;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.StyledLogPane;
@@ -19,6 +20,8 @@ import java.util.Map;
  */
 public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
     public static final String NAME = "BrowserPackagePanel";
+
+    private DependenciesPanel dependenciesPanel;
 
     private DisabledField packageNameField;
 
@@ -50,6 +53,8 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
     }
 
     private void init() throws Exception {
+
+        dependenciesPanel = new DependenciesPanel();
 
         JPanel panel = new JPanel();
 
@@ -91,6 +96,7 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
         sqlPanel.add(sqlPane, BorderLayout.CENTER);
 
         tabs.add("Sql", sqlPanel);
+        tabs.add(Bundles.getCommon("dependencies"), dependenciesPanel);
 
         objectNameLabel = new JLabel();
         packageNameField = new DisabledField();
@@ -150,6 +156,7 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
 
     public void setValues(DefaultDatabasePackage databasePackage) {
 
+        dependenciesPanel.setDatabaseObject(databasePackage);
         objectNameLabel.setText("Package Name:");
         setHeaderText("Database Package");
         setHeaderIcon(GUIUtilities.loadIcon("package16.png", true));

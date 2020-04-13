@@ -519,7 +519,12 @@ std::vector<std::string> get_potential_libjvm_paths()
     search_suffixes.push_back("");
     search_suffixes.push_back("/lib/amd64/server");
     search_suffixes.push_back("/jre/lib/amd64/server");
+    search_suffixes.push_back("/lib/amd64/client");
+    search_suffixes.push_back("/jre/lib/amd64/client");
     search_suffixes.push_back("jre/lib/amd64");
+    search_suffixes.push_back("/lib/server");
+    search_suffixes.push_back("/lib/client");
+
 
     file_name = "libjvm.so";
 #endif
@@ -1225,6 +1230,7 @@ int main(int argc, char *argv[])
     char buf[256];
     GetCurrentDirectoryA(256, buf);
     bin_dir = std::string(buf);
+    app_pid = GetCurrentProcessId();
 #endif
 
     app_dir = bin_dir + "/..";

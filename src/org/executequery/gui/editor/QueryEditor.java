@@ -52,6 +52,8 @@ import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.print.Printable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -129,6 +131,11 @@ public class QueryEditor extends DefaultTabView
      * enable/disable max rows
      */
     private JCheckBox maxRowCountCheckBox;
+
+    /**
+     * the max row count returned field
+     */
+    private JCheckBox stopOnErrorCheckBox;
 
     /**
      * the max row count returned field
@@ -272,14 +279,27 @@ public class QueryEditor extends DefaultTabView
         Vector<DatabaseConnection> connections =
                 ConnectionManager.getActiveConnections();
         connectionsCombo = new OpenConnectionsComboBox(this, connections);
-        connectionsCombo.addActionListener(new ActionListener() {
+        connectionsCombo.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    String idConnection = null;
+                    if (oldConnection == null)
+                        idConnection = QueryEditorHistory.NULL_CONNECTION;
+                    else idConnection = oldConnection.getId();
+                    QueryEditorHistory.changedConnectionEditor(idConnection, getSelectedConnection().getId(), scriptFile.getAbsolutePath());
+                    oldConnection = getSelectedConnection();
+                }
+            }
+        });
+                /*(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 if (oldConnection != null)
                     QueryEditorHistory.changedConnectionEditor(oldConnection.getId(), getSelectedConnection().getId(), scriptFile.getAbsolutePath());
                 oldConnection = getSelectedConnection();
             }
-        });
+        });*/
         oldConnection = (DatabaseConnection) connectionsCombo.getSelectedItem();
 
         txBox = new TransactionIsolationCombobox();
@@ -295,6 +315,14 @@ public class QueryEditor extends DefaultTabView
         maxRowCountCheckBox.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 maxRowCountCheckBoxSelected();
+            }
+        });
+        stopOnErrorCheckBox = new JCheckBox("Stop On Error");
+        stopOnErrorCheckBox.setToolTipText("Enable/disable stopping when error in script");
+        stopOnErrorCheckBox.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                SystemProperties.setBooleanProperty("user", "editor.stop.on.error", stopOnErrorCheckBox.isSelected());
             }
         });
 
@@ -372,6 +400,12 @@ public class QueryEditor extends DefaultTabView
         gbc.insets.right = 2;
         gbc.fill = GridBagConstraints.BOTH;
         toolsPanel.add(maxRowCountField, gbc);
+
+        gbc.gridx++;
+        gbc.weightx = 0;
+        gbc.insets.top = 5;
+        gbc.insets.left = 10;
+        toolsPanel.add(stopOnErrorCheckBox, gbc);
 
         splitPane.setBorder(BorderFactory.createEmptyBorder(0, 3, 3, 3));
 
@@ -555,6 +589,7 @@ public class QueryEditor extends DefaultTabView
         int maxRecords = SystemProperties.getIntProperty("user", "editor.max.records");
         maxRowCountCheckBox.setSelected((maxRecords > 0));
         maxRowCountCheckBoxSelected();
+        stopOnErrorCheckBox.setSelected(SystemProperties.getBooleanProperty("user", "editor.stop.on.error"));
     }
 
     private boolean isAutoCompleteOn() {
@@ -1059,7 +1094,11 @@ public class QueryEditor extends DefaultTabView
         if (getSelectedConnection() != null)
             connectionID = getSelectedConnection().getId();
         else connectionID = QueryEditorHistory.NULL_CONNECTION;
-        QueryEditorHistory.removeEditor(connectionID, scriptFile.getAbsolutePath());
+        try {
+            QueryEditorHistory.removeEditor(connectionID, scriptFile.getAbsolutePath());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return true;
     }
@@ -1210,6 +1249,20 @@ public class QueryEditor extends DefaultTabView
         boolean executeAsBlock = new SqlParser(query).isExecuteBlock();
 
         delegate.executeQuery(getSelectedConnection(), query, executeAsBlock);
+    }
+
+    public void executeSQLScript(String script) {
+
+        preExecute();
+
+        if (script == null) {
+
+            script = editorPanel.getQueryAreaText();
+        }
+
+        editorPanel.resetExecutingLine();
+
+        delegate.executeScript(getSelectedConnection(), script);
     }
 
     public void printExecutedPlan() {

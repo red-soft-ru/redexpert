@@ -14,8 +14,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class JSONAPI {
 
@@ -38,13 +36,7 @@ public class JSONAPI {
 
         br.close();
 
-        if (text != null && text.length() != 0) {
-            Pattern pattern;
-            pattern = Pattern.compile("\"\\d+\\.\\d+\\.\\d+\\.\\d+\\\"");
-            Matcher m = pattern.matcher(text);
-            if (!m.find())
-                throw new IOException(String.format("Server returned HTML or some other non-JSON string: %s", text));
-        } else {
+        if (text.length() == 0) {
             text.append("{\n" +
                     "    \"version\": \"0.0.0.0\"\n" +
                     "}");

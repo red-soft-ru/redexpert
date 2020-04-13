@@ -22,6 +22,8 @@ import java.util.Map;
 public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
     public static final String NAME = "BrowserTriggerPanel";
 
+    private DependenciesPanel dependenciesPanel;
+
     private DisabledField triggerNameField;
     private DisabledField triggerBeforeAfterField;
     private DisabledField triggerPositionField;
@@ -60,6 +62,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
     private void init() {
 
+        dependenciesPanel = new DependenciesPanel();
         JPanel panel = new JPanel();
 
         panel.setLayout(new BorderLayout());
@@ -119,6 +122,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         sqlPanel.add(sqlPane, BorderLayout.CENTER);
 
         tabs.add("Sql", sqlPanel);
+        tabs.add(Bundles.getCommon("dependencies"), dependenciesPanel);
 
         objectNameLabel = new JLabel();
         triggerNameField = new DisabledField();
@@ -193,7 +197,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
     }
 
     public void setValues(DefaultDatabaseTrigger trigger) {
-
+        dependenciesPanel.setDatabaseObject(trigger);
         objectNameLabel.setText(bundleString("TriggerName"));
         setHeaderText(bundleString("DatabaseTrigger"));
         setHeaderIcon(GUIUtilities.loadIcon("TableTrigger16.png", true));

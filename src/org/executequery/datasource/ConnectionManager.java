@@ -34,6 +34,7 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.resource.ResourceException;
 import javax.sql.DataSource;
+import javax.swing.tree.TreeNode;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -97,9 +98,9 @@ public final class ConnectionManager {
 
     public static void loadTree(DatabaseObjectNode root) {
         root.populateChildren();
-        Enumeration<DatabaseObjectNode> nodes = root.children();
+        Enumeration<TreeNode> nodes = root.children();
         while (nodes.hasMoreElements()) {
-            DatabaseObjectNode node = nodes.nextElement();
+            DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
             if (node.isHostNode() || node.getType() == NamedObject.META_TAG)
                 loadTree(node);
         }
@@ -132,6 +133,40 @@ public final class ConnectionManager {
             return connection;
         }
 
+    }
+
+    public static Connection getTemporaryConnection(DatabaseConnection databaseConnection) {
+
+        if (databaseConnection == null) {
+
+            return null;
+        }
+
+        synchronized (databaseConnection) {
+
+            if (connectionPools == null || !connectionPools.containsKey(databaseConnection)) {
+
+                createDataSource(databaseConnection);
+            }
+
+            ConnectionPool pool = connectionPools.get(databaseConnection);
+            DataSource dataSource = getDataSource(databaseConnection);
+            try {
+                return new PooledConnection(dataSource.getConnection(), databaseConnection);
+            } catch (SQLException e) {
+                Log.error("Error get connection", e);
+                return pool.getConnection();
+            }
+        }
+
+    }
+
+    public static String getURL(DatabaseConnection databaseConnection) {
+        if (databaseConnection == null) {
+
+            return null;
+        }
+        return SimpleDataSource.generateUrl(databaseConnection, SimpleDataSource.buildAdvancedProperties(databaseConnection));
     }
 
     public static Connection realConnection(DatabaseMetaData dmd) throws SQLException {

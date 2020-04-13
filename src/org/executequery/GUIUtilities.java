@@ -902,10 +902,10 @@ public final class GUIUtilities {
         BaseActionCommand undo = (BaseActionCommand) ActionBuilder.get("undo-command");
         BaseActionCommand redo = (BaseActionCommand) ActionBuilder.get("redo-command");
 
-        if (undoable == null) {
+        /*if (undoable == null) {
             undo.setEnabled(false);
             redo.setEnabled(false);
-        }
+        }*/
 
         UndoCommand _undo = (UndoCommand) undo.getCommand();
         RedoCommand _redo = (RedoCommand) redo.getCommand();

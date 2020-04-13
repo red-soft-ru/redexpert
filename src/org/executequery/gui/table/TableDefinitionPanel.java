@@ -376,11 +376,21 @@ public abstract class TableDefinitionPanel extends JPanel
                 tableChanged(PK_COLUMN, row, null);
 
             } else if (table.getSelectedColumn() == AUTOINCREMENT_COLUMN) {
-                BaseDialog dialog = new BaseDialog("Autoincrement", true);
-                AutoIncrementPanel panel = new AutoIncrementPanel(dc, dialog, tableVector.elementAt(row).getAutoincrement(), SUBSTITUTE_NAME, generators);
-                dialog.addDisplayComponent(panel);
-                dialog.display();
-                tableChanged(AUTOINCREMENT_COLUMN, row, null);
+                if (tableVector.elementAt(row).isAutoincrement()) {
+                    tableVector.elementAt(row).getAutoincrement().setCreateGenerator(false);
+                    tableVector.elementAt(row).getAutoincrement().setCreateTrigger(false);
+                    tableVector.elementAt(row).getAutoincrement().setIdentity(false);
+                    tableVector.elementAt(row).getAutoincrement().setSqlAutoincrement("");
+                    _model.setValueAt(null, row, AUTOINCREMENT_COLUMN);
+                    tableChanged(AUTOINCREMENT_COLUMN, row, null);
+                } else {
+                    BaseDialog dialog = new BaseDialog("Autoincrement", true);
+                    AutoIncrementPanel panel = new AutoIncrementPanel(dc, dialog, tableVector.elementAt(row).getAutoincrement(), SUBSTITUTE_NAME, generators);
+                    dialog.addDisplayComponent(panel);
+                    dialog.display();
+                    _model.setValueAt(null, row, AUTOINCREMENT_COLUMN);
+                    tableChanged(AUTOINCREMENT_COLUMN, row, null);
+                }
 
             }
         }

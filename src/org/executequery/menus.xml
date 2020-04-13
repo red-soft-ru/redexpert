@@ -320,7 +320,7 @@
                        mnemonic="B"
                        action-command="viewBrowserTools"
                        cache-name="viewBrowserTools"
-                       tool-tip="Displays the browser tool bar"/>-->
+                       tool-tip="Displays the browser tool bar"/>
 
             <menu-item name="Import/Export Tool Bar"
                        key="menu.view.tool-bars.import-export-tool-bar"
@@ -459,6 +459,8 @@
         <menu-item id="grant-manager-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
         <menu-item id="trace-manager-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+        <menu-item id="generator-test-data-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
         <!--<menu-item id="comparerDB-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>

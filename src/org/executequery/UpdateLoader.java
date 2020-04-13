@@ -360,16 +360,6 @@ public class UpdateLoader extends JFrame {
         ApplicationContext.getInstance().setBuild(build);
     }
 
-    private static String stringApplicationProperty(String key) {
-
-        return applicationProperties().getProperty(key);
-    }
-
-    private static ApplicationProperties applicationProperties() {
-
-        return ApplicationProperties.getInstance();
-    }
-
     public boolean isNeedUpdate() {
         version = getLastVersion(repo);
         String localVersion = System.getProperty("executequery.minor.version");
@@ -382,16 +372,26 @@ public class UpdateLoader extends JFrame {
         return false;
     }
 
-    public String getVersion() {
-        return version;
-    }
-
     public void setVersion(String version) {
         this.version = version;
     }
 
+    public String getVersion() {
+        return version;
+    }
+
     public void setBinaryZipUrl(String binaryZip) {
         this.binaryZipUrl = binaryZip;
+    }
+
+    private static String stringApplicationProperty(String key) {
+
+        return applicationProperties().getProperty(key);
+    }
+
+    private static ApplicationProperties applicationProperties() {
+
+        return ApplicationProperties.getInstance();
     }
 
     void update() {

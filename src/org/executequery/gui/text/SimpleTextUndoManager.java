@@ -107,12 +107,12 @@ public class SimpleTextUndoManager extends UndoManager implements FocusListener 
      * Updates the state of undo/redo on a focus lost.
      */
     public void focusLost(FocusEvent e) {
-        if (undoCommand != null) {
+        /*if (undoCommand != null) {
             undoCommand.setEnabled(false);
         }        
         if (redoCommand != null) {
             redoCommand.setEnabled(false);
-        }
+        }*/
         // deregister this as an undo/redo component
         if (textComponent instanceof UndoableComponent) {
             GUIUtilities.registerUndoRedoComponent(null);

@@ -49,6 +49,8 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
 
     public static final String NAME = "BrowserProcedurePanel";
 
+    private DependenciesPanel dependenciesPanel;
+
     private DisabledField procNameField;
     //private DisabledField schemaNameField;
 
@@ -80,6 +82,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
     }
 
     private void init() {
+        dependenciesPanel = new DependenciesPanel();
         model = new ProcedureTableModel();
         table = new DefaultTable(model);
         table.getTableHeader().setReorderingAllowed(false);
@@ -119,6 +122,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         sqlPanel.add(new JScrollPane(createSqlPane), BorderLayout.CENTER);
 
         tabs.add("Sql", sqlPanel);
+        tabs.add(Bundles.getCommon("dependencies"), dependenciesPanel);
 
 
 //        tabs.add("Source", sourcePanel);
@@ -195,6 +199,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
     }
 
     public void setValues(DatabaseExecutable executeable) {
+        dependenciesPanel.setDatabaseObject(executeable);
         int type = executeable.getType();
         if (executeable instanceof SystemDatabaseFunction) {
             type = ((SystemDatabaseFunction) executeable).getRealType();

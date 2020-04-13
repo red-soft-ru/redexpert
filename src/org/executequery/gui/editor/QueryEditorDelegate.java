@@ -171,6 +171,29 @@ public class QueryEditorDelegate implements QueryDelegate {
 
     }
 
+    public void executeScript(DatabaseConnection selectedConnection,
+                              String script) {
+
+        if (dispatcher.isExecuting()) {
+
+            return;
+        }
+
+        if (script == null) {
+
+            script = queryEditor.getEditorText();
+        }
+
+        if (StringUtils.isNotBlank(script)) {
+
+            currentStatementHistoryIndex = -1;
+            queryEditor.setHasPreviousStatement(true);
+            queryEditor.setHasNextStatement(false);
+            dispatcher.executeSQLScript(selectedConnection, script);
+        }
+
+    }
+
     public void printExecutedPlan(DatabaseConnection selectedConnection,
                                   String query) {
 

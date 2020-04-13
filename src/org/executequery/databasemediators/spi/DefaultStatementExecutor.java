@@ -64,6 +64,7 @@ import java.util.regex.Pattern;
  */
 public class DefaultStatementExecutor implements StatementExecutor, Serializable {
 
+
     /**
      * Whether this object is owned by a QueryEditor instance
      */
@@ -280,7 +281,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
             try {
 
-                conn = ConnectionManager.getConnection(databaseConnection);
+                conn = ConnectionManager.getTemporaryConnection(databaseConnection);
                 if (keepAlive) {
 
                     try {
@@ -1118,6 +1119,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
     @Override
     public SqlStatementResult execute(int type, PreparedStatement statement, int fetchSize) throws SQLException {
+        statementResult.reset();
         statementResult.setType(type);
 
         switch (type) {
@@ -1452,7 +1454,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
         } catch (SQLException e) {
             statementResult.setSqlException(e);
         } finally {
-            finished();
+            //finished();
         }
 
         return statementResult;
@@ -1775,6 +1777,14 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
         stmnt = conn.prepareCall(query);
 
         return (CallableStatement) stmnt;
+    }
+
+    public boolean isKeepAlive() {
+        return keepAlive;
+    }
+
+    public void setKeepAlive(boolean keepAlive) {
+        this.keepAlive = keepAlive;
     }
 }
 

@@ -57,9 +57,15 @@ public class EQTimePicker extends JPanel {
         return temp.getHour() + ":" + temp.getMinute() + ":" + temp.getSecond();
     }
 
+    public LocalDateTime getTime() {
+        Instant instant = Instant.ofEpochMilli(((Date) (timeSpinner).getValue()).getTime());
+        LocalDateTime temp = LocalDateTime.ofInstant(instant, ZoneOffset.systemDefault());
+        return temp;
+    }
+
     public void setTime(LocalTime time) {
         if (time != null) {
-            Instant instant = time.atDate(LocalDate.of(2000, 1, 1)).
+            Instant instant = time.atDate(LocalDate.of(1970, 1, 1)).
                     atZone(ZoneId.systemDefault()).toInstant();
             Date date = Date.from(instant);
             timeSpinner.setValue(date);
@@ -73,5 +79,9 @@ public class EQTimePicker extends JPanel {
         nullBox.setSelected(!enable);
         nullBox.setEnabled(enable);
         timeSpinner.setEnabled(enable);
+    }
+
+    public void setVisibleNullBox(boolean flag) {
+        nullBox.setVisible(flag);
     }
 }

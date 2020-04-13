@@ -36,6 +36,7 @@ import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.util.MiscUtils;
 
+import javax.swing.tree.TreeNode;
 import java.util.*;
 
 /**
@@ -695,9 +696,9 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     private void addingChild(List<String> list, DatabaseObjectNode root) {
         root.populateChildren();
-        Enumeration<DatabaseObjectNode> nodes = root.children();
+        Enumeration<TreeNode> nodes = root.children();
         while (nodes.hasMoreElements()) {
-            DatabaseObjectNode node = nodes.nextElement();
+            DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
             if (!node.isHostNode() && node.getType() != NamedObject.META_TAG)
                 list.add(node.getName().replace("$", "\\$"));
             if (node.isHostNode() || node.getType() == NamedObject.META_TAG)

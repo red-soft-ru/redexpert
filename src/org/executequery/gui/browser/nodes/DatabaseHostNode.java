@@ -104,7 +104,6 @@ public class DatabaseHostNode extends DatabaseObjectNode {
      */
     public void populateChildren() throws DataSourceException {
         if (isConnected()) {
-
             super.populateChildren();
             ensureValidCatalogsAndSchemasVisible();
         }

@@ -2,7 +2,6 @@ cache:
   paths:
     - .m2/repository
 
-
 stages:
 - prepare
 - sources
@@ -14,7 +13,7 @@ variables:
   RELEASE_HUB_PROJECT: red_expert
   CI_URL: ${CI_PROJECT_URL}/pipelines/${CI_PIPELINE_ID}
   CONTEXT: commit
-  TAG_BRANCH: RedExpert_1.0
+  TAG_BRANCH: stable
   MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository"
 
 .prepare_template: &prepare_template

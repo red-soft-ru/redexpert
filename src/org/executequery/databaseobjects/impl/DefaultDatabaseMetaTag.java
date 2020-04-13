@@ -432,7 +432,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     object.setSchemaName("");
                     object.setRemarks(rs.getString(2));
                     object.setSource(rs.getString(3));
-                } else if (typeTree == TreePanel.DEPENDED_ON) {
+                } else {
                     object.setTypeTree(typeTree);
                     object.setDependObject(dependedObject);
 

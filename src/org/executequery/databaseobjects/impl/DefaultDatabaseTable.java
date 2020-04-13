@@ -244,6 +244,8 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                   getName());
         if (typeTree == TreePanel.DEPENDED_ON)
           _columns = getDependedColumns();
+        if (typeTree == TreePanel.DEPENDENT)
+          _columns = getDependentColumns();
         if (_columns != null) {
 
           columns = databaseColumnListWithSize(_columns.size());
@@ -1441,6 +1443,122 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
               "(d.rdb$dependent_name = f.rdb$field_source)\n" +
               "and (f.rdb$relation_name = '" + dependObject.getName() + "')\n" +
               "and (d.RDB$DEPENDED_ON_NAME = '" + getName() + "')\n" +
+              "order by 1";
+
+      statement = connection.createStatement();
+      rs = statement.executeQuery(firebirdSql);
+
+
+      while (rs.next()) {
+
+        DefaultDatabaseColumn column = new DefaultDatabaseColumn();
+
+        column.setName(rs.getString(1));
+
+        columns.add(column);
+      }
+      releaseResources(rs);
+
+      int columnCount = columns.size();
+      if (columnCount > 0) {
+
+        // check for primary keys
+        rs = dmd.getPrimaryKeys(null, null, getName());
+        while (rs.next()) {
+
+          String pkColumn = rs.getString(4);
+
+          // find the pk column in the previous list
+          for (int i = 0; i < columnCount; i++) {
+
+            DatabaseColumn column = columns.get(i);
+            String columnName = column.getName();
+
+            if (columnName.equalsIgnoreCase(pkColumn)) {
+              ((DefaultDatabaseColumn) column).setPrimaryKey(true);
+              break;
+            }
+
+          }
+
+        }
+        releaseResources(rs);
+
+        // check for foreign keys
+        rs = dmd.getImportedKeys(null, null, getName());
+        while (rs.next()) {
+          String fkColumn = rs.getString(8);
+
+          // find the fk column in the previous list
+          for (int i = 0; i < columnCount; i++) {
+            DatabaseColumn column = columns.get(i);
+            String columnName = column.getName();
+            if (columnName.equalsIgnoreCase(fkColumn)) {
+              ((DefaultDatabaseColumn) column).setForeignKey(true);
+              break;
+            }
+          }
+
+        }
+
+      }
+
+      return columns;
+
+    } catch (SQLException e) {
+
+      if (Log.isDebugEnabled()) {
+
+        Log.error("Error retrieving column data for table " + getName()
+                + " using connection " + getHost().getDatabaseConnection(), e);
+      }
+
+      return columns;
+
+//            throw new DataSourceException(e);
+
+    } finally {
+
+      releaseResources(rs);
+    }
+  }
+
+  private List<DatabaseColumn> getDependentColumns() {
+    ResultSet rs = null;
+
+    List<DatabaseColumn> columns = new ArrayList<DatabaseColumn>();
+
+    try {
+      DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+      String packageField = "";
+      if (dmd.getDatabaseMajorVersion() > 2) {
+        packageField = "and (T1.RDB$PACKAGE_NAME IS NULL)\n";
+      }
+      Connection connection = dmd.getConnection();
+      Statement statement = null;
+      String firebirdSql = "select " +
+              "E.RDB$FIELD_NAME as OnField\n" +
+              "from RDB$REF_CONSTRAINTS B, RDB$RELATION_CONSTRAINTS A, RDB$RELATION_CONSTRAINTS C,\n" +
+              "RDB$INDEX_SEGMENTS D, RDB$INDEX_SEGMENTS E\n" +
+              "where (A.RDB$CONSTRAINT_TYPE = 'FOREIGN KEY') and\n" +
+              "(A.RDB$CONSTRAINT_NAME = B.RDB$CONSTRAINT_NAME) and\n" +
+              "(B.RDB$CONST_NAME_UQ=C.RDB$CONSTRAINT_NAME) and (C.RDB$INDEX_NAME=D.RDB$INDEX_NAME) and\n" +
+              "(A.RDB$INDEX_NAME=E.RDB$INDEX_NAME)\n" +
+              "and (C.RDB$RELATION_NAME = '" + dependObject.getName() + "')\n" +
+              "and (A.RDB$RELATION_NAME = '" + getName() + "')\n" +
+              "union all\n" +
+              "select cast(t1.RDB$FIELD_NAME as varchar(64))\n" +
+              "from RDB$DEPENDENCIES t1 where (t1.RDB$DEPENDENT_NAME = '" + dependObject.getName() + "')\n" +
+              "and (t1.RDB$DEPENDENT_TYPE = 0)\n" +
+              packageField +
+              "and t1.RDB$DEPENDED_ON_NAME = '" + getName() + "'\n" +
+              "union all\n" +
+              "select distinct cast(d.rdb$field_name as varchar(64))\n" +
+              "from rdb$dependencies d, rdb$relation_fields f\n" +
+              "where (d.rdb$dependent_type = 3) and\n" +
+              "(d.rdb$dependent_name = f.rdb$field_source)\n" +
+              "and (f.rdb$relation_name = '" + dependObject.getName() + "')\n" +
+              "and  d.rdb$depended_on_name = '" + getName() + "'\n" +
               "order by 1";
 
       statement = connection.createStatement();

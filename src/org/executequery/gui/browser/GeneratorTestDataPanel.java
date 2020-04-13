@@ -14,6 +14,7 @@ import org.executequery.gui.browser.generatortestdata.FieldsPanel;
 import org.executequery.gui.components.OpenConnectionsComboboxPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.SqlStatementResult;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -212,6 +213,8 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
                             logPanel.append("execute:\n");
                             logPanel.append(sql);
                             try {
+                                if (selectedFields.size() < 1)
+                                    throw new DataSourceException("no columns selected for generation");
                                 executor.setCommitMode(false);
                                 executor.setKeepAlive(true);
                                 PreparedStatement statement = executor.getPreparedStatement(sql);

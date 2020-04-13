@@ -291,7 +291,7 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             return t;
         }
         if (col.getFormattedDataType().contentEquals("INTEGER") || col.getFormattedDataType().contentEquals("SMALLINT")) {
-            int value = new Random().nextInt();
+            long value = new Random().nextLong();
             if (value < 0)
                 value *= -1;
             long max = ((NumberTextField) maxField).getValue();
@@ -300,12 +300,12 @@ public class RandomMethodPanel extends AbstractMethodPanel {
                 throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
             long diapason = max - min;
             if (diapason == 0) {
-                value = (int) max;
+                value = max;
             } else
-                value = (int) (min + (value % diapason));
+                value = (min + (value % diapason));
             if (col.getFormattedDataType().contentEquals("SMALLINT"))
                 return (short) value;
-            return value;
+            return (int) value;
         }
         if (col.getFormattedDataType().contentEquals("DOUBLE PRECISION")
                 || col.getFormattedDataType().contentEquals("FLOAT")

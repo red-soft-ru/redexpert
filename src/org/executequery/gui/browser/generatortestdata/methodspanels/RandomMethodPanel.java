@@ -148,8 +148,8 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             settingsPanel.add(maxDateTime, gbh.defaults().nextCol().spanX().get());
         }
         if (col.getFormattedDataType().contains("CHAR")) {
-            maxField = new NumberTextField();
-            minField = new NumberTextField();
+            maxField = new NumberTextField(false);
+            minField = new NumberTextField(false);
             maxField.setText("" + col.getColumnSize());
             minField.setText("0");
             useOnlyThisSymbolsBox = new JCheckBox(bundles("UseOnlyThisSymbols"));
@@ -169,8 +169,8 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             settingsPanel.add(useOnlyThisSymbolsField, gbh.defaults().nextRowFirstCol().fillBoth().spanX().spanY().get());
         }
         if (col.getFormattedDataType().contains("BLOB")) {
-            maxField = new NumberTextField();
-            minField = new NumberTextField();
+            maxField = new NumberTextField(false);
+            minField = new NumberTextField(false);
             maxField.setText("" + col.getColumnSize());
             minField.setText("0");
             maxByteField = new NumberTextField();

@@ -132,7 +132,7 @@ public class GetFromListPanel extends AbstractMethodPanel {
         if (index >= list.length)
             index = 0;
         if (orderBox.getSelectedIndex() == 1) {
-            index = new Random().nextInt(list.length - 1);
+            index = new Random().nextInt(list.length);
         }
         index++;
         return listObject[index - 1];

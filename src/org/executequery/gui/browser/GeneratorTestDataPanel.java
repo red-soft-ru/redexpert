@@ -60,6 +60,8 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
 
     private JCheckBox logBox;
 
+    private JCheckBox stopOnErrorBox;
+
 
     public GeneratorTestDataPanel() {
         init();
@@ -243,6 +245,10 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
                                             }
                                         }
                                         countError++;
+                                        if (stopOnErrorBox.isSelected()) {
+                                            GUIUtilities.displayExceptionErrorDialog(result.getSqlException().getMessage(), result.getSqlException());
+                                            break;
+                                        }
                                     } else {
                                         countSuccess++;
                                         if (outlog && lastError) {
@@ -287,7 +293,7 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
 
 
         logBox = new JCheckBox(bundles("OutputLog"));
-
+        stopOnErrorBox = new JCheckBox(bundles("StopOnError"));
 
         tableBoxModel.setElements(fillTables());
         JPanel topPanel = new JPanel();
@@ -323,6 +329,8 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
         topPanel.add(commitAfterField, gbh.defaults().nextCol().spanX().get());
 
         topPanel.add(logBox, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
+
+        topPanel.add(stopOnErrorBox, gbh.defaults().nextCol().setLabelDefault().get());
 
         topPanel.add(progressBar, gbh.defaults().nextRowFirstCol().spanX().get());
 

@@ -29,9 +29,11 @@ public class DependenciesPanel extends JPanel {
 
         this.dependentPanel = new DependPanel(TreePanel.DEPENDENT);
         this.dependedOnPanel = new DependPanel(TreePanel.DEPENDED_ON);
-        dependentPanel.setBorder(new BorderUIResource.TitledBorderUIResource(bundledString("dependent")));
-        dependedOnPanel.setBorder(new BorderUIResource.TitledBorderUIResource(bundledString("dependedOn")));
-        this.splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(dependentPanel), new JScrollPane(dependedOnPanel));
+        JScrollPane dependentScroll = new JScrollPane(dependentPanel);
+        dependentScroll.setBorder(new BorderUIResource.TitledBorderUIResource(bundledString("dependent")));
+        JScrollPane dependedOnScroll = new JScrollPane(dependedOnPanel);
+        dependedOnScroll.setBorder(new BorderUIResource.TitledBorderUIResource(bundledString("dependedOn")));
+        this.splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dependentScroll, dependedOnScroll);
         setLayout(new GridBagLayout());
 
         add(splitPane, new GridBagConstraints(0, 0,

@@ -97,14 +97,14 @@ Red Expert обладает рядом полезных компонентов: 
 
 На \textit{центральной панели} окна приложения в виде вкладок размещаются основные функциональные компоненты, такие как:
 
-\anonsubsubsection{\hyperref[sec:connections]{Браузер баз данных}}
+\anonsubsubsection[Браузер баз данных]{\hyperref[sec:connections]{Браузер баз данных}}
 
 С его помощью выполняется подключение и отключение от базы данных, просматриваются все настройки подключения.
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width = 0.8\linewidth]{img/browser_db.png}
 	\end{figure}
-\anonsubsubsection{\hyperref[sec:new_driver]{Компонент для установки JDBC драйверов}}
+\anonsubsubsection[Компонент для установки JDBC драйверов]{\hyperref[sec:new_driver]{Компонент для установки JDBC драйверов}}
 
 Предназначен для регистрации в Red Expert других JDBC драйверов помимо Jaybird 3 Driver, а также просмотра и редактирования их настроек.
 	\begin{figure}[H]
@@ -116,7 +116,7 @@ Red Expert обладает рядом полезных компонентов: 
 		\includegraphics[width = 0.8\linewidth]{img/driver_show.png}
 	\end{figure}
 
-\anonsubsubsection{\hyperref[sec:create_db]{Компонент для создания новой базы данных}}
+\anonsubsubsection[Компонент для создания новой базы данных]{\hyperref[sec:create_db]{Компонент для создания новой базы данных}}
 
 В нем настраиваются параметры подключения к создаваемой базе данных, в том числе расширенные.
 \begin{figure}[H]
@@ -124,7 +124,7 @@ Red Expert обладает рядом полезных компонентов: 
 	\includegraphics[width = 0.8\linewidth]{img/create_db.png}
 \end{figure}
 
-\anonsubsubsection{\hyperref[sec:objects]{Обозреватели и редакторы объектов базы данных}}
+\anonsubsubsection[Обозреватели и редакторы объектов базы данных]{\hyperref[sec:objects]{Обозреватели и редакторы объектов базы данных}}
 
 Каждый созданный объект базы данных (процедура, индекс, таблица и т.д.) можно просматривать и изменять через графический интерфейс.
 	\begin{figure}[H]
@@ -132,7 +132,25 @@ Red Expert обладает рядом полезных компонентов: 
 		\includegraphics[width = 0.8\linewidth]{img/table_explor.png}
 	\end{figure}
 
-\anonsubsubsection{\hyperref[sec:query_editor]{Редактор запросов}}
+\anonsubsubsection{Отображение зависимостей}
+
+С помощью обозревателя зависимостей можно выяснить любые зависимости от объекта и зависимости объекта от других объектов. Этот инструмент имеет большую вспомогательную роль перед изменением типов данных или удалением объектов.
+
+Посмотреть зависимости можно открыв обозреватель конкретного объекта на вкладке \textit{Зависимости}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width = 0.8\linewidth]{img/dependence.png}
+\end{figure}
+
+Колонка \textit{<<Зависимые от объекта>>} отображает какие объекты ссылаются на выбранный объект. Например, из примера видно, что на таблицу \ttt{EMPLOYEE} ссылаются подчиненные объекты: \ttt{EMPLOYEE} (ссылается на себя), \ttt{DEPARTMENT, EMPLOYEE\_PROJECT, PROJECT, SALARY\_HISTORY, SALES}.
+
+
+Колонка \textit{<<Объекты БД от которых зависит объект>>} показывает, какие объекты используются выбранным объектом. В приведенном выше примере это таблицы \ttt{DEPARTMENT, JOB} и \ttt{EMPLOYEE}.
+
+Двойной щелчок по любому из объектов в средстве просмотра открывает соответствующий редактор объектов.
+
+\anonsubsubsection[Редактор запросов]{\hyperref[sec:query_editor]{Редактор запросов}}
 
 Инструмент просмотра и выполнения операторов SQL.
 	\begin{figure}[H]
@@ -140,7 +158,7 @@ Red Expert обладает рядом полезных компонентов: 
 		\includegraphics[width = 0.8\linewidth]{img/query_editor.png}
 	\end{figure}
 
-\anonsubsubsection{\hyperref[sec:draft]{Черновик}}
+\anonsubsubsection[Черновик]{\hyperref[sec:draft]{Черновик}}
 
 Текстовый редактор для временного отображения или редактирования текста по мере необходимости.
 	\begin{figure}[H]
@@ -148,7 +166,7 @@ Red Expert обладает рядом полезных компонентов: 
 		\includegraphics[width = 0.8\linewidth]{img/scratch_pad.png}
 	\end{figure}
 
-\anonsubsubsection{\hyperref[sec:user_manager]{Менеджер пользователей}} 
+\anonsubsubsection[Менеджер пользователей]{\hyperref[sec:user_manager]{Менеджер пользователей}} 
 
 Для управления пользователями базы данных (создания, изменения и удаления) через графический интерфейс.
 	
@@ -157,7 +175,7 @@ Red Expert обладает рядом полезных компонентов: 
 		\includegraphics[width = 0.8\linewidth]{img/user_manager.png}
 	\end{figure}
 
-\anonsubsubsection{\hyperref[sec:priv_manager]{Менеджер прав}} 
+\anonsubsubsection[Менеджер прав]{\hyperref[sec:priv_manager]{Менеджер прав}} 
 
 Графический интерфейс для назначения и отзыва привилегий.
 	\begin{figure}[H]
@@ -165,7 +183,7 @@ Red Expert обладает рядом полезных компонентов: 
 		\includegraphics[width = 0.8\linewidth]{img/priv_manager.png}
 	\end{figure}
 
-\anonsubsubsection{\hyperref[sec:trace_manager]{Трейс менеджер}}  
+\anonsubsubsection[Трейс менеджер]{\hyperref[sec:trace_manager]{Трейс менеджер}}  
 
 Позволяют серверу отслеживать и записывать в лог-файлы все события, происходящие с базой данных, такие как: соединение и отсоединение от БД (создание и удаление БД), операции DML и DDL, выполнение хранимых процедур и т.д.
 	\begin{figure}[H]
@@ -173,7 +191,7 @@ Red Expert обладает рядом полезных компонентов: 
 		\includegraphics[width = 0.8\linewidth]{img/trace_manager.png}
 	\end{figure}
 
-\anonsubsubsection{\hyperref[sec:test_data_generator]{Генератор тестовых данных}}
+\anonsubsubsection[Генератор тестовых данных]{\hyperref[sec:test_data_generator]{Генератор тестовых данных}}
 
 Инструмент для быстрой генерации тестовых данных в базах.  С помощью него вы сможете быстро заполнять любую таблицу Ред Базы Данных сгенерированными данными с помощью следующих методов:
 \begin{itemize}
@@ -190,7 +208,7 @@ Red Expert обладает рядом полезных компонентов: 
 	\includegraphics[width = 1\linewidth]{img/test_data_generator_1.png}
 \end{figure}
 
-\anonsubsubsection{\hyperref[sec:logout]{Обозреватель системного журнала состояний вывода}}
+\anonsubsubsection[Обозреватель системного журнала состояний вывода]{\hyperref[sec:logout]{Обозреватель системного журнала состояний вывода}}
 
 Отображение всей информации, которая выводится в стандартный поток вывода, ошибки и предупреждения.
 	\begin{figure}[H]
@@ -198,7 +216,7 @@ Red Expert обладает рядом полезных компонентов: 
 		\includegraphics[width = 0.8\linewidth]{img/system_log.png}
 	\end{figure}
 
-\anonsubsubsection{\hyperref[sec:erd]{Построитель ER-диаграмм}} 
+\anonsubsubsection[Построитель ER-диаграмм]{\hyperref[sec:erd]{Построитель ER-диаграмм}} 
 
 Графическая визуализация схемы базы данных.
 	\begin{figure}[H]
@@ -206,7 +224,7 @@ Red Expert обладает рядом полезных компонентов: 
 		\includegraphics[width = 0.8\linewidth]{img/er_diagram.png}
 	\end{figure}
 
-\anonsubsubsection{\hyperref[sec:compare_datatype]{Компонент для сравнения типов данных}}
+\anonsubsubsection[Компонент для сравнения типов данных]{\hyperref[sec:compare_datatype]{Компонент для сравнения типов данных}}
 
 Для поиска аналогичных типов данных двух разных СУБД, которые наиболее точно соответствуют друг другу.
 	\begin{figure}[H]
@@ -214,7 +232,7 @@ Red Expert обладает рядом полезных компонентов: 
 		\includegraphics[width = 0.8\linewidth]{img/compare_types2.png}
 	\end{figure}
 
-\anonsubsubsection{\hyperref[sec:execute_proc]{Компонент для выполнения хранимых процедур и функций}}
+\anonsubsubsection[Компонент для выполнения хранимых процедур и функций]{\hyperref[sec:execute_proc]{Компонент для выполнения хранимых процедур и функций}}
 
 Выполнение хранимых объектов через графический интерфейс.
 	\begin{figure}[H]
@@ -222,7 +240,7 @@ Red Expert обладает рядом полезных компонентов: 
 		\includegraphics[width = 0.7\linewidth]{img/execute_store_proc.png}
 	\end{figure}
 	
-\anonsubsubsection{\hyperref[sec:export_results]{Компонент для экспорта результатов SELECT запроса}} 
+\anonsubsubsection[Компонент для экспорта результатов SELECT запроса]{\hyperref[sec:export_results]{Компонент для экспорта результатов SELECT запроса}} 
 
 Для сохранения результата выборки \ttt{SELECT} запроса в текстовом файле.
 	\begin{figure}[H]
@@ -230,7 +248,7 @@ Red Expert обладает рядом полезных компонентов: 
 		\includegraphics[width = 0.8\linewidth]{img/export_result.png}
 	\end{figure}
 
-\anonsubsubsection{\hyperref[sec:execute_scripts]{Компонент для выполнения скриптов из файла}}
+\anonsubsubsection[Компонент для выполнения скриптов из файла]{\hyperref[sec:execute_scripts]{Компонент для выполнения скриптов из файла}}
 Можно заранее написать код из SQL команд во внешнем редакторе и сохранить его в файле операционной системы. Red Expert позволяет работать с такими файлами: считывать их в буфер, запускать на выполнение и сохранять набранные команды в файле.
 
 	\begin{figure}[H]
@@ -1751,6 +1769,12 @@ SELECT * FROM employees WHERE (surname = ?)
 	\item Далее выберите таблицу. Поля и их типы вы увидите перед собой. Напротив поля поставьте галочку, если Вы хотите, чтобы для него были сгенерированы данные. Иначе это поле будет заполнено значениями \ttt{NULL}.
 
 	\item Напишите количество записей, которые будут сгенерированы. Генерация больших объемов данных может занять некоторое время. 
+	
+	\item В поле \textit{Фиксация после} введите число строк, после вставки которых будет совершаться коммит.
+	
+	\item При генерации могут возникать ошибки. По умолчанию они не пишутся в лог-файл, чтобы не замедлять работу генератора. Поставьте соответствующую галочку, если вы хотите, чтобы все ошибки фиксировались в логе.
+	
+	\item Если в процессе генерации возникает ошибка для некоторых записей (например, из-за ограничений столбца), то по умолчанию генератор не остановится и продолжит свою работу. Вы можете изменить это поведение, поставив напротив поля \textit{Остановить при ошибке} галочку.
 
 	\item С правой стороны окна можно выбрать метод генерации отдельно для каждого поля таблицы. 
 Предлагается выбрать один из следующих методов:
@@ -1790,7 +1814,7 @@ SELECT * FROM employees WHERE (surname = ?)
 	
 	Значения списка формируют содержимое поля.
 	
-	Список должен состоять из элементов соответствующего типа данных, разделенных специальным символом (разделителем). Сам список можно ввести вручную в предназначенном для этого поле, либо загрузить из файла. 
+	Список должен состоять из элементов соответствующего типа данных, разделенных специальным символом. Разделителем может выступать любой одиночный символ или escape-последовательность, начинающаяся с обратной косой черты (\rr{\textbackslash}). Сам список можно ввести вручную в предназначенном для этого поле, либо загрузить из файла. 
 
 	\item \textbf{\textit{Автоинкремент}}
 	

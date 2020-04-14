@@ -9,7 +9,7 @@
 \usepackage{longtable}
 \usepackage{hhline}
 \usepackage[pdftex]{graphicx}
-\usepackage[colorlinks=true,linkcolor=blue]{hyperref}
+\usepackage[colorlinks=true,linkcolor=blue,unicode, pdftex]{hyperref}
 \makeatletter
 \newcommand\arraybslash{\let\\\@arraycr}
 \makeatother
@@ -251,7 +251,12 @@
 
 \newcommand{\anonsubsection}[1]{\phantomsection\subsection*{#1}\addcontentsline{toc}{subsection}{#1}}
 
-\newcommand{\anonsubsubsection}[1]{\phantomsection\subsubsection*{#1}\addcontentsline{toc}{subsubsection}{#1}}
+\newcommand{\anonsubsubsection}[2][]{\phantomsection%
+	\subsubsection*{#2}%
+	\ifthenelse{\equal{#1}{}}{\addcontentsline{toc}{subsubsection}{#2}}{\addcontentsline{toc}{subsubsection}{#1}}%
+	}
+
+
 
 
 
@@ -264,7 +269,7 @@
 
 \begin{flushright}
 \Huge {\xhrulefill{red}{2mm}\color{red} Red Expert} \\
-\LARGE Версия 1.0\\
+\LARGE Версия 2020.04\\
 #1
 \end{flushright}
 
@@ -272,7 +277,7 @@
 
 \newpage
 
-\fancyhead[R]{#1\\\leftmark}
+\fancyhead[R]{#1\\\rightmark}
 \fancyfoot[C]{\xhrulefill{red}{2mm} Стр. \thepage}
 
 \setcounter{tocdepth}{10}

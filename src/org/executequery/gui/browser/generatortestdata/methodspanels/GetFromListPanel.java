@@ -4,6 +4,7 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.gui.browser.GeneratorTestDataPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
@@ -141,6 +142,8 @@ public class GetFromListPanel extends AbstractMethodPanel {
     private void fillList() {
         if (col.getFormattedDataType().contains("BLOB")) {
             File directory = new File(fileField.getText());
+            if (!directory.exists())
+                throw new DataSourceException("The selected directory does not exist.");
             File[] files = directory.listFiles();
             list = new String[files.length];
             for (int i = 0; i < list.length; i++) {
@@ -154,6 +157,9 @@ public class GetFromListPanel extends AbstractMethodPanel {
                 list = textArea.getTextAreaComponent().getText().trim().split(delimiter);
             else {
                 try {
+                    File file = new File(fileField.getText());
+                    if (!file.exists())
+                        throw new DataSourceException("The selected file does not exist.");
                     String s = new String(Files.readAllBytes(Paths.get(fileField.getText())));
                     list = s.trim().split(delimiter);
                 } catch (IOException e) {

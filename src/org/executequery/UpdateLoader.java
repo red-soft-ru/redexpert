@@ -49,6 +49,7 @@ public class UpdateLoader extends JFrame {
     private JScrollPane scrollPane;
     private JPanel panel1;
     private JPanel panel2;
+    private JProgressBar progressBar;
     private String repoArg;
 
     public void setRepoArg(String repoArg) {
@@ -146,6 +147,9 @@ public class UpdateLoader extends JFrame {
             }
         });
         panel2.add(cancelButton);
+        progressBar = new JProgressBar();
+        panel1.add(progressBar, BorderLayout.NORTH);
+        progressBar.setVisible(false);
         panel1.add(scrollPane, BorderLayout.CENTER);
         panel1.add(panel2, BorderLayout.SOUTH);
 
@@ -362,12 +366,11 @@ public class UpdateLoader extends JFrame {
 
     public boolean isNeedUpdate() {
         version = getLastVersion(repo);
+        ApplicationVersion remoteVersion = new ApplicationVersion(version);
         String localVersion = System.getProperty("executequery.minor.version");
 
-        if (version != null && localVersion != null) {
-            int newVersion = Integer.valueOf(version.replaceAll("\\.", ""));
-            int currentVersion = Integer.valueOf(localVersion.replaceAll("\\.", ""));
-            return (newVersion > currentVersion);
+        if (localVersion != null) {
+            return remoteVersion.isNewerThan(localVersion);
         }
         return false;
     }
@@ -407,7 +410,24 @@ public class UpdateLoader extends JFrame {
                 downloadLink = "http://builds.red-soft.biz/" + obj.getString("file");
                 download();
             } catch (Exception e) {
-                Log.error(e.getMessage());
+                outText.append("\n");
+                e.printStackTrace(new PrintWriter(new Writer() {
+                    @Override
+                    public void write(char[] cbuf, int off, int len) throws IOException {
+                        outText.append("\n");
+                        outText.append(new String(cbuf));
+                    }
+
+                    @Override
+                    public void flush() throws IOException {
+
+                    }
+
+                    @Override
+                    public void close() throws IOException {
+
+                    }
+                }));
             }
         } else {
             outText.setText("Contacting Download Server...");
@@ -425,8 +445,25 @@ public class UpdateLoader extends JFrame {
                         downloadLink = JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link", heads);
                         download();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    outText.append("\n");
+                    e.printStackTrace(new PrintWriter(new Writer() {
+                        @Override
+                        public void write(char[] cbuf, int off, int len) throws IOException {
+                            outText.append("\n");
+                            outText.append(new String(cbuf));
+                        }
+
+                        @Override
+                        public void flush() throws IOException {
+
+                        }
+
+                        @Override
+                        public void close() throws IOException {
+
+                        }
+                    }));
                 }
             }
         }
@@ -437,20 +474,53 @@ public class UpdateLoader extends JFrame {
         URLConnection conn = url.openConnection();
         InputStream is = conn.getInputStream();
         long max = conn.getContentLength();
-        outText.setText(outText.getText() + "\n" + "Downloading file...\nUpdate Size(compressed): " + max + " Bytes");
+        outText.setText(outText.getText() + "\n" + "Downloading file...\nUpdate Size(compressed): " + getUsabilitySize(max));
         BufferedOutputStream fOut = new BufferedOutputStream(new FileOutputStream(new File("update.zip")));
         byte[] buffer = new byte[32 * 1024];
         int bytesRead;
-        int in = 0;
+        long in = 0;
+        int delimiter = 1024;
+        progressBar.setVisible(true);
+        progressBar.setMaximum((int) (max / delimiter));
+        progressBar.setMinimum(0);
+        progressBar.setValue(0);
+        String textOut = outText.getText();
         while ((bytesRead = is.read(buffer)) != -1) {
             in += bytesRead;
             fOut.write(buffer, 0, bytesRead);
+            outText.setText(textOut + "\n" + getUsabilitySize(in));
+            progressBar.setValue((int) (in / delimiter));
         }
+        progressBar.setValue(0);
+        progressBar.setVisible(false);
         fOut.flush();
         fOut.close();
         is.close();
         outText.setText(outText.getText() + "\nDownload Complete!");
 
+    }
+
+    String getUsabilitySize(long countByte) {
+        int oneByte = 1024;
+        int delimiter = 103;
+        long drob = 0;
+        if (countByte > 1024) {
+            drob = (countByte % oneByte) / delimiter;
+            countByte = countByte / oneByte;
+            if (countByte > oneByte) {
+                drob = (countByte % oneByte) / delimiter;
+                countByte = countByte / oneByte;
+                if (countByte > oneByte) {
+                    drob = (countByte % oneByte) / delimiter;
+                    countByte = countByte / oneByte;
+                    if (countByte > oneByte) {
+                        drob = (countByte % oneByte) / delimiter;
+                        countByte = countByte / oneByte;
+                        return countByte + "," + drob + "Tb";
+                    } else return countByte + "," + drob + "Gb";
+                } else return countByte + "," + drob + "Mb";
+            } else return countByte + "," + drob + "Kb";
+        } else return countByte + "b";
     }
 
 }

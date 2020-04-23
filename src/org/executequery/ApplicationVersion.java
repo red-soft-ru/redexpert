@@ -74,7 +74,7 @@ public final class ApplicationVersion {
             throw new java.lang.RuntimeException("Unable to parse version string " + version);
         }
 
-        this.version = constructVersion();
+        this.version = version;
     }
 
     public String constructVersion() {

@@ -508,8 +508,7 @@ public class ConnectionsTreePanel extends TreePanel
    */
   public void deleteConnection(DatabaseHostNode node) {
 
-    int yesNo = GUIUtilities.displayConfirmCancelDialog(
-        bundleString("message.confirm-delete-connection", node));
+    int yesNo = GUIUtilities.displayYesNoDialog(bundleString("message.confirm-delete-connection", node), bundleString("title.confirm-delete-connection"));
 
     if (yesNo != JOptionPane.YES_OPTION) {
 

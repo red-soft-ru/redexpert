@@ -39,21 +39,21 @@ import java.awt.event.ActionListener;
 /**
  * @author Takis Diakoumis
  */
-class BrowserTreePopupMenu extends JPopupMenu {
+public class BrowserTreePopupMenu extends JPopupMenu {
 
-    private JMenuItem addNewConnection;
-    private JMenuItem connect;
-    private JMenuItem disconnect;
-    private JMenuItem reload;
-    private JMenuItem createObject;
-    private JMenuItem editObject;
-    private JMenuItem deleteObject;
-    private JMenuItem duplicate;
-    private JMenuItem duplicateWithSource;
-    private JMenuItem delete;
-    private JMenuItem recycleConnection;
-    private JMenuItem copyName;
-    private JMenuItem moveToFolder;
+    private final JMenuItem addNewConnection;
+    private final JMenuItem connect;
+    private final JMenuItem disconnect;
+    private final JMenuItem reload;
+    private final JMenuItem createObject;
+    private final JMenuItem editObject;
+    private final JMenuItem deleteObject;
+    private final JMenuItem duplicate;
+    private final JMenuItem duplicateWithSource;
+    private final JMenuItem delete;
+    private final JMenuItem recycleConnection;
+    private final JMenuItem copyName;
+    private final JMenuItem moveToFolder;
 
     private JCheckBoxMenuItem showDefaultCatalogsAndSchemas;
 
@@ -61,7 +61,7 @@ class BrowserTreePopupMenu extends JPopupMenu {
     private JMenu exportData;
     private JMenu importData;
 
-    private BrowserTreePopupMenuActionListener listener;
+    private final BrowserTreePopupMenuActionListener listener;
 
     BrowserTreePopupMenu(BrowserTreePopupMenuActionListener listener) {
 

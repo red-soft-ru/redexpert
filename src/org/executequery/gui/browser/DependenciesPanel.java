@@ -19,6 +19,8 @@ public class DependenciesPanel extends JPanel {
     DatabaseConnection databaseConnection;
     DefaultStatementExecutor executor;
     DatabaseObject databaseObject;
+    JScrollPane dependentScroll;
+    JScrollPane dependedOnScroll;
 
     public DependenciesPanel() {
         init();
@@ -29,10 +31,8 @@ public class DependenciesPanel extends JPanel {
 
         this.dependentPanel = new DependPanel(TreePanel.DEPENDENT);
         this.dependedOnPanel = new DependPanel(TreePanel.DEPENDED_ON);
-        JScrollPane dependentScroll = new JScrollPane(dependentPanel);
-        dependentScroll.setBorder(new BorderUIResource.TitledBorderUIResource(bundledString("dependent")));
-        JScrollPane dependedOnScroll = new JScrollPane(dependedOnPanel);
-        dependedOnScroll.setBorder(new BorderUIResource.TitledBorderUIResource(bundledString("dependedOn")));
+        dependentScroll = new JScrollPane(dependentPanel);
+        dependedOnScroll = new JScrollPane(dependedOnPanel);
         this.splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dependentScroll, dependedOnScroll);
         setLayout(new GridBagLayout());
 
@@ -59,6 +59,8 @@ public class DependenciesPanel extends JPanel {
         this.databaseObject = databaseObject;
         dependedOnPanel.setDatabaseObject(databaseObject);
         dependentPanel.setDatabaseObject(databaseObject);
+        dependentScroll.setBorder(new BorderUIResource.TitledBorderUIResource(bundledString("dependent", databaseObject.getName())));
+        dependedOnScroll.setBorder(new BorderUIResource.TitledBorderUIResource(bundledString("dependedOn", databaseObject.getName())));
     }
 
     public DatabaseConnection getDatabaseConnection() {
@@ -69,8 +71,8 @@ public class DependenciesPanel extends JPanel {
         this.databaseConnection = databaseConnection;
     }
 
-    private String bundledString(String key) {
-        return Bundles.get(this.getClass(), key);
+    private String bundledString(String key, Object... args) {
+        return Bundles.get(this.getClass(), key, args);
     }
 
 

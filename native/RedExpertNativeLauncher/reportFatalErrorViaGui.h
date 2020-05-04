@@ -5,6 +5,8 @@
  * Functions and helpers for displaying errors in graphical mode
  */
 
+static const int NOT_SUPPORTED_ARCH=1;
+
 #ifdef _WIN32
 #define USE_MESSAGE_BOX 1
 #include <windows.h>
@@ -72,7 +74,7 @@ inline void printErrorToLogFile(const char* log_file, const std::string& app_mes
     }
 }
 
-inline void reportFatalErrorViaGui(const std::string& programName, const std::string& applicationMessage, std::string supportAddress)
+inline void reportFatalErrorViaGui(const std::string& programName, const std::string& applicationMessage, std::string supportAddress,int typeError)
 {
     const char* log_file = 0;
     std::string path;
@@ -116,13 +118,26 @@ inline void reportFatalErrorViaGui(const std::string& programName, const std::st
     {
         supportAddress = std::string("rdb.support@red-soft.ru");
     }
+    std::string arch;
+    #if INTPTR_MAX == INT32_MAX
+    arch = "x86";
+    #elif INTPTR_MAX == INT64_MAX
+    arch = "amd64";
+    #endif
     std::ostringstream os;
     os << applicationMessage;
     os << std::endl;
     os << "Please copy this message to the clipboard with Ctrl-C and mail it to " << supportAddress << ".";
     os << std::endl;
     std::string platformMessage(os.str());
-    std::string m_mes("Launch error. Please, check ");
+    std::string m_mes("Launch error.");
+    if(typeError==NOT_SUPPORTED_ARCH)
+    {
+        m_mes.append(" This application need in java with arch: ");
+        m_mes.append(arch);
+        m_mes.append(".");
+    }
+    m_mes.append(" Please, check ");
     m_mes.append(log_file);
     m_mes.append(" for error details");
 #if USE_MESSAGE_BOX
@@ -140,7 +155,7 @@ inline void reportFatalErrorViaGui(const std::string& programName, const std::st
 
 inline void reportFatalErrorViaGui(const std::string& programName, const std::string& applicationMessage)
 {
-    reportFatalErrorViaGui(programName, applicationMessage, "");
+    reportFatalErrorViaGui(programName, applicationMessage, "",0);
 }
 
 #endif

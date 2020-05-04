@@ -13,6 +13,7 @@
 #include <WinReg.hpp>
 #include "HKEY.h"
 #include <cstdint>
+#include <atlstr.h>
 #endif
 
 #include "utils.h"
@@ -62,13 +63,16 @@ public:
     NativeArguments launcher_args;
     std::string support_address;
     std::ostringstream progress_os;
+    int typeError;
 
 private:
     std::string getUsage() const;
     void generateReport(const std::exception &ex, const std::string &usage) const;
 
 public:
-    ErrorReporter() : ARGV0("<unknown>") {}
+    ErrorReporter() : ARGV0("<unknown>") {
+        typeError=0;
+    }
 
     void reportUsageError(const UsageError &ex) const
     {
@@ -181,7 +185,7 @@ openSharedLibrary(const std::string &sl_file)
     executeCmdEx(cmd.c_str(), out);
     if(out.find("Property settings")==std::string :: npos)
     {
-        std::string err = "File "+sl_f+" not_found";
+        std::string err = "Error 02: File "+sl_f+" not_found";
         throw err;
     }
     std::regex jarch_regex("os\\.arch\\s\\=\\s(([\\w+\\s\\\\\\-:\\.])+)\\n");
@@ -195,9 +199,10 @@ openSharedLibrary(const std::string &sl_file)
     if(!support)
     {
 
-        std::string err = "File "+ sl_f+" not support arch this application! this application need in java with arch: " +arch;
+        std::string err = "Error 01: File "+ sl_f+" not support arch this application! this application need in java with arch: " +arch;
         throw err;
     }
+    SetEnvironmentVariableA("PATH",path_to_java.c_str());
     void *sl_handle = LoadLibraryA(sl_file.c_str());
     if (sl_handle == 0)
     {
@@ -356,7 +361,7 @@ SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
                                 const char *java_vendor, const char *jdk_name,
                                 const char *jre_name)
 {
-    const std::string reg_prefix = utils::toString("SOFTWARE\\") + java_vendor + "\\";
+    const std::string reg_prefix = utils::toString("\\SOFTWARE\\") + java_vendor + "\\";
     const std::string jre_reg_path = reg_prefix + jre_name;
     const std::string jdk_reg_path = reg_prefix + jdk_name;
     std::ostream &os = err_rep.progress_os;
@@ -384,6 +389,10 @@ SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
         }
         catch (std::string  &ex)
         {
+            if(ex.find("Error 01")==0)
+            {
+                err_rep.typeError=NOT_SUPPORTED_ARCH;
+            }
             os << ex;
             os << std::endl;
         }
@@ -413,6 +422,10 @@ SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
         }
         catch (std::string &ex)
         {
+            if(ex.find("Error 01")==0)
+            {
+                err_rep.typeError=NOT_SUPPORTED_ARCH;
+            }
             os << ex;
             os << std::endl;
         }
@@ -551,10 +564,62 @@ std::vector<std::string> get_potential_libjvm_paths()
             os<<"java.home = "<<str;
             std::string str86 = replaceFirstOccurrence(str,"Program Files\\","Program Files (x86)\\");
             std::string str64 = replaceFirstOccurrence(str,"Program Files (x86)\\","Program Files\\");
-            search_prefixes.insert(search_prefixes.begin(), strdup(str86.c_str()));
-            search_prefixes.insert(search_prefixes.begin(), strdup(str64.c_str()));
-            search_prefixes.insert(search_prefixes.begin(), strdup(str.c_str()));
+            search_prefixes.insert(search_prefixes.begin(), _strdup(str86.c_str()));
+            search_prefixes.insert(search_prefixes.begin(), _strdup(str64.c_str()));
+            search_prefixes.insert(search_prefixes.begin(), _strdup(str.c_str()));
         }
+
+            HANDLE dir;
+            WIN32_FIND_DATA file_data;
+
+            if ((dir = FindFirstFile(L"C:\\Program Files\\Java\\*", &file_data)) != INVALID_HANDLE_VALUE)
+
+
+            do {
+                //wide char array
+
+
+                    //convert from wide char to narrow char array
+                    char ch[260];
+                    char DefChar = ' ';
+                    WideCharToMultiByte(CP_ACP,0,file_data.cFileName,-1, ch,260,&DefChar, NULL);
+
+                    //A std:string  using the char* constructor.
+
+                std::string fileName (ch);
+                std::string full_file_name = "C:\\Program Files\\Java\\" + fileName;
+
+
+                if (fileName[0] == '.')
+                    continue;
+                search_prefixes.push_back(full_file_name);
+            } while (FindNextFile(dir, &file_data));
+
+            FindClose(dir);
+            if ((dir = FindFirstFile(L"C:\\Program Files (x86)\\Java\\*", &file_data)) != INVALID_HANDLE_VALUE)
+
+
+            do {
+                //wide char array
+
+
+                    //convert from wide char to narrow char array
+                    char ch[260];
+                    char DefChar = ' ';
+                    WideCharToMultiByte(CP_ACP,0,file_data.cFileName,-1, ch,260,&DefChar, NULL);
+
+                    //A std:string  using the char* constructor.
+
+                std::string fileName (ch);
+                std::string full_file_name = "C:\\Program Files (x86)\\Java\\" + fileName;
+
+
+                if (fileName[0] == '.')
+                    continue;
+                search_prefixes.push_back(full_file_name);
+            } while (FindNextFile(dir, &file_data));
+
+            FindClose(dir);
 #elif __linux__
         std::string jhome_pat = "java.home = ";
         int jhome_pos = out.find(jhome_pat.c_str()) +  jhome_pat.length();
@@ -1131,7 +1196,7 @@ void ErrorReporter::generateReport(const std::exception &ex,
     os << utils::join(" ", launcher_args);
     os << std::endl;
 
-    reportFatalErrorViaGui("Red Expert", os.str(), support_address);
+    reportFatalErrorViaGui("Red Expert", os.str(), support_address,typeError);
 }
 
 #ifdef _WIN32

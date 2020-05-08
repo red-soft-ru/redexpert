@@ -1,0 +1,2 @@
+Installer.Parameter.java_home.description=Path to Java
+Installer.Parameter.java_home.explanation=Choose a path to Java or download Java from https://www.java.com/ru/download/manual.jsp and then restart the installation

@@ -1,0 +1,2 @@
+Installer.Parameter.java_home.description=Расположение java
+Installer.Parameter.java_home.explanation=Выберите расположение Java на вашем компьютере или скачайте java https://www.java.com/ru/download/manual.jsp и перезапустите установку

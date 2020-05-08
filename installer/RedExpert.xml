@@ -5,6 +5,18 @@
     <licenseFile>${redexpert_dir}/LICENSE.txt</licenseFile>
     <logoImage>logos/red_expert.png</logoImage>
     <allowLanguageSelection>1</allowLanguageSelection>
+    <customLanguageFileList>
+        <language>
+            <code>en</code>
+            <encoding>utf-8</encoding>
+            <file>localization/install_props_en.lng</file>
+        </language>
+        <language>
+            <code>ru</code>
+            <encoding>cp1251</encoding>
+            <file>localization/install_props_ru.lng</file>
+        </language>
+    </customLanguageFileList>
     <componentList>
         <component>
             <name>default</name>
@@ -112,12 +124,34 @@
         <consoleWrite>
             <text>${execution_file}</text>
         </consoleWrite>
+        <setInstallerVariable>
+            <name>bitness_app</name>
+            <value>64</value>
+            <persist>1</persist>
+            <ruleList>
+                <compareText>
+                    <logic>contains</logic>
+                    <text>${execution_file}</text>
+                    <value>64</value>
+                </compareText>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable>
+            <name>bitness_app</name>
+            <value>32</value>
+            <persist>1</persist>
+            <ruleList>
+                <compareText>
+                    <logic>does_not_contain</logic>
+                    <text>${execution_file}</text>
+                    <value>64</value>
+                </compareText>
+            </ruleList>
+        </setInstallerVariable>
+        <consoleWrite>
+            <text>${bitness_app}</text>
+        </consoleWrite>
     </preBuildActionList>
-    <preUninstallationActionList>
-        <deleteFile path="${installdir}/bin"/>
-        <deleteFile path="${installdir}/lib"/>
-        <deleteFile path="${installdir}/RedExpertInstallation.log"/>
-    </preUninstallationActionList>
     <postInstallationActionList>
         <createShortcuts>
             <destination>${user_home_directory}/.local/share/applications</destination>
@@ -144,7 +178,17 @@
                 </fileExists>
             </ruleList>
         </iniFileSet>
+        <writeFile>
+            <path>${installdir}${platform_path_separator}bin${platform_path_separator}java_paths.txt</path>
+            <text>${java_home}</text>
+        </writeFile>
     </postInstallationActionList>
+
+    <preUninstallationActionList>
+        <deleteFile path="${installdir}/bin"/>
+        <deleteFile path="${installdir}/lib"/>
+        <deleteFile path="${installdir}/RedExpertInstallation.log"/>
+    </preUninstallationActionList>
     <allowedLanguages>en ru</allowedLanguages>
     <enableRollback>1</enableRollback>
     <enableTimestamp>1</enableTimestamp>
@@ -156,6 +200,54 @@
     <windows64bitMode>1</windows64bitMode>
     <installationLogFile>${installdir}/RedExpertInstallation.log</installationLogFile>
     <parameterList>
+        <directoryParameter>
+            <name>java_home</name>
+            <description>Installer.Parameter.java_home.description</description>
+            <explanation>Installer.Parameter.java_home.explanation</explanation>
+            <value></value>
+            <default>${java_path}</default>
+            <allowEmptyValue>0</allowEmptyValue>
+            <ask>yes</ask>
+            <cliOptionName>prefix</cliOptionName>
+            <mustBeWritable>no</mustBeWritable>
+            <mustExist>1</mustExist>
+            <width>40</width>
+            <preShowPageActionList>
+                <autodetectJava>
+                <abortOnError>0</abortOnError>
+                <showMessageOnError>1</showMessageOnError>
+                <promptUser>0</promptUser>
+                <validVersionList>
+                    <validVersion>
+                        <vendor></vendor>
+                        <minVersion>1.8</minVersion>
+                        <maxVersion></maxVersion>
+                        <bitness>${bitness_app}</bitness>
+                    </validVersion>
+                </validVersionList>
+            </autodetectJava>
+                <setInstallerVariableFromRegEx>
+                    <name>java_path</name>
+                    <pattern>(\/|\\)bin(\/|\\)java.*</pattern>
+                    <text>${java_executable}</text>
+                    <substitution></substitution>
+                    <ruleList>
+                        <isTrue>
+                            <value>${java_autodetected}</value>
+                        </isTrue>
+                    </ruleList>
+                </setInstallerVariableFromRegEx>
+                <setInstallerVariable>
+                    <name>java_path</name>
+                    <value></value>
+                    <ruleList>
+                        <isFalse>
+                            <value>${java_autodetected}</value>
+                        </isFalse>
+                    </ruleList>
+                </setInstallerVariable>
+            </preShowPageActionList>
+        </directoryParameter>
         <directoryParameter>
             <name>installdir</name>
             <description>Installer.Parameter.installdir.description</description>
@@ -174,6 +266,12 @@
             <allowEmptyValue>0</allowEmptyValue>
             <ask>no</ask>
             <width>40</width>
+        </stringParameter>
+        <stringParameter>
+            <name>bitness_app</name>
+            <allowEmptyValue>0</allowEmptyValue>
+            <ask>no</ask>
+            <width>2</width>
         </stringParameter>
     </parameterList>
 </project>

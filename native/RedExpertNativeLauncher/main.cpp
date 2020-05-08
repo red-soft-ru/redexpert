@@ -566,10 +566,13 @@ std::vector<std::string> get_potential_libjvm_paths()
     search_prefixes.push_back("/usr/local/lib64/jvm");            // alt opensuse 13
     for(int i=8;i<20;i++)
     {
-        search_prefixes.push_back("/usr/lib/jvm/java-"+std::to_string(i)+"-openjdk-amd64");
-        search_prefixes.push_back("/usr/local/lib/jvm/java-"+std::to_string(i)+"-openjdk-amd64");
-        search_prefixes.push_back("/usr/lib/jvm/java-"+std::to_string(i)+"-oracle");
-        search_prefixes.push_back("/usr/local/lib/jvm/java-"+std::to_string(i)+"-oracle");
+        std::stringstream ss;
+        ss << i;
+        std::string version = ss.str();
+        search_prefixes.push_back("/usr/lib/jvm/java-"+version+"-openjdk-amd64");
+        search_prefixes.push_back("/usr/local/lib/jvm/java-"+version+"-openjdk-amd64");
+        search_prefixes.push_back("/usr/lib/jvm/java-"+version+"-oracle");
+        search_prefixes.push_back("/usr/local/lib/jvm/java-"+version+"-oracle");
     }
     search_prefixes.push_back("/usr/lib/jvm/default");              // alt centos
     search_prefixes.push_back("/usr/java/latest");                  // alt centos
@@ -655,15 +658,6 @@ std::vector<std::string> get_potential_libjvm_paths()
 
             FindClose(dir);
 #elif __linux__
-        /*std::string jhome_pat = "java.home = ";
-        int jhome_pos = out.find(jhome_pat.c_str()) +  jhome_pat.length();
-        int end_pos = out.find("\n", jhome_pos);
-        std::string java_env = strdup(out.substr(jhome_pos, end_pos - jhome_pos).c_str());
-        search_prefixes.insert(search_prefixes.begin(), java_env);
-        if(java_path!="")
-        {
-            search_prefixes.insert(search_prefixes.begin(),java_path.c_str());
-        }*/
         std::string jhome_pat = "java.home = ";
         int jhome_pos = out.find(jhome_pat.c_str()) +  jhome_pat.length();
         int end_pos = out.find("\n", jhome_pos);

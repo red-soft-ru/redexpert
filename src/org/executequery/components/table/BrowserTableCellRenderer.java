@@ -1,6 +1,8 @@
 package org.executequery.components.table;
 
-import sun.swing.DefaultLookup;
+//import sun.swing.DefaultLookup;
+
+//import sun.swing.DefaultLookup;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -31,6 +33,7 @@ public class BrowserTableCellRenderer extends JLabel
     // These ivars will be made protected when their names are finalized.
     private Color unselectedForeground;
     private Color unselectedBackground;
+    private UIDefaults uiDefaults=new UIDefaults();
 
     /**
      * Creates a default table cell renderer.
@@ -45,7 +48,7 @@ public class BrowserTableCellRenderer extends JLabel
 
 
     private Border getNoFocusBorder() {
-        Border border = DefaultLookup.getBorder(this, ui, "Table.cellNoFocusBorder");
+        Border border = uiDefaults.getBorder( "Table.cellNoFocusBorder");
         if (System.getSecurityManager() != null) {
             if (border != null) return border;
             return SAFE_NO_FOCUS_BORDER;
@@ -172,24 +175,24 @@ public class BrowserTableCellRenderer extends JLabel
         if (hasFocus) {
             Border border = null;
             if (isSelected) {
-                border = DefaultLookup.getBorder(this, ui, "Table.focusSelectedCellHighlightBorder");
+                border = uiDefaults.getBorder( "Table.focusSelectedCellHighlightBorder");
                 super.setForeground(fg == null ? table.getSelectionForeground()
                         : fg);
                 super.setBackground(bg == null ? table.getSelectionBackground()
                         : bg);
             }
             if (border == null) {
-                border = DefaultLookup.getBorder(this, ui, "Table.focusCellHighlightBorder");
+                border = uiDefaults.getBorder( "Table.focusCellHighlightBorder");
             }
             setBorder(border);
 
             if (!isSelected && table.isCellEditable(row, column)) {
                 Color col;
-                col = DefaultLookup.getColor(this, ui, "Table.focusCellForeground");
+                col = uiDefaults.getColor( "Table.focusCellForeground");
                 if (col != null) {
                     super.setForeground(col);
                 }
-                col = DefaultLookup.getColor(this, ui, "Table.focusCellBackground");
+                col = uiDefaults.getColor( "Table.focusCellBackground");
                 if (col != null) {
                     super.setBackground(col);
                 }
@@ -199,7 +202,7 @@ public class BrowserTableCellRenderer extends JLabel
                     ? unselectedBackground
                     : table.getBackground();
             if (background == null || background instanceof javax.swing.plaf.UIResource) {
-                Color alternateColor = DefaultLookup.getColor(this, ui, "Table.alternateRowColor");
+                Color alternateColor = uiDefaults.getColor( "Table.alternateRowColor");
                 if (alternateColor != null && row % 2 != 0) {
                     background = alternateColor;
                 }

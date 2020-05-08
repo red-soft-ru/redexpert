@@ -35,7 +35,12 @@
 #include <string>
 #include <vector>
 
+static std::string java_path;
+static std::string path_to_java_paths;
+
 std::vector<std::string> get_potential_libjvm_paths();
+
+
 
 struct UsageError : std::runtime_error
 {
@@ -162,7 +167,7 @@ replaceFirstOccurrence(
 typedef void *SharedLibraryHandle;
 
 SharedLibraryHandle
-openSharedLibrary(const std::string &sl_file)
+openSharedLibrary(const std::string &sl_file,bool from_file_java_paths)
 {
     std::ostringstream os;
 #ifdef _WIN32
@@ -476,13 +481,73 @@ SharedLibraryHandle tryHives(const char *jvm_dir, const char *java_vendor,
 
 #endif
 
+std::vector<std::string> get_search_suffixes()
+{
+    std::vector<std::string> search_suffixes;
+    search_suffixes.push_back("");
+#ifdef __linux__
+    search_suffixes.push_back("/lib/amd64/server");
+    search_suffixes.push_back("/jre/lib/amd64/server");
+    search_suffixes.push_back("/lib/amd64/client");
+    search_suffixes.push_back("/jre/lib/amd64/client");
+    search_suffixes.push_back("jre/lib/amd64");
+    search_suffixes.push_back("/lib/server");
+    search_suffixes.push_back("/lib/client");
+#endif
+    search_suffixes.push_back("/jre/bin/server");
+    search_suffixes.push_back("/bin/server");
+    search_suffixes.push_back("/bin/client");
+    return search_suffixes;
+}
+
+std::vector<std::string> get_potential_libjvm_paths_from_path(std::string path_parameter)
+{
+    std::vector<std::string> libjvm_potential_paths;
+    std::vector<std::string> search_suffixes=get_search_suffixes();
+    std::string out;
+    std::string path=path_parameter;
+    std::string file_name;
+    std::string cmd = path_parameter+" -XshowSettings:properties -version";
+    executeCmdEx(cmd.c_str(), out);
+    if(out.find("Property settings")!=std::string :: npos)
+    {
+#ifdef __linux__
+        std::string jhome_pat = "java.home = ";
+        int jhome_pos = out.find(jhome_pat.c_str()) +  jhome_pat.length();
+        int end_pos = out.find("\n", jhome_pos);
+        path = strdup(out.substr(jhome_pos, end_pos - jhome_pos).c_str());
+#endif
+    }
+    cmd = path_parameter+"/java -XshowSettings:properties -version";
+        executeCmdEx(cmd.c_str(), out);
+        if(out.find("Property settings")!=std::string :: npos)
+        {
+#ifdef __linux__
+            std::string jhome_pat = "java.home = ";
+            int jhome_pos = out.find(jhome_pat.c_str()) +  jhome_pat.length();
+            int end_pos = out.find("\n", jhome_pos);
+            path = strdup(out.substr(jhome_pos, end_pos - jhome_pos).c_str());
+#endif
+        }
+#ifdef __linux__
+        file_name = "libjvm.so";
+#endif
+    for (std::vector<std::string>::iterator it_s = search_suffixes.begin(), en_s = search_suffixes.end(); it_s != en_s;
+         ++it_s)
+    {
+        std::string suffix = *it_s;
+        std::string res_path = path + suffix + "/" + file_name;
+        libjvm_potential_paths.push_back(res_path);
+    }
+    return libjvm_potential_paths;
+}
 
 std::vector<std::string> get_potential_libjvm_paths()
 {
     std::vector<std::string> libjvm_potential_paths;
 
     std::vector<std::string> search_prefixes;
-    std::vector<std::string> search_suffixes;
+    std::vector<std::string> search_suffixes=get_search_suffixes();
     std::string file_name;
 
     // From heuristics
@@ -499,46 +564,15 @@ std::vector<std::string> get_potential_libjvm_paths()
     search_prefixes.push_back("/usr/local/lib/jvm/java");         // alt rhel6
     search_prefixes.push_back("/usr/local/lib/jvm");              // alt centos6
     search_prefixes.push_back("/usr/local/lib64/jvm");            // alt opensuse 13
-
-    search_prefixes.push_back("/usr/lib/jvm/java-8-openjdk-amd64");
-    search_prefixes.push_back("/usr/local/lib/jvm/java-8-openjdk-amd64");
-
-    search_prefixes.push_back("/usr/local/lib/jvm/java-9-openjdk-amd64"); // alt ubuntu / debian distros
-    search_prefixes.push_back("/usr/lib/jvm/java-9-openjdk-amd64");       // alt ubuntu / debian distros
-
-    search_prefixes.push_back("/usr/lib/jvm/java-10-openjdk-amd64");       // alt ubuntu / debian distros
-    search_prefixes.push_back("/usr/local/lib/jvm/java-10-openjdk-amd64"); // alt ubuntu / debian distros
-
-    search_prefixes.push_back("/usr/lib/jvm/java-11-openjdk-amd64");       // alt ubuntu / debian distros
-    search_prefixes.push_back("/usr/local/lib/jvm/java-11-openjdk-amd64"); // alt ubuntu / debian distros
-
-    search_prefixes.push_back("/usr/lib/jvm/java-12-openjdk-amd64");       // alt ubuntu / debian distros
-    search_prefixes.push_back("/usr/local/lib/jvm/java-12-openjdk-amd64"); // alt ubuntu / debian distros
-
-    search_prefixes.push_back("/usr/lib/jvm/java-8-oracle");  // alt ubuntu
-    search_prefixes.push_back("/usr/lib/jvm/java-9-oracle");  // alt ubuntu
-    search_prefixes.push_back("/usr/lib/jvm/java-10-oracle"); // alt ubuntu
-    search_prefixes.push_back("/usr/lib/jvm/java-11-oracle"); // alt ubuntu
-    search_prefixes.push_back("/usr/lib/jvm/java-12-oracle"); // alt ubuntu
-
-    search_prefixes.push_back("/usr/local/lib/jvm/java-8-oracle");  // alt ubuntu
-    search_prefixes.push_back("/usr/local/lib/jvm/java-9-oracle");  // alt ubuntu
-    search_prefixes.push_back("/usr/local/lib/jvm/java-10-oracle"); // alt ubuntu
-    search_prefixes.push_back("/usr/local/lib/jvm/java-11-oracle"); // alt ubuntu
-    search_prefixes.push_back("/usr/local/lib/jvm/java-12-oracle"); // alt ubuntu
+    for(int i=8;i<20;i++)
+    {
+        search_prefixes.push_back("/usr/lib/jvm/java-"+std::to_string(i)+"-openjdk-amd64");
+        search_prefixes.push_back("/usr/local/lib/jvm/java-"+std::to_string(i)+"-openjdk-amd64");
+        search_prefixes.push_back("/usr/lib/jvm/java-"+std::to_string(i)+"-oracle");
+        search_prefixes.push_back("/usr/local/lib/jvm/java-"+std::to_string(i)+"-oracle");
+    }
     search_prefixes.push_back("/usr/lib/jvm/default");              // alt centos
     search_prefixes.push_back("/usr/java/latest");                  // alt centos
-
-    search_suffixes.push_back("");
-    search_suffixes.push_back("/lib/amd64/server");
-    search_suffixes.push_back("/jre/lib/amd64/server");
-    search_suffixes.push_back("/lib/amd64/client");
-    search_suffixes.push_back("/jre/lib/amd64/client");
-    search_suffixes.push_back("jre/lib/amd64");
-    search_suffixes.push_back("/lib/server");
-    search_suffixes.push_back("/lib/client");
-
-
     file_name = "libjvm.so";
 #endif
     // From direct environment variable
@@ -621,11 +655,23 @@ std::vector<std::string> get_potential_libjvm_paths()
 
             FindClose(dir);
 #elif __linux__
-        std::string jhome_pat = "java.home = ";
+        /*std::string jhome_pat = "java.home = ";
         int jhome_pos = out.find(jhome_pat.c_str()) +  jhome_pat.length();
         int end_pos = out.find("\n", jhome_pos);
         std::string java_env = strdup(out.substr(jhome_pos, end_pos - jhome_pos).c_str());
         search_prefixes.insert(search_prefixes.begin(), java_env);
+        if(java_path!="")
+        {
+            search_prefixes.insert(search_prefixes.begin(),java_path.c_str());
+        }*/
+        std::string jhome_pat = "java.home = ";
+        int jhome_pos = out.find(jhome_pat.c_str()) +  jhome_pat.length();
+        int end_pos = out.find("\n", jhome_pos);
+        std::string java_env = out.substr(jhome_pos, end_pos - jhome_pos);
+        search_prefixes.insert(search_prefixes.begin(), java_env);
+        if (!java_path.empty())
+            search_prefixes.insert(search_prefixes.begin(), java_path);
+
 #endif
 
     }
@@ -641,7 +687,7 @@ std::vector<std::string> get_potential_libjvm_paths()
             std::string prefix = *it;
             std::string suffix = *it_s;
             std::string path = prefix + "/" + suffix + "/" + file_name;
-            libjvm_potential_paths.push_back(path);
+            libjvm_potential_paths.push_back(path.c_str());
         }
     }
 
@@ -745,24 +791,44 @@ SharedLibraryHandle openWindowsJvmLibrary(bool isClient, bool isServer)
 #endif
 
 #ifdef __linux__
-int try_dlopen(std::vector<std::string> potential_paths, void *&out_handle)
+int try_dlopen(std::vector<std::string> potential_paths, void *&out_handle,bool from_file_java_paths)
 {
+    std::ostream &os = err_rep.progress_os;
     for (std::vector<std::string>::iterator it = potential_paths.begin(), en = potential_paths.end(); it != en;
          ++it)
     {
         std::string p_path = *it;
-        out_handle = dlopen(p_path.c_str(), RTLD_NOW | RTLD_LOCAL);
-
-        if (out_handle != 0)
+        if(p_path!="")
         {
+            os << "Trying potential path \"";
+            os << p_path;
+            os << "\" [";
+            os << std::endl;
+            out_handle = dlopen(p_path.c_str(), RTLD_NOW | RTLD_LOCAL);
+        }
+
+        if ((out_handle != 0) && (!from_file_java_paths))
+        {
+
+            std::ofstream file_java_paths;          // поток для записи
+            file_java_paths.open(path_to_java_paths); // окрываем файл для записи
+            if (file_java_paths.is_open())
+               {
+                   file_java_paths << p_path << std::endl;
+               }
+            file_java_paths.close();
             break;
+
         }
     }
 
     if (out_handle == 0)
     {
+        os << "]\nerror open library";
         return 0;
     }
+    os << "]";
+    os << std::endl;
     return 1;
 }
 #endif
@@ -774,9 +840,42 @@ SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
 #else
     (void)isClient;
     (void)isServer;
-    std::vector<std::string> paths = get_potential_libjvm_paths();
     void *handler = 0;
-    if (try_dlopen(paths, handler))
+    std::string java_path_from_file;
+    path_to_java_paths=getSelfPath();
+    replaceFirstOccurrence(path_to_java_paths,"bin/RedExpert64","bin/");
+    replaceFirstOccurrence(path_to_java_paths,"bin/RedExpert","bin/");
+    path_to_java_paths=path_to_java_paths+"java_paths.txt";
+    if(java_path!="")
+    {
+        std::vector<std::string> paths = get_potential_libjvm_paths_from_path(java_path);
+        if (try_dlopen(paths, handler,false))
+        {
+            return static_cast<SharedLibraryHandle>(handler);
+        }
+    }
+    std::ifstream in(path_to_java_paths); // окрываем файл для чтения
+    bool f_open = in.is_open();
+    if (f_open)
+    {
+        getline(in, java_path_from_file);
+    }
+    in.close();
+    if(f_open)
+    {
+
+        std::vector<std::string> paths;
+        paths.push_back(java_path_from_file.c_str());
+        if (try_dlopen(paths, handler,true))
+        {
+            return static_cast<SharedLibraryHandle>(handler);
+        }
+        else {  
+           java_path = java_path_from_file.c_str();
+        }
+    }
+    std::vector<std::string> paths = get_potential_libjvm_paths();
+    if (try_dlopen(paths, handler,false))
     {
         return static_cast<SharedLibraryHandle>(handler);
     } else
@@ -835,6 +934,7 @@ public:
         properties.parse(launcherArguments);
         // Try to set the mailing list address before reporting errors.
         err_rep.support_address = properties["supportAddress"];
+        java_path = properties["java_home"];
         isClient = false;
         isServer = false;
         NativeArguments::const_iterator it = launcherArguments.begin();

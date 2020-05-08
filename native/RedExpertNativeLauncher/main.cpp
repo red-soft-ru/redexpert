@@ -39,8 +39,7 @@ static std::string java_path;
 static std::string path_to_java_paths;
 
 std::vector<std::string> get_potential_libjvm_paths();
-
-
+std::vector<std::string> get_potential_libjvm_paths_from_path(std::string path_parameter);
 
 struct UsageError : std::runtime_error
 {
@@ -235,6 +234,15 @@ openSharedLibrary(const std::string &sl_file,bool from_file_java_paths)
         throw std::runtime_error(os.str());
 #endif
     }
+    if(!from_file_java_paths)
+    {
+    std::ofstream file_java_paths;          // поток для записи
+    file_java_paths.open("java_paths.txt"); // окрываем файл для записи
+    if (file_java_paths.is_open())
+       {
+           file_java_paths << sl_file << std::endl;
+       }
+    }
     return sl_handle;
 }
 
@@ -366,10 +374,84 @@ SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
                                 const char *java_vendor, const char *jdk_name,
                                 const char *jre_name)
 {
+       std::string java_path_from_file;
+       std::ostream &os = err_rep.progress_os;
+       if(!java_path.empty())
+       {
+            std::vector<std::string> paths = get_potential_libjvm_paths_from_path(java_path);
+            for (std::vector<std::string>::const_iterator it = paths.begin(), en = paths.end(); it != en;
+                 ++it)
+            {
+                std::string p_jvm = *it;
+                os << "Trying potential path \"";
+                os << p_jvm;
+                os << "\" [";
+                os << std::endl;
+                try
+                {
+                    return openSharedLibrary(p_jvm,false);
+                }
+                catch (std::string &ex)
+                {
+                    if(ex.find("Error 01")==0)
+                    {
+                        err_rep.typeError=NOT_SUPPORTED_ARCH;
+                    }
+                    os << ex;
+                    os << std::endl;
+                }
+                catch (const std::exception &ex)
+                {
+                    os << ex.what();
+                    os << std::endl;
+                }
+                os << "]";
+                os << std::endl;
+            }
+       }
+       std::ifstream in("java_paths.txt"); // окрываем файл для чтения
+       bool f_open = in.is_open();
+       if (f_open)
+       {
+           getline(in, java_path_from_file);
+       }
+       in.close();
+       if(f_open)
+       {
+           os << "Trying potential path \"";
+           os << java_path_from_file;
+           os << "\" [";
+           os << std::endl;
+           try
+           {
+              return openSharedLibrary(java_path_from_file,true);
+           }
+           catch (std::string &ex)
+           {
+               if(ex.find("Error 01")==0)
+               {
+                   err_rep.typeError=NOT_SUPPORTED_ARCH;
+               }
+               os << ex;
+               os << std::endl;
+               java_path=java_path_from_file;
+           }
+           catch (const std::exception &ex)
+           {
+               std::ostream &os = err_rep.progress_os;
+               os << ex.what();
+               os << std::endl;
+               java_path=java_path_from_file;
+           }
+           os << "]";
+           os << std::endl;
+
+       }
+
     const std::string reg_prefix = utils::toString("\\SOFTWARE\\") + java_vendor + "\\";
     const std::string jre_reg_path = reg_prefix + jre_name;
     const std::string jdk_reg_path = reg_prefix + jdk_name;
-    std::ostream &os = err_rep.progress_os;
+
     JvmRegistryKeys jvm_reg_keys;
     findVersionsInRegistry(os, hive, jvm_reg_keys, jre_reg_path, "");
     // Sun JDK key:
@@ -390,7 +472,7 @@ SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
         {
             std::string jre_bin = jvm_reg_key.readJreBin();
             std::string jvm_location = jre_bin + "\\" + jvm_dir + "\\jvm.dll";
-            return openSharedLibrary(jvm_location);
+            return openSharedLibrary(jvm_location,false);
         }
         catch (std::string  &ex)
         {
@@ -423,7 +505,7 @@ SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
         os << std::endl;
         try
         {
-            return openSharedLibrary(p_jvm);
+            return openSharedLibrary(p_jvm,false);
         }
         catch (std::string &ex)
         {
@@ -531,6 +613,8 @@ std::vector<std::string> get_potential_libjvm_paths_from_path(std::string path_p
         }
 #ifdef __linux__
         file_name = "libjvm.so";
+#elif WIN32
+        file_name = "jvm.dll";
 #endif
     for (std::vector<std::string>::iterator it_s = search_suffixes.begin(), en_s = search_suffixes.end(); it_s != en_s;
          ++it_s)
@@ -657,6 +741,10 @@ std::vector<std::string> get_potential_libjvm_paths()
             } while (FindNextFile(dir, &file_data));
 
             FindClose(dir);
+            if(java_path!="")
+            {
+                search_prefixes.insert(search_prefixes.begin(), java_path);
+            }
 #elif __linux__
         std::string jhome_pat = "java.home = ";
         int jhome_pos = out.find(jhome_pat.c_str()) +  jhome_pat.length();
@@ -864,7 +952,7 @@ SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
         {
             return static_cast<SharedLibraryHandle>(handler);
         }
-        else {  
+        else {
            java_path = java_path_from_file.c_str();
         }
     }

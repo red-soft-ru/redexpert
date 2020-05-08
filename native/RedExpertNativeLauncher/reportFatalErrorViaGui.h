@@ -130,7 +130,7 @@ inline void reportFatalErrorViaGui(const std::string& programName, const std::st
     os << "Please copy this message to the clipboard with Ctrl-C and mail it to " << supportAddress << ".";
     os << std::endl;
     std::string platformMessage(os.str());
-    std::string m_mes("Launch error.");
+    std::string m_mes("Launch error because Java not found.");
     if(typeError==NOT_SUPPORTED_ARCH)
     {
         m_mes.append(" This application need in java with arch: ");
@@ -139,7 +139,9 @@ inline void reportFatalErrorViaGui(const std::string& programName, const std::st
     }
     m_mes.append(" Please, check ");
     m_mes.append(log_file);
-    m_mes.append(" for error details");
+    m_mes.append(" for error details.");
+    m_mes.append("You just need to run the application once with the parameter -Djava_home=java_path,");
+    m_mes.append("where java_path is the path to Java. And the application will remember the path");
 #if USE_MESSAGE_BOX
     printErrorToLogFile(log_file, platformMessage);
     MessageBox(GetActiveWindow(), utils::convertUtf8ToUtf16(m_mes).c_str(), utils::convertUtf8ToUtf16(programName).c_str(), MB_OK);

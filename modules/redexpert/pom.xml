@@ -288,6 +288,7 @@
                                     <includes>
                                         <include>**/fbtrace.conf</include>
                                         <include>**/gss.login.conf</include>
+                                        <include>**/redexpert_config.ini</include>
                                         <include>red_expert.png</include>
                                         <include>red_expert.ico</include>
                                         <include>LICENSE.txt</include>

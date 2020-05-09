@@ -82,18 +82,9 @@ public final class ApplicationContext {
 
         // ie. /home/user_name/.executequery/
 
-        if (!settings.containsKey(USER_HOME_DIR)) { // ie. /home/user_name
 
-            settings.put(USER_HOME_DIR, getUserHome());
-        }
+                return getUserSettingsDirectoryName()+fileSeparator();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(settings.get(USER_HOME_DIR)).
-                append(fileSeparator()).
-                append(getUserSettingsDirectoryName()).
-                append(fileSeparator());
-
-        return sb.toString();
     }
 
     public String getRepo() {

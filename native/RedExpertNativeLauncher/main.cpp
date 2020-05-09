@@ -35,8 +35,34 @@
 #include <string>
 #include <vector>
 
-static std::string java_path;
+static std::string djava_home;
+static std::string djvm;
+static std::string dpath;
 static std::string path_to_java_paths;
+
+bool startsWith(const std::string &st, const std::string &prefix)
+{
+    return st.substr(0, prefix.size()) == prefix;
+}
+
+std::string file_separator()
+{
+ #ifdef WIN32
+    return"\\";
+ #else
+    return "/"
+ #endif
+}
+
+std::string extension_exe_file()
+{
+ #ifdef WIN32
+    return".exe";
+ #else
+    return ""
+ #endif
+}
+
 
 std::vector<std::string> get_potential_libjvm_paths();
 std::vector<std::string> get_potential_libjvm_paths_from_path(std::string path_parameter);
@@ -179,9 +205,9 @@ openSharedLibrary(const std::string &sl_file,bool from_file_java_paths)
 	#error "Environment not 32 or 64-bit."
 	#endif
     std::string out;
-    std::string server_jvm = "server/jvm.dll";
-    std::string client_jvm = "client/jvm.dll";
-    std::string java_exe = "java.exe";
+    std::string server_jvm = "server"+file_separator()+"jvm.dll";
+    std::string client_jvm = "client"+file_separator()+"jvm.dll";
+    std::string java_exe = "java"+extension_exe_file();
     std::string sl_f = sl_file;
     std::string path_to_java = replaceFirstOccurrence(sl_f,server_jvm,java_exe);
     path_to_java = replaceFirstOccurrence(path_to_java,client_jvm,java_exe);
@@ -206,6 +232,7 @@ openSharedLibrary(const std::string &sl_file,bool from_file_java_paths)
         std::string err = "Error 01: File "+ sl_f+" not support arch this application! this application need in java with arch: " +arch;
         throw err;
     }
+    path_to_java=replaceFirstOccurrence(path_to_java,java_exe,"");
     SetEnvironmentVariableA("PATH",path_to_java.c_str());
     void *sl_handle = LoadLibraryA(sl_file.c_str());
     if (sl_handle == 0)
@@ -236,11 +263,93 @@ openSharedLibrary(const std::string &sl_file,bool from_file_java_paths)
     }
     if(!from_file_java_paths)
     {
-    std::ofstream file_java_paths;          // поток для записи
-    file_java_paths.open("java_paths.txt"); // окрываем файл для записи
+    std::ofstream file_java_paths;
+    file_java_paths.open(path_to_java_paths.c_str());
+    std::cout<<path_to_java_paths<<std::endl;
     if (file_java_paths.is_open())
        {
-           file_java_paths << sl_file << std::endl;
+           //std::cout<< "jvm=" << sl_file << std::endl;
+           //std::cout << "path=" << path_to_java << std::endl;
+           file_java_paths << "jvm=" << sl_file << std::endl;
+           file_java_paths << "path=" << path_to_java << std::endl;
+       }
+    }
+    return sl_handle;
+}
+
+SharedLibraryHandle openSharedLibrary(const std::string &sl_file,std::string path,bool from_file_java_paths)
+{
+    std::ostringstream os;
+#ifdef _WIN32
+    std::string arch;
+    #if INTPTR_MAX == INT32_MAX
+    arch = "x86";
+    #elif INTPTR_MAX == INT64_MAX
+    arch = "amd64";
+    #else
+    #error "Environment not 32 or 64-bit."
+    #endif
+    std::string out;
+    std::string java_exe = "java"+extension_exe_file();
+    std::string sl_f = sl_file;
+    std::string path_to_java = path+file_separator()+java_exe;
+    std::string cmd = "\"" +path_to_java +"\"" + " -XshowSettings:properties -version";
+    executeCmdEx(cmd.c_str(), out);
+    if(out.find("Property settings")==std::string :: npos)
+    {
+        std::string err = "Error 02: File "+sl_f+" not_found";
+        throw err;
+    }
+    std::regex jarch_regex("os\\.arch\\s\\=\\s(([\\w+\\s\\\\\\-:\\.])+)\\n");
+    std::smatch match;
+    bool support = false;
+    if(std::regex_search(out, match, jarch_regex))
+    {
+        std::string str = match[1].str();
+        support = str==arch;
+    }
+    if(!support)
+    {
+
+        std::string err = "Error 01: File "+ sl_f+" not support arch this application! this application need in java with arch: " +arch;
+        throw err;
+    }
+    SetEnvironmentVariableA("PATH",path.c_str());
+    void *sl_handle = LoadLibraryA(sl_file.c_str());
+    if (sl_handle == 0)
+    {
+        DWORD l_err = GetLastError();
+#else
+    void *sl_handle = dlopen(sl_file.c_str(), RTLD_LAZY);
+    if (sl_handle == 0)
+    {
+        os << "dlopen(\"" << sl_handle << "\") failed with "
+           << dlerror() << ".";
+#endif
+        os << std::endl;
+        os << "If you can't otherwise explain why this call failed, consider "
+              "whether all of the shared libraries";
+        os << " used by this shared library can be found.";
+        os << std::endl;
+#ifdef _WIN32
+        os << "This command's output may help:";
+        os << std::endl;
+        os << "objdump -p \"" << sl_file << "\" | grep DLL";
+        os << std::endl;
+        os << "LoadLibrary(\"" << sl_file << "\")";
+        throw utils::WindowsError(os.str(), l_err);
+#else
+        throw std::runtime_error(os.str());
+#endif
+    }
+    if(!from_file_java_paths)
+    {
+    std::ofstream file_java_paths;          // поток для записи
+    file_java_paths.open(path_to_java_paths.c_str()); // окрываем файл для записи
+    if (file_java_paths.is_open())
+       {
+           file_java_paths << "jvm=" <<sl_file << std::endl;
+           file_java_paths << "path=" <<path << std::endl;
        }
     }
     return sl_handle;
@@ -296,7 +405,7 @@ public:
     std::string readJreBin() const
     {
         std::string java_home = readRegistryFile(m_hive, reg_path);
-        std::string jre_bin = java_home + jre_path + "\\bin";
+        std::string jre_bin = java_home + jre_path + file_separator()+ "bin";
         return jre_bin;
     }
 
@@ -374,11 +483,38 @@ SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
                                 const char *java_vendor, const char *jdk_name,
                                 const char *jre_name)
 {
-       std::string java_path_from_file;
+
        std::ostream &os = err_rep.progress_os;
-       if(!java_path.empty())
+       if(!djvm.empty()&&!dpath.empty())
        {
-            std::vector<std::string> paths = get_potential_libjvm_paths_from_path(java_path);
+           os << "Trying potential path \"";
+           os << djvm;
+           os << "\" [";
+           os << std::endl;
+           try
+           {
+               return openSharedLibrary(djvm,dpath,false);
+           }
+           catch (std::string &ex)
+           {
+               if(ex.find("Error 01")==0)
+               {
+                   err_rep.typeError=NOT_SUPPORTED_ARCH;
+               }
+               os << ex;
+               os << std::endl;
+           }
+           catch (const std::exception &ex)
+           {
+               os << ex.what();
+               os << std::endl;
+           }
+           os << "]";
+           os << std::endl;
+       }
+       if(!djava_home.empty())
+       {
+            std::vector<std::string> paths = get_potential_libjvm_paths_from_path(djava_home);
             for (std::vector<std::string>::const_iterator it = paths.begin(), en = paths.end(); it != en;
                  ++it)
             {
@@ -409,22 +545,39 @@ SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
                 os << std::endl;
             }
        }
-       std::ifstream in("java_paths.txt"); // окрываем файл для чтения
+       std::ifstream in(path_to_java_paths); // окрываем файл для чтения
        bool f_open = in.is_open();
        if (f_open)
        {
-           getline(in, java_path_from_file);
+           std::string line;
+           while(getline(in,line))
+           {
+               size_t offset = line.find('=');
+               if(startsWith(line,"java_home"))
+               {
+                   djava_home=line.substr(offset+1);
+               }
+               if(startsWith(line,"jvm"))
+               {
+                   djvm=line.substr(offset+1);
+               }
+               if(startsWith(line,"path"))
+               {
+                   dpath=line.substr(offset+1);
+               }
+           }
        }
        in.close();
-       if(f_open)
+       std::cout<<djava_home<<";"<<djvm<<";"<<dpath<<std::endl;
+       if(!djvm.empty()&&!dpath.empty())
        {
            os << "Trying potential path \"";
-           os << java_path_from_file;
+           os << djvm;
            os << "\" [";
            os << std::endl;
            try
            {
-              return openSharedLibrary(java_path_from_file,true);
+               return openSharedLibrary(djvm,dpath,false);
            }
            catch (std::string &ex)
            {
@@ -434,18 +587,47 @@ SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
                }
                os << ex;
                os << std::endl;
-               java_path=java_path_from_file;
            }
            catch (const std::exception &ex)
            {
-               std::ostream &os = err_rep.progress_os;
                os << ex.what();
                os << std::endl;
-               java_path=java_path_from_file;
            }
            os << "]";
            os << std::endl;
-
+       }
+       if(!djava_home.empty())
+       {
+            std::vector<std::string> paths = get_potential_libjvm_paths_from_path(djava_home);
+            for (std::vector<std::string>::const_iterator it = paths.begin(), en = paths.end(); it != en;
+                 ++it)
+            {
+                std::string p_jvm = *it;
+                os << "Trying potential path \"";
+                os << p_jvm;
+                os << "\" [";
+                os << std::endl;
+                try
+                {
+                    return openSharedLibrary(p_jvm,false);
+                }
+                catch (std::string &ex)
+                {
+                    if(ex.find("Error 01")==0)
+                    {
+                        err_rep.typeError=NOT_SUPPORTED_ARCH;
+                    }
+                    os << ex;
+                    os << std::endl;
+                }
+                catch (const std::exception &ex)
+                {
+                    os << ex.what();
+                    os << std::endl;
+                }
+                os << "]";
+                os << std::endl;
+            }
        }
 
     const std::string reg_prefix = utils::toString("\\SOFTWARE\\") + java_vendor + "\\";
@@ -576,9 +758,9 @@ std::vector<std::string> get_search_suffixes()
     search_suffixes.push_back("/lib/server");
     search_suffixes.push_back("/lib/client");
 #endif
-    search_suffixes.push_back("/jre/bin/server");
-    search_suffixes.push_back("/bin/server");
-    search_suffixes.push_back("/bin/client");
+    search_suffixes.push_back(""+file_separator()+"jre"+file_separator()+"bin"+file_separator()+"server");
+    search_suffixes.push_back(""+file_separator()+"bin"+file_separator()+"server");
+    search_suffixes.push_back(""+file_separator()+"bin"+file_separator()+"client");
     return search_suffixes;
 }
 
@@ -600,7 +782,7 @@ std::vector<std::string> get_potential_libjvm_paths_from_path(std::string path_p
         path = strdup(out.substr(jhome_pos, end_pos - jhome_pos).c_str());
 #endif
     }
-    cmd = path_parameter+"/java -XshowSettings:properties -version";
+    cmd = path_parameter+file_separator()+"java -XshowSettings:properties -version";
         executeCmdEx(cmd.c_str(), out);
         if(out.find("Property settings")!=std::string :: npos)
         {
@@ -620,7 +802,7 @@ std::vector<std::string> get_potential_libjvm_paths_from_path(std::string path_p
          ++it_s)
     {
         std::string suffix = *it_s;
-        std::string res_path = path + suffix + "/" + file_name;
+        std::string res_path = path + suffix +file_separator() + file_name;
         libjvm_potential_paths.push_back(res_path);
     }
     return libjvm_potential_paths;
@@ -637,7 +819,7 @@ std::vector<std::string> get_potential_libjvm_paths()
     // From heuristics
 #ifdef _WIN32
     search_prefixes = {""};
-    search_suffixes = {"/jre/bin/server", "/bin/server", "/bin/client" };
+    search_suffixes = {file_separator()+"jre"+file_separator()+"bin"+file_separator()+"server", file_separator()+"bin"+file_separator()+"server", file_separator()+"bin"+file_separator()+"client" };
     file_name = "jvm.dll";
 #else
     search_prefixes.push_back("/usr/lib/jvm/default-java");       // ubuntu / debian distros
@@ -739,11 +921,10 @@ std::vector<std::string> get_potential_libjvm_paths()
                     continue;
                 search_prefixes.push_back(full_file_name);
             } while (FindNextFile(dir, &file_data));
-
             FindClose(dir);
-            if(java_path!="")
+            if(djava_home!="")
             {
-                search_prefixes.insert(search_prefixes.begin(), java_path);
+                search_prefixes.insert(search_prefixes.begin(), djava_home);
             }
 #elif __linux__
         std::string jhome_pat = "java.home = ";
@@ -768,7 +949,7 @@ std::vector<std::string> get_potential_libjvm_paths()
         {
             std::string prefix = *it;
             std::string suffix = *it_s;
-            std::string path = prefix + "/" + suffix + "/" + file_name;
+            std::string path = prefix +file_separator()+ suffix + file_separator()+file_name;
             libjvm_potential_paths.push_back(path.c_str());
         }
     }
@@ -970,10 +1151,6 @@ SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
 #endif
 }
 
-bool startsWith(const std::string &st, const std::string &prefix)
-{
-    return st.substr(0, prefix.size()) == prefix;
-}
 
 struct Properties : public std::map<std::string, std::string>
 {
@@ -984,7 +1161,7 @@ struct Properties : public std::map<std::string, std::string>
              it != en; ++it)
         {
             std::string option = *it;
-            if (startsWith(option, "-D") == false)
+            if ((startsWith(option, "-D") == false)&&(startsWith(option, "eq.")==false))
             {
                 continue;
             }
@@ -993,7 +1170,10 @@ struct Properties : public std::map<std::string, std::string>
             {
                 continue;
             }
-            std::string name = option.substr(2, offset - 2);
+            std::string name;
+            if (startsWith(option, "-D"))
+                name = option.substr(2, offset - 2);
+            else name = option.substr(0, offset);
             std::string value = option.substr(offset + 1);
             (*this)[name] = value;
         }
@@ -1016,7 +1196,11 @@ public:
         properties.parse(launcherArguments);
         // Try to set the mailing list address before reporting errors.
         err_rep.support_address = properties["supportAddress"];
-        java_path = properties["java_home"];
+        djava_home = properties["java_home"];
+        dpath=properties["path"];
+        djvm=properties["jvm"];
+        path_to_java_paths=properties["eq.user.home.dir"]+file_separator()+properties["eq.java_paths.filename"];
+        std::cout<<path_to_java_paths<<std::endl;
         isClient = false;
         isServer = false;
         NativeArguments::const_iterator it = launcherArguments.begin();
@@ -1046,7 +1230,7 @@ public:
             {
                 jvmArguments.push_back(option);
             }
-            else
+            else if(!startsWith(option, "eq."))
             {
                 mainArguments.push_back(option);
             }
@@ -1480,8 +1664,8 @@ int main(int argc, char *argv[])
     app_pid = GetCurrentProcessId();
 #endif
 
-    app_dir = bin_dir + "/..";
-    paths.append(app_dir + "/RedExpert.jar");
+    app_dir = bin_dir +file_separator()+"..";
+    paths.append(app_dir + file_separator()+"RedExpert.jar");
     paths.append(separator);
 
 #ifdef __linux__
@@ -1491,7 +1675,7 @@ int main(int argc, char *argv[])
     paths.append(separator);
 #endif
 
-    std::string lib_dir(app_dir + "/lib");
+    std::string lib_dir(app_dir +file_separator()+"lib");
 
 #ifdef __linux__
     DIR *dir;
@@ -1570,6 +1754,25 @@ int main(int argc, char *argv[])
     launcher_args.push_back("-exe_path=" + app_exe_path);
     std::string str_pid = utils::toString(app_pid);
     launcher_args.push_back("-exe_pid=" + str_pid);
+    std::string path_config;
 
+    path_config = replaceFirstOccurrence(app_exe_path,"bin"+file_separator()+"RedExpert64"+extension_exe_file(),"config"+file_separator()+"redexpert_config.ini");
+    path_config = replaceFirstOccurrence(path_config,"bin"+file_separator()+"RedExpert"+extension_exe_file(),"config"+file_separator()+"redexpert_config.ini");
+    std::ifstream in(path_config); // окрываем файл для чтения
+    bool f_open = in.is_open();
+    std::string line;
+    if (f_open)
+    {
+        while(getline(in, line))
+        {
+            if(startsWith(line,"eq."))
+            {
+                launcher_args.push_back(line);
+            }
+        }
+
+     }
+    in.close();
+    if(f_open)
     return runJvm(launcher_args);
 }

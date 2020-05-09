@@ -37,11 +37,13 @@ import org.underworldlabs.swing.PasswordDialog;
 import org.underworldlabs.swing.SplashPanel;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.plaf.UIUtils;
+import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.*;
@@ -295,10 +297,10 @@ public class ApplicationLauncher {
             System.setProperty("file.encoding", encoding);
         }
 
-        String settingDirName = stringApplicationProperty("eq.user.home.dir");
+        String settingDirName = stringPropertyFromConfig("eq.user.home.dir");
+        settingDirName = settingDirName.replace("$HOME",System.getProperty("user.home"));
         System.setProperty("executequery.user.home.dir", settingDirName);
         ApplicationContext.getInstance().setUserSettingsDirectoryName(settingDirName);
-
         String build = stringApplicationProperty("eq.build");
         System.setProperty("executequery.build", build);
         ApplicationContext.getInstance().setBuild(build);
@@ -548,6 +550,18 @@ public class ApplicationLauncher {
 
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", ExecuteQueryFrame.TITLE);
+        }
+
+    }
+    private String stringPropertyFromConfig(String key)
+    {
+        Properties props = null;
+        try {
+            props = FileUtils.loadProperties(MiscUtils.loadURLs("./config/redexpert_config.ini;../config/redexpert_config.ini"));
+            return props.getProperty(key);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "";
         }
 
     }

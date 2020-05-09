@@ -148,9 +148,12 @@
                 </compareText>
             </ruleList>
         </setInstallerVariable>
-        <consoleWrite>
-            <text>${bitness_app}</text>
-        </consoleWrite>
+        <iniFileGet>
+            <file>${redexpert_dir}/config/redexpert_config.ini</file>
+            <section>Installer_settings</section>
+            <key>eq.user.home.dir</key>
+            <variable>settings_dir</variable>
+        </iniFileGet>
     </preBuildActionList>
     <postInstallationActionList>
         <createShortcuts>
@@ -178,9 +181,24 @@
                 </fileExists>
             </ruleList>
         </iniFileSet>
+        <iniFileSet>
+            <file>${installdir}${platform_path_separator}config${platform_path_separator}redexpert_config.ini</file>
+            <section>Installer_settings</section>
+            <key>eq.user.home.dir</key>
+            <value>${settings_dir}</value>
+        </iniFileSet>
+        <createDirectory>
+            <path>${settings_dir}</path>
+        </createDirectory>
+        <iniFileGet>
+            <file>${installdir}/config/redexpert_config.ini</file>
+            <section>Installer_settings</section>
+            <key>eq.java_paths.filename</key>
+            <variable>java_paths_filename</variable>
+        </iniFileGet>
         <writeFile>
-            <path>${installdir}${platform_path_separator}bin${platform_path_separator}java_paths.txt</path>
-            <text>${java_home}</text>
+            <path>${settings_dir}${platform_path_separator}${java_paths_filename}</path>
+            <text>java_home=${java_home}</text>
         </writeFile>
     </postInstallationActionList>
 
@@ -200,6 +218,27 @@
     <windows64bitMode>1</windows64bitMode>
     <installationLogFile>${installdir}/RedExpertInstallation.log</installationLogFile>
     <parameterList>
+        <directoryParameter>
+            <name>settings_dir</name>
+            <description>Installer.Parameter.settings_dir.description</description>
+            <explanation>Installer.Parameter.settings_dir.explanation</explanation>
+            <value></value>
+            <default>${settings_dir}</default>
+            <allowEmptyValue>0</allowEmptyValue>
+            <ask>yes</ask>
+            <cliOptionName>prefix</cliOptionName>
+            <mustBeWritable>no</mustBeWritable>
+            <mustExist>1</mustExist>
+            <width>40</width>
+            <preShowPageActionList>
+                <setInstallerVariableFromRegEx>
+                    <name>settings_dir</name>
+                    <pattern>\$HOME</pattern>
+                    <substitution>${user_home_directory}</substitution>
+                    <text>${settings_dir}</text>
+                </setInstallerVariableFromRegEx>
+            </preShowPageActionList>
+        </directoryParameter>
         <directoryParameter>
             <name>java_home</name>
             <description>Installer.Parameter.java_home.description</description>

@@ -50,7 +50,7 @@ std::string file_separator()
  #ifdef WIN32
     return"\\";
  #else
-    return "/"
+    return "/";
  #endif
 }
 
@@ -59,7 +59,7 @@ std::string extension_exe_file()
  #ifdef WIN32
     return".exe";
  #else
-    return ""
+    return "";
  #endif
 }
 
@@ -261,6 +261,9 @@ openSharedLibrary(const std::string &sl_file,bool from_file_java_paths)
         throw std::runtime_error(os.str());
 #endif
     }
+#ifdef __linux__
+    std::string path_to_java;
+#endif
     if(!from_file_java_paths)
     {
     std::ofstream file_java_paths;
@@ -932,8 +935,8 @@ std::vector<std::string> get_potential_libjvm_paths()
         int end_pos = out.find("\n", jhome_pos);
         std::string java_env = out.substr(jhome_pos, end_pos - jhome_pos);
         search_prefixes.insert(search_prefixes.begin(), java_env);
-        if (!java_path.empty())
-            search_prefixes.insert(search_prefixes.begin(), java_path);
+        if (!djava_home.empty())
+            search_prefixes.insert(search_prefixes.begin(), djava_home);
 
 #endif
 
@@ -1077,7 +1080,7 @@ int try_dlopen(std::vector<std::string> potential_paths, void *&out_handle,bool 
             file_java_paths.open(path_to_java_paths); // окрываем файл для записи
             if (file_java_paths.is_open())
                {
-                   file_java_paths << p_path << std::endl;
+                   file_java_paths << "jvm="<<p_path << std::endl;
                }
             file_java_paths.close();
             break;
@@ -1104,14 +1107,18 @@ SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
     (void)isClient;
     (void)isServer;
     void *handler = 0;
-    std::string java_path_from_file;
-    path_to_java_paths=getSelfPath();
-    replaceFirstOccurrence(path_to_java_paths,"bin/RedExpert64","bin/");
-    replaceFirstOccurrence(path_to_java_paths,"bin/RedExpert","bin/");
-    path_to_java_paths=path_to_java_paths+"java_paths.txt";
-    if(java_path!="")
+    if(djvm!="")
     {
-        std::vector<std::string> paths = get_potential_libjvm_paths_from_path(java_path);
+        std::vector<std::string> paths;
+        paths.push_back(djvm.c_str());
+        if (try_dlopen(paths, handler,false))
+        {
+            return static_cast<SharedLibraryHandle>(handler);
+        }
+    }
+    if(djava_home!="")
+    {
+        std::vector<std::string> paths = get_potential_libjvm_paths_from_path(djava_home);
         if (try_dlopen(paths, handler,false))
         {
             return static_cast<SharedLibraryHandle>(handler);
@@ -1120,21 +1127,41 @@ SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
     std::ifstream in(path_to_java_paths); // окрываем файл для чтения
     bool f_open = in.is_open();
     if (f_open)
-    {
-        getline(in, java_path_from_file);
-    }
+           {
+               std::string line;
+               while(getline(in,line))
+               {
+                   size_t offset = line.find('=');
+                   if(startsWith(line,"java_home"))
+                   {
+                       djava_home=line.substr(offset+1);
+                   }
+                   if(startsWith(line,"jvm"))
+                   {
+                       djvm=line.substr(offset+1);
+                   }
+                   if(startsWith(line,"path"))
+                   {
+                       dpath=line.substr(offset+1);
+                   }
+               }
+           }
     in.close();
-    if(f_open)
+    if(djvm!="")
     {
-
         std::vector<std::string> paths;
-        paths.push_back(java_path_from_file.c_str());
+        paths.push_back(djvm.c_str());
         if (try_dlopen(paths, handler,true))
         {
             return static_cast<SharedLibraryHandle>(handler);
         }
-        else {
-           java_path = java_path_from_file.c_str();
+    }
+    if(djava_home!="")
+    {
+        std::vector<std::string> paths = get_potential_libjvm_paths_from_path(djava_home);
+        if (try_dlopen(paths, handler,false))
+        {
+            return static_cast<SharedLibraryHandle>(handler);
         }
     }
     std::vector<std::string> paths = get_potential_libjvm_paths();

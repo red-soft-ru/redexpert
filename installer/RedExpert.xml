@@ -1,4 +1,7 @@
-<project>
+<?xml version="1.0" encoding="utf-8" ?>
+<!--xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="./InstallBuilder.rng"-->
+<project >
     <shortName>RedExpert</shortName>
     <fullName>Red Expert</fullName>
     <version>${VERSION}</version>
@@ -100,10 +103,6 @@
                 <startMenuShortcut>
                     <comment>Launch ${project.shortName}</comment>
                     <name>${project.shortName}</name>
-                    <platforms>all</platforms>
-                    <exec>${installdir}/bin/${execute_file}</exec>
-                    <path>${installdir}/bin/</path>
-                    <icon>${installdir}/red_expert.png</icon>
                     <windowsExec>${installdir}/bin/${execute_file}.exe</windowsExec>
                     <windowsPath>${installdir}/bin/</windowsPath>
                     <windowsExecArgs></windowsExecArgs>
@@ -121,9 +120,6 @@
             <value>${execution_file}</value>
             <persist>1</persist>
         </setInstallerVariable>
-        <consoleWrite>
-            <text>${execution_file}</text>
-        </consoleWrite>
         <setInstallerVariable>
             <name>bitness_app</name>
             <value>64</value>
@@ -154,6 +150,12 @@
             <key>eq.user.home.dir</key>
             <variable>settings_dir</variable>
         </iniFileGet>
+        <iniFileGet>
+            <file>${redexpert_dir}/config/redexpert_config.ini</file>
+            <section>Installer_settings</section>
+            <key>eq.min_version_java</key>
+            <variable>min_java_version</variable>
+        </iniFileGet>
     </preBuildActionList>
     <postInstallationActionList>
         <createShortcuts>
@@ -177,7 +179,7 @@
             <value>Development;IDE;</value>
             <ruleList>
                 <fileExists>
-                    <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>>
+                        <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>
                 </fileExists>
             </ruleList>
         </iniFileSet>
@@ -259,7 +261,7 @@
                 <validVersionList>
                     <validVersion>
                         <vendor></vendor>
-                        <minVersion>1.8</minVersion>
+                        <minVersion>${min_java_version}</minVersion>
                         <maxVersion></maxVersion>
                         <bitness>${bitness_app}</bitness>
                     </validVersion>
@@ -286,6 +288,130 @@
                     </ruleList>
                 </setInstallerVariable>
             </preShowPageActionList>
+            <validationActionList>
+                <if>
+                    <ruleList>
+                        <platformTest>
+                            <type>windows</type>
+                        </platformTest>
+                    </ruleList>
+                    <actionList>
+                        <setInstallerVariable>
+                            <name>java_exe</name>
+                            <value>java.exe</value>
+                        </setInstallerVariable>
+                    </actionList>
+                    <elseActionList>
+                        <setInstallerVariable>
+                            <name>java_exe</name>
+                            <value>java</value>
+                        </setInstallerVariable>
+                    </elseActionList>
+                </if>
+                <setInstallerVariable>
+                    <name>java_executable</name>
+                    <value>${java_home}${platform_path_separator}bin${platform_path_separator}${java_exe}</value>
+                </setInstallerVariable>
+                <runProgram>
+                    <program>${java_executable}</program>
+                    <programArguments>-XshowSettings:properties -version</programArguments>
+                    <abortOnError>0</abortOnError>
+                    <showMessageOnError>0</showMessageOnError>
+                </runProgram>
+                <setInstallerVariable>
+                    <name>java_props</name>
+                    <value>${program_stderr}</value>
+                </setInstallerVariable>
+                <setInstallerVariable>
+                    <name>java_executable</name>
+                    <value>${java_home}{platform_path_separator}${java_exe}</value>
+                    <ruleList>
+                        <compareText>
+                            <text>${java_props}</text>
+                            <logic>does_not_contain</logic>
+                            <value>Property settings</value>
+                        </compareText>
+                    </ruleList>
+                </setInstallerVariable>
+                <runProgram>
+                    <program>${java_executable}</program>
+                    <programArguments>-XshowSettings:properties -version</programArguments>
+                    <abortOnError>0</abortOnError>
+                    <showMessageOnError>0</showMessageOnError>
+                </runProgram>
+                <setInstallerVariable>
+                    <name>java_props</name>
+                    <value>${program_stderr}</value>
+                </setInstallerVariable>
+                <throwError>
+                    <text>${msg(Installer.Parameter.java_home.error.not_found)}</text>
+                    <ruleList>
+                       <compareText>
+                           <text>${java_props}</text>
+                           <logic>does_not_contain</logic>
+                           <value>Property settings</value>
+                       </compareText>
+                    </ruleList>
+                </throwError>
+                <setInstallerVariableFromRegEx>
+                    <name>java_home</name>
+                    <text>${java_props}</text>
+                    <pattern>^.*java\.home = ([^\n]*)\n.*$</pattern>
+                    <substitution>\1</substitution>
+                </setInstallerVariableFromRegEx>
+                <setInstallerVariableFromRegEx>
+                    <name>java_version</name>
+                    <text>${java_props}</text>
+                    <pattern>^.*java\.version = ([^\n]*)\n.*$</pattern>
+                    <substitution>\1</substitution>
+                </setInstallerVariableFromRegEx>
+                <throwError>
+                    <text>${msg(Installer.Parameter.java_home.error.min_version)}</text>
+                    <ruleList>
+                        <compareVersions>
+                            <logic>less</logic>
+                            <version1>${java_version}</version1>
+                            <version2>${min_java_version}</version2>
+                        </compareVersions>
+                    </ruleList>
+                </throwError>
+                <setInstallerVariableFromRegEx>
+                    <name>java_arch</name>
+                    <text>${java_props}</text>
+                    <pattern>^.*os\.arch = ([^\n]*)\n.*$</pattern>
+                    <substitution>\1</substitution>
+                </setInstallerVariableFromRegEx>
+                <setInstallerVariable>
+                    <name>check_java_version</name>
+                    <value>x86</value>
+                    <ruleList>
+                        <compareText>
+                            <text>${bitness_app}</text>
+                            <value>32</value>
+                        </compareText>
+                    </ruleList>
+                </setInstallerVariable>
+                <setInstallerVariable>
+                    <name>check_java_version</name>
+                    <value>amd64</value>
+                    <ruleList>
+                        <compareText>
+                            <text>${bitness_app}</text>
+                            <value>64</value>
+                        </compareText>
+                    </ruleList>
+                </setInstallerVariable>
+                <throwError>
+                    <text>${msg(Installer.Parameter.java_home.error.bitness)}</text>
+                    <ruleList>
+                        <compareText>
+                            <text>${java_arch}</text>
+                            <value>${check_java_version}</value>
+                            <negate>1</negate>
+                        </compareText>
+                    </ruleList>
+                </throwError>
+            </validationActionList>
         </directoryParameter>
         <directoryParameter>
             <name>installdir</name>
@@ -311,6 +437,11 @@
             <allowEmptyValue>0</allowEmptyValue>
             <ask>no</ask>
             <width>2</width>
+        </stringParameter>
+        <stringParameter>
+            <name>min_java_version</name>
+            <allowEmptyValue>0</allowEmptyValue>
+            <ask>no</ask>
         </stringParameter>
     </parameterList>
 </project>

@@ -228,7 +228,7 @@
             <ask>yes</ask>
             <cliOptionName>prefix</cliOptionName>
             <mustBeWritable>no</mustBeWritable>
-            <mustExist>1</mustExist>
+            <mustExist>0</mustExist>
             <width>40</width>
             <preShowPageActionList>
                 <setInstallerVariableFromRegEx>

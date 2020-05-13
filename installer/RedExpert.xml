@@ -290,11 +290,11 @@
             </preShowPageActionList>
             <validationActionList>
                 <if>
-                    <ruleList>
+                    <conditionRuleList>
                         <platformTest>
                             <type>windows</type>
                         </platformTest>
-                    </ruleList>
+                    </conditionRuleList>
                     <actionList>
                         <setInstallerVariable>
                             <name>java_exe</name>

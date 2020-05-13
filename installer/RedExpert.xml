@@ -267,26 +267,33 @@
                     </validVersion>
                 </validVersionList>
             </autodetectJava>
-                <setInstallerVariableFromRegEx>
-                    <name>java_path</name>
-                    <pattern>(\/|\\)bin(\/|\\)java.*</pattern>
-                    <text>${java_executable}</text>
-                    <substitution></substitution>
-                    <ruleList>
+                <if>
+                    <conditionRuleList>
                         <isTrue>
                             <value>${java_autodetected}</value>
                         </isTrue>
-                    </ruleList>
-                </setInstallerVariableFromRegEx>
-                <setInstallerVariable>
-                    <name>java_path</name>
-                    <value></value>
-                    <ruleList>
-                        <isFalse>
-                            <value>${java_autodetected}</value>
-                        </isFalse>
-                    </ruleList>
-                </setInstallerVariable>
+                    </conditionRuleList>
+                    <actionList>
+                        <runProgram>
+                            <program>${java_executable}</program>
+                            <programArguments>-XshowSettings:properties -version</programArguments>
+                            <abortOnError>0</abortOnError>
+                            <showMessageOnError>0</showMessageOnError>
+                        </runProgram>
+                        <setInstallerVariableFromRegEx>
+                             <name>java_path</name>
+                             <text>${program_stderr}</text>
+                             <pattern>^.*java\.home = ([^\n]*)\n.*$</pattern>
+                             <substitution>\1</substitution>
+                        </setInstallerVariableFromRegEx>
+                    </actionList>
+                    <elseActionList>
+                        <setInstallerVariable>
+                            <name>java_path</name>
+                            <value></value>
+                        </setInstallerVariable>
+                    </elseActionList>
+                </if>
             </preShowPageActionList>
             <validationActionList>
                 <if>

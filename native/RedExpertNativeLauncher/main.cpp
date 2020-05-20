@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <system_error>
+#include <sys/types.h>
+#include <pwd.h>
 #else
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "Urlmon.lib")
@@ -57,7 +59,6 @@ static int result_dialog;
 const int CHOOSE_FILE = 3;
 const int DOWNLOAD = 4;
 const int CANCEL = 5;
-static TCHAR* archive_name = TEXT("java.zip");
 #ifdef WIN32
 #if INTPTR_MAX==INT64_MAX
 static TCHAR* url_manual = TEXT("https://www.oracle.com/java/technologies/javase-downloads.html");
@@ -70,6 +71,7 @@ static TCHAR* download_url = TEXT("https://download.bell-sw.com/java/14+36/bells
 #endif
 static HWND h_progress;
 static HWND h_dialog_download;
+static TCHAR* archive_name = TEXT("java.zip");
 class DownloadStatus : public IBindStatusCallback
 {
 private:
@@ -1299,7 +1301,7 @@ public:
 		user_dir = replaceFirstOccurrence(user_dir, "$HOME", getenv("USERPROFILE"));
 		//std::cout<<path_to_java_paths<<std::endl;
 		CreateDirectoryA(user_dir.c_str(), NULL);
-#elif
+#elif __linux__
 		struct passwd* user = NULL;
 		uid_t user_id = getuid();
 		user = getpwuid(user_id);

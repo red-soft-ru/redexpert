@@ -32,7 +32,7 @@ win32: {
     QMAKE_CFLAGS_RELEASE -= -Zc:strictStrings
     QMAKE_CFLAGS -= -Zc:strictStrings
     QMAKE_CXXFLAGS -= -Zc:strictStrings
-    
+
     QMAKE_CXXFLAGS_RELEASE = -O2 -MT
     QMAKE_CFLAGS_RELEASE = -O2 -MT
     QMAKE_CFLAGS = -O2 -MT
@@ -40,11 +40,17 @@ win32: {
     LIBS += -lcomdlg32
     RC_FILE += ResourceScript.rc
     HEADERS +=\
-           resource.h
+           resource.h \
+    unzip.h \
+    zip.h
     DISTFILES += ResourceScript.rc
+    SOURCES +=\
+    unzip.cpp \
+    zip.cpp
 
 }
 else:unix: {
+
     contains(QT_ARCH, i386) {
         message("select 32-bit arch")
         TARGET = bin/RedExpert
@@ -72,9 +78,7 @@ else:unix: {
 }
 
 SOURCES += \
-    main.cpp \
-    unzip.cpp \
-    zip.cpp
+    main.cpp
 
 HEADERS += \
     JniError.h \
@@ -83,9 +87,7 @@ HEADERS += \
     reportFatalErrorViaGui.h \
     WinReg.hpp \
     HKEY.h \
-    unzip.h \
-    utils.h \
-    zip.h
+    utils.h
 
 
 

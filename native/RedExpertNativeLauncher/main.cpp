@@ -7,13 +7,23 @@
 #include <system_error>
 #else
 #pragma comment(lib, "user32.lib")
+#pragma comment(lib, "Urlmon.lib")
+#pragma comment(lib, "WinINet.lib")
+#pragma comment(lib, "shell32.lib")
 #include <windows.h>
 #include <ShellAPI.h>
 #include <regex>
 #include <WinReg.hpp>
 #include "HKEY.h"
-#include <cstdint>
-#include <atlstr.h>
+#include <thread>
+#include <commctrl.h>
+#include <Wininet.h>
+#include "resource.h"
+#include "unzip.h"
+#include <tchar.h>
+#include <direct.h>
+
+#define MAKEINTRESOURCE(i) ((LPWSTR)((ULONG_PTR)((WORD)(i))))
 #endif
 
 #include "utils.h"
@@ -39,6 +49,161 @@ static std::string djava_home;
 static std::string djvm;
 static std::string dpath;
 static std::string path_to_java_paths;
+static std::string user_dir;
+static std::string app_exe_path;
+static std::string bin_dir;
+static std::string app_dir;
+static int result_dialog;
+const int CHOOSE_FILE = 3;
+const int DOWNLOAD = 4;
+const int CANCEL=5;
+static TCHAR* archive_name= TEXT("java.zip");
+#ifdef WIN32
+#if INTPTR_MAX==INT64_MAX
+static TCHAR* url_manual=TEXT("https://www.oracle.com/java/technologies/javase-downloads.html");
+static TCHAR* download_url = TEXT("https://download.bell-sw.com/java/14+36/bellsoft-jre14+36-windows-amd64.zip");
+#elif INTPTR_MAX == INT32_MAX
+static TCHAR* url_manual=TEXT("https://www.java.com/ru/download/manual.jsp");
+static TCHAR* download_url = TEXT("https://download.bell-sw.com/java/14+36/bellsoft-jre14+36-windows-i586.zip");
+#else
+#error "Environment not 32 or 64-bit."
+#endif
+static HWND h_progress;
+static HWND h_dialog_download;
+class DownloadStatus : public IBindStatusCallback
+{
+private:
+    int progress, filesize;
+    int AbortDownload;
+public:
+
+
+    STDMETHOD(OnStartBinding)(
+        /* [in] */ DWORD dwReserved,
+        /* [in] */ IBinding __RPC_FAR* pib)
+    {
+        return E_NOTIMPL;
+    }
+
+    STDMETHOD(GetPriority)(
+        /* [out] */ LONG __RPC_FAR* pnPriority)
+    {
+        return E_NOTIMPL;
+    }
+
+    STDMETHOD(OnLowResource)(
+        /* [in] */ DWORD reserved)
+    {
+        return E_NOTIMPL;
+    }
+
+    STDMETHOD(OnProgress)(
+        /* [in] */ ULONG ulProgress,
+        /* [in] */ ULONG ulProgressMax,
+        /* [in] */ ULONG ulStatusCode,
+        /* [in] */ LPCWSTR wszStatusText);
+
+    STDMETHOD(OnStopBinding)(
+        /* [in] */ HRESULT hresult,
+        /* [unique][in] */ LPCWSTR szError)
+    {
+        return E_NOTIMPL;
+    }
+
+    STDMETHOD(GetBindInfo)(
+        /* [out] */ DWORD __RPC_FAR* grfBINDF,
+        /* [unique][out][in] */ BINDINFO __RPC_FAR* pbindinfo)
+    {
+        return E_NOTIMPL;
+    }
+
+    STDMETHOD(OnDataAvailable)(
+        /* [in] */ DWORD grfBSCF,
+        /* [in] */ DWORD dwSize,
+        /* [in] */ FORMATETC __RPC_FAR* pformatetc,
+        /* [in] */ STGMEDIUM __RPC_FAR* pstgmed)
+    {
+        return E_NOTIMPL;
+    }
+
+    STDMETHOD(OnObjectAvailable)(
+        /* [in] */ REFIID riid,
+        /* [iid_is][in] */ IUnknown __RPC_FAR* punk)
+    {
+        return E_NOTIMPL;
+    }
+
+    // IUnknown methods.  Note that IE never calls any of these methods, since
+    // the caller owns the IBindStatusCallback interface, so the methods all
+    // return zero/E_NOTIMPL.
+
+    STDMETHOD_(ULONG, AddRef)()
+    {
+        return 0;
+    }
+
+    STDMETHOD_(ULONG, Release)()
+    {
+        return 0;
+    }
+
+    STDMETHOD(QueryInterface)(
+        /* [in] */ REFIID riid,
+        /* [iid_is][out] */ void __RPC_FAR* __RPC_FAR* ppvObject)
+    {
+        return E_NOTIMPL;
+    }
+
+
+    STDMETHOD(OnStartBinding)()
+        {
+         AbortDownload = 0;
+         progress = 0;
+         filesize = 0;
+         return E_NOTIMPL; }
+
+        STDMETHOD(GetProgress)()
+         {
+             return progress;
+         }
+
+         STDMETHOD(GetFileSize)()
+         {
+             return filesize;
+         }
+         STDMETHOD(AbortDownl)()
+         {
+             AbortDownload = 1;
+             return E_NOTIMPL;
+         }
+         STDMETHOD(GetAbortDownl)()
+         {
+             return AbortDownload;
+         }
+};
+
+HRESULT DownloadStatus::OnProgress(ULONG ulProgress, ULONG ulProgressMax, ULONG ulStatusCode, LPCWSTR wszStatusText)
+{
+    progress = ulProgress;
+    filesize = ulProgressMax;
+    if (AbortDownload) return E_ABORT;
+    return S_OK;
+}
+
+static DownloadStatus ds;
+static std::thread th;
+int showDialog();
+std::string get_property_from_regex(std::string reg_property,std::string source)
+{
+    std::regex regex(reg_property+"\\s\\=\\s(([^\\n])+)\\n");
+    std::smatch match;
+    if(std::regex_search(source, match, regex))
+    {
+        return match[1].str();
+    }
+    return "";
+}
+#endif
 
 bool startsWith(const std::string &st, const std::string &prefix)
 {
@@ -62,7 +227,25 @@ std::string extension_exe_file()
     return "";
  #endif
 }
-
+bool isUnreasonableVersion(std::ostream &os, const std::string &version)
+{
+    if (version.empty() || isdigit(version[0]) == false)
+    {
+        os << "\"";
+        os << version;
+        os << "\" is not a number";
+        os << std::endl;
+        return true;
+    }
+    if (version < "1.8")
+    {
+        os << version;
+        os << " is too old";
+        os << std::endl;
+        return true;
+    }
+    return false;
+}
 
 std::vector<std::string> get_potential_libjvm_paths();
 std::vector<std::string> get_potential_libjvm_paths_from_path(std::string path_parameter);
@@ -191,94 +374,7 @@ replaceFirstOccurrence(
 
 typedef void *SharedLibraryHandle;
 
-SharedLibraryHandle
-openSharedLibrary(const std::string &sl_file,bool from_file_java_paths)
-{
-    std::ostringstream os;
-#ifdef _WIN32
-    std::string arch;
-	#if INTPTR_MAX == INT32_MAX
-    arch = "x86";
-	#elif INTPTR_MAX == INT64_MAX
-    arch = "amd64";
-	#else
-	#error "Environment not 32 or 64-bit."
-	#endif
-    std::string out;
-    std::string server_jvm = "server"+file_separator()+"jvm.dll";
-    std::string client_jvm = "client"+file_separator()+"jvm.dll";
-    std::string java_exe = "java"+extension_exe_file();
-    std::string sl_f = sl_file;
-    std::string path_to_java = replaceFirstOccurrence(sl_f,server_jvm,java_exe);
-    path_to_java = replaceFirstOccurrence(path_to_java,client_jvm,java_exe);
-    std::string cmd = "\"" +path_to_java +"\"" + " -XshowSettings:properties -version";
-    executeCmdEx(cmd.c_str(), out);
-    if(out.find("Property settings")==std::string :: npos)
-    {
-        std::string err = "Error 02: File "+sl_f+" not_found";
-        throw err;
-    }
-    std::regex jarch_regex("os\\.arch\\s\\=\\s(([\\w+\\s\\\\\\-:\\.])+)\\n");
-    std::smatch match;
-    bool support = false;
-    if(std::regex_search(out, match, jarch_regex))
-    {
-        std::string str = match[1].str();
-        support = str==arch;
-    }
-    if(!support)
-    {
 
-        std::string err = "Error 01: File "+ sl_f+" not support arch this application! this application need in java with arch: " +arch;
-        throw err;
-    }
-    path_to_java=replaceFirstOccurrence(path_to_java,java_exe,"");
-    SetEnvironmentVariableA("PATH",path_to_java.c_str());
-    void *sl_handle = LoadLibraryA(sl_file.c_str());
-    if (sl_handle == 0)
-    {
-        DWORD l_err = GetLastError();
-#else
-    void *sl_handle = dlopen(sl_file.c_str(), RTLD_LAZY);
-    if (sl_handle == 0)
-    {
-        os << "dlopen(\"" << sl_handle << "\") failed with "
-           << dlerror() << ".";
-#endif
-        os << std::endl;
-        os << "If you can't otherwise explain why this call failed, consider "
-              "whether all of the shared libraries";
-        os << " used by this shared library can be found.";
-        os << std::endl;
-#ifdef _WIN32
-        os << "This command's output may help:";
-        os << std::endl;
-        os << "objdump -p \"" << sl_file << "\" | grep DLL";
-        os << std::endl;
-        os << "LoadLibrary(\"" << sl_file << "\")";
-        throw utils::WindowsError(os.str(), l_err);
-#else
-        throw std::runtime_error(os.str());
-#endif
-    }
-#ifdef __linux__
-    std::string path_to_java;
-#endif
-    if(!from_file_java_paths)
-    {
-    std::ofstream file_java_paths;
-    file_java_paths.open(path_to_java_paths.c_str());
-    std::cout<<path_to_java_paths<<std::endl;
-    if (file_java_paths.is_open())
-       {
-           //std::cout<< "jvm=" << sl_file << std::endl;
-           //std::cout << "path=" << path_to_java << std::endl;
-           file_java_paths << "jvm=" << sl_file << std::endl;
-           file_java_paths << "path=" << path_to_java << std::endl;
-       }
-    }
-    return sl_handle;
-}
 
 SharedLibraryHandle openSharedLibrary(const std::string &sl_file,std::string path,bool from_file_java_paths)
 {
@@ -303,19 +399,25 @@ SharedLibraryHandle openSharedLibrary(const std::string &sl_file,std::string pat
         std::string err = "Error 02: File "+sl_f+" not_found";
         throw err;
     }
-    std::regex jarch_regex("os\\.arch\\s\\=\\s(([\\w+\\s\\\\\\-:\\.])+)\\n");
-    std::smatch match;
-    bool support = false;
-    if(std::regex_search(out, match, jarch_regex))
-    {
-        std::string str = match[1].str();
-        support = str==arch;
-    }
+
+        std::string str =get_property_from_regex("os\\.arch",out);
+        //std::cout<<str<<"\n";
+        bool support = str==arch;
+
     if(!support)
     {
 
         std::string err = "Error 01: File "+ sl_f+" not support arch this application! this application need in java with arch: " +arch;
         throw err;
+    }
+
+    str =get_property_from_regex("java\\.version",out);
+    if(!str.empty()&&isUnreasonableVersion(err_rep.progress_os,str))
+    {
+        std::string err = "Error 03: File "+ sl_f+" not support version this application! this application need in java with version>=1.8";
+        err_rep.typeError=NOT_SUPPORTED_VERSION;
+        throw err;
+
     }
     SetEnvironmentVariableA("PATH",path.c_str());
     void *sl_handle = LoadLibraryA(sl_file.c_str());
@@ -357,6 +459,17 @@ SharedLibraryHandle openSharedLibrary(const std::string &sl_file,std::string pat
     }
     return sl_handle;
 }
+SharedLibraryHandle
+openSharedLibrary(const std::string &sl_file,bool from_file_java_paths)
+{
+    std::string server_jvm = "server"+file_separator()+"jvm.dll";
+    std::string client_jvm = "client"+file_separator()+"jvm.dll";
+    std::string java_exe = "java"+extension_exe_file();
+    std::string sl_f = sl_file;
+    std::string path_to_java = replaceFirstOccurrence(sl_f,server_jvm,"");
+    path_to_java = replaceFirstOccurrence(path_to_java,client_jvm,"");
+    return openSharedLibrary(sl_file,path_to_java,from_file_java_paths);
+}
 
 static std::string readFile(const std::string &path)
 {
@@ -372,6 +485,9 @@ static std::string readFile(const std::string &path)
 
 #ifdef _WIN32
 
+
+
+
 static std::string readRegistryFile(const HKEY hive, const std::string &path)
 {
     winreg::RegKey key;
@@ -386,6 +502,7 @@ static std::string readRegistryFile(const HKEY hive, const std::string &path)
     }
     return contents;
 }
+
 
 struct JvmRegistryKey
 {
@@ -427,26 +544,6 @@ typedef std::vector<JvmRegistryKey> JvmRegistryKeys;
 
 #endif
 
-bool isUnreasonableVersion(std::ostream &os, const std::string &version)
-{
-    if (version.empty() || isdigit(version[0]) == false)
-    {
-        os << "\"";
-        os << version;
-        os << "\" is not a number";
-        os << std::endl;
-        return true;
-    }
-    if (version < "1.8")
-    {
-        os << version;
-        os << " is too old";
-        os << std::endl;
-        return true;
-    }
-    return false;
-}
-
 #ifdef _WIN32
 
 void findVersionsInRegistry(std::ostream &os, HKEY &hive, JvmRegistryKeys &jvm_reg_keys,
@@ -481,73 +578,77 @@ void findVersionsInRegistry(std::ostream &os, HKEY &hive, JvmRegistryKeys &jvm_r
     os << "]";
     os << std::endl;
 }
-
-SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
-                                const char *java_vendor, const char *jdk_name,
-                                const char *jre_name)
-{
-
-       std::ostream &os = err_rep.progress_os;
-       if(!djvm.empty()&&!dpath.empty())
-       {
-           os << "Trying potential path \"";
-           os << djvm;
-           os << "\" [";
-           os << std::endl;
-           try
-           {
-               return openSharedLibrary(djvm,dpath,false);
-           }
-           catch (std::string &ex)
-           {
-               if(ex.find("Error 01")==0)
-               {
-                   err_rep.typeError=NOT_SUPPORTED_ARCH;
-               }
-               os << ex;
-               os << std::endl;
-           }
-           catch (const std::exception &ex)
-           {
-               os << ex.what();
-               os << std::endl;
-           }
-           os << "]";
-           os << std::endl;
-       }
-       if(!djava_home.empty())
-       {
-            std::vector<std::string> paths = get_potential_libjvm_paths_from_path(djava_home);
-            for (std::vector<std::string>::const_iterator it = paths.begin(), en = paths.end(); it != en;
-                 ++it)
+SharedLibraryHandle checkParameters(bool from_file)
+{   std::ostream &os = err_rep.progress_os;
+    if(!djvm.empty()&&!dpath.empty())
+    {
+        os << "Trying potential path \"";
+        os << djvm;
+        os << "\" [";
+        os << std::endl;
+        try
+        {
+            return openSharedLibrary(djvm,dpath,from_file);
+        }
+        catch (std::string &ex)
+        {
+            if(ex.find("Error 01")==0)
             {
-                std::string p_jvm = *it;
-                os << "Trying potential path \"";
-                os << p_jvm;
-                os << "\" [";
-                os << std::endl;
-                try
-                {
-                    return openSharedLibrary(p_jvm,false);
-                }
-                catch (std::string &ex)
-                {
-                    if(ex.find("Error 01")==0)
-                    {
-                        err_rep.typeError=NOT_SUPPORTED_ARCH;
-                    }
-                    os << ex;
-                    os << std::endl;
-                }
-                catch (const std::exception &ex)
-                {
-                    os << ex.what();
-                    os << std::endl;
-                }
-                os << "]";
-                os << std::endl;
+                err_rep.typeError=NOT_SUPPORTED_ARCH;
             }
-       }
+            os << ex;
+            os << std::endl;
+        }
+        catch (const std::exception &ex)
+        {
+            os << ex.what();
+            os << std::endl;
+        }
+        os << "]";
+        os << std::endl;
+    }
+    if(!djava_home.empty())
+    {
+
+         std::vector<std::string> paths = get_potential_libjvm_paths_from_path(djava_home);
+         for (std::vector<std::string>::const_iterator it = paths.begin(), en = paths.end(); it != en;
+              ++it)
+         {
+             std::string p_jvm = *it;
+             os << "Trying potential path \"";
+             os << p_jvm;
+             os << "\" [";
+             os << std::endl;
+             try
+             {
+                 return openSharedLibrary(p_jvm,false);
+             }
+             catch (std::string &ex)
+             {
+                 if(ex.find("Error 01")==0)
+                 {
+                     err_rep.typeError=NOT_SUPPORTED_ARCH;
+                 }
+                 os << ex;
+                 os << std::endl;
+             }
+             catch (const std::exception &ex)
+             {
+                 os << ex.what();
+                 os << std::endl;
+             }
+             os << "]";
+             os << std::endl;
+         }
+    }
+    return 0;
+}
+SharedLibraryHandle tryPaths()
+{
+       std::ostream &os = err_rep.progress_os;
+       SharedLibraryHandle handle = checkParameters(false);
+       if(handle!=0)
+           return handle;
        std::ifstream in(path_to_java_paths); // окрываем файл для чтения
        bool f_open = in.is_open();
        if (f_open)
@@ -571,78 +672,64 @@ SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
            }
        }
        in.close();
-       std::cout<<djava_home<<";"<<djvm<<";"<<dpath<<std::endl;
-       if(!djvm.empty()&&!dpath.empty())
-       {
-           os << "Trying potential path \"";
-           os << djvm;
-           os << "\" [";
-           os << std::endl;
-           try
-           {
-               return openSharedLibrary(djvm,dpath,false);
-           }
-           catch (std::string &ex)
-           {
-               if(ex.find("Error 01")==0)
-               {
-                   err_rep.typeError=NOT_SUPPORTED_ARCH;
-               }
-               os << ex;
-               os << std::endl;
-           }
-           catch (const std::exception &ex)
-           {
-               os << ex.what();
-               os << std::endl;
-           }
-           os << "]";
-           os << std::endl;
-       }
-       if(!djava_home.empty())
-       {
-            std::vector<std::string> paths = get_potential_libjvm_paths_from_path(djava_home);
-            for (std::vector<std::string>::const_iterator it = paths.begin(), en = paths.end(); it != en;
-                 ++it)
-            {
-                std::string p_jvm = *it;
-                os << "Trying potential path \"";
-                os << p_jvm;
-                os << "\" [";
-                os << std::endl;
-                try
-                {
-                    return openSharedLibrary(p_jvm,false);
-                }
-                catch (std::string &ex)
-                {
-                    if(ex.find("Error 01")==0)
-                    {
-                        err_rep.typeError=NOT_SUPPORTED_ARCH;
-                    }
-                    os << ex;
-                    os << std::endl;
-                }
-                catch (const std::exception &ex)
-                {
-                    os << ex.what();
-                    os << std::endl;
-                }
-                os << "]";
-                os << std::endl;
-            }
-       }
+       //std::cout<<djava_home<<";"<<djvm<<";"<<dpath<<std::endl;
+       handle = checkParameters(true);
+       if(handle!=0)
+           return handle;
 
-    const std::string reg_prefix = utils::toString("\\SOFTWARE\\") + java_vendor + "\\";
+
+    std::vector<std::string> p_paths = get_potential_libjvm_paths();
+
+    for (std::vector<std::string>::const_iterator it = p_paths.begin(), en = p_paths.end(); it != en;
+         ++it)
+    {
+        std::string p_jvm = *it;
+        os << "Trying potential path \"";
+        os << p_jvm;
+        os << "\" [";
+        os << std::endl;
+        try
+        {
+            return openSharedLibrary(p_jvm,false);
+        }
+        catch (std::string &ex)
+        {
+            if(ex.find("Error 01")==0)
+            {
+                err_rep.typeError=NOT_SUPPORTED_ARCH;
+            }
+            os << ex;
+            os << std::endl;
+        }
+        catch (const std::exception &ex)
+        {
+            std::ostream &os = err_rep.progress_os;
+            os << ex.what();
+            os << std::endl;
+        }
+        os << "]";
+        os << std::endl;
+    }
+    return 0;
+}
+
+
+
+SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
+                                const char *java_vendor, const char *jdk_name,
+                                const char *jre_name)
+{
+
+    std::ostream &os = err_rep.progress_os;
+
+    const std::string reg_prefix = utils::toString("SOFTWARE\\") + java_vendor + "\\";
     const std::string jre_reg_path = reg_prefix + jre_name;
     const std::string jdk_reg_path = reg_prefix + jdk_name;
 
     JvmRegistryKeys jvm_reg_keys;
+
     findVersionsInRegistry(os, hive, jvm_reg_keys, jre_reg_path, "");
-    // Sun JDK key:
-    // "JavaHome"="C:\\Program Files\\Java\\jdk1.5.0_06"
-    // IBM JDK has an appended "jre" component:
-    // "JavaHome"="C:\\Program Files\\IBM\\Java50\\jre"
+    findVersionsInRegistry(os, hive, jvm_reg_keys, jdk_reg_path, "");
     findVersionsInRegistry(os, hive, jvm_reg_keys, jdk_reg_path, "\\jre");
     std::sort(jvm_reg_keys.begin(), jvm_reg_keys.end());
     while (jvm_reg_keys.empty() == false)
@@ -677,40 +764,6 @@ SharedLibraryHandle tryVersions(const char *jvm_dir, HKEY hive,
         os << "]";
         os << std::endl;
     }
-
-    std::vector<std::string> p_paths = get_potential_libjvm_paths();
-
-    for (std::vector<std::string>::const_iterator it = p_paths.begin(), en = p_paths.end(); it != en;
-         ++it)
-    {
-        std::string p_jvm = *it;
-        os << "Trying potential path \"";
-        os << p_jvm;
-        os << "\" [";
-        os << std::endl;
-        try
-        {
-            return openSharedLibrary(p_jvm,false);
-        }
-        catch (std::string &ex)
-        {
-            if(ex.find("Error 01")==0)
-            {
-                err_rep.typeError=NOT_SUPPORTED_ARCH;
-            }
-            os << ex;
-            os << std::endl;
-        }
-        catch (const std::exception &ex)
-        {
-            std::ostream &os = err_rep.progress_os;
-            os << ex.what();
-            os << std::endl;
-        }
-        os << "]";
-        os << std::endl;
-    }
-
     std::ostringstream err_os;
     err_os << "tryVersions(\"" << jvm_dir << "\", " << hive << ", "
                  << java_vendor << ", " << jdk_name << ", " << jre_name
@@ -862,11 +915,9 @@ std::vector<std::string> get_potential_libjvm_paths()
 #ifdef _WIN32
         std::ostream &os = err_rep.progress_os;
         os<<out;
-        std::regex jhome_regex("java\\.home\\s\\=\\s(([\\w+\\s\\\\\\-:\\.\\(\\)])+)\\n");
-        std::smatch match;
-        if(std::regex_search(out, match, jhome_regex))
+        std::string str = get_property_from_regex("java\\.home",out);
+        if(!str.empty())
         {
-            std::string str = match[1].str();
             os<<"java.home = "<<str;
             std::string str86 = replaceFirstOccurrence(str,"Program Files\\","Program Files (x86)\\");
             std::string str64 = replaceFirstOccurrence(str,"Program Files (x86)\\","Program Files\\");
@@ -980,6 +1031,8 @@ SharedLibraryHandle tryVendors(const char *jvm_dir)
     vendor_reg_locations.push_back(JavaVendorRegistryLocation(
                                               "JavaSoft", "Java Development Kit", "Java Runtime Environment"));
     vendor_reg_locations.push_back(JavaVendorRegistryLocation(
+                                              "JavaSoft", "JDK", "Java Runtime Environment"));
+    vendor_reg_locations.push_back(JavaVendorRegistryLocation(
                                               "IBM", "Java Development Kit", "Java2 Runtime Environment"));
     for (JavaVendorRegistryLocations::const_iterator it =
          vendor_reg_locations.begin();
@@ -1036,7 +1089,7 @@ SharedLibraryHandle tryDirectories(bool isClient, bool isServer)
     }
     std::ostringstream os;
     os << "tryDirectories(" << isClient << ", " << isServer << ") failed";
-    throw std::runtime_error(os.str());
+    return 0;
 }
 
 // Once we've successfully opened a shared library, I think we're committed to
@@ -1051,7 +1104,19 @@ SharedLibraryHandle openWindowsJvmLibrary(bool isClient, bool isServer)
     os << std::endl;
     os << "Error messages were:";
     os << std::endl;
-    return tryDirectories(isClient, isServer);
+    SharedLibraryHandle handle = tryPaths();
+    if(handle!=0)
+        return handle;
+    handle = tryDirectories(isClient, isServer);
+    if(handle!=0)
+        return handle;
+    std::string log_file = user_dir+"\\launcher.log";
+    printErrorToLogFile(log_file.c_str(),err_rep.progress_os.str());
+    if(showDialog()==0)
+    {
+       throw std::string("CANCEL");
+    }
+    return checkParameters(false);
 }
 
 #endif
@@ -1226,8 +1291,20 @@ public:
         djava_home = properties["java_home"];
         dpath=properties["path"];
         djvm=properties["jvm"];
-        path_to_java_paths=properties["eq.user.home.dir"]+file_separator()+properties["eq.java_paths.filename"];
-        std::cout<<path_to_java_paths<<std::endl;
+        user_dir=properties["eq.user.home.dir"];
+#ifdef WIN32
+        user_dir=replaceFirstOccurrence(user_dir,"$HOME",getenv("USERPROFILE"));
+        //std::cout<<path_to_java_paths<<std::endl;
+        CreateDirectoryA(user_dir.c_str(),NULL);
+#elif
+        struct passwd *user = NULL;
+        uid_t user_id = getuid();
+        user = getpwuid(user_id);
+        path_to_java_paths=replaceFirstOccurrence(user_dir,"$HOME",user->pw_dir);
+#endif
+        path_to_java_paths =user_dir + file_separator()+properties["eq.java_paths.filename"];
+
+        //system("pause");
         isClient = false;
         isServer = false;
         NativeArguments::const_iterator it = launcherArguments.begin();
@@ -1593,6 +1670,222 @@ void ErrorReporter::generateReport(const std::exception &ex,
 }
 
 #ifdef _WIN32
+VOID CALLBACK TimerProc(
+
+    HWND hwnd,
+    UINT uMsg,
+    UINT_PTR idEvent,
+    DWORD dwTime
+)
+{
+    if (idEvent == 1001)
+    {
+
+        long filesize = ds.GetFileSize();
+        long progress = ds.GetProgress();
+        if (filesize != 0)
+        {
+            //SetDlgItemText(dialog_download, 1, mes.c_str());
+            float procent = ((float)progress) / ((float)filesize);
+            procent *= 100;
+            int pb_pos = (int)procent; // увеличить
+            SendMessage(h_progress, PBM_SETPOS, pb_pos, 0);
+            if(progress==filesize)
+            {
+                EndDialog(h_dialog_download, 0);
+                KillTimer(h_dialog_download,idEvent);
+            }
+        }
+    }
+}
+INT_PTR CALLBACK DlgDownloadProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
+
+    switch (msg) {
+    case WM_INITDIALOG:
+    {
+        h_dialog_download = hw;
+        h_progress = CreateWindowEx(0, //создаём окно
+            PROGRESS_CLASS,
+            L"ProgressBar", //тип окна
+            WS_CHILD | WS_BORDER | WS_VISIBLE, //стиль окна
+            10, 40, //расположение
+            270, 20,
+            hw, //родительское окно
+            NULL,
+            GetModuleHandle(NULL), //эту переменную надо объявить в начале программы HANDLE hInst;
+            NULL);
+        SendMessage(h_progress, PBM_SETRANGE, 0, (LPARAM)MAKELONG(0, 100));
+        //Установим шаг
+        SendMessage(h_progress, PBM_SETSTEP, (WPARAM)1, 0); //шаг 1
+        //
+        /* сообщение о создании диалога */
+         th=std::thread([] {URLDownloadToFile(
+            0,
+            download_url,
+            archive_name,
+            0,
+            &ds
+        ); });
+         SetTimer(hw, 1001, 1000, TimerProc);
+        return TRUE;
+    }
+    case WM_COMMAND:    /* сообщение от управляющих элементов */
+        if (LOWORD(wp) == 3)
+        {
+            ds.AbortDownl();
+            EndDialog(hw, 0);
+        }
+    }
+    return FALSE;
+}
+INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
+    std::wstring m_mes;
+    std::wstring arch;
+    #if INTPTR_MAX == INT32_MAX
+    arch = L"x86";
+    #elif INTPTR_MAX == INT64_MAX
+    arch = L"amd64";
+    #endif
+    switch (msg) {
+    case WM_INITDIALOG: /* сообщение о создании диалога */
+        SendMessage(GetDlgItem(hw,CHOOSE_FILE), BM_SETCHECK,BST_CHECKED,0);
+        if(err_rep.typeError==NOT_SUPPORTED_ARCH)
+        {
+            m_mes.append(L"Java with invalid architecture found. ");
+        } else if(err_rep.typeError==NOT_SUPPORTED_ARCH)
+        {
+            m_mes.append(L"Java with invalid version found. ");
+        }
+        else
+        {
+            m_mes.append(L"Java not found. ");
+        }
+        m_mes.append(L"You can select the path to the jvm.dll manually. Usually jvm.dll is located at this address:\n");
+        m_mes.append(L"path to java files\\bin\\[client|server]\\jvm.dll");
+        m_mes.append(L"\nYou can also start downloading java automatically or download java manually from <A HREF=\"");
+        m_mes.append(url_manual);
+        m_mes.append(L"\">");
+        m_mes.append(url_manual);
+        m_mes.append(L"</A>");
+        m_mes.append(L" This application need in java with architecture \"");
+        m_mes.append(arch);
+        m_mes.append(L"\" and version>=1.8");
+        SetDlgItemText(hw, 1,m_mes.c_str());
+        return TRUE;
+    case WM_COMMAND:    /* сообщение от управляющих элементов */
+        if (LOWORD(wp) == 6)
+        {
+            if(IsDlgButtonChecked(hw, DOWNLOAD))
+                result_dialog = DOWNLOAD;
+            if(IsDlgButtonChecked(hw, CHOOSE_FILE))
+                result_dialog = CHOOSE_FILE;
+            if(IsDlgButtonChecked(hw,CANCEL))
+                result_dialog = CANCEL;
+            EndDialog(hw, 0);
+
+        }
+        return TRUE;
+   case WM_NOTIFY:
+        if (LOWORD(wp) == 1)
+        {
+            switch (((LPNMHDR)lp)->code)
+                {
+
+                case NM_CLICK:          // Fall through to the next case.
+
+                case NM_RETURN:
+                    {
+                        PNMLINK pNMLink = (PNMLINK)lp;
+                         LITEM   item    = pNMLink->item;
+
+                        if (item.iLink == 0)
+                          {
+                            ShellExecute(NULL, L"open", item.szUrl, NULL, NULL, SW_SHOW);
+                          }
+
+                        break;
+                    }
+                }
+        }
+    }
+    return FALSE;
+}
+
+int showDialog()
+{
+    int res;
+    HINSTANCE h = GetModuleHandle(NULL);
+    DialogBox(h, MAKEINTRESOURCEW(DIALOG_X), GetConsoleWindow(), DlgProc);
+
+   if(result_dialog==DOWNLOAD)
+    {
+        DialogBox(h, MAKEINTRESOURCEW(P_BAR_DIALOG), GetConsoleWindow(), DlgDownloadProc);
+            th.join();
+            DeleteUrlCacheEntry(download_url);
+            if(ds.GetAbortDownl())
+                return 0;
+            HZIP hz = OpenZip(archive_name, 0);
+            ZIPENTRY ze;
+            GetZipItem(hz, -1, &ze);
+            int numitems = ze.index;
+                    // -1 gives overall information about the zipfile
+            for (int zi = 0; zi < numitems; zi++)
+                    {
+                        ZIPENTRY ze; GetZipItem(hz, zi, &ze); // fetch individual details
+                        UnzipItem(hz, zi, ze.name);         // e.g. the item's name.
+                    }
+             CloseZip(hz);
+             std::string archive=bin_dir+file_separator()+utils::convertUtf16ToUtf8(archive_name);
+             remove(archive.c_str());
+             HANDLE dir;
+             WIN32_FIND_DATA file_data;
+             if ((dir = FindFirstFile(utils::convertUtf8ToUtf16(bin_dir+file_separator()+"*").c_str(), &file_data)) != INVALID_HANDLE_VALUE)
+
+
+             do {
+                 //wide char array
+
+
+                     //convert from wide char to narrow char array
+                     char ch[260];
+                     char DefChar = ' ';
+                     WideCharToMultiByte(CP_ACP,0,file_data.cFileName,-1, ch,260,&DefChar, NULL);
+
+                     //A std:string  using the char* constructor.
+
+                 std::string fileName (ch);
+                 std::string full_file_name = bin_dir + file_separator()+fileName;
+
+
+                 if (fileName[0] == '.'||fileName.find("RedExpert")==0)
+                     continue;
+                 djava_home=full_file_name;
+             } while (FindNextFile(dir, &file_data));
+
+             FindClose(dir);
+            return 1;
+    }
+    else if(result_dialog== CHOOSE_FILE)
+    {
+        TCHAR* file = basicOpenFile();
+        if(file!=0)
+        {
+            res=1;
+            djvm = utils::convertUtf16ToUtf8(file);
+            std::string server_jvm = "server"+file_separator()+"jvm.dll";
+            std::string client_jvm = "client"+file_separator()+"jvm.dll";
+            dpath = replaceFirstOccurrence(djvm,server_jvm,"");
+            dpath = replaceFirstOccurrence(dpath,client_jvm,"");
+            return 1;
+        }
+        else return 0;
+
+    }else
+    {
+        return 0;
+    }
+    return 0;
+}
 
 LONG CALLBACK handleVectoredException(PEXCEPTION_POINTERS)
 {
@@ -1640,6 +1933,13 @@ static int runJvm(const NativeArguments &l_args)
         JavaInvocation j_invocation(parser);
         return j_invocation.invokeMain();
     }
+    catch (std::string &ex)
+    {
+        std::cout<<ex<<std::endl;
+        int res = ex.compare("CANCEL");
+        if(res==0)
+            return 1;
+    }
     catch (const UsageError &ex)
     {
         err_rep.reportUsageError(ex);
@@ -1667,9 +1967,7 @@ int main(int argc, char *argv[])
 #endif
 
     std::string paths("-Djava.class.path=");
-    std::string app_exe_path;
-    std::string bin_dir;
-    std::string app_dir;
+
     int app_pid;
 #ifdef __linux__
     app_exe_path = getSelfPath();
@@ -1800,6 +2098,5 @@ int main(int argc, char *argv[])
 
      }
     in.close();
-    if(f_open)
     return runJvm(launcher_args);
 }

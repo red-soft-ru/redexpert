@@ -6,6 +6,7 @@
  */
 
 static const int NOT_SUPPORTED_ARCH=1;
+static const int NOT_SUPPORTED_VERSION=3;
 
 #ifdef _WIN32
 #define USE_MESSAGE_BOX 1
@@ -57,7 +58,41 @@ inline std::string getCurrentDateTime()
     strftime(buf, sizeof(buf), "%Y-%m-%d %X", &tstruct);
     return std::string(buf);
 }
+#ifdef WIN32
+TCHAR* basicOpenFile()
+{
+    OPENFILENAME ofn;       // common dialog box structure
+    wchar_t szFile[260];       // buffer for file name
+    HWND hwnd;              // owner window
+    TCHAR* res;              // file handle
 
+    // Initialize OPENFILENAME
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = GetActiveWindow();
+    ofn.lpstrFile = szFile;
+    // Set lpstrFile[0] to '\0' so that GetOpenFileName does not
+    // use the contents of szFile to initialize itself.
+    ofn.lpstrFile[0] = '\0';
+    ofn.nMaxFile = sizeof(szFile);
+    ofn.lpstrFilter = L"dll\0jvm.dll\0";
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFileTitle = NULL;
+    ofn.nMaxFileTitle = 0;
+    ofn.lpstrInitialDir = NULL;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+    // Display the Open dialog box.
+
+    if (GetOpenFileName(&ofn)==TRUE)
+        res =ofn.lpstrFile;
+    else res=0;
+    return res;
+}
+
+
+
+#endif
 inline void printErrorToLogFile(const char* log_file, const std::string& app_mess)
 {    
     std::ofstream ofs(log_file, std::ofstream::out | std::ofstream::app);

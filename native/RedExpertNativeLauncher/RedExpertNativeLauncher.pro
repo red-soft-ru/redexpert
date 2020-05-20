@@ -37,8 +37,12 @@ win32: {
     QMAKE_CFLAGS_RELEASE = -O2 -MT
     QMAKE_CFLAGS = -O2 -MT
     QMAKE_CXXFLAGS = -O2 -MT
+    LIBS += -lcomdlg32
+    RC_FILE += ResourceScript.rc
+    HEADERS +=\
+           resource.h
+    DISTFILES += ResourceScript.rc
 
-    RC_ICONS += red_expert.ico
 }
 else:unix: {
     contains(QT_ARCH, i386) {
@@ -68,7 +72,9 @@ else:unix: {
 }
 
 SOURCES += \
-    main.cpp
+    main.cpp \
+    unzip.cpp \
+    zip.cpp
 
 HEADERS += \
     JniError.h \
@@ -77,5 +83,14 @@ HEADERS += \
     reportFatalErrorViaGui.h \
     WinReg.hpp \
     HKEY.h \
-    utils.h
+    unzip.h \
+    utils.h \
+    zip.h
+
+
+
+
+
+
+
 

@@ -41,13 +41,10 @@ win32: {
     RC_FILE += ResourceScript.rc
     HEADERS +=\
            resource.h \
-    unzip.h \
-    zip.h
+           unzip.h
     DISTFILES += ResourceScript.rc
     SOURCES +=\
-    unzip.cpp \
-    zip.cpp
-
+    unzip.cpp
 }
 else:unix: {
 

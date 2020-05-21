@@ -103,6 +103,10 @@
                 <startMenuShortcut>
                     <comment>Launch ${project.shortName}</comment>
                     <name>${project.shortName}</name>
+                    <platforms>all</platforms>
+                    <exec>${installdir}/bin/${execute_file}</exec>
+                    <path>${installdir}/bin/</path>
+                    <icon>${installdir}/red_expert.png</icon>
                     <windowsExec>${installdir}/bin/${execute_file}.exe</windowsExec>
                     <windowsPath>${installdir}/bin/</windowsPath>
                     <windowsExecArgs></windowsExecArgs>
@@ -120,7 +124,15 @@
             <value>${execution_file}</value>
             <persist>1</persist>
         </setInstallerVariable>
+        <consoleWrite>
+            <text>${execution_file}</text>
+        </consoleWrite>
     </preBuildActionList>
+    <preUninstallationActionList>
+        <deleteFile path="${installdir}/bin"/>
+        <deleteFile path="${installdir}/lib"/>
+        <deleteFile path="${installdir}/RedExpertInstallation.log"/>
+    </preUninstallationActionList>
     <postInstallationActionList>
         <createShortcuts>
             <destination>${user_home_directory}/.local/share/applications</destination>
@@ -143,36 +155,11 @@
             <value>Development;IDE;</value>
             <ruleList>
                 <fileExists>
-                        <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>
+                    <path>${user_home_directory}/.local/share/applications/${project.shortName}.desktop</path>>
                 </fileExists>
             </ruleList>
         </iniFileSet>
-        <iniFileSet>
-            <file>${installdir}${platform_path_separator}config${platform_path_separator}redexpert_config.ini</file>
-            <section>Installer_settings</section>
-            <key>eq.user.home.dir</key>
-            <value>${settings_dir}</value>
-        </iniFileSet>
-        <createDirectory>
-            <path>${settings_dir}</path>
-        </createDirectory>
-        <iniFileGet>
-            <file>${installdir}/config/redexpert_config.ini</file>
-            <section>Installer_settings</section>
-            <key>eq.java_paths.filename</key>
-            <variable>java_paths_filename</variable>
-        </iniFileGet>
-        <writeFile>
-            <path>${settings_dir}${platform_path_separator}${java_paths_filename}</path>
-            <text>java_home=${java_home}</text>
-        </writeFile>
     </postInstallationActionList>
-
-    <preUninstallationActionList>
-        <deleteFile path="${installdir}/bin"/>
-        <deleteFile path="${installdir}/lib"/>
-        <deleteFile path="${installdir}/RedExpertInstallation.log"/>
-    </preUninstallationActionList>
     <allowedLanguages>en ru</allowedLanguages>
     <enableRollback>1</enableRollback>
     <enableTimestamp>1</enableTimestamp>

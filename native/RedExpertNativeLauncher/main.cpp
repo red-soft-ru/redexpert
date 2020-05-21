@@ -25,7 +25,6 @@
 #include <tchar.h>
 #include <direct.h>
 
-#define MAKEINTRESOURCE(i) ((LPWSTR)((ULONG_PTR)((WORD)(i))))
 #endif
 
 #include "utils.h"
@@ -71,7 +70,9 @@ static TCHAR* download_url = TEXT("https://download.bell-sw.com/java/14+36/bells
 #endif
 static HWND h_progress;
 static HWND h_dialog_download;
-static TCHAR* archive_name = TEXT("java.zip");
+static std::wstring archive_name = L"java.zip";
+static std::wstring archive_path;
+static std::wstring archive_dir;
 class DownloadStatus : public IBindStatusCallback
 {
 private:
@@ -219,6 +220,33 @@ std::string file_separator()
 	return"\\";
 #else
 	return "/";
+#endif
+}
+
+std::string other_file_separator()
+{
+#ifdef WIN32
+    return "/";
+#else
+    return"\\";
+#endif
+}
+
+std::wstring wfile_separator()
+{
+#ifdef WIN32
+    return L"\\";
+#else
+    return L"/";
+#endif
+}
+
+std::wstring wother_file_separator()
+{
+#ifdef WIN32
+    return L"/";
+#else
+    return L"\\";
 #endif
 }
 
@@ -1299,8 +1327,17 @@ public:
 		user_dir = properties["eq.user.home.dir"];
 #ifdef WIN32
 		user_dir = replaceFirstOccurrence(user_dir, "$HOME", getenv("USERPROFILE"));
+        user_dir = replaceFirstOccurrence(user_dir,other_file_separator(),file_separator());
 		//std::cout<<path_to_java_paths<<std::endl;
-		CreateDirectoryA(user_dir.c_str(), NULL);
+        if(!CreateDirectoryW(utils::convertUtf8ToUtf16(user_dir).c_str(), NULL))
+        {
+            if(GetLastError()==ERROR_PATH_NOT_FOUND)
+            {
+                std::wstring error_message=L"error creating directory \""+utils::convertUtf8ToUtf16(user_dir)+L"\"";
+                MessageBox(GetActiveWindow(),error_message.c_str(),L"Error",MB_OK);
+                exit(EXIT_FAILURE);
+            }
+        }
 #elif __linux__
 		struct passwd* user = NULL;
 		uid_t user_id = getuid();
@@ -1308,8 +1345,21 @@ public:
 		path_to_java_paths = replaceFirstOccurrence(user_dir, "$HOME", user->pw_dir);
 #endif
 		path_to_java_paths = user_dir + file_separator() + properties["eq.java_paths.filename"];
-
-		//system("pause");
+#ifdef WIN32
+        archive_dir = utils::convertUtf8ToUtf16(user_dir+file_separator()+"java");
+        //temp=temp+archive_name;
+        if(!CreateDirectoryW(archive_dir.c_str(), NULL))
+        {
+            if(GetLastError()==ERROR_ALREADY_EXISTS)
+            {
+                std::wstring error_message=L"error creating directory \""+archive_dir+L"\"";
+                MessageBox(GetActiveWindow(),error_message.c_str(),L"Error",MB_OK);
+                exit(EXIT_FAILURE);
+            }
+        }
+       ;
+        archive_path = archive_dir+wfile_separator()+ archive_name;
+#endif
 		isClient = false;
 		isServer = false;
 		NativeArguments::const_iterator it = launcherArguments.begin();
@@ -1727,7 +1777,7 @@ INT_PTR CALLBACK DlgDownloadProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 		th = std::thread([] {URLDownloadToFile(
 			0,
 			download_url,
-			archive_name,
+            archive_path.c_str(),
 			0,
 			&ds
 		); });
@@ -1830,8 +1880,9 @@ int showDialog()
 		DeleteUrlCacheEntry(download_url);
 		if (ds.GetAbortDownl())
 			return 0;
-		HZIP hz = OpenZip(archive_name, 0);
+        HZIP hz = OpenZip(archive_path.c_str(), 0);
 		ZIPENTRY ze;
+        SetUnzipBaseDir(hz,archive_dir.c_str());
 		GetZipItem(hz, -1, &ze);
 		int numitems = ze.index;
 		// -1 gives overall information about the zipfile
@@ -1841,11 +1892,11 @@ int showDialog()
 			UnzipItem(hz, zi, ze.name);         // e.g. the item's name.
 		}
 		CloseZip(hz);
-		std::string archive = bin_dir + file_separator() + utils::convertUtf16ToUtf8(archive_name);
-		remove(archive.c_str());
+        _wremove(archive_path.c_str());
 		HANDLE dir;
 		WIN32_FIND_DATA file_data;
-		if ((dir = FindFirstFile(utils::convertUtf8ToUtf16(bin_dir + file_separator() + "*").c_str(), &file_data)) != INVALID_HANDLE_VALUE)
+        std::wstring str=archive_dir + wfile_separator() + L"*";
+        if ((dir = FindFirstFile(str.c_str(), &file_data)) != INVALID_HANDLE_VALUE)
 
 
 			do {
@@ -1860,10 +1911,10 @@ int showDialog()
 				//A std:string  using the char* constructor.
 
 				std::string fileName(ch);
-				std::string full_file_name = bin_dir + file_separator() + fileName;
+                std::string full_file_name = utils::convertUtf16ToUtf8(archive_dir) + file_separator() + fileName;
 
 
-				if (fileName[0] == '.' || fileName.find("RedExpert") == 0)
+                if (fileName[0] == '.')
 					continue;
 				djava_home = full_file_name;
 			} while (FindNextFile(dir, &file_data));
@@ -1946,6 +1997,7 @@ static int runJvm(const NativeArguments & l_args)
 		int res = ex.compare("CANCEL");
 		if (res == 0)
 			return 1;
+       err_rep.reportUsageError(UsageError(ex));
 	}
 	catch (const UsageError& ex)
 	{

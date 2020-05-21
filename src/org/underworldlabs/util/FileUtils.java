@@ -23,6 +23,7 @@ package org.underworldlabs.util;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Properties;
 import java.util.UUID;
@@ -283,11 +284,10 @@ public class FileUtils {
 
     }
 
-    public static Properties loadProperties(URL[] urls) throws IOException {
-        for(int i=0;i<urls.length;i++)
-        {
-            File f = new File(urls[i].getPath());
-            if(f.exists())
+    public static Properties loadProperties(URL[] urls) throws IOException, URISyntaxException {
+        for (int i = 0; i < urls.length; i++) {
+            File f = new File(urls[i].toURI().getPath());
+            if (f.exists())
                 return loadProperties(f, null);
         }
         return null;

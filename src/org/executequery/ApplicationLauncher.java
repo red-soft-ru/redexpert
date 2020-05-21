@@ -43,7 +43,6 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.*;
@@ -559,7 +558,7 @@ public class ApplicationLauncher {
         try {
             props = FileUtils.loadProperties(MiscUtils.loadURLs("./config/redexpert_config.ini;../config/redexpert_config.ini"));
             return props.getProperty(key);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return "";
         }

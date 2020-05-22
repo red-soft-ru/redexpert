@@ -1350,7 +1350,7 @@ public:
         //temp=temp+archive_name;
         if(!CreateDirectoryW(archive_dir.c_str(), NULL))
         {
-            if(GetLastError()==ERROR_ALREADY_EXISTS)
+            if(GetLastError()==ERROR_PATH_NOT_FOUND)
             {
                 std::wstring error_message=L"error creating directory \""+archive_dir+L"\"";
                 MessageBox(GetActiveWindow(),error_message.c_str(),L"Error",MB_OK);

@@ -45,6 +45,8 @@ win32: {
     DISTFILES += ResourceScript.rc
     SOURCES +=\
     unzip.cpp
+    DEFINES += UNICODE
+    DEFINES += _UNICODE
 }
 else:unix: {
 

@@ -1347,6 +1347,10 @@ public:
 		path_to_java_paths = user_dir + file_separator() + properties["eq.java_paths.filename"];
 #ifdef WIN32
         archive_dir = utils::convertUtf8ToUtf16(user_dir+file_separator()+"java");
+#if INTPTR_MAX==INT64_MAX
+        archive_dir+=L"64";
+        path_to_java_paths+="64";
+#endif
         //temp=temp+archive_name;
         if(!CreateDirectoryW(archive_dir.c_str(), NULL))
         {

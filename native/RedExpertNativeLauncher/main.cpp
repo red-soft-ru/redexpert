@@ -1,4 +1,5 @@
-#ifdef __linux__
+﻿#ifdef __linux__
+#pragma comment( lib, "libcurl.lib" )
 #include <dirent.h>
 #include <dlfcn.h>
 #include <libgen.h>
@@ -6,7 +7,9 @@
 #include <string.h>
 #include <system_error>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <pwd.h>
+#include <curl/curl.h>
 #else
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "Urlmon.lib")
@@ -55,9 +58,55 @@ static std::string app_exe_path;
 static std::string bin_dir;
 static std::string app_dir;
 static int result_dialog;
-const int CHOOSE_FILE = 3;
-const int DOWNLOAD = 4;
-const int CANCEL = 5;
+bool startsWith(const std::string& st, const std::string& prefix)
+{
+    return st.substr(0, prefix.size()) == prefix;
+}
+
+std::string file_separator()
+{
+#ifdef WIN32
+    return"\\";
+#else
+    return "/";
+#endif
+}
+
+std::string other_file_separator()
+{
+#ifdef WIN32
+    return "/";
+#else
+    return"\\";
+#endif
+}
+
+std::wstring wfile_separator()
+{
+#ifdef WIN32
+    return L"\\";
+#else
+    return L"/";
+#endif
+}
+
+std::wstring wother_file_separator()
+{
+#ifdef WIN32
+    return L"/";
+#else
+    return L"\\";
+#endif
+}
+
+std::string extension_exe_file()
+{
+#ifdef WIN32
+    return".exe";
+#else
+    return "";
+#endif
+}
 #ifdef WIN32
 #if INTPTR_MAX==INT64_MAX
 static TCHAR* url_manual = TEXT("https://www.oracle.com/java/technologies/javase-downloads.html");
@@ -207,57 +256,149 @@ std::string get_property_from_regex(std::string reg_property, std::string source
 	}
 	return "";
 }
-#endif
-
-bool startsWith(const std::string& st, const std::string& prefix)
-{
-	return st.substr(0, prefix.size()) == prefix;
-}
-
-std::string file_separator()
-{
-#ifdef WIN32
-	return"\\";
 #else
-	return "/";
+#if INTPTR_MAX==INT64_MAX
+static std::string url_manual = "https://www.oracle.com/java/technologies/javase-downloads.html";
+static std::string download_url = "https://download.bell-sw.com/java/14+36/bellsoft-jre14+36-linux-amd64.tar.gz";
+#elif INTPTR_MAX == INT32_MAX
+static std::string url_manual ="https://www.java.com/ru/download/manual.jsp";
+static std::string download_url = "https://download.bell-sw.com/java/14+36/bellsoft-jre14+36-linux-i586.tar.gz";
 #endif
-}
-
-std::string other_file_separator()
+static std::string archive_name = "java.tar.gz";
+static std::string archive_path;
+static std::string archive_dir;
+GtkWidget *Bar;
+GtkWidget *dialog_dwnl;
+extern "C"  void cancel_button_clicked_cb(GtkButton *button,
+                                          gpointer   data)
 {
-#ifdef WIN32
-    return "/";
-#else
-    return"\\";
-#endif
+    gtk_widget_destroy(dialog_dwnl);
+    gtk_main_quit();
 }
-
-std::wstring wfile_separator()
+size_t my_write_func(void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
-#ifdef WIN32
-    return L"\\";
-#else
-    return L"/";
-#endif
+  return fwrite(ptr, size, nmemb, stream);
 }
-
-std::wstring wother_file_separator()
+size_t my_read_func(void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
-#ifdef WIN32
-    return L"/";
-#else
-    return L"\\";
-#endif
+  return fread(ptr, size, nmemb, stream);
 }
-
-std::string extension_exe_file()
+int my_progress_func(GtkWidget *bar,
+                     double t, /* dltotal */
+                     double d, /* dlnow */
+                     double ultotal,
+                     double ulnow)
 {
-#ifdef WIN32
-	return".exe";
-#else
-	return "";
-#endif
+/*  printf("%d / %d (%g %%)\n", d, t, d*100.0/t);*/
+  gdk_threads_enter();
+  if(t!=0)
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(bar), d/t);
+  if(d==t&&d!=0)
+  {
+      gtk_widget_destroy(dialog_dwnl);
+      gtk_main_quit();
+  }
+  gdk_threads_leave();
+  return 0;
 }
+void *download_in_thread(gpointer ptr)
+{
+  CURL *curl;
+
+  curl = curl_easy_init();
+  if(curl) {
+      const char *url = download_url.c_str();
+    FILE *outfile = fopen(archive_path.c_str(), "wb");
+
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, outfile);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, my_write_func);
+    curl_easy_setopt(curl, CURLOPT_READFUNCTION, my_read_func);
+    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+    curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, my_progress_func);
+    curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, Bar);
+
+    curl_easy_perform(curl);
+
+    fclose(outfile);
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+  }
+
+  return NULL;
+}
+int showDialog()
+{
+    gtkDialog(bin_dir+file_separator()+"../resources/dialog_java_not_found.glade"
+              ,url_manual);
+    if (dialog_result==CANCEL)
+            exit(1);
+    if(dialog_result==CHOOSE_FILE)
+    {
+        char * s =gtkOpenFile();
+        if(s == 0)
+            return 0;
+        djava_home=s;
+        return 1;
+    }
+    if(dialog_result==DOWNLOAD)
+    {
+
+        /* Must initialize libcurl before any threads are started */
+          curl_global_init(CURL_GLOBAL_ALL);
+          GError *error = NULL;
+          gtk_init(NULL, NULL);
+          builder = gtk_builder_new();
+          std::string path_to_glade=bin_dir+file_separator()+"../resources/download_dialog.glade";
+          if( ! gtk_builder_add_from_file( builder, path_to_glade.c_str(), &error ) )
+              {
+                  g_warning( "%s", error->message );
+                  g_error_free (error);
+                  return( 1 );
+              }
+      dialog_dwnl = GTK_WIDGET(gtk_builder_get_object(builder, "download_dialog"));
+      gtk_builder_connect_signals (builder, NULL);
+      Bar=GTK_WIDGET(gtk_builder_get_object(builder, "prog_bar"));
+      gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(Bar), 0);
+          /* Init thread */
+          //g_thread_init(NULL);
+          //adj = (GtkAdjustment*)gtk_adjustment_new(0, 0, 100, 0, 0, 0);
+      g_object_unref( G_OBJECT( builder ) );
+
+      // Показываем форму и виджеты на ней
+      gtk_widget_show(dialog_dwnl);
+          gpointer url = (gpointer)download_url.c_str();
+          if(!g_thread_create(&download_in_thread, url, FALSE, NULL) != 0)
+              g_warning("can't create the thread");
+          gdk_threads_enter();
+            gtk_main();
+            gdk_threads_leave();
+        std::string command = "wget -O "+archive_path+" "+download_url;
+        //system(command.c_str());
+        command = "tar -C "+archive_dir+" -xvf "+archive_path;
+        system(command.c_str());
+        command = "rm "+archive_path;
+        system(command.c_str());
+        DIR* dir;
+        struct dirent* ent;
+        if ((dir = opendir(archive_dir.c_str())) != NULL)
+        {
+            while ((ent = readdir(dir)) != NULL)
+            {
+                std::string dir_name=ent->d_name;
+                if(dir_name=="."||dir_name=="..")
+                    continue;
+                djava_home = archive_dir+file_separator()+dir_name;
+            }
+            closedir(dir);
+        }
+        return 1;
+    }
+    return 0;
+}
+#endif
+
+
 bool isUnreasonableVersion(std::ostream& os, const std::string& version)
 {
 	if (version.empty() || isdigit(version[0]) == false)
@@ -1194,6 +1335,28 @@ int try_dlopen(std::vector<std::string> potential_paths, void*& out_handle, bool
 	os << std::endl;
 	return 1;
 }
+SharedLibraryHandle checkParameters(bool from_file)
+{
+    void* handler = 0;
+    if (djvm != "")
+    {
+        std::vector<std::string> paths;
+        paths.push_back(djvm.c_str());
+        if (try_dlopen(paths, handler, from_file))
+        {
+            return static_cast<SharedLibraryHandle>(handler);
+        }
+    }
+    if (djava_home != "")
+    {
+        std::vector<std::string> paths = get_potential_libjvm_paths_from_path(djava_home);
+        if (try_dlopen(paths, handler, false))
+        {
+            return static_cast<SharedLibraryHandle>(handler);
+        }
+    }
+    return handler;
+}
 #endif
 
 SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
@@ -1204,23 +1367,9 @@ SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
 	(void)isClient;
 	(void)isServer;
 	void* handler = 0;
-	if (djvm != "")
-	{
-		std::vector<std::string> paths;
-		paths.push_back(djvm.c_str());
-		if (try_dlopen(paths, handler, false))
-		{
-			return static_cast<SharedLibraryHandle>(handler);
-		}
-	}
-	if (djava_home != "")
-	{
-		std::vector<std::string> paths = get_potential_libjvm_paths_from_path(djava_home);
-		if (try_dlopen(paths, handler, false))
-		{
-			return static_cast<SharedLibraryHandle>(handler);
-		}
-	}
+    handler = checkParameters(false);
+    if(handler!=0)
+        return handler;
 	std::ifstream in(path_to_java_paths); // окрываем файл для чтения
 	bool f_open = in.is_open();
 	if (f_open)
@@ -1244,23 +1393,9 @@ SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
 		}
 	}
 	in.close();
-	if (djvm != "")
-	{
-		std::vector<std::string> paths;
-		paths.push_back(djvm.c_str());
-		if (try_dlopen(paths, handler, true))
-		{
-			return static_cast<SharedLibraryHandle>(handler);
-		}
-	}
-	if (djava_home != "")
-	{
-		std::vector<std::string> paths = get_potential_libjvm_paths_from_path(djava_home);
-		if (try_dlopen(paths, handler, false))
-		{
-			return static_cast<SharedLibraryHandle>(handler);
-		}
-	}
+    handler = checkParameters(true);
+    if(handler!=0)
+        return handler;
 	std::vector<std::string> paths = get_potential_libjvm_paths();
 	if (try_dlopen(paths, handler, false))
 	{
@@ -1271,6 +1406,8 @@ SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
 		std::ostringstream os;
 		os << "dlopen failed with "
 			<< dlerror() << ".";
+        if(showDialog())
+            return checkParameters(false);
 		return 0;
 	}
 #endif
@@ -1343,6 +1480,7 @@ public:
 		uid_t user_id = getuid();
 		user = getpwuid(user_id);
 		path_to_java_paths = replaceFirstOccurrence(user_dir, "$HOME", user->pw_dir);
+
 #endif
 		path_to_java_paths = user_dir + file_separator() + properties["eq.java_paths.filename"];
 #ifdef WIN32
@@ -1363,6 +1501,15 @@ public:
         }
        ;
         archive_path = archive_dir+wfile_separator()+ archive_name;
+#else
+        mkdir(user_dir.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        archive_dir = user_dir+file_separator()+"java";
+#if INTPTR_MAX==INT64_MAX
+        path_to_java_paths+="64";
+        archive_dir+="64";
+#endif
+        mkdir(archive_dir.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        archive_path = archive_dir+file_separator()+ archive_name;
 #endif
 		isClient = false;
 		isServer = false;

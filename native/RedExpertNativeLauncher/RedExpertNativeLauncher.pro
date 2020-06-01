@@ -53,27 +53,24 @@ else:unix: {
     contains(QT_ARCH, i386) {
         message("select 32-bit arch")
         TARGET = bin/RedExpert
-        CONFIG += link_pkgconfig
-        PKGCONFIG += gtk+-2.0
-#        LIBS += -L/usr/lib/jvm/java-8-oracle/jre/lib/i386/server/ -ljvm
     } else {
         message("select 64-bit arch")
         TARGET = bin/RedExpert64
-        CONFIG += link_pkgconfig
-        PKGCONFIG += gtk+-2.0
-#        LIBS += -L/usr/lib/jvm/java-8-oracle/jre/lib/amd64/server/ -ljvm
     }
-
+    CONFIG += link_pkgconfig
+    PKGCONFIG += gtk+-3.0
+    PKGCONFIG += gmodule-2.0
     INCLUDEPATH += $$(JAVA_HOME)/include
     INCLUDEPATH += $$(JAVA_HOME)/include/linux
-
-    # QMAKE_LFLAGS_RPATH=
     # add your own with quoting gyrations to make sure $ORIGIN gets to the command line unexpanded
     QMAKE_LFLAGS += "-Wl,-rpath,\'\$$ORIGIN\'"
-
     QMAKE_CXXFLAGS += -std=c++0x
-
+    LIBS += -lcurl
     LIBS += -ldl
+    DISTFILES += \
+        resources/dialog_java_not_found.glade \
+        resources/download_dialog.glade
+
 }
 
 SOURCES += \

@@ -7,6 +7,10 @@
 
 static const int NOT_SUPPORTED_ARCH=1;
 static const int NOT_SUPPORTED_VERSION=3;
+static int dialog_result;
+const int CHOOSE_FILE = 3;
+const int DOWNLOAD = 4;
+const int CANCEL = 5;
 
 #ifdef _WIN32
 #define USE_MESSAGE_BOX 1
@@ -16,6 +20,12 @@ static const int NOT_SUPPORTED_VERSION=3;
 #define USE_MESSAGE_BOX 0
 
 #include <gtk/gtk.h>
+extern "C"  void
+ok_button_clicked (GtkButton *button,
+            gpointer   data);
+static  GtkBuilder *builder;
+static GtkRadioButton *rb_download,*rb_file,*rb_cancel;
+
 
 void gtkMessageBox(const char *title, const char *message)
 {
@@ -41,6 +51,85 @@ void gtkMessageBox(const char *title, const char *message)
 
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
+}
+char* gtkOpenFile()
+{
+    GtkWidget *dialog;
+    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER;
+    gint res;
+
+    dialog = gtk_file_chooser_dialog_new ("Select java",
+                                          NULL,
+                                          action,
+                                          "_Cancel",
+                                          GTK_RESPONSE_CANCEL,
+                                          "_Open",
+                                          GTK_RESPONSE_ACCEPT,
+                                          NULL);
+
+    res = gtk_dialog_run (GTK_DIALOG (dialog));
+    char *filename=0;
+    if (res == GTK_RESPONSE_ACCEPT)
+      {
+
+        GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
+        filename = gtk_file_chooser_get_filename (chooser);
+
+      }
+
+    gtk_widget_destroy (dialog);
+    return filename;
+}
+int gtkDialog(std::string path_to_glade,std::string url)
+{
+
+    GtkWidget *dialog;
+    GError *error = NULL;
+    gtk_init(NULL, NULL);
+    builder = gtk_builder_new();
+    if( ! gtk_builder_add_from_file( builder, path_to_glade.c_str(), &error ) )
+        {
+            g_warning( "%s", error->message );
+            g_error_free (error);
+            return( 1 );
+        }
+dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_jnf"));
+    gtk_builder_connect_signals (builder, NULL);
+        rb_download=GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_download"));
+        rb_file=GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_file"));
+        rb_cancel=GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_cancel"));
+        GtkTextBuffer * msg = GTK_TEXT_BUFFER(gtk_builder_get_object(builder, "mes_txt"));
+        std::string text_msg="Java not found. You can select the path to java manually.\n";
+        text_msg.append("You can also start downloading java automatically\n");
+        text_msg.append("or download java manually from\n");
+        text_msg.append(url);
+        gtk_text_buffer_set_text(msg,text_msg.c_str(),text_msg.length());
+       // освобождение памяти
+       g_object_unref( G_OBJECT( builder ) );
+
+       // Показываем форму и виджеты на ней
+       gtk_widget_show(dialog);
+
+       // запуск главного цикла приложения
+       gtk_main();
+       //system("pause");
+       gtk_widget_destroy(dialog);
+       return 0;
+}
+extern "C"  void
+ok_button_clicked (GtkButton *button,
+            gpointer   data)
+{
+
+
+    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_download)))
+        dialog_result = DOWNLOAD;
+    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_file)))
+        dialog_result = CHOOSE_FILE;
+    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_cancel)))
+        dialog_result = CANCEL;
+    gtk_main_quit();
+
 }
 
 #endif
@@ -163,6 +252,8 @@ inline void reportFatalErrorViaGui(const std::string& programName, const std::st
     os << applicationMessage;
     os << std::endl;
     os << "Please copy this message to the clipboard with Ctrl-C and mail it to " << supportAddress << ".";
+    os << "You just need to run the application once with the parameter -Djava_home=java_path,";
+    os << "where java_path is the path to Java. And the application will remember the path";
     os << std::endl;
     std::string platformMessage(os.str());
     std::string m_mes("Launch error because Java not found.");
@@ -175,8 +266,6 @@ inline void reportFatalErrorViaGui(const std::string& programName, const std::st
     m_mes.append(" Please, check ");
     m_mes.append(log_file);
     m_mes.append(" for error details.");
-    m_mes.append("You just need to run the application once with the parameter -Djava_home=java_path,");
-    m_mes.append("where java_path is the path to Java. And the application will remember the path");
 #if USE_MESSAGE_BOX
     printErrorToLogFile(log_file, platformMessage);
     MessageBox(GetActiveWindow(), utils::convertUtf8ToUtf16(m_mes).c_str(), utils::convertUtf8ToUtf16(programName).c_str(), MB_OK);

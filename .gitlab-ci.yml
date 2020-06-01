@@ -104,6 +104,7 @@ sources:
     - ./ci/build_native.sh
     - ./ci/build_jar.sh
     - mkdir -p "${DIST}"
+    - mv native/RedExpertNativeLauncher/resources "${DIST}"
     - mkdir "${DIST}"/guide/
     - chmod +x modules/redexpert/target/bin/*
     - mv modules/redexpert/target/bin "${DIST}"

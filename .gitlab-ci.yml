@@ -93,7 +93,7 @@ sources:
   before_script:
     - yum -y update
     - yum install -y java-1.8.0-openjdk-devel-1.8.0.252.b09-2.el7_8 qt-devel gtk3-devel wget
-    - yum group install "Development Tools"
+    - yum group install -y "Development Tools"
     - cd /opt
     - wget http://www.apache.org/dist/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.tar.gz
     - tar xzf apache-maven-3.5.4-bin.tar.gz

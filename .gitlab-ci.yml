@@ -134,7 +134,7 @@ build:linux:x86:
   image: i386/centos:7
   variables:
     DIST: ${CI_PROJECT_DIR}/dist/linux-x86
-    JAVA_HOME: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.252.b09-2.el7_8.i686/
+    JAVA_HOME: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.252.b09-2.el7_8.i386/
     ARCH: x86
     <<: *build_linux_template_variables
 

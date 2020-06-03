@@ -21,7 +21,6 @@ if [ "$ARCH" == "x86_64" ]; then
     url_installbuilder="http://builds.red-soft.biz/release_hub/installbuilder/18.7.0/download/installbuilder:linux-x86_64:18.7.0:run"
 fi
 echo $url_installbuilder
-cd /opt
 wget -O installbuider.run $url_installbuilder
 chmod +x installbuilder.run
 ./installbuilder.run --mode unattended  --prefix /opt/installbuilder

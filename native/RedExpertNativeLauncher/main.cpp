@@ -48,6 +48,7 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
+#include <thread>
 
 static std::string djava_home;
 static std::string djvm;
@@ -264,16 +265,26 @@ static std::string download_url = "https://download.bell-sw.com/java/14+36/bells
 static std::string url_manual ="https://www.java.com/ru/download/manual.jsp";
 static std::string download_url = "https://download.bell-sw.com/java/14+36/bellsoft-jre14+36-linux-i586.tar.gz";
 #endif
+int status_downl;
+static int ABORT_DOWNLOAD=-1;
+static int DOWNLOADING = 0;
+static int FINISHED_DOWNLOADING = 1;
+static std::thread th;
 static std::string archive_name = "java.tar.gz";
 static std::string archive_path;
 static std::string archive_dir;
 GtkWidget *Bar;
 GtkWidget *dialog_dwnl;
+GThread * downl_thread;
+ CURL *curl;
+static double d=0,t=0;
 extern "C"  void cancel_button_clicked_cb(GtkButton *button,
                                           gpointer   data)
 {
-    gtk_widget_destroy(dialog_dwnl);
+    status_downl=ABORT_DOWNLOAD;
+    curl_easy_reset(curl);
     gtk_main_quit();
+
 }
 size_t my_write_func(void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
@@ -284,27 +295,39 @@ size_t my_read_func(void *ptr, size_t size, size_t nmemb, FILE *stream)
   return fread(ptr, size, nmemb, stream);
 }
 int my_progress_func(GtkWidget *bar,
-                     double t, /* dltotal */
-                     double d, /* dlnow */
+                     double tt, /* dltotal */
+                     double dd, /* dlnow */
                      double ultotal,
                      double ulnow)
 {
-/*  printf("%d / %d (%g %%)\n", d, t, d*100.0/t);*/
-  gdk_threads_enter();
+
+t=tt;
+d=dd;
+
+    return 0;
+}
+static gboolean updateProgress(gpointer data)
+{
+    if(status_downl==DOWNLOADING)
+    {
+
   if(t!=0)
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(bar), d/t);
+  {
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(Bar), d/t);
+  }
   if(d==t&&d!=0)
   {
+      status_downl=FINISHED_DOWNLOADING;
       gtk_widget_destroy(dialog_dwnl);
-      gtk_main_quit();
+       gtk_main_quit();
+       return FALSE;
   }
-  gdk_threads_leave();
-  return 0;
-}
-void *download_in_thread(gpointer ptr)
-{
-  CURL *curl;
 
+     }
+    return TRUE;
+}
+void download_in_thread()
+{
   curl = curl_easy_init();
   if(curl) {
       const char *url = download_url.c_str();
@@ -316,7 +339,7 @@ void *download_in_thread(gpointer ptr)
     curl_easy_setopt(curl, CURLOPT_READFUNCTION, my_read_func);
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
     curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, my_progress_func);
-    curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, Bar);
+    //curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, Bar);
 
     curl_easy_perform(curl);
 
@@ -325,7 +348,6 @@ void *download_in_thread(gpointer ptr)
     curl_easy_cleanup(curl);
   }
 
-  return NULL;
 }
 int showDialog()
 {
@@ -367,15 +389,14 @@ int showDialog()
 
       // Показываем форму и виджеты на ней
       gtk_widget_show(dialog_dwnl);
-          gpointer url = (gpointer)download_url.c_str();
-          if(!g_thread_create(&download_in_thread, url, FALSE, NULL) != 0)
-              g_warning("can't create the thread");
-          gdk_threads_enter();
-            gtk_main();
-            gdk_threads_leave();
-        std::string command = "wget -O "+archive_path+" "+download_url;
-        //system(command.c_str());
-        command = "tar -C "+archive_dir+" -xvf "+archive_path;
+      status_downl=DOWNLOADING;
+      th = std::thread([] {download_in_thread();});
+      g_timeout_add_seconds(1,updateProgress,NULL);
+      gtk_main();
+      th.join();
+      if(status_downl==ABORT_DOWNLOAD)
+          exit(1);
+      std::string command = "tar -C "+archive_dir+" -xvf "+archive_path;
         system(command.c_str());
         command = "rm "+archive_path;
         system(command.c_str());
@@ -2181,7 +2202,7 @@ int main(int argc, char* argv[])
 	int app_pid;
 #ifdef __linux__
 	app_exe_path = getSelfPath();
-	std::string tmp_path = app_exe_path;
+    std::string tmp_path = getSelfPath();
 	bin_dir = dirname((char*)tmp_path.c_str());
 	app_pid = getpid();
 #else

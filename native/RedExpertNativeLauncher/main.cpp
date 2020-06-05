@@ -949,11 +949,22 @@ std::vector<std::string> get_search_suffixes()
     std::vector<std::string> search_suffixes;
     search_suffixes.push_back("");
 #ifdef __linux__
-    search_suffixes.push_back("/lib/amd64/server");
-    search_suffixes.push_back("/jre/lib/amd64/server");
-    search_suffixes.push_back("/lib/amd64/client");
-    search_suffixes.push_back("/jre/lib/amd64/client");
-    search_suffixes.push_back("jre/lib/amd64");
+#if INTPTR_MAX == INT64_MAX
+     search_suffixes.push_back("/lib/amd64/server");
+     search_suffixes.push_back("/lib/amd64/client");
+     search_suffixes.push_back("/lib/amd64");
+     search_suffixes.push_back("/jre/lib/amd64/server");
+     search_suffixes.push_back("/jre/lib/amd64/client");
+     search_suffixes.push_back("/jre/lib/amd64");
+
+ #else
+     search_suffixes.push_back("/lib/i386/server");
+     search_suffixes.push_back("/lib/i386/client");
+     search_suffixes.push_back("/lib/i386");
+     search_suffixes.push_back("/jre/lib/i386/server");
+     search_suffixes.push_back("/jre/lib/i386/client");
+     search_suffixes.push_back("/jre/lib/i386");
+ #endif
     search_suffixes.push_back("/lib/server");
     search_suffixes.push_back("/lib/client");
 #endif

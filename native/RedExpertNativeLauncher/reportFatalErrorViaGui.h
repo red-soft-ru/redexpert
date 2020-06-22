@@ -23,6 +23,9 @@ const int CANCEL = 5;
 extern "C"  void
 ok_button_clicked (GtkButton *button,
             gpointer   data);
+extern "C"  void
+cancel_button_clicked (GtkButton *button,
+            gpointer   data);
 static  GtkBuilder *builder;
 static GtkRadioButton *rb_download,*rb_file,*rb_cancel;
 
@@ -80,10 +83,11 @@ char* gtkOpenFile()
     gtk_widget_destroy (dialog);
     return filename;
 }
+GtkWidget *dialog;
 int gtkDialog(std::string path_to_glade,std::string url)
 {
 
-    GtkWidget *dialog;
+
     GError *error = NULL;
     gtk_init(NULL, NULL);
     builder = gtk_builder_new();
@@ -116,18 +120,12 @@ dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_jnf"));
        gtk_widget_destroy(dialog);
        return 0;
 }
+
 extern "C"  void
-ok_button_clicked (GtkButton *button,
+cancel_button_clicked (GtkButton *button,
             gpointer   data)
 {
-
-
-    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_download)))
-        dialog_result = DOWNLOAD;
-    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_file)))
-        dialog_result = CHOOSE_FILE;
-    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_cancel)))
-        dialog_result = CANCEL;
+    dialog_result = CANCEL;
     gtk_main_quit();
 
 }
@@ -275,7 +273,7 @@ inline void reportFatalErrorViaGui(const std::string& programName, const std::st
     std::cerr << platformMessage;
     printErrorToLogFile(log_file, platformMessage);
 #ifdef __linux__
-    gtkMessageBox(programName.c_str(), m_mes.c_str());
+    //gtkMessageBox(programName.c_str(), m_mes.c_str());
 #endif
 }
 

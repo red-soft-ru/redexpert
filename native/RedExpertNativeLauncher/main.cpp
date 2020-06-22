@@ -1,5 +1,5 @@
-﻿#ifdef __linux__
-#pragma comment(lib, "libcurl.lib")
+﻿
+#ifdef __linux__
 #include <dirent.h>
 #include <dlfcn.h>
 #include <libgen.h>
@@ -59,6 +59,7 @@ static std::string app_exe_path;
 static std::string bin_dir;
 static std::string app_dir;
 static int result_dialog;
+typedef void* SharedLibraryHandle;
 bool startsWith(const std::string& st, const std::string& prefix)
 {
     return st.substr(0, prefix.size()) == prefix;
@@ -279,10 +280,10 @@ static std::string url_manual = "https://www.java.com/ru/download/manual.jsp";
 static std::string download_url = "https://download.bell-sw.com/java/14+36/bellsoft-jre14+36-linux-i586.tar.gz";
 #endif
 int status_downl;
+FILE* outfile;
 static int ABORT_DOWNLOAD = -1;
 static int DOWNLOADING = 0;
 static int FINISHED_DOWNLOADING = 1;
-static std::thread th;
 static std::string archive_name = "java.tar.gz";
 static std::string archive_path;
 static std::string archive_dir;
@@ -290,13 +291,69 @@ GtkWidget* Bar;
 GtkWidget* dialog_dwnl;
 GThread* downl_thread;
 CURL* curl;
+CURL* (*curl_easy_init_)(void);
+CURLcode (*curl_easy_setopt_)(CURL *, CURLoption , ...);
+CURLcode (*curl_easy_perform_)(CURL *);
+CURLcode (*curl_global_init_)(long flags);
+void (*curl_easy_cleanup_)(CURL *);
+void (*curl_easy_reset_)(CURL *);
+const char *(*curl_easy_strerror_)(CURLcode);
+void (*curl_global_cleanup_)(void);
+SharedLibraryHandle curlHandle;
 static double d = 0, t = 0;
+std::string getUsabilitySize(long countByte) {
+        int oneByte = 1024;
+        int delimiter = 103;
+        long drob = 0;
+        if (countByte > 1024) {
+            drob = (countByte % oneByte) / delimiter;
+            countByte = countByte / oneByte;
+            if (countByte > oneByte) {
+                drob = (countByte % oneByte) / delimiter;
+                countByte = countByte / oneByte;
+                if (countByte > oneByte) {
+                    drob = (countByte % oneByte) / delimiter;
+                    countByte = countByte / oneByte;
+                    if (countByte > oneByte) {
+                        drob = (countByte % oneByte) / delimiter;
+                        countByte = countByte / oneByte;
+                        return std::to_string(countByte )+ "," + std::to_string(drob)+ "Tb";
+                    } else return std::to_string(countByte )+ "," + std::to_string(drob)+ "Gb";
+                } else return std::to_string(countByte )+ "," + std::to_string(drob)+ "Mb";
+            } else return std::to_string(countByte )+ "," + std::to_string(drob) + "Kb";
+        } else return std::to_string(countByte ) + "b";
+    }
+void download_java();
+extern "C"  void
+ok_button_clicked (GtkButton *button,
+            gpointer   data)
+{
+
+
+    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_download)))
+    {
+        download_java();
+        if (status_downl==ABORT_DOWNLOAD)
+            return;
+        dialog_result = DOWNLOAD;
+    }
+    if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_file)))
+    {
+        char* s = gtkOpenFile();
+        if (s == 0)
+            return;
+        djava_home = s;
+        dialog_result = CHOOSE_FILE;
+    }
+    gtk_widget_destroy(dialog);
+    gtk_main_quit();
+
+}
 extern "C" void cancel_button_clicked_cb(GtkButton* button,
     gpointer data)
 {
     status_downl = ABORT_DOWNLOAD;
-    curl_easy_reset(curl);
-    gtk_main_quit();
+    gtk_widget_destroy(dialog_dwnl);
 }
 size_t my_write_func(void* ptr, size_t size, size_t nmemb, FILE* stream)
 {
@@ -315,14 +372,29 @@ int my_progress_func(GtkWidget* bar,
 
     t = tt;
     d = dd;
-
+    if(status_downl==ABORT_DOWNLOAD)
+        return 1;
     return 0;
+}
+static std::string http_code;
+static size_t header_callback(char *buffer, size_t size,
+                          size_t nitems, void *userdata)
+{
+    std::string s=buffer;
+    if (s.find("HTTP") != std::string::npos)
+        http_code=s;
+  /*
+   * Эта функция будет вызываться на каждый возвращаемый заголовок.
+   */
+  return nitems * size;
 }
 static gboolean updateProgress(gpointer data)
 {
     if (status_downl == DOWNLOADING) {
 
         if (t != 0) {
+            std::string text=getUsabilitySize((long)d)+"/"+getUsabilitySize((long)t);
+            gtk_progress_bar_set_text(GTK_PROGRESS_BAR(Bar),text.c_str());
             gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(Bar), d / t);
         }
         if (d == t && d != 0) {
@@ -334,26 +406,73 @@ static gboolean updateProgress(gpointer data)
     }
     return TRUE;
 }
+void init_curl()
+{
+    curlHandle=0;
+    curlHandle = dlopen("libcurl.so.4",RTLD_LAZY);
+    if(curlHandle==0)
+    {
+        gtkMessageBox("Error downloading java","libcurl not found. Please install libcurl4 to automatically download java");
+        exit(1);
+    }
+    curl_easy_init_=(CURL* (*)(void))dlsym(curlHandle,"curl_easy_init");
+    curl_easy_setopt_=(CURLcode (*)(CURL *, CURLoption , ...))dlsym(curlHandle,"curl_easy_setopt");
+    curl_easy_perform_=(CURLcode (*)(CURL *))dlsym(curlHandle,"curl_easy_perform");
+    curl_easy_cleanup_=(void (*)(CURL *)) dlsym(curlHandle,"curl_easy_cleanup");
+    curl_global_init_=(CURLcode (*)(long flags))dlsym(curlHandle,"curl_global_init");
+    curl_easy_reset_=(void (*)(CURL *))dlsym(curlHandle,"curl_easy_reset");
+    curl_easy_strerror_=(const char *(*)(CURLcode))dlsym(curlHandle,"curl_easy_strerror");
+    curl_global_cleanup_=(void (*)(void))dlsym(curlHandle,"curl_global_cleanup");
+    (*curl_global_init_)(CURL_GLOBAL_ALL);
+    curl=(*curl_easy_init_)();
+    if (curl) {
+        CURLcode res;
+        const char* url = download_url.c_str();
+        curl_easy_setopt_(curl, CURLOPT_URL, url);
+        curl_easy_setopt_(curl, CURLOPT_HEADER, 1);
+        curl_easy_setopt_(curl, CURLOPT_NOBODY, 1);
+        curl_easy_setopt_(curl, CURLOPT_HEADERFUNCTION, header_callback);
+        res = curl_easy_perform_(curl);
+        if(res != CURLE_OK)
+        {
+              gtkMessageBox("Error downloading java" ,curl_easy_strerror_(res));
+              exit(1);
+        }
+        if(http_code.find("20")==std::string::npos&&http_code.find("30")==std::string::npos)
+        {
+            gtkMessageBox("Error downloading java" ,http_code.c_str());
+            exit(1);
+        }
+        /* always cleanup */
+        curl_easy_cleanup_(curl);
+        curl=(*curl_easy_init_)();
+        if (curl) {
+            const char* url = download_url.c_str();
+            outfile = fopen(archive_path.c_str(), "wb");
+            curl_easy_setopt_(curl, CURLOPT_URL, url);
+            curl_easy_setopt_(curl, CURLOPT_WRITEDATA, outfile);
+            curl_easy_setopt_(curl, CURLOPT_WRITEFUNCTION, my_write_func);
+            curl_easy_setopt_(curl, CURLOPT_READFUNCTION, my_read_func);
+            curl_easy_setopt_(curl, CURLOPT_NOPROGRESS, 0L);
+            curl_easy_setopt_(curl, CURLOPT_PROGRESSFUNCTION, my_progress_func);
+        }
+    }
+}
 void download_in_thread()
 {
-    curl = curl_easy_init();
+
     if (curl) {
-        const char* url = download_url.c_str();
-        FILE* outfile = fopen(archive_path.c_str(), "wb");
 
-        curl_easy_setopt(curl, CURLOPT_URL, url);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, outfile);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, my_write_func);
-        curl_easy_setopt(curl, CURLOPT_READFUNCTION, my_read_func);
-        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
-        curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, my_progress_func);
-        //curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, Bar);
-
-        curl_easy_perform(curl);
-
+        CURLcode res;
+        status_downl=DOWNLOADING;
+        res = curl_easy_perform_(curl);
+        if(res != CURLE_OK)
+        {
+              std::cout<<curl_easy_strerror_(res)<<std::endl;
+        }
         fclose(outfile);
-        /* always cleanup */
-        curl_easy_cleanup(curl);
+
+        curl_easy_cleanup_(curl);
     }
 }
 int showDialog()
@@ -362,61 +481,60 @@ int showDialog()
     if (dialog_result == CANCEL)
         exit(1);
     if (dialog_result == CHOOSE_FILE) {
-        char* s = gtkOpenFile();
-        if (s == 0)
-            return 0;
-        djava_home = s;
         return 1;
     }
     if (dialog_result == DOWNLOAD) {
 
         /* Must initialize libcurl before any threads are started */
-        curl_global_init(CURL_GLOBAL_ALL);
-        GError* error = NULL;
-        gtk_init(NULL, NULL);
-        builder = gtk_builder_new();
-        std::string path_to_glade = bin_dir + file_separator() + "../resources/download_dialog.glade";
-        if (!gtk_builder_add_from_file(builder, path_to_glade.c_str(), &error)) {
-            g_warning("%s", error->message);
-            g_error_free(error);
-            return (1);
-        }
-        dialog_dwnl = GTK_WIDGET(gtk_builder_get_object(builder, "download_dialog"));
-        gtk_builder_connect_signals(builder, NULL);
-        Bar = GTK_WIDGET(gtk_builder_get_object(builder, "prog_bar"));
-        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(Bar), 0);
-        /* Init thread */
-        //g_thread_init(NULL);
-        //adj = (GtkAdjustment*)gtk_adjustment_new(0, 0, 100, 0, 0, 0);
-        g_object_unref(G_OBJECT(builder));
-
-        // Показываем форму и виджеты на ней
-        gtk_widget_show(dialog_dwnl);
-        status_downl = DOWNLOADING;
-        th = std::thread([] { download_in_thread(); });
-        g_timeout_add_seconds(1, updateProgress, NULL);
-        gtk_main();
-        th.join();
-        if (status_downl == ABORT_DOWNLOAD)
-            exit(1);
-        std::string command = "tar -C " + archive_dir + " -xvf " + archive_path;
-        system(command.c_str());
-        command = "rm " + archive_path;
-        system(command.c_str());
-        DIR* dir;
-        struct dirent* ent;
-        if ((dir = opendir(archive_dir.c_str())) != NULL) {
-            while ((ent = readdir(dir)) != NULL) {
-                std::string dir_name = ent->d_name;
-                if (dir_name == "." || dir_name == "..")
-                    continue;
-                djava_home = archive_dir + file_separator() + dir_name;
-            }
-            closedir(dir);
-        }
         return 1;
+
     }
     return 0;
+}
+void download_java()
+{
+    init_curl();
+    GError* error = NULL;
+    builder = gtk_builder_new();
+    std::string path_to_glade = bin_dir + file_separator() + "../resources/download_dialog.glade";
+    if (!gtk_builder_add_from_file(builder, path_to_glade.c_str(), &error)) {
+        g_warning("%s", error->message);
+        g_error_free(error);
+        exit(1);
+    }
+    dialog_dwnl = GTK_WIDGET(gtk_builder_get_object(builder, "download_dialog"));
+    gtk_builder_connect_signals(builder, NULL);
+    Bar = GTK_WIDGET(gtk_builder_get_object(builder, "prog_bar"));
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(Bar), 0);
+    /* Init thread */
+    //g_thread_init(NULL);
+    //adj = (GtkAdjustment*)gtk_adjustment_new(0, 0, 100, 0, 0, 0);
+    g_object_unref(G_OBJECT(builder));
+
+    // Показываем форму и виджеты на ней
+    gtk_widget_show(dialog_dwnl);
+    std::thread th = std::thread([] { download_in_thread(); });
+    g_timeout_add_seconds(1, updateProgress, NULL);
+    gtk_main();
+    th.join();
+
+    if (status_downl == ABORT_DOWNLOAD)
+        return;
+    std::string command = "tar -C " + archive_dir + " -xvf " + archive_path;
+    system(command.c_str());
+    command = "rm " + archive_path;
+    system(command.c_str());
+    DIR* dir;
+    struct dirent* ent;
+    if ((dir = opendir(archive_dir.c_str())) != NULL) {
+        while ((ent = readdir(dir)) != NULL) {
+            std::string dir_name = ent->d_name;
+            if (dir_name == "." || dir_name == "..")
+                continue;
+            djava_home = archive_dir + file_separator() + dir_name;
+        }
+        closedir(dir);
+    }
 }
 #endif
 
@@ -563,7 +681,7 @@ replaceFirstOccurrence(
     return s.replace(pos, toReplace.length(), replaceWith);
 }
 
-typedef void* SharedLibraryHandle;
+
 
 SharedLibraryHandle openSharedLibrary(const std::string& sl_file, std::string path, bool from_file_java_paths)
 {
@@ -1303,6 +1421,17 @@ SharedLibraryHandle checkParameters(bool from_file)
     }
     return handler;
 }
+SharedLibraryHandle checkInputDialog()
+{
+    SharedLibraryHandle handle =0;
+    if (showDialog())
+        {
+        handle = checkParameters(false);
+        if(handle==0)
+            return checkInputDialog();
+        else return handle;
+    } else return 0;
+}
 #endif
 
 SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
@@ -1345,8 +1474,7 @@ SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
         std::ostringstream os;
         os << "dlopen failed with "
            << dlerror() << ".";
-        if (showDialog())
-            return checkParameters(false);
+        return checkInputDialog();
         return 0;
     }
 #endif

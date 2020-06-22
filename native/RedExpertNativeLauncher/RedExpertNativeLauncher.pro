@@ -49,7 +49,6 @@ win32: {
     DEFINES += _UNICODE
 }
 else:unix: {
-
     contains(QT_ARCH, i386) {
         message("select 32-bit arch")
         TARGET = bin/RedExpert
@@ -65,7 +64,6 @@ else:unix: {
     # add your own with quoting gyrations to make sure $ORIGIN gets to the command line unexpanded
     QMAKE_LFLAGS += "-Wl,-rpath,\'\$$ORIGIN\'"
     QMAKE_CXXFLAGS += -std=c++0x
-    LIBS += -lcurl
     LIBS += -ldl
     DISTFILES += \
         resources/dialog_java_not_found.glade \

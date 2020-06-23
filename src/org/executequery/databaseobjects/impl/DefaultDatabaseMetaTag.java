@@ -1694,7 +1694,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     "rdb$view_source\n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is null \n" +
-                    "and (rdb$system_flag is null or rdb$system_flag = 0) and rdb$relation_type=0 or rdb$relation_type=2\n" +
+                    "and (rdb$system_flag is null or rdb$system_flag = 0) and (rdb$relation_type=0 or rdb$relation_type=2 or rdb$relation_type is NULL)\n" +
                     "order by rdb$relation_name";
             if (typeTree == TreePanel.DEPENDED_ON)
                 query = getDependOnQuery(0);

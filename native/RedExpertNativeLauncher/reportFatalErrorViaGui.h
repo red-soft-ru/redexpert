@@ -16,6 +16,7 @@ const int CANCEL = 5;
 #define USE_MESSAGE_BOX 1
 #include <windows.h>
 #include "utils.h"
+#include <shlobj.h>
 #else
 #define USE_MESSAGE_BOX 0
 
@@ -175,6 +176,27 @@ TCHAR* basicOpenFile()
         res =ofn.lpstrFile;
     else res=0;
     return res;
+}
+TCHAR* basicOpenFolder() //если -1 - то вызов стандартного диалога выбора папки
+                      //иначе CSIDL_... (специальная папка, see SHGetSpecialFolderLocation) -возвращает путь
+                      //                                                                     к спецпапке
+{
+    TCHAR* res;
+    BROWSEINFO bi;
+    TCHAR szDisplayName[MAX_PATH];
+    LPITEMIDLIST pidl;
+    LPMALLOC pMalloc = NULL;
+    ZeroMemory(&bi, sizeof(bi));
+    bi.hwndOwner = NULL;
+    bi.pszDisplayName = szDisplayName;
+    bi.lpszTitle = TEXT("Select folder");
+    bi.ulFlags = BIF_RETURNONLYFSDIRS;
+    pidl = SHBrowseForFolder(&bi);
+    if  (pidl)
+    {
+        SHGetPathFromIDList(pidl, szDisplayName);
+        return szDisplayName;
+    } else return 0;
 }
 
 

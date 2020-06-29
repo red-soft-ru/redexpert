@@ -1265,6 +1265,17 @@ std::vector<std::string> get_potential_libjvm_paths()
 
     return libjvm_potential_paths;
 }
+SharedLibraryHandle checkInputDialog()
+{
+    SharedLibraryHandle handle =0;
+    if (showDialog()!=0)
+        {
+        handle = checkParameters(false);
+        if(handle==0)
+            return checkInputDialog();
+        else return handle;
+    } else return 0;
+}
 
 #ifdef _WIN32
 
@@ -1340,6 +1351,7 @@ SharedLibraryHandle tryDirectories(bool isClient, bool isServer)
     return 0;
 }
 
+
 // Once we've successfully opened a shared library, I think we're committed to
 // trying to use it or else who knows what its DLL entry point has done. Until
 // we've successfully opened it, though, we can keep trying alternatives.
@@ -1360,7 +1372,7 @@ SharedLibraryHandle openWindowsJvmLibrary(bool isClient, bool isServer)
         return handle;
     std::string log_file = user_dir + "\\launcher.log";
     printErrorToLogFile(log_file.c_str(), err_rep.progress_os.str());
-    if (showDialog() == 0) {
+    if (checkInputDialog() == 0) {
         throw std::string("CANCEL");
     }
     return checkParameters(false);
@@ -1421,18 +1433,9 @@ SharedLibraryHandle checkParameters(bool from_file)
     }
     return handler;
 }
-SharedLibraryHandle checkInputDialog()
-{
-    SharedLibraryHandle handle =0;
-    if (showDialog())
-        {
-        handle = checkParameters(false);
-        if(handle==0)
-            return checkInputDialog();
-        else return handle;
-    } else return 0;
-}
 #endif
+
+
 
 SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
 {
@@ -1946,12 +1949,18 @@ INT_PTR CALLBACK DlgDownloadProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
         SendMessage(h_progress, PBM_SETSTEP, (WPARAM)1, 0); //шаг 1
         //
         /* сообщение о создании диалога */
-        th = std::thread([] { URLDownloadToFile(
+        th = std::thread([] {HRESULT res=URLDownloadToFile(
                                   0,
                                   download_url,
                                   archive_path.c_str(),
                                   0,
-                                  &ds); });
+                                  &ds);
+            if(res==INET_E_DOWNLOAD_FAILURE)
+            {
+                MessageBox(GetActiveWindow(), TEXT("Check internet connection"), TEXT("Error download"), MB_OK);
+            }
+            EndDialog(h_dialog_download, 0);
+            KillTimer(h_dialog_download, 1001);});
         SetTimer(hw, 1001, 1000, TimerProc);
         return TRUE;
     }
@@ -2081,7 +2090,7 @@ int showDialog()
         return 1;
     }
     else if (result_dialog == CHOOSE_FILE) {
-        TCHAR* file = basicOpenFile();
+        TCHAR* file = basicOpenFolder();
         if (file != 0) {
             res = 1;
             djvm = utils::convertUtf16ToUtf8(file);

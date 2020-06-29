@@ -279,6 +279,7 @@ static std::string download_url = "https://download.bell-sw.com/java/14+36/bells
 static std::string url_manual = "https://www.java.com/ru/download/manual.jsp";
 static std::string download_url = "https://download.bell-sw.com/java/14+36/bellsoft-jre14+36-linux-i586.tar.gz";
 #endif
+SharedLibraryHandle checkParameters(bool from_file);
 int status_downl;
 FILE* outfile;
 static int ABORT_DOWNLOAD = -1;

@@ -1950,18 +1950,22 @@ INT_PTR CALLBACK DlgDownloadProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
         SendMessage(h_progress, PBM_SETSTEP, (WPARAM)1, 0); //шаг 1
         //
         /* сообщение о создании диалога */
-        th = std::thread([] {HRESULT res=URLDownloadToFile(
+        th = std::thread([] {
+            HRESULT res=URLDownloadToFile(
                                   0,
                                   download_url,
                                   archive_path.c_str(),
                                   0,
                                   &ds);
-            if(res==INET_E_DOWNLOAD_FAILURE)
-            {
-                MessageBox(GetActiveWindow(), TEXT("Check internet connection"), TEXT("Error download"), MB_OK);
-            }
             EndDialog(h_dialog_download, 0);
-            KillTimer(h_dialog_download, 1001);});
+            KillTimer(h_dialog_download, 1001);
+            if(res!=S_OK&&res!=E_ABORT)
+            {
+                std::wstring mes = L"Error code: ";
+                mes.append(std::to_wstring(res));
+                MessageBox(GetActiveWindow(),mes.c_str(), TEXT("Error download"), MB_OK);
+            }
+            });
         SetTimer(hw, 1001, 1000, TimerProc);
         return TRUE;
     }
@@ -1994,8 +1998,7 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
         else {
             m_mes.append(L"Java not found. ");
         }
-        m_mes.append(L"You can select the path to the jvm.dll manually. Usually jvm.dll is located at this address:\n");
-        m_mes.append(L"path to java files\\bin\\[client|server]\\jvm.dll");
+        m_mes.append(L"You can select the path to java manually.\n");
         m_mes.append(L"\nYou can also start downloading java automatically or download java manually from <A HREF=\"");
         m_mes.append(url_manual);
         m_mes.append(L"\">");
@@ -2094,11 +2097,11 @@ int showDialog()
         TCHAR* file = basicOpenFolder();
         if (file != 0) {
             res = 1;
-            djvm = utils::convertUtf16ToUtf8(file);
-            std::string server_jvm = "server" + file_separator() + "jvm.dll";
+            djava_home = utils::convertUtf16ToUtf8(file);
+            /*std::string server_jvm = "server" + file_separator() + "jvm.dll";
             std::string client_jvm = "client" + file_separator() + "jvm.dll";
             dpath = replaceFirstOccurrence(djvm, server_jvm, "");
-            dpath = replaceFirstOccurrence(dpath, client_jvm, "");
+            dpath = replaceFirstOccurrence(dpath, client_jvm, "");*/
             return 1;
         }
         else

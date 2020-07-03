@@ -356,6 +356,15 @@ extern "C" void cancel_button_clicked_cb(GtkButton* button,
     status_downl = ABORT_DOWNLOAD;
     gtk_widget_destroy(dialog_dwnl);
 }
+extern "C" void close_dialog(GtkWidget* d,
+    gpointer data)
+{
+    if(status_downl==DOWNLOADING)
+    {
+    status_downl = ABORT_DOWNLOAD;
+    gtk_widget_destroy(dialog_dwnl);
+    }
+}
 size_t my_write_func(void* ptr, size_t size, size_t nmemb, FILE* stream)
 {
     return fwrite(ptr, size, nmemb, stream);
@@ -478,7 +487,7 @@ void download_in_thread()
 }
 int showDialog()
 {
-    gtkDialog(bin_dir + file_separator() + "../resources/dialog_java_not_found.glade", url_manual);
+    gtkDialog(bin_dir + file_separator() + "../../RedExpertNativeLauncher/resources/dialog_java_not_found.glade", url_manual);
     if (dialog_result == CANCEL)
         exit(1);
     if (dialog_result == CHOOSE_FILE) {
@@ -497,7 +506,7 @@ void download_java()
     init_curl();
     GError* error = NULL;
     builder = gtk_builder_new();
-    std::string path_to_glade = bin_dir + file_separator() + "../resources/download_dialog.glade";
+    std::string path_to_glade = bin_dir + file_separator() + "../../RedExpertNativeLauncher/resources/dialog_java_not_found.glade";
     if (!gtk_builder_add_from_file(builder, path_to_glade.c_str(), &error)) {
         g_warning("%s", error->message);
         g_error_free(error);
@@ -1443,6 +1452,7 @@ SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
 #ifdef _WIN32
     return openWindowsJvmLibrary(isClient, isServer);
 #else
+    checkInputDialog();
     (void)isClient;
     (void)isServer;
     void* handler = 0;

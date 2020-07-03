@@ -177,26 +177,29 @@ TCHAR* basicOpenFile()
     else res=0;
     return res;
 }
-TCHAR* basicOpenFolder() //если -1 - то вызов стандартного диалога выбора папки
+std::wstring basicOpenFolder() //если -1 - то вызов стандартного диалога выбора папки
                       //иначе CSIDL_... (специальная папка, see SHGetSpecialFolderLocation) -возвращает путь
                       //                                                                     к спецпапке
 {
-    TCHAR* res;
     BROWSEINFO bi;
     TCHAR szDisplayName[MAX_PATH];
     LPITEMIDLIST pidl;
-    LPMALLOC pMalloc = NULL;
     ZeroMemory(&bi, sizeof(bi));
-    bi.hwndOwner = NULL;
+    bi.hwndOwner = GetActiveWindow();
     bi.pszDisplayName = szDisplayName;
     bi.lpszTitle = TEXT("Select folder");
     bi.ulFlags = BIF_RETURNONLYFSDIRS;
     pidl = SHBrowseForFolder(&bi);
     if  (pidl)
     {
+
         SHGetPathFromIDList(pidl, szDisplayName);
-        return szDisplayName;
-    } else return 0;
+        //std::cout<<"2:"<<ws<<std::endl;
+        std::wstring ws=szDisplayName;
+        std::wcout<<L"w2:"<<ws<<std::endl;
+        return ws;
+        //return res;
+    } else return L"";
 }
 
 

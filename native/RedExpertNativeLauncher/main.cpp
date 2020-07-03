@@ -1929,6 +1929,8 @@ VOID CALLBACK TimerProc(
         }
     }
 }
+static int showError=0;
+HRESULT error_code;
 INT_PTR CALLBACK DlgDownloadProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
 {
 
@@ -1948,7 +1950,8 @@ INT_PTR CALLBACK DlgDownloadProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
         SendMessage(h_progress, PBM_SETRANGE, 0, (LPARAM)MAKELONG(0, 100));
         //Установим шаг
         SendMessage(h_progress, PBM_SETSTEP, (WPARAM)1, 0); //шаг 1
-        //
+        ds.OnStartBinding();
+        showError = 0;
         /* сообщение о создании диалога */
         th = std::thread([] {
             HRESULT res=URLDownloadToFile(
@@ -1961,9 +1964,12 @@ INT_PTR CALLBACK DlgDownloadProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
             KillTimer(h_dialog_download, 1001);
             if(res!=S_OK&&res!=E_ABORT)
             {
-                std::wstring mes = L"Error code: ";
-                mes.append(std::to_wstring(res));
-                MessageBox(GetActiveWindow(),mes.c_str(), TEXT("Error download"), MB_OK);
+
+                showError=1;
+                error_code=res;
+               // }
+               // else  MessageBox(GetActiveWindow(),L"Unknown error", TEXT("Error download"), MB_OK);
+
             }
             });
         SetTimer(hw, 1001, 1000, TimerProc);
@@ -1979,6 +1985,7 @@ INT_PTR CALLBACK DlgDownloadProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
 }
 INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
 {
+    h_dialog_error=hw;
     std::wstring m_mes;
     std::wstring arch;
 #if INTPTR_MAX == INT32_MAX
@@ -2012,12 +2019,85 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
     case WM_COMMAND: /* сообщение от управляющих элементов */
         if (LOWORD(wp) == 6) {
             if (IsDlgButtonChecked(hw, DOWNLOAD))
+            {
+                HINSTANCE h = GetModuleHandle(NULL);
+                DialogBox(h, MAKEINTRESOURCEW(P_BAR_DIALOG), GetConsoleWindow(), DlgDownloadProc);
+                th.join();
+                DeleteUrlCacheEntry(download_url);
+                if(showError==1)
+                {
+                    LPTSTR errorText = NULL;
+                        std::wstring mes = L"Error code: ";
+                        mes.append(std::to_wstring(error_code));
+                        mes.append(L"\nCheck internet connection.");
+
+                        MessageBox(GetActiveWindow(),mes.c_str(), TEXT("Error download"), MB_OK);
+                       // release memory allocated by FormatMessage()
+                       LocalFree(errorText);
+                       errorText = NULL;
+                       return TRUE;
+                }
+                if (ds.GetAbortDownl())
+                    return TRUE;
+                HZIP hz = OpenZip(archive_path.c_str(), 0);
+                ZIPENTRY ze;
+                SetUnzipBaseDir(hz, archive_dir.c_str());
+                GetZipItem(hz, -1, &ze);
+                int numitems = ze.index;
+                // -1 gives overall information about the zipfile
+                for (int zi = 0; zi < numitems; zi++) {
+                    ZIPENTRY ze;
+                    GetZipItem(hz, zi, &ze); // fetch individual details
+                    UnzipItem(hz, zi, ze.name); // e.g. the item's name.
+                }
+                CloseZip(hz);
+                _wremove(archive_path.c_str());
+                HANDLE dir;
+                WIN32_FIND_DATA file_data;
+                std::wstring str = archive_dir + wfile_separator() + L"*";
+                if ((dir = FindFirstFile(str.c_str(), &file_data)) != INVALID_HANDLE_VALUE)
+
+                    do {
+                        //wide char array
+
+                        //convert from wide char to narrow char array
+                        char ch[260];
+                        char DefChar = ' ';
+                        WideCharToMultiByte(CP_ACP, 0, file_data.cFileName, -1, ch, 260, &DefChar, NULL);
+
+                        //A std:string  using the char* constructor.
+
+                        std::string fileName(ch);
+                        std::string full_file_name = utils::convertUtf16ToUtf8(archive_dir) + file_separator() + fileName;
+
+                        if (fileName[0] == '.')
+                            continue;
+                        djava_home = full_file_name;
+                    } while (FindNextFile(dir, &file_data));
+
+                FindClose(dir);
                 result_dialog = DOWNLOAD;
+                EndDialog(hw, 0);
+        }
             if (IsDlgButtonChecked(hw, CHOOSE_FILE))
-                result_dialog = CHOOSE_FILE;
+            {
+                std::wstring ws = basicOpenFolder();
+                if (ws != L"") {
+                    //std::wcout<<L"temp="<<temp<<std::endl;
+                    std::wcout<<L"ws="<<ws<<std::endl;
+                    djava_home = utils::convertUtf16ToUtf8(ws);
+                    std::cout<<"djava_home="<<djava_home<<std::endl;
+                    result_dialog = CHOOSE_FILE;
+                    EndDialog(hw, 0);
+                }
+
+            }
             if (IsDlgButtonChecked(hw, CANCEL))
+            {
                 result_dialog = CANCEL;
-            EndDialog(hw, 0);
+                EndDialog(hw, 0);
+            }
+
         }
         return TRUE;
     case WM_NOTIFY:
@@ -2049,63 +2129,11 @@ int showDialog()
     DialogBox(h, MAKEINTRESOURCEW(DIALOG_X), GetConsoleWindow(), DlgProc);
 
     if (result_dialog == DOWNLOAD) {
-        DialogBox(h, MAKEINTRESOURCEW(P_BAR_DIALOG), GetConsoleWindow(), DlgDownloadProc);
-        th.join();
-        DeleteUrlCacheEntry(download_url);
-        if (ds.GetAbortDownl())
-            return 0;
-        HZIP hz = OpenZip(archive_path.c_str(), 0);
-        ZIPENTRY ze;
-        SetUnzipBaseDir(hz, archive_dir.c_str());
-        GetZipItem(hz, -1, &ze);
-        int numitems = ze.index;
-        // -1 gives overall information about the zipfile
-        for (int zi = 0; zi < numitems; zi++) {
-            ZIPENTRY ze;
-            GetZipItem(hz, zi, &ze); // fetch individual details
-            UnzipItem(hz, zi, ze.name); // e.g. the item's name.
-        }
-        CloseZip(hz);
-        _wremove(archive_path.c_str());
-        HANDLE dir;
-        WIN32_FIND_DATA file_data;
-        std::wstring str = archive_dir + wfile_separator() + L"*";
-        if ((dir = FindFirstFile(str.c_str(), &file_data)) != INVALID_HANDLE_VALUE)
 
-            do {
-                //wide char array
-
-                //convert from wide char to narrow char array
-                char ch[260];
-                char DefChar = ' ';
-                WideCharToMultiByte(CP_ACP, 0, file_data.cFileName, -1, ch, 260, &DefChar, NULL);
-
-                //A std:string  using the char* constructor.
-
-                std::string fileName(ch);
-                std::string full_file_name = utils::convertUtf16ToUtf8(archive_dir) + file_separator() + fileName;
-
-                if (fileName[0] == '.')
-                    continue;
-                djava_home = full_file_name;
-            } while (FindNextFile(dir, &file_data));
-
-        FindClose(dir);
         return 1;
     }
     else if (result_dialog == CHOOSE_FILE) {
-        TCHAR* file = basicOpenFolder();
-        if (file != 0) {
-            res = 1;
-            djava_home = utils::convertUtf16ToUtf8(file);
-            /*std::string server_jvm = "server" + file_separator() + "jvm.dll";
-            std::string client_jvm = "client" + file_separator() + "jvm.dll";
-            dpath = replaceFirstOccurrence(djvm, server_jvm, "");
-            dpath = replaceFirstOccurrence(dpath, client_jvm, "");*/
             return 1;
-        }
-        else
-            return 0;
     }
     else {
         return 0;

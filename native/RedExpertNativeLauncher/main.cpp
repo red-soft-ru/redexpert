@@ -356,13 +356,13 @@ extern "C" void cancel_button_clicked_cb(GtkButton* button,
     status_downl = ABORT_DOWNLOAD;
     gtk_widget_destroy(dialog_dwnl);
 }
-extern "C" void close_dialog(GtkWidget* d,
+
+extern "C" void destroy_dialog(GtkDialog* d,
     gpointer data)
 {
     if(status_downl==DOWNLOADING)
     {
     status_downl = ABORT_DOWNLOAD;
-    gtk_widget_destroy(dialog_dwnl);
     }
 }
 size_t my_write_func(void* ptr, size_t size, size_t nmemb, FILE* stream)

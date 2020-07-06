@@ -6,7 +6,7 @@
     <property name="can_focus">False</property>
     <property name="modal">True</property>
     <property name="type_hint">dialog</property>
-    <signal name="close" handler="close_dialog" swapped="no"/>
+    <signal name="destroy" handler="destroy_dialog" swapped="no"/>
     <child type="titlebar">
       <placeholder/>
     </child>

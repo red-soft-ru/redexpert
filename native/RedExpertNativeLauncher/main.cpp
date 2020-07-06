@@ -1995,7 +1995,6 @@ INT_PTR CALLBACK DlgDownloadProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
 }
 INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
 {
-    h_dialog_error=hw;
     std::wstring m_mes;
     std::wstring arch;
 #if INTPTR_MAX == INT32_MAX

@@ -506,7 +506,7 @@ void download_java()
     init_curl();
     GError* error = NULL;
     builder = gtk_builder_new();
-    std::string path_to_glade = bin_dir + file_separator() + "../resources/dialog_java_not_found.glade";
+    std::string path_to_glade = bin_dir + file_separator() + "../resources/download_dialog.glade";
     if (!gtk_builder_add_from_file(builder, path_to_glade.c_str(), &error)) {
         g_warning("%s", error->message);
         g_error_free(error);

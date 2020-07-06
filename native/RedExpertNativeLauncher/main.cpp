@@ -289,6 +289,8 @@ static std::string archive_path;
 static std::string archive_dir;
 GtkWidget* Bar;
 GtkWidget* dialog_dwnl;
+GtkLabel * upLabel;
+GtkLabel * downLabel;
 GThread* downl_thread;
 CURL* curl;
 CURL* (*curl_easy_init_)(void);
@@ -403,7 +405,7 @@ static gboolean updateProgress(gpointer data)
 
         if (t != 0) {
             std::string text=getUsabilitySize((long)d)+"/"+getUsabilitySize((long)t);
-            gtk_progress_bar_set_text(GTK_PROGRESS_BAR(Bar),text.c_str());
+            gtk_label_set_text(GTK_LABEL(downLabel),text.c_str());
             gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(Bar), d / t);
         }
         if (d == t && d != 0) {
@@ -514,8 +516,10 @@ void download_java()
     dialog_dwnl = GTK_WIDGET(gtk_builder_get_object(builder, "download_dialog"));
     gtk_builder_connect_signals(builder, NULL);
     Bar = GTK_WIDGET(gtk_builder_get_object(builder, "prog_bar"));
+    upLabel=GTK_LABEL(gtk_builder_get_object(builder, "up_text"));
+    downLabel=GTK_LABEL(gtk_builder_get_object(builder, "down_text"));
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(Bar), 0);
-    //gtk_progress_bar_set_text(GTK_PROGRESS_BAR(Bar),"Please wait while java download");
+    gtk_label_set_text(GTK_LABEL(upLabel),"Please wait while java is downloading.");
     /* Init thread */
     //g_thread_init(NULL);
     //adj = (GtkAdjustment*)gtk_adjustment_new(0, 0, 100, 0, 0, 0);

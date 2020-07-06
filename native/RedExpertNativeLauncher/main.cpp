@@ -1,5 +1,4 @@
-﻿
-#ifdef __linux__
+﻿#ifdef __linux__
 #include <dirent.h>
 #include <dlfcn.h>
 #include <libgen.h>
@@ -516,6 +515,7 @@ void download_java()
     gtk_builder_connect_signals(builder, NULL);
     Bar = GTK_WIDGET(gtk_builder_get_object(builder, "prog_bar"));
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(Bar), 0);
+    //gtk_progress_bar_set_text(GTK_PROGRESS_BAR(Bar),"Please wait while java download");
     /* Init thread */
     //g_thread_init(NULL);
     //adj = (GtkAdjustment*)gtk_adjustment_new(0, 0, 100, 0, 0, 0);

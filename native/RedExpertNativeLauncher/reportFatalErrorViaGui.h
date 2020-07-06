@@ -102,14 +102,12 @@ dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_jnf"));
     gtk_builder_connect_signals (builder, NULL);
         rb_download=GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_download"));
         rb_file=GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_file"));
-        rb_cancel=GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_cancel"));
-        GtkTextBuffer * msg = GTK_TEXT_BUFFER(gtk_builder_get_object(builder, "mes_txt"));
+        GtkLabel * msg = GTK_LABEL(gtk_builder_get_object(builder, "mes_lbl"));
         std::string text_msg="Java not found. You can select the path to java manually.\n";
         text_msg.append("You can also start downloading java automatically\n");
         text_msg.append("or download java manually from\n");
         text_msg.append(url);
-        gtk_text_buffer_set_text(msg,text_msg.c_str(),text_msg.length());
-       // освобождение памяти
+        gtk_label_set_text(msg,text_msg.c_str());
        g_object_unref( G_OBJECT( builder ) );
 
        // Показываем форму и виджеты на ней

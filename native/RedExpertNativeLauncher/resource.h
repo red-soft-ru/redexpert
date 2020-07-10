@@ -1,6 +1,6 @@
 #define DIALOG_X                        106
 #define P_BAR_DIALOG					107
-
+#define IDI_ICON1                       101
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

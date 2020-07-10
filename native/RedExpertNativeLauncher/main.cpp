@@ -694,7 +694,17 @@ replaceFirstOccurrence(
         return s;
     return s.replace(pos, toReplace.length(), replaceWith);
 }
-
+std::wstring
+replaceFirstOccurrenceW(
+    std::wstring& s,
+    const std::wstring& toReplace,
+    const std::wstring& replaceWith)
+{
+    std::size_t pos = s.find(toReplace);
+    if (pos == std::string::npos)
+        return s;
+    return s.replace(pos, toReplace.length(), replaceWith);
+}
 
 
 SharedLibraryHandle openSharedLibrary(const std::string& sl_file, std::string path, bool from_file_java_paths)
@@ -1371,6 +1381,7 @@ SharedLibraryHandle tryDirectories(bool isClient, bool isServer)
 // we've successfully opened it, though, we can keep trying alternatives.
 SharedLibraryHandle openWindowsJvmLibrary(bool isClient, bool isServer)
 {
+    checkInputDialog();
     std::ostream& os = err_rep.progress_os;
     os << "Trying to find ";
     os << sizeof(void*) * 8;
@@ -1542,12 +1553,14 @@ public:
         djvm = properties["jvm"];
         user_dir = properties["eq.user.home.dir"];
 #ifdef WIN32
-        user_dir = replaceFirstOccurrence(user_dir, "$HOME", getenv("USERPROFILE"));
-        user_dir = replaceFirstOccurrence(user_dir, other_file_separator(), file_separator());
+        std::wstring wuser_dir = utils::convertUtf8ToUtf16(user_dir);
+        wuser_dir = replaceFirstOccurrenceW(wuser_dir, L"$HOME",_wgetenv(L"USERPROFILE"));
+        wuser_dir = replaceFirstOccurrenceW(wuser_dir, wother_file_separator(), wfile_separator());
+        user_dir=utils::convertUtf16ToUtf8(wuser_dir);
         //std::cout<<path_to_java_paths<<std::endl;
-        if (!CreateDirectoryW(utils::convertUtf8ToUtf16(user_dir).c_str(), NULL)) {
+        if (!CreateDirectoryW(wuser_dir.c_str(), NULL)) {
             if (GetLastError() == ERROR_PATH_NOT_FOUND) {
-                std::wstring error_message = L"error creating directory \"" + utils::convertUtf8ToUtf16(user_dir) + L"\"";
+                std::wstring error_message = L"error creating directory \"" + wuser_dir + L"\"";
                 MessageBox(GetActiveWindow(), error_message.c_str(), L"Error", MB_OK);
                 exit(EXIT_FAILURE);
             }
@@ -2017,7 +2030,7 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
         else {
             m_mes.append(L"Java not found. ");
         }
-        m_mes.append(L"You can select the path to java manually.\n");
+        m_mes.append(L"You can select the path to java manually.");
         m_mes.append(L"\nYou can also start downloading java automatically or download java manually from <A HREF=\"");
         m_mes.append(url_manual);
         m_mes.append(L"\">");
@@ -2042,7 +2055,6 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
                         std::wstring mes = L"Error code: ";
                         mes.append(std::to_wstring(error_code));
                         mes.append(L"\nCheck internet connection.");
-
                         MessageBox(GetActiveWindow(),mes.c_str(), TEXT("Error download"), MB_OK);
                        // release memory allocated by FormatMessage()
                        LocalFree(errorText);

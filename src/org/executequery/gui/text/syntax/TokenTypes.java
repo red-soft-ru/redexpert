@@ -47,6 +47,9 @@ public interface TokenTypes {
 
     String SINGLE_LINE_COMMENT_REGEX = "--.*$";
 
+    String DECLARE_BLOCK_REGEX = "declare\\svariable[^;]*;";
+    // String BEGIN_END_BLOCK_REGEX =
+
 //    public static final String QUOTE_REGEX = "'([^'\r\n])+'|'.*";
 
     String QUOTE_REGEX = "\'((?>[^\']*+)(?>\'{2}[^\']*+)*+)\'|\'.*";
@@ -93,7 +96,9 @@ public interface TokenTypes {
             SINGLE_LINE_COMMENT = 10,
             BRACKET_HIGHLIGHT = 11,
             BRACKET_HIGHLIGHT_ERR = 12,
-            DBOBJECT = 13;
+            DBOBJECT = 13,
+            DECLARE_BLOCK = 14,
+            BEGIN_END_BLOCK = 15;
 
 
     /**

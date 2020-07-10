@@ -43,33 +43,22 @@ public class QueryTokenizer {
 
     private List<Token> multiLineCommentTokens;
 
+    String beginPattern = "begin";
+    String endPattern = "end";
+
     private Matcher stringMatcher;
 
     private Matcher singleLineCommentMatcher;
 
     private Matcher multiLineCommentMatcher;
+    List<String> begin_end_blocks;
 
     private static final String QUOTE_REGEX = "'((\\?>[^']*\\+)(\\?>'{2}[^']*\\+)*\\+)'|'.*'";//"'((?>[^']*+)(?>'{2}[^']*+)*+)'|'.*";
 
     private static final String MULTILINE_COMMENT_REGEX = "/\\*.*?\\*/";
     //                                                    "/\\*(?:.|[\\n\\r])*?\\*/|/\\*.*";
 //                                                        "/\\*((?>[^\\*/]*+)*+)\\*/|/\\*.*";
-
-    public QueryTokenizer() {
-
-        stringTokens = new ArrayList<Token>();
-        stringMatcher = Pattern.compile(QUOTE_REGEX).matcher(Constants.EMPTY);
-
-        singleLineCommentTokens = new ArrayList<Token>();
-        singleLineCommentMatcher = Pattern.compile(
-                TokenTypes.SINGLE_LINE_COMMENT_REGEX, Pattern.MULTILINE).
-                matcher(Constants.EMPTY);
-
-        multiLineCommentTokens = new ArrayList<Token>();
-        multiLineCommentMatcher = Pattern.compile(
-                MULTILINE_COMMENT_REGEX, Pattern.DOTALL).
-                matcher(Constants.EMPTY);
-    }
+    private List<Token> declareBlockTokens;
 
     public String removeComments(String query) {
 
@@ -172,6 +161,47 @@ public class QueryTokenizer {
         return queries;
     }
 
+    private List<Token> beginEndBlockTokens;
+
+
+    private boolean notInAnyToken(int index) {
+
+        return !(withinMultiLineComment(index, index))
+                && !(withinSingleLineComment(index, index))
+                && !(withinQuotedString(index, index));
+    }
+
+    private Matcher declareBlockMatcher;
+
+    private void extractSingleLineCommentTokens(String query) {
+
+        addTokensForMatcherWhenNotInString(singleLineCommentMatcher, query, singleLineCommentTokens);
+    }
+
+    private void extractMultiLineCommentTokens(String query) {
+
+        addTokensForMatcherWhenNotInString(multiLineCommentMatcher, query, multiLineCommentTokens);
+    }
+
+    public QueryTokenizer() {
+
+        stringTokens = new ArrayList<Token>();
+        stringMatcher = Pattern.compile(QUOTE_REGEX).matcher(Constants.EMPTY);
+
+        singleLineCommentTokens = new ArrayList<Token>();
+        singleLineCommentMatcher = Pattern.compile(
+                TokenTypes.SINGLE_LINE_COMMENT_REGEX, Pattern.MULTILINE).
+                matcher(Constants.EMPTY);
+
+        multiLineCommentTokens = new ArrayList<Token>();
+        multiLineCommentMatcher = Pattern.compile(
+                MULTILINE_COMMENT_REGEX, Pattern.DOTALL).
+                matcher(Constants.EMPTY);
+        declareBlockTokens = new ArrayList<>();
+        declareBlockMatcher = Pattern.compile(TokenTypes.DECLARE_BLOCK_REGEX, Pattern.DOTALL).matcher(Constants.EMPTY);
+        beginEndBlockTokens = new ArrayList<>();
+    }
+
     private QueryTokenized firstQuery(String query, String delimiter, int startIndexQuery, String lowQuery) {
 
         int index = 0;
@@ -182,17 +212,19 @@ public class QueryTokenizer {
             return new QueryTokenized(new DerivedQuery(query), "", "", startIndexQuery + query.length(), delimiter);
         }
         index = query.indexOf(delimiter);
+        String x = query.substring(0, index);
+        String y = query.substring(index);
         boolean cycleContinue = true;
 
-        while ((index != -1)&&cycleContinue) {
-            cycleContinue=false;
+        while ((index != -1) && cycleContinue) {
+            cycleContinue = false;
 
             if (Thread.interrupted()) {
 
                 throw new InterruptedException();
             }
 
-            if (notInAnyToken(index + startIndexQuery)) {
+            if (notInAllTokens(index + startIndexQuery)) {
 
                 String substring = query.substring(lastIndex, index);
 
@@ -210,38 +242,99 @@ public class QueryTokenizer {
                 return new QueryTokenized(new DerivedQuery(substring), query.substring(lastIndex),lowQuery.substring(lastIndex), startIndexQuery+lastIndex, delimiter);
             } else {
                 cycleContinue = true;
-                index = query.indexOf(delimiter,index+1);
+                index = query.indexOf(delimiter, index + 1);
+                x = query.substring(0, index);
+                y = query.substring(index);
             }
 
         }
-        return new QueryTokenized(new DerivedQuery(query), "","",lastIndex+startIndexQuery, delimiter);
+        return new QueryTokenized(new DerivedQuery(query), "", "", lastIndex + startIndexQuery, delimiter);
     }
 
-
-
-
-    private boolean notInAnyToken(int index) {
-
-        return !(withinMultiLineComment(index, index))
-                && !(withinSingleLineComment(index, index))
-                && !(withinQuotedString(index, index));
+    private boolean notInAllTokens(int index) {
+        boolean notAny = notInAnyToken(index);
+        boolean wdb = withinDeclareBlock(index, index);
+        boolean wbeb = withinBeginEndBlock(index, index);
+        return notAny && !wdb && !wbeb;
     }
 
-    private void extractSingleLineCommentTokens(String query) {
+    private void extractDeclareBlockTokens(String query) {
 
-        addTokensForMatcherWhenNotInString(singleLineCommentMatcher, query, singleLineCommentTokens);
+        addTokensForMatcherWhenNotInString(declareBlockMatcher, query, declareBlockTokens);
     }
 
-    private void extractMultiLineCommentTokens(String query) {
-
-        addTokensForMatcherWhenNotInString(multiLineCommentMatcher, query, multiLineCommentTokens);
+    private int indexOfStringWithSpaces(String query, String word) {
+        return indexOfStringWithSpaces(query, word, 0);
     }
 
-    public void extractTokens(String query)
-    {
+    private int indexOfStringWithSpaces(String query, String word, int startIndex) {
+        String[] spaces = {" ", "\n", ";"};
+        int index = query.length();
+        for (int i = 0; i < spaces.length; i++) {
+            for (int g = 0; g < spaces.length; g++) {
+                int ind = query.indexOf(spaces[i] + word + spaces[g], startIndex);
+                if (ind != -1 && ind < index)
+                    index = ind;
+            }
+        }
+        if (index == query.length())
+            return -1;
+        else return index + 1;
+    }
+
+    private String replace(String query, int start, String replacement) {
+        String startQuery = query.substring(0, start);
+        startQuery += replacement;
+        startQuery += query.substring(start + replacement.length());
+        return startQuery;
+    }
+
+    private String addBeginEndBlock(String query) {
+        List<Token> tokens = beginEndBlockTokens;
+        int start = indexOfStringWithSpaces(query, beginPattern);
+        int end = -1;
+        if (start > 0 && notInAnyToken(start)) {
+            end = indexOfStringWithSpaces(query, endPattern);
+            if (end > 0 && notInAnyToken(end)) {
+                query = replace(query, start, "nigeb");
+                int ind = indexOfStringWithSpaces(query, beginPattern);
+                while (ind > 0 && ind < end) {
+                    query = addBeginEndBlock(query);
+                    query = replace(query, ind, "nigeb");
+                    ind = indexOfStringWithSpaces(query, beginPattern);
+                    end = indexOfStringWithSpaces(query, endPattern);
+                    while (!notInAnyToken(end)) {
+                        end = query.indexOf(end);
+                    }
+                }
+            }
+        }
+        if (start >= 0 && end >= 0) {
+            tokens.add(new Token(TokenTypes.BEGIN_END_BLOCK, start, end));
+            query = replace(query, end, "dne");
+            begin_end_blocks.add(query.substring(start, end + 3));
+        }
+        return query;
+    }
+
+    private void extractBeginEndBlockTokens(String query) {
+
+        begin_end_blocks = new ArrayList<>();
+        for (int index = indexOfStringWithSpaces(query, beginPattern); index >= 0; index = indexOfStringWithSpaces(query, beginPattern, index + 1)) {
+            if (notInAnyToken(index)) {
+                query = addBeginEndBlock(query);
+            }
+
+        }
+
+    }
+
+    public void extractTokens(String query) {
         extractQuotedStringTokens(query);
         extractSingleLineCommentTokens(query);
         extractMultiLineCommentTokens(query);
+        extractDeclareBlockTokens(query);
+        extractBeginEndBlockTokens(query);
     }
 
     private void addTokensForMatcherWhenNotInString(Matcher matcher, String query, List<Token> tokens) {
@@ -266,7 +359,9 @@ public class QueryTokenizer {
 
             if (!withinQuotedString(start, endOffset)) {
 
-                tokens.add(new Token(TokenTypes.COMMENT, start, end));
+                if (matcher == declareBlockMatcher)
+                    tokens.add(new Token(TokenTypes.DECLARE_BLOCK, start, end));
+                else tokens.add(new Token(TokenTypes.COMMENT, start, end));
             }
             matcher.reset(query);
 
@@ -328,6 +423,16 @@ public class QueryTokenizer {
     private boolean withinQuotedString(int start, int end) {
 
         return contains(stringTokens, start, end);
+    }
+
+    private boolean withinDeclareBlock(int start, int end) {
+
+        return contains(declareBlockTokens, start, end);
+    }
+
+    private boolean withinBeginEndBlock(int start, int end) {
+
+        return contains(beginEndBlockTokens, start, end);
     }
 
     private boolean contains(List<Token> tokens, int start, int end) {

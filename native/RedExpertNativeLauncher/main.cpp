@@ -1381,7 +1381,7 @@ SharedLibraryHandle tryDirectories(bool isClient, bool isServer)
 // we've successfully opened it, though, we can keep trying alternatives.
 SharedLibraryHandle openWindowsJvmLibrary(bool isClient, bool isServer)
 {
-    checkInputDialog();
+    //checkInputDialog();
     std::ostream& os = err_rep.progress_os;
     os << "Trying to find ";
     os << sizeof(void*) * 8;
@@ -2046,8 +2046,10 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
             if (IsDlgButtonChecked(hw, DOWNLOAD))
             {
                 HINSTANCE h = GetModuleHandle(NULL);
+                EnableWindow(hw, FALSE);
                 DialogBox(h, MAKEINTRESOURCEW(P_BAR_DIALOG), GetConsoleWindow(), DlgDownloadProc);
                 th.join();
+                EnableWindow(hw, TRUE);
                 DeleteUrlCacheEntry(download_url);
                 if(showError==1)
                 {

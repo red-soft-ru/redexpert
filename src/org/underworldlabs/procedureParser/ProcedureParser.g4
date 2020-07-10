@@ -4,6 +4,15 @@
 
 grammar ProcedureParser;
 
+ queries
+ :query*
+ ;
+ query
+ :create_or_alter_procedure_stmt
+ |execute_block_stmt
+ |.* ';'
+ ;
+
  create_procedure_stmt
  :K_CREATE K_PROCEDURE procedure_name
     (K_AUTHID (K_OWNER|K_CALLER))?

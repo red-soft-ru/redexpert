@@ -40,7 +40,7 @@
                     <visitor>true</visitor>
                     <arguments>
                         <argument>-package</argument>
-                        <argument>org.underworldlabs.traceparser</argument>
+                        <argument>org.underworldlabs.procedureParser</argument>
                     </arguments>
                 </configuration>
                 <executions>

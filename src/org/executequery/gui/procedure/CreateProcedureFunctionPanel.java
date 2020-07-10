@@ -22,10 +22,10 @@ import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.procedureParser.ProcedureParserBaseListener;
+import org.underworldlabs.procedureParser.ProcedureParserLexer;
+import org.underworldlabs.procedureParser.ProcedureParserParser;
 import org.underworldlabs.swing.GUIUtils;
-import org.underworldlabs.traceparser.ProcedureParserBaseListener;
-import org.underworldlabs.traceparser.ProcedureParserLexer;
-import org.underworldlabs.traceparser.ProcedureParserParser;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;

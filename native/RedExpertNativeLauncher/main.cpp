@@ -2058,7 +2058,7 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
                         std::wstring mes = L"Error code: ";
                         mes.append(std::to_wstring(error_code));
                         mes.append(L"\nCheck internet connection.");
-                        MessageBox(GetActiveWindow(),mes.c_str(), TEXT("Error download"), MB_OK);
+                        MessageBox(hw,mes.c_str(), TEXT("Error download"), MB_OK);
                        // release memory allocated by FormatMessage()
                        LocalFree(errorText);
                        errorText = NULL;

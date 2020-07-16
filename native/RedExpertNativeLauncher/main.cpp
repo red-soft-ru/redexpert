@@ -48,6 +48,7 @@
 #include <string>
 #include <vector>
 #include <thread>
+#include <locale>
 
 static std::string djava_home;
 static std::string djvm;
@@ -111,7 +112,7 @@ std::string extension_exe_file()
 #ifdef WIN32
 #if INTPTR_MAX == INT64_MAX
 static TCHAR* url_manual = TEXT("https://www.oracle.com/java/technologies/javase-downloads.html");
-static TCHAR* download_url = TEXT("https://download.bell-sw.com/java/14+36/bellsoft-jre14+36-windows-amd64.zip");
+static TCHAR* download_url = TEXT("https://download.bell-sw.com/java/14.0.2+13/bellsoft-jre14.0.2+13-windows-amd64.zip");
 #elif INTPTR_MAX == INT32_MAX
 static TCHAR* url_manual = TEXT("https://www.java.com/ru/download/manual.jsp");
 static TCHAR* download_url = TEXT("https://download.bell-sw.com/java/14+36/bellsoft-jre14+36-windows-i586.zip");
@@ -2087,13 +2088,11 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
                         //wide char array
 
                         //convert from wide char to narrow char array
-                        char ch[260];
-                        char DefChar = ' ';
-                        WideCharToMultiByte(CP_ACP, 0, file_data.cFileName, -1, ch, 260, &DefChar, NULL);
+
 
                         //A std:string  using the char* constructor.
 
-                        std::string fileName(ch);
+                        std::string fileName=utils::convertUtf16ToUtf8(file_data.cFileName);
                         std::string full_file_name = utils::convertUtf16ToUtf8(archive_dir) + file_separator() + fileName;
 
                         if (fileName[0] == '.')
@@ -2229,6 +2228,7 @@ static int runJvm(const NativeArguments& l_args)
 
 int main(int argc, char* argv[])
 {
+    std::locale::global(std::locale(""));
 // if linux system is used need to set desktop environment to NONE,
 // otherwise launcher is crashed
 // TODO check it on Centos 7
@@ -2256,7 +2256,7 @@ int main(int argc, char* argv[])
     WCHAR path[MAX_PATH];
     GetModuleFileNameW(h_module, path, MAX_PATH);
     std::wstring ws(path);
-    std::string str(ws.begin(), ws.end());
+    std::string str=utils::convertUtf16ToUtf8(ws);
     app_exe_path = str;
     char buf[256];
     GetCurrentDirectoryA(256, buf);

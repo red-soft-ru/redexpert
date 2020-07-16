@@ -357,6 +357,7 @@ extern "C" void cancel_button_clicked_cb(GtkButton* button,
 {
     status_downl = ABORT_DOWNLOAD;
     gtk_widget_destroy(dialog_dwnl);
+    gtk_main_quit();
 }
 
 extern "C" void destroy_dialog(GtkDialog* d,

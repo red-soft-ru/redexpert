@@ -1535,13 +1535,23 @@ public final class GUIUtilities {
         Properties properties = UserProperties.getInstance().getProperties();
         SystemResources.setUserPreferences(properties);
 
-        ((DatabaseConnectionRepository) RepositoryCache.load(
-                DatabaseConnectionRepository.REPOSITORY_ID)).save();
-
-        ((ConnectionFoldersRepository) RepositoryCache.load(
-                ConnectionFoldersRepository.REPOSITORY_ID)).save();
-
-        ToolBarProperties.saveTools();
+        try {
+            ((DatabaseConnectionRepository) RepositoryCache.load(
+                    DatabaseConnectionRepository.REPOSITORY_ID)).save();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            ((ConnectionFoldersRepository) RepositoryCache.load(
+                    ConnectionFoldersRepository.REPOSITORY_ID)).save();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            ToolBarProperties.saveTools();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         Log.info("System exiting...");
     }

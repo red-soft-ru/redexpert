@@ -115,14 +115,23 @@ public class ConnectionsTreePanel extends TreePanel
   private DefaultMutableTreeNode createTreeStructure() {
 
     RootDatabaseObjectNode root = new RootDatabaseObjectNode();
-
-    folders = folders();
+    try {
+      folders = folders();
+    } catch (Exception e) {
+      e.printStackTrace();
+      folders = new ArrayList<>();
+    }
     List<DatabaseConnection> connectionsAdded = new ArrayList<DatabaseConnection>();
 
     DatabaseObjectFactory factory = databaseObjectFactory();
 
     int count = 0;
-    connections = connections();
+    try {
+      connections = connections();
+    } catch (Exception e) {
+      e.printStackTrace();
+      connections = new ArrayList<>();
+    }
     for (ConnectionsFolder folder : folders) {
 
       ConnectionsFolderNode folderNode = new ConnectionsFolderNode(folder);

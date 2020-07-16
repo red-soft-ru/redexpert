@@ -212,8 +212,6 @@ public class QueryTokenizer {
             return new QueryTokenized(new DerivedQuery(query), "", "", startIndexQuery + query.length(), delimiter);
         }
         index = query.indexOf(delimiter);
-        String x = query.substring(0, index);
-        String y = query.substring(index);
         boolean cycleContinue = true;
 
         while ((index != -1) && cycleContinue) {
@@ -243,8 +241,6 @@ public class QueryTokenizer {
             } else {
                 cycleContinue = true;
                 index = query.indexOf(delimiter, index + 1);
-                x = query.substring(0, index);
-                y = query.substring(index);
             }
 
         }

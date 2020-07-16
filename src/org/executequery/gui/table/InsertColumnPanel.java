@@ -282,6 +282,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
             column.setColumnSize(columnData.getColumnSize());
             column.setColumnScale(columnData.getColumnScale());
             sb.append(alterColumn().replace(";", "^"));
+            autoIncrementPanel.generateAI();
             if (columnData.isAutoincrement()) {
                 sb.append(columnData.getAutoincrement().getSqlAutoincrement());
             }

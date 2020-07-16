@@ -115,7 +115,7 @@ static TCHAR* url_manual = TEXT("https://www.oracle.com/java/technologies/javase
 static TCHAR* download_url = TEXT("https://download.bell-sw.com/java/14.0.2+13/bellsoft-jre14.0.2+13-windows-amd64.zip");
 #elif INTPTR_MAX == INT32_MAX
 static TCHAR* url_manual = TEXT("https://www.java.com/ru/download/manual.jsp");
-static TCHAR* download_url = TEXT("https://download.bell-sw.com/java/14+36/bellsoft-jre14+36-windows-i586.zip");
+static TCHAR* download_url = TEXT("https://download.bell-sw.com/java/14.0.2+13/bellsoft-jre14.0.2+13-windows-i586.zip");
 #else
 #error "Environment not 32 or 64-bit."
 #endif

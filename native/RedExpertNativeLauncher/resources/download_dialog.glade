@@ -9,6 +9,7 @@
   </object>
   <object class="GtkDialog" id="download_dialog">
     <property name="can_focus">False</property>
+    <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="icon_name">applications-internet</property>
     <property name="type_hint">dialog</property>

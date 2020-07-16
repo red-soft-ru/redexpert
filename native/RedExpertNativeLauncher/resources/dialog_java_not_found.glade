@@ -4,6 +4,7 @@
   <requires lib="gtk+" version="3.22"/>
   <object class="GtkDialog" id="dialog_jnf">
     <property name="can_focus">False</property>
+    <property name="resizable">False</property>
     <property name="icon">../red_expert.png</property>
     <property name="type_hint">dialog</property>
     <child type="titlebar">

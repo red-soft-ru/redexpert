@@ -2048,7 +2048,7 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
             {
                 HINSTANCE h = GetModuleHandle(NULL);
                 EnableWindow(hw, FALSE);
-                DialogBox(h, MAKEINTRESOURCEW(P_BAR_DIALOG), GetConsoleWindow(), DlgDownloadProc);
+                DialogBox(h, MAKEINTRESOURCEW(P_BAR_DIALOG), NULL, DlgDownloadProc);
                 th.join();
                 EnableWindow(hw, TRUE);
                 DeleteUrlCacheEntry(download_url);
@@ -2151,7 +2151,7 @@ int showDialog()
 {
     int res;
     HINSTANCE h = GetModuleHandle(NULL);
-    DialogBox(h, MAKEINTRESOURCEW(DIALOG_X), GetConsoleWindow(), DlgProc);
+    DialogBox(h, MAKEINTRESOURCEW(DIALOG_X), NULL, DlgProc);
 
     if (result_dialog == DOWNLOAD) {
 

@@ -133,6 +133,7 @@ cancel_button_clicked (GtkButton *button,
             gpointer   data)
 {
     dialog_result = CANCEL;
+    gtk_widget_destroy(GTK_WIDGET(dialog));
     gtk_main_quit();
 
 }

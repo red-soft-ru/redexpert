@@ -490,7 +490,8 @@ CURLcode download_in_thread()
         if(res != CURLE_OK)
         {
               std::cout<<curl_easy_strerror_(res)<<std::endl;
-              status_downl=ERROR_DOWNLOAD;
+              if(status_downl!=ABORT_DOWNLOAD)
+                status_downl=ERROR_DOWNLOAD;
         }
         fclose(outfile);
 
@@ -1482,6 +1483,7 @@ SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
 #ifdef _WIN32
     return openWindowsJvmLibrary(isClient, isServer);
 #else
+    //checkInputDialog();
     (void)isClient;
     (void)isServer;
     void* handler = 0;

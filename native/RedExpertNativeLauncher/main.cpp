@@ -285,6 +285,7 @@ FILE* outfile;
 static int ABORT_DOWNLOAD = -1;
 static int DOWNLOADING = 0;
 static int FINISHED_DOWNLOADING = 1;
+static int ERROR_DOWNLOAD = -2;
 static std::string archive_name = "java.tar.gz";
 static std::string archive_path;
 static std::string archive_dir;
@@ -336,7 +337,7 @@ ok_button_clicked (GtkButton *button,
     if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_download)))
     {
         download_java();
-        if (status_downl==ABORT_DOWNLOAD)
+        if (status_downl==ABORT_DOWNLOAD||status_downl==ERROR_DOWNLOAD)
             return;
         dialog_result = DOWNLOAD;
     }
@@ -385,7 +386,7 @@ int my_progress_func(GtkWidget* bar,
 
     t = tt;
     d = dd;
-    if(status_downl==ABORT_DOWNLOAD)
+    if(status_downl==ABORT_DOWNLOAD||status_downl==ERROR_DOWNLOAD)
         return 1;
     return 0;
 }
@@ -416,17 +417,23 @@ static gboolean updateProgress(gpointer data)
             gtk_main_quit();
             return FALSE;
         }
+    } else if(status_downl==ERROR_DOWNLOAD)
+    {
+        gtk_widget_destroy(dialog_dwnl);
+        gtk_main_quit();
+        return FALSE;
     }
     return TRUE;
 }
 void init_curl()
 {
+    status_downl=DOWNLOADING;
     curlHandle=0;
     curlHandle = dlopen("libcurl.so.4",RTLD_LAZY);
     if(curlHandle==0)
     {
         gtkMessageBox("Error downloading java","libcurl not found. Please install libcurl4 to automatically download java");
-        exit(1);
+        status_downl=ERROR_DOWNLOAD;
     }
     curl_easy_init_=(CURL* (*)(void))dlsym(curlHandle,"curl_easy_init");
     curl_easy_setopt_=(CURLcode (*)(CURL *, CURLoption , ...))dlsym(curlHandle,"curl_easy_setopt");
@@ -449,12 +456,12 @@ void init_curl()
         if(res != CURLE_OK)
         {
               gtkMessageBox("Error downloading java" ,curl_easy_strerror_(res));
-              exit(1);
+              status_downl=ERROR_DOWNLOAD;
         }
         if(http_code.find("20")==std::string::npos&&http_code.find("30")==std::string::npos)
         {
             gtkMessageBox("Error downloading java" ,http_code.c_str());
-            exit(1);
+            status_downl=ERROR_DOWNLOAD;
         }
         /* always cleanup */
         curl_easy_cleanup_(curl);
@@ -468,10 +475,11 @@ void init_curl()
             curl_easy_setopt_(curl, CURLOPT_READFUNCTION, my_read_func);
             curl_easy_setopt_(curl, CURLOPT_NOPROGRESS, 0L);
             curl_easy_setopt_(curl, CURLOPT_PROGRESSFUNCTION, my_progress_func);
+            curl_easy_setopt_(curl,CURLOPT_TIMEOUT,10);
         }
     }
 }
-void download_in_thread()
+CURLcode download_in_thread()
 {
 
     if (curl) {
@@ -482,10 +490,12 @@ void download_in_thread()
         if(res != CURLE_OK)
         {
               std::cout<<curl_easy_strerror_(res)<<std::endl;
+              status_downl=ERROR_DOWNLOAD;
         }
         fclose(outfile);
 
         curl_easy_cleanup_(curl);
+        return res;
     }
 }
 int showDialog()
@@ -507,13 +517,15 @@ int showDialog()
 void download_java()
 {
     init_curl();
+    if(status_downl==ERROR_DOWNLOAD)
+        return;
     GError* error = NULL;
     builder = gtk_builder_new();
     std::string path_to_glade = bin_dir + file_separator() + "../resources/download_dialog.glade";
     if (!gtk_builder_add_from_file(builder, path_to_glade.c_str(), &error)) {
         g_warning("%s", error->message);
         g_error_free(error);
-        exit(1);
+        return;
     }
     dialog_dwnl = GTK_WIDGET(gtk_builder_get_object(builder, "download_dialog"));
     gtk_builder_connect_signals(builder, NULL);
@@ -529,12 +541,14 @@ void download_java()
     gtk_window_set_transient_for(GTK_WINDOW(dialog_dwnl),GTK_WINDOW(dialog));
     // Показываем форму и виджеты на ней
     gtk_widget_show(dialog_dwnl);
-    std::thread th = std::thread([] { download_in_thread(); });
+    static CURLcode res=CURLE_OK;
+    std::thread th = std::thread([] { res=download_in_thread(); });
     g_timeout_add_seconds(1, updateProgress, NULL);
     gtk_main();
     th.join();
-
-    if (status_downl == ABORT_DOWNLOAD)
+    if (status_downl == ERROR_DOWNLOAD)
+        gtkMessageBox("Error downloading_java",curl_easy_strerror_(res));
+    if (status_downl == ABORT_DOWNLOAD||status_downl == ERROR_DOWNLOAD)
         return;
     std::string command = "tar -C " + archive_dir + " -xvf " + archive_path;
     system(command.c_str());

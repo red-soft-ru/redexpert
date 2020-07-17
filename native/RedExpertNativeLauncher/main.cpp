@@ -2131,12 +2131,12 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
                 }
 
             }
-            if (IsDlgButtonChecked(hw, CANCEL))
-            {
-                result_dialog = CANCEL;
-                EndDialog(hw, 0);
-            }
 
+        }
+        if(LOWORD(wp)==7)
+        {
+            result_dialog = CANCEL;
+            EndDialog(hw, 0);
         }
         return TRUE;
     case WM_NOTIFY:

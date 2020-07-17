@@ -1,10 +1,25 @@
-<project>
+<?xml version="1.0" encoding="utf-8" ?>
+<!--xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="./InstallBuilder.rng"-->
+<project >
     <shortName>RedExpert</shortName>
     <fullName>Red Expert</fullName>
     <version>${VERSION}</version>
     <licenseFile>${redexpert_dir}/LICENSE.txt</licenseFile>
     <logoImage>logos/red_expert.png</logoImage>
     <allowLanguageSelection>1</allowLanguageSelection>
+    <customLanguageFileList>
+        <language>
+            <code>en</code>
+            <encoding>utf-8</encoding>
+            <file>localization/install_props_en.lng</file>
+        </language>
+        <language>
+            <code>ru</code>
+            <encoding>cp1251</encoding>
+            <file>localization/install_props_ru.lng</file>
+        </language>
+    </customLanguageFileList>
     <componentList>
         <component>
             <name>default</name>

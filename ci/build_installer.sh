@@ -15,6 +15,15 @@ function check_variable()
 check_variable VERSION
 check_variable DIST
 check_variable ARCH
+ARCH=${ARCH=arch}
+url_installbuilder="http://builds.red-soft.biz/release_hub/installbuilder/18.7.0/download/installbuilder:linux-x86:18.7.0:run"
+if [ "$ARCH" == "x86_64" ]; then
+    url_installbuilder="http://builds.red-soft.biz/release_hub/installbuilder/18.7.0/download/installbuilder:linux-x86_64:18.7.0:run"
+fi
+echo $url_installbuilder
+wget -O installbuilder.run $url_installbuilder
+chmod +x installbuilder.run
+./installbuilder.run --mode unattended  --prefix /opt/installbuilder
 DIST=${DIST:=dist}
 INSTALLBUILDER_BINARY=${INSTALLBUILDER_BINARY:=/opt/installbuilder/bin/builder}
 echo $LICENSE_INSTALLBUILDER > /opt/installbuilder/license.xml
@@ -23,7 +32,6 @@ INSTALLER_SRC_DIR=$SRC_DIR/installer
 INSTALLER_COMPONENTS=$DIST
 INSTALLER_OUTPUT_DIR=$DIST/bin
 VERSION=${VERSION=version}
-ARCH=${ARCH=arch}
 INSTALLER_NAME="RedExpert-$VERSION-installer-linux-$ARCH.bin"
 exec_file="RedExpert"
 if [ "$ARCH" == "x86_64" ]; then

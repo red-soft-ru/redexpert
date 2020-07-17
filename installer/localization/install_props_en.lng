@@ -1,0 +1,7 @@
+Installer.Parameter.java_home.description=Path to Java
+Installer.Parameter.java_home.explanation=Choose a path to Java or download Java from https://www.java.com/ru/download/manual.jsp and then restart the installation
+Installer.Parameter.settings_dir.description=Settings directory
+Installer.Parameter.settings_dir.explanation=A directory for user settings of RedExpert
+Installer.Parameter.java_home.error.not_found=Java hasn't been found at the specified path
+Installer.Parameter.java_home.error.min_version=Invalid version of java $ {java_version}. The minimum version of java $ {min_java_version}
+Installer.Parameter.java_home.error.bitness=Invalid Java bit depth: ${java_arch}.\n Required bit depth ${check_java_version}.

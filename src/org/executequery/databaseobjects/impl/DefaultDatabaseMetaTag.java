@@ -1504,7 +1504,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
-        String query = "select rdb$generator_name from rdb$generators where rdb$system_flag is distinct from 1\n" +
+        String query = "select rdb$generator_name from rdb$generators where ((RDB$SYSTEM_FLAG is NULL) or (RDB$SYSTEM_FLAG = 0))\n" +
                 "     order by  rdb$generator_name";
         if (typeTree == TreePanel.DEPENDED_ON)
             query = getDependOnQuery(14);
@@ -1525,14 +1525,27 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         String query = "select " +
                 "RDB$FIELD_NAME " +
                 "from RDB$FIELDS\n" +
-                "where RDB$FIELD_NAME not like 'RDB$%'\n" +
-                "and RDB$FIELD_NAME not like 'MON$%'\n" +
+                "where (not (RDB$FIELD_NAME starting with 'RDB$')) and (RDB$SYSTEM_FLAG=0 or RDB$SYSTEM_FLAG IS NULL)\n" +
                 "order by RDB$FIELD_NAME";
         if (typeTree == TreePanel.DEPENDED_ON)
             query = getDependOnQuery(9);
         else if (typeTree == TreePanel.DEPENDENT)
             query = getDependentQuery(9);
         ResultSet resultSet = statement.executeQuery(query);
+
+        return resultSet;
+    }
+
+    private ResultSet getSystemDomainResultSet() throws SQLException {
+
+        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+        Statement statement = dmd.getConnection().createStatement();
+
+        ResultSet resultSet = statement.executeQuery("select " +
+                "RDB$FIELD_NAME " +
+                "from RDB$FIELDS\n" +
+                "where (RDB$FIELD_NAME starting with 'RDB$') or (RDB$SYSTEM_FLAG<>0 and RDB$SYSTEM_FLAG IS not NULL)\n" +
+                "order by RDB$FIELD_NAME");
 
         return resultSet;
     }
@@ -1581,14 +1594,16 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         db.setConnection(fbConn);
         switch (db.getMajorVersion()) {
             case 2:
-                resultSet = statement.executeQuery("select RDB$FUNCTION_NAME,\n" +
+                String query = "select RDB$FUNCTION_NAME,\n" +
                         "RDB$DESCRIPTION,\n" +
                         "RDB$MODULE_NAME,\n" +
                         "RDB$ENTRYPOINT,\n" +
                         "RDB$RETURN_ARGUMENT,\n" +
                         "RDB$DESCRIPTION as description\n" +
                         "from RDB$FUNCTIONS\n" +
-                        "order by RDB$FUNCTION_NAME");
+                        "where RDB$SYSTEM_FLAG =0 or RDB$SYSTEM_FLAG is null\n" +
+                        "order by RDB$FUNCTION_NAME";
+                resultSet = statement.executeQuery(query);
                 break;
             case 3:
             case 4:
@@ -1599,25 +1614,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         "RDB$RETURN_ARGUMENT,\n" +
                         "RDB$DESCRIPTION as description\n" +
                         "from RDB$FUNCTIONS\n" +
-                        "where RDB$LEGACY_FLAG = 1 and (RDB$MODULE_NAME is not NULL)\n" +
+                        "where RDB$LEGACY_FLAG = 1 and (RDB$MODULE_NAME is not NULL) and (RDB$SYSTEM_FLAG =0 or RDB$SYSTEM_FLAG is null)\n" +
                         "order by RDB$FUNCTION_NAME");
                 break;
         }
-
-        return resultSet;
-    }
-
-    private ResultSet getSystemDomainResultSet() throws SQLException {
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("select " +
-                "RDB$FIELD_NAME " +
-                "from RDB$FIELDS\n" +
-                "where RDB$FIELD_NAME like 'RDB$%'\n" +
-                "or RDB$FIELD_NAME like 'MON$%'\n" +
-                "order by RDB$FIELD_NAME");
 
         return resultSet;
     }
@@ -1694,7 +1694,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     "rdb$view_source\n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is null \n" +
-                    "and (rdb$system_flag is null or rdb$system_flag = 0) and rdb$relation_type=0 or rdb$relation_type=2\n" +
+                    "and (rdb$system_flag is null or rdb$system_flag = 0) and (rdb$relation_type=0 or rdb$relation_type=2 or rdb$relation_type is NULL)\n" +
                     "order by rdb$relation_name";
             if (typeTree == TreePanel.DEPENDED_ON)
                 query = getDependOnQuery(0);

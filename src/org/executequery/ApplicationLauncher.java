@@ -37,6 +37,7 @@ import org.underworldlabs.swing.PasswordDialog;
 import org.underworldlabs.swing.SplashPanel;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.plaf.UIUtils;
+import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
@@ -56,7 +57,7 @@ public class ApplicationLauncher {
     // asm license: http://asm.ow2.org/license.html
 
     public void startup() {
-
+        SplashPanel splash = null;
         try {
 
             applySystemProperties();
@@ -74,7 +75,7 @@ public class ApplicationLauncher {
             System.setProperty("executequery.minor.version",
                     stringApplicationProperty("re.version"));
 
-            SplashPanel splash = null;
+
 
             if (displaySplash()) {
 
@@ -186,25 +187,29 @@ public class ApplicationLauncher {
                 }
 
             });
+            try {
+                printSystemProperties();
 
-            printSystemProperties();
+                frame.setTitle("Red Expert - " + System.getProperty("executequery.minor.version"));
 
-            frame.setTitle("Red Expert - " + System.getProperty("executequery.minor.version"));
+                // auto-login if selected
+                if (openConnection) {
 
-            // auto-login if selected
-            if (openConnection) {
+                    openStartupConnection();
+                }
+                QueryEditorHistory.restoreTabs(null);
 
-                openStartupConnection();
+
+                doCheckForUpdate();
+                GUIUtilities.loadAuthorisationInfo();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
-            QueryEditorHistory.restoreTabs(null);
-
-            doCheckForUpdate();
-            GUIUtilities.loadAuthorisationInfo();
-
         } catch (Exception e) {
-
+            GUIUtilities.displayExceptionErrorDialog("Application launch error", e);
             e.printStackTrace();
+            System.exit(1);
         }
 
     }
@@ -295,10 +300,10 @@ public class ApplicationLauncher {
             System.setProperty("file.encoding", encoding);
         }
 
-        String settingDirName = stringApplicationProperty("eq.user.home.dir");
+        String settingDirName = stringPropertyFromConfig("eq.user.home.dir");
+        settingDirName = settingDirName.replace("$HOME",System.getProperty("user.home"));
         System.setProperty("executequery.user.home.dir", settingDirName);
         ApplicationContext.getInstance().setUserSettingsDirectoryName(settingDirName);
-
         String build = stringApplicationProperty("eq.build");
         System.setProperty("executequery.build", build);
         ApplicationContext.getInstance().setBuild(build);
@@ -548,6 +553,18 @@ public class ApplicationLauncher {
 
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", ExecuteQueryFrame.TITLE);
+        }
+
+    }
+    private String stringPropertyFromConfig(String key)
+    {
+        Properties props = null;
+        try {
+            props = FileUtils.loadProperties(MiscUtils.loadURLs("./config/redexpert_config.ini;../config/redexpert_config.ini"));
+            return props.getProperty(key);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
         }
 
     }

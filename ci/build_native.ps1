@@ -28,8 +28,18 @@ cd "$SRC_DIR\native\RedExpertNativeLauncher\"
 Import-VisualStudioVars -VisualStudioVersion 2013 -Architecture $env:ARCH
 
 & "$QMAKE"
+if (-Not$?)
+{
+    echo "qmake failed"
+    exit 1
+}
 
 & "nmake.exe"
+if (-Not$?)
+{
+    echo "nmake failed"
+    exit 1
+}
 
 mkdir -force bin
 cp -recurse .\release\bin\* bin

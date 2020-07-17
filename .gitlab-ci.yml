@@ -91,7 +91,9 @@ sources:
     M2_HOME: /opt/apache-maven-3.5.4/
     QMAKE: qmake-qt4
   before_script:
-    - yum install -y java-1.8.0-openjdk-devel-1.8.0.181 qt-devel gtk2-devel-2.24.23
+    - yum -y update
+    - yum install -y java-1.8.0-openjdk-devel-1.8.0.252.b09-2.el7_8 qt-devel gtk3-devel wget libcurl-devel
+    - yum group install -y "Development Tools"
     - cd /opt
     - wget http://www.apache.org/dist/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.tar.gz
     - tar xzf apache-maven-3.5.4-bin.tar.gz
@@ -104,6 +106,7 @@ sources:
     - ./ci/build_native.sh
     - ./ci/build_jar.sh
     - mkdir -p "${DIST}"
+    - mv native/RedExpertNativeLauncher/resources "${DIST}"
     - mkdir "${DIST}"/guide/
     - chmod +x modules/redexpert/target/bin/*
     - mv modules/redexpert/target/bin "${DIST}"
@@ -119,19 +122,19 @@ sources:
 
 build:linux:x86_64:
   <<: *build_linux_template
-  image: redsoftru/rdbbuildenv-lsbsdk-centos:centos6-lsb4.1.0
+  image: amd64/centos:7
   variables:
     DIST: ${CI_PROJECT_DIR}/dist/linux-x86_64
-    JAVA_HOME: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.181-3.b13.el6_10.x86_64/
+    JAVA_HOME: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.252.b09-2.el7_8.x86_64/
     ARCH: x86_64
     <<: *build_linux_template_variables
 
 build:linux:x86:
   <<: *build_linux_template
-  image: redsoftru/rdbbuildenv-lsbsdk-centos:centos6-i386-lsb4.1.0
+  image: i386/centos:7
   variables:
     DIST: ${CI_PROJECT_DIR}/dist/linux-x86
-    JAVA_HOME: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.181-3.b13.el6_10.i386/
+    JAVA_HOME: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.252.b09-2.el7_8.i386/
     ARCH: x86
     <<: *build_linux_template_variables
 

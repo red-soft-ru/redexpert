@@ -32,39 +32,43 @@ win32: {
     QMAKE_CFLAGS_RELEASE -= -Zc:strictStrings
     QMAKE_CFLAGS -= -Zc:strictStrings
     QMAKE_CXXFLAGS -= -Zc:strictStrings
-    
+
     QMAKE_CXXFLAGS_RELEASE = -O2 -MT
     QMAKE_CFLAGS_RELEASE = -O2 -MT
     QMAKE_CFLAGS = -O2 -MT
     QMAKE_CXXFLAGS = -O2 -MT
-
-    RC_ICONS += red_expert.ico
+    LIBS += -lcomdlg32
+    RC_FILE += ResourceScript.rc
+    HEADERS +=\
+           resource.h \
+           unzip.h
+    DISTFILES += ResourceScript.rc
+    SOURCES +=\
+    unzip.cpp
+    DEFINES += UNICODE
+    DEFINES += _UNICODE
 }
 else:unix: {
     contains(QT_ARCH, i386) {
         message("select 32-bit arch")
         TARGET = bin/RedExpert
-        CONFIG += link_pkgconfig
-        PKGCONFIG += gtk+-2.0
-#        LIBS += -L/usr/lib/jvm/java-8-oracle/jre/lib/i386/server/ -ljvm
     } else {
         message("select 64-bit arch")
         TARGET = bin/RedExpert64
-        CONFIG += link_pkgconfig
-        PKGCONFIG += gtk+-2.0
-#        LIBS += -L/usr/lib/jvm/java-8-oracle/jre/lib/amd64/server/ -ljvm
     }
-
+    CONFIG += link_pkgconfig
+    PKGCONFIG += gtk+-3.0
+    PKGCONFIG += gmodule-2.0
     INCLUDEPATH += $$(JAVA_HOME)/include
     INCLUDEPATH += $$(JAVA_HOME)/include/linux
-
-    # QMAKE_LFLAGS_RPATH=
     # add your own with quoting gyrations to make sure $ORIGIN gets to the command line unexpanded
     QMAKE_LFLAGS += "-Wl,-rpath,\'\$$ORIGIN\'"
-
     QMAKE_CXXFLAGS += -std=c++0x
-
     LIBS += -ldl
+    DISTFILES += \
+        resources/dialog_java_not_found.glade \
+        resources/download_dialog.glade
+
 }
 
 SOURCES += \
@@ -78,4 +82,11 @@ HEADERS += \
     WinReg.hpp \
     HKEY.h \
     utils.h
+
+
+
+
+
+
+
 

@@ -63,14 +63,14 @@ namespace utils
         {
             return output;
         }
-        int rc = WideCharToMultiByte(CP_UTF8, 0, &input[0], input.size(), 0, 0, 0, 0);
+        int rc = WideCharToMultiByte(CP_ACP, 0, &input[0], input.size(), 0, 0, 0, 0);
         if (rc == 0)
         {
             DWORD lastError = GetLastError();
             throw WindowsError("initial, sizing, call to WideCharToMultiByte() failed", lastError);
         }
         output.resize(rc);
-        rc = WideCharToMultiByte(CP_UTF8, 0, &input[0], input.size(), &output[0], output.size(), 0, 0);
+        rc = WideCharToMultiByte(CP_ACP, 0, &input[0], input.size(), &output[0], output.size(), 0, 0);
         if (rc == 0)
         {
             DWORD lastError = GetLastError();
@@ -87,14 +87,14 @@ namespace utils
         {
             return output;
         }
-        int rc = MultiByteToWideChar(CP_UTF8, 0, &input[0], input.size(), 0, 0);
+        int rc = MultiByteToWideChar(CP_ACP, 0, &input[0], input.size(), 0, 0);
         if (rc == 0)
         {
             DWORD lastError = GetLastError();
             throw WindowsError("initial, sizing, call to MultiByteToWideChar() failed", lastError);
         }
         output.resize(rc);
-        rc = MultiByteToWideChar(CP_UTF8, 0, &input[0], input.size(), &output[0], output.size());
+        rc = MultiByteToWideChar(CP_ACP, 0, &input[0], input.size(), &output[0], output.size());
         if (rc == 0)
         {
             DWORD lastError = GetLastError();

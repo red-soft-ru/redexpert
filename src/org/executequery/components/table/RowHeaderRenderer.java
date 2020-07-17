@@ -1,6 +1,6 @@
 package org.executequery.components.table;
 
-import sun.swing.DefaultLookup;
+//import sun.swing.DefaultLookup;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -11,7 +11,7 @@ public class RowHeaderRenderer extends JLabel implements ListCellRenderer {
     protected static final Border SAFE_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
     protected static final Border DEFAULT_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
     protected static Border noFocusBorder = DEFAULT_NO_FOCUS_BORDER;
-
+    private UIDefaults uiDefaults=new UIDefaults();
     // We need a place to store the color the JLabel should be returned
     // to after its foreground and background colors have been set
     // to the selection background color.
@@ -31,7 +31,7 @@ public class RowHeaderRenderer extends JLabel implements ListCellRenderer {
     }
 
     private Border getNoFocusBorder() {
-        Border border = DefaultLookup.getBorder(this, ui, "Table.cellNoFocusBorder");
+        Border border = uiDefaults.getBorder("Table.cellNoFocusBorder");
         if (System.getSecurityManager() != null) {
             if (border != null) return border;
             return SAFE_NO_FOCUS_BORDER;
@@ -148,24 +148,24 @@ public class RowHeaderRenderer extends JLabel implements ListCellRenderer {
         if (hasFocus) {
             Border border = null;
             if (isSelected) {
-                border = DefaultLookup.getBorder(this, ui, "Table.focusSelectedCellHighlightBorder");
+                border = uiDefaults.getBorder( "Table.focusSelectedCellHighlightBorder");
                 super.setForeground(fg == null ? table.getSelectionForeground()
                         : fg);
                 super.setBackground(bg == null ? table.getSelectionBackground()
                         : bg);
             }
             if (border == null) {
-                border = DefaultLookup.getBorder(this, ui, "Table.focusCellHighlightBorder");
+                border = uiDefaults.getBorder( "Table.focusCellHighlightBorder");
             }
             setBorder(border);
 
             if (!isSelected) {
                 Color col;
-                col = DefaultLookup.getColor(this, ui, "Table.focusCellForeground");
+                col = uiDefaults.getColor( "Table.focusCellForeground");
                 if (col != null) {
                     super.setForeground(col);
                 }
-                col = DefaultLookup.getColor(this, ui, "Table.focusCellBackground");
+                col = uiDefaults.getColor( "Table.focusCellBackground");
                 if (col != null) {
                     super.setBackground(col);
                 }
@@ -175,7 +175,7 @@ public class RowHeaderRenderer extends JLabel implements ListCellRenderer {
                     ? unselectedBackground
                     : table.getBackground();
             if (background == null || background instanceof javax.swing.plaf.UIResource) {
-                Color alternateColor = DefaultLookup.getColor(this, ui, "Table.alternateRowColor");
+                Color alternateColor = uiDefaults.getColor( "Table.alternateRowColor");
                 if (alternateColor != null && index % 2 != 0) {
                     background = alternateColor;
                 }

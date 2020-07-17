@@ -21,6 +21,7 @@
 package org.underworldlabs.swing;
 
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.util.SwingWorker;
 
@@ -307,7 +308,7 @@ public class GUIUtils {
                 false,
                 "OptionPane.informationIcon",
                 "Message",
-                message);
+                message, null);
     }
 
     public static final String displayInputMessage(Component parent, String title, Object message) {
@@ -317,7 +318,7 @@ public class GUIUtils {
                 true,
                 "OptionPane.questionIcon",
                 title,
-                message).toString();
+                message, new Object[]{Bundles.getCommon("ok.button"), Bundles.getCommon("cancel.button")}).toString();
     }
 
     public static final void displayWarningMessage(Component parent, Object message) {
@@ -327,7 +328,7 @@ public class GUIUtils {
                 false,
                 "OptionPane.warningIcon",
                 "Warning",
-                message);
+                message, null);
     }
 
     /**
@@ -341,22 +342,26 @@ public class GUIUtils {
                                         final boolean wantsInput,
                                         final String icon,
                                         final String title,
-                                        final Object message) {
+                                        final Object message,
+                                        final Object[] buttons) {
 
         dialogReturnValue = null;
 
         Runnable runnable = new Runnable() {
             public void run() {
                 showNormalCursor(parent);
+                Object okOption = null;
+                if (buttons != null)
+                    okOption = buttons[0];
                 JOptionPane pane = new JOptionPane(message, messageType,
-                        optionType, UIManager.getIcon(icon));
+                        optionType, UIManager.getIcon(icon), buttons, okOption);
                 pane.setWantsInput(wantsInput);
 
                 JDialog dialog = null;
                 JFrame frame = null;
                 if (parent == null) {
                     frame = new JFrame("My dialog asks....");
-                    frame.setUndecorated( true );
+                    frame.setUndecorated(true);
                     frame.setIconImage(GUIUtilities.loadIcon("ApplicationIcon48.png", true).getImage());
                     frame.setVisible( true );
                     frame.setLocationRelativeTo( null );
@@ -368,7 +373,6 @@ public class GUIUtils {
 
                     ((DialogMessageContent) message).setDialog(dialog);
                 }
-
                 dialog.setLocation(getPointToCenter(parent, dialog.getSize()));
                 dialog.setVisible(true);
                 dialog.dispose();
@@ -395,7 +399,7 @@ public class GUIUtils {
                 false,
                 "OptionPane.errorIcon",
                 "Error Message",
-                message);
+                message, null);
     }
 
     public static final int displayConfirmCancelErrorMessage(Component parent, Object message) {
@@ -406,7 +410,7 @@ public class GUIUtils {
                 false,
                 "OptionPane.errorIcon",
                 "Error Message",
-                message));
+                message, new Object[]{Bundles.getCommon("ok.button"), Bundles.getCommon("cancel.button")}));
     }
 
     public static final int displayYesNoDialog(Component parent, Object message, String title) {
@@ -416,7 +420,7 @@ public class GUIUtils {
                 false,
                 "OptionPane.questionIcon",
                 title,
-                message));
+                message, new Object[]{Bundles.getCommon("yes.button"), Bundles.getCommon("no.button")}));
     }
 
     public static final int displayConfirmCancelDialog(Component parent, Object message) {
@@ -426,7 +430,7 @@ public class GUIUtils {
                 false,
                 "OptionPane.questionIcon",
                 "Confirmation",
-                message));
+                message, new Object[]{Bundles.getCommon("yes.button"), Bundles.getCommon("no.button"), Bundles.getCommon("cancel.button")}));
     }
 
     public static final int displayConfirmDialog(Component parent, Object message) {
@@ -436,7 +440,7 @@ public class GUIUtils {
                 false,
                 "OptionPane.questionIcon",
                 "Confirmation",
-                message));
+                message, new Object[]{Bundles.getCommon("yes.button"), Bundles.getCommon("no.button")}));
     }
 
     private static int formatDialogReturnValue(Object returnValue) {
@@ -444,6 +448,17 @@ public class GUIUtils {
         if (returnValue instanceof Integer) {
 
             return ((Integer) returnValue).intValue();
+        }
+        if (returnValue instanceof String) {
+            String stringValue = (String) returnValue;
+            if (stringValue.contentEquals(Bundles.getCommon("yes.button")))
+                return JOptionPane.YES_OPTION;
+            if (stringValue.contentEquals(Bundles.getCommon("ok.button")))
+                return JOptionPane.OK_OPTION;
+            if (stringValue.contentEquals(Bundles.getCommon("no.button")))
+                return JOptionPane.NO_OPTION;
+            if (stringValue.contentEquals(Bundles.getCommon("cancel.button")))
+                return JOptionPane.CANCEL_OPTION;
         }
 
         return -1;

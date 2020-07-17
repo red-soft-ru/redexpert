@@ -134,7 +134,7 @@ public class CreateDatabasePanel extends ActionPanel
     /**
      * the browser's control object
      */
-    private BrowserController controller;
+    private final BrowserController controller;
 
     /**
      * Creates a new instance of ConnectionPanel
@@ -161,11 +161,17 @@ public class CreateDatabasePanel extends ActionPanel
 
         // initialise the fields
         nameField = createTextField();
+        nameField.setName("nameField");
         passwordField = createPasswordField();
+        passwordField.setName("passwordField");
         hostField = createTextField();
+        hostField.setName("hostField");
         portField = createNumberTextField();
+        portField.setName("portField");
         sourceField = createMatchedWidthTextField();
+        sourceField.setName("sourceField");
         userField = createTextField();
+        userField.setName("userField");
 
         portField.setText("3050");
 
@@ -181,6 +187,7 @@ public class CreateDatabasePanel extends ActionPanel
         // retrieve the available charsets
         loadCharsets();
         charsetsCombo = WidgetFactory.createComboBox(charsets.toArray());
+        charsetsCombo.setName("charsetsCombo");
 
         pageSizeCombo = WidgetFactory.createComboBox(pageSizes.toArray());
         pageSizeCombo.setSelectedItem("8192");
@@ -313,7 +320,7 @@ public class CreateDatabasePanel extends ActionPanel
 
         JButton saveFile = new DefaultButton(bundledString("ChooseFile"));
         saveFile.addActionListener(new ActionListener() {
-            FileChooserDialog fileChooser = new FileChooserDialog();
+            final FileChooserDialog fileChooser = new FileChooserDialog();
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -597,6 +604,7 @@ public class CreateDatabasePanel extends ActionPanel
             DynamicComboBoxModel comboModel = new DynamicComboBoxModel();
             comboModel.setElements(driverNames);
             driverCombo = WidgetFactory.createComboBox(comboModel);
+            driverCombo.setName("driverCombo");
 
         } else {
 
@@ -801,8 +809,8 @@ public class CreateDatabasePanel extends ActionPanel
             GUIUtilities.showNormalCursor();
             System.gc();
         }
-        int result = GUIUtilities.displayYesNoDialog("Register a created database?", "Database registration");
-        if (result == JOptionPane.OK_OPTION || result == JOptionPane.YES_OPTION) {
+        int result = GUIUtilities.displayYesNoDialog(bundledString("DatabaseRegistration.message"), bundledString("DatabaseRegistration"));
+        if (result == JOptionPane.YES_OPTION) {
             DatabaseConnectionFactory databaseConnectionFactory = new DatabaseConnectionFactoryImpl();
             String name = this.nameField.getText();
             ConnectionsTreePanel connectionsTreePanel = (ConnectionsTreePanel) GUIUtilities.
@@ -1433,7 +1441,7 @@ public class CreateDatabasePanel extends ActionPanel
 
     class DeleteButtonEditor extends DefaultCellEditor {
 
-        private JButton button;
+        private final JButton button;
         private boolean isPushed;
         private final JTable table;
 

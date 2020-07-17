@@ -85,9 +85,17 @@ char* gtkOpenFile()
     return filename;
 }
 GtkWidget *dialog;
+extern "C"  void
+destroy_jnf (GtkButton *widget,
+            gpointer   data)
+{
+    if(dialog_result==0)
+    dialog_result = CANCEL;
+    gtk_main_quit();
+}
 int gtkDialog(std::string path_to_glade,std::string url)
 {
-
+    dialog_result=0;
 
     GError *error = NULL;
     gtk_init(NULL, NULL);

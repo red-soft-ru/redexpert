@@ -526,7 +526,7 @@ void download_java()
     //g_thread_init(NULL);
     //adj = (GtkAdjustment*)gtk_adjustment_new(0, 0, 100, 0, 0, 0);
     g_object_unref(G_OBJECT(builder));
-
+    gtk_window_set_transient_for(GTK_WINDOW(dialog_dwnl),GTK_WINDOW(dialog));
     // Показываем форму и виджеты на ней
     gtk_widget_show(dialog_dwnl);
     std::thread th = std::thread([] { download_in_thread(); });
@@ -1383,7 +1383,6 @@ SharedLibraryHandle tryDirectories(bool isClient, bool isServer)
 // we've successfully opened it, though, we can keep trying alternatives.
 SharedLibraryHandle openWindowsJvmLibrary(bool isClient, bool isServer)
 {
-    //checkInputDialog();
     std::ostream& os = err_rep.progress_os;
     os << "Trying to find ";
     os << sizeof(void*) * 8;

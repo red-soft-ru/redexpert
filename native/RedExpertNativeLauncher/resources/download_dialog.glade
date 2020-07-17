@@ -13,6 +13,7 @@
     <property name="modal">True</property>
     <property name="icon_name">applications-internet</property>
     <property name="type_hint">dialog</property>
+    <property name="urgency_hint">True</property>
     <signal name="destroy" handler="destroy_dialog" swapped="no"/>
     <child type="titlebar">
       <object class="GtkLabel">

@@ -48,7 +48,6 @@
 #include <string>
 #include <vector>
 #include <thread>
-#include <locale>
 
 static std::string djava_home;
 static std::string djvm;
@@ -1771,21 +1770,16 @@ private:
         return method;
     }
 
-    jstring makeJavaString(const char* n_string)
+    jstring makeJavaString(const wchar_t* n_string)
     {
-        jstring j_string = env->NewStringUTF(n_string);
-        if (j_string == 0) {
-            std::ostringstream os;
-            os << "NewStringUTF(\"" << n_string << "\") failed.";
-            throw std::runtime_error(os.str());
-        }
+        jstring j_string =env->NewString((const jchar *)n_string, wcslen(n_string));
         return j_string;
     }
 
     jobjectArray convertArguments(const NativeArguments& n_args)
     {
         jclass str_cl = findClass("java/lang/String");
-        jstring def_args = makeJavaString("");
+        jstring def_args = makeJavaString(L"");
         jobjectArray j_args = env->NewObjectArray(
             n_args.size(), str_cl, def_args);
         if (j_args == 0) {
@@ -1795,7 +1789,7 @@ private:
         }
         for (size_t index = 0; index != n_args.size(); ++index) {
             std::string n_arg = n_args[index];
-            jstring j_arg = makeJavaString(n_arg.c_str());
+            jstring j_arg = makeJavaString(utils::convertUtf8ToUtf16(n_arg).c_str());
             env->SetObjectArrayElement(j_args, index, j_arg);
         }
         return j_args;
@@ -2244,7 +2238,6 @@ static int runJvm(const NativeArguments& l_args)
 
 int main(int argc, char* argv[])
 {
-    std::locale::global(std::locale(""));
 // if linux system is used need to set desktop environment to NONE,
 // otherwise launcher is crashed
 // TODO check it on Centos 7

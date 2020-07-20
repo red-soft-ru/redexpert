@@ -1789,7 +1789,12 @@ private:
         }
         for (size_t index = 0; index != n_args.size(); ++index) {
             std::string n_arg = n_args[index];
+#ifdef _WIN32
             jstring j_arg = makeJavaString(utils::convertUtf8ToUtf16(n_arg).c_str());
+#else
+            std::wstring ws(n_arg.begin(),n_arg.end());
+            jstring j_arg = makeJavaString(ws.c_str());
+#endif
             env->SetObjectArrayElement(j_args, index, j_arg);
         }
         return j_args;

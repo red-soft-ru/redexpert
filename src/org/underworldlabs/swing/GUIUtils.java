@@ -134,11 +134,7 @@ public class GUIUtils {
     }
 
     public static Dimension getDefaultDeviceScreenSize() {
-
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice gs = ge.getScreenDevices()[0];
-        Dimension screenSize = gs.getDefaultConfiguration().getBounds().getSize();
-
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         return screenSize;
     }
 

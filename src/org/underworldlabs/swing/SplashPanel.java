@@ -166,7 +166,7 @@ public class SplashPanel extends Canvas {
         window.setLayout(new BorderLayout());
         window.add(BorderLayout.CENTER, this);
 
-        window.setLocation(GUIUtils.getPointToCenter(window, size));
+        window.setLocation(GUIUtils.getPointToCenter(null, size));
 
         window.validate();
         window.setVisible(true);

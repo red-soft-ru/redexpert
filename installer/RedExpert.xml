@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="./InstallBuilder.rng"-->
-<project >
+<project>
+    <height>500</height>
+    <width>700</width>
     <shortName>RedExpert</shortName>
     <fullName>Red Expert</fullName>
     <version>${VERSION}</version>

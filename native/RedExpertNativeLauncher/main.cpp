@@ -451,19 +451,22 @@ void init_curl()
         curl_easy_setopt_(curl, CURLOPT_HEADER, 1);
         curl_easy_setopt_(curl, CURLOPT_NOBODY, 1);
         curl_easy_setopt_(curl, CURLOPT_HEADERFUNCTION, header_callback);
+        http_code="0";
         res = curl_easy_perform_(curl);
         if(res != CURLE_OK)
         {
               gtkMessageBox("Error downloading java" ,curl_easy_strerror_(res));
               status_downl=ERROR_DOWNLOAD;
         }
-        if(http_code.find("20")==std::string::npos&&http_code.find("30")==std::string::npos)
+        else if(http_code.find("20")==std::string::npos&&http_code.find("30")==std::string::npos)
         {
             gtkMessageBox("Error downloading java" ,http_code.c_str());
             status_downl=ERROR_DOWNLOAD;
         }
         /* always cleanup */
         curl_easy_cleanup_(curl);
+        if(status_downl==ERROR_DOWNLOAD)
+            return;
         curl=(*curl_easy_init_)();
         if (curl) {
             const char* url = download_url.c_str();
@@ -547,7 +550,11 @@ void download_java()
     gtk_main();
     th.join();
     if (status_downl == ERROR_DOWNLOAD)
-        gtkMessageBox("Error downloading_java",curl_easy_strerror_(res));
+    {
+        std::stringstream stream;
+        stream<<curl_easy_strerror_(res)<<"\nCheck internet connection";
+        gtkMessageBox("Error downloading java",stream.str().c_str());
+    }
     if (status_downl == ABORT_DOWNLOAD||status_downl == ERROR_DOWNLOAD)
         return;
     std::string command = "tar -C " + archive_dir + " -xvf " + archive_path;
@@ -1769,17 +1776,33 @@ private:
         }
         return method;
     }
-
+#ifdef __linux__
+    jstring makeJavaString(const char* n_string)
+    {
+        jstring j_string = env->NewStringUTF(n_string);
+                if (j_string == 0) {
+                    std::ostringstream os;
+                    os << "NewStringUTF(\"" << n_string << "\") failed.";
+                    throw std::runtime_error(os.str());
+                }
+         return j_string;
+    }
+#else
     jstring makeJavaString(const wchar_t* n_string)
     {
         jstring j_string =env->NewString((const jchar *)n_string, wcslen(n_string));
         return j_string;
     }
+ #endif
 
     jobjectArray convertArguments(const NativeArguments& n_args)
     {
         jclass str_cl = findClass("java/lang/String");
+        #ifdef __linux__
+        jstring def_args = makeJavaString("");
+        #else
         jstring def_args = makeJavaString(L"");
+        #endif
         jobjectArray j_args = env->NewObjectArray(
             n_args.size(), str_cl, def_args);
         if (j_args == 0) {
@@ -1792,8 +1815,7 @@ private:
 #ifdef _WIN32
             jstring j_arg = makeJavaString(utils::convertUtf8ToUtf16(n_arg).c_str());
 #else
-            std::wstring ws(n_arg.begin(),n_arg.end());
-            jstring j_arg = makeJavaString(ws.c_str());
+            jstring j_arg = makeJavaString(n_arg.c_str());
 #endif
             env->SetObjectArrayElement(j_args, index, j_arg);
         }

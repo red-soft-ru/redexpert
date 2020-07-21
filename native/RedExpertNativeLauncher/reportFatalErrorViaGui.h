@@ -48,6 +48,7 @@ void gtkMessageBox(const char *title, const char *message)
     gtk_container_set_border_width (GTK_CONTAINER(dialog), 5);
     content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
     gtk_container_set_border_width (GTK_CONTAINER(content_area), 15);
+    gtk_window_set_resizable(GTK_WINDOW(dialog),FALSE);
 
     label = gtk_label_new(message);
     gtk_container_add(GTK_CONTAINER(content_area), label);

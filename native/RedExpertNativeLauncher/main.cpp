@@ -1776,17 +1776,33 @@ private:
         }
         return method;
     }
-
+#ifdef __linux__
+    jstring makeJavaString(const char* n_string)
+    {
+        jstring j_string = env->NewStringUTF(n_string);
+                if (j_string == 0) {
+                    std::ostringstream os;
+                    os << "NewStringUTF(\"" << n_string << "\") failed.";
+                    throw std::runtime_error(os.str());
+                }
+         return j_string;
+    }
+#else
     jstring makeJavaString(const wchar_t* n_string)
     {
         jstring j_string =env->NewString((const jchar *)n_string, wcslen(n_string));
         return j_string;
     }
+ #endif
 
     jobjectArray convertArguments(const NativeArguments& n_args)
     {
         jclass str_cl = findClass("java/lang/String");
+        #ifdef __linux__
+        jstring def_args = makeJavaString("");
+        #else
         jstring def_args = makeJavaString(L"");
+        #endif
         jobjectArray j_args = env->NewObjectArray(
             n_args.size(), str_cl, def_args);
         if (j_args == 0) {
@@ -1799,8 +1815,7 @@ private:
 #ifdef _WIN32
             jstring j_arg = makeJavaString(utils::convertUtf8ToUtf16(n_arg).c_str());
 #else
-            std::wstring ws(n_arg.begin(),n_arg.end());
-            jstring j_arg = makeJavaString(ws.c_str());
+            jstring j_arg = makeJavaString(n_arg.c_str());
 #endif
             env->SetObjectArrayElement(j_args, index, j_arg);
         }

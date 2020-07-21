@@ -451,19 +451,22 @@ void init_curl()
         curl_easy_setopt_(curl, CURLOPT_HEADER, 1);
         curl_easy_setopt_(curl, CURLOPT_NOBODY, 1);
         curl_easy_setopt_(curl, CURLOPT_HEADERFUNCTION, header_callback);
+        http_code="0";
         res = curl_easy_perform_(curl);
         if(res != CURLE_OK)
         {
               gtkMessageBox("Error downloading java" ,curl_easy_strerror_(res));
               status_downl=ERROR_DOWNLOAD;
         }
-        if(http_code.find("20")==std::string::npos&&http_code.find("30")==std::string::npos)
+        else if(http_code.find("20")==std::string::npos&&http_code.find("30")==std::string::npos)
         {
             gtkMessageBox("Error downloading java" ,http_code.c_str());
             status_downl=ERROR_DOWNLOAD;
         }
         /* always cleanup */
         curl_easy_cleanup_(curl);
+        if(status_downl==ERROR_DOWNLOAD)
+            return;
         curl=(*curl_easy_init_)();
         if (curl) {
             const char* url = download_url.c_str();
@@ -547,7 +550,11 @@ void download_java()
     gtk_main();
     th.join();
     if (status_downl == ERROR_DOWNLOAD)
-        gtkMessageBox("Error downloading_java",curl_easy_strerror_(res));
+    {
+        std::stringstream stream;
+        stream<<curl_easy_strerror_(res)<<"\nCheck internet connection";
+        gtkMessageBox("Error downloading java",stream.str().c_str());
+    }
     if (status_downl == ABORT_DOWNLOAD||status_downl == ERROR_DOWNLOAD)
         return;
     std::string command = "tar -C " + archive_dir + " -xvf " + archive_path;

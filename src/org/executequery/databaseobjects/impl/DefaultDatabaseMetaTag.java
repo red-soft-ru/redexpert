@@ -450,8 +450,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             return new ArrayList<NamedObject>(0);
 
         } finally {
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
 
-            releaseResources(rs);
         }
     }
 
@@ -680,7 +684,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -699,7 +707,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -718,7 +730,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -737,7 +753,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -756,7 +776,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -775,7 +799,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -794,7 +822,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -813,7 +845,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -837,7 +873,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -856,7 +896,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -875,7 +919,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -894,7 +942,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -913,7 +965,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -932,7 +988,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -969,7 +1029,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -1010,7 +1074,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -1041,7 +1109,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -1073,7 +1145,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -1105,7 +1181,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -1135,7 +1215,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -1164,7 +1248,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -1190,7 +1278,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -1220,7 +1312,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -1263,7 +1359,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             return new ArrayList<NamedObject>(0);
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -1290,7 +1390,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -1318,7 +1422,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -1345,7 +1453,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -1373,7 +1485,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 
@@ -1400,7 +1516,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
         }
     }
 

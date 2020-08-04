@@ -277,7 +277,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
               }
             }
           }
-          releaseResources(rs);
+          releaseResources(rs, null);
 
           try {
 
@@ -337,7 +337,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
       } finally {
 
-        releaseResources(rs);
+        releaseResources(rs, null);
         setMarkedForReload(false);
       }
 
@@ -489,7 +489,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
           lastIndex.addIndexedColumn(rs.getString(9));
         }
       }
-      releaseResources(rs);
+      releaseResources(rs, null);
       DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(getHost(),null,null,META_TYPES[INDEX]);
       for (TableColumnIndex index : tindexes)
       {
@@ -524,7 +524,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     } finally {
 
-      releaseResources(rs);
+      releaseResources(rs, null);
       setMarkedForReload(false);
     }
   }
@@ -1457,7 +1457,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
         columns.add(column);
       }
-      releaseResources(rs);
+      releaseResources(rs, connection);
 
       int columnCount = columns.size();
       if (columnCount > 0) {
@@ -1482,7 +1482,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
           }
 
         }
-        releaseResources(rs);
+        releaseResources(rs, connection);
 
         // check for foreign keys
         rs = dmd.getImportedKeys(null, null, getName());
@@ -1519,7 +1519,11 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     } finally {
 
-      releaseResources(rs);
+      try {
+        releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+      } catch (SQLException throwables) {
+        releaseResources(rs, null);
+      }
     }
   }
 
@@ -1573,7 +1577,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
         columns.add(column);
       }
-      releaseResources(rs);
+      releaseResources(rs, connection);
 
       int columnCount = columns.size();
       if (columnCount > 0) {
@@ -1598,7 +1602,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
           }
 
         }
-        releaseResources(rs);
+        releaseResources(rs, connection);
 
         // check for foreign keys
         rs = dmd.getImportedKeys(null, null, getName());
@@ -1635,7 +1639,11 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     } finally {
 
-      releaseResources(rs);
+      try {
+        releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+      } catch (SQLException throwables) {
+        releaseResources(rs, null);
+      }
     }
   }
 

@@ -469,7 +469,7 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
 
         } finally {
 
-            releaseResources(rs);
+            releaseResources(rs, null);
         }
     }
 

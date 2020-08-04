@@ -22,6 +22,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.datasource.PooledConnection;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 
@@ -112,11 +113,18 @@ public abstract class AbstractNamedObject implements NamedObject,
      *
      * @param rs the result set to be closed
      */
-    protected void releaseResources(ResultSet rs) {
+    protected void releaseResources(ResultSet rs, Connection con) {
         try {
+            Statement st = null;
             if (rs == null) // On RDB 2.6 is null
-                return;
-            Statement st = rs.getStatement();
+            {
+                if (con == null)
+                    return;
+                else if (con instanceof PooledConnection)
+                    st = ((PooledConnection) con).getLastStatement();
+                else return;
+            } else
+                st = rs.getStatement();
             if (rs != null) {
                 if (!rs.isClosed())
 
@@ -152,7 +160,7 @@ public abstract class AbstractNamedObject implements NamedObject,
      * @param rs    the result set to be closed
      */
     protected void releaseResources(Statement stmnt, ResultSet rs) {
-        releaseResources(rs);
+        releaseResources(rs, null);
         releaseResources(stmnt);
     }
 

@@ -2068,15 +2068,15 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
         else {
             m_mes.append(L"Java not found. ");
         }
-        m_mes.append(L"You can select the path to java manually.");
-        m_mes.append(L"\nYou can also start downloading java automatically or download java manually from <A HREF=\"");
+        m_mes.append(L"You can specify the path to jvm manually\nor download java automatically or manually from ");
+        m_mes.append(L"<A HREF=\"");
         m_mes.append(url_manual);
         m_mes.append(L"\">");
         m_mes.append(url_manual);
         m_mes.append(L"</A>");
-        m_mes.append(L" This application need in java with architecture \"");
+        m_mes.append(L" Note that you need Java 1.8 or higher with ");
         m_mes.append(arch);
-        m_mes.append(L"\" and version>=1.8");
+        m_mes.append(L" architecture. ");
         SetDlgItemText(hw, 1, m_mes.c_str());
         return TRUE;
     case WM_COMMAND: /* сообщение от управляющих элементов */

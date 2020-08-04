@@ -112,12 +112,12 @@ dialog = GTK_WIDGET(gtk_builder_get_object(builder, "dialog_jnf"));
         rb_download=GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_download"));
         rb_file=GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_file"));
         GtkLabel * msg = GTK_LABEL(gtk_builder_get_object(builder, "mes_lbl"));
-        std::string text_msg="Java not found. You can select the path to java manually.\n";
-        text_msg.append("You can also start downloading java automatically\n");
-        text_msg.append("or download java manually from\n");
+        std::string text_msg="Java not found. You can specify the path to jvm manually\n";
+        text_msg.append("or download java automatically or manually from\n");
         text_msg.append(url);
+        text_msg.append("\nNote that you need Java 1.8 or higher.\n");
         gtk_label_set_text(msg,text_msg.c_str());
-       g_object_unref( G_OBJECT( builder ) );
+        g_object_unref( G_OBJECT( builder ) );
 
        // Показываем форму и виджеты на ней
        gtk_widget_show(dialog);

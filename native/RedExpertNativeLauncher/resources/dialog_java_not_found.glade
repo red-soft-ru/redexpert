@@ -93,7 +93,7 @@
             <property name="spacing">3</property>
             <child>
               <object class="GtkRadioButton" id="rb_file">
-                <property name="label" translatable="yes">Select the path to the jvm manually</property>
+                <property name="label" translatable="yes">Specify the path to jvm manually</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>

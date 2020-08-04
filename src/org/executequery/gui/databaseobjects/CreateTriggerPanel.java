@@ -110,6 +110,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         positionField = new JSpinner(model);
         positionField.setValue(0);
         activeBox = new JCheckBox(bundlesString("active"));
+        activeBox.setSelected(true);
         databaseTriggerPanel = new JPanel();
         actionCombo = new JComboBox(new String[]{"CONNECT", "DISCONNECT", "TRANSACTION START", "TRANSACTION COMMIT", "TRANSACTION ROLLBACK"});
         actionLabel = new JLabel(bundleString("event"));
@@ -129,7 +130,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         ddlTableTriggerPanel = new JPanel(new GridBagLayout());
         ddlCheckBoxes = new ArrayList<>();
         anyDdlBox = new JCheckBox("ANY DDL STATEMENT");
-        sqlBodyText.setSQLText("AS\n" +
+        sqlBodyText.setSQLText("as\n" +
                 "begin\n" +
                 "  /* Trigger text */\n" +
                 "end");

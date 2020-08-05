@@ -98,8 +98,6 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         delete = createMenuItem(bundleString("delete"), "delete", listener);
         add(delete);
 
-        addSeparator();
-
         copyName = createMenuItem(bundleString("copyName"), "copyName", listener);
         add(copyName);
 
@@ -110,7 +108,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         createImportMenu(listener);
         moveToFolder = createMenuItem(bundleString("moveToFolder"), "moveToFolder", listener);
         add(moveToFolder);
-        add(createMenuItem(bundleString("properties"), "properties", listener));
+        //add(createMenuItem(bundleString("properties"), "properties", listener));
     }
 
     public void show(Component invoker, int x, int y) {
@@ -176,6 +174,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     recycleConnection.setVisible(false);
                     moveToFolder.setVisible(false);
                     duplicate.setVisible(false);
+                    addNewConnection.setVisible(false);
                     int type = node.getType();
                     boolean deleteObjectEnabled = type >= 0 && type < NamedObject.META_TYPES.length;
                     if (deleteObjectEnabled)

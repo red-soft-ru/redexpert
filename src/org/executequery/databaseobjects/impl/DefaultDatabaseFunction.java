@@ -144,7 +144,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
 
         } finally {
 
-            releaseResources(rs);
+            releaseResources(rs, this.getMetaTagParent().getHost().getConnection());
         }
     }
     /**

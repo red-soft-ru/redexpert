@@ -32,7 +32,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
     private JCheckBox activeCheckbox;
 
-    private JLabel tableNameLabel;
+    private JLabel triggerInfoLabel;
     private JLabel beforeAfterLabel;
     private JLabel triggerPositionLabel;
     private JComboBox tableNameCombo;
@@ -77,27 +77,28 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         sourcePanel.add(new JScrollPane(textPane), BorderLayout.CENTER);
 
         activeCheckbox = new JCheckBox(bundleString("Active"), false);
-        paramPanel.add(activeCheckbox, new GridBagConstraints(0, 0, 2, 1, 1, 0,
+        paramPanel.add(activeCheckbox, new GridBagConstraints(0, 0, 1, 1, 1, 0,
                 GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 0, 5, 5), 0, 0));
 
-        tableNameLabel = new JLabel(bundleString("ForTable"));
-        paramPanel.add(tableNameLabel);
+        triggerInfoLabel = new JLabel(bundleString("ForTable"));
+        paramPanel.add(triggerInfoLabel, new GridBagConstraints(1, 0, 1, 1, 0, 0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 0, 5, 5), 0, 0));
 
         tableNameCombo = new DefaultComboBox();
-        paramPanel.add(tableNameCombo);
+        //paramPanel.add(tableNameCombo);
 
         beforeAfterLabel = new JLabel(bundleString("BeforeAfter"));
-        paramPanel.add(beforeAfterLabel);
+        //paramPanel.add(beforeAfterLabel);
 
         triggerBeforeAfterField = new DisabledField();
-        paramPanel.add(triggerBeforeAfterField);
+        //paramPanel.add(triggerBeforeAfterField);
 
         triggerPositionLabel = new JLabel(bundleString("Position"));
-        paramPanel.add(triggerPositionLabel);
+        //paramPanel.add(triggerPositionLabel);
 
         triggerPositionField = new DisabledField();
 
-        paramPanel.add(triggerPositionField);
+        //paramPanel.add(triggerPositionField);
 
         panel.add(paramPanel, BorderLayout.NORTH);
         panel.add(sourcePanel, BorderLayout.CENTER);
@@ -206,6 +207,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
             triggerNameField.setText(trigger.getName());
             textPane.setText(trigger.getTriggerSourceCode());
             activeCheckbox.setSelected(trigger.isTriggerActive());
+            activeCheckbox.setEnabled(false);
             if (!trigger.getStringTriggerType().toLowerCase().contains("before") &&
                     !trigger.getStringTriggerType().toLowerCase().contains("after"))
                 beforeAfterLabel.setText(bundleString("Event"));
@@ -218,16 +220,17 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
             triggerBeforeAfterField.setText(trigger.getStringTriggerType());
             tableNameCombo.removeAllItems();
             if (trigger.getTriggerTableName() != null && !trigger.getTriggerTableName().isEmpty()) {
-                tableNameLabel.setVisible(true);
-                tableNameCombo.setVisible(true);
-                tableNameCombo.addItem(trigger.getTriggerTableName());
+                triggerInfoLabel.setText(bundleString("ForTable") + trigger.getTriggerTableName().trim());
+                //tableNameCombo.setVisible(true);
+                //tableNameCombo.addItem(trigger.getTriggerTableName());
             } else {
-                tableNameLabel.setVisible(false);
-                tableNameCombo.setVisible(false);
+                triggerInfoLabel.setText("");
+                //tableNameCombo.setVisible(false);
             }
             triggerPositionField.setText(String.valueOf(trigger.getTriggerSequence()));
             descriptionPane.setText(trigger.getTriggerDescription());
             sqlPane.setText(trigger.getCreateSQLText());
+            triggerInfoLabel.setText(triggerInfoLabel.getText() + "       " + triggerBeforeAfterField.getText() + "       " + triggerPositionLabel.getText() + triggerPositionField.getText());
         } catch (DataSourceException e) {
             controller.handleException(e);
         }

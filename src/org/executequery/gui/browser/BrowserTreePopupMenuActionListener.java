@@ -610,7 +610,13 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     public void copyName(ActionEvent e) {
         if (currentPath != null) {
-            String name = currentPath.getLastPathComponent().toString();
+            String name;
+            if (currentPath.getLastPathComponent() instanceof DatabaseObjectNode) {
+                DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
+                if (node.getDatabaseObject() instanceof DefaultDatabaseColumn)
+                    name = node.getDatabaseObject().getParent().getName() + "." + node.getName();
+                else name = node.getName();
+            } else name = currentPath.getLastPathComponent().toString();
             GUIUtilities.copyToClipBoard(name);
         }
     }

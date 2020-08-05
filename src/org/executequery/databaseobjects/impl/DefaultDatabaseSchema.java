@@ -147,7 +147,7 @@ public class DefaultDatabaseSchema extends AbstractDatabaseSource
 
         } finally {
 
-            releaseResources(rs);
+            releaseResources(rs, null);
         }
 
     }

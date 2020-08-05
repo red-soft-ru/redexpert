@@ -69,7 +69,7 @@ body:
   ;
 
  local_variable
- :K_DECLARE SPACES K_VARIABLE? SPACES variable_name
+ :K_DECLARE SPACES (K_VARIABLE SPACES)? variable_name
   SPACES datatype
   (SPACES notnull)?
   (SPACES K_COLLATE SPACES order_collate)?

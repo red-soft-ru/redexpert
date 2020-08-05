@@ -291,7 +291,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
                 parameters.add(udfParameter);
             }
 
-            releaseResources(rs);
+            releaseResources(rs, this.getHost().getConnection());
 
             if (returnArg != 0) {
                 returnMechanism = parameters.get(returnArg - 1).getStringMechanism();
@@ -330,7 +330,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseExecutable
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            releaseResources(rs);
+            releaseResources(rs, this.getHost().getConnection());
         }
 
     }

@@ -256,7 +256,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             throw new DataSourceException(e);
         } finally {
 
-            releaseResources(rs);
+            releaseResources(rs, null);
             setMarkedForReload(false);
         }
     }
@@ -296,7 +296,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            releaseResources(rs, null);
             setMarkedForReload(false);
         }
     }
@@ -334,7 +334,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            releaseResources(rs, null);
         }
 
     }
@@ -407,7 +407,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            releaseResources(rs, null);
         }
 
     }
@@ -484,7 +484,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             throw new DataSourceException(e);
         } finally {
 
-            releaseResources(rs);
+            releaseResources(rs, null);
         }
 
     }
@@ -575,7 +575,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            releaseResources(rs, null);
         }
 
     }
@@ -620,7 +620,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            releaseResources(rs, null);
         }
 
     }
@@ -680,7 +680,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            releaseResources(rs, null);
         }
 
     }
@@ -782,7 +782,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                     columns.add(column);
                 }
             }
-            releaseResources(rs);
+            releaseResources(rs, connection);
 
             int columnCount = columns.size();
             if (columnCount > 0) {
@@ -807,7 +807,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                     }
 
                 }
-                releaseResources(rs);
+                releaseResources(rs, connection);
 
                 // check for foreign keys
                 rs = dmd.getImportedKeys(_catalog, _schema, table);
@@ -844,7 +844,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         } finally {
 
-            releaseResources(rs);
+            releaseResources(rs, connection);
         }
 
     }
@@ -948,7 +948,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             columns.add(column);
         }
 
-        releaseResources(rs);
+        releaseResources(rs, connection);
 
         Statement statement = null;
 
@@ -972,7 +972,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                     computedSource = sourceRS.getString(1);
                 }
 
-                releaseResources(sourceRS);
+                releaseResources(sourceRS, connection);
 
                 if (computedSource != null && !computedSource.isEmpty()) {
                     column.setDomain(computedSource);
@@ -999,7 +999,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                     if (sourceRS.next()) {
                         computedSource = sourceRS.getString(1);
                     }
-                    releaseResources(sourceRS);
+                releaseResources(sourceRS, connection);
                     if (computedSource != null && !computedSource.isEmpty()) {
 //                            column.setTypeName(computedSource);
                         column.setGenerated(true);
@@ -1028,7 +1028,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                     if (sourceRS.next()) {
                         column.setColumnSubtype(sourceRS.getInt(1));
                         column.setColumnSize(sourceRS.getInt(2));
-                        releaseResources(sourceRS);
+                        releaseResources(sourceRS, connection);
                     }
 
                 } finally {
@@ -1252,7 +1252,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         } catch (SQLException e) {
             throw new DataSourceException(e);
         } finally {
-            releaseResources(rs);
+            releaseResources(rs, connection);
         }
 
     }
@@ -1423,7 +1423,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         } catch (SQLException e) {
             throw new DataSourceException(e);
         } finally {
-            releaseResources(rs);
+            releaseResources(rs, connection);
             setMarkedForReload(false);
         }
 

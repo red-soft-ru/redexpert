@@ -23,6 +23,7 @@ package org.executequery.gui.browser.nodes;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
+import org.executequery.databaseobjects.impl.DefaultDatabaseColumn;
 import org.executequery.gui.browser.DatabaseObjectChangeProvider;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -313,10 +314,11 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
     public String toString() {
         String metadatakey = getMetaDataKey();
         if (metadatakey != null) {
-            if (getType() == NamedObject.TABLE_COLUMN) {
+            if (databaseObject instanceof DatabaseTableColumn) {
                 return ((DatabaseTableColumn) databaseObject).getTable().getName().trim() + "." + getShortName() + ":" + "COLUMN";
-            } else
-                return getShortName() + ":" + getMetaDataKey();
+            } else if (databaseObject instanceof DefaultDatabaseColumn) {
+                return databaseObject.getParent().getName().trim() + "." + getShortName() + ":" + "COLUMN";
+            } else return getShortName() + ":" + getMetaDataKey();
         } else return getShortName();
     }
 

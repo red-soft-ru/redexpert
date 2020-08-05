@@ -56,6 +56,7 @@ public interface NamedObject extends Named, java.io.Serializable {
     int SYSTEM_DOMAIN = 21;
     int SYSTEM_INDEX = 22;
     int SYSTEM_TRIGGER = 23;
+    int SYSTEM_ROLE = 24;
 
     int META_TAG = 93;
     int TABLE_COLUMN = 94;

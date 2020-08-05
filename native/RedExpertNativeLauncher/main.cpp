@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <pwd.h>
 #include <curl/curl.h>
+#include <ctime>
 #else
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "Urlmon.lib")
@@ -390,6 +391,9 @@ int my_progress_func(GtkWidget* bar,
     return 0;
 }
 static std::string http_code;
+static bool timeout_error;
+static time_t last_time;
+static double last_d;
 static size_t header_callback(char *buffer, size_t size,
                           size_t nitems, void *userdata)
 {
@@ -404,7 +408,25 @@ static size_t header_callback(char *buffer, size_t size,
 static gboolean updateProgress(gpointer data)
 {
     if (status_downl == DOWNLOADING) {
+        time_t cur_time= time(NULL);
+        if(last_time == 0)
+        {
+            last_time=cur_time;
+        }
+        else
+        {
+            if(d!=last_d)
+            {
+                last_time=cur_time;
+            }
+            else if(cur_time-last_time>10)
+            {
+                status_downl=ERROR_DOWNLOAD;
+                timeout_error = true;
+            }
 
+        }
+        last_d = d;
         if (t != 0) {
             std::string text=getUsabilitySize((long)d)+"/"+getUsabilitySize((long)t);
             gtk_label_set_text(GTK_LABEL(downLabel),text.c_str());
@@ -477,7 +499,8 @@ void init_curl()
             curl_easy_setopt_(curl, CURLOPT_READFUNCTION, my_read_func);
             curl_easy_setopt_(curl, CURLOPT_NOPROGRESS, 0L);
             curl_easy_setopt_(curl, CURLOPT_PROGRESSFUNCTION, my_progress_func);
-            curl_easy_setopt_(curl,CURLOPT_TIMEOUT,10);
+            timeout_error=false;
+            last_time=0;
         }
     }
 }
@@ -552,7 +575,10 @@ void download_java()
     if (status_downl == ERROR_DOWNLOAD)
     {
         std::stringstream stream;
-        stream<<curl_easy_strerror_(res)<<"\nCheck internet connection";
+        if(timeout_error)
+            stream<<"Timeout was reached\nCheck internet connection";
+        else
+            stream<<curl_easy_strerror_(res)<<"\nCheck internet connection";
         gtkMessageBox("Error downloading java",stream.str().c_str());
     }
     if (status_downl == ABORT_DOWNLOAD||status_downl == ERROR_DOWNLOAD)
@@ -2074,7 +2100,7 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
         m_mes.append(L"\">");
         m_mes.append(url_manual);
         m_mes.append(L"</A>");
-        m_mes.append(L" Note that you need Java 1.8 or higher with ");
+        m_mes.append(L"\nNote that you need Java 1.8 or higher with ");
         m_mes.append(arch);
         m_mes.append(L" architecture. ");
         SetDlgItemText(hw, 1, m_mes.c_str());

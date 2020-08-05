@@ -2074,7 +2074,7 @@ INT_PTR CALLBACK DlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp)
         m_mes.append(L"\">");
         m_mes.append(url_manual);
         m_mes.append(L"</A>");
-        m_mes.append(L" Note that you need Java 1.8 or higher with ");
+        m_mes.append(L"\nNote that you need Java 1.8 or higher with ");
         m_mes.append(arch);
         m_mes.append(L" architecture. ");
         SetDlgItemText(hw, 1, m_mes.c_str());

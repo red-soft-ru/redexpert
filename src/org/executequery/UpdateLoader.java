@@ -7,6 +7,7 @@ import org.executequery.log.Log;
 import org.executequery.util.ApplicationProperties;
 import org.executequery.util.UserProperties;
 import org.json.JSONObject;
+import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -21,6 +22,7 @@ import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -188,35 +190,30 @@ public class UpdateLoader extends JFrame {
         updateLoader.setVisible(true);
         updateLoader.update();
     }
-    private void download() {
-        worker = new Thread(
-                () -> {
-                    try {
-                        String parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
-                        parent += "/";
-                        File aNew = new File(parent);
-                        root = parent + "/update/";
-                        downloadFile(downloadLink);
-                        unzip();
-                        aNew.mkdir();
-                        copyFiles(new File(root), aNew.getAbsolutePath());
-                        cleanup();
-                        restartButton.setEnabled(true);
-                        outText.setText(outText.getText() + "\nUpdate Finished!");
-                        cancelButton.setText("Restart later");
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        JOptionPane.showMessageDialog(null, "An error occurred while preforming update!");
-                    }
-                });
-        worker.start();
+
+    private static void applySystemProperties() {
+
+        String encoding = stringApplicationProperty("system.file.encoding");
+        if (StringUtils.isNotBlank(encoding)) {
+
+            System.setProperty("file.encoding", encoding);
+        }
+
+        String settingDirName = stringPropertyFromConfig("eq.user.home.dir");
+        settingDirName = settingDirName.replace("$HOME", System.getProperty("user.home"));
+        System.setProperty("executequery.user.home.dir", settingDirName);
+        ApplicationContext.getInstance().setUserSettingsDirectoryName(settingDirName);
+
+        String build = stringApplicationProperty("eq.build");
+        System.setProperty("executequery.build", build);
+        ApplicationContext.getInstance().setBuild(build);
     }
 
     private void launch() {
         ProcessBuilder pb = null;
         try {
             StringBuilder sb = new StringBuilder("./RedExpert");
-            if(System.getProperty("os.arch").toLowerCase().contains("amd64"))
+            if (System.getProperty("os.arch").toLowerCase().contains("amd64"))
                 sb.append("64");
             if (System.getProperty("os.name").toLowerCase().contains("win"))
                 sb.append(".exe");
@@ -347,21 +344,16 @@ public class UpdateLoader extends JFrame {
         }
     }
 
-    private static void applySystemProperties() {
-
-        String encoding = stringApplicationProperty("system.file.encoding");
-        if (StringUtils.isNotBlank(encoding)) {
-
-            System.setProperty("file.encoding", encoding);
+    private static String stringPropertyFromConfig(String key) {
+        Properties props = null;
+        try {
+            props = FileUtils.loadProperties(MiscUtils.loadURLs("./config/redexpert_config.ini;../config/redexpert_config.ini"));
+            return props.getProperty(key);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
         }
 
-        String settingDirName = stringApplicationProperty("eq.user.home.dir");
-        System.setProperty("executequery.user.home.dir", settingDirName);
-        ApplicationContext.getInstance().setUserSettingsDirectoryName(settingDirName);
-
-        String build = stringApplicationProperty("eq.build");
-        System.setProperty("executequery.build", build);
-        ApplicationContext.getInstance().setBuild(build);
     }
 
     public boolean isNeedUpdate() {
@@ -521,6 +513,34 @@ public class UpdateLoader extends JFrame {
                 } else return countByte + "," + drob + "Mb";
             } else return countByte + "," + drob + "Kb";
         } else return countByte + "b";
+    }
+
+    private void download() {
+        worker = new Thread(
+                () -> {
+                    try {
+                        String parent = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
+                        parent += "/";
+                        File aNew = new File(parent);
+                        root = parent + "/update/";
+                        downloadFile(downloadLink);
+                        unzip();
+                        aNew.mkdir();
+                        copyFiles(new File(root), aNew.getAbsolutePath());
+                        cleanup();
+                        restartButton.setEnabled(true);
+                        outText.setText(outText.getText() + "\nUpdate Finished!");
+                        cancelButton.setText("Restart later");
+                    } catch (FileNotFoundException ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Access denied. Please restart RedExpert as an admin!");
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "An error occurred while preforming update!");
+                    }
+                });
+        worker.start();
     }
 
 }

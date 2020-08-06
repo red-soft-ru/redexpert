@@ -225,7 +225,7 @@ public class CheckForUpdateNotifier implements Interruptible {
                     List<String> argsList = new ArrayList<String>();
                     if (releaseHub)
                         argsList.add("useReleaseHub");
-                    else if (!ReddatabaseAPI.getToken()) {
+                    else if (ReddatabaseAPI.getHeadersWithToken() == null) {
                         return Constants.WORKER_CANCEL;
                     }
 
@@ -246,10 +246,15 @@ public class CheckForUpdateNotifier implements Interruptible {
                     run = new String[]{"java", "-cp", file.getPath(), "org.executequery.UpdateLoader"};
                     run = (String[]) ArrayUtils.addAll(run, args);
                     try {
+                        File outputLog = new File(ApplicationContext.getInstance().getUserSettingsHome() + System.getProperty("file.separator") + "updater.log");
                         ProcessBuilder pb = new ProcessBuilder(run);
+                        pb.redirectOutput(ProcessBuilder.Redirect.appendTo(outputLog));
+                        pb.redirectError(ProcessBuilder.Redirect.appendTo(outputLog));
                         pb.start();
+
                     } catch (Exception ex) {
                         ex.printStackTrace();
+                        GUIUtilities.displayExceptionErrorDialog("update error", ex);
                     }
                     System.exit(0);
                     return Constants.WORKER_SUCCESS;

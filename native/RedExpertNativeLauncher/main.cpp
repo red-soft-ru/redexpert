@@ -1141,25 +1141,26 @@ std::vector<std::string> get_search_suffixes()
     search_suffixes.push_back("");
 #ifdef __linux__
 #if INTPTR_MAX == INT64_MAX
-     search_suffixes.push_back("/lib/amd64/server");
-     search_suffixes.push_back("/lib/amd64/client");
-     search_suffixes.push_back("/lib/amd64");
      search_suffixes.push_back("/jre/lib/amd64/server");
      search_suffixes.push_back("/jre/lib/amd64/client");
      search_suffixes.push_back("/jre/lib/amd64");
+     search_suffixes.push_back("/lib/amd64/server");
+     search_suffixes.push_back("/lib/amd64/client");
+     search_suffixes.push_back("/lib/amd64");
 
  #else
-     search_suffixes.push_back("/lib/i386/server");
-     search_suffixes.push_back("/lib/i386/client");
-     search_suffixes.push_back("/lib/i386");
      search_suffixes.push_back("/jre/lib/i386/server");
      search_suffixes.push_back("/jre/lib/i386/client");
      search_suffixes.push_back("/jre/lib/i386");
+     search_suffixes.push_back("/lib/i386/server");
+     search_suffixes.push_back("/lib/i386/client");
+     search_suffixes.push_back("/lib/i386");
  #endif
     search_suffixes.push_back("/lib/server");
     search_suffixes.push_back("/lib/client");
 #endif
     search_suffixes.push_back("" + file_separator() + "jre" + file_separator() + "bin" + file_separator() + "server");
+    search_suffixes.push_back("" + file_separator() + "jre" + file_separator() + "bin" + file_separator() + "client");
     search_suffixes.push_back("" + file_separator() + "bin" + file_separator() + "server");
     search_suffixes.push_back("" + file_separator() + "bin" + file_separator() + "client");
     return search_suffixes;
@@ -1457,6 +1458,7 @@ SharedLibraryHandle openWindowsJvmLibrary(bool isClient, bool isServer)
 int try_dlopen(std::vector<std::string> potential_paths, void*& out_handle, bool from_file_java_paths)
 {
     std::ostream& os = err_rep.progress_os;
+    std::string java_bin_path;
     for (std::vector<std::string>::iterator it = potential_paths.begin(), en = potential_paths.end(); it != en;
          ++it) {
         std::string p_path = *it;
@@ -1466,6 +1468,7 @@ int try_dlopen(std::vector<std::string> potential_paths, void*& out_handle, bool
             os << "\" [";
             os << std::endl;
             out_handle = dlopen(p_path.c_str(), RTLD_NOW | RTLD_LOCAL);
+            java_bin_path = p_path;
         }
 
         if ((out_handle != 0) && (!from_file_java_paths)) {
@@ -1486,6 +1489,14 @@ int try_dlopen(std::vector<std::string> potential_paths, void*& out_handle, bool
     }
     os << "]";
     os << std::endl;
+
+    std::vector<std::string> suffixes=get_search_suffixes();
+    for(int i=0;i<suffixes.size();i++)
+    {
+        if(!suffixes.at(i).empty())
+            java_bin_path=replaceFirstOccurrence(java_bin_path,suffixes.at(i)+"/libjvm.so","/bin/");
+    }
+    setenv("PATH",java_bin_path.c_str(),1);
     return 1;
 }
 SharedLibraryHandle checkParameters(bool from_file)

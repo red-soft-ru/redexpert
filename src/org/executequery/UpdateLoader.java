@@ -396,9 +396,9 @@ public class UpdateLoader extends JFrame {
             try {
 
                 JSONObject obj = JSONAPI.getJsonObjectFromArray(JSONAPI.getJsonArray(
-                        "http://builds.red-soft.biz/api/artifacts/by_build/?project=red_expert&version=" + version),
+                        "http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version),
                         "artifact_id",
-                        "red_expert:red_expert:" + version + ":zip:bin");
+                        "red_expert:bin:" + version + ":zip");
                 downloadLink = "http://builds.red-soft.biz/" + obj.getString("file");
                 download();
             } catch (Exception e) {

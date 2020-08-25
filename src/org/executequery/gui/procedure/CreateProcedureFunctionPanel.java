@@ -215,6 +215,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                             if (var.notnull() != null && !var.notnull().isEmpty()) {
                                 variable.setNullable(0);
                             } else variable.setNullable(1);
+                            variable.setDefaultValue(var.default_value().getText());
                             variablesPanel.addRow(variable);
                         }
                     }

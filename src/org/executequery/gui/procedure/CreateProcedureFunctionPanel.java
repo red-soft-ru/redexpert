@@ -365,7 +365,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                 if (cd.isTypeOf())
                     sb.append(cd.getFormattedDataType());
                 else
-                    sb.append(cd.getDomainInQuotes());
+                    sb.append(cd.getFormattedDomain());
             }
             sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
             if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue())) {

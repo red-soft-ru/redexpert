@@ -29,6 +29,8 @@ import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.gui.table.Autoincrement;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.log.Log;
+import org.executequery.repository.KeywordRepository;
+import org.executequery.repository.RepositoryCache;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.util.MiscUtils;
 
@@ -649,8 +651,8 @@ public class ColumnData implements Serializable {
 
         if (typeOf) {
             if (getTypeOfFrom() == TYPE_OF_FROM_DOMAIN) {
-                return "TYPE OF " + getDomainInQuotes();
-            } else return "TYPE OF COLUMN " + getTableInQuotes() + "." + getColumnTableInQuotes();
+                return "TYPE OF " + getFormattedDomain();
+            } else return "TYPE OF COLUMN " + getFormattedTable() + "." + getFormattedColumnTable();
         }
         String typeString = getColumnType();
         if (StringUtils.isBlank(typeString)) {
@@ -903,8 +905,8 @@ public class ColumnData implements Serializable {
         return table;
     }
 
-    public String getTableInQuotes() {
-        return MiscUtils.wordInQuotes(table);
+    public String getFormattedTable() {
+        return getFormattedObject(table);
     }
 
     public void setTable(int tableIndex) {
@@ -915,8 +917,8 @@ public class ColumnData implements Serializable {
         return columnTable;
     }
 
-    public String getColumnTableInQuotes() {
-        return MiscUtils.wordInQuotes(columnTable);
+    public String getFormattedColumnTable() {
+        return getFormattedObject(columnTable);
     }
 
     public void setColumnTable(String columnTable) {
@@ -970,12 +972,32 @@ public class ColumnData implements Serializable {
         this.cstring = cstring;
     }
 
-    public String getDomainInQuotes() {
-        return MiscUtils.wordInQuotes(domain);
+    public String getFormattedDomain() {
+        return getFormattedObject(domain);
     }
 
-    public String getColumnNameInQuotes() {
-        return MiscUtils.wordInQuotes(columnName);
+    public String getFormattedColumnName() {
+        return getFormattedObject(columnName);
+    }
+
+    private boolean checkAllUpperCase(String str) {
+        return str.equals(str.toUpperCase());
+    }
+
+    private boolean checkKeyword(String str) {
+        KeywordRepository keywordRepository =
+                (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
+        List<String> keywords = keywordRepository.getSQLKeywords();
+        for (int i = 0; i < keywords.size(); i++)
+            if (keywords.get(i).toUpperCase().equals(str.toUpperCase()))
+                return true;
+        return false;
+    }
+
+    String getFormattedObject(String obj) {
+        if (checkAllUpperCase(obj) && !checkKeyword(obj))
+            return obj;
+        else return MiscUtils.wordInQuotes(obj);
     }
 }
 

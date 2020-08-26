@@ -253,7 +253,7 @@ public class CreateTableScriptsGenerator {
                             sb_spaces_2.append(SPACE);
                         }
 
-                        sb.append(column.getColumnNameInQuotes()).
+                        sb.append(column.getFormattedColumnName()).
                                 append(sb_spaces_2).
                                 append(column.getFormattedDataType());
 

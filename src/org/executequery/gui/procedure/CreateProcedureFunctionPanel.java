@@ -414,7 +414,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
             ColumnData cd = tableVector.elementAt(i);
             if (!MiscUtils.isNull(cd.getColumnName())) {
                 if (variable)
-                    sqlText.append("DECLARE VARIABLE ");
+                    sqlText.append("DECLARE ");
                 sqlText.append(formattedParameter(cd));
                 if (variable) {
                     sqlText.append(";");

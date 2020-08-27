@@ -256,7 +256,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
                     sb.append("\n");
                     sb.append("COMMENT ON PARAMETER ");
                     sb.append(getNameInQuotes()).append(".");
-                    sb.append(cd.getColumnNameInQuotes());
+                    sb.append(cd.getFormattedColumnName());
                     sb.append(" IS '");
                     sb.append(cdText);
                     sb.append("'\n");
@@ -271,7 +271,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
                     sb.append("\n");
                     sb.append("COMMENT ON PARAMETER ");
                     sb.append(getNameInQuotes()).append(".");
-                    sb.append(cd.getColumnNameInQuotes());
+                    sb.append(cd.getFormattedColumnName());
                     sb.append(" IS '");
                     sb.append(cdText);
                     sb.append("'\n");

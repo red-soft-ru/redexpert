@@ -183,7 +183,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
             if (columnData.isChanged()) {
                 sb.append("ALTER DOMAIN ").append(MiscUtils.wordInQuotes(domain)).append("\n");
                 if (columnData.isNameChanged()) {
-                    sb.append("TO ").append(columnData.getColumnNameInQuotes()).append("\n");
+                    sb.append("TO ").append(columnData.getFormattedColumnName()).append("\n");
                 }
                 if (columnData.isDefaultChanged()) {
                     if (MiscUtils.isNull(columnData.getDefaultValue()))
@@ -219,7 +219,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
                 }
                 sb.append(";");
                 if (columnData.isDescriptionChanged()) {
-                    sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getColumnNameInQuotes()).append(" IS ");
+                    sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getFormattedColumnName()).append(" IS ");
                     if (!MiscUtils.isNull(columnData.getDescription())) {
 
                         sb.append("'").append(columnData.getDescription()).append("'");
@@ -231,7 +231,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
                 sqlTextPane.setText(sb.toString());
             }
         } else {
-            sb.append("CREATE DOMAIN ").append(columnData.getColumnNameInQuotes()).append(" as ").append(columnData.getFormattedDataType()).append("\n");
+            sb.append("CREATE DOMAIN ").append(columnData.getFormattedColumnName()).append(" as ").append(columnData.getFormattedDataType()).append("\n");
             if (!MiscUtils.isNull(columnData.getDefaultValue())) {
                 sb.append(" DEFAULT ").append(MiscUtils.formattedSQLValue(columnData.getDefaultValue(), columnData.getSQLType()));
             }
@@ -241,7 +241,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
             }
             sb.append(";");
             if (!MiscUtils.isNull(columnData.getDescription())) {
-                sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getColumnNameInQuotes()).append(" IS '")
+                sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getFormattedColumnName()).append(" IS '")
                         .append(columnData.getDescription()).append("';");
             }
             sqlTextPane.setText(sb.toString());

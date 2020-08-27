@@ -73,26 +73,12 @@ public class QueryTokenizer {
 
         List<DerivedQuery> derivedQueries = deriveQueries(query);
 
-        for (DerivedQuery derivedQuery : derivedQueries) {
-
-            if (Thread.interrupted()) {
-
-                throw new InterruptedException();
-            }
-
-            String noCommentsQuery = removeAllCommentsFromQuery(derivedQuery.getOriginalQuery());
-            derivedQuery.setDerivedQuery(noCommentsQuery.trim());
-        }
-
         return derivedQueries;
     }
 
     public QueryTokenized tokenizeFirstQuery(String query,String lowQuery,int startQueryIndex, String delimiter) {
 
         QueryTokenized fquery = firstQuery(query,delimiter,startQueryIndex,lowQuery);
-        String noCommentsQuery = removeAllCommentsFromQuery(fquery.query.getOriginalQuery());
-        fquery.query.setDerivedQuery(noCommentsQuery.trim());
-
         return fquery;
     }
 
@@ -119,11 +105,6 @@ public class QueryTokenizer {
         int lastIndex = 0;
 
         List<DerivedQuery> queries = new ArrayList<DerivedQuery>();
-
-        if (query.toLowerCase().startsWith("create")) {
-            queries.add(new DerivedQuery(query));
-            return queries;
-        }
 
         while ((index = query.indexOf(QUERY_DELIMITER, index + 1)) != -1) {
 
@@ -207,10 +188,6 @@ public class QueryTokenizer {
         int index = 0;
         int lastIndex = 0;
 
-
-        if (lowQuery.startsWith("create")) {
-            return new QueryTokenized(new DerivedQuery(query), "", "", startIndexQuery + query.length(), delimiter);
-        }
         index = query.indexOf(delimiter);
         boolean cycleContinue = true;
 

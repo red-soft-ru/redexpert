@@ -215,6 +215,8 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                             if (var.notnull() != null && !var.notnull().isEmpty()) {
                                 variable.setNullable(0);
                             } else variable.setNullable(1);
+                            if (var.default_value() != null)
+                                variable.setDefaultValue(var.default_value().getText());
                             variablesPanel.addRow(variable);
                         }
                     }
@@ -364,7 +366,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                 if (cd.isTypeOf())
                     sb.append(cd.getFormattedDataType());
                 else
-                    sb.append(cd.getDomainInQuotes());
+                    sb.append(cd.getFormattedDomain());
             }
             sb.append(cd.isRequired() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
             if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER && !MiscUtils.isNull(cd.getDefaultValue())) {
@@ -413,7 +415,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
             ColumnData cd = tableVector.elementAt(i);
             if (!MiscUtils.isNull(cd.getColumnName())) {
                 if (variable)
-                    sqlText.append("DECLARE VARIABLE ");
+                    sqlText.append("DECLARE ");
                 sqlText.append(formattedParameter(cd));
                 if (variable) {
                     sqlText.append(";");

@@ -18,7 +18,6 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Random;
 
 public class RandomMethodPanel extends AbstractMethodPanel {
@@ -259,8 +258,8 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             long value = new Random().nextLong();
             if (value < 0)
                 value *= -1;
-            long max = ChronoUnit.DAYS.between(maxDate.getDate(), LocalDate.of(0, 1, 1));
-            long min = ChronoUnit.DAYS.between(minDate.getDate(), LocalDate.of(0, 1, 1));
+            long max = maxDate.getDate().toEpochDay();
+            long min = minDate.getDate().toEpochDay();
             if (min > max)
                 throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
             long diapason = max - min;
@@ -268,7 +267,7 @@ public class RandomMethodPanel extends AbstractMethodPanel {
                 value = max;
             } else
                 value = (min + (value % diapason));
-            LocalDate temp = LocalDate.of(0, 1, 1);
+            LocalDate temp = LocalDate.of(1970, 1, 1);
             temp = temp.plusDays(value);
             Date date = Date.valueOf(temp);
             return date;

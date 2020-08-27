@@ -92,7 +92,7 @@ sources:
     QMAKE: qmake-qt4
   before_script:
     - yum -y update
-    - yum install -y java-1.8.0-openjdk-devel-1.8.0.252.b09-2.el7_8 qt-devel gtk3-devel wget libcurl-devel
+    - yum install -y java-1.8.0-openjdk-devel-1.8.0.262.b10-0.el7_8 qt-devel gtk3-devel wget libcurl-devel
     - yum group install -y "Development Tools"
     - cd /opt
     - wget http://www.apache.org/dist/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.tar.gz
@@ -125,7 +125,7 @@ build:linux:x86_64:
   image: amd64/centos:7
   variables:
     DIST: ${CI_PROJECT_DIR}/dist/linux-x86_64
-    JAVA_HOME: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.252.b09-2.el7_8.x86_64/
+    JAVA_HOME: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.262.b10-0.el7_8.x86_64/
     ARCH: x86_64
     <<: *build_linux_template_variables
 
@@ -134,7 +134,7 @@ build:linux:x86:
   image: i386/centos:7
   variables:
     DIST: ${CI_PROJECT_DIR}/dist/linux-x86
-    JAVA_HOME: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.252.b09-2.el7_8.i386/
+    JAVA_HOME: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.262.b10-0.el7_8.i386/
     ARCH: x86
     <<: *build_linux_template_variables
 

@@ -102,7 +102,8 @@ public interface NamedObject extends Named, java.io.Serializable {
             "SYSTEM TABLE",
             "SYSTEM DOMAIN",
             "SYSTEM INDEX",
-            "SYSTEM TRIGGER"
+            "SYSTEM TRIGGER",
+            "SYSTEM ROLE"
     };
     String[] META_TYPES_FOR_BUNDLE = {
             "INDEX",
@@ -128,7 +129,8 @@ public interface NamedObject extends Named, java.io.Serializable {
             "SYSTEM_TABLE",
             "SYSTEM_DOMAIN",
             "SYSTEM_INDEX",
-            "SYSTEM_TRIGGER"
+            "SYSTEM_TRIGGER",
+            "SYSTEM_ROLE"
     };
 
     /**

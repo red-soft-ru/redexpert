@@ -156,6 +156,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 || type == SYSTEM_TABLE
                 || type == SYSTEM_VIEW
                 || type == SYSTEM_TRIGGER
+                || type == SYSTEM_ROLE
                 || type == GLOBAL_TEMPORARY
         )
             if (typeTree != TreePanel.DEFAULT) {
@@ -183,6 +184,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 children = loadDomains();
 
+            } else if (isSystemRole()) {
+                if (typeTree != TreePanel.DEFAULT)
+                    return new ArrayList<>();
+                children = loadSystemRoles();
             } else if (isRole()) {
                 if (typeTree != TreePanel.DEFAULT)
                     return new ArrayList<>();
@@ -349,6 +354,13 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     }
 
+    private List<NamedObject> loadSystemRoles()
+            throws DataSourceException {
+
+        return getSystemRoles();
+
+    }
+
     private List<NamedObject> loadRoles()
             throws DataSourceException {
 
@@ -476,6 +488,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     || type == SYSTEM_TABLE
                     || type == SYSTEM_VIEW
                     || type == SYSTEM_TRIGGER
+                    || type == SYSTEM_ROLE
             )
                 if (typeTree != TreePanel.DEFAULT) {
                     return false;
@@ -527,6 +540,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                     if (type == ROLE) {
                         return hasRoles();
+                    }
+
+                } else if (isSystemRole()) {
+
+                    if (type == SYSTEM_ROLE) {
+                        return hasSystemRoles();
                     }
 
                 } else if (isException()) {
@@ -615,6 +634,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         int type = getSubType();
         return type == DOMAIN;
+    }
+
+    private boolean isSystemRole() {
+        int type = getSubType();
+        return type == SYSTEM_ROLE;
     }
 
     private boolean isRole() {
@@ -790,6 +814,29 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         try {
 
             rs = getDomainsResultSet();
+            return rs != null && rs.next();
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return false;
+
+        } finally {
+
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
+        }
+    }
+
+    private boolean hasSystemRoles() {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getSystemRolesResultSet();
             return rs != null && rs.next();
 
         } catch (SQLException e) {
@@ -1256,6 +1303,37 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
     }
 
+    private List<NamedObject> getSystemRoles() throws DataSourceException {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getSystemRolesResultSet();
+            List<NamedObject> list = new ArrayList<NamedObject>();
+            while (rs.next()) {
+
+                DefaultDatabaseRole role = new DefaultDatabaseRole(this, rs.getObject(1).toString());
+                role.setSystemFlag(true);
+                list.add(role);
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return new ArrayList<NamedObject>(0);
+
+        } finally {
+
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
+        }
+    }
+
     private List<NamedObject> getRoles() throws DataSourceException {
 
         ResultSet rs = null;
@@ -1670,12 +1748,22 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return resultSet;
     }
 
+    private ResultSet getSystemRolesResultSet() throws SQLException {
+
+        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+        Statement statement = dmd.getConnection().createStatement();
+
+        ResultSet resultSet = statement.executeQuery("SELECT RDB$ROLE_NAME FROM RDB$ROLES WHERE RDB$SYSTEM_FLAG=1");
+
+        return resultSet;
+    }
+
     private ResultSet getRolesResultSet() throws SQLException {
 
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
-        ResultSet resultSet = statement.executeQuery("SELECT RDB$ROLE_NAME FROM RDB$ROLES");
+        ResultSet resultSet = statement.executeQuery("SELECT RDB$ROLE_NAME FROM RDB$ROLES WHERE RDB$SYSTEM_FLAG!=1");
 
         return resultSet;
     }

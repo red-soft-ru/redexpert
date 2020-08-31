@@ -1503,14 +1503,14 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
                         conn.commit();
                         Log.info("Commit complete.");
                         statementResult.setMessage("Commit complete.");
-                        closeMaxedConn();
+                        //closeMaxedConn();
 
                     } else {
 
                         conn.rollback();
                         Log.info("Rollback complete.");
                         statementResult.setMessage("Rollback complete.");
-                        closeMaxedConn();
+                        //closeMaxedConn();
                     }
 
                 } else {

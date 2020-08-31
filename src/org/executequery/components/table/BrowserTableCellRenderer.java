@@ -340,9 +340,11 @@ public class BrowserTableCellRenderer extends JLabel
         if (!value.getClass().equals(String.class)) {
             setText("");
             setIcon((Icon) value);
+            setHorizontalAlignment(JLabel.CENTER);
         } else {
             setIcon(null);
             setText((String) value);
+            setHorizontalAlignment(JLabel.LEFT);
         }
     }
 

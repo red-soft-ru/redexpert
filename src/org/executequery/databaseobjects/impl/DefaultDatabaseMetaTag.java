@@ -1753,7 +1753,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
-        ResultSet resultSet = statement.executeQuery("SELECT RDB$ROLE_NAME FROM RDB$ROLES WHERE RDB$SYSTEM_FLAG=1");
+        ResultSet resultSet = statement.executeQuery("SELECT RDB$ROLE_NAME FROM RDB$ROLES WHERE RDB$SYSTEM_FLAG!=0 AND RDB$SYSTEM_FLAG IS NOT NULL ORDER BY 1");
 
         return resultSet;
     }
@@ -1763,7 +1763,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
 
-        ResultSet resultSet = statement.executeQuery("SELECT RDB$ROLE_NAME FROM RDB$ROLES WHERE RDB$SYSTEM_FLAG!=1");
+        ResultSet resultSet = statement.executeQuery("SELECT RDB$ROLE_NAME FROM RDB$ROLES WHERE RDB$SYSTEM_FLAG=0 OR RDB$SYSTEM_FLAG IS NULL ORDER BY 1");
 
         return resultSet;
     }

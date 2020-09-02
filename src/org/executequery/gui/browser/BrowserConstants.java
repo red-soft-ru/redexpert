@@ -273,6 +273,8 @@ public class BrowserConstants {
 
     public static final String ROLE_IMAGE = "user_manager_16.png";
 
+    public static final String SYSTEM_ROLE_IMAGE = "system_role_16.png";
+
     public static final String SYSTEM_DATABASE_TRIGGER_ACTIVE_IMAGE = "SystemDatabaseTrigger_active.png";
 
     public static final String INDEXES_ACTIVE_IMAGE = "TableIndex16_active.png";
@@ -322,7 +324,8 @@ public class BrowserConstants {
             ROLE_IMAGE,
             SYSTEM_DATABASE_TRIGGER_ACTIVE_IMAGE,
             INDEXES_ACTIVE_IMAGE,
-            TABLE_TRIGGER_ACTIVE_IMAGE
+            TABLE_TRIGGER_ACTIVE_IMAGE,
+            SYSTEM_ROLE_IMAGE
     };
 
     private static String bundleString(String key) {

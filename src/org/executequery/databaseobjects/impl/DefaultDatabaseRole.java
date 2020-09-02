@@ -15,11 +15,15 @@ public class DefaultDatabaseRole extends DefaultDatabaseExecutable {
 
     @Override
     public int getType() {
+        if (isSystem())
+            return NamedObject.SYSTEM_ROLE;
         return NamedObject.ROLE;
     }
 
     @Override
     public String getMetaDataKey() {
+        if (isSystem())
+            return META_TYPES[SYSTEM_ROLE];
         return META_TYPES[ROLE];
     }
 }

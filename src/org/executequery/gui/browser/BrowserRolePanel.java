@@ -275,11 +275,12 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel implements Con
             roles = new Vector<>();
             while (result.next()) {
                 String role = result.getString(1);
-                roles.add(role);
+                roles.add(role.trim());
             }
             querySender.releaseResources();
             rolesListCombo.setModel(new javax.swing.DefaultComboBoxModel<>(roles));
-            rolesListCombo.setSelectedItem(selectedRole);
+            rolesListCombo.setSelectedItem(selectedRole.trim());
+            rolesListCombo.setEnabled(false);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -655,7 +656,7 @@ public class BrowserRolePanel extends AbstractFormObjectViewPanel implements Con
 
     void setEnableGrant(boolean enable) {
         enableGrant = enable;
-        rolesListCombo.setEnabled(enable);
+        //rolesListCombo.setEnabled(enable);
         objectBox.setEnabled(enable);
         showSysTablesCheckBox.setEnabled(enable);
         grantAllToAllButton.setEnabled(enable);

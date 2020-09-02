@@ -173,14 +173,14 @@ public class SqlScriptRunner {
                     pat = Pattern.compile("set\\s+autoddl\\s+off", Pattern.CASE_INSENSITIVE);
                     m = pat.matcher(derivedQuery);
                     if ( m.find() ) {
-//                        connection.setAutoCommit(false);
+                        connection.setAutoCommit(false);
                         continue;
                     }
 
                     pat = Pattern.compile("set\\s+autoddl\\s+on", Pattern.CASE_INSENSITIVE);
                     m = pat.matcher(derivedQuery);
                     if ( m.find() ) {
-//                        connection.setAutoCommit(true);
+                        connection.setAutoCommit(true);
                         continue;
                     }
 

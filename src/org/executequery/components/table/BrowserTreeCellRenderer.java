@@ -188,6 +188,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                     setIcon(icons.get(BrowserConstants.ROLE_IMAGE));
                     break;
                 }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system role") == 0) {
+                    setIcon(icons.get(BrowserConstants.SYSTEM_ROLE_IMAGE));
+                    break;
+                }
                 if (databaseObject.getMetaDataKey().compareToIgnoreCase("exception") == 0) {
                     setIcon(icons.get(BrowserConstants.EXCEPTION_IMAGE));
                     break;
@@ -286,6 +290,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 break;
             case NamedObject.ROLE:
                 setIcon(icons.get(BrowserConstants.ROLE_IMAGE));
+                break;
+
+            case NamedObject.SYSTEM_ROLE:
+                setIcon(icons.get(BrowserConstants.SYSTEM_ROLE_IMAGE));
                 break;
 
             case NamedObject.EXCEPTION:

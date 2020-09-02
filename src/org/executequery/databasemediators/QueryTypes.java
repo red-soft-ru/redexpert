@@ -148,6 +148,10 @@ public final class QueryTypes {
 
     public static final int SQL_DIALECT = 43;
 
+    public static final int SET_AUTOCOMMIT_ON = 45;
+
+    public static final int SET_AUTOCOMMIT_OFF = 46;
+
     private QueryTypes() {
     }
 

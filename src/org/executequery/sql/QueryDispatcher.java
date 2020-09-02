@@ -928,9 +928,6 @@ public class QueryDispatcher {
             for (int i = 0; i < executableQueries.size(); i++) {
                 try {
                     DerivedQuery query = executableQueries.get(i);
-                    if (i == 156)
-                        setOutputMessage(
-                                SqlMessages.ACTION_MESSAGE, (i + 1) + " query");
                     setOutputMessage(
                             SqlMessages.ACTION_MESSAGE, (i + 1) + " query");
                     if (statementCancelled || Thread.interrupted()) {
@@ -964,7 +961,9 @@ public class QueryDispatcher {
 
 
                     PreparedStatement statement;
-                    statement = querySender.getPreparedStatement(queryToExecute);
+                    if (query.getQueryType() == QueryTypes.SET_AUTOCOMMIT_ON || query.getQueryType() == QueryTypes.SET_AUTOCOMMIT_OFF)
+                        statement = null;
+                    else statement = querySender.getPreparedStatement(queryToExecute);
                     SqlStatementResult result = querySender.execute(type, statement);
 
                     if (statementCancelled || Thread.interrupted()) {

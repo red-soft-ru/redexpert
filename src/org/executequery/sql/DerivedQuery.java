@@ -156,7 +156,7 @@ public final class DerivedQuery {
     public int getQueryType() {
 
         int type = -1;
-        String query = derivedQuery.replaceAll("\n", " ").toUpperCase();
+        String query = derivedQuery.replaceAll("\n", " ").toUpperCase().trim();
 
         if (query.indexOf("SELECT ") == 0 && query.indexOf(" INTO ") != -1) {
 
@@ -266,6 +266,14 @@ public final class DerivedQuery {
         } else if (query.indexOf("SET SQL DIALECT") == 0) {
 
             type = QueryTypes.SQL_DIALECT;
+
+        } else if (query.indexOf("SET AUTODDL ON") == 0) {
+
+            type = QueryTypes.SET_AUTOCOMMIT_ON;
+
+        } else if (query.indexOf("SET AUTODDL OFF") == 0) {
+
+            type = QueryTypes.SET_AUTOCOMMIT_OFF;
 
         } else {
 

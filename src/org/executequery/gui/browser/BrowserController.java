@@ -435,6 +435,7 @@ public class BrowserController {
                     domainPanel.setValues((DefaultDatabaseDomain) databaseObject);
                     return domainPanel;
                 case NamedObject.ROLE:
+                case NamedObject.SYSTEM_ROLE:
                     BrowserRolePanel rolePanel = null;
                     if (!viewPanel.containsPanel(BrowserRolePanel.NAME)) {
                         rolePanel = new BrowserRolePanel(this);

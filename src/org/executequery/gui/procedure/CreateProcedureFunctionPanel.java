@@ -217,6 +217,14 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                             } else variable.setNullable(1);
                             if (var.default_value() != null)
                                 variable.setDefaultValue(var.default_value().getText());
+                            if (var.comment() != null) {
+                                String description = var.comment().getText();
+                                if (description.startsWith("--"))
+                                    description = description.substring(2);
+                                else if (description.startsWith("/*"))
+                                    description = description.substring(2, description.length() - 2);
+                                variable.setDescription(description);
+                            }
                             variablesPanel.addRow(variable);
                         }
                     }

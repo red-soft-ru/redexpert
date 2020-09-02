@@ -922,7 +922,7 @@ public class PooledConnection implements Connection {
                 mutex.acquire();
                 StackTraceElement[] stack = Thread.currentThread().getStackTrace();
                 Log.debug("---------------------------------Start a connection lock. Stack:----------------------------------\n\n\n");
-                for (int i = 0; i < stack.length; i++)
+                for (int i = 0; i < stack.length - 2; i++)
                     Log.debug(stack[stack.length - 1 - i]);
                 Log.debug("---------------------------------Connection is locked.----------------------------------\n\n\n");
             } catch (InterruptedException e) {

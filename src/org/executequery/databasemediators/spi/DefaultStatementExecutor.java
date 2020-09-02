@@ -1108,7 +1108,10 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
             case QueryTypes.SHOW_TABLES:
                 return showTables();
-
+            case QueryTypes.SET_AUTOCOMMIT_ON:
+                return setAutocommit(true);
+            case QueryTypes.SET_AUTOCOMMIT_OFF:
+                return setAutocommit(false);
             /*
             case CONNECT:
                 return establishConnection(query.toUpperCase());
@@ -1157,8 +1160,14 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             case QueryTypes.ROLLBACK:
                 return commitLast(false);
 
+            case QueryTypes.SET_AUTOCOMMIT_ON:
+                return setAutocommit(true);
+            case QueryTypes.SET_AUTOCOMMIT_OFF:
+                return setAutocommit(false);
+
             case QueryTypes.SHOW_TABLES:
                 return showTables();
+
 
             /*
             case CONNECT:
@@ -1512,6 +1521,33 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
                         statementResult.setMessage("Rollback complete.");
                         //closeMaxedConn();
                     }
+
+                } else {
+
+                    statementResult.setSqlException(new SQLException("Connection is closed"));
+                }
+
+            } catch (SQLException e) {
+                handleException(e);
+                statementResult.setSqlException(e);
+            }
+        return statementResult;
+
+    }
+
+    private SqlStatementResult setAutocommit(boolean autocommit) {
+
+        statementResult.reset();
+        statementResult.setUpdateCount(0);
+        if (conn != null)
+            try {
+
+                if (!conn.isClosed()) {
+
+
+                    conn.setAutoCommit(autocommit);
+                    Log.info("Set autocommit " + autocommit);
+                    statementResult.setMessage("Set autocommit " + autocommit);
 
                 } else {
 

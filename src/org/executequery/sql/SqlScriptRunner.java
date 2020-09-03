@@ -90,7 +90,7 @@ public class SqlScriptRunner {
             close();
             if (databaseConnection != null) {
                 connection = ConnectionManager.getConnection(databaseConnection);
-                connection.setAutoCommit(false);
+                connection.setAutoCommit(true);
             }
 
             List<DerivedQuery> executableQueries = new ArrayList<DerivedQuery>();
@@ -134,7 +134,7 @@ public class SqlScriptRunner {
                     createDBQuery = query;
                     localDataSource = createDatabase(createDBQuery, sqlDialect);
                     connection = localDataSource.getConnection();
-                    connection.setAutoCommit(false);
+                    connection.setAutoCommit(true);
                     createDBQuery = null;
                     needCloseDatabase = true;
                     continue;

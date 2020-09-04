@@ -400,12 +400,12 @@ public class PooledConnection implements Connection {
     }
 
     public void commit() throws SQLException {
-        if (!getAutoCommit())
-            try {
-                realConnection.commit();
-            } catch (SQLException e) {
-                handleException(e);
-            }
+        checkOpen();
+        try {
+            realConnection.commit();
+        } catch (SQLException e) {
+            handleException(e);
+        }
     }
 
     public boolean getAutoCommit() throws SQLException {

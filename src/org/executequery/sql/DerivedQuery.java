@@ -153,12 +153,14 @@ public final class DerivedQuery {
         return null;
     }
 
+    int type = -1;
     public int getQueryType() {
 
-        int type = -1;
+        if (type != -1)
+            return type;
         String query = derivedQuery.replaceAll("\n", " ").toUpperCase().trim();
 
-        if (query.indexOf("SELECT ") == 0 && query.indexOf(" INTO ") != -1) {
+        if (query.indexOf("SELECT ") == 0 && query.contains(" INTO ")) {
 
             type = QueryTypes.SELECT_INTO;
 
@@ -263,17 +265,33 @@ public final class DerivedQuery {
 
             type = QueryTypes.CREATE_DATABASE;
 
+        } else if (query.indexOf("CREATE OR ALTER") == 0) {
+
+            type = QueryTypes.CREATE_OR_ALTER;
+
+        } else if (query.indexOf("CREATE") == 0) {
+
+            type = QueryTypes.CREATE_OBJECT;
+
+        } else if (query.indexOf("RECREATE") == 0) {
+
+            type = QueryTypes.RECREATE_OBJECT;
+
+        } else if (query.indexOf("ALTER") == 0) {
+
+            type = QueryTypes.ALTER_OBJECT;
+
         } else if (query.indexOf("SET SQL DIALECT") == 0) {
 
             type = QueryTypes.SQL_DIALECT;
 
         } else if (query.indexOf("SET AUTODDL ON") == 0) {
 
-            type = QueryTypes.SET_AUTOCOMMIT_ON;
+            type = QueryTypes.SET_AUTODDL_ON;
 
         } else if (query.indexOf("SET AUTODDL OFF") == 0) {
 
-            type = QueryTypes.SET_AUTOCOMMIT_OFF;
+            type = QueryTypes.SET_AUTODDL_OFF;
 
         } else {
 

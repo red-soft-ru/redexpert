@@ -961,7 +961,7 @@ public class QueryDispatcher {
 
 
                     PreparedStatement statement;
-                    if (query.getQueryType() == QueryTypes.SET_AUTOCOMMIT_ON || query.getQueryType() == QueryTypes.SET_AUTOCOMMIT_OFF)
+                    if (query.getQueryType() == QueryTypes.SET_AUTODDL_ON || query.getQueryType() == QueryTypes.SET_AUTODDL_OFF)
                         statement = null;
                     else statement = querySender.getPreparedStatement(queryToExecute);
                     SqlStatementResult result = querySender.execute(type, statement);

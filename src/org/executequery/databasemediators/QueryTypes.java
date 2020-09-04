@@ -59,10 +59,7 @@ public final class QueryTypes {
      */
     public static final int EXECUTE = 11;
 
-    /**
-     * An SQL CALL procedure
-     */
-    public static final int CALL = 44;
+
 
     /**
      * An SQL DROP TABLE statement
@@ -148,9 +145,22 @@ public final class QueryTypes {
 
     public static final int SQL_DIALECT = 43;
 
-    public static final int SET_AUTOCOMMIT_ON = 45;
+    /**
+     * An SQL CALL procedure
+     */
+    public static final int CALL = 44;
 
-    public static final int SET_AUTOCOMMIT_OFF = 46;
+    public static final int SET_AUTODDL_ON = 45;
+
+    public static final int SET_AUTODDL_OFF = 46;
+
+    public static final int CREATE_OBJECT = 47;
+
+    public static final int CREATE_OR_ALTER = 48;
+
+    public static final int ALTER_OBJECT = 49;
+
+    public static final int RECREATE_OBJECT = 50;
 
     private QueryTypes() {
     }

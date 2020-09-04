@@ -90,7 +90,11 @@ public interface StatementExecutor {
      */
     SqlStatementResult updateRecords(String query) throws SQLException;
 
+    SqlStatementResult executeDDL(String query) throws SQLException;
+
     SqlStatementResult updateRecords(PreparedStatement statement) throws SQLException;
+
+    SqlStatementResult executeDDL(PreparedStatement statement) throws SQLException;
 
     /**
      * Destroys the open connection.

@@ -103,7 +103,7 @@ public class SqlScriptRunner {
 
 
 
-            executionController.message("Found " + executableQueries.size() + " executable queries");
+            //executionController.message("Found " + executableQueries.size() + " executable queries");
             executionController.message("Executing...");
 
             /*if (connection == null)
@@ -165,6 +165,9 @@ public class SqlScriptRunner {
                     statement = querySender.getPreparedStatement(derivedQuery);
                     start = System.currentTimeMillis();
                     sqlStatementResult = querySender.execute(query.getQueryType(), statement);
+                    if (sqlStatementResult.isException())
+                        if (sqlStatementResult.getSqlException() != null)
+                            throw sqlStatementResult.getSqlException();
                     result += sqlStatementResult.getUpdateCount();
 
                 } catch (SQLException e) {

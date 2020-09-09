@@ -82,6 +82,7 @@ public class PooledConnection implements Connection {
     private TimerTask task;
     private int timeoutShutdown;
     private PooledStatement lastStatement;
+    private boolean timerCheckConnection;
 
 
     /**
@@ -92,7 +93,10 @@ public class PooledConnection implements Connection {
      *
      */
     public PooledConnection(Connection realConnection, DatabaseConnection databaseConnection) {
-        this(realConnection, databaseConnection, false);
+        this(realConnection, databaseConnection, false,false);
+    }
+    public PooledConnection(Connection realConnection, DatabaseConnection databaseConnection,boolean timerCheckConnection) {
+        this(realConnection, databaseConnection, false,timerCheckConnection);
     }
 
     /**
@@ -101,8 +105,9 @@ public class PooledConnection implements Connection {
      *
      * @param realConnection real java.sql.Connection
      */
-    public PooledConnection(Connection realConnection, DatabaseConnection databaseConnection, boolean closeOnReturn) {
+    public PooledConnection(Connection realConnection, DatabaseConnection databaseConnection, boolean closeOnReturn,boolean timerCheckConnection) {
         this.databaseConnection = databaseConnection;
+        this.timerCheckConnection=timerCheckConnection;
         mutex = new Semaphore(1);
         useCount = 0;
         timeoutShutdown = SystemProperties.getIntProperty("user", "connection.shutdown.timeout");
@@ -116,7 +121,8 @@ public class PooledConnection implements Connection {
                 checkConnectionToServer();
             }
         };
-        timer.schedule(task, timeoutShutdown);
+        if(this.timerCheckConnection)
+            timer.schedule(task, timeoutShutdown);
         try {
 
             originalAutoCommit = realConnection.getAutoCommit();
@@ -181,22 +187,20 @@ public class PooledConnection implements Connection {
 
     protected void destroy() {
 
-        if (Log.isDebugEnabled()) {
+        /*if (Log.isDebugEnabled()) {*/
 
-            Log.debug("Destroying connection - " + id);
-        }
+        //Log.info("Destroying connection - " + id);
+        //}
 
         try {
 
-            if (realConnection != null) {
-
-                realConnection.close();
-            }
+            close();
 
         } catch (SQLException e) {
+            e.printStackTrace();
         }
 
-        realConnection = null;
+        //realConnection = null;
     }
 
     /**
@@ -206,13 +210,15 @@ public class PooledConnection implements Connection {
     public void close() throws SQLException {
 
         inUse = false;
+        if(timerCheckConnection)
+            timer.cancel();
 
         if (realConnection != null) {
 
-            if (Log.isDebugEnabled()) {
+            //if (Log.isDebugEnabled()) {
 
-                Log.debug("Closing connection - " + id);
-            }
+            //Log.info("Closing connection - " + id);
+            //}
 
             if (closeOnReturn) {
 
@@ -227,6 +233,7 @@ public class PooledConnection implements Connection {
                     realConnection.setAutoCommit(originalAutoCommit);
 
                 } catch (SQLException e) {
+                    e.printStackTrace();
                 }
 
             }
@@ -269,19 +276,25 @@ public class PooledConnection implements Connection {
                 }
             };
             timerDelay = new Timer();
+            /*StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+            Log.info("---------------------------------Start check----------------------------------\n\n\n");
+            for (int i = 0; i < stack.length - 2; i++)
+                Log.info(stack[stack.length - 1 - i]);*/
             timerDelay.schedule(task, timeoutShutdown);
             db.getPerformanceInfo();
             timerDelay.cancel();
+            //Log.info("---------------------------------Finish check.----------------------------------\n\n\n");
         } catch (SQLException e)
         {
             if (databaseConnection.isConnected())
                 closeDatabaseConnection();
             timerDelay.cancel();
         } catch (ClassNotFoundException e) {
-            if (databaseConnection.isConnected())
+            if (databaseConnection.isConnected()) {
                 if (GUIUtilities.displayConfirmDialog("The server is not responding. do you want to close the connection?") == JOptionPane.OK_OPTION) {
                     closeDatabaseConnection();
                 }
+            }
             timerDelay.cancel();
         }
     }
@@ -920,18 +933,18 @@ public class PooledConnection implements Connection {
         if (flag) {
             try {
                 mutex.acquire();
-                StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+                /*StackTraceElement[] stack = Thread.currentThread().getStackTrace();
                 Log.debug("---------------------------------Start a connection lock. Stack:----------------------------------\n\n\n");
                 for (int i = 0; i < stack.length - 2; i++)
                     Log.debug(stack[stack.length - 1 - i]);
-                Log.debug("---------------------------------Connection is locked.----------------------------------\n\n\n");
+                Log.debug("---------------------------------Connection is locked.----------------------------------\n\n\n");*/
             } catch (InterruptedException e) {
                 throw new SQLException(e);
             }
         }
         else {
             mutex.release();
-            Log.debug("---------------------------------Connection is released.----------------------------------\n\n\n");
+            //Log.debug("---------------------------------Connection is released.----------------------------------\n\n\n");
         }
 
     }

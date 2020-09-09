@@ -115,6 +115,8 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
      */
     private int transactionIsolation;
 
+    boolean useDatabaseConnection;
+
     public DefaultStatementExecutor() {
         this(null, false);
     }
@@ -146,6 +148,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
         maxUseCount = ConnectionManager.getMaxUseCount();
         statementResult = new SqlStatementResult();
         transactionIsolation = -1;
+        setUseDatabaseConnection(true);
     }
 
     /**
@@ -269,7 +272,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
     private boolean prepared() throws SQLException {
 
-        if (databaseConnection == null || !databaseConnection.isConnected()) {
+        if (isUseDatabaseConnection() && (databaseConnection == null || !databaseConnection.isConnected())) {
 
             statementResult.setMessage("Not Connected");
             statementResult.setOtherException(new UndeclaredThrowableException(new Throwable(), "Not Connected"));
@@ -281,7 +284,9 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
             try {
 
-                conn = ConnectionManager.getTemporaryConnection(databaseConnection);
+                if (isUseDatabaseConnection())
+                    conn = ConnectionManager.getTemporaryConnection(databaseConnection);
+                else throw new DataSourceException("Connection=null or closed");
                 if (keepAlive) {
 
                     try {
@@ -1799,7 +1804,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             stmnt = null;
             if (conn != null) {
 
-                if (!keepAlive) {
+                if (useDatabaseConnection) {
 
                     conn.close();
 
@@ -1880,6 +1885,22 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
     public void setKeepAlive(boolean keepAlive) {
         this.keepAlive = keepAlive;
+    }
+
+    public boolean isUseDatabaseConnection() {
+        return useDatabaseConnection;
+    }
+
+    public void setUseDatabaseConnection(boolean useDatabaseConnection) {
+        this.useDatabaseConnection = useDatabaseConnection;
+    }
+
+    public Connection getConn() {
+        return conn;
+    }
+
+    public void setConn(Connection conn) {
+        this.conn = conn;
     }
 }
 

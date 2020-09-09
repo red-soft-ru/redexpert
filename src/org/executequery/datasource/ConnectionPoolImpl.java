@@ -286,7 +286,7 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
                 }
             }
 
-            connection = new PooledConnection(realConnection, databaseConnection);
+            connection = new PooledConnection(realConnection, databaseConnection,true,true);
             connection.addPooledConnectionListener(this);
 
             openConnections.add(connection);

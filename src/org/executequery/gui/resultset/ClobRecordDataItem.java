@@ -21,13 +21,16 @@
 package org.executequery.gui.resultset;
 
 import biz.redsoft.IFBClob;
+import org.apache.commons.lang.CharUtils;
 import org.executequery.Constants;
+import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.log.Log;
 import org.underworldlabs.util.SystemProperties;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.sql.Clob;
 import java.sql.SQLException;
 
@@ -51,9 +54,49 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 
     @Override
     public Object getDisplayValue() {
+        String dataAsText = null;
+        byte[] data = readLob(displayLength);
+        boolean isValidText = true;
+
+        if (data != null) {
+            if (charset.equals(CreateTableSQLSyntax.NONE))
+                dataAsText = new String(data);
+            else try {
+                dataAsText = new String(data, charset);
+            } catch (UnsupportedEncodingException e) {
+                Log.error("Error method loadTextData in class LobDataItemViewerPanel:", e);
+                dataAsText = new String(data);
+            }
+            char[] charArray = dataAsText.toCharArray();
+
+            int defaultEndPoint = 256;
+            int endPoint = Math.min(charArray.length, defaultEndPoint);
+            if (charset.equals(CreateTableSQLSyntax.NONE))
+                for (int i = 0; i < endPoint; i++) {
+
+                    if (!CharUtils.isAscii(charArray[i])) {
+
+                        isValidText = false;
+                        break;
+                    }
+
+                }
+
+        } else {
+
+            isValidText = false;
+        }
+
+        if (isValidText) {
+
+            return dataAsText;
+
+        } else {
+
+            return CLOB_DATA;
+        }
 
 
-        return CLOB_DATA;
     }
 
     public String getCharset() {
@@ -129,6 +172,83 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
                 int length;
                 while ((length = as.read(b)) != -1) {
                     result.write(b, 0, length);
+                }
+                return result.toByteArray();
+
+
+                //reader = clob.getCharacterStream();
+
+            } catch (SQLException e) {
+
+                if (Log.isDebugEnabled()) {
+
+                    Log.debug("Error reading CLOB data", e);
+                }
+
+                return e.getMessage().getBytes();
+            } catch (Exception e) {
+                Log.error("Error reading CLOB data:" + e.getMessage());
+                return "Error reading CLOB data:".getBytes();
+            }
+        }
+    }
+
+    protected byte[] readLob(int displayLength) {
+
+        if (isValueNull())
+            return null;
+
+        Object value = getValue();
+        if (value instanceof String) {
+
+            return ((String) value).getBytes();
+        }
+
+        if (value.getClass().getName().contains("FBClobImpl")) {
+            IFBClob ifbClob = (IFBClob) value;
+            InputStream as;
+            try {
+                as = ifbClob.open();
+                byte[] b = new byte[1024];
+                ByteArrayOutputStream result = new ByteArrayOutputStream();
+                int length;
+                int i = 0;
+                while ((length = as.read(b)) != -1 && i < displayLength) {
+                    result.write(b, 0, length);
+                    i += length;
+                }
+                as.close();
+                ifbClob.close();
+                return result.toByteArray();
+
+
+                //reader = clob.getCharacterStream();
+
+            } catch (SQLException e) {
+
+                if (Log.isDebugEnabled()) {
+
+                    Log.debug("Error reading CLOB data", e);
+                }
+
+                return e.getMessage().getBytes();
+            } catch (Exception e) {
+                Log.error("Error reading CLOB data:" + e.getMessage());
+                return "Error reading CLOB data:".getBytes();
+            }
+        } else {
+
+            Clob clob = (Clob) value;
+            InputStream as;
+            try {
+                as = clob.getAsciiStream();
+                byte[] b = new byte[1024];
+                ByteArrayOutputStream result = new ByteArrayOutputStream();
+                int i = 0;
+                int length;
+                while ((length = as.read(b)) != -1 && i < displayLength) {
+                    result.write(b, 0, length);
+                    i += length;
                 }
                 return result.toByteArray();
 

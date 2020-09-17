@@ -2,6 +2,7 @@ package org.underworldlabs.util;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
+import org.executequery.databaseobjects.Parameter;
 import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
@@ -299,9 +300,14 @@ public final class SQLUtils {
                 if (variable) {
                     sqlText.append(";");
                     if (cd.getDescription() != null && !cd.getDescription().isEmpty()) {
-                        sqlText.append(" /*");
-                        sqlText.append(cd.getDescription());
-                        sqlText.append("*/");
+                        if (cd.isDescriptionAsSingleComment()) {
+                            sqlText.append(" --");
+                            sqlText.append(cd.getDescription());
+                        } else {
+                            sqlText.append(" /*");
+                            sqlText.append(cd.getDescription());
+                            sqlText.append("*/");
+                        }
                     }
                 } else if (i != k - 1) {
                     sqlText.append(",");
@@ -367,8 +373,8 @@ public final class SQLUtils {
         }
         return sb.toString();
     }
-    public static ColumnData columnDataFromProcedureParameter(ProcedureParameter parameter, DatabaseConnection dc)
-    {
+
+    public static ColumnData columnDataFromProcedureParameter(Parameter parameter, DatabaseConnection dc) {
         ColumnData cd = new ColumnData(true, dc);
         cd.setColumnName(parameter.getName());
         cd.setDomain(parameter.getDomain());
@@ -385,6 +391,7 @@ public final class SQLUtils {
         cd.setTable(parameter.getRelationName());
         cd.setColumnTable(parameter.getFieldName());
         cd.setDefaultValue(parameter.getDefaultValue(), true);
+        cd.setDescriptionAsSingleComment(parameter.isDescriptionAsSingleComment());
         MetaDataValues metaData = new MetaDataValues(true);
         metaData.setDatabaseConnection(dc);
         String [] dataTypes = metaData.getDataTypesArray();

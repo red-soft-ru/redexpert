@@ -25,6 +25,7 @@ public class Parameter {
     protected String fieldName;
     protected int typeOfFrom;
     protected String defaultValue;
+    protected boolean descriptionAsSingleComment;
 
     public int getDataType() {
         return dataType;
@@ -189,6 +190,14 @@ public class Parameter {
 
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    public boolean isDescriptionAsSingleComment() {
+        return descriptionAsSingleComment;
+    }
+
+    public void setDescriptionAsSingleComment(boolean descriptionAsSingleComment) {
+        this.descriptionAsSingleComment = descriptionAsSingleComment;
     }
 }
 

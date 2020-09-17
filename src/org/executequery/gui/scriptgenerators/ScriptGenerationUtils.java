@@ -29,6 +29,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import static org.executequery.databaseobjects.NamedObject.FOREIGN_KEY;
+import static org.executequery.databaseobjects.NamedObject.PRIMARY_KEY;
+
 /**
  * Simple utility methods to asist in generating SQL scripts
  * for tables/schemas.
@@ -189,7 +192,7 @@ public class ScriptGenerationUtils implements CreateTableSQLSyntax {
                             append(cc.getColumn()).
                             append(B_CLOSE);
 
-                    if (cc.getType() == ColumnConstraint.FOREIGN_KEY) {
+                    if (cc.getType() == FOREIGN_KEY) {
                         sb.append(REFERENCES);
                         if (cc.hasSchema()) {
                             sb.append(cc.getRefSchema()).
@@ -236,7 +239,7 @@ public class ScriptGenerationUtils implements CreateTableSQLSyntax {
             ColumnConstraint cc = columnConstraints.get(i);
             type = cc.getType();
 
-            if (type == ColumnConstraint.FOREIGN_KEY) {
+            if (type == FOREIGN_KEY) {
 
                 foreignKeys.append(ALTER_TABLE).
                         append(cc.getTable()).
@@ -260,7 +263,7 @@ public class ScriptGenerationUtils implements CreateTableSQLSyntax {
                         append(B_CLOSE).
                         append(SEMI_COLON).
                         append(NEW_LINE);
-            } else if (type == ColumnConstraint.PRIMARY_KEY) {
+            } else if (type == PRIMARY_KEY) {
                 primaryKeys.append(ALTER_TABLE).
                         append(cc.getTable()).
                         append(ADD).

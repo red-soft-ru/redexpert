@@ -22,6 +22,8 @@ package org.executequery.gui.browser;
 
 import java.io.Serializable;
 
+import static org.executequery.databaseobjects.NamedObject.*;
+
 /* ----------------------------------------------------------
  * CVS NOTE: Changes to the CVS repository prior to the
  *           release of version 3.0.0beta1 has meant a
@@ -69,14 +71,17 @@ public class ColumnConstraint implements Serializable {
     /** Whether this constraint is marked to be dropped */
     private boolean markedDeleted;
 
-    public static final int PRIMARY_KEY = 0;
+    private String check;
+
+    /*public static final int PRIMARY_KEY = 0;
     public static final int FOREIGN_KEY = 1;
-    public static final int UNIQUE_KEY = 2;
+    public static final int UNIQUE_KEY = 2;*/
 
     public static final String EMPTY = "";
     public static final String PRIMARY = "PRIMARY";
     public static final String FOREIGN = "FOREIGN";
     public static final String UNIQUE = "UNIQUE";
+    public static final String CHECK = "CHECK";
 
     public ColumnConstraint() {
         newConstraint = false;
@@ -92,6 +97,22 @@ public class ColumnConstraint implements Serializable {
             column = EMPTY;
             refColumn = EMPTY;
         }
+    }
+    public ColumnConstraint(boolean newConstraint, org.executequery.databaseobjects.impl.ColumnConstraint cc) {
+        this.newConstraint = newConstraint;
+        type = -1;
+        if (newConstraint) {
+            name = EMPTY;
+            schema = EMPTY;
+            refTable = EMPTY;
+            column = EMPTY;
+            refColumn = EMPTY;
+        }
+        this.column= cc.getColumnName();
+        this.name=cc.getName();
+        this.table= cc.getTableName();
+        this.type=cc.getType();
+        this.check=cc.getCheck();
     }
 
     public boolean isForeignKey() {
@@ -126,12 +147,14 @@ public class ColumnConstraint implements Serializable {
 
     public String getTypeName() {
         switch (type) {
-            case 0:
+            case PRIMARY_KEY:
                 return PRIMARY;
-            case 1:
+            case FOREIGN_KEY:
                 return FOREIGN;
-            case 2:
+            case UNIQUE_KEY:
                 return UNIQUE;
+            case CHECK_KEY:
+                return CHECK;
             default:
                 return null;
         }
@@ -201,7 +224,13 @@ public class ColumnConstraint implements Serializable {
         this.markedDeleted = markedDeleted;
     }
 
+    public String getCheck() {
+        return check;
+    }
 
+    public void setCheck(String check) {
+        this.check = check;
+    }
 }
 
 

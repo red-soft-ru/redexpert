@@ -20,6 +20,7 @@
 
 package org.executequery.gui.erd;
 
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ColumnConstraint;
@@ -235,7 +236,7 @@ public class ErdNewRelationshipDialog extends ErdPrintableDialog {
         constraint.setRefTable(referencedTableCombo.getSelectedItem().toString());
         constraint.setColumn(column.getColumnName());
         constraint.setRefColumn(referencedColumnCombo.getSelectedItem().toString());
-        constraint.setType(ColumnConstraint.FOREIGN_KEY);
+        constraint.setType(NamedObject.FOREIGN_KEY);
 
         column.addConstraint(constraint);
         column.setForeignKey(true);

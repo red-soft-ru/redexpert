@@ -21,6 +21,8 @@
 package org.underworldlabs.util;
 
 import org.executequery.ApplicationContext;
+import org.executequery.repository.KeywordRepository;
+import org.executequery.repository.RepositoryCache;
 import org.executequery.util.StringBundle;
 
 import javax.swing.*;
@@ -722,6 +724,33 @@ public final class MiscUtils {
 
     public static String wordInQuotes(String world) {
         return "\"" + world + "\"";
+    }
+
+    public static boolean checkAllUpperCase(String str) {
+        return str.equals(str.toUpperCase());
+    }
+
+    public static boolean checkKeyword(String str) {
+        KeywordRepository keywordRepository =
+                (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
+        List<String> keywords = keywordRepository.getSQLKeywords();
+        for (int i = 0; i < keywords.size(); i++)
+            if (keywords.get(i).toUpperCase().equals(str.toUpperCase()))
+                return true;
+        return false;
+    }
+
+    public final static String LATIN_OR_DIGIT_OR_SPEC_SYMBOL_RDB="([A-Za-z]+[$_0-1A-Za-z]*)";
+
+    public static boolean isLatinOrDigitOrSpecSymbolRDB(String obj)
+    {
+        return obj.matches(LATIN_OR_DIGIT_OR_SPEC_SYMBOL_RDB);
+    }
+
+    public static String getFormattedObject(String obj) {
+        if (isLatinOrDigitOrSpecSymbolRDB(obj)&&checkAllUpperCase(obj) && !checkKeyword(obj))
+            return obj.trim();
+        else return MiscUtils.wordInQuotes(obj.trim());
     }
 
 }

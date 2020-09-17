@@ -451,7 +451,7 @@ public class EditTablePanel extends TableDefinitionPanel {
         }
 
         generateSQL();
-        creator.setSQLText(sqlText.toString(), TableModifier.COLUMN_VALUES);
+        creator.setSQLText();
     }
 
     private void tableChanged(ColumnData cd, int row, int col) {
@@ -532,7 +532,7 @@ public class EditTablePanel extends TableDefinitionPanel {
         }
 
         generateSQL();
-        creator.setSQLText(sqlText.toString(), TableModifier.COLUMN_VALUES);
+        creator.setSQLText();
     }
 
     private void generateSQL() {
@@ -552,7 +552,7 @@ public class EditTablePanel extends TableDefinitionPanel {
      */
     public void addColumnLines(int row) {
         generateSQL();
-        creator.setSQLText(sqlText.toString(), TableModifier.COLUMN_VALUES);
+        creator.setSQLText();
     }
 
 

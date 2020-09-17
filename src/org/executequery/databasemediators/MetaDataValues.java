@@ -41,6 +41,9 @@ import java.lang.reflect.Method;
 import java.sql.*;
 import java.util.*;
 
+import static org.executequery.databaseobjects.NamedObject.FOREIGN_KEY;
+import static org.executequery.databaseobjects.NamedObject.PRIMARY_KEY;
+
 /**
  * This class provides access to the current connection's
  * database meta data. Each method performs specific requests
@@ -547,7 +550,7 @@ public class MetaDataValues implements ConnectionListener {
                 cc.setTable(keys.getString(3));
                 cc.setColumn(keys.getString(4));
                 cc.setName(keys.getString(6));
-                cc.setType(ColumnConstraint.PRIMARY_KEY);
+                cc.setType(PRIMARY_KEY);
                 _primaryKeys.add(cc);
             }
 
@@ -576,7 +579,7 @@ public class MetaDataValues implements ConnectionListener {
                 cc.setRefColumn(keys.getString(4));
                 cc.setColumn(keys.getString(8));
                 cc.setName(keys.getString(12));
-                cc.setType(ColumnConstraint.FOREIGN_KEY);
+                cc.setType(FOREIGN_KEY);
                 _foreignKeys.add(cc);
             }
 

@@ -42,6 +42,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import static org.executequery.databaseobjects.NamedObject.FOREIGN_KEY;
+import static org.executequery.databaseobjects.NamedObject.PRIMARY_KEY;
+
 /**
  * @author Takis Diakoumis
  * @deprecated
@@ -291,7 +294,7 @@ public class CreateTableScriptsGenerator {
                                         append(B_OPEN).append(cc.getColumn()).
                                         append(B_CLOSE);
 
-                                if (cc.getType() == ColumnConstraint.FOREIGN_KEY) {
+                                if (cc.getType() == FOREIGN_KEY) {
                                     sb.append(REFERENCES);
 
                                     if (cc.hasSchema())
@@ -316,7 +319,7 @@ public class CreateTableScriptsGenerator {
                                 cc = (ColumnConstraint) columnConstraints.get(j);
                                 type = cc.getType();
 
-                                if (type == ColumnConstraint.FOREIGN_KEY) {
+                                if (type == FOREIGN_KEY) {
 
                                     fKeys.append(ALTER_TABLE).append(cc.getTable()).
                                             append(ADD).append(CONSTRAINT).
@@ -331,7 +334,7 @@ public class CreateTableScriptsGenerator {
                                     fKeys.append(cc.getRefTable()).append(B_OPEN).
                                             append(cc.getRefColumn()).append(B_CLOSE).
                                             append(SEMI_COLON).append(NEW_LINE);
-                                } else if (type == ColumnConstraint.PRIMARY_KEY) {
+                                } else if (type == PRIMARY_KEY) {
 
                                     pKeys.append(ALTER_TABLE).append(cc.getTable()).
                                             append(ADD).append(CONSTRAINT).

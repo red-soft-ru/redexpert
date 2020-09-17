@@ -39,6 +39,7 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -489,72 +490,10 @@ public abstract class CreateTableFunctionPanel extends JPanel
     }
 
     public void setSQLText() {
-        setSQLText(null, TableModifier.EMPTY_VALUE);
-    }
-
-    public void setSQLText(String values, int type) {
         if (getSelectedConnection().isNamesToUpperCase())
-            nameField.setText(nameField.getText().toUpperCase());
-        sqlBuffer.setLength(0);
-        if (temporary)
-            sqlBuffer.append(CreateTableSQLSyntax.CREATE_GLOBAL_TEMPORARY_TABLE);
-        else
-            sqlBuffer.append(CreateTableSQLSyntax.CREATE_TABLE);
-        StringBuffer primary = new StringBuffer(50);
-        primary.setLength(0);
-        primary.append(",\nCONSTRAINT PK_");
-        primary.append(nameField.getText());
-        primary.append(" PRIMARY KEY (");
-        primary.append(tablePanel.getPrimaryText());
-        primary.append(")");
-        StringBuffer description = new StringBuffer(50);
-        description.setLength(0);
-        if (tablePanel.descriptions != null)
-            for (String d : tablePanel.descriptions) {
-                description.append("COMMENT ON COLUMN ");
-                description.append(MiscUtils.wordInQuotes(nameField.getText()));
-                description.append("." + d);
-                description.append("^");
+        nameField.setText(nameField.getText().toUpperCase());
 
-            }
-
-        // check for a valid schema name
-        if (schemaModel.getSize() > 0) {
-            String schema = schemaCombo.getSelectedItem().toString();
-            if (!MiscUtils.isNull(schema)) {
-                sqlBuffer.append(schemaCombo.getSelectedItem()).
-                        append(CreateTableSQLSyntax.DOT);
-
-            }
-        }
-
-        sqlBuffer.append(MiscUtils.wordInQuotes(nameField.getText())).
-                append(CreateTableSQLSyntax.SPACE).
-                append(CreateTableSQLSyntax.B_OPEN);
-
-        if (type == TableModifier.COLUMN_VALUES) {
-            sqlBuffer.append(values);
-            if (tablePanel.primary)
-                sqlBuffer.append(primary);
-            sqlBuffer.append(consPanel.getSQLText().replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, nameField.getText()));
-        } else if (type == TableModifier.CONSTRAINT_VALUES) {
-            sqlBuffer.append(tablePanel.getSQLText());
-            if (tablePanel.primary)
-                sqlBuffer.append(primary);
-            sqlBuffer.append(values.replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, nameField.getText()));
-        } else if (type == TableModifier.EMPTY_VALUE) {
-            sqlBuffer.append(tablePanel.getSQLText());
-            if (tablePanel.primary)
-                sqlBuffer.append(primary);
-            sqlBuffer.append(consPanel.getSQLText().replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, nameField.getText()));
-        }
-        sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE);
-        if (temporary)
-            sqlBuffer.append("\nON COMMIT ").append(typeTemporaryBox.getSelectedItem());
-        sqlBuffer.append(CreateTableSQLSyntax.SEMI_COLON);
-        sqlBuffer.append("\n").append(description);
-        sqlBuffer.append(tablePanel.getAutoincrementSQLText().replace(TableDefinitionPanel.SUBSTITUTE_NAME, nameField.getText()));
-        setSQLText(sqlBuffer.toString());
+        setSQLText(SQLUtils.generateCreateTable(nameField.getText(),tablePanel.getTableColumnDataVector(),consPanel.getKeys(),false,temporary,(String) typeTemporaryBox.getSelectedItem()));
     }
 
     private void setSQLText(final String text) {

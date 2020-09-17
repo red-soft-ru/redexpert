@@ -24,19 +24,25 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
+import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.gui.resultset.RecordDataItem;
+import org.executequery.gui.table.CreateTableSQLSyntax;
+import org.executequery.gui.table.TableDefinitionPanel;
+import org.executequery.gui.table.TableModifier;
 import org.executequery.log.Log;
 import org.executequery.sql.SQLFormatter;
 import org.executequery.sql.SqlStatementResult;
-import org.executequery.sql.StatementGenerator;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static org.executequery.gui.table.CreateTableSQLSyntax.*;
 
 /**
  * @author Takis Diakoumis
@@ -406,6 +412,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
               if (!names.contains(name)) {
                 ColumnConstraint constraint = new TableColumnConstraint(rs.getString(2));
                 constraint.setName(name);
+                constraint.setTable(this);
                 constraints.add(constraint);
                 names.add(name);
               }
@@ -665,7 +672,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       }
 
       int result = 0;
-      String[] queries = changes.split(StatementGenerator.END_DELIMITER);
+      String[] queries = changes.split(";");
 
       Connection connection = getHost().getConnection();
       stmnt = connection.createStatement();
@@ -756,29 +763,40 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
   public String getAlteredSQLText() throws DataSourceException {
 
     StringBuilder sb = new StringBuilder();
-
-    // retrieve column alter changes
     List<DatabaseColumn> _columns = getColumns();
-    if (_columns != null) {
-
-      StatementGenerator statementGenerator = createStatementGenerator();
-      String columnsAlter = statementGenerator.alterTable(databaseProductName(), this);
-      sb.append(columnsAlter);
-    }
-
-    // retrieve constraint changes
-        /*
-        List<ColumnConstraint> constraints = getConstraints();
-        if (constraints != null) {
-            for (ColumnConstraint i : constraints) {
-                if (i.isNewConstraint() || i.isAltered()) {
-                    sb.append(i.getAlteredSQLText());
-                    sb.append("\n");
-                }
-            }
+    List<ColumnConstraint> _constraints = getConstraints();
+    boolean first=true;
+    sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(getName()));
+    if (_constraints != null) {
+      for(int i=0;i<_constraints.size();i++) {
+        if(_constraints.get(i) instanceof TableColumnConstraint)
+        {
+          TableColumnConstraint dtc=(TableColumnConstraint) _constraints.get(i);
+          if(dtc.isMarkedDeleted()) {
+            if(!first)
+              sb.append(",");
+            first=false;
+            sb.append("\nDROP CONSTRAINT ").append(MiscUtils.getFormattedObject(dtc.getName()));
+          }
         }
-        */
-
+      }
+    }
+    if (_columns != null) {
+      for(int i=0;i<_columns.size();i++) {
+        if(_columns.get(i) instanceof DatabaseTableColumn)
+        {
+          DatabaseTableColumn dtc=(DatabaseTableColumn)_columns.get(i);
+          if(dtc.isMarkedDeleted()) {
+            if(!first)
+              sb.append(",");
+            first=false;
+            sb.append("\nDROP ").append(dtc.getNameEscaped());
+          }
+        }
+      }
+    }
+    if(first)
+      return "";
     return sb.toString();
   }
 
@@ -789,7 +807,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
   public String getDropSQLText(boolean cascadeConstraints) {
 
-    StatementGenerator statementGenerator = createStatementGenerator();
+    /*StatementGenerator statementGenerator = null;
     String databaseProductName = databaseProductName();
 
     String dropStatement = null;
@@ -802,7 +820,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       dropStatement = statementGenerator.dropTable(databaseProductName, this);
     }
 
-    return dropStatement;
+    return dropStatement;*/
+  return  null;
+
   }
 
   public boolean hasForeignKey() {
@@ -871,31 +891,36 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
   public String getAlterSQLTextForUniqueKeys() {
 
-    StatementGenerator statementGenerator = createStatementGenerator();
+    /*StatementGenerator statementGenerator = null;
 
-    return statementGenerator.createUniqueKeyChange(databaseProductName(), this);
+    return statementGenerator.createUniqueKeyChange(databaseProductName(), this);*/
+    return null;
   }
 
   public String getAlterSQLTextForForeignKeys() {
 
-    StatementGenerator statementGenerator = createStatementGenerator();
-    return statementGenerator.createForeignKeyChange(databaseProductName(), this);
+    /*StatementGenerator statementGenerator = null;
+    return statementGenerator.createForeignKeyChange(databaseProductName(), this);*/
+    return null;
   }
 
   public String getAlterSQLTextForPrimaryKeys() {
 
-    StatementGenerator statementGenerator = createStatementGenerator();
+    /*StatementGenerator statementGenerator = null;
 
     return statementGenerator.createPrimaryKeyChange(databaseProductName(), this);
+     */
+    return  null;
   }
 
   public String getCreateConstraintsSQLText() throws DataSourceException {
 
-    StatementGenerator statementGenerator = createStatementGenerator();
+    /*StatementGenerator statementGenerator = null;
 
     String databaseProductName = databaseProductName();
 
-    return statementGenerator.tableConstraintsAsAlter(databaseProductName, this);
+    return statementGenerator.tableConstraintsAsAlter(databaseProductName, this);*/
+    return null;
   }
 
   /**
@@ -905,36 +930,25 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
    */
   public String getCreateSQLText(int style) throws DataSourceException {
 
-    StatementGenerator statementGenerator = createStatementGenerator();
-    String databaseProductName = databaseProductName();
-
-    if (style == STYLE_CONSTRAINTS_DEFAULT) {
-
-      String createStatement =
-          statementGenerator.createTableWithConstraints(databaseProductName, this);
-
-      return formatSqlText(createStatement);
-
-    } else if (style == STYLE_CONSTRAINTS_ALTER) {
-
-      String createStatement = statementGenerator.createTable(databaseProductName, this);
-
-      StringBuilder sb = new StringBuilder();
-
-      sb.append(formatSqlText(createStatement));
-      sb.append("\n\n");
-      sb.append(statementGenerator.tableConstraintsAsAlter(databaseProductName, this));
-
-      return sb.toString();
-
-    } else {
-
-      String createStatement = statementGenerator.createTable(databaseProductName, this);
-
-      return formatSqlText(createStatement);
-    }
+    return formatSqlText(generateCreateTableSQLText().replaceAll("\\^",";"));
 
   }
+
+  private String generateCreateTableSQLText() {
+    List<ColumnData> listCD=new ArrayList<>();
+    for(int i=0;i<getColumnCount();i++)
+    {
+      listCD.add(new ColumnData(getHost().getDatabaseConnection(),getColumns().get(i)));
+    }
+    List<org.executequery.gui.browser.ColumnConstraint> listCC=new ArrayList<>();
+    for(int i=0;i<getConstraints().size();i++)
+    {
+      listCC.add(new org.executequery.gui.browser.ColumnConstraint(false,getConstraints().get(i)));
+    }
+
+    return SQLUtils.generateCreateTable(getName(),listCD,listCC,true,false,null);
+
+    }
 
   private String formatSqlText(String text) {
 

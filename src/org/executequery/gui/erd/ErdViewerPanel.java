@@ -45,6 +45,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
 
+import static org.executequery.databaseobjects.NamedObject.PRIMARY_KEY;
+
 /**
  * @author Takis Diakoumis
  */
@@ -444,7 +446,7 @@ public class ErdViewerPanel extends DefaultTabView
 
                 for (int n = 0; n < cca.length; n++) {
 
-                    if (cca[n].getType() == ColumnConstraint.PRIMARY_KEY)
+                    if (cca[n].getType() == PRIMARY_KEY)
                         continue;
 
                     referencedTable = cca[n].getRefTable();

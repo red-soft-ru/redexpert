@@ -1,15 +1,21 @@
 package org.executequery.databaseobjects.impl;
 
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.gui.browser.ColumnData;
 import org.executequery.sql.SQLFormatter;
-import org.executequery.sql.StatementGenerator;
+import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -31,15 +37,16 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
     public String getCreateSQLText() throws DataSourceException {
 
-        StatementGenerator statementGenerator = createStatementGenerator();
-        String databaseProductName = databaseProductName();
-        Statement statement = null;
+
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor();
+        querySender.setDatabaseConnection(getHost().getDatabaseConnection());
         int type = -1;
         try {
-            statement = getHost().getConnection().createStatement();
-
-            ResultSet resultSet = statement.executeQuery("Select RDB$RELATION_TYPE FROM RDB$RELATIONS R \n" +
+            SqlStatementResult result=querySender.getResultSet("Select RDB$RELATION_TYPE FROM RDB$RELATIONS R \n" +
                     "WHERE R.RDB$RELATION_NAME = '" + getName() + "'");
+            if(result.isException())
+                throw result.getSqlException();
+            ResultSet resultSet=result.getResultSet();
 
             resultSet.next();
             type = resultSet.getInt(1);
@@ -47,29 +54,24 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            releaseResources(statement);
+            querySender.releaseResources();
         }
-
-        String createStatement =
-                statementGenerator.createTableWithConstraints(databaseProductName, this);
-
-        createStatement = formatSqlText(createStatement);
-
-        createStatement = createStatement.replace("CREATE TABLE", "CREATE GLOBAL TEMPORARY TABLE");
-
-        createStatement = createStatement.substring(0, createStatement.length() - 2);
-
+        String typeTemporary = "";
         if (type == 4)
-            createStatement += " ON COMMIT PRESERVE ROWS;\n\n";
+            typeTemporary += " ON COMMIT PRESERVE ROWS;\n\n";
         else if (type == 5)
-            createStatement += " ON COMMIT DELETE ROWS;\n\n";
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(createStatement);
-        sb.append("\n\n");
-        sb.append(statementGenerator.tableConstraintsAsAlter(databaseProductName, this));
-
-        return sb.toString();
+            typeTemporary += " ON COMMIT DELETE ROWS;\n\n";
+        List<ColumnData> listCD=new ArrayList<>();
+        for(int i=0;i<getColumnCount();i++)
+        {
+            listCD.add(new ColumnData(getHost().getDatabaseConnection(),getColumns().get(i)));
+        }
+        List<org.executequery.gui.browser.ColumnConstraint> listCC=new ArrayList<>();
+        for(int i=0;i<getConstraints().size();i++)
+        {
+            listCC.add(new org.executequery.gui.browser.ColumnConstraint(false,getConstraints().get(i)));
+        }
+        return formatSqlText(SQLUtils.generateCreateTable(getName(),listCD,listCC,true,true,typeTemporary));
     }
 
     private String formatSqlText(String text) {

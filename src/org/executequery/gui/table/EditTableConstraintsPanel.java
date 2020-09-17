@@ -39,6 +39,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import static org.executequery.databaseobjects.NamedObject.*;
+
 /**
  * @author Takis Diakoumis
  */
@@ -170,8 +172,7 @@ public class EditTableConstraintsPanel extends TableConstraintsPanel {
             } else if (value.length() == 0) {
                 tempSqlText.remove(ADD_CONSTRAINT + row);
                 generateSQL();
-                creator.setSQLText(sqlBuffer.toString(),
-                        TableModifier.CONSTRAINT_VALUES);
+                creator.setSQLText();
                 return;
             }
 
@@ -183,7 +184,7 @@ public class EditTableConstraintsPanel extends TableConstraintsPanel {
 
             switch (cc.getType()) {
 
-                case ColumnConstraint.FOREIGN_KEY:
+                case FOREIGN_KEY:
                     sqlBuffer.append(KEY).
                             append(B_OPEN).
                             append(cc.getColumn()).
@@ -204,7 +205,7 @@ public class EditTableConstraintsPanel extends TableConstraintsPanel {
                             append(NEW_LINE);
                     break;
 
-                case ColumnConstraint.UNIQUE_KEY:
+                case UNIQUE_KEY:
                     sqlBuffer.append(B_OPEN).
                             append(cc.getColumn()).
                             append(B_CLOSE).
@@ -212,7 +213,7 @@ public class EditTableConstraintsPanel extends TableConstraintsPanel {
                             append(NEW_LINE);
                     break;
 
-                case ColumnConstraint.PRIMARY_KEY:
+                case PRIMARY_KEY:
                     sqlBuffer.append(KEY).
                             append(B_OPEN).
                             append(cc.getColumn()).
@@ -253,7 +254,7 @@ public class EditTableConstraintsPanel extends TableConstraintsPanel {
         }
 
         generateSQL();
-        creator.setSQLText(sqlBuffer.toString(), TableModifier.CONSTRAINT_VALUES);
+        creator.setSQLText();
 
     }
 
@@ -413,7 +414,7 @@ public class EditTableConstraintsPanel extends TableConstraintsPanel {
         model.fireTableRowsDeleted(row, row);
 
         generateSQL();
-        creator.setSQLText(sqlBuffer.toString(), TableModifier.CONSTRAINT_VALUES);
+        creator.setSQLText();
 
         if (model.getKeys().size() == 0) {
             model.insertRowAfter(true);

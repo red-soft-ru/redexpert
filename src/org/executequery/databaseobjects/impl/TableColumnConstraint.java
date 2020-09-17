@@ -257,6 +257,11 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
         return null;
     }
 
+    @Override
+    public void setTable(DatabaseTable table) {
+        this.column=new DatabaseTableColumn(table);
+    }
+
     /**
      * Returns the table name associated with this constraint.
      *

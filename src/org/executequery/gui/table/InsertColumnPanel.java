@@ -13,7 +13,6 @@ import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.log.Log;
-import org.executequery.sql.spi.LiquibaseStatementGenerator;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -45,7 +44,6 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
     StringBuffer sb;
     DatabaseColumn columnEdited;
     DatabaseTableColumn column;
-    LiquibaseStatementGenerator statementGenerator;
     private SimpleSqlTextPanel descriptionPanel;
     private SimpleSqlTextPanel sqlPanel;
 
@@ -183,7 +181,6 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         columnData = new ColumnData(connection);
         sb = new StringBuffer(200);
         this.column = new DatabaseTableColumn(table, columnEdited);
-        statementGenerator = new LiquibaseStatementGenerator();
     }
 
     void init_edited_elements() {

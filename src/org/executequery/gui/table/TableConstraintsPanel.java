@@ -40,6 +40,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Vector;
 
+import static org.executequery.databaseobjects.NamedObject.*;
+
 /**
  * @author Takis Diakoumis
  */
@@ -324,7 +326,7 @@ public abstract class TableConstraintsPanel extends JPanel
             ColumnConstraint cc = (ColumnConstraint) keys.elementAt(row);
 
             // check the column type
-            boolean canHaveReference = (cc.getType() == ColumnConstraint.FOREIGN_KEY);
+            boolean canHaveReference = (cc.getType() == FOREIGN_KEY);
 
             switch (col) {
                 case 0:
@@ -364,11 +366,11 @@ public abstract class TableConstraintsPanel extends JPanel
                 case 1:
                     String colType = (String) value;
                     if (colType == ColumnConstraint.PRIMARY) {
-                        cc.setType(ColumnConstraint.PRIMARY_KEY);
+                        cc.setType(PRIMARY_KEY);
                     } else if (colType == ColumnConstraint.FOREIGN) {
-                        cc.setType(ColumnConstraint.FOREIGN_KEY);
+                        cc.setType(FOREIGN_KEY);
                     } else if (colType == ColumnConstraint.UNIQUE) {
-                        cc.setType(ColumnConstraint.UNIQUE_KEY);
+                        cc.setType(UNIQUE_KEY);
                     }
 
                     if (colType != null) {
@@ -428,8 +430,8 @@ public abstract class TableConstraintsPanel extends JPanel
                         return true;
                     case 4:
                     case 5:
-                        return (cc.getType() != ColumnConstraint.UNIQUE_KEY &&
-                                cc.getType() != ColumnConstraint.PRIMARY_KEY);
+                        return (cc.getType() != UNIQUE_KEY &&
+                                cc.getType() != PRIMARY_KEY);
                 }
             } else {
                 if (col == 2) {
@@ -438,8 +440,8 @@ public abstract class TableConstraintsPanel extends JPanel
 
                 if (cc.isNewConstraint()) {
 
-                    return col <= 3 || (cc.getType() != ColumnConstraint.UNIQUE_KEY &&
-                            cc.getType() != ColumnConstraint.PRIMARY_KEY);
+                    return col <= 3 || (cc.getType() != UNIQUE_KEY &&
+                            cc.getType() != PRIMARY_KEY);
 
                 }
 

@@ -38,14 +38,7 @@ public interface TableModifier extends CreateTableSQLSyntax {
      */
     void setSQLText();
 
-    /**
-     * Generates and prints the SQL text with the specified values as either
-     * column values or constraints values depending on the type parameter.
-     *
-     * @param the values to add to the SQL
-     * @param the type of values - column or constraint
-     */
-    void setSQLText(String values, int type);
+
 
     /**
      * Retrieves the currently selected/created table name.

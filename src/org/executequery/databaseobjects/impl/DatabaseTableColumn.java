@@ -23,8 +23,6 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.sql.StatementGenerator;
-import org.executequery.sql.spi.LiquibaseStatementGenerator;
 import org.underworldlabs.util.MiscUtils;
 
 import java.util.ArrayList;
@@ -48,7 +46,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
     /**
      * The table this column belongs to
      */
-    private DatabaseTable table;
+    protected DatabaseTable table;
 
     /**
      * constraints of this column
@@ -60,7 +58,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
      */
     private DatabaseTableColumn copy;
 
-    private transient static final StatementGenerator STATEMENT_GENERATOR = new LiquibaseStatementGenerator();
+    //private transient static final StatementGenerator STATEMENT_GENERATOR = new LiquibaseStatementGenerator();
 
     /**
      * Creates a new instance of DatabaseTableColumn belonging to the
@@ -104,6 +102,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
         setColumnDescription(column.getColumnDescription());
         setDomain(column.getDomain());
         setColumnSubtype(column.getColumnSubtype());
+        setIdentity(column.isIdentity());
     }
 
     @Override
@@ -131,7 +130,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
     public String getNameEscaped() {
 
-        return STATEMENT_GENERATOR.columnNameValueEscaped(this);
+        return MiscUtils.getFormattedObject(getName());
     }
 
     /**

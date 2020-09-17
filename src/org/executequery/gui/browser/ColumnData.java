@@ -398,9 +398,11 @@ public class ColumnData implements Serializable {
         setNotNull(cd.isRequired());
         setSQLType(cd.getTypeInt());
         setDomain(cd.getDomain());
-        setDescription(cd.getDescription());
+        setDescription(cd.getColumnDescription());
         setComputedBy(cd.getComputedSource());
         setDefaultValue(cd.getDefaultValue());
+        if(cd.isIdentity())
+            ai.setIdentity(true);
     }
 
     public boolean isPrimaryKey() {
@@ -507,6 +509,7 @@ public class ColumnData implements Serializable {
     }
 
     public void setColumnSize(int columnSize) {
+
         this.columnSize = columnSize;
     }
 
@@ -572,7 +575,8 @@ public class ColumnData implements Serializable {
                 "F.RDB$NULL_FLAG,\n" +
                 "F.RDB$DEFAULT_SOURCE,\n" +
                 "F.RDB$FIELD_PRECISION,\n" +
-                "F.RDB$COMPUTED_SOURCE\n" +
+                "F.RDB$COMPUTED_SOURCE,\n" +
+                "F.RDB$SEGMENT_LENGTH\n"+
                 "FROM RDB$FIELDS AS F \n" +
                 "LEFT JOIN RDB$CHARACTER_SETS AS C ON F.RDB$CHARACTER_SET_ID = C.RDB$CHARACTER_SET_ID\n" +
                 "WHERE RDB$FIELD_NAME='" +
@@ -582,6 +586,8 @@ public class ColumnData implements Serializable {
             if (rs.next()) {
                 domainType = rs.getInt(1);
                 domainSize = rs.getInt(2);
+                if(rs.getInt(12)!=0)
+                    domainSize=rs.getInt(12);
                 if (rs.getInt(10) != 0)
                     domainSize = rs.getInt(10);
                 domainScale = Math.abs(rs.getInt(3));
@@ -678,7 +684,7 @@ public class ColumnData implements Serializable {
                         || type == Types.LONGVARBINARY)) {
             if (type == Types.BLOB || type == Types.LONGVARCHAR
                     || type == Types.LONGVARBINARY)
-                sb.append(" segment size ").append(getColumnSize());
+                sb.append(" SEGMENT SIZE ").append(getColumnSize());
             else if (isEditSize() && getColumnSize() > 0 && !isDateDataType()
                     && !isNonPrecisionType()) {
                 sb.append("(");
@@ -980,24 +986,8 @@ public class ColumnData implements Serializable {
         return getFormattedObject(columnName);
     }
 
-    private boolean checkAllUpperCase(String str) {
-        return str.equals(str.toUpperCase());
-    }
-
-    private boolean checkKeyword(String str) {
-        KeywordRepository keywordRepository =
-                (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
-        List<String> keywords = keywordRepository.getSQLKeywords();
-        for (int i = 0; i < keywords.size(); i++)
-            if (keywords.get(i).toUpperCase().equals(str.toUpperCase()))
-                return true;
-        return false;
-    }
-
     String getFormattedObject(String obj) {
-        if (checkAllUpperCase(obj) && !checkKeyword(obj))
-            return obj;
-        else return MiscUtils.wordInQuotes(obj);
+        return MiscUtils.getFormattedObject(obj);
     }
 }
 

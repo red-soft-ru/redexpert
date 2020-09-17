@@ -20,7 +20,6 @@
 
 package org.executequery.gui.importexport;
 
-import liquibase.database.Database;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -31,7 +30,6 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.LogRepository;
 import org.executequery.repository.RepositoryCache;
-import org.executequery.sql.spi.LiquibaseDatabaseFactory;
 import org.executequery.util.Base64;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.GUIUtils;
@@ -271,20 +269,12 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
     private String columnNamesAsCommaSeparatedString(String table, List<?> columns) throws DataSourceException, SQLException {
 
         StringBuilder sb = new StringBuilder();
-        Database database = new LiquibaseDatabaseFactory().createDatabase(getConnection().getMetaData().getDatabaseProductName());
 
         int columnCount = columns.size();
         for (int i = 0, n = columnCount - 1; i < columnCount; i++) {
 
             String columnName = columns.get(i).toString();
-            if (columnName.contains(" ")) {
-
-                columnName = "\"" + columnName + "\"";
-
-            } else {
-
-                columnName = database.escapeColumnName(null, parent.getSchemaName(), table, columnName);
-            }
+            columnName = MiscUtils.getFormattedObject(columnName);
 
             sb.append(columnName);
             if (i != n) {

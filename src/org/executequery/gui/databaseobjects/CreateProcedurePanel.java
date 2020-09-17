@@ -20,6 +20,7 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.procedure.CreateProcedureFunctionPanel;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -217,70 +218,8 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
 
     @Override
     protected void generateScript() {
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append("create or alter procedure ");
-            sb.append(getNameInQuotes());
-            sb.append(" (");
-            sb.append(formattedParameters(inputParametersPanel.getProcedureParameterModel().getTableVector(), false));
-            sb.append(")\n");
-            String output = formattedParameters(outputParametersPanel.getProcedureParameterModel().getTableVector(), false);
-            if (!MiscUtils.isNull(output.trim())) {
-                sb.append("returns (");
-                sb.append(output);
-                sb.append(")\n");
-            }
-            sb.append("as");
-            sb.append(formattedParameters(variablesPanel.getProcedureParameterModel().getTableVector(), true));
-            sb.append(sqlBodyText.getSQLText());
-            sb.append("^\n");
+            ddlTextPanel.setSQLText(SQLUtils.generateCreateProcedure(nameField.getText(),inputParametersPanel.getProcedureParameterModel().getTableVector(),outputParametersPanel.getProcedureParameterModel().getTableVector(),variablesPanel.getProcedureParameterModel().getTableVector(),sqlBodyText.getSQLText(),descriptionArea.getTextAreaComponent().getText()));
 
-            sb.append("\n");
-
-            // add procedure description
-            String text = descriptionArea.getTextAreaComponent().getText();
-            if (text != null && !text.isEmpty()) {
-                sb.append("\n");
-                sb.append("COMMENT ON PROCEDURE ");
-                sb.append(getNameInQuotes());
-                sb.append(" IS '");
-                sb.append(text);
-                sb.append("'");
-                sb.append("^\n");
-            }
-
-            for (ColumnData cd :
-                    inputParametersPanel.getProcedureParameterModel().getTableVector()) {
-                String cdText = cd.getDescription();
-                if (cdText != null && !cdText.isEmpty()) {
-                    sb.append("\n");
-                    sb.append("COMMENT ON PARAMETER ");
-                    sb.append(getNameInQuotes()).append(".");
-                    sb.append(cd.getFormattedColumnName());
-                    sb.append(" IS '");
-                    sb.append(cdText);
-                    sb.append("'\n");
-                    sb.append("^\n");
-                }
-            }
-
-            for (ColumnData cd :
-                    outputParametersPanel.getProcedureParameterModel().getTableVector()) {
-                String cdText = cd.getDescription();
-                if (cdText != null && !cdText.isEmpty()) {
-                    sb.append("\n");
-                    sb.append("COMMENT ON PARAMETER ");
-                    sb.append(getNameInQuotes()).append(".");
-                    sb.append(cd.getFormattedColumnName());
-                    sb.append(" IS '");
-                    sb.append(cdText);
-                    sb.append("'\n");
-                    sb.append("^\n");
-                }
-            }
-
-            ddlTextPanel.setSQLText(sb.toString());
-        }
     }
 
     /**

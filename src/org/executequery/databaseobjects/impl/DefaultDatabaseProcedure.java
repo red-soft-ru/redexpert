@@ -25,6 +25,7 @@ import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -84,146 +85,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
 
     public String getCreateSQLText() {
 
-        StringBuilder sbSQL = new StringBuilder();
-        StringBuilder sbInput = new StringBuilder();
-        StringBuilder sbOutput = new StringBuilder();
-
-        sbSQL.append("CREATE OR ALTER PROCEDURE \n");
-        sbSQL.append(getName());
-        sbSQL.append("\n");
-
-        sbInput.append("( \n");
-
-        sbOutput.append("( \n");
-
-        List<ProcedureParameter> parameters = getParameters();
-
-        for (ProcedureParameter parameter : parameters) {
-            if (parameter.getType() == DatabaseMetaData.procedureColumnIn) {
-                sbInput.append("\t");
-                sbInput.append(parameter.getName());
-                sbInput.append(" ");
-                if (parameter.isTypeOf()) {
-                    sbInput.append(" type of ");
-                    if (parameter.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
-                        sbInput.append(parameter.getDomain());
-                    else {
-                        sbInput.append("column ");
-                        sbInput.append(parameter.getRelationName());
-                        sbInput.append(".");
-                        sbInput.append(parameter.getFieldName());
-                    }
-                } else {
-                    if (parameter.getDomain() != null) {
-                        sbInput.append(parameter.getDomain());
-                    } else {
-                        if (parameter.getSqlType().contains("SUB_TYPE")) {
-                            sbInput.append(parameter.getSqlType().replace("<0", String.valueOf(parameter.getSubType())));
-                            sbInput.append(" segment size ");
-                            sbInput.append(parameter.getSize());
-                        } else {
-                            sbInput.append(parameter.getSqlType());
-
-                            if (parameter.getDataType() == Types.CHAR
-                                    || parameter.getDataType() == Types.BINARY
-                                    || parameter.getDataType() == Types.VARCHAR
-                                    || parameter.getDataType() == Types.NVARCHAR
-                                    || parameter.getDataType() == Types.VARBINARY) {
-                                sbInput.append("(");
-                                sbInput.append(parameter.getSize());
-                                sbInput.append(")");
-                            }
-                        }
-                    }
-                }
-                if (parameter.getEncoding() != null) {
-                    sbInput.append(" character set ");
-                    sbInput.append(parameter.getEncoding()).append(" ");
-                }
-                if (parameter.getNullable() == 1)
-                    sbInput.append(" not null ");
-                if (!MiscUtils.isNull(parameter.getDefaultValue()))
-                    sbInput.append(" ").append(parameter.getDefaultValue());
-                sbInput.append(",\n");
-            } else if (parameter.getType() == DatabaseMetaData.procedureColumnOut) {
-                sbOutput.append("\t");
-                sbOutput.append(parameter.getName());
-                sbOutput.append(" ");
-                if (parameter.isTypeOf()) {
-                    sbOutput.append("type of ");
-                    if (parameter.getTypeOfFrom() == ColumnData.TYPE_OF_FROM_DOMAIN)
-                        sbOutput.append(parameter.getDomain());
-                    else {
-                        sbOutput.append("column ");
-                        sbOutput.append(parameter.getRelationName());
-                        sbOutput.append(".");
-                        sbOutput.append(parameter.getFieldName());
-                    }
-                } else {
-                    if (parameter.getDomain() != null) {
-                        sbOutput.append(parameter.getDomain());
-                    } else {
-                        if (parameter.getSqlType().contains("SUB_TYPE")) {
-                            sbOutput.append(parameter.getSqlType().replace("<0", String.valueOf(parameter.getSubType())));
-                            sbOutput.append(" segment size ");
-                            sbOutput.append(parameter.getSize());
-                        } else {
-                            sbOutput.append(parameter.getSqlType());
-
-                            if (parameter.getDataType() == Types.CHAR
-                                    || parameter.getDataType() == Types.BINARY
-                                    || parameter.getDataType() == Types.VARCHAR
-                                    || parameter.getDataType() == Types.NVARCHAR
-                                    || parameter.getDataType() == Types.VARBINARY) {
-                                sbOutput.append("(");
-                                sbOutput.append(parameter.getSize());
-                                sbOutput.append(")");
-                            }
-                        }
-                    }
-                }
-                if (parameter.getEncoding() != null) {
-                    sbOutput.append(" character set ");
-                    sbOutput.append(parameter.getEncoding());
-                }
-                if (parameter.getNullable() == 1)
-                    sbOutput.append(" not null ");
-                sbOutput.append(",\n");
-            }
-        }
-
-        String input = null;
-        if (sbInput.length() > 3) {
-            input = sbInput.substring(0, sbInput.length() - 2);
-            input += "\n) \n";
-        }
-
-        if (input != null) {
-            sbSQL.append(input);
-            sbSQL.append("\n");
-        }
-
-        String output = null;
-        if (sbOutput.length() > 3) {
-            output = sbOutput.substring(0, sbOutput.length() - 2);
-            output += "\n) \n";
-        }
-
-        if (output != null) {
-            sbSQL.append("RETURNS \n");
-            sbSQL.append(output);
-            sbSQL.append("\n");
-        }
-
-
-        sbSQL.append("AS");
-        sbSQL.append("\n");
-
-        sbSQL.append(getProcedureSourceCode());
-
-        sbSQL.append(";\n");
-
-        return sbSQL.toString();
+        return SQLUtils.generateCreateProcedure(getName(),getParameters(),getProcedureSourceCode(),getDescription(), getHost().getDatabaseConnection());
     }
 
     @Override

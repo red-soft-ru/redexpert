@@ -103,6 +103,8 @@ public interface ColumnConstraint extends DatabaseObjectElement {
      */
     DatabaseTable getTable();
 
+    void setTable(DatabaseTable table);
+
     /**
      * Returns the table name associated with this constraint.
      *

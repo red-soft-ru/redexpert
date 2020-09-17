@@ -14,6 +14,7 @@ import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 import org.underworldlabs.swing.table.NumberCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
 import org.underworldlabs.util.FileUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -616,29 +617,7 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         }
 
 
-        ColumnData cd = new ColumnData(true, dc);
-        cd.setColumnName(parameter.getName());
-        cd.setDomain(parameter.getDomain());
-        cd.setColumnSubtype(parameter.getSubType());
-        cd.setSQLType(parameter.getDataType());
-        cd.setColumnSize(parameter.getSize());
-        cd.setColumnType(parameter.getSqlType());
-        cd.setColumnScale(parameter.getScale());
-        cd.setColumnRequired(parameter.getNullable());
-        cd.setCharset(parameter.getEncoding());
-        cd.setDescription(parameter.getDescription());
-        cd.setTypeOf(parameter.isTypeOf());
-        cd.setTypeOfFrom(parameter.getTypeOfFrom());
-        cd.setTable(parameter.getRelationName());
-        cd.setColumnTable(parameter.getFieldName());
-        cd.setDefaultValue(parameter.getDefaultValue(), true);
-
-
-        for (int i = 0; i < dataTypes.length; i++) {
-            if (dataTypes[i].toLowerCase().equals(parameter.getSqlType().toLowerCase()))
-                cd.setSQLType(intDataTypes[i]);
-        }
-
+        ColumnData cd = SQLUtils.columnDataFromProcedureParameter(parameter, dc);
         addRow(cd);
         table.setEditingRow(tableVector.size() - 1);
         _model.fireTableRowsUpdated(tableVector.size() - 1, tableVector.size() - 1);

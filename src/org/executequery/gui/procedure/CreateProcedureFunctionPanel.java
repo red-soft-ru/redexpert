@@ -219,9 +219,10 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                                 variable.setDefaultValue(var.default_value().getText());
                             if (var.comment() != null) {
                                 String description = var.comment().getText();
-                                if (description.startsWith("--"))
+                                if (description.startsWith("--")) {
                                     description = description.substring(2);
-                                else if (description.startsWith("/*"))
+                                    variable.setDescriptionAsSingleComment(true);
+                                } else if (description.startsWith("/*"))
                                     description = description.substring(2, description.length() - 2);
                                 variable.setDescription(description);
                             }

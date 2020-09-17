@@ -29,8 +29,6 @@ import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.gui.table.Autoincrement;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.log.Log;
-import org.executequery.repository.KeywordRepository;
-import org.executequery.repository.RepositoryCache;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.util.MiscUtils;
 
@@ -66,6 +64,8 @@ public class ColumnData implements Serializable {
     public static final int TYPE_OF_FROM_DOMAIN = 0;
 
     public static final int TYPE_OF_FROM_COLUMN = 1;
+
+    private boolean descriptionAsSingleComment = false;
 
     /**
      * the catalog for this column
@@ -988,6 +988,14 @@ public class ColumnData implements Serializable {
 
     String getFormattedObject(String obj) {
         return MiscUtils.getFormattedObject(obj);
+    }
+
+    public boolean isDescriptionAsSingleComment() {
+        return descriptionAsSingleComment;
+    }
+
+    public void setDescriptionAsSingleComment(boolean descriptionAsSingleComment) {
+        this.descriptionAsSingleComment = descriptionAsSingleComment;
     }
 }
 

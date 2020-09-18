@@ -22,15 +22,9 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
-import org.executequery.databaseobjects.ProcedureParameter;
-import org.executequery.gui.browser.ColumnData;
-import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.Types;
-import java.util.List;
 
 /**
  * Default database procedure implementation.
@@ -85,7 +79,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
 
     public String getCreateSQLText() {
 
-        return SQLUtils.generateCreateProcedure(getName(),getParameters(),getProcedureSourceCode(),getDescription(), getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateProcedure(getName(), getParameters(), getProcedureSourceCode(), getRemarks(), getHost().getDatabaseConnection());
     }
 
     @Override

@@ -188,8 +188,8 @@ public final class SQLUtils {
                         if (cc.hasSchema())
                             sqlBuffer.append(cc.getRefSchema()).append(DOT);
 
-                        sqlBuffer.append(MiscUtils.wordInQuotes(cc.getRefTable())).
-                                append(B_OPEN).append(MiscUtils.wordInQuotes(cc.getRefColumn())).
+                        sqlBuffer.append(MiscUtils.getFormattedObject(cc.getRefTable())).
+                                append(B_OPEN).append(MiscUtils.getFormattedObject(cc.getRefColumn())).
                                 append(B_CLOSE);
                     }
 

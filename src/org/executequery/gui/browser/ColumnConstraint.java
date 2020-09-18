@@ -108,11 +108,13 @@ public class ColumnConstraint implements Serializable {
             column = EMPTY;
             refColumn = EMPTY;
         }
-        this.column= cc.getColumnName();
-        this.name=cc.getName();
-        this.table= cc.getTableName();
-        this.type=cc.getType();
-        this.check=cc.getCheck();
+        this.column = cc.getColumnName();
+        this.name = cc.getName();
+        this.table = cc.getTableName();
+        this.type = cc.getType();
+        this.check = cc.getCheck();
+        this.refTable = cc.getReferencedTable();
+        this.refColumn = cc.getReferencedColumn();
     }
 
     public boolean isForeignKey() {

@@ -740,7 +740,7 @@ public final class MiscUtils {
         return false;
     }
 
-    public final static String LATIN_OR_DIGIT_OR_SPEC_SYMBOL_RDB="([A-Za-z]+[$_0-1A-Za-z]*)";
+    public final static String LATIN_OR_DIGIT_OR_SPEC_SYMBOL_RDB = "([A-Za-z]+[$_0-9A-Za-z]*)";
 
     public static boolean isLatinOrDigitOrSpecSymbolRDB(String obj)
     {
@@ -748,9 +748,10 @@ public final class MiscUtils {
     }
 
     public static String getFormattedObject(String obj) {
-        if (isLatinOrDigitOrSpecSymbolRDB(obj)&&checkAllUpperCase(obj) && !checkKeyword(obj))
-            return obj.trim();
-        else return MiscUtils.wordInQuotes(obj.trim());
+        obj = obj.trim();
+        if (isLatinOrDigitOrSpecSymbolRDB(obj) && checkAllUpperCase(obj) && !checkKeyword(obj))
+            return obj;
+        else return MiscUtils.wordInQuotes(obj);
     }
 
 }

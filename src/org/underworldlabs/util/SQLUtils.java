@@ -136,8 +136,8 @@ public final class SQLUtils {
                 if (str) {
                     value += "'";
                 }
-                if(MiscUtils.checkKeyword(cd.getDefaultValue()))
-                    value=cd.getDefaultValue();
+                if (MiscUtils.checkKeyword(cd.getDefaultValue()) || cd.getDefaultValue().startsWith("'"))
+                    value = cd.getDefaultValue();
                 sqlText.append(" DEFAULT " + value);
             }
             sqlText.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);

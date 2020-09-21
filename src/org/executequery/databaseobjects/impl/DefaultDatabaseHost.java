@@ -937,8 +937,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             }
             if (column_def != null) {
                 // TODO This looks suspicious (what if it contains default)
-                int defaultPos = column_def.toUpperCase().indexOf("DEFAULT");
-                if (defaultPos >= 0)
+                int defaultPos = column_def.toUpperCase().trim().indexOf("DEFAULT");
+                if (defaultPos == 0)
                     column_def = column_def.substring(7).trim();
                 column.setDefaultValue(column_def);
             }

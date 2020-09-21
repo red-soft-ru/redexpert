@@ -75,6 +75,7 @@ public final class SQLUtils {
         sqlBuffer.append(sqlText.toString().replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME,MiscUtils.getFormattedObject(name)));
         if (primary_flag&&!existTable)
             sqlBuffer.append(primary);
+        columnConstraintList = removeDuplicatesConstraints(columnConstraintList);
         for (int i = 0, n = columnConstraintList.size(); i < n; i++) {
             sqlBuffer.append(generateDefinitionColumnConstraint(columnConstraintList.get(i)));
 
@@ -176,10 +177,18 @@ public final class SQLUtils {
                 }
                 else if (cc.getType() == UNIQUE_KEY) {
                     sqlBuffer.append(ColumnConstraint.UNIQUE).append(B_OPEN);
-                    sqlBuffer.append(MiscUtils.getFormattedObject(cc.getColumn())).append(B_CLOSE);
+                    String formatted = "";
+                    if (cc.getCountCols() > 1)
+                        formatted = cc.getColumn();
+                    else formatted = MiscUtils.getFormattedObject(cc.getColumn());
+                    sqlBuffer.append(formatted).append(B_CLOSE);
                 } else {
                     sqlBuffer.append(cc.getTypeName()).append(KEY).append(B_OPEN);
-                    sqlBuffer.append(MiscUtils.getFormattedObject(cc.getColumn()));
+                    String formatted = "";
+                    if (cc.getCountCols() > 1)
+                        formatted = cc.getColumn();
+                    else formatted = MiscUtils.getFormattedObject(cc.getColumn());
+                    sqlBuffer.append(formatted);
                     sqlBuffer.append(B_CLOSE);
 
                     if (cc.getType() == FOREIGN_KEY) {
@@ -188,9 +197,11 @@ public final class SQLUtils {
                         if (cc.hasSchema())
                             sqlBuffer.append(cc.getRefSchema()).append(DOT);
 
-                        sqlBuffer.append(MiscUtils.getFormattedObject(cc.getRefTable())).
-                                append(B_OPEN).append(MiscUtils.getFormattedObject(cc.getRefColumn())).
-                                append(B_CLOSE);
+                        sqlBuffer.append(MiscUtils.getFormattedObject(cc.getRefTable())).append(B_OPEN);
+                        if (cc.getCountCols() > 1)
+                            formatted = cc.getRefColumn();
+                        else formatted = MiscUtils.getFormattedObject(cc.getRefColumn());
+                        sqlBuffer.append(formatted).append(B_CLOSE);
                     }
 
                 }
@@ -394,13 +405,45 @@ public final class SQLUtils {
         cd.setDescriptionAsSingleComment(parameter.isDescriptionAsSingleComment());
         MetaDataValues metaData = new MetaDataValues(true);
         metaData.setDatabaseConnection(dc);
-        String [] dataTypes = metaData.getDataTypesArray();
-        int [] intDataTypes = metaData.getIntDataTypesArray();
+        String[] dataTypes = metaData.getDataTypesArray();
+        int[] intDataTypes = metaData.getIntDataTypesArray();
         for (int i = 0; i < dataTypes.length; i++) {
             if (dataTypes[i].toLowerCase().equals(parameter.getSqlType().toLowerCase()))
                 cd.setSQLType(intDataTypes[i]);
         }
         return cd;
+    }
+
+    public static List<ColumnConstraint> removeDuplicatesConstraints(List<ColumnConstraint> columnConstraintList) {
+        List<String> cc_names = new ArrayList<>();
+        List<ColumnConstraint> columnConstraints = new ArrayList<>();
+        for (int i = 0, n = columnConstraintList.size(); i < n; i++) {
+            int ind = cc_names.indexOf(columnConstraintList.get(i).getName());
+            if (ind >= 0) {
+                ColumnConstraint cc_rep = columnConstraintList.get(i);
+                ColumnConstraint cc_origin = columnConstraints.get(ind);
+                if (cc_rep.getColumn() != null) {
+                    String cols = cc_origin.getColumn();
+                    if (cc_origin.getCountCols() == 1)
+                        cols = MiscUtils.getFormattedObject(cols);
+                    cols += "," + MiscUtils.getFormattedObject(cc_rep.getColumn());
+                    cc_origin.setColumn(cols);
+                }
+                if (cc_rep.getRefColumn() != null) {
+                    String cols = cc_origin.getRefColumn();
+                    if (cc_origin.getCountCols() == 1)
+                        cols = MiscUtils.getFormattedObject(cols);
+                    cols += "," + MiscUtils.getFormattedObject(cc_rep.getRefColumn());
+                    cc_origin.setRefColumn(cols);
+                }
+                cc_origin.setCountCols(cc_origin.getCountCols() + 1);
+
+            } else {
+                cc_names.add(columnConstraintList.get(i).getName());
+                columnConstraints.add(columnConstraintList.get(i));
+            }
+        }
+        return columnConstraints;
     }
 
 }

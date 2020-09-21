@@ -213,13 +213,11 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         }
         switch ((String) typeBox.getSelectedItem()) {
             case ColumnConstraint.PRIMARY:
+            case ColumnConstraint.UNIQUE:
                 typePanel = primaryPanel;
                 break;
             case ColumnConstraint.FOREIGN:
                 typePanel = foreignPanel;
-                break;
-            case ColumnConstraint.UNIQUE:
-                typePanel = primaryPanel;
                 break;
             case ColumnConstraint.CHECK:
                 typePanel = checkPanel;

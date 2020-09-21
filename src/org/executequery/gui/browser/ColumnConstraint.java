@@ -62,16 +62,25 @@ public class ColumnConstraint implements Serializable {
     /** The referenced column of this constraint */
     private String refColumn;
 
-    /** The type of constraint */
+
+    /**
+     * The type of constraint
+     */
     private int type;
 
-    /** Whether this constraint is new (for editing a table definition) */
+    /**
+     * Whether this constraint is new (for editing a table definition)
+     */
     private boolean newConstraint;
 
-    /** Whether this constraint is marked to be dropped */
+    /**
+     * Whether this constraint is marked to be dropped
+     */
     private boolean markedDeleted;
 
     private String check;
+
+    private int countCols = 1;
 
     /*public static final int PRIMARY_KEY = 0;
     public static final int FOREIGN_KEY = 1;
@@ -232,6 +241,14 @@ public class ColumnConstraint implements Serializable {
 
     public void setCheck(String check) {
         this.check = check;
+    }
+
+    public int getCountCols() {
+        return countCols;
+    }
+
+    public void setCountCols(int countCols) {
+        this.countCols = countCols;
     }
 }
 

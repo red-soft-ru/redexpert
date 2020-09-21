@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.Clob;
 import java.sql.SQLException;
+import java.util.Objects;
 
 public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 
@@ -59,7 +60,7 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
         boolean isValidText = true;
 
         if (data != null) {
-            if (charset.equals(CreateTableSQLSyntax.NONE))
+            if (charset == null || Objects.equals(charset, CreateTableSQLSyntax.NONE))
                 dataAsText = new String(data);
             else try {
                 dataAsText = new String(data, charset);
@@ -71,7 +72,7 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 
             int defaultEndPoint = 256;
             int endPoint = Math.min(charArray.length, defaultEndPoint);
-            if (charset.equals(CreateTableSQLSyntax.NONE))
+            if (charset == null || charset.equals(CreateTableSQLSyntax.NONE))
                 for (int i = 0; i < endPoint; i++) {
 
                     if (!CharUtils.isAscii(charArray[i])) {

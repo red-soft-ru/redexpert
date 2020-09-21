@@ -27,9 +27,6 @@ import org.executequery.databaseobjects.*;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.gui.resultset.RecordDataItem;
-import org.executequery.gui.table.CreateTableSQLSyntax;
-import org.executequery.gui.table.TableDefinitionPanel;
-import org.executequery.gui.table.TableModifier;
 import org.executequery.log.Log;
 import org.executequery.sql.SQLFormatter;
 import org.executequery.sql.SqlStatementResult;
@@ -41,8 +38,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import static org.executequery.gui.table.CreateTableSQLSyntax.*;
 
 /**
  * @author Takis Diakoumis
@@ -398,11 +393,16 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         DefaultStatementExecutor executor = new DefaultStatementExecutor(getHost().getDatabaseConnection(), true);
         SqlStatementResult result = null;
         try {
-          String query = "SELECT DISTINCT C.RDB$CONSTRAINT_NAME,\n" +
-              "T.RDB$TRIGGER_SOURCE FROM\n" +
-              "RDB$CHECK_CONSTRAINTS AS C LEFT JOIN RDB$TRIGGERS AS T\n" +
-              "ON C.RDB$TRIGGER_NAME = T.RDB$TRIGGER_NAME\n" +
-              "where T.RDB$RELATION_NAME='" + getName() + "'";
+          String query = "select A.RDB$CONSTRAINT_NAME,\n" +
+                  "A.RDB$CONSTRAINT_TYPE,\n" +
+                  "A.RDB$RELATION_NAME,\n" +
+                  "C.RDB$TRIGGER_SOURCE\n" +
+                  "from RDB$RELATION_CONSTRAINTS A, RDB$CHECK_CONSTRAINTS B, RDB$TRIGGERS C\n" +
+                  "where (A.RDB$CONSTRAINT_TYPE = 'CHECK') and\n" +
+                  "(A.RDB$CONSTRAINT_NAME = B.RDB$CONSTRAINT_NAME) and\n" +
+                  "(B.RDB$TRIGGER_NAME = C.RDB$TRIGGER_NAME) and\n" +
+                  "(C.RDB$TRIGGER_TYPE = 1)\n" +
+                  "and (A.RDB$RELATION_NAME = '" + getName() + "')";
           result = executor.execute(QueryTypes.SELECT, query);
           ResultSet rs = result.getResultSet();
           List<String> names = new ArrayList<>();
@@ -410,7 +410,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
             while (rs.next()) {
               String name = rs.getString(1).trim();
               if (!names.contains(name)) {
-                ColumnConstraint constraint = new TableColumnConstraint(rs.getString(2));
+                ColumnConstraint constraint = new TableColumnConstraint(rs.getString(4));
                 constraint.setName(name);
                 constraint.setTable(this);
                 constraints.add(constraint);

@@ -291,7 +291,10 @@ public abstract class TableConstraintsPanel extends JPanel
                 "Name",
                 "Table Column",
                 "Reference Table",
-                "Reference Column"};
+                "Reference Column",
+                "Update rule",
+                "Delete rule"
+        };
 
         private Vector keys;
 
@@ -347,6 +350,16 @@ public abstract class TableConstraintsPanel extends JPanel
                         return null;
                     }
                     return cc.getRefColumn();
+                case 6:
+                    if (!canHaveReference) {
+                        return null;
+                    }
+                    return cc.getUpdateRule();
+                case 7:
+                    if (!canHaveReference) {
+                        return null;
+                    }
+                    return cc.getDeleteRule();
                 default:
                     return null;
             }
@@ -407,6 +420,14 @@ public abstract class TableConstraintsPanel extends JPanel
                     cc.setRefColumn((String) value);
                     columnValuesChanged(col, row, null);
                     break;
+                case 6:
+                    cc.setUpdateRule((String) value);
+                    columnValuesChanged(col, row, null);
+                    break;
+                case 7:
+                    cc.setDeleteRule((String) value);
+                    columnValuesChanged(col, row, null);
+                    break;
             }
 
             fireTableRowsUpdated(row, row);
@@ -430,6 +451,8 @@ public abstract class TableConstraintsPanel extends JPanel
                         return true;
                     case 4:
                     case 5:
+                    case 6:
+                    case 7:
                         return (cc.getType() != UNIQUE_KEY &&
                                 cc.getType() != PRIMARY_KEY);
                 }

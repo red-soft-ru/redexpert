@@ -286,7 +286,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
             sqlPanel.setSQLText(sb.toString());
         } else {
             columnData.setColumnName(nameField.getText());
-            sb.append("ALTER TABLE ").append(MiscUtils.wordInQuotes(table.getName())).append("\nADD ").append(columnData.getFormattedColumnName()).append("\n");
+            sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName())).append("\nADD ").append(columnData.getFormattedColumnName()).append("\n");
             if (MiscUtils.isNull(columnData.getComputedBy())) {
                 if (MiscUtils.isNull(columnData.getDomain())) {
                     if (columnData.getColumnType() != null) {
@@ -337,7 +337,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
             }
             sb.append("^");
             if (!MiscUtils.isNull(columnData.getDescription())) {
-                sb.append("\nCOMMENT ON COLUMN ").append(MiscUtils.wordInQuotes(table.getName())).append(".").append(columnData.getFormattedColumnName()).append(" IS '")
+                sb.append("\nCOMMENT ON COLUMN ").append(MiscUtils.getFormattedObject(table.getName())).append(".").append(columnData.getFormattedColumnName()).append(" IS '")
                         .append(columnData.getDescription()).append("'^");
             }
             autoIncrementPanel.generateAI();
@@ -353,13 +353,13 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
 
         if (column.isNameChanged()) {
 
-            sb.append("ALTER TABLE ").append(MiscUtils.wordInQuotes(table.getName()))
-                    .append(" ALTER COLUMN ").append(MiscUtils.wordInQuotes(column.getOriginalColumn().getName())).append(" TO ").append(columnData.getFormattedColumnName()).append(";\n");
+            sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName()))
+                    .append(" ALTER COLUMN ").append(MiscUtils.getFormattedObject(column.getOriginalColumn().getName())).append(" TO ").append(columnData.getFormattedColumnName()).append(";\n");
         }
 
         if (column.isDataTypeChanged()) {
 
-            sb.append("ALTER TABLE ").append(MiscUtils.wordInQuotes(table.getName()))
+            sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName()))
                     .append(" ALTER COLUMN ").append(columnData.getFormattedColumnName()).append(" TYPE ").append(columnData.getFormattedDataType()).append(";\n");
         }
 
@@ -367,12 +367,12 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
 
             if (column.isRequired()) {
 
-                sb.append("ALTER TABLE " + MiscUtils.wordInQuotes(table.getName()) +
+                sb.append("ALTER TABLE " + MiscUtils.getFormattedObject(table.getName()) +
                         " ALTER COLUMN " + columnData.getFormattedColumnName() + " SET NOT NULL;\n");
 
             } else {
 
-                sb.append("ALTER TABLE " + MiscUtils.wordInQuotes(table.getName()) +
+                sb.append("ALTER TABLE " + MiscUtils.getFormattedObject(table.getName()) +
                         " ALTER COLUMN " + columnData.getFormattedColumnName() + " DROP NOT NULL;\n");
             }
 
@@ -380,23 +380,23 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
 
         if (column.isDefaultValueChanged()) {
 
-            sb.append("ALTER TABLE " + MiscUtils.wordInQuotes(table.getName()) +
+            sb.append("ALTER TABLE " + MiscUtils.getFormattedObject(table.getName()) +
                     " ALTER COLUMN " + columnData.getFormattedColumnName() + " SET DEFAULT " + columnData.getDefaultValue() + ";\n");
         }
 
         if (column.isComputedChanged()) {
-            sb.append("ALTER TABLE " + MiscUtils.wordInQuotes(table.getName()) +
+            sb.append("ALTER TABLE " + MiscUtils.getFormattedObject(table.getName()) +
                     "\nALTER COLUMN " + columnData.getFormattedColumnName() + " COMPUTED BY " + column.getComputedSource() + ";\n");
         }
 
         if (column.isDescriptionChanged()) {
-            sb.append("COMMENT ON COLUMN " + MiscUtils.wordInQuotes(table.getName()) + "."
+            sb.append("COMMENT ON COLUMN " + MiscUtils.getFormattedObject(table.getName()) + "."
                     + columnData.getFormattedColumnName() +
                     " IS '" + column.getColumnDescription() + "';\n");
         }
 
         if (column.isDomainChanged()) {
-            sb.append("ALTER TABLE " + MiscUtils.wordInQuotes(table.getName()) +
+            sb.append("ALTER TABLE " + MiscUtils.getFormattedObject(table.getName()) +
                     "\nALTER COLUMN " + columnData.getFormattedColumnName() + " TYPE " + columnData.getFormattedDomain() + ";\n");
         }
 

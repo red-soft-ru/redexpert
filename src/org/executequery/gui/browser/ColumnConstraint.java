@@ -82,6 +82,16 @@ public class ColumnConstraint implements Serializable {
 
     private int countCols = 1;
 
+    public static final int RESTRICT = 0;
+    public static final int NO_ACTION = 1;
+    public static final int CASCADE = 2;
+    public static final int SET_DEFAULT = 3;
+    public static final int SET_NULL = 4;
+    public static final String[] RULES = {"RESTRICT", "NO ACTION", "CASCADE", "SET DEFAULT", "SET NULL"};
+    private String updateRule;
+    private String deleteRule;
+    private String sorting;
+
     /*public static final int PRIMARY_KEY = 0;
     public static final int FOREIGN_KEY = 1;
     public static final int UNIQUE_KEY = 2;*/
@@ -105,6 +115,8 @@ public class ColumnConstraint implements Serializable {
             refTable = EMPTY;
             column = EMPTY;
             refColumn = EMPTY;
+            setUpdateRule(RULES[RESTRICT]);
+            setDeleteRule(RULES[RESTRICT]);
         }
     }
     public ColumnConstraint(boolean newConstraint, org.executequery.databaseobjects.impl.ColumnConstraint cc) {
@@ -124,6 +136,8 @@ public class ColumnConstraint implements Serializable {
         this.check = cc.getCheck();
         this.refTable = cc.getReferencedTable();
         this.refColumn = cc.getReferencedColumn();
+        setUpdateRule(cc.getUpdateRule());
+        setDeleteRule(cc.getDeleteRule());
     }
 
     public boolean isForeignKey() {
@@ -249,6 +263,30 @@ public class ColumnConstraint implements Serializable {
 
     public void setCountCols(int countCols) {
         this.countCols = countCols;
+    }
+
+    public String getUpdateRule() {
+        return updateRule;
+    }
+
+    public void setUpdateRule(String updateRule) {
+        this.updateRule = updateRule;
+    }
+
+    public String getDeleteRule() {
+        return deleteRule;
+    }
+
+    public void setDeleteRule(String deleteRule) {
+        this.deleteRule = deleteRule;
+    }
+
+    public String getSorting() {
+        return sorting;
+    }
+
+    public void setSorting(String sorting) {
+        this.sorting = sorting;
     }
 }
 

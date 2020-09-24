@@ -226,12 +226,12 @@ public class AutoIncrementPanel extends JPanel {
                 ai.setCreateTrigger(createTriggerBox.isSelected());
                 triggerScroll.setVisible(ai.isCreateTrigger());
                 if (ai.isCreateTrigger()) {
-                    String sql = "create trigger " + MiscUtils.wordInQuotes(tableName + "_bi") + " for " + MiscUtils.wordInQuotes(tableName) + "\n" +
+                    String sql = "create trigger " + MiscUtils.getFormattedObject(tableName + "_bi") + " for " + MiscUtils.getFormattedObject(tableName) + "\n" +
                             "active before insert position 0\n" +
                             "as\n" +
                             "begin\n" +
-                            "if (new." + MiscUtils.wordInQuotes(ai.getFieldName()) + " is null) then\n" +
-                            "new." + MiscUtils.wordInQuotes(ai.getFieldName()) + " = gen_id(" + MiscUtils.wordInQuotes(ai.getGeneratorName()) + ",1);\n" +
+                            "if (new." + MiscUtils.getFormattedObject(ai.getFieldName()) + " is null) then\n" +
+                            "new." + MiscUtils.getFormattedObject(ai.getFieldName()) + " = gen_id(" + MiscUtils.getFormattedObject(ai.getGeneratorName()) + ",1);\n" +
                             "end";
                     triggerSQLPane.setText(sql);
                 }
@@ -387,10 +387,10 @@ public class AutoIncrementPanel extends JPanel {
         if (ai.isIdentity())
             ai.setStartValue(identityStartValue.getValue());
         if (ai.isCreateGenerator()) {
-            sql += "\nCREATE SEQUENCE " + MiscUtils.wordInQuotes(ai.getGeneratorName()) + "^";
+            sql += "\nCREATE SEQUENCE " + MiscUtils.getFormattedObject(ai.getGeneratorName()) + "^";
             ai.setStartValue(createStartValue.getValue());
             if (ai.getStartValue() != 0) {
-                sql += "\nALTER SEQUENCE " + MiscUtils.wordInQuotes(ai.getGeneratorName()) + " RESTART WITH " + ai.getStartValue() + "^";
+                sql += "\nALTER SEQUENCE " + MiscUtils.getFormattedObject(ai.getGeneratorName()) + " RESTART WITH " + ai.getStartValue() + "^";
             }
         }
         if (ai.isCreateTrigger()) {

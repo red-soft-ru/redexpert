@@ -43,7 +43,9 @@ public class ColumnConstraintTableModel extends AbstractPrintableTableModel {
             "Reference Schema",
             "Reference Table",
             "Reference Column",
-            "Check"
+            "Check",
+            "Update rule",
+            "Delete rule"
     };
 
     /**
@@ -226,6 +228,12 @@ public class ColumnConstraintTableModel extends AbstractPrintableTableModel {
             case 7:
                 tableConstraint.setCheck(_value);
                 break;
+            case 8:
+                tableConstraint.setUpdateRule(_value);
+                break;
+            case 9:
+                tableConstraint.setDeleteRule(_value);
+                break;
         }
         fireTableRowsUpdated(row, row);
     }
@@ -249,6 +257,10 @@ public class ColumnConstraintTableModel extends AbstractPrintableTableModel {
                 return constraint.getReferencedColumn();
             case 7:
                 return constraint.getCheck();
+            case 8:
+                return constraint.getUpdateRule();
+            case 9:
+                return constraint.getDeleteRule();
             default:
                 return null;
         }

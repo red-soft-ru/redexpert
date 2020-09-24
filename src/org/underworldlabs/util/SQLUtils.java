@@ -13,9 +13,12 @@ import java.sql.DatabaseMetaData;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 import static org.executequery.databaseobjects.NamedObject.*;
+import static org.executequery.gui.browser.ColumnConstraint.RESTRICT;
+import static org.executequery.gui.browser.ColumnConstraint.RULES;
 import static org.executequery.gui.table.CreateTableSQLSyntax.*;
 
 public final class SQLUtils {
@@ -77,7 +80,7 @@ public final class SQLUtils {
             sqlBuffer.append(primary);
         columnConstraintList = removeDuplicatesConstraints(columnConstraintList);
         for (int i = 0, n = columnConstraintList.size(); i < n; i++) {
-            sqlBuffer.append(generateDefinitionColumnConstraint(columnConstraintList.get(i)));
+            sqlBuffer.append(generateDefinitionColumnConstraint(columnConstraintList.get(i)).replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name)));
 
         }
         sqlBuffer.append(CreateTableSQLSyntax.B_CLOSE);
@@ -202,6 +205,10 @@ public final class SQLUtils {
                             formatted = cc.getRefColumn();
                         else formatted = MiscUtils.getFormattedObject(cc.getRefColumn());
                         sqlBuffer.append(formatted).append(B_CLOSE);
+                        if (cc.getUpdateRule() != null && !Objects.equals(cc.getUpdateRule(), RULES[RESTRICT]))
+                            sqlBuffer.append(INDENT).append(" ON UPDATE ").append(cc.getUpdateRule());
+                        if (cc.getDeleteRule() != null && !Objects.equals(cc.getDeleteRule(), RULES[RESTRICT]))
+                            sqlBuffer.append(INDENT).append(" ON DELETE ").append(cc.getDeleteRule());
                     }
 
                 }

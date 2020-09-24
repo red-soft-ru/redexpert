@@ -84,6 +84,8 @@ public class EditableColumnConstraintTable extends DefaultColumnConstraintTable
     private static final int REF_TABLE_COL_INDEX = 5;
     private static final int REF_COLUMN_COL_INDEX = 6;
     private static final int CHECK_COL_INDEX = 7;
+    private static final int UPDATE_RULE_COL_INDEX = 8;
+    private static final int DELETE_RULE_COL_INDEX = 9;
 
     /**
      * Creates a new instance of EditableColumnConstraintTable

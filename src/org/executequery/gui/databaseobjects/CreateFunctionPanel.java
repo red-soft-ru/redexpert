@@ -182,7 +182,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     protected void generateScript() {
         StringBuilder sb = new StringBuilder();
         sb.append("create or alter function ");
-        sb.append(getNameInQuotes());
+        sb.append(getFormattedName());
         sb.append(" (");
         sb.append(formattedParameters(inputParametersPanel.getProcedureParameterModel().getTableVector(), false));
         sb.append(")\n");
@@ -201,7 +201,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         if (text != null && !text.isEmpty()) {
             sb.append("\n");
             sb.append("COMMENT ON FUNCTION ");
-            sb.append(getNameInQuotes());
+            sb.append(getFormattedName());
             sb.append(" IS '");
             sb.append(text);
             sb.append("'");
@@ -214,7 +214,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
             if (cdText != null && !cdText.isEmpty()) {
                 sb.append("\n");
                 sb.append("COMMENT ON PARAMETER ");
-                sb.append(getNameInQuotes()).append(".");
+                sb.append(getFormattedName()).append(".");
                 sb.append(cd.getFormattedColumnName());
                 sb.append(" IS '");
                 sb.append(cdText);

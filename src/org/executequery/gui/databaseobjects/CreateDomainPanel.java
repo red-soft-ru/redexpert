@@ -181,7 +181,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
         sb.setLength(0);
         if (editing) {
             if (columnData.isChanged()) {
-                sb.append("ALTER DOMAIN ").append(MiscUtils.wordInQuotes(domain)).append("\n");
+                sb.append("ALTER DOMAIN ").append(MiscUtils.getFormattedObject(domain)).append("\n");
                 if (columnData.isNameChanged()) {
                     sb.append("TO ").append(columnData.getFormattedColumnName()).append("\n");
                 }

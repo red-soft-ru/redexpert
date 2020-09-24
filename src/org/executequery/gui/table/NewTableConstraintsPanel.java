@@ -20,16 +20,9 @@
 
 package org.executequery.gui.table;
 
-import org.apache.commons.lang.StringUtils;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
-import org.underworldlabs.util.MiscUtils;
-
-import java.util.Vector;
-
-import static org.executequery.databaseobjects.NamedObject.FOREIGN_KEY;
-import static org.executequery.databaseobjects.NamedObject.UNIQUE_KEY;
 
 /**
  * @author Takis Diakoumis
@@ -74,7 +67,12 @@ public class NewTableConstraintsPanel extends TableConstraintsPanel
                 if (cc.getType() != -1 && cc.getTypeName() == ColumnConstraint.FOREIGN) {
                     setCellEditor(4, new ComboBoxCellEditor(
                             creator.getSchemaTables(value)));
-
+                    setCellEditor(6, new ComboBoxCellEditor(
+                            ColumnConstraint.RULES
+                    ));
+                    setCellEditor(7, new ComboBoxCellEditor(
+                            ColumnConstraint.RULES
+                    ));
                 }
                 break;
 

@@ -288,6 +288,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
             // surround with try/catch hack to get at least a columns list
 
             rs = dmd.getImportedKeys(_catalog, _schema, getName());
+
             while (rs.next()) {
 
               String fkColumn = rs.getString(8);
@@ -297,17 +298,36 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                 if (i.getName().equalsIgnoreCase(fkColumn)) {
 
                   DatabaseTableColumn column = (DatabaseTableColumn) i;
-
+                  List<String> row = new ArrayList<>();
+                  for (int g = 1; g <= rs.getMetaData().getColumnCount(); g++)
+                    row.add(rs.getString(g));
                   TableColumnConstraint constraint = new TableColumnConstraint(column, ColumnConstraint.FOREIGN_KEY);
                   constraint.setReferencedCatalog(rs.getString(1));
                   constraint.setReferencedSchema(rs.getString(2));
                   constraint.setReferencedTable(rs.getString(3));
                   constraint.setReferencedColumn(rs.getString(4));
-                  constraint.setUpdateRule(rs.getShort(10));
-                  constraint.setDeleteRule(rs.getShort(11));
                   constraint.setName(rs.getString(12));
                   constraint.setDeferrability(rs.getShort(14));
                   constraint.setMetaData(resultSetRowToMap(rs));
+                  ResultSet rulesRS = querySender.getResultSet("select RDB$REF_CONSTRAINTS.RDB$UPDATE_RULE, RDB$REF_CONSTRAINTS.RDB$DELETE_RULE" +
+                          " from rdb$ref_constraints where RDB$REF_CONSTRAINTS.RDB$CONSTRAINT_NAME='" + constraint.getName() + "'").getResultSet();
+                  try {
+                    if (rulesRS.next()) {
+                      for (int g = 1; g <= 2; g++) {
+                        String rule = rulesRS.getString(g);
+                        if (rule != null) {
+                          if (g == 1)
+                            constraint.setUpdateRule(rule.trim());
+                          else
+                            constraint.setDeleteRule(rule.trim());
+                        }
+                      }
+                    }
+                  } catch (Exception e) {
+                    e.printStackTrace();
+                  } finally {
+                    querySender.releaseResources();
+                  }
                   column.addConstraint(constraint);
                   break;
 
@@ -1240,7 +1260,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     StringBuilder sb = new StringBuilder();
     sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
     for (String column : columns) {
-      sb.append(MiscUtils.wordInQuotes(column)).append(" = ?,");
+      sb.append(MiscUtils.getFormattedObject(column)).append(" = ?,");
     }
 
     sb.deleteCharAt(sb.length() - 1);
@@ -1250,7 +1270,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     List<DatabaseColumn> cols = getColumns();
     for (int i = 0; i < cols.size(); i++) {
       DatabaseColumn column = cols.get(i);
-      String col = MiscUtils.wordInQuotes(cols.get(i).getName());
+      String col = MiscUtils.getFormattedObject(cols.get(i).getName());
       RecordDataItem rdi = changes.get(i);
       if (column.isGenerated())
         rdi.setGenerated(true);
@@ -1282,7 +1302,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     List<DatabaseColumn> cols = getColumns();
     for (int i = 0; i < cols.size(); i++) {
       DatabaseColumn column = cols.get(i);
-      String col = MiscUtils.wordInQuotes(cols.get(i).getName());
+      String col = MiscUtils.getFormattedObject(cols.get(i).getName());
       RecordDataItem rdi = changes.get(i);
       if (column.isGenerated())
         rdi.setGenerated(true);
@@ -1315,7 +1335,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     List<DatabaseColumn> cols = getColumns();
     for (int i = 0; i < cols.size(); i++) {
       DatabaseColumn column = cols.get(i);
-      String col = MiscUtils.wordInQuotes(cols.get(i).getName());
+      String col = MiscUtils.getFormattedObject(cols.get(i).getName());
       RecordDataItem rdi = changes.get(i);
       if (column.isGenerated())
         rdi.setGenerated(true);
@@ -1342,7 +1362,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     StringBuilder sb = new StringBuilder();
     sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
     for (String column : columns) {
-      sb.append(MiscUtils.wordInQuotes(column)).append(" = ?,");
+      sb.append(MiscUtils.getFormattedObject(column)).append(" = ?,");
     }
     sb.deleteCharAt(sb.length() - 1);
     sb.append(" WHERE ");
@@ -1351,7 +1371,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       if (applied) {
         sb.append(" AND ");
       }
-      sb.append(MiscUtils.wordInQuotes(primaryKey)).append(" = ? ");
+      sb.append(MiscUtils.getFormattedObject(primaryKey)).append(" = ? ");
       applied = true;
     }
     sb.deleteCharAt(sb.length() - 1);
@@ -1372,7 +1392,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
         sb.append(" AND ");
       }
-      sb.append(MiscUtils.wordInQuotes(primaryKey)).append(" = ? ");
+      sb.append(MiscUtils.getFormattedObject(primaryKey)).append(" = ? ");
       applied = true;
     }
 

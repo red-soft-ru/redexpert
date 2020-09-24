@@ -91,7 +91,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 type = NamedObject.META_TYPES[NamedObject.TRIGGER];
             else
                 type = NamedObject.META_TYPES[node.getType()];
-            String query = "DROP " + type + " " + MiscUtils.wordInQuotes(node.getName());
+            String query = "DROP " + type + " " + MiscUtils.getFormattedObject(node.getName());
             ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, currentSelection, true);
             eqd.display();
             if (eqd.getCommit())

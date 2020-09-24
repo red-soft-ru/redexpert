@@ -397,12 +397,12 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     }
 
     private void generateScript() {
-        StringBuilder query = new StringBuilder("CREATE OR ALTER TRIGGER " + getNameInQuotes());
+        StringBuilder query = new StringBuilder("CREATE OR ALTER TRIGGER " + getFormattedName());
         int selectedIndex = typeTriggerCombo.getSelectedIndex();
         if (triggerType == NamedObject.SYSTEM_DATABASE_TRIGGER)
             selectedIndex++;
         if (selectedIndex == 0)
-            query.append(" FOR ").append(MiscUtils.wordInQuotes(((String) tablesCombo.getSelectedItem()).trim()));
+            query.append(" FOR ").append(MiscUtils.getFormattedObject(((String) tablesCombo.getSelectedItem()).trim()));
         query.append("\n");
         if (activeBox.isSelected())
             query.append("ACTIVE ");
@@ -451,7 +451,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         String comment = descriptionText.getTextAreaComponent().getText();
         if (!MiscUtils.isNull(comment) && !comment.trim().isEmpty()) {
             comment = comment.replace("'", "''");
-            query.append("COMMENT ON TRIGGER ").append(getNameInQuotes()).append(" IS '").append(comment).append("'^");
+            query.append("COMMENT ON TRIGGER ").append(getFormattedName()).append(" IS '").append(comment).append("'^");
         }
         displayExecuteQueryDialog(query.toString(), "^");
     }

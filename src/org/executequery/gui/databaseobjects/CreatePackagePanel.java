@@ -41,12 +41,12 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
 
     @Override
     public void createObject() {
-        headerPanel.setSQLText(headerPanel.getSQLText().replace(replacing_name, getNameInQuotes()));
-        bodyPanel.setSQLText(bodyPanel.getSQLText().replace(replacing_name, getNameInQuotes()));
+        headerPanel.setSQLText(headerPanel.getSQLText().replace(replacing_name, getFormattedName()));
+        bodyPanel.setSQLText(bodyPanel.getSQLText().replace(replacing_name, getFormattedName()));
         StringBuilder sb = new StringBuilder();
         sb.append(headerPanel.getSQLText()).append("^\n");
         sb.append(bodyPanel.getSQLText()).append("^\n");
-        sb.append("COMMENT ON PACKAGE " + getNameInQuotes() + " IS '" + descriptionPanel.getTextAreaComponent().getText() + "'");
+        sb.append("COMMENT ON PACKAGE " + getFormattedName() + " IS '" + descriptionPanel.getTextAreaComponent().getText() + "'");
         displayExecuteQueryDialog(sb.toString(), "^");
 
     }

@@ -310,18 +310,18 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                 if (activeBox.isSelected())
                     act = "ACTIVE";
                 else act = "INACTIVE";
-                query = "ALTER INDEX " + getNameInQuotes() + " " + act + ";";
+                query = "ALTER INDEX " + getFormattedName() + " " + act + ";";
             }
         } else {
             if (editing)
-                query = "DROP INDEX " + getNameInQuotes() + ";";
+                query = "DROP INDEX " + getFormattedName() + ";";
             query += "CREATE ";
             if (uniqueBox.isSelected())
                 query += "UNIQUE ";
             if (sortingBox.getSelectedIndex() == 1)
                 query += "DESCENDING ";
-            query += "INDEX " + getNameInQuotes() +
-                    " ON " + MiscUtils.wordInQuotes(((String) tableName.getSelectedItem()).trim()) + " ";
+            query += "INDEX " + getFormattedName() +
+                    " ON " + MiscUtils.getFormattedObject(((String) tableName.getSelectedItem()).trim()) + " ";
             if (computedBox.isSelected()) {
                 query += "COMPUTED BY (" + computedPanel.getSQLText() + ");";
             } else {
@@ -335,16 +335,16 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                         if (!first)
                             fieldss.append(",");
                         first = false;
-                        fieldss.append(MiscUtils.wordInQuotes(item.label));
+                        fieldss.append(MiscUtils.getFormattedObject(item.label));
                     }
                 }
                 query += fieldss + ");";
             }
             if (!activeBox.isSelected())
-                query += "ALTER INDEX " + getNameInQuotes() + " INACTIVE;";
+                query += "ALTER INDEX " + getFormattedName() + " INACTIVE;";
         }
         if (!MiscUtils.isNull(description.getTextAreaComponent().getText()))
-            query += new StringBuilder().append("COMMENT ON INDEX ").append(getNameInQuotes()).append(" IS '").append(description.getTextAreaComponent().getText()).append("'").toString();
+            query += new StringBuilder().append("COMMENT ON INDEX ").append(getFormattedName()).append(" IS '").append(description.getTextAreaComponent().getText()).append("'").toString();
         displayExecuteQueryDialog(query, ";");
 
     }

@@ -1,6 +1,7 @@
 package org.executequery.gui.table;
 
 import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.TableColumnConstraint;
 import org.executequery.gui.ActionContainer;
@@ -8,7 +9,9 @@ import org.executequery.gui.databaseobjects.AbstractCreateObjectPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.CheckBoxPanel;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,6 +21,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.Objects;
+
+import static org.executequery.gui.browser.ColumnConstraint.RULES;
 
 
 public class EditConstraintPanel extends AbstractCreateObjectPanel implements KeyListener {
@@ -40,6 +47,8 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
     private JComboBox foreignSortingBox;
     private CheckBoxPanel onFieldPrimaryPanel;
     private JComboBox referenceTable;
+    private JComboBox updateRuleBox;
+    private JComboBox deleteRuleBox;
     private CheckBoxPanel referenceColumn;
     private CheckBoxPanel fieldConstraint;
 
@@ -72,6 +81,8 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                 }
             }
         });
+        updateRuleBox = new JComboBox(RULES);
+        deleteRuleBox = new JComboBox(RULES);
         /*
         <Primary Panel>
         */
@@ -79,29 +90,21 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         primaryPanel = new JScrollPane(panel);
         panel.setLayout(new GridBagLayout());
         JLabel label = new JLabel("Index");
-        panel.add(label, new GridBagConstraints(0, 0,
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaults(new GridBagConstraints(0, 0,
                 1, 1, 0, 0,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
                 0, 0));
-        panel.add(primaryIndexField, new GridBagConstraints(1, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        gbh.defaults().setXY(0, 0);
+        panel.add(label, gbh.get());
+        panel.add(primaryIndexField, gbh.nextCol().spanX().get());
         label = new JLabel("Sorting");
-        panel.add(label, new GridBagConstraints(0, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        panel.add(primarySortingBox, new GridBagConstraints(1, 1,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        panel.add(label, gbh.nextRowFirstCol().setLabelDefault().get());
+        panel.add(primarySortingBox, gbh.nextCol().spanX().get());
         onFieldPrimaryPanel = new CheckBoxPanel(table.getColumns().toArray(), 6, false);
         onFieldPrimaryPanel.setBorder(BorderFactory.createTitledBorder("On Field"));
-        panel.add(onFieldPrimaryPanel, new GridBagConstraints(0, 2,
-                2, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        panel.add(onFieldPrimaryPanel, gbh.nextRowFirstCol().spanX().get());
+        //TODO CHECK MOVE TO END
         panel.add(new JPanel(), new GridBagConstraints(0, 10,
                 1, 1, 0, 1,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
@@ -118,23 +121,19 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
         foreignPanel = new JPanel();
         foreignPanel.setLayout(new GridBagLayout());
         label = new JLabel("Index");
-        foreignPanel.add(label, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        foreignPanel.add(foreignIndexField, new GridBagConstraints(1, 0,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        gbh.defaults().setXY(0, 0);
+        foreignPanel.add(label, gbh.setLabelDefault().get());
+        foreignPanel.add(foreignIndexField, gbh.nextCol().spanX().get());
         label = new JLabel("Sorting");
-        foreignPanel.add(label, new GridBagConstraints(0, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        foreignPanel.add(foreignSortingBox, new GridBagConstraints(1, 1,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        foreignPanel.add(label, gbh.nextRowFirstCol().setLabelDefault().get());
+        foreignPanel.add(foreignSortingBox, gbh.nextCol().spanX().get());
+        label = new JLabel("Update rule");
+        foreignPanel.add(label, gbh.setLabelDefault().nextRowFirstCol().get());
+        foreignPanel.add(updateRuleBox, gbh.nextCol().spanX().get());
+        label = new JLabel("Delete rule");
+        foreignPanel.add(label, gbh.setLabelDefault().nextRowFirstCol().get());
+        foreignPanel.add(deleteRuleBox, gbh.nextCol().spanX().get());
+        //TODO CHECK MOVE TO END
         foreignPanel.add(new JPanel(), new GridBagConstraints(1, 12,
                 1, 1, 1, 1,
                 GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
@@ -153,24 +152,14 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
             }
         });
         fieldConstraint.setBorder(BorderFactory.createTitledBorder("On Field"));
-        foreignPanel.add(fieldConstraint, new GridBagConstraints(0, 2,
-                2, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        foreignPanel.add(fieldConstraint, gbh.nextRowFirstCol().spanX().get());
         label = new JLabel("Reference Table");
-        foreignPanel.add(label, new GridBagConstraints(0, 3,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
-        foreignPanel.add(referenceTable, new GridBagConstraints(1, 3,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        foreignPanel.add(label, gbh.setLabelDefault().nextRowFirstCol().get());
+        foreignPanel.add(referenceTable, gbh.nextCol().spanX().get());
         referenceColumn.setBorder(BorderFactory.createTitledBorder("Reference Column"));
-        foreignPanel.add(referenceColumn, new GridBagConstraints(0, 4,
-                2, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        foreignPanel.add(referenceColumn, gbh.nextRowFirstCol().spanX().get());
+
+
 
         /*
         </Foreign Panel>
@@ -291,6 +280,8 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                     fieldConstraint.getCheckBoxMap().get(fieldName).setSelected(true);
                     referenceColumn.getCheckBoxMap().get(refCol).setSelected(true);
                     foreignSortingBox.setSelectedIndex(rs.getInt("RDB$INDEX_TYPE"));
+                    updateRuleBox.setSelectedItem(constraint.getUpdateRule());
+                    deleteRuleBox.setSelectedItem(constraint.getDeleteRule());
 
                 }
             } catch (SQLException e) {
@@ -332,29 +323,15 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
 
     @Override
     public void createObject() {
-        StringBuilder sb = new StringBuilder();
-        if (editing)
-            sb.append("ALTER TABLE ").append(MiscUtils.wordInQuotes(table.getName().trim())).append(" DROP CONSTRAINT ").append(getNameInQuotes()).append("^");
-        sb.append("ALTER TABLE ").append(MiscUtils.wordInQuotes(table.getName().trim())).append("\n");
-        String name_constraint = getNameInQuotes();
-        if (generate_name) {
-            name_constraint = generateName();
-        }
-        sb.append("ADD CONSTRAINT " + name_constraint + " ");
-
-        switch ((String) typeBox.getSelectedItem()) {
+        org.executequery.gui.browser.ColumnConstraint cc = new org.executequery.gui.browser.ColumnConstraint();
+        cc.setName(nameField.getText());
+        switch ((String) Objects.requireNonNull(typeBox.getSelectedItem())) {
             case ColumnConstraint.PRIMARY:
-                sb.append("PRIMARY KEY(");
-                boolean first = true;
-                for (String key : onFieldPrimaryPanel.getCheckBoxMap().keySet()) {
-                    if (onFieldPrimaryPanel.getCheckBoxMap().get(key).isSelected()) {
-                        if (!first)
-                            sb.append(", ");
-                        first = false;
-                        sb.append(MiscUtils.wordInQuotes(key));
-                    }
-                }
-                sb.append(")");
+            case ColumnConstraint.UNIQUE:
+                if (typeBox.getSelectedItem() == ColumnConstraint.PRIMARY)
+                    cc.setType(NamedObject.PRIMARY_KEY);
+                else cc.setType(NamedObject.UNIQUE_KEY);
+                cc.setColumn(getColumnsFromCheckBoxMap(onFieldPrimaryPanel.getCheckBoxMap()));
                 if (!primaryIndexField.getText().isEmpty()) {
                     String sorting = "";
                     if (primarySortingBox.getSelectedIndex() == 0) {
@@ -362,32 +339,15 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                     } else {
                         sorting = "DESCENDING";
                     }
-                    sb.append("USING ").append(sorting).append(" INDEX ").append(primaryIndexField.getText());
+                    cc.setSorting(sorting);
                 }
+
                 break;
             case ColumnConstraint.FOREIGN:
-                sb.append("FOREIGN KEY(");
-                first = true;
-                for (String key : fieldConstraint.getCheckBoxMap().keySet()) {
-                    if (fieldConstraint.getCheckBoxMap().get(key).isSelected()) {
-                        if (!first)
-                            sb.append(", ");
-                        first = false;
-                        sb.append(MiscUtils.wordInQuotes(key));
-                    }
-                }
-                sb.append(")\n");
-                sb.append("REFERENCES ").append(MiscUtils.wordInQuotes((String) referenceTable.getSelectedItem())).append("(");
-                first = true;
-                for (String key : referenceColumn.getCheckBoxMap().keySet()) {
-                    if (referenceColumn.getCheckBoxMap().get(key).isSelected()) {
-                        if (!first)
-                            sb.append(", ");
-                        first = false;
-                        sb.append(MiscUtils.wordInQuotes(key));
-                    }
-                }
-                sb.append(")\n");
+                cc.setType(NamedObject.FOREIGN_KEY);
+                cc.setColumn(getColumnsFromCheckBoxMap(fieldConstraint.getCheckBoxMap()));
+                cc.setRefTable((String) referenceTable.getSelectedItem());
+                cc.setRefColumn(getColumnsFromCheckBoxMap(referenceColumn.getCheckBoxMap()));
                 if (!foreignIndexField.getText().isEmpty()) {
                     String sorting = "";
                     if (foreignSortingBox.getSelectedIndex() == 0) {
@@ -395,38 +355,41 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel implements Ke
                     } else {
                         sorting = "DESCENDING";
                     }
-                    sb.append("USING ").append(sorting).append(" INDEX ").append(MiscUtils.wordInQuotes(foreignIndexField.getText()));
+                    cc.setSorting(sorting);
                 }
-                break;
-            case ColumnConstraint.UNIQUE:
-                sb.append("UNIQUE(");
-                first = true;
-                for (String key : onFieldPrimaryPanel.getCheckBoxMap().keySet()) {
-                    if (onFieldPrimaryPanel.getCheckBoxMap().get(key).isSelected()) {
-                        if (!first)
-                            sb.append(", ");
-                        first = false;
-                        sb.append(MiscUtils.wordInQuotes(key));
-                    }
-                }
-                sb.append(")");
-                if (!primaryIndexField.getText().isEmpty()) {
-                    String sorting = "";
-                    if (primarySortingBox.getSelectedIndex() == 0) {
-                        sorting = "ASCENDING";
-                    } else {
-                        sorting = "DESCENDING";
-                    }
-                    sb.append("USING ").append(sorting).append(" INDEX ").append(MiscUtils.wordInQuotes(primaryIndexField.getText()));
-                }
+                cc.setUpdateRule((String) updateRuleBox.getSelectedItem());
+                cc.setDeleteRule((String) deleteRuleBox.getSelectedItem());
                 break;
             case ColumnConstraint.CHECK:
-                sb.append("CHECK(");
-                sb.append(checkPanel.getSQLText()).append(")");
+                cc.setType(NamedObject.CHECK_KEY);
+                cc.setCheck(checkPanel.getSQLText());
                 break;
 
         }
+        StringBuilder sb = new StringBuilder();
+        if (editing)
+            sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName().trim())).append(" DROP CONSTRAINT ").append(getFormattedName()).append("^");
+        sb.append("ALTER TABLE ").append(MiscUtils.getFormattedObject(table.getName().trim())).append("\n");
+        if (generate_name) {
+            cc.setName(generateName());
+        }
+        sb.append("ADD  ");
+        sb.append(SQLUtils.generateDefinitionColumnConstraint(cc).trim().substring(1).trim());
         displayExecuteQueryDialog(sb.toString(), "^");
+    }
+
+    private String getColumnsFromCheckBoxMap(Map<String, JCheckBox> checkBoxMap) {
+        boolean first = true;
+        StringBuilder sb = new StringBuilder();
+        for (String key : checkBoxMap.keySet()) {
+            if (checkBoxMap.get(key).isSelected()) {
+                if (!first)
+                    sb.append(", ");
+                first = false;
+                sb.append(MiscUtils.getFormattedObject(key));
+            }
+        }
+        return sb.toString();
     }
 
     @Override

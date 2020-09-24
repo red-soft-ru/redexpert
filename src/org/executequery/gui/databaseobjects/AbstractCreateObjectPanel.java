@@ -182,8 +182,8 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
 
     public abstract void setParameters(Object[] params);
 
-    public String getNameInQuotes() {
-        return MiscUtils.wordInQuotes(nameField.getText());
+    public String getFormattedName() {
+        return MiscUtils.getFormattedObject(nameField.getText());
     }
 
     public String bundleString(String key) {

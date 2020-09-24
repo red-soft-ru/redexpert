@@ -219,7 +219,7 @@ public class DefaultDatabaseExecutable extends AbstractDatabaseObject
                         DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(7), rs.getInt(10)),
                         DatabaseTypeConverter.getDataTypeName(rs.getInt(7), rs.getInt(10), rs.getInt(9)),
                         rs.getInt(8),
-                        rs.getInt("null_flag"));
+                        1 - rs.getInt("null_flag"));
 
                 if (pp.getDataType() == Types.LONGVARBINARY ||
                         pp.getDataType() == Types.LONGVARCHAR ||

@@ -37,6 +37,7 @@ import org.underworldlabs.util.SQLUtils;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -469,7 +470,12 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
           executor.releaseResources();
         }
         constraints.removeAll(Collections.singleton(null));
-
+        constraints.sort(new Comparator<ColumnConstraint>() {
+          @Override
+          public int compare(ColumnConstraint o1, ColumnConstraint o2) {
+            return o1.getName().compareTo(o2.getName());
+          }
+        });
         return constraints;
 
       } else {

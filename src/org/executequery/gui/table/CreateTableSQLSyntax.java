@@ -144,22 +144,22 @@ public interface CreateTableSQLSyntax {
     /**
      * The literal ','
      */
-    char COMMA = ',';
+    String COMMA = ",";
 
     /**
      * The literal ')'
      */
-    char B_CLOSE = ')';
+    String B_CLOSE = ")";
 
     /**
      * The literal '.'
      */
-    char DOT = '.';
+    String DOT = ".";
 
     /**
      * The literal ';'
      */
-    char SEMI_COLON = '^';
+    String SEMI_COLON = "^";
 
     /**
      * The literal ' DROP CONSTRAINT '

@@ -179,7 +179,7 @@ public final class SQLUtils {
                     sqlBuffer.append(cc.getCheck());
                 }
                 else if (cc.getType() == UNIQUE_KEY) {
-                    sqlBuffer.append(ColumnConstraint.UNIQUE).append(B_OPEN);
+                    sqlBuffer.append(ColumnConstraint.UNIQUE).append(SPACE).append(B_OPEN);
                     String formatted = "";
                     if (cc.getCountCols() > 1)
                         formatted = cc.getColumn();
@@ -195,20 +195,16 @@ public final class SQLUtils {
                     sqlBuffer.append(B_CLOSE);
 
                     if (cc.getType() == FOREIGN_KEY) {
-                        sqlBuffer.append(INDENT).append(REFERENCES);
-
-                        if (cc.hasSchema())
-                            sqlBuffer.append(cc.getRefSchema()).append(DOT);
-
-                        sqlBuffer.append(MiscUtils.getFormattedObject(cc.getRefTable())).append(B_OPEN);
+                        sqlBuffer.append(REFERENCES);
+                        sqlBuffer.append(MiscUtils.getFormattedObject(cc.getRefTable())).append(SPACE).append(B_OPEN);
                         if (cc.getCountCols() > 1)
                             formatted = cc.getRefColumn();
                         else formatted = MiscUtils.getFormattedObject(cc.getRefColumn());
                         sqlBuffer.append(formatted).append(B_CLOSE);
                         if (cc.getUpdateRule() != null && !Objects.equals(cc.getUpdateRule(), RULES[RESTRICT]))
-                            sqlBuffer.append(INDENT).append(" ON UPDATE ").append(cc.getUpdateRule());
+                            sqlBuffer.append(" ON UPDATE ").append(cc.getUpdateRule());
                         if (cc.getDeleteRule() != null && !Objects.equals(cc.getDeleteRule(), RULES[RESTRICT]))
-                            sqlBuffer.append(INDENT).append(" ON DELETE ").append(cc.getDeleteRule());
+                            sqlBuffer.append(" ON DELETE ").append(cc.getDeleteRule());
                     }
 
                 }

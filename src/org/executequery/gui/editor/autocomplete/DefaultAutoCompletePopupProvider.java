@@ -120,29 +120,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         return autoCompletePopupAction;
     }
 
-    public void firePopupTrigger() {
-
-        try {
-
-            final JTextComponent textComponent = queryEditorTextComponent();
-
-            Caret caret = textComponent.getCaret();
-            final Rectangle caretCoords = textComponent.modelToView(caret.getDot());
-
-            addFocusActions();
-
-            resetCount = 0;
-            captureAndResetListValues();
-
-            popupMenu().show(textComponent, caretCoords.x, caretCoords.y + caretCoords.height);
-            textComponent.requestFocus();
-
-        } catch (BadLocationException e) {
-
-            debug("Error on caret coordinates", e);
-        }
-
-    }
+    boolean noProposals = false;
 
     private QueryEditorAutoCompletePopupPanel popupMenu() {
 
@@ -414,27 +392,27 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         return new QueryWithPosition(position, start, end + 1, query);
     }
 
-    private void captureAndResetListValues() {
+    public void firePopupTrigger() {
 
-        String wordAtCursor = getWordEndingAt(sqlTextPane.getCaretPosition());
-        trace("Capturing and resetting list values for word [ " + wordAtCursor + " ]");
+        try {
 
-        DerivedQuery derivedQuery = new DerivedQuery(getQueryAt(sqlTextPane.getCaretPosition()).getQuery());
-        List<QueryTable> tables = derivedQuery.tableForWord(wordAtCursor);
+            final JTextComponent textComponent = queryEditorTextComponent();
 
-        List<AutoCompleteListItem> itemsStartingWith = itemsStartingWith(tables, wordAtCursor);
-        if (itemsStartingWith.isEmpty()) {
+            Caret caret = textComponent.getCaret();
+            final Rectangle caretCoords = textComponent.modelToView(caret.getDot());
 
-            noProposalsAvailable(itemsStartingWith);
-        }
+            addFocusActions();
 
-        if (rebuildingList) {
+            resetCount = 0;
+            captureAndResetListValues();
+            if (!noProposals) {
+                popupMenu().show(textComponent, caretCoords.x, caretCoords.y + caretCoords.height);
+                textComponent.requestFocus();
+            } else popupHidden();
 
-            popupMenu().scheduleReset(itemsStartingWith);
+        } catch (BadLocationException e) {
 
-        } else {
-
-            popupMenu().reset(itemsStartingWith);
+            debug("Error on caret coordinates", e);
         }
 
     }
@@ -609,6 +587,31 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
             }
 
             return o1.getUpperCaseValue().compareTo(o2.getUpperCaseValue());
+        }
+
+    }
+
+    private void captureAndResetListValues() {
+        noProposals = false;
+        String wordAtCursor = getWordEndingAt(sqlTextPane.getCaretPosition());
+        trace("Capturing and resetting list values for word [ " + wordAtCursor + " ]");
+
+        DerivedQuery derivedQuery = new DerivedQuery(getQueryAt(sqlTextPane.getCaretPosition()).getQuery());
+        List<QueryTable> tables = derivedQuery.tableForWord(wordAtCursor);
+
+        List<AutoCompleteListItem> itemsStartingWith = itemsStartingWith(tables, wordAtCursor);
+        if (itemsStartingWith.isEmpty()) {
+            noProposals = true;
+            noProposalsAvailable(itemsStartingWith);
+        }
+
+        if (rebuildingList) {
+
+            popupMenu().scheduleReset(itemsStartingWith);
+
+        } else {
+
+            popupMenu().reset(itemsStartingWith);
         }
 
     }

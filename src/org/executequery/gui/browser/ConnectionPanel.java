@@ -36,7 +36,6 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.drivers.DialogDriverPanel;
 import org.executequery.gui.editor.TransactionIsolationCombobox;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
@@ -1429,13 +1428,13 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private void selectDriver() {
 
         if (databaseConnection == null) {
-
+            driverCombo.setSelectedIndex(1);
             return;
         }
 
         if (databaseConnection.getDriverId() == 0) {
 
-            driverCombo.setSelectedIndex(0);
+            driverCombo.setSelectedIndex(1);
 
         } else {
 

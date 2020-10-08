@@ -129,8 +129,28 @@
         <consoleWrite>
             <text>${execution_file}</text>
         </consoleWrite>
+        <iniFileGet>
+            <file>${redexpert_dir}/config/redexpert_config.ini</file>
+            <section>Installer_settings</section>
+            <key>eq.user.home.dir</key>
+            <variable>settings_dir</variable>
+        </iniFileGet>
+        <setInstallerVariableFromRegEx>
+            <name>settings_dir</name>
+            <pattern>\$HOME</pattern>
+            <substitution>${user_home_directory}</substitution>
+            <text>${settings_dir}</text>
+        </setInstallerVariableFromRegEx>
     </preBuildActionList>
     <preUninstallationActionList>
+        <showQuestion text="Do you want the uninstallation to also remove the user properties?"
+                      variable="remove_props"/>
+        <deleteFile>
+            <path>${settings_dir}</path>
+            <ruleList>
+                <compareText text="${remove_props}" value="yes" logic="equals"/>
+            </ruleList>
+        </deleteFile>
         <deleteFile path="${installdir}/bin"/>
         <deleteFile path="${installdir}/lib"/>
         <deleteFile path="${installdir}/RedExpertInstallation.log"/>
@@ -188,6 +208,12 @@
         </directoryParameter>
         <stringParameter>
             <name>execute_file</name>
+            <allowEmptyValue>0</allowEmptyValue>
+            <ask>no</ask>
+            <width>40</width>
+        </stringParameter>
+        <stringParameter>
+            <name>settings_dir_name</name>
             <allowEmptyValue>0</allowEmptyValue>
             <ask>no</ask>
             <width>40</width>

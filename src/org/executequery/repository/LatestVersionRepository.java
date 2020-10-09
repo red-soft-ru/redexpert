@@ -30,6 +30,8 @@ public interface LatestVersionRepository extends Repository {
 
     String getReleaseNotes();
 
+    String getReleaseNotesUrl();
+
     String getBinaryZipUrl();
 
 }

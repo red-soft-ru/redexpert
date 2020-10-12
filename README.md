@@ -38,59 +38,7 @@ http://reddatabase.ru/downloads/redexpert/
 
 RedExpert requires at least a Java 8 JDK installed and maven
 
-To build a project you need change:
-
-\modules\plugins\fbplugin-impl\pom.xml:
-
-from
-```
-<dependency>
-      <groupId>ru.red-soft.jdbc</groupId>
-      <artifactId>jaybird-full-jdk18</artifactId>
-      <version>X.Y.Z</version>
-    </dependency>
-```
-
-to
-```
-<dependency>
-      <groupId>ru.red-soft.jdbc</groupId>
-      <artifactId>jaybird-full-jdk18</artifactId>
-      <version>X.Y.Z</version>
-      <scope>system</scope>
-      <systemPath>${pom.basedir}/../../lib/jaybird-full-
-jdk18.jar</systemPath>
-    </dependency>
-```
-
-In this case jaybird-full-jdk18.jar must be located in "lib" folder and
-it's better to have RedSoft jaybird.
-
-The same with jaybird-cryptoapi-jdk18.jar
-
-\modules\plugins\fbplugin-impl\pom.xml change:
-```
-<dependency>
-      <groupId>ru.red-soft.jdbc</groupId>
-      <artifactId> jaybird-cryptoapi-jdk18</artifactId>
-      <version>X.Y.Z</version>
-    </dependency>
-```
-to :
-```
-<dependency>
-      <groupId>ru.red-soft.jdbc</groupId>
-      <artifactId> jaybird-cryptoapi-jdk18</artifactId>
-      <version>X.Y.Z</version>
-      <scope>system</scope>
-      <systemPath>${pom.basedir}/../../lib/jaybird-cryptoapi-
-jdk18.jar</systemPath>
-    </dependency>
-```
- you can download the archive with binary files from https://reddatabase.ru/downloads/redexpert/ . 
- jaybird-cryptoapi-jdk18.jar and jaybird-full-jdk18.jar are in the catalog lib.
- 
- To create a jar file:
+To build a project you need create a jar file:
 
 ```sh
 $ mvn package

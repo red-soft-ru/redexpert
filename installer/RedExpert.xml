@@ -135,18 +135,27 @@
             <key>eq.user.home.dir</key>
             <variable>settings_dir</variable>
         </iniFileGet>
+    </preBuildActionList>
+    <preInstallationActionList>
         <setInstallerVariableFromRegEx>
             <name>settings_dir</name>
             <pattern>\$HOME</pattern>
             <substitution>${user_home_directory}</substitution>
             <text>${settings_dir}</text>
         </setInstallerVariableFromRegEx>
-    </preBuildActionList>
+        <setInstallerVariableFromRegEx>
+            <name>settings_dir</name>
+            <pattern>/</pattern>
+            <substitution>${platform_path_separator}</substitution>
+            <text>${settings_dir}</text>
+        </setInstallerVariableFromRegEx>
+    </preInstallationActionList>
     <preUninstallationActionList>
-        <showQuestion text="Do you want the uninstallation to also remove the user properties?"
+        <showQuestion text="${msg(Installer.Parameter.question_remove_props)}"
                       variable="remove_props"/>
         <deleteFile>
             <path>${settings_dir}</path>
+            <matchHiddenFiles>1</matchHiddenFiles>
             <ruleList>
                 <compareText text="${remove_props}" value="yes" logic="equals"/>
             </ruleList>
@@ -213,7 +222,7 @@
             <width>40</width>
         </stringParameter>
         <stringParameter>
-            <name>settings_dir_name</name>
+            <name>settings_dir</name>
             <allowEmptyValue>0</allowEmptyValue>
             <ask>no</ask>
             <width>40</width>

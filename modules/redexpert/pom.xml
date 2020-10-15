@@ -14,7 +14,7 @@
         <groupId>org.executequery</groupId>
         <artifactId>RedExpert-parent</artifactId>
         <relativePath>../../pom.xml</relativePath>
-        <version>2020.08-SNAPSHOT</version>
+        <version>2020.10</version>
     </parent>
 
     <dependencies>

@@ -695,9 +695,10 @@ public class ColumnData implements Serializable {
                         type == Types.BLOB || type == Types.LONGVARCHAR
                         || type == Types.LONGVARBINARY)) {
             if (type == Types.BLOB || type == Types.LONGVARCHAR
-                    || type == Types.LONGVARBINARY)
-                sb.append(" SEGMENT SIZE ").append(getColumnSize());
-            else if (isEditSize() && getColumnSize() > 0 && !isDateDataType()
+                    || type == Types.LONGVARBINARY) {
+                if (getColumnSize() != 80)
+                    sb.append(" SEGMENT SIZE ").append(getColumnSize());
+            } else if (isEditSize() && getColumnSize() > 0 && !isDateDataType()
                     && !isNonPrecisionType()) {
                 sb.append("(");
                 sb.append(getColumnSize());

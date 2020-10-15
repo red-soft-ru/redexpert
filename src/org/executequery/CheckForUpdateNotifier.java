@@ -49,8 +49,6 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Checks to see if a newer version of Execute Query is available.
@@ -504,17 +502,10 @@ public class CheckForUpdateNotifier implements Interruptible {
 
             createProgressDialogForReleaseNotesLoad();
 
-            String apiInfo = repository().getReleaseNotes();
-
-            Pattern p = Pattern.compile("\"body\":\"(.*?)\"", Pattern.CASE_INSENSITIVE);
-
-            Matcher m = p.matcher(apiInfo);
+            String link = repository().getReleaseNotesUrl();
 
             String releaseNotes = "";
-
-            if (m.find()) {
-                releaseNotes = m.group(1).replaceAll("\\\\r\\\\n", "\n");//.split("\\\\r\\\\n");//responseTextLines.substring(m.start(), m.end()).trim();
-            }
+            releaseNotes = JSONAPI.getJsonPropertyFromUrl(link, "body");
 
             closeProgressDialog();
 
@@ -527,6 +518,12 @@ public class CheckForUpdateNotifier implements Interruptible {
         } catch (ApplicationException e) {
 
             showExceptionErrorDialog(e);
+
+            return Constants.WORKER_FAIL;
+
+        } catch (IOException e) {
+
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
 
             return Constants.WORKER_FAIL;
 

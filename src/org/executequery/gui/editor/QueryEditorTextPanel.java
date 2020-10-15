@@ -182,7 +182,7 @@ public class QueryEditorTextPanel extends JPanel {
                     if (caret > 0) {
                         String lastSymbol = queryPane.getDocument().getText(caret - 1, 1);
 
-                        if ((!lastSymbol.equals(" ")) && (!lastSymbol.equals("\n"))) {
+                        if ((!lastSymbol.equals(" ")) && (!lastSymbol.equals("\n")) && e.getLength() < 2) {
                             // (!autoCompletePopup.isVisible())
                             autoCompletePopupAction.actionPerformed(null);
                         }

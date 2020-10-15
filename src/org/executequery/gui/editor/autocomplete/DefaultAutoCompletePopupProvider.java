@@ -430,7 +430,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         boolean hasTables = hasTables(tables);
         if (StringUtils.isBlank(prefix) && !hasTables) {
 
-            return selectionsFactory.buildKeywords(databaseHost, autoCompleteKeywords);
+            return new ArrayList<>();
         }
 
         trace("Building list of items starting with [ " + prefix + " ] from table list with size " + tables.size());
@@ -510,7 +510,6 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
             itemsStartingWith = buildItemsStartingWithForList(searchList, null, wordPrefix, hasDotIndex);
 
             if (itemsStartingWith.isEmpty()) { // now bail...
-
                 noProposalsAvailable(itemsStartingWith);
             }
 
@@ -601,7 +600,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
         List<AutoCompleteListItem> itemsStartingWith = itemsStartingWith(tables, wordAtCursor);
         if (itemsStartingWith.isEmpty()) {
-            noProposals = true;
+            //noProposals = true;
             noProposalsAvailable(itemsStartingWith);
         }
 
@@ -613,11 +612,14 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
             popupMenu().reset(itemsStartingWith);
         }
+        if (noProposals)
+            popupMenu().hidePopup();
 
     }
 
     private void noProposalsAvailable(List<AutoCompleteListItem> itemsStartingWith) {
 
+        noProposals = true;
         if (rebuildingList) {
 
             debug("Suggestions list still in progress");

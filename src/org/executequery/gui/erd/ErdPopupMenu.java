@@ -89,7 +89,7 @@ public class ErdPopupMenu extends JPopupMenu implements ActionListener {
                 "Display page margin",
                 parent.shouldDisplayMargin());
         JCheckBoxMenuItem displayColumnsCheck = MenuItemFactory.createCheckBoxMenuItem(
-                "Display referenced keys only", true);
+                "Display referenced keys only", false);
 
         viewMenu.addSeparator();
         viewMenu.add(displayColumnsCheck);

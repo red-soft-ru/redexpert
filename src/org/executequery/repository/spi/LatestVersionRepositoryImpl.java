@@ -155,6 +155,16 @@ public class LatestVersionRepositoryImpl implements LatestVersionRepository {
         }
     }
 
+    public String getReleaseNotesUrl() {
+        try {
+            return "https://" + ADDRESS + releaseNotesUrl().getPath();
+            //+ "?access_token=145758a9d7895bc57a631694c145864df19fe6d9";
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public String getReleaseNotes() {
 
         if (siteAvailable()) {

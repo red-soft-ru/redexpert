@@ -166,7 +166,7 @@ public class ErdViewerPanel extends DefaultTabView
     /**
      * flag whether to display reference keys only
      */
-    private boolean displayKeysOnly = true;
+    private boolean displayKeysOnly = false;
 
     private static final int INITIAl_VIEW_HEIGHT = 450;
 

@@ -4,6 +4,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.databaseobjects.NamedObject;
+import org.underworldlabs.util.MiscUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -350,16 +351,11 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     @Override
     public String getCreateSQLText() {
         StringBuilder sb = new StringBuilder();
-
-        sb.append("SET TERM ^ ;");
-        sb.append("\n\n");
         sb.append("CREATE OR ALTER TRIGGER ");
-        sb.append("\"");
-        sb.append(getName());
-        sb.append("\"");
+        sb.append(MiscUtils.getFormattedObject(getName()));
         if (!getTriggerTableName().isEmpty()) {
             sb.append(" FOR ");
-            sb.append(getTriggerTableName());
+            sb.append(MiscUtils.getFormattedObject(getTriggerTableName()));
         }
         sb.append("\n");
         sb.append(isTriggerActive() ? "ACTIVE" : "INACTIVE");
@@ -370,11 +366,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
         sb.append("\n");
         if (triggerSourceCode != null) {
             sb.append(getTriggerSourceCode());
-            sb.append("^");
         }
-        sb.append("\n\n");
-        sb.append("SET TERM ; ^");
-
         return sb.toString();
     }
 

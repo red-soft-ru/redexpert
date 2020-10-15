@@ -1,16 +1,21 @@
 package org.executequery.gui.datatype;
 
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.FileUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,8 +28,10 @@ public class SelectTypePanel extends JPanel {
     private JLabel scaleLabel;
     private JLabel subtypeLabel;
     private JLabel encodingLabel;
+    private JLabel collateLabel;
     private JComboBox typeBox;
     private JComboBox encodingBox;
+    private JComboBox collateBox;
     private NumberTextField sizeField;
     private NumberTextField scaleField;
     private NumberTextField subtypeField;
@@ -38,6 +45,8 @@ public class SelectTypePanel extends JPanel {
     private List<String> charsets;
     private Map<Integer, String> types;
     private TypeOfPanel typeOfPanel;
+    private DynamicComboBoxModel collateModel;
+    private boolean refreshingCollate = false;
 
     public SelectTypePanel(String[] types, int[] intTypes, ColumnData cd, boolean displayTypeOf) {
         this.dataTypes = types;
@@ -56,8 +65,10 @@ public class SelectTypePanel extends JPanel {
         scaleLabel = new JLabel(Bundles.getCommon("scale"));
         subtypeLabel = new JLabel(Bundles.getCommon("subtype"));
         encodingLabel = new JLabel(Bundles.getCommon("encoding"));
+        collateLabel = new JLabel(Bundles.getCommon("collate"));
         typeBox = new JComboBox();
         encodingBox = new JComboBox();
+        collateBox = new JComboBox();
         sizeField = new NumberTextField();
         scaleField = new NumberTextField();
         subtypeField = new NumberTextField();
@@ -96,7 +107,34 @@ public class SelectTypePanel extends JPanel {
         typeBox.setSelectedIndex(0);
 
         encodingBox.setModel(new DefaultComboBoxModel(charsets.toArray(new String[charsets.size()])));
-        encodingBox.addActionListener(actionEvent -> cd.setCharset((String) encodingBox.getSelectedItem()));
+        encodingBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    refreshingCollate = true;
+                    cd.setCharset((String) encodingBox.getSelectedItem());
+                    collateModel.setElements(loadCollates((String) encodingBox.getSelectedItem()));
+                    refreshingCollate = false;
+                    if (cd.getCollate() != null && collateModel.contains(cd.getCollate()))
+                        collateBox.setSelectedItem(cd.getCollate());
+                    else {
+                        collateBox.setSelectedIndex(0);
+                        cd.setCollate((String) collateBox.getSelectedItem());
+                    }
+                }
+            }
+        }); //
+        collateModel = new DynamicComboBoxModel();
+        collateBox.setModel(collateModel);
+        collateBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    if (!refreshingCollate)
+                        cd.setCollate((String) collateBox.getSelectedItem());
+                }
+            }
+        });
 
         sizeField.addKeyListener(keyListener);
         scaleField.addKeyListener(keyListener);
@@ -118,6 +156,9 @@ public class SelectTypePanel extends JPanel {
         this.add(encodingLabel, new GridBagConstraints(0, 4, 1, 1,
                 0, 0, GridBagConstraints.NORTH,
                 GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
+        this.add(collateLabel, new GridBagConstraints(0, 5, 1, 1,
+                0, 0, GridBagConstraints.NORTH,
+                GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
         this.add(typeBox, new GridBagConstraints(1, 0, 1, 1,
                 1, 0, GridBagConstraints.NORTH,
                 GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 0, 0));
@@ -133,11 +174,14 @@ public class SelectTypePanel extends JPanel {
         this.add(encodingBox, new GridBagConstraints(1, 4, 1, 1,
                 1, 0, GridBagConstraints.NORTH,
                 GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 0, 0));
+        this.add(collateBox, new GridBagConstraints(1, 5, 1, 1,
+                1, 0, GridBagConstraints.NORTH,
+                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 0, 0));
         this.add(typeOfPanel, new GridBagConstraints(0, 4, 2, 1,
                 1, 1, GridBagConstraints.NORTH,
                 GridBagConstraints.BOTH, new Insets(1, 1, 1, 1), 0, 0));
         // empty panel for stretch
-        this.add(new JPanel(), new GridBagConstraints(0, 5, 2, 1,
+        this.add(new JPanel(), new GridBagConstraints(0, 6, 2, 1,
                 1, 1, GridBagConstraints.NORTH,
                 GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
     }
@@ -210,9 +254,13 @@ public class SelectTypePanel extends JPanel {
 
     private void setEncodingVisible(boolean flag) {
         encodingBox.setEnabled(flag);
-        if (refreshing)
+        collateBox.setEnabled(flag);
+        if (refreshing) {
             encodingBox.setSelectedItem(cd.getCharset());
+            collateBox.setSelectedItem(cd.getCollate());
+        }
         cd.setCharset((String) encodingBox.getSelectedItem());
+        cd.setCollate((String) collateBox.getSelectedItem());
     }
 
     private void removeDuplicates() {
@@ -279,7 +327,7 @@ public class SelectTypePanel extends JPanel {
                 charsets.clear();
 
             String resource = FileUtils.loadResource("org/executequery/charsets.properties");
-            String[] strings = resource.split("\n"/*System.getProperty("line.separator")*/);
+            String[] strings = resource.split("\n");
             for (String s : strings) {
                 if (!s.startsWith("#") && !s.isEmpty())
                     charsets.add(s);
@@ -294,5 +342,26 @@ public class SelectTypePanel extends JPanel {
 
     public void setColumnData(ColumnData columnData) {
         this.cd = columnData;
+    }
+
+    protected String[] loadCollates(String charset) {
+        DefaultStatementExecutor sender = new DefaultStatementExecutor();
+        sender.setDatabaseConnection(cd.getDatabaseConnection());
+        List<String> collates = new ArrayList<>();
+        collates.add(CreateTableSQLSyntax.NONE);
+        String query = "SELECT RDB$COLLATION_NAME\n" +
+                "FROM RDB$COLLATIONS CO LEFT JOIN RDB$CHARACTER_SETS CS ON CO.RDB$CHARACTER_SET_ID = CS.RDB$CHARACTER_SET_ID\n" +
+                "WHERE CS.RDB$CHARACTER_SET_NAME='" + charset + "'";
+        try {
+            ResultSet rs = sender.getResultSet(query).getResultSet();
+            while (rs.next()) {
+                collates.add(rs.getString(1).trim());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            sender.releaseResources();
+        }
+        return collates.toArray(new String[collates.size()]);
     }
 }

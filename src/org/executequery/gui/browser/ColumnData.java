@@ -259,6 +259,10 @@ public class ColumnData implements Serializable {
      */
     int typeOfFrom;
 
+    private String collate;
+
+    private String domainCollate;
+
     String mechanism;
 
     boolean cstring;
@@ -576,9 +580,12 @@ public class ColumnData implements Serializable {
                 "F.RDB$DEFAULT_SOURCE,\n" +
                 "F.RDB$FIELD_PRECISION,\n" +
                 "F.RDB$COMPUTED_SOURCE,\n" +
-                "F.RDB$SEGMENT_LENGTH\n"+
+                "F.RDB$SEGMENT_LENGTH,\n" +
+                "CO.RDB$COLLATION_NAME\n" +
                 "FROM RDB$FIELDS AS F \n" +
                 "LEFT JOIN RDB$CHARACTER_SETS AS C ON F.RDB$CHARACTER_SET_ID = C.RDB$CHARACTER_SET_ID\n" +
+                "LEFT JOIN RDB$COLLATIONS CO ON ((F.RDB$COLLATION_ID = CO.RDB$COLLATION_ID) AND" +
+                "(F.RDB$CHARACTER_SET_ID = CO.RDB$CHARACTER_SET_ID))\n" +
                 "WHERE RDB$FIELD_NAME='" +
                 domain.trim() + "'";
         try {
@@ -598,6 +605,7 @@ public class ColumnData implements Serializable {
                 domainNotNull = rs.getInt(8) == 1;
                 domainDefault = rs.getString(9);
                 domainComputedBy = rs.getString(11);
+                domainCollate = rs.getString(13);
             }
             domainType = DatabaseTypeConverter.getSqlTypeFromRDBType(domainType, domainSubType);
             sqlType = domainType;
@@ -617,6 +625,10 @@ public class ColumnData implements Serializable {
                 domainCharset = CreateTableSQLSyntax.NONE;
             } else domainCharset = domainCharset.trim();
             setCharset(domainCharset);
+            if (MiscUtils.isNull(domainCollate)) {
+                domainCollate = CreateTableSQLSyntax.NONE;
+            } else domainCollate = domainCollate.trim();
+            setCollate(domainCollate);
 
         } catch (SQLException | NullPointerException e) {
             Log.error("Error get ColumnData get Domain:", e);
@@ -698,6 +710,9 @@ public class ColumnData implements Serializable {
             }
             if (getCharset() != null && !getCharset().equals(CreateTableSQLSyntax.NONE)) {
                 sb.append(" CHARACTER SET ").append(getCharset());
+            }
+            if (getCollate() != null && !getCollate().equals(CreateTableSQLSyntax.NONE)) {
+                sb.append(" COLLATE ").append(getCollate());
             }
         }
         return sb.toString();
@@ -997,6 +1012,15 @@ public class ColumnData implements Serializable {
     public void setDescriptionAsSingleComment(boolean descriptionAsSingleComment) {
         this.descriptionAsSingleComment = descriptionAsSingleComment;
     }
+
+    public String getCollate() {
+        return collate;
+    }
+
+    public void setCollate(String collate) {
+        this.collate = collate;
+    }
+
 }
 
 

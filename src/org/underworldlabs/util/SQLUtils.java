@@ -147,6 +147,9 @@ public final class SQLUtils {
             if (!MiscUtils.isNull(cd.getCheck())) {
                 sqlText.append(" CHECK ( " + cd.getCheck() + ")");
             }
+            if (cd.getCollate() != null && !cd.getCollate().equals(CreateTableSQLSyntax.NONE)) {
+                sqlText.append(" COLLATE ").append(cd.getCollate());
+            }
         } else {
             sqlText.append("COMPUTED BY ( " + cd.getComputedBy() + ")");
         }

@@ -145,13 +145,13 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
     }
 
     private void enableConnectionTabs(boolean enabled) {
-        int[] tabs = new int[]{1, 2, 3};
+        /*int[] tabs = new int[]{1, 2, 3};
         for (int i = 0; i < tabs.length; i++) {
             tabPane.setEnabledAt(tabs[i], enabled);
         }
         if (!enabled) {
             tabPane.setSelectedIndex(0);
-        }
+        }*/
     }
 
     public void connectionNameChanged(String name) {
@@ -268,7 +268,6 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         //dataTypesPanel.setDataTypes(controller.getDataTypesResultSet());
 
         // enable the tabs
-        enableConnectionTabs(host.getDatabaseConnection().isConnected());
     }
 
     /**
@@ -296,7 +295,6 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
      */
     public void disconnected(ConnectionEvent connectionEvent) {
         connectionPanel.disconnected(connectionEvent.getDatabaseConnection());
-        enableConnectionTabs(false);
         GUIUtilities.scheduleGC();
     }
 

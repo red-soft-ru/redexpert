@@ -230,47 +230,6 @@
                    property-key="system.display.connections"
                    tool-tip="Opens the saved connections panel"/>
 
-        <menu-item name="Keywords"
-                   key="menu.view.keywords"
-                   class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
-                   mnemonic="K"
-                   listener="org.executequery.actions.viewcommands.ViewOptionsCommand"
-                   action-command="viewKeywords"
-                   property-key="system.display.keywords"
-                   tool-tip="Opens the keywords search and insert panel"/>
-
-        <menu-item name="SQL State Codes"
-                   key="menu.view.sql-codes"
-                   class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
-                   mnemonic="Q"
-                   action-command="viewSqlStateCodes"
-                   property-key="system.display.state-codes"
-                   tool-tip="Opens the SQL State Codes docked panel"/>
-
-        <menu-item name="Drivers"
-                   key="menu.view.drivers"
-                   class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
-                   mnemonic="D"
-                   action-command="viewDrivers"
-                   property-key="system.display.drivers"
-                   tool-tip="Opens JDBC drivers panel"/>
-
-        <menu-item name="System Properties"
-                   key="menu.view.system-properties"
-                   class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
-                   mnemonic="P"
-                   action-command="viewSystemProperties"
-                   property-key="system.display.systemprops"
-                   tool-tip="Opens the system properties palette"/>
-
-        <menu-item name="Notepad"
-                   key="menu.view.notepad"
-                   class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
-                   mnemonic="O"
-                   action-command="viewNotepad"
-                   property-key="system.display.notepad"
-                   tool-tip="Displays the text notepad"/>
-
         <menu-item name="Status Bar"
                    key="menu.view.status-bar"
                    class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"

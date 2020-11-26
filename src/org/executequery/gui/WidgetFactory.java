@@ -21,7 +21,9 @@
 package org.executequery.gui;
 
 import org.executequery.gui.browser.DefaultInlineFieldButton;
-import org.underworldlabs.swing.*;
+import org.underworldlabs.swing.DefaultButton;
+import org.underworldlabs.swing.DefaultFieldLabel;
+import org.underworldlabs.swing.NumberTextField;
 
 import javax.swing.*;
 import java.awt.*;
@@ -60,7 +62,7 @@ public final class WidgetFactory {
 
     public static JButton createButton(String text) {
 
-        return new DefaultButton(text);
+        return new JButton(text);
     }
 
     public static JButton createButton(ActionListener actionListener, String text) {
@@ -70,42 +72,42 @@ public final class WidgetFactory {
 
     public static JComboBox createComboBox(Vector<?> items) {
 
-        return new DefaultComboBox(items);
+        return new JComboBox(items);
     }
 
     public static JComboBox createComboBox(ComboBoxModel model) {
 
-        return new DefaultComboBox(model);
+        return new JComboBox(model);
     }
 
     public static JComboBox createComboBox(Object[] items) {
 
-        return new DefaultComboBox(items);
+        return new JComboBox(items);
     }
 
     public static JComboBox createComboBox() {
 
-        return new DefaultComboBox();
+        return new JComboBox();
     }
 
     public static NumberTextField createNumberTextField() {
 
-        return new DefaultNumberTextField();
+        return new NumberTextField();
     }
 
     public static JTextField createTextField() {
 
-        return new DefaultTextField();
+        return new JTextField();
     }
 
     public static JTextField createTextField(String text) {
 
-        return new DefaultTextField(text);
+        return new JTextField(text);
     }
 
     public static JPasswordField createPasswordField() {
 
-        return new DefaultPasswordField();
+        return new JPasswordField();
     }
 
     public static void addLabelFieldPair(JPanel panel, String label,

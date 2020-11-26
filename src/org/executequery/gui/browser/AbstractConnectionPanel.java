@@ -23,6 +23,7 @@ package org.executequery.gui.browser;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.ActionPanel;
 import org.underworldlabs.swing.DefaultFieldLabel;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -42,7 +43,7 @@ public abstract class AbstractConnectionPanel extends ActionPanel {
         gbc.fill = GridBagConstraints.NONE;
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.insets.bottom = 10;
+        gbc.insets.bottom = 0;
 
         int count = 0;
         for (ComponentToolTipPair pair : components) {
@@ -72,26 +73,21 @@ public abstract class AbstractConnectionPanel extends ActionPanel {
     }
 
     protected void addLabelFieldPair(JPanel panel, String label,
-                                     JComponent field, String toolTip, GridBagConstraints gbc) {
+                                     JComponent field, String toolTip, GridBagHelper gbh) {
 
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.gridwidth = 1;
-        gbc.insets.top = 10;
+        gbh.nextRowFirstCol();
 
+        gbh.topGap(0);
         if (panel.getComponentCount() > 0) {
 
-            gbc.insets.top = 0;
+            gbh.topGap(0);
         }
 
-        gbc.insets.left = 10;
-        gbc.weightx = 0;
-        panel.add(new DefaultFieldLabel(label), gbc);
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.gridx = 1;
-        gbc.insets.left = 5;
-        gbc.weightx = 1.0;
-        panel.add(field, gbc);
+        gbh.leftGap(10);
+        gbh.setLabelDefault();
+        panel.add(new DefaultFieldLabel(label), gbh.get());
+        gbh.nextCol().spanX();
+        panel.add(field, gbh.get());
 
         if (toolTip != null) {
 

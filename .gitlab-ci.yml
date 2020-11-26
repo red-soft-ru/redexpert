@@ -99,7 +99,7 @@ sources:
     - tar xzf apache-maven-3.5.4-bin.tar.gz
     - export PATH=${M2_HOME}/bin:${PATH}
     - export VERSION=`cat ${CI_PROJECT_DIR}/.ci/version`
-    - export JAVA_HOME=`java -XshowSettings:properties -version 2>&1|grep "java.home"|cut -d "=" -f 2|tr -d " "`/
+    - export JAVA_HOME=`java -XshowSettings:properties -version 2>&1|grep "java.home"|cut -d "=" -f 2|tr -d " "|rev | cut -c 4- | rev`
   script:
     - cd "${CI_PROJECT_DIR}"
     - tar xf dist-src/RedExpert-$VERSION-src.tar.gz

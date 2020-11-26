@@ -9,6 +9,7 @@ public class GridBagHelper {
     private GridBagConstraints constraints;
     private GridBagConstraints defaultConstraints;
 
+
     public GridBagHelper() {
         this.constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -42,6 +43,18 @@ public class GridBagHelper {
     // двигается на следующую ячейку
     public GridBagHelper nextCol() {
         constraints.gridx++;
+        // для удобства возвращаем себя
+        return this;
+    }
+
+    public GridBagHelper nextColWidth() {
+        constraints.gridx += constraints.gridwidth;
+        // для удобства возвращаем себя
+        return this;
+    }
+
+    public GridBagHelper nextRowWidth() {
+        constraints.gridy += constraints.gridheight;
         // для удобства возвращаем себя
         return this;
     }
@@ -92,9 +105,23 @@ public class GridBagHelper {
         return this;
     }
 
-    // вставляет распорку справа
-    public GridBagHelper gap(int size) {
+    public GridBagHelper rightGap(int size) {
         constraints.insets.right = size;
+        return this;
+    }
+
+    public GridBagHelper leftGap(int size) {
+        constraints.insets.left = size;
+        return this;
+    }
+
+    public GridBagHelper topGap(int size) {
+        constraints.insets.top = size;
+        return this;
+    }
+
+    public GridBagHelper bottomGap(int size) {
+        constraints.insets.bottom = size;
         return this;
     }
 
@@ -124,7 +151,7 @@ public class GridBagHelper {
         return this;
     }
 
-    public GridBagHelper seWeightX(double weight) {
+    public GridBagHelper setWeightX(double weight) {
         constraints.weightx = weight;
         return this;
     }
@@ -230,4 +257,7 @@ public class GridBagHelper {
         nextRowFirstCol();
     }
 
+    public GridBagConstraints getDefaultConstraints() {
+        return defaultConstraints;
+    }
 }

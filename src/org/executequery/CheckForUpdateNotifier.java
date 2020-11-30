@@ -205,7 +205,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         label.setIcon(GUIUtilities.loadIcon("YellowBallAnimated16.gif"));
         label.setToolTipText(newVersionAvailableText());
 
-        statusBar().setThirdLabelText("Update available");
+        statusBar().setThirdLabelText(bundledString("updateAvailable"));
         Log.info("The application needs to be updated");
     }
 
@@ -290,7 +290,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         label.setIcon(new PulsatingCircle(label, 6));
         label.setToolTipText(newVersionAvailableText());
 
-        statusBar().setThirdLabelText("Update available");
+        statusBar().setThirdLabelText(bundledString("updateAvailable"));
     }
 
     private JLabel getUpdateNotificationLabel() {

@@ -377,7 +377,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         //multifactorPanel = new JPanel(new GridBagLayout());
         //multifactorPanel.setVisible(false);
         //GridBagConstraints mCons = new GridBagConstraints();
-        JLabel certLabel = new DefaultFieldLabel("Certificate file X.509 (CER, DER):");
+        JLabel certLabel = new DefaultFieldLabel(bundleString("certLabel"));
         mainPanel.add(certLabel, gbh.nextRowFirstCol().setLabelDefault().get());
         multifactorComponents.add(certLabel);
         /*mCons.gridx = 1;
@@ -393,7 +393,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         fileChooser.addChoosableFileFilter(
                 new FileNameExtensionFilter("Certificate file X.509 (CER, DER)", "cer", "der"));
 
-        JButton openCertFile = new JButton("Choose file");
+        JButton openCertFile = new JButton(bundleString("ChooseFile"));
         openCertFile.addActionListener(new ActionListener() {
 
             @Override
@@ -414,7 +414,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         mainPanel.add(openCertFile, gbh.nextColWidth().setLabelDefault().get());
         multifactorComponents.add(openCertFile);
 
-        JLabel contLabel = new DefaultFieldLabel("Container password:");
+        JLabel contLabel = new DefaultFieldLabel(bundleString("contLabel"));
         mainPanel.add(contLabel, gbh.nextRowFirstCol().setLabelDefault().get());
         multifactorComponents.add(contLabel);
 

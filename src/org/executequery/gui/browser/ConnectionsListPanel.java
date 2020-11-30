@@ -109,7 +109,7 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
 
         JPanel tablePanel = new JPanel(new GridBagLayout());
         tablePanel.add(new JScrollPane(table), getPanelConstraints());
-        tablePanel.setBorder(BorderFactory.createTitledBorder(bundleString("AvailableConnections")));
+        //tablePanel.setBorder(BorderFactory.createTitledBorder(bundleString("AvailableConnections")));
 
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -124,7 +124,7 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         gbc.gridwidth = 1;
         gbc.insets.top = 0;
         gbc.fill = GridBagConstraints.NONE;
-        panel.add(new JLabel(bundleString("label2")), gbc);
+        //panel.add(new JLabel(bundleString("label2")), gbc);
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.insets.left = 10;

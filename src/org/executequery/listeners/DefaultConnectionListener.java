@@ -29,6 +29,7 @@ import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.util.SwingWorker;
@@ -74,8 +75,8 @@ public class DefaultConnectionListener implements ConnectionListener {
     private void updateStatusBarDataSourceCounter() {
 
         statusBar().setFirstLabelText(
-                " Active Data Sources: " +
-                        ConnectionManager.getActiveConnectionPoolCount());
+                bundledString("activeConns", ConnectionManager.getActiveConnectionPoolCount())
+        );
     }
 
     void populate(DatabaseObjectNode root) {
@@ -93,6 +94,10 @@ public class DefaultConnectionListener implements ConnectionListener {
     private StatusBarPanel statusBar() {
 
         return GUIUtilities.getStatusBar();
+    }
+
+    private String bundledString(String key, Object... args) {
+        return Bundles.get(this.getClass(), key, args);
     }
 
 }

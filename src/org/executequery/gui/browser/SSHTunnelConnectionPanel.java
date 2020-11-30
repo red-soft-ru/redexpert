@@ -25,6 +25,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.TextFieldPanel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.ComponentTitledPanel;
 import org.underworldlabs.swing.DefaultFieldLabel;
 import org.underworldlabs.swing.LinkButton;
@@ -84,29 +85,29 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
         mainPanel.add(new DefaultFieldLabel(
                 FileUtils.loadResource("org/executequery/gui/browser/resource/ssh-tunnel.html")), gbc);
         gbh.setDefaults(gbc).defaults();
-        addLabelFieldPair(mainPanel, "SSH Host:", hostField,
-                "The SSH host server for the tunnel", gbh);
+        addLabelFieldPair(mainPanel, bundleString("hostField"), hostField,
+                bundleString("hostField.tool-tip"), gbh);
 
-        addLabelFieldPair(mainPanel, "SSH Port:", portField,
-                "The SSH server port", gbh);
+        addLabelFieldPair(mainPanel, bundleString("portField"), portField,
+                bundleString("portField.tool-tip"), gbh);
 
-        addLabelFieldPair(mainPanel, "SSH User Name:", userNameField,
-                "The SSH user name for the tunnel", gbh);
+        addLabelFieldPair(mainPanel, bundleString("userField"), userNameField,
+                bundleString("userField.tool-tip"), gbh);
 
-        addLabelFieldPair(mainPanel, "SSH Password:", passwordField,
-                "The SSH user password for the tunnel", gbh);
+        addLabelFieldPair(mainPanel, bundleString("passwordField"), passwordField,
+                bundleString("passwordField"), gbh);
 
-        savePwdCheck = ActionUtilities.createCheckBox("Store Password", "setStorePassword");
+        savePwdCheck = ActionUtilities.createCheckBox(bundleString("StorePassword"), "setStorePassword");
 
-        JButton showPassword = new LinkButton("Show Password");
+        JButton showPassword = new LinkButton(bundleString("ShowPassword"));
         showPassword.setActionCommand("showPassword");
         showPassword.addActionListener(this);
 
         JPanel passwordOptionsPanel = new JPanel(new GridBagLayout());
         addComponents(passwordOptionsPanel,
                 new ComponentToolTipPair[]{
-                        new ComponentToolTipPair(savePwdCheck, "Store the password with the connection information"),
-                        new ComponentToolTipPair(showPassword, "Show the password in plain text")});
+                        new ComponentToolTipPair(savePwdCheck, bundleString("StorePassword.tool-tip")),
+                        new ComponentToolTipPair(showPassword, bundleString("ShowPassword.tool-tip"))});
         gbc = gbh.get();
         gbc.gridy++;
         gbc.gridx = 1;
@@ -117,7 +118,7 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
         JScrollPane scrollPane = new JScrollPane(mainPanel);
         scrollPane.setBorder(null);
 
-        useSshCheckbox = ActionUtilities.createCheckBox(this, "Connect Using an SSH Tunnel", "useSshSelected");
+        useSshCheckbox = ActionUtilities.createCheckBox(this, bundleString("borderTitle"), "useSshSelected");
         ComponentTitledPanel titledPanel = new ComponentTitledPanel(useSshCheckbox);
 
         JPanel panel = titledPanel.getContentPane();
@@ -259,6 +260,10 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
     private boolean hasValue(JTextField textField) {
 
         return StringUtils.isNotBlank(textField.getText());
+    }
+
+    protected String bundleString(String key) {
+        return Bundles.get(ConnectionPanel.class, key);
     }
 
 }

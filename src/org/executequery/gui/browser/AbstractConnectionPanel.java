@@ -39,7 +39,7 @@ public abstract class AbstractConnectionPanel extends ActionPanel {
 
         GridBagConstraints gbc = new GridBagConstraints();
 
-        gbc.anchor = GridBagConstraints.EAST;
+        gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.NONE;
         gbc.gridx = 0;
         gbc.gridy = 0;

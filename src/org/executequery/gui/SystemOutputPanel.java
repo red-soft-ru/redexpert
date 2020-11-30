@@ -25,6 +25,7 @@ import org.apache.log4j.PatternLayout;
 import org.executequery.GUIUtilities;
 import org.executequery.components.BasicPopupMenuListener;
 import org.executequery.components.TextAreaLogAppender;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
@@ -41,7 +42,7 @@ public class SystemOutputPanel extends AbstractDockedTabPanel implements ReadOnl
     /**
      * This panel's title
      */
-    public static final String TITLE = "Output Console";
+    public static final String TITLE = Bundles.get(SystemOutputPanel.class, "title");
 
     /**
      * the output text area

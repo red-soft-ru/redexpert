@@ -394,7 +394,7 @@ public class GUIUtils {
                 JOptionPane.ERROR_MESSAGE,
                 false,
                 "OptionPane.errorIcon",
-                "Error Message",
+                Bundles.getCommon("error-message"),
                 message, null);
     }
 
@@ -405,7 +405,7 @@ public class GUIUtils {
                 JOptionPane.ERROR_MESSAGE,
                 false,
                 "OptionPane.errorIcon",
-                "Error Message",
+                Bundles.getCommon("error-message"),
                 message, new Object[]{Bundles.getCommon("ok.button"), Bundles.getCommon("cancel.button")}));
     }
 
@@ -425,7 +425,7 @@ public class GUIUtils {
                 JOptionPane.QUESTION_MESSAGE,
                 false,
                 "OptionPane.questionIcon",
-                "Confirmation",
+                Bundles.getCommon("confirmation"),
                 message, new Object[]{Bundles.getCommon("yes.button"), Bundles.getCommon("no.button"), Bundles.getCommon("cancel.button")}));
     }
 
@@ -435,7 +435,7 @@ public class GUIUtils {
                 JOptionPane.WARNING_MESSAGE,
                 false,
                 "OptionPane.questionIcon",
-                "Confirmation",
+                Bundles.getCommon("confirmation"),
                 message, new Object[]{Bundles.getCommon("yes.button"), Bundles.getCommon("no.button")}));
     }
 

@@ -107,6 +107,7 @@ public class ToolBarManager extends DefaultToolBarManager
 
             reset();
         }
+        initToolBar();
 
         buildToolBar(FILE_TOOLS, rebuild);
         buildToolBar(EDIT_TOOLS, rebuild);

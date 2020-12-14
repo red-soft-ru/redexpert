@@ -557,7 +557,7 @@ public class DockedTabContainer extends JPanel
         // if not, add there regardless of specified position
         if (northTabPane == null && orientation != CENTER) {
 
-            northTabPane = new DockedTabPane(this);
+            northTabPane = new DockedTabPane(this, false);
             splitPane.setLeftComponent(northTabPane);
             tabPane = northTabPane;
 
@@ -579,7 +579,7 @@ public class DockedTabContainer extends JPanel
                 case SwingConstants.SOUTH_WEST:
                 case SwingConstants.SOUTH_EAST:
                     if (southTabPane == null) {
-                        southTabPane = new DockedTabPane(this);
+                        southTabPane = new DockedTabPane(this, true);
                         southPaneCreated();
                     }
                     tabPane = southTabPane;
@@ -890,7 +890,7 @@ public class DockedTabContainer extends JPanel
         if (orientation != SwingConstants.CENTER) {
             // a restored tab is always added to the north pane
             if (northTabPane == null) {
-                northTabPane = new DockedTabPane(this);
+                northTabPane = new DockedTabPane(this, false);
                 // check the split pane
                 if (splitPane == null) {
                     initSplitPane();
@@ -904,7 +904,7 @@ public class DockedTabContainer extends JPanel
             northTabPane.setSelectedTab(tabComponent);
         } else { // for center only
             if (southTabPane == null) {
-                southTabPane = new DockedTabPane(this);
+                southTabPane = new DockedTabPane(this, true);
                 southPaneCreated();
             }
             southTabPane.addTab(tabComponent);

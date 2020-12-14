@@ -42,7 +42,8 @@ public class GridBagHelper {
 
     // двигается на следующую ячейку
     public GridBagHelper nextCol() {
-        constraints.gridx++;
+        //constraints.gridx++;
+        nextColWidth();
         // для удобства возвращаем себя
         return this;
     }
@@ -259,5 +260,72 @@ public class GridBagHelper {
 
     public GridBagConstraints getDefaultConstraints() {
         return defaultConstraints;
+    }
+
+    public void addLabelFieldPair(JPanel panel, String label,
+                                  JComponent field, String toolTip) {
+        addLabelFieldPair(panel, label, field, toolTip, true);
+    }
+
+    public void addLabelFieldPair(JPanel panel, String label,
+                                  JComponent field, String toolTip, boolean newLine) {
+        addLabelFieldPair(panel, label, field, toolTip, newLine, true);
+    }
+
+    public void addLabelFieldPair(JPanel panel, String label,
+                                  JComponent field, String toolTip, boolean newLine, boolean spanX) {
+        addLabelFieldPair(panel, label, field, toolTip, newLine, spanX, 1);
+    }
+
+    public void addLabelFieldPair(JPanel panel, String label,
+                                  JComponent field, String toolTip, boolean newLine, boolean spanX, int fieldWidth) {
+        addLabelFieldPair(panel, label, field, toolTip, newLine, spanX, fieldWidth, 10);
+    }
+
+    public void addLabelFieldPair(JPanel panel, String label,
+                                  JComponent field, String toolTip, boolean newLine, boolean spanX, int fieldWidth, int leftGap) {
+        addLabelFieldPair(panel, new JLabel(label), field, toolTip, newLine, spanX, fieldWidth, leftGap);
+    }
+
+    public void addLabelFieldPair(JPanel panel, JLabel label,
+                                  JComponent field, String toolTip) {
+        addLabelFieldPair(panel, label, field, toolTip, true);
+    }
+
+    public void addLabelFieldPair(JPanel panel, JLabel label,
+                                  JComponent field, String toolTip, boolean newLine) {
+        addLabelFieldPair(panel, label, field, toolTip, newLine, true);
+    }
+
+    public void addLabelFieldPair(JPanel panel, JLabel label,
+                                  JComponent field, String toolTip, boolean newLine, boolean spanX) {
+        addLabelFieldPair(panel, label, field, toolTip, newLine, spanX, 1);
+    }
+
+    public void addLabelFieldPair(JPanel panel, JLabel label,
+                                  JComponent field, String toolTip, boolean newLine, boolean spanX, int fieldWidth) {
+        addLabelFieldPair(panel, label, field, toolTip, newLine, spanX, fieldWidth, 10);
+    }
+
+    public void addLabelFieldPair(JPanel panel, JLabel label,
+                                  JComponent field, String toolTip, boolean newLine, boolean spanX, int fieldWidth, int leftGap) {
+        if (newLine)
+            nextRowFirstCol();
+        else nextCol();
+
+        topGap(0);
+        leftGap(leftGap);
+        setLabelDefault();
+        panel.add(label, get());
+        nextCol().setMaxWeightX().fillHorizontally().setWidth(fieldWidth);
+        if (spanX)
+            spanX();
+        panel.add(field, get());
+
+        if (toolTip != null) {
+
+            field.setToolTipText(toolTip);
+        }
+
     }
 }

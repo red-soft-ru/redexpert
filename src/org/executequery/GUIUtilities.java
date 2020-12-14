@@ -547,6 +547,10 @@ public final class GUIUtilities {
         return getParentFrame();
     }
 
+    public static ExecuteQueryMenu getExecuteQueryMenu() {
+        return (ExecuteQueryMenu) frame.getJMenuBar();
+    }
+
     /**
      * Selects the next tab from the current selection.
      */

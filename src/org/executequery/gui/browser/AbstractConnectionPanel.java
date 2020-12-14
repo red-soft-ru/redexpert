@@ -22,8 +22,6 @@ package org.executequery.gui.browser;
 
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.ActionPanel;
-import org.underworldlabs.swing.DefaultFieldLabel;
-import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -72,29 +70,7 @@ public abstract class AbstractConnectionPanel extends ActionPanel {
 
     }
 
-    protected void addLabelFieldPair(JPanel panel, String label,
-                                     JComponent field, String toolTip, GridBagHelper gbh) {
 
-        gbh.nextRowFirstCol();
-
-        gbh.topGap(0);
-        if (panel.getComponentCount() > 0) {
-
-            gbh.topGap(0);
-        }
-
-        gbh.leftGap(10);
-        gbh.setLabelDefault();
-        panel.add(new DefaultFieldLabel(label), gbh.get());
-        gbh.nextCol().spanX();
-        panel.add(field, gbh.get());
-
-        if (toolTip != null) {
-
-            field.setToolTipText(toolTip);
-        }
-
-    }
 
     class ComponentToolTipPair {
 

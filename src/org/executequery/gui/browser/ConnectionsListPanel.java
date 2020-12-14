@@ -77,6 +77,10 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
      */
     private PopMenu popupMenu;
 
+    private JButton connButton;
+
+    private JButton newDBButton;
+
     public ConnectionsListPanel(BrowserController controller) {
         super();
         this.controller = controller;
@@ -104,8 +108,11 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         tcm.getColumn(0).setCellRenderer(new ConnectCellRenderer());
 
         // new connection button
-        JButton button = WidgetFactory.createButton(Bundles.getCommon("newConnection.button"));
-        button.addActionListener(this);
+        connButton = WidgetFactory.createButton(Bundles.getCommon("newConnection.button"));
+        connButton.addActionListener(this);
+
+        newDBButton = WidgetFactory.createButton(Bundles.get("action.create-database-command"));
+        newDBButton.addActionListener(this);
 
         JPanel tablePanel = new JPanel(new GridBagLayout());
         tablePanel.add(new JScrollPane(table), getPanelConstraints());
@@ -130,7 +137,11 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         gbc.insets.left = 10;
         gbc.insets.bottom = 0;
         gbc.anchor = GridBagConstraints.WEST;
-        panel.add(button, gbc);
+        gbc.weightx = 0;
+        panel.add(connButton, gbc);
+        gbc.gridx++;
+        panel.add(newDBButton, gbc);
+
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.gridy++;
         gbc.gridx = 0;
@@ -197,8 +208,17 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
     }
 
     public void actionPerformed(ActionEvent e) {
-        GUIUtilities.ensureDockedTabVisible(ConnectionsTreePanel.PROPERTY_KEY);
-        controller.addNewConnection();
+        if (e.getSource() == connButton) {
+            GUIUtilities.ensureDockedTabVisible(ConnectionsTreePanel.PROPERTY_KEY);
+            controller.addNewConnection();
+        }
+        if (e.getSource() == newDBButton) {
+            GUIUtilities.addCentralPane(CreateDatabasePanel.TITLE,
+                    CreateDatabasePanel.FRAME_ICON,
+                    new CreateDatabasePanel(null),
+                    null,
+                    true);
+        }
     }
 
     private List<DatabaseConnection> getConnectionsAt(Point point) {

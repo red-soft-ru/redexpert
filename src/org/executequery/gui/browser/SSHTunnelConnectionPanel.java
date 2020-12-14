@@ -83,19 +83,19 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
 
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         mainPanel.add(new DefaultFieldLabel(
-                FileUtils.loadResource("org/executequery/gui/browser/resource/ssh-tunnel.html")), gbc);
+                FileUtils.loadResource(bundleString("path_to_html"))), gbc);
         gbh.setDefaults(gbc).defaults();
-        addLabelFieldPair(mainPanel, bundleString("hostField"), hostField,
-                bundleString("hostField.tool-tip"), gbh);
+        gbh.addLabelFieldPair(mainPanel, bundleString("hostField"), hostField,
+                bundleString("hostField.tool-tip"));
 
-        addLabelFieldPair(mainPanel, bundleString("portField"), portField,
-                bundleString("portField.tool-tip"), gbh);
+        gbh.addLabelFieldPair(mainPanel, bundleString("portField"), portField,
+                bundleString("portField.tool-tip"));
 
-        addLabelFieldPair(mainPanel, bundleString("userField"), userNameField,
-                bundleString("userField.tool-tip"), gbh);
+        gbh.addLabelFieldPair(mainPanel, bundleString("userField"), userNameField,
+                bundleString("userField.tool-tip"));
 
-        addLabelFieldPair(mainPanel, bundleString("passwordField"), passwordField,
-                bundleString("passwordField"), gbh);
+        gbh.addLabelFieldPair(mainPanel, bundleString("passwordField"), passwordField,
+                bundleString("passwordField"));
 
         savePwdCheck = ActionUtilities.createCheckBox(bundleString("StorePassword"), "setStorePassword");
 

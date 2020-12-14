@@ -22,6 +22,7 @@ package org.executequery.gui;
 
 import org.executequery.Constants;
 import org.executequery.EventMediator;
+import org.executequery.GUIUtilities;
 import org.executequery.base.DockedTabEvent;
 import org.executequery.base.DockedTabListener;
 import org.executequery.base.DockedTabView;
@@ -30,6 +31,7 @@ import org.executequery.event.DefaultUserPreferenceEvent;
 import org.executequery.event.UserPreferenceEvent;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.swing.menu.MainCheckBoxMenuItem;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -380,6 +382,10 @@ public class OpenComponentRegister implements DockedTabListener {
 
                         markDockedComponentVisible(key, false);
 
+                        key = keyMenuFromComponent(component);
+
+                        markMenuItemSelected(key, false);
+
                         fireComponentViewClosed(key);
                     }
 
@@ -394,14 +400,26 @@ public class OpenComponentRegister implements DockedTabListener {
     }
 
     private void markDockedComponentVisible(String key, boolean visible) {
-
         SystemProperties.setBooleanProperty(
                 Constants.USER_PROPERTIES_KEY, key, visible);
+    }
+
+    private void markMenuItemSelected(String key, boolean visible) {
+        JMenuItem item = GUIUtilities.getExecuteQueryMenu().getMenuMap().get(key);
+        if (item instanceof MainCheckBoxMenuItem) {
+            MainCheckBoxMenuItem menuItem = (MainCheckBoxMenuItem) item;
+            menuItem.setSelected(visible);
+        }
     }
 
     private String keyFromComponent(Component component) {
 
         return ((DockedTabView) component).getPropertyKey();
+    }
+
+    private String keyMenuFromComponent(Component component) {
+
+        return ((DockedTabView) component).getMenuItemKey();
     }
 
     private void fireComponentViewOpened(final String key) {

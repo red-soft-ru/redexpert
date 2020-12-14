@@ -110,7 +110,7 @@ public class ScrollingTabPane extends AbstractTabPane
         componentPanel.setBorder(null);
         add(componentPanel, BorderLayout.CENTER);
 
-        setBorder(BorderFactory.createLineBorder(tabPanel.controlShadow));
+        //setBorder(BorderFactory.createLineBorder(tabPanel.controlShadow));
 
         viewport.movePanel(0);
     }
@@ -175,6 +175,7 @@ public class ScrollingTabPane extends AbstractTabPane
         tabSelectionPopupMenu.addTabMenuItem(tabComponent);
         scrollButtonPanel.setVisible(true);
         scrollButtonPanel.enableButton(SOUTH, true);
+        componentPanel.setBorder(BorderFactory.createLineBorder(tabPanel.controlShadow));
     }
 
     /**

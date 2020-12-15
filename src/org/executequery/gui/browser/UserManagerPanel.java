@@ -175,9 +175,9 @@ public class UserManagerPanel extends JPanel {
         rolesPanel = new JPanel();
         membershipPanel = new JPanel();
         membershipTable = new JTable();
-        grantButton = new DefaultButton();
-        adminButton = new DefaultButton();
-        no_grantButton = new DefaultButton();
+        grantButton = new JButton();
+        adminButton = new JButton();
+        no_grantButton = new JButton();
         grantLabel = new JLabel();
         adminLabel = new JLabel();
         no_grantLabel = new JLabel();

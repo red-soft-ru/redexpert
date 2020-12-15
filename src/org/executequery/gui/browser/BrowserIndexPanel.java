@@ -12,6 +12,7 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DefaultComboBox;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.StyledLogPane;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -82,14 +83,16 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
         dependenciesPanel = new DependenciesPanel();
         model = new DefaultDatabaseIndex.IndexColumnsModel(columns);
         table = new JTable(model);
-
+        GridBagConstraints gbc_def = new GridBagConstraints();
+        gbc_def.fill = GridBagConstraints.HORIZONTAL;
+        gbc_def.anchor = GridBagConstraints.NORTHWEST;
+        gbc_def.insets = new Insets(10, 10, 10, 10);
+        gbc_def.gridy = -1;
+        gbc_def.gridx = 0;
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaults(gbc_def).defaults();
         fieldsPanel.add(
-                new JScrollPane(table),
-                new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                        GridBagConstraints.SOUTHEAST,
-                        GridBagConstraints.BOTH,
-                        new Insets(2, 2, 2, 2), 0, 0));
-
+                new JScrollPane(table), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
         tabPane = new JTabbedPane(JTabbedPane.TOP);
         tabPane.add(bundleString("IncludedFields"), fieldsPanel);
         JPanel descriptionPanel = new JPanel(new BorderLayout());
@@ -106,34 +109,6 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
         objectNameLabel = new JLabel();
         indexNameField = new DisabledField();
 
-        JPanel base = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        Insets insets = new Insets(10, 10, 5, 5);
-        gbc.anchor = GridBagConstraints.NORTHEAST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridx++;
-        gbc.insets = insets;
-        gbc.gridy++;
-        base.add(objectNameLabel, gbc);
-        gbc.gridy++;
-        gbc.insets.top = 0;
-        gbc.insets.right = 5;
-        gbc.insets.right = 10;
-        gbc.gridy++;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        gbc.gridwidth = 2;
-        gbc.insets.bottom = 10;
-        gbc.fill = GridBagConstraints.BOTH;
-        base.add(tabPane, gbc);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets.left = 5;
-        gbc.insets.top = 10;
-        gbc.gridwidth = 1;
-        gbc.weighty = 0;
-        gbc.gridy = 0;
-        gbc.gridx = 1;
-
         tableField = new DisabledField();
         uniqueCheckBox = new JCheckBox(bundleString("Unique"));
         uniqueCheckBox.setEnabled(false);
@@ -147,49 +122,15 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
         sorting.add(bundleString("Descending"));
         sortingComboBox.setModel(new DefaultComboBoxModel(sorting.toArray()));
 
-        base.add(indexNameField, gbc);
-        ++gbc.gridy;
+        JPanel base = new JPanel(new GridBagLayout());
+        gbh.defaults();
+        gbh.addLabelFieldPair(base, objectNameLabel, indexNameField, null);
+        gbh.addLabelFieldPair(base, bundleString("TableName"), tableField, null);
+        gbh.addLabelFieldPair(base, bundleString("Sorting"), sortingComboBox, null);
+        base.add(activeCheckBox, gbh.nextRowFirstCol().setLabelDefault().get());
+        base.add(uniqueCheckBox, gbh.nextCol().get());
+        base.add(tabPane, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
 
-        JPanel panel = new JPanel(new FlowLayout());
-
-        JLabel tableLable = new JLabel(bundleString("TableName"));
-        JLabel sortingLable = new JLabel(bundleString("Sorting"));
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(panel);
-        panel.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-                jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(tableLable)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(tableField, javax.swing.GroupLayout.DEFAULT_SIZE, 604, Short.MAX_VALUE))
-                        .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(sortingLable)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(sortingComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addComponent(uniqueCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(activeCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(
-                jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(tableLable)
-                                        .addComponent(tableField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(sortingLable)
-                                        .addComponent(sortingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(uniqueCheckBox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(activeCheckBox)
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        --gbc.gridx;
-        gbc.gridwidth = 2;
-        base.add(panel, gbc);
-        gbc.insets.top = 0;
 
         setHeaderText("Database UDF");
         setHeaderIcon(GUIUtilities.loadIcon("TableIndex16.png", true));

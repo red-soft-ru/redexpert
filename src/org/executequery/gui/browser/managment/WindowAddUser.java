@@ -6,6 +6,7 @@ import org.executequery.gui.browser.UserManagerPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -29,20 +30,14 @@ public class WindowAddUser extends JPanel {
     private JTextArea descriptionField;
     private JTextField firstNameField;
     private NumberTextField groupIDField;
-    private JLabel jLabel1;
-    private JLabel jLabel2;
-    private JLabel jLabel3;
-    private JLabel jLabel4;
-    private JLabel jLabel5;
-    private JLabel jLabel6;
-    private JLabel jLabel7;
-    private JLabel jLabel8;
-    private JLabel jLabel9;
+    private JLabel userIDLabel;
+    private JLabel groupIDLabel;
+    private JLabel descriptionLabel;
     private JLabel tagLabel;
     private JLabel pluginLabel;
     private JTextField pluginField;
     private JCheckBox adminBox;
-    private JScrollPane jScrollPane1;
+    private JScrollPane descriptionScroll;
     private JTextField lastNameField;
     private JTextField middleNameField;
     private JTextField nameTextField;
@@ -52,6 +47,7 @@ public class WindowAddUser extends JPanel {
     private JTable tagTable;
     private JScrollPane tagScrol;
     private JCheckBox activeBox;
+
     private JButton addTag;
     private JButton deleteTag;
 
@@ -157,19 +153,13 @@ public class WindowAddUser extends JPanel {
         firstNameField = new JTextField();
         middleNameField = new JTextField();
         lastNameField = new JTextField();
-        jScrollPane1 = new JScrollPane();
+        descriptionScroll = new JScrollPane();
         descriptionField = new JTextArea();
         userIDField = new NumberTextField();
         groupIDField = new NumberTextField();
-        jLabel1 = new JLabel();
-        jLabel2 = new JLabel();
-        jLabel3 = new JLabel();
-        jLabel4 = new JLabel();
-        jLabel5 = new JLabel();
-        jLabel6 = new JLabel();
-        jLabel7 = new JLabel();
-        jLabel8 = new JLabel();
-        jLabel9 = new JLabel();
+        userIDLabel = new JLabel();
+        groupIDLabel = new JLabel();
+        descriptionLabel = new JLabel();
         tagLabel = new JLabel();
         okButton = new DefaultButton();
         cancelButton = new DefaultButton();
@@ -182,7 +172,7 @@ public class WindowAddUser extends JPanel {
         pluginField = new JTextField();
         adminBox = new JCheckBox();
 
-        jScrollPane1.setViewportView(descriptionField);
+        descriptionScroll.setViewportView(descriptionField);
         tagScrol.setViewportView(tagTable);
 
         addTag.setText(bundleString("addTag"));
@@ -195,23 +185,11 @@ public class WindowAddUser extends JPanel {
 
         groupIDField.setText("0");
 
-        jLabel1.setText(bundleString("UserName"));
+        userIDLabel.setText(bundleString("UserID"));
 
-        jLabel2.setText(bundleString("Password"));
+        groupIDLabel.setText(bundleString("GroupID"));
 
-        jLabel3.setText(bundleString("ConfirmPassword"));
-
-        jLabel4.setText(bundleString("FirstName"));
-
-        jLabel5.setText(bundleString("MiddleName"));
-
-        jLabel6.setText(bundleString("LastName"));
-
-        jLabel7.setText(bundleString("UserID"));
-
-        jLabel8.setText(bundleString("GroupID"));
-
-        jLabel9.setText(bundleString("Description"));
+        descriptionLabel.setText(bundleString("Description"));
 
         pluginLabel.setText(bundleString("Plugin"));
 
@@ -233,90 +211,39 @@ public class WindowAddUser extends JPanel {
 
         activeBox.setText(bundleString("active"));
 
-        JPanel panel = new JPanel(new GridBagLayout());
+        setLayout(new GridBagLayout());
 
         GridBagConstraints gbConst = new GridBagConstraints(
                 0, 0, 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST,
-                GridBagConstraints.NONE,
+                GridBagConstraints.HORIZONTAL,
                 new Insets(2, 2, 2, 2), 0, 0);
-        panel.add(jLabel1, gbConst);
-        gbConst.gridy++;
-        panel.add(jLabel2, gbConst);
-        gbConst.gridy++;
-        panel.add(jLabel3, gbConst);
-        gbConst.gridy++;
-        panel.add(jLabel4, gbConst);
-        gbConst.gridy++;
-        panel.add(jLabel5, gbConst);
-        gbConst.gridy++;
-        panel.add(jLabel6, gbConst);
-        gbConst.gridy++;
-        panel.add(jLabel7, gbConst);
-        gbConst.gridy++;
-        panel.add(jLabel8, gbConst);
-        gbConst.gridy++;
-        panel.add(pluginLabel, gbConst);
-        gbConst.weightx = 0.5;
-        gbConst.gridx = 1;
-        gbConst.gridy = 0;
-        gbConst.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(nameTextField, gbConst);
-        gbConst.gridy++;
-        panel.add(passTextField, gbConst);
-        gbConst.gridy++;
-        panel.add(confirmField, gbConst);
-        gbConst.gridy++;
-        panel.add(firstNameField, gbConst);
-        gbConst.gridy++;
-        panel.add(middleNameField, gbConst);
-        gbConst.gridy++;
-        panel.add(lastNameField, gbConst);
-        gbConst.gridy++;
-        panel.add(userIDField, gbConst);
-        gbConst.gridy++;
-        panel.add(groupIDField, gbConst);
-        gbConst.gridy++;
-        panel.add(pluginField, gbConst);
-        gbConst.gridy++;
-        panel.add(activeBox, gbConst);
-        gbConst.gridy++;
-        panel.add(adminBox, gbConst);
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaults(gbConst).defaults();
 
-        gbConst.fill = GridBagConstraints.NONE;
-        gbConst.weightx = 0;
-        gbConst.gridy = 0;
-        gbConst.gridx = 2;
-        panel.add(jLabel9, gbConst);
+        gbh.insertEmptyRow(this, 10);
 
-        gbConst.fill = GridBagConstraints.BOTH;
-        gbConst.weightx = 0;
-        gbConst.weighty = 0;
-        gbConst.gridx = 3;
-        gbConst.gridheight = 3;
-        panel.add(jScrollPane1, gbConst);
+        gbh.addLabelFieldPair(this, bundleString("UserName"), nameTextField, null, true, false);
 
-        gbConst.fill = GridBagConstraints.NONE;
-        gbConst.weightx = 0;
-        gbConst.weighty = 0;
-        gbConst.gridy = 3;
-        gbConst.gridx = 2;
-        gbConst.gridheight = 1;
-        panel.add(tagLabel, gbConst);
+        gbh.addLabelFieldPair(this, bundleString("Password"), passTextField, null, true, false);
 
-        gbConst.gridy++;
-        panel.add(addTag, gbConst);
+        gbh.addLabelFieldPair(this, bundleString("ConfirmPassword"), confirmField, null, true, false);
+        gbh.addLabelFieldPair(this, bundleString("FirstName"), firstNameField, null, true, false);
+        gbh.addLabelFieldPair(this, bundleString("MiddleName"), middleNameField, null, true, false);
+        gbh.addLabelFieldPair(this, bundleString("LastName"), lastNameField, null, true, false);
+        gbh.addLabelFieldPair(this, userIDLabel, userIDField, null, true, false);
+        gbh.addLabelFieldPair(this, groupIDLabel, groupIDField, null, true, false);
+        gbh.addLabelFieldPair(this, pluginLabel, pluginField, null, true, false);
+        add(activeBox, gbh.nextRowFirstCol().setLabelDefault().get());
+        add(adminBox, gbh.nextCol().get());
+        add(descriptionLabel, gbh.nextRowFirstCol().setLabelDefault().get());
+        add(descriptionScroll, gbh.nextCol().fillBoth().setMaxWeightX().setMaxWeightY().get());
+        gbh.insertEmptyBigRow(this);
+        gbh.setXY(2, 1).setLabelDefault().setHeight(2).setMinWeightY();
+        add(addTag, gbh.nextRow().setMaxWeightX().get());
+        add(deleteTag, gbh.nextCol().setMaxWeightX().get());
 
-        gbConst.gridy++;
-        panel.add(deleteTag, gbConst);
-
-        gbConst.fill = GridBagConstraints.BOTH;
-        gbConst.weightx = 1;
-        gbConst.gridy = 3;
-        gbConst.gridx = 3;
-        gbConst.gridheight = 8;
-        gbConst.weighty = 1;
-        panel.add(tagScrol, gbConst);
+        add(tagScrol, gbh.setX(2).nextRowWidth().setWidth(2).setMaxWeightY().setMaxWeightX().fillBoth().setHeight(10).get());
 
         JPanel buttonPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -329,30 +256,20 @@ public class WindowAddUser extends JPanel {
         gbc.gridx++;
         gbc.insets.left = 5;
         buttonPanel.add(cancelButton, gbc);
-
-        gbConst.fill = GridBagConstraints.HORIZONTAL;
-        gbConst.gridy = 11;
-        gbConst.gridx = 3;
-        gbConst.gridheight = 1;
-        gbConst.weightx = 0;
-        gbConst.weighty = 0;
-        panel.add(buttonPanel, gbConst);
-
-        setLayout(new GridLayout());
-        add(panel);
+        add(buttonPanel, gbh.setX(0).nextRowWidth().nextRow().setMinWeightY().setHeight(1).spanX().get());
         initVersion();
     }
 
     private void initVersion() {
         if (version >= 3) {
-            jLabel7.setVisible(false);
-            jLabel8.setVisible(false);
+            userIDLabel.setVisible(false);
+            groupIDLabel.setVisible(false);
             userIDField.setVisible(false);
             groupIDField.setVisible(false);
 
         } else {
-            jLabel9.setVisible(false);
-            descriptionField.setVisible(false);
+            descriptionLabel.setVisible(false);
+            descriptionScroll.setVisible(false);
             activeBox.setVisible(false);
             tagScrol.setVisible(false);
             tagLabel.setVisible(false);

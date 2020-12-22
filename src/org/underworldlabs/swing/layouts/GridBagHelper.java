@@ -40,6 +40,18 @@ public class GridBagHelper {
         return this;
     }
 
+    int defaultX = 0;
+
+    public GridBagHelper makeCurrentXTheDefaultForNewline() {
+        defaultX = constraints.gridx;
+        return this;
+    }
+
+    public GridBagHelper resetDefaultX() {
+        defaultX = 0;
+        return this;
+    }
+
     // двигается на следующую ячейку
     public GridBagHelper nextCol() {
         //constraints.gridx++;
@@ -63,12 +75,32 @@ public class GridBagHelper {
     // двигается на следующий ряд
     public GridBagHelper nextRowFirstCol() {
         constraints.gridy++;
-        constraints.gridx = 0;
+        constraints.gridx = defaultX;
         return this;
     }
 
     public GridBagHelper nextRow() {
         constraints.gridy++;
+        return this;
+    }
+
+    public GridBagHelper previousRow() {
+        constraints.gridy--;
+        return this;
+    }
+
+    public GridBagHelper previousCol() {
+        constraints.gridx--;
+        return this;
+    }
+
+    public GridBagHelper setX(int x) {
+        constraints.gridx = x;
+        return this;
+    }
+
+    public GridBagHelper setY(int y) {
+        constraints.gridy = y;
         return this;
     }
 
@@ -246,10 +278,21 @@ public class GridBagHelper {
 
     public void insertEmptyRow(Container c, int height) {
         Component comp = Box.createVerticalStrut(height);
-        nextCol().nextRowFirstCol().fillHorizontally().spanX();
+        nextRowFirstCol().fillHorizontally().spanX();
         c.add(comp, get());
-        nextRowFirstCol();
     }
+
+    public void insertEmptyBigRow(Container c) {
+        Component comp = Box.createGlue();
+        nextRowFirstCol().fillHorizontally().spanX().setMaxWeightY();
+        c.add(comp, get());
+    }
+
+    public void insertEmptyGap(Container c) {
+        Component comp = Box.createGlue();
+        c.add(comp, get());
+    }
+
 
     public void insertEmptyFiller(Container c) {
         Component comp = Box.createGlue();

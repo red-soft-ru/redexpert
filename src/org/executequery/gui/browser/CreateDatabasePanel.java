@@ -29,6 +29,7 @@ import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -36,6 +37,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -139,6 +141,18 @@ public class CreateDatabasePanel extends ActionPanel
     /**
      * Creates a new instance of ConnectionPanel
      */
+
+
+    private List<JComponent> multifactorComponents;
+    private List<JComponent> basicComponents;
+
+    private JTextField certificateFileField;
+    private JPasswordField containerPasswordField;
+    private JCheckBox saveContPwdCheck;
+    private JCheckBox verifyServerCertCheck;
+
+    private JComboBox authCombo;
+
     public CreateDatabasePanel(BrowserController controller) {
         super(new BorderLayout());
         this.controller = controller;
@@ -149,7 +163,22 @@ public class CreateDatabasePanel extends ActionPanel
 
     private void init() {
 
+        multifactorComponents = new ArrayList<>();
+        basicComponents = new ArrayList<>();
         gbh = new GridBagHelper();
+
+        List<String> auth = new ArrayList<>();
+        auth.add(bundledString("BasicAu"));
+        auth.add("GSS");
+        auth.add(bundledString("Multifactor"));
+        authCombo = new JComboBox(auth.toArray());
+        authCombo.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                checkVisibleComponents();
+            }
+
+        });
+
         gradientLabel = new GradientLabel();
         gradientLabel.setText(bundledString("CreateDatabase"));
 
@@ -185,6 +214,13 @@ public class CreateDatabasePanel extends ActionPanel
         savePwdCheck.addActionListener(this);
         encryptPwdCheck.addActionListener(this);
 
+        certificateFileField = createMatchedWidthTextField();
+        containerPasswordField = createPasswordField();
+        saveContPwdCheck = ActionUtilities.createCheckBox(bundledString("Store-container-password"), "setStoreContainerPassword");
+        saveContPwdCheck.addActionListener(this);
+        verifyServerCertCheck = ActionUtilities.createCheckBox(bundledString("Verify-server-certificate"), "setVerifyServerCertCheck");
+        verifyServerCertCheck.addActionListener(this);
+
         // retrieve the drivers
         buildDriversList();
 
@@ -204,19 +240,28 @@ public class CreateDatabasePanel extends ActionPanel
         GridBagConstraints gbc_def = new GridBagConstraints();
         gbc_def.fill = GridBagConstraints.HORIZONTAL;
         gbc_def.anchor = GridBagConstraints.NORTHWEST;
-        gbc_def.insets = new Insets(10, 10, 10, 10);
+        gbc_def.insets = new Insets(5, 10, 10, 10);
         gbc_def.gridy = -1;
         gbc_def.gridx = 0;
         gbh.setDefaults(gbc_def).defaults();
 
+        int fieldWidth = 2;
+
+        gbh.insertEmptyRow(mainPanel, 0);
+
         gbh.addLabelFieldPair(mainPanel, bundledString("nameField"),
-                nameField, bundleString("nameField.tool-tip"), true, false);
+                nameField, bundleString("nameField.tool-tip"), true, false, fieldWidth);
 
-        addDriverFields(mainPanel, gbh);
 
-        gbh.addLabelFieldPair(mainPanel, bundledString("hostField"), hostField, null, true, false);
+        JLabel hostLabel = new JLabel(bundledString("hostField"));
+        gbh.addLabelFieldPair(mainPanel, hostLabel, hostField, null, true, false, fieldWidth);
 
-        JButton saveFile = new JButton(bundledString("ChooseFile"));
+
+        JLabel portLabel = new JLabel(bundledString("portField"));
+        gbh.addLabelFieldPair(mainPanel, portLabel, portField, null, true, false, fieldWidth);
+
+
+        JButton saveFile = new JButton("...");
         saveFile.addActionListener(new ActionListener() {
             final FileChooserDialog fileChooser = new FileChooserDialog();
 
@@ -231,19 +276,36 @@ public class CreateDatabasePanel extends ActionPanel
         });
 
         JLabel dataSourceLabel = new DefaultFieldLabel(bundledString("sourceField"));
-        mainPanel.add(dataSourceLabel, gbh.nextCol().setLabelDefault().get());
+        mainPanel.add(dataSourceLabel, gbh.nextRowFirstCol().setLabelDefault().get());
         mainPanel.add(sourceField, gbh.nextCol().setMaxWeightX().get());
         mainPanel.add(saveFile, gbh.nextCol().setLabelDefault().get());
 
-        gbh.addLabelFieldPair(mainPanel, bundledString("portField"), portField, null, true, false);
 
-        gbh.addLabelFieldPair(mainPanel, bundledString("CharacterSet"), charsetsCombo, null, false, true);
+        JLabel charsetLabel = new JLabel(bundledString("CharacterSet"));
 
-        gbh.addLabelFieldPair(mainPanel, bundledString("userField"), userField, null, true, false);
+        gbh.addLabelFieldPair(mainPanel, charsetLabel, charsetsCombo, null, true, false, fieldWidth);
 
-        gbh.addLabelFieldPair(mainPanel, bundledString("PageSize"), pageSizeCombo, null, false, true);
+        gbh.addLabelFieldPair(mainPanel, bundledString("PageSize"), pageSizeCombo, null, true, false, fieldWidth);
 
-        gbh.addLabelFieldPair(mainPanel, bundledString("passwordField"), passwordField, null, true, false);
+        gbh.setY(2).nextCol().makeCurrentXTheDefaultForNewline().setWidth(1).previousCol();
+
+        addDriverFields(mainPanel, gbh);
+
+        JLabel authLabel = new JLabel(bundledString("Authentication"));
+
+        gbh.addLabelFieldPair(mainPanel, authLabel, authCombo, null, true, true);
+
+
+        JLabel userLabel = new JLabel(bundledString("userField"));
+        basicComponents.add(userLabel);
+        basicComponents.add(userField);
+        gbh.addLabelFieldPair(mainPanel, userLabel, userField, null, true, true);
+
+        JLabel passwordLabel = new JLabel(bundledString("passwordField"));
+        basicComponents.add(passwordLabel);
+        basicComponents.add(passwordField);
+        gbh.addLabelFieldPair(mainPanel, passwordLabel, passwordField, null, true, true);
+
 
         JButton showPassword = new LinkButton(bundledString("ShowPassword"));
         showPassword.setActionCommand("showPassword");
@@ -251,12 +313,51 @@ public class CreateDatabasePanel extends ActionPanel
 
         JPanel passwordOptionsPanel = new JPanel(new GridBagLayout());
         addComponents(passwordOptionsPanel,
-                new ComponentToolTipPair(savePwdCheck, bundleString("StorePassword.tool-tip")),
-                new ComponentToolTipPair(encryptPwdCheck, bundleString("EncryptPassword.tool-tip")),
-                new ComponentToolTipPair(showPassword, bundleString("ShowPassword.tool-tip")));
+                new ComponentToolTipPair(savePwdCheck, bundledString("StorePassword.tool-tip")),
+                new ComponentToolTipPair(encryptPwdCheck, bundledString("EncryptPassword.tool-tip")),
+                new ComponentToolTipPair(showPassword, bundledString("ShowPassword.tool-tip")));
 
-        mainPanel.add(passwordOptionsPanel, gbh.nextCol().spanX().get());
+        basicComponents.add(passwordOptionsPanel);
+        mainPanel.add(passwordOptionsPanel, gbh.nextRowFirstCol().fillHorizontally().setMaxWeightX().setWidth(2).get());
 
+        JLabel contLabel = new JLabel(bundledString("contLabel"));
+        multifactorComponents.add(contLabel);
+        multifactorComponents.add(containerPasswordField);
+        gbh.addLabelFieldPair(mainPanel, contLabel, containerPasswordField, null, true, true);
+
+        JLabel certLabel = new JLabel(bundledString("certLabel"));
+        mainPanel.add(certLabel, gbh.nextRowFirstCol().setLabelDefault().get());
+        multifactorComponents.add(certLabel);
+        mainPanel.add(certificateFileField, gbh.nextCol().setMaxWeightX().get());
+        multifactorComponents.add(certificateFileField);
+
+        FileChooserDialog fileChooser = new FileChooserDialog();
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        fileChooser.addChoosableFileFilter(
+                new FileNameExtensionFilter("Certificate file X.509 (CER, DER)", "cer", "der"));
+
+        JButton openCertFile = new JButton(bundledString("ChooseFile"));
+        openCertFile.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int returnVal = fileChooser.showOpenDialog(openCertFile);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+                    certificateFileField.setText(file.getAbsolutePath());
+                }
+            }
+        });
+
+        mainPanel.add(openCertFile, gbh.nextColWidth().setLabelDefault().get());
+        multifactorComponents.add(openCertFile);
+
+        mainPanel.add(saveContPwdCheck, gbh.nextRowFirstCol().setLabelDefault().get());
+        multifactorComponents.add(saveContPwdCheck);
+
+        mainPanel.add(verifyServerCertCheck, gbh.nextCol().setLabelDefault().get());
+        multifactorComponents.add(verifyServerCertCheck);
+        gbh.resetDefaultX();
 
         createButton = createButton(bundledString("Create"), CREATE_ACTION_COMMAND, 'T');
         mainPanel.add(createButton, gbh.nextRowFirstCol().setWidth(1).anchorNorthWest().setLabelDefault().spanY().get());
@@ -335,6 +436,27 @@ public class CreateDatabasePanel extends ActionPanel
         add(tabPane, BorderLayout.CENTER);
 
         EventMediator.registerListener(this);
+        checkVisibleComponents();
+    }
+
+    private void checkVisibleComponents() {
+        Object selectedItem = authCombo.getSelectedItem();
+        if (selectedItem.toString().equalsIgnoreCase(bundledString("BasicAu"))) {
+            setVisibleComponents(basicComponents, true);
+            setVisibleComponents(multifactorComponents, false);
+        } else if (selectedItem.toString().equalsIgnoreCase("gss")) {
+            setVisibleComponents(basicComponents, false);
+            setVisibleComponents(multifactorComponents, false);
+        } else if (selectedItem.toString().equalsIgnoreCase(bundledString("Multifactor"))) {
+            setVisibleComponents(basicComponents, true);
+            setVisibleComponents(multifactorComponents, true);
+        }
+    }
+
+    private void setVisibleComponents(List<JComponent> components, boolean flag) {
+        for (int i = 0; i < components.size(); i++) {
+            components.get(i).setVisible(flag);
+        }
     }
 
     private void loadCharsets() {
@@ -1028,13 +1150,21 @@ public class CreateDatabasePanel extends ActionPanel
             return;
         }
 
+        String path = sourceField.getText().replace("\\", "/");
         databaseConnection.setPasswordStored(savePwdCheck.isSelected());
         databaseConnection.setPasswordEncrypted(encryptPwdCheck.isSelected());
         databaseConnection.setUserName(userField.getText());
         databaseConnection.setPassword(MiscUtils.charsToString(passwordField.getPassword()));
         databaseConnection.setHost(hostField.getText());
         databaseConnection.setPort(portField.getText());
-        databaseConnection.setSourceName(sourceField.getText());
+        //databaseConnection.setSourceName(path);
+        databaseConnection.setCertificate(certificateFileField.getText());
+        databaseConnection.setContainerPassword(MiscUtils.charsToString(containerPasswordField.getPassword()));
+        databaseConnection.setContainerPasswordStored(saveContPwdCheck.isSelected());
+        databaseConnection.setVerifyServerCertCheck(verifyServerCertCheck.isSelected());
+        databaseConnection.setCharset(charsetsCombo.getSelectedItem().toString());
+        databaseConnection.setAuthMethod(authCombo.getSelectedItem().toString());
+
 
         // jdbc driver selection
         int driverIndex = driverCombo.getSelectedIndex();

@@ -75,34 +75,6 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel implements
                 bundledString("Connections"),
                 Boolean.valueOf(stringUserProperty(key))));
 
-        key = "system.display.drivers";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("Drivers"),
-                Boolean.valueOf(stringUserProperty(key))));
-
-        key = "system.display.keywords";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("SQLKeywords"),
-                Boolean.valueOf(stringUserProperty(key))));
-
-        key = "system.display.state-codes";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("SQLStateCodes"),
-                Boolean.valueOf(stringUserProperty(key))));
-
-        key = "system.display.systemprops";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("SystemPropertiesPalette"),
-                Boolean.valueOf(stringUserProperty(key))));
-
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,

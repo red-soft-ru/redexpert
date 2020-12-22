@@ -122,11 +122,12 @@ public class DefaultToolBarManager {
     }
 
     protected void buildToolBar(String name, boolean rebuild) {
-        toolBarBase.removeAll();
         ToolBarWrapper eqtb = ToolBarProperties.getToolBar(name);
         if (!eqtb.isVisible() || !eqtb.hasButtons()) {
             return;
         }
+        toolBarBase.removeAll();
+
 
         ToolBar toolBar = (ToolBar) toolBars.get("Tool Bar");
 

@@ -246,6 +246,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
         userField = createTextField();
         userNameDocumentListener = addCheckEmptyField(userField);
         urlField = createMatchedWidthTextField();
+        nameField.setPreferredSize(hostField.getPreferredSize());
+        hostField.setPreferredSize(hostField.getPreferredSize());
+        portField.setPreferredSize(hostField.getPreferredSize());
+        userField.setPreferredSize(hostField.getPreferredSize());
+        passwordField.setPreferredSize(hostField.getPreferredSize());
 
         certificateFileField = createMatchedWidthTextField();
         containerPasswordField = createPasswordField();
@@ -279,40 +284,36 @@ public class ConnectionPanel extends AbstractConnectionPanel
         GridBagConstraints gbc_def = new GridBagConstraints();
         gbc_def.fill = GridBagConstraints.HORIZONTAL;
         gbc_def.anchor = GridBagConstraints.NORTHWEST;
-        gbc_def.insets = new Insets(10, 10, 10, 10);
+        gbc_def.insets = new Insets(5, 10, 10, 10);
         gbc_def.gridy = -1;
         gbc_def.gridx = 0;
         gbh.setDefaults(gbc_def).defaults();
+        int fieldWidth = 2;
+
+        gbh.insertEmptyRow(mainPanel, 0);
 
         statusLabel = new DefaultFieldLabel();
         gbh.addLabelFieldPair(mainPanel, bundleString("statusLabel"),
-                statusLabel, bundleString("statusLabel.tool-tip"), true, false);
+                statusLabel, bundleString("statusLabel.tool-tip"), true, false, fieldWidth);
 
-        addDriverFields(mainPanel, gbh);
 
         gbh.addLabelFieldPair(mainPanel, bundleString("nameField"),
-                nameField, bundleString("nameField.tool-tip"), true, false);
+                nameField, bundleString("nameField.tool-tip"), true, false, fieldWidth);
 
-        gbh.addLabelFieldPair(mainPanel, bundleString("ConnectionParameters"),
-                methodCombo, bundleString("ConnectionParameters.tool-tip"), false, true);
 
         JLabel hostLabel = new JLabel(bundleString("hostField"));
         standardComponents.add(hostLabel);
         standardComponents.add(hostField);
-        gbh.addLabelFieldPair(mainPanel, hostLabel, hostField, null, true, false);
-
-        JLabel authLabel = new DefaultFieldLabel(bundleString("Authentication"));
-        standardComponents.add(authLabel);
-        standardComponents.add(authCombo);
-        gbh.addLabelFieldPair(mainPanel, authLabel, authCombo, null, false, true);
+        gbh.addLabelFieldPair(mainPanel, hostLabel, hostField, null, true, false, fieldWidth);
 
 
         JLabel portLabel = new JLabel(bundleString("portField"));
         standardComponents.add(portLabel);
         standardComponents.add(portField);
-        gbh.addLabelFieldPair(mainPanel, portLabel, portField, null, true, false);
+        gbh.addLabelFieldPair(mainPanel, portLabel, portField, null, true, false, fieldWidth);
 
-        JButton openFile = new JButton(bundleString("ChooseFile"));
+
+        JButton openFile = new JButton("...");
         openFile.addActionListener(new ActionListener() {
             FileChooserDialog fileChooser = new FileChooserDialog();
 
@@ -328,36 +329,50 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         //JPanel selectFilePanel = new JPanel(new BorderLayout());
 
-        JLabel dataSourceLabel = new DefaultFieldLabel(bundleString("sourceField"));
+        JLabel dataSourceLabel = new JLabel(bundleString("sourceField"));
         standardComponents.add(dataSourceLabel);
         standardComponents.add(sourceField);
         standardComponents.add(openFile);
-        mainPanel.add(dataSourceLabel, gbh.nextCol().setLabelDefault().get());
+        mainPanel.add(dataSourceLabel, gbh.nextRowFirstCol().setLabelDefault().get());
         mainPanel.add(sourceField, gbh.nextCol().setMaxWeightX().get());
         mainPanel.add(openFile, gbh.nextCol().setLabelDefault().get());
 
-
-        JLabel userLabel = new DefaultFieldLabel(bundleString("userField"));
-        basicComponents.add(userLabel);
-        basicComponents.add(userField);
-        gbh.addLabelFieldPair(mainPanel, userLabel, userField, null, true, false);
-
         standardComponents.addAll(multifactorComponents);
-        JLabel charsetLabel = new DefaultFieldLabel(bundleString("CharacterSet"));
+        JLabel charsetLabel = new JLabel(bundleString("CharacterSet"));
         standardComponents.add(charsetLabel);
         standardComponents.add(charsetsCombo);
-        gbh.addLabelFieldPair(mainPanel, charsetLabel, charsetsCombo, null, false, true);
+        gbh.addLabelFieldPair(mainPanel, charsetLabel, charsetsCombo, null, true, false, fieldWidth);
 
+        mainPanel.add(namesToUpperBox, gbh.nextRowFirstCol().setLabelDefault().setWidth(3).get());
+        standardComponents.add(namesToUpperBox);
 
-        JLabel passwordLabel = new DefaultFieldLabel(bundleString("passwordField"));
-        basicComponents.add(passwordLabel);
-        basicComponents.add(passwordField);
-        gbh.addLabelFieldPair(mainPanel, passwordLabel, passwordField, null, true, false);
+        gbh.setY(2).nextCol().makeCurrentXTheDefaultForNewline().setWidth(1).previousCol();
 
-        JLabel roleLabel = new DefaultFieldLabel(bundleString("Role"));
+        addDriverFields(mainPanel, gbh);
+
+        gbh.addLabelFieldPair(mainPanel, bundleString("ConnectionParameters"),
+                methodCombo, bundleString("ConnectionParameters.tool-tip"), true, true);
+
+        JLabel authLabel = new JLabel(bundleString("Authentication"));
+        standardComponents.add(authLabel);
+        standardComponents.add(authCombo);
+        gbh.addLabelFieldPair(mainPanel, authLabel, authCombo, null, true, true);
+
+        JLabel roleLabel = new JLabel(bundleString("Role"));
         standardComponents.add(roleLabel);
         standardComponents.add(roleField);
-        gbh.addLabelFieldPair(mainPanel, roleLabel, roleField, null, false, true);
+        gbh.addLabelFieldPair(mainPanel, roleLabel, roleField, null, true, true);
+
+        JLabel userLabel = new JLabel(bundleString("userField"));
+        basicComponents.add(userLabel);
+        basicComponents.add(userField);
+        gbh.addLabelFieldPair(mainPanel, userLabel, userField, null, true, true);
+
+        JLabel passwordLabel = new JLabel(bundleString("passwordField"));
+        basicComponents.add(passwordLabel);
+        basicComponents.add(passwordField);
+        gbh.addLabelFieldPair(mainPanel, passwordLabel, passwordField, null, true, true);
+
 
         JButton showPassword = new LinkButton(bundleString("ShowPassword"));
         showPassword.setActionCommand("showPassword");
@@ -372,16 +387,13 @@ public class ConnectionPanel extends AbstractConnectionPanel
         basicComponents.add(passwordOptionsPanel);
         mainPanel.add(passwordOptionsPanel, gbh.nextRowFirstCol().fillHorizontally().setMaxWeightX().setWidth(2).get());
 
-        mainPanel.add(namesToUpperBox, gbh.nextCol().setLabelDefault().setWidth(2).get());
-        standardComponents.add(namesToUpperBox);
-
-        JLabel contLabel = new DefaultFieldLabel(bundleString("contLabel"));
+        JLabel contLabel = new JLabel(bundleString("contLabel"));
         multifactorComponents.add(contLabel);
         multifactorComponents.add(containerPasswordField);
-        gbh.addLabelFieldPair(mainPanel, contLabel, containerPasswordField, null, true, false);
+        gbh.addLabelFieldPair(mainPanel, contLabel, containerPasswordField, null, true, true);
 
         JLabel certLabel = new JLabel(bundleString("certLabel"));
-        mainPanel.add(certLabel, gbh.nextCol().setLabelDefault().get());
+        mainPanel.add(certLabel, gbh.nextRowFirstCol().setLabelDefault().get());
         multifactorComponents.add(certLabel);
         mainPanel.add(certificateFileField, gbh.nextCol().setMaxWeightX().get());
         multifactorComponents.add(certificateFileField);
@@ -407,13 +419,15 @@ public class ConnectionPanel extends AbstractConnectionPanel
         mainPanel.add(openCertFile, gbh.nextColWidth().setLabelDefault().get());
         multifactorComponents.add(openCertFile);
 
-        mainPanel.add(saveContPwdCheck, gbh.nextRowFirstCol().setLabelDefault().setWidth(2).get());
+        mainPanel.add(saveContPwdCheck, gbh.nextRowFirstCol().setLabelDefault().get());
         multifactorComponents.add(saveContPwdCheck);
 
         mainPanel.add(verifyServerCertCheck, gbh.nextCol().setLabelDefault().get());
         multifactorComponents.add(verifyServerCertCheck);
 
-        JLabel urlLabel = new DefaultFieldLabel(bundleString("urlField"));
+        JLabel urlLabel = new JLabel(bundleString("urlField"));
+
+        gbh.resetDefaultX();
 
         mainPanel.add(urlLabel, gbh.nextRowFirstCol().setLabelDefault().get());
         jdbcUrlComponents.add(urlLabel);
@@ -1537,7 +1551,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     private void addDriverFields(JPanel panel, GridBagHelper gbh) {
         gbh.nextCol().setLabelDefault();
-        panel.add(new DefaultFieldLabel(bundleString("driverField")), gbh.get());
+        panel.add(new JLabel(bundleString("driverField")), gbh.get());
         panel.add(driverCombo, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
         driverCombo.setToolTipText(bundleString("driverField.tool-tip"));
         JButton button = new JButton(bundleString("addNewDriver"));

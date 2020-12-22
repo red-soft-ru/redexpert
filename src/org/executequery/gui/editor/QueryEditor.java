@@ -78,10 +78,10 @@ public class QueryEditor extends DefaultTabView
 
 {
 
-    public static final String TITLE = "Query Editor";
+    public static final String TITLE = Bundles.get(QueryEditor.class, "title");
     public static final String FRAME_ICON = "Edit16.png";
 
-    private static final String DEFAULT_SCRIPT_PREFIX = "script";
+    private static final String DEFAULT_SCRIPT_PREFIX = Bundles.get(QueryEditor.class, "script");
 
     private static final String DEFAULT_SCRIPT_SUFFIX = ".sql";
 

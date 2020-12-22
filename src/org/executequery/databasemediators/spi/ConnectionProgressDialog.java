@@ -57,7 +57,7 @@ public class ConnectionProgressDialog extends JDialog
 
     public ConnectionProgressDialog(ConnectionBuilder connectonBuilder) {
 
-        super(GUIUtilities.getParentFrame(), "Connecting...", true);
+        super(GUIUtilities.getParentFrame(), Bundles.getCommon("connecting"), true);
         this.connectonBuilder = connectonBuilder;
         init();
     }

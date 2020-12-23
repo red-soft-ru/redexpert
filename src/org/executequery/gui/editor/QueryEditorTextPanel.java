@@ -29,7 +29,10 @@ import org.executequery.gui.browser.tree.SchemaTree;
 import org.executequery.gui.editor.autocomplete.AutoCompletePopupProvider;
 import org.executequery.gui.text.TextUtilities;
 import org.executequery.log.Log;
+import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.swing.sound.Sound;
+import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -39,10 +42,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.sql.ResultSet;
@@ -76,6 +76,17 @@ public class QueryEditorTextPanel extends JPanel {
     private static final String AUTO_COMPLETE_POPUP_ACTION_KEY = "autoCompletePopupActionKey";
 
     private AutoCompletePopupProvider autoCompletePopup;
+
+    private int[][] melody = {{65, 3}, {67, 1}, {65, 2}, {62, 6}, {65, 3}, {67, 1}, {65, 2}, {62, 6}, {72, 4}, {72, 2}, {69, 6}, {70, 4}, {70, 2}, {65, 6},
+            {67, 2}, {67, 2}, {67, 2}, {70, 3}, {69, 1}, {67, 2}, {65, 3}, {67, 1}, {65, 2}, {62, 6},
+            {67, 2}, {67, 2}, {67, 2}, {70, 3}, {69, 1}, {67, 2}, {65, 3}, {67, 1}, {65, 2}, {62, 6},
+            {72, 2}, {72, 2}, {72, 2}, {75, 3}, {72, 1}, {69, 2}, {70, 6}, {74, 6},
+            {70, 3}, {65, 1}, {62, 2}, {65, 3}, {63, 1}, {60, 2}, {58, 12}
+    };
+
+    private int indexNote = 0;
+
+    private int instrument = 11;//new Random().nextInt(9)+7;
 
     /**
      * Constructs a new instance.
@@ -139,6 +150,39 @@ public class QueryEditorTextPanel extends JPanel {
                 }
             }
         });
+
+        if (UserProperties.getInstance().getBooleanProperty("editor.christmas.melody"))
+            queryPane.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyReleased(KeyEvent e) {
+                    if (indexNote < melody.length) {
+                        SwingWorker sw = new SwingWorker() {
+                            @Override
+                            public Object construct() {
+                                Sound.tone(melody[indexNote][0], melody[indexNote][1] * 180, instrument);
+                                indexNote++;
+                                return "done";
+                            }
+                        };
+                        sw.start();
+                    }
+
+
+                    if (indexNote == melody.length) {
+                        indexNote++;
+                        SwingWorker sw = new SwingWorker() {
+                            @Override
+                            public Object construct() {
+                                for (int i = 0; i < melody.length; i++)
+                                    Sound.tone(melody[i][0], melody[i][1] * 180, instrument);
+                                return "done";
+                            }
+                        };
+                        sw.start();
+
+                    }
+                }
+            });
 
         JScrollPane queryScroller = new JScrollPane();
         queryScroller.getViewport().add(queryPane, BorderLayout.CENTER);

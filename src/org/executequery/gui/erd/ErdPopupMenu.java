@@ -46,24 +46,24 @@ public class ErdPopupMenu extends JPopupMenu implements ActionListener {
 
         MenuBuilder builder = new MenuBuilder();
 
-        JMenu newMenu = MenuItemFactory.createMenu("New");
-        JMenuItem newTable = builder.createMenuItem(newMenu, "Database Table",
-                MenuBuilder.ITEM_PLAIN, "Create a new database table");
-        JMenuItem newRelation = builder.createMenuItem(newMenu, "Relationship",
-                MenuBuilder.ITEM_PLAIN, "Create a new table relationship");
+        JMenu newMenu = MenuItemFactory.createMenu(bundleString("New"));
+        JMenuItem newTable = builder.createMenuItem(newMenu, bundleString("DatabaseTable"),
+                MenuBuilder.ITEM_PLAIN, bundleString("DatabaseTable.tool-tip"));
+        JMenuItem newRelation = builder.createMenuItem(newMenu, bundleString("Relationship"),
+                MenuBuilder.ITEM_PLAIN, bundleString("Relationship.tool-tip"));
 
-        JMenuItem fontProperties = MenuItemFactory.createMenuItem("Font Style");
-        JMenuItem lineProperties = MenuItemFactory.createMenuItem("Line Style");
+        JMenuItem fontProperties = MenuItemFactory.createMenuItem(bundleString("FontStyle"));
+        JMenuItem lineProperties = MenuItemFactory.createMenuItem(bundleString("LineStyle"));
 
-        viewMenu = MenuItemFactory.createMenu("View");
+        viewMenu = MenuItemFactory.createMenu(bundleString("View"));
 
-        JMenuItem zoomIn = builder.createMenuItem(viewMenu, "Zoom In",
+        JMenuItem zoomIn = builder.createMenuItem(viewMenu, bundleString("ZoomIn"),
                 MenuBuilder.ITEM_PLAIN, null);
-        JMenuItem zoomOut = builder.createMenuItem(viewMenu, "Zoom Out",
+        JMenuItem zoomOut = builder.createMenuItem(viewMenu, bundleString("ZoomOut"),
                 MenuBuilder.ITEM_PLAIN, null);
         viewMenu.addSeparator();
 
-        JMenuItem reset = builder.createMenuItem(viewMenu, "Layout",
+        JMenuItem reset = builder.createMenuItem(viewMenu, bundleString("Layout"),
                 MenuBuilder.ITEM_PLAIN, null);
         viewMenu.addSeparator();
 
@@ -83,13 +83,13 @@ public class ErdPopupMenu extends JPopupMenu implements ActionListener {
             bg.add(scaleChecks[i]);
         }
 
-        gridCheck = new JCheckBoxMenuItem("Display grid", parent.shouldDisplayGrid());
+        gridCheck = new JCheckBoxMenuItem(bundleString("DisplayGrid"), parent.shouldDisplayGrid());
 
         JCheckBoxMenuItem marginCheck = MenuItemFactory.createCheckBoxMenuItem(
-                "Display page margin",
+                bundleString("DisplayPageMargin"),
                 parent.shouldDisplayMargin());
         JCheckBoxMenuItem displayColumnsCheck = MenuItemFactory.createCheckBoxMenuItem(
-                "Display referenced keys only", false);
+                bundleString("DisplayReferencedKeysOnly"), false);
 
         viewMenu.addSeparator();
         viewMenu.add(displayColumnsCheck);
@@ -147,13 +147,13 @@ public class ErdPopupMenu extends JPopupMenu implements ActionListener {
 
         //Log.debug(command);
 
-        if (command.equals("Font Style")) {
+        if (command.equals(bundleString("FontStyle"))) {
             parent.showFontStyleDialog();
-        } else if (command.equals("Line Style")) {
+        } else if (command.equals(bundleString("LineStyle"))) {
             parent.showLineStyleDialog();
-        } else if (command.equals("Database Table")) {
+        } else if (command.equals(bundleString("DatabaseTable"))) {
             new ErdNewTableDialog(parent);
-        } else if (command.equals("Relationship")) {
+        } else if (command.equals(bundleString("Relationship"))) {
 
             if (parent.getAllComponentsVector().size() <= 1) {
                 GUIUtilities.displayErrorMessage(
@@ -168,21 +168,25 @@ public class ErdPopupMenu extends JPopupMenu implements ActionListener {
             double scale = Double.parseDouble(scaleString) / 100;
             parent.setScaledView(scale);
             parent.setScaleComboValue(command);
-        } else if (command.equals("Zoom In")) {
+        } else if (command.equals(bundleString("ZoomIn"))) {
             parent.zoom(true);
-        } else if (command.equals("Zoom Out")) {
+        } else if (command.equals(bundleString("ZoomOut"))) {
             parent.zoom(false);
-        } else if (command.equals("Layout")) {
+        } else if (command.equals(bundleString("Layout"))) {
             parent.reset();
-        } else if (command.equals("Display grid")) {
+        } else if (command.equals(bundleString("DisplayGrid"))) {
             parent.swapCanvasBackground();
-        } else if (command.equals("Display page margin")) {
+        } else if (command.equals(bundleString("DisplayPageMargin"))) {
             parent.swapPageMargin();
-        } else if (command.equals("Display referenced keys only")) {
+        } else if (command.equals(bundleString("DisplayReferencedKeysOnly"))) {
             JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
             parent.setDisplayKeysOnly(item.isSelected());
         }
 
+    }
+
+    private String bundleString(String key) {
+        return Bundles.get(ErdPopupMenu.class, key);
     }
 
     public void removeAll() {

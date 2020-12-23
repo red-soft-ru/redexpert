@@ -28,7 +28,6 @@ import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
-import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -121,17 +120,17 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         dataTypesPanel = new DataTypesPanel();
         javaSqlTypesPanel = new JavaSQLTypesPanel();
 
-        tabPane = new JTabbedPane(JTabbedPane.TOP);
+        /*tabPane = new JTabbedPane(JTabbedPane.TOP);
         tabPane.addTab(Bundles.getCommon("connection"), connectionPanel);
         tabPane.addTab(bundleString("DatabaseProperties"), databasePropertiesPanel);
         tabPane.addTab(bundleString("SQLKeywords"), keyWordsPanel);
         tabPane.addTab(bundleString("DataTypes"), dataTypesPanel);
         tabPane.addTab("java.sql.Types", javaSqlTypesPanel);
-        enableConnectionTabs(false);
+        enableConnectionTabs(false);*/
 
         setHeaderText(bundleString("DatabaseConnection"));
         setHeaderIcon(GUIUtilities.loadIcon("Database24.png"));
-        setContentPanel(tabPane);
+        setContentPanel(connectionPanel);
 
         // register with the event listener
         EventMediator.registerListener(this);
@@ -146,13 +145,13 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
     }
 
     private void enableConnectionTabs(boolean enabled) {
-        int[] tabs = new int[]{1, 2, 3};
+        /*int[] tabs = new int[]{1, 2, 3};
         for (int i = 0; i < tabs.length; i++) {
             tabPane.setEnabledAt(tabs[i], enabled);
         }
         if (!enabled) {
             tabPane.setSelectedIndex(0);
-        }
+        }*/
     }
 
     public void connectionNameChanged(String name) {
@@ -185,7 +184,7 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
 
         } else {
 
-            enableConnectionTabs(false);
+            //enableConnectionTabs(false);
         }
 
     }
@@ -269,7 +268,6 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         //dataTypesPanel.setDataTypes(controller.getDataTypesResultSet());
 
         // enable the tabs
-        enableConnectionTabs(host.getDatabaseConnection().isConnected());
     }
 
     /**
@@ -297,7 +295,6 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
      */
     public void disconnected(ConnectionEvent connectionEvent) {
         connectionPanel.disconnected(connectionEvent.getDatabaseConnection());
-        enableConnectionTabs(false);
         GUIUtilities.scheduleGC();
     }
 

@@ -110,7 +110,7 @@ public class ScrollingTabPane extends AbstractTabPane
         componentPanel.setBorder(null);
         add(componentPanel, BorderLayout.CENTER);
 
-        setBorder(BorderFactory.createLineBorder(tabPanel.controlShadow));
+        //setBorder(BorderFactory.createLineBorder(tabPanel.controlShadow));
 
         viewport.movePanel(0);
     }
@@ -175,6 +175,7 @@ public class ScrollingTabPane extends AbstractTabPane
         tabSelectionPopupMenu.addTabMenuItem(tabComponent);
         scrollButtonPanel.setVisible(true);
         scrollButtonPanel.enableButton(SOUTH, true);
+        componentPanel.setBorder(BorderFactory.createLineBorder(tabPanel.controlShadow));
     }
 
     /**
@@ -526,8 +527,12 @@ public class ScrollingTabPane extends AbstractTabPane
         }
 
         protected void enableButtons(Point pt) {
-            scrollButtonPanel.enableButton(WEST, pt.x > 0);
-            scrollButtonPanel.enableButton(EAST, pt.x < getMaxXExtent());
+            boolean visible = pt.x > 0 || pt.x < getMaxXExtent();
+            scrollButtonPanel.setVisible(visible);
+            if (visible) {
+                scrollButtonPanel.enableButton(WEST, pt.x > 0);
+                scrollButtonPanel.enableButton(EAST, pt.x < getMaxXExtent());
+            }
         }
 
         protected int getMaxXExtent() {
@@ -593,14 +598,15 @@ public class ScrollingTabPane extends AbstractTabPane
             super.paintComponent(g);
             // evil hack to continue the tab selection border
             if (selectedIndex != -1) {
-                g.setColor(tabPanel.controlShadow);
-                g.drawLine(0, getHeight() - TabPanel.TAB_BOTTOM_BORDER_HEIGHT - 1,
-                        getWidth(), getHeight() - TabPanel.TAB_BOTTOM_BORDER_HEIGHT - 1);
+
+                //g.drawLine(0, getHeight() - TabPanel.TAB_BOTTOM_BORDER_HEIGHT - 1,
+                //getWidth(), getHeight() - TabPanel.TAB_BOTTOM_BORDER_HEIGHT - 1);
                 if (isFocusedTabPane) {
                     g.setColor(tabPanel.activeColor);
                 } else {
                     g.setColor(tabPanel.activeNoFocusColor);
                 }
+                g.setColor(new Color(0, 0, 0, 0));
                 g.fillRect(0, getHeight() - TabPanel.TAB_BOTTOM_BORDER_HEIGHT,
                         getWidth(), TabPanel.TAB_BOTTOM_BORDER_HEIGHT);
             }
@@ -674,13 +680,8 @@ public class ScrollingTabPane extends AbstractTabPane
             int y = getHeight() - ((getHeight() - iconHeight) / 2) - 1;
 
             int width = iconWidth;
-
-            for (int i = 0; i < iconHeight; i++) {
-                g.drawLine(x, y, x + width, y);
-                x++;
-                y--;
-                width -= 2;
-            }
+            g.drawLine(x, y, x + (width / 2), y - iconHeight);
+            g.drawLine(x + (width / 2), y - iconHeight, x + width, y);
 
             g2.setTransform(oldTransform);
 

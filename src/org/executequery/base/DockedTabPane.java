@@ -53,13 +53,17 @@ public class DockedTabPane extends AbstractTabPane {
      */
     private TabPopupMenu tabPopupMenu;
 
+    private boolean printTitle = true;
+
+
     /**
      * Creates a new instance of DockedTabPane with
      * the specified parent container
      *
      * @param the enclosing tab container
      */
-    public DockedTabPane(DockedTabContainer parent) {
+    public DockedTabPane(DockedTabContainer parent, boolean printTitle) {
+        this.printTitle = printTitle;
         setLayout(new BorderLayout());
         this.parent = parent;
         init();
@@ -71,7 +75,7 @@ public class DockedTabPane extends AbstractTabPane {
     private void init() {
         super.initComponents();
         // panel where actual tabs are drawn
-        tabPanel = new TabPanel();
+        tabPanel = new TabPanel(printTitle);
         setTabPanel(tabPanel);
     }
 
@@ -419,11 +423,14 @@ public class DockedTabPane extends AbstractTabPane {
         protected Insets tabInsets;
         private int height;
 
+        private boolean printTitle;
+
         protected static final int TEXT_CROP_OFFSET = 10;
 
         protected static final int TAB_BOTTOM_BORDER_HEIGHT = 3;
 
-        protected TabPanel() {
+        protected TabPanel(boolean printTitle) {
+            this.printTitle = printTitle;
             initDefaults();
             tabRects = new Rectangle[0];
             MouseHandler mouseHandler = new MouseHandler();
@@ -465,9 +472,13 @@ public class DockedTabPane extends AbstractTabPane {
         }
 
         protected void calculateTabHeight() {
-            FontMetrics metrics = getFontMetrics(font);
-            height = metrics.getHeight() + tabInsets.top +
-                    tabInsets.bottom + TAB_BOTTOM_BORDER_HEIGHT + 6;
+            if (!printTitle)
+                height = 0;
+            else {
+                FontMetrics metrics = getFontMetrics(font);
+                height = metrics.getHeight() + tabInsets.top +
+                        tabInsets.bottom + TAB_BOTTOM_BORDER_HEIGHT + 6;
+            }
         }
 
         /*
@@ -481,6 +492,8 @@ public class DockedTabPane extends AbstractTabPane {
         }
 
         public void paintComponent(Graphics g) {
+            if (!printTitle)
+                return;
             if (components == null) {
                 return;
             }

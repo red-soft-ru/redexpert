@@ -14,7 +14,7 @@
         <key>system.display.console</key>
         <index>0</index>
         <position>5</position>
-        <visible>true</visible>
+        <visible>false</visible>
         <minimised>false</minimised>
     </docked-tab>
 
@@ -22,7 +22,7 @@
         <key>system.display.drivers</key>
         <index>1</index>
         <position>8</position>
-        <visible>true</visible>
+        <visible>false</visible>
         <minimised>false</minimised>
     </docked-tab>
 

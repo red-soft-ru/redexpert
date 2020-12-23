@@ -9,6 +9,7 @@ public class GridBagHelper {
     private GridBagConstraints constraints;
     private GridBagConstraints defaultConstraints;
 
+
     public GridBagHelper() {
         this.constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -39,9 +40,34 @@ public class GridBagHelper {
         return this;
     }
 
+    int defaultX = 0;
+
+    public GridBagHelper makeCurrentXTheDefaultForNewline() {
+        defaultX = constraints.gridx;
+        return this;
+    }
+
+    public GridBagHelper resetDefaultX() {
+        defaultX = 0;
+        return this;
+    }
+
     // двигается на следующую ячейку
     public GridBagHelper nextCol() {
-        constraints.gridx++;
+        //constraints.gridx++;
+        nextColWidth();
+        // для удобства возвращаем себя
+        return this;
+    }
+
+    public GridBagHelper nextColWidth() {
+        constraints.gridx += constraints.gridwidth;
+        // для удобства возвращаем себя
+        return this;
+    }
+
+    public GridBagHelper nextRowWidth() {
+        constraints.gridy += constraints.gridheight;
         // для удобства возвращаем себя
         return this;
     }
@@ -49,12 +75,32 @@ public class GridBagHelper {
     // двигается на следующий ряд
     public GridBagHelper nextRowFirstCol() {
         constraints.gridy++;
-        constraints.gridx = 0;
+        constraints.gridx = defaultX;
         return this;
     }
 
     public GridBagHelper nextRow() {
         constraints.gridy++;
+        return this;
+    }
+
+    public GridBagHelper previousRow() {
+        constraints.gridy--;
+        return this;
+    }
+
+    public GridBagHelper previousCol() {
+        constraints.gridx--;
+        return this;
+    }
+
+    public GridBagHelper setX(int x) {
+        constraints.gridx = x;
+        return this;
+    }
+
+    public GridBagHelper setY(int y) {
+        constraints.gridy = y;
         return this;
     }
 
@@ -92,9 +138,23 @@ public class GridBagHelper {
         return this;
     }
 
-    // вставляет распорку справа
-    public GridBagHelper gap(int size) {
+    public GridBagHelper rightGap(int size) {
         constraints.insets.right = size;
+        return this;
+    }
+
+    public GridBagHelper leftGap(int size) {
+        constraints.insets.left = size;
+        return this;
+    }
+
+    public GridBagHelper topGap(int size) {
+        constraints.insets.top = size;
+        return this;
+    }
+
+    public GridBagHelper bottomGap(int size) {
+        constraints.insets.bottom = size;
         return this;
     }
 
@@ -124,7 +184,7 @@ public class GridBagHelper {
         return this;
     }
 
-    public GridBagHelper seWeightX(double weight) {
+    public GridBagHelper setWeightX(double weight) {
         constraints.weightx = weight;
         return this;
     }
@@ -218,10 +278,21 @@ public class GridBagHelper {
 
     public void insertEmptyRow(Container c, int height) {
         Component comp = Box.createVerticalStrut(height);
-        nextCol().nextRowFirstCol().fillHorizontally().spanX();
+        nextRowFirstCol().fillHorizontally().spanX();
         c.add(comp, get());
-        nextRowFirstCol();
     }
+
+    public void insertEmptyBigRow(Container c) {
+        Component comp = Box.createGlue();
+        nextRowFirstCol().fillHorizontally().spanX().setMaxWeightY();
+        c.add(comp, get());
+    }
+
+    public void insertEmptyGap(Container c) {
+        Component comp = Box.createGlue();
+        c.add(comp, get());
+    }
+
 
     public void insertEmptyFiller(Container c) {
         Component comp = Box.createGlue();
@@ -230,4 +301,74 @@ public class GridBagHelper {
         nextRowFirstCol();
     }
 
+    public GridBagConstraints getDefaultConstraints() {
+        return defaultConstraints;
+    }
+
+    public void addLabelFieldPair(JPanel panel, String label,
+                                  JComponent field, String toolTip) {
+        addLabelFieldPair(panel, label, field, toolTip, true);
+    }
+
+    public void addLabelFieldPair(JPanel panel, String label,
+                                  JComponent field, String toolTip, boolean newLine) {
+        addLabelFieldPair(panel, label, field, toolTip, newLine, true);
+    }
+
+    public void addLabelFieldPair(JPanel panel, String label,
+                                  JComponent field, String toolTip, boolean newLine, boolean spanX) {
+        addLabelFieldPair(panel, label, field, toolTip, newLine, spanX, 1);
+    }
+
+    public void addLabelFieldPair(JPanel panel, String label,
+                                  JComponent field, String toolTip, boolean newLine, boolean spanX, int fieldWidth) {
+        addLabelFieldPair(panel, label, field, toolTip, newLine, spanX, fieldWidth, 10);
+    }
+
+    public void addLabelFieldPair(JPanel panel, String label,
+                                  JComponent field, String toolTip, boolean newLine, boolean spanX, int fieldWidth, int leftGap) {
+        addLabelFieldPair(panel, new JLabel(label), field, toolTip, newLine, spanX, fieldWidth, leftGap);
+    }
+
+    public void addLabelFieldPair(JPanel panel, JLabel label,
+                                  JComponent field, String toolTip) {
+        addLabelFieldPair(panel, label, field, toolTip, true);
+    }
+
+    public void addLabelFieldPair(JPanel panel, JLabel label,
+                                  JComponent field, String toolTip, boolean newLine) {
+        addLabelFieldPair(panel, label, field, toolTip, newLine, true);
+    }
+
+    public void addLabelFieldPair(JPanel panel, JLabel label,
+                                  JComponent field, String toolTip, boolean newLine, boolean spanX) {
+        addLabelFieldPair(panel, label, field, toolTip, newLine, spanX, 1);
+    }
+
+    public void addLabelFieldPair(JPanel panel, JLabel label,
+                                  JComponent field, String toolTip, boolean newLine, boolean spanX, int fieldWidth) {
+        addLabelFieldPair(panel, label, field, toolTip, newLine, spanX, fieldWidth, 10);
+    }
+
+    public void addLabelFieldPair(JPanel panel, JLabel label,
+                                  JComponent field, String toolTip, boolean newLine, boolean spanX, int fieldWidth, int leftGap) {
+        if (newLine)
+            nextRowFirstCol();
+        else nextCol();
+
+        topGap(0);
+        leftGap(leftGap);
+        setLabelDefault();
+        panel.add(label, get());
+        nextCol().setMaxWeightX().fillHorizontally().setWidth(fieldWidth);
+        if (spanX)
+            spanX();
+        panel.add(field, get());
+
+        if (toolTip != null) {
+
+            field.setToolTipText(toolTip);
+        }
+
+    }
 }

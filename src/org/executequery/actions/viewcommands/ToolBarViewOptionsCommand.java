@@ -21,6 +21,7 @@
 package org.executequery.actions.viewcommands;
 
 import org.executequery.EventMediator;
+import org.executequery.GUIUtilities;
 import org.executequery.event.DefaultUserPreferenceEvent;
 import org.executequery.event.UserPreferenceEvent;
 import org.executequery.toolbars.ToolBarManager;
@@ -71,6 +72,7 @@ public class ToolBarViewOptionsCommand extends AbstractViewOptionsCommand {
     private void setToolBarVisible(String name, boolean visible) {
 
         ToolBarProperties.setToolBarVisible(name, visible);
+        GUIUtilities.resetToolBar();
 
         EventMediator.fireEvent(
                 new DefaultUserPreferenceEvent(

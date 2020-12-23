@@ -23,6 +23,7 @@ package org.executequery.gui.erd;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
@@ -80,41 +81,41 @@ public class ErdToolBarPalette extends PanelToolBar
     private void jbInit() {
 
         dropTableButton = new RolloverButton("/org/executequery/icons/DropTable16.png",
-                "Remove selected object(s) from the ERD");
+                bundleString("dropTable"));
 
 //        commitButton = new RolloverButton("/org/executequery/icons/Commit16.png",
 //                                         "Commit any schema changes");
 
         relationButton = new RolloverButton("/org/executequery/icons/TableRelationship16.png",
-                "Create a new table relationship");
+                bundleString("relation"));
 
         deleteRelationButton = new RolloverButton(
                 "/org/executequery/icons/TableRelationshipDelete16.png",
-                "Delete selected table relationship");
+                bundleString("deleteRelation"));
 
         genScriptsButton = new RolloverButton("/org/executequery/icons/CreateScripts16.png",
-                "Generate SQL CREATE TABLE scripts from ERD");
+                bundleString("genScripts"));
 
         fontStyleButton = new RolloverButton("/org/executequery/icons/FontStyle16.png",
-                "Font");
+                bundleString("fontStyle"));
 
         lineStyleButton = new RolloverButton("/org/executequery/icons/LineStyle16.png",
-                "Line style");
+                bundleString("lineStyle"));
 
         createTableButton = new RolloverButton("/org/executequery/icons/NewTable16.png",
-                "Create new table");
+                bundleString("createTable"));
 
         addTableButton = new RolloverButton("/org/executequery/icons/AddTable16.png",
                 "Add tables from an existing schema");
 
         canvasBgButton = new RolloverButton("/org/executequery/icons/ErdBackground16.png",
-                "Canvas background colour");
+                bundleString("canvasBg"));
 
         canvasFgButton = new RolloverButton("/org/executequery/icons/ErdForeground16.png",
-                "Table background colour for selected or all tables");
+                bundleString("canvasFg"));
 
         erdTitleButton = new RolloverButton("/org/executequery/icons/ErdTitle16.png",
-                "Add ERD title");
+                bundleString("erdTitle"));
 
         genScriptsButton.addActionListener(this);
         canvasFgButton.addActionListener(this);
@@ -130,7 +131,7 @@ public class ErdToolBarPalette extends PanelToolBar
         erdTitleButton.addActionListener(this);
 
         addButton(createTableButton);
-        addButton(addTableButton);
+        //addButton(addTableButton);
         addButton(relationButton);
         addButton(deleteRelationButton);
         addButton(dropTableButton);
@@ -151,9 +152,9 @@ public class ErdToolBarPalette extends PanelToolBar
         scaleCombo.setSelectedIndex(3);
 
         zoomInButton = new RolloverButton("/org/executequery/icons/ZoomIn16.png",
-                "Zoom in");
+                bundleString("zoomIn"));
         zoomOutButton = new RolloverButton("/org/executequery/icons/ZoomOut16.png",
-                "Zoom out");
+                bundleString("zoomOut"));
 
         zoomInButton.addActionListener(this);
         zoomOutButton.addActionListener(this);
@@ -353,6 +354,10 @@ public class ErdToolBarPalette extends PanelToolBar
                 new RolloverButton(ActionBuilder.get(actionId), toolTipText);
         button.setText(Constants.EMPTY);
         return button;
+    }
+
+    private String bundleString(String key) {
+        return Bundles.get(ErdToolBarPalette.class, key);
     }
 
 }

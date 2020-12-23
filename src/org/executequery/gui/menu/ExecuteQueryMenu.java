@@ -25,7 +25,9 @@ import org.executequery.repository.spi.MenuItemXMLRepository;
 
 import javax.swing.*;
 import javax.swing.JPopupMenu.Separator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Application main menu.
@@ -35,6 +37,8 @@ import java.util.List;
 public class ExecuteQueryMenu extends JMenuBar {
 
     private JMenuItemFactory jMenuItemFactory;
+
+    Map<String, JMenuItem> menuMap;
 
     public ExecuteQueryMenu() {
 
@@ -51,6 +55,7 @@ public class ExecuteQueryMenu extends JMenuBar {
     private void init() throws Exception {
 
         setBorder(null);
+        menuMap = new HashMap<>();
         createMenus();
     }
 
@@ -94,6 +99,10 @@ public class ExecuteQueryMenu extends JMenuBar {
             }
 
             JMenuItem jMenuItem = jMenuItemFactory.createJMenuItem(parent, menuItem);
+            if (menuItem.hasId())
+                menuMap.put(menuItem.getId(), jMenuItem);
+            else if (menuItem.hasActionCommand())
+                menuMap.put(menuItem.getActionCommand(), jMenuItem);
             if (jMenuItem instanceof JMenu) {
 
                 buildMenuForParent(jMenuItem, menuItem.getChildren());
@@ -120,6 +129,10 @@ public class ExecuteQueryMenu extends JMenuBar {
 
     public void setjMenuItemFactory(JMenuItemFactory jMenuItemFactory) {
         this.jMenuItemFactory = jMenuItemFactory;
+    }
+
+    public Map<String, JMenuItem> getMenuMap() {
+        return menuMap;
     }
 }
 

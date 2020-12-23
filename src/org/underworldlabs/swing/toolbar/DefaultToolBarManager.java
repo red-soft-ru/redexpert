@@ -107,29 +107,29 @@ public class DefaultToolBarManager {
      *                XML tool bar conf file
      * @param rebuild - whether this is a rebuild of an existing tool bar
      */
+    protected void initToolBar() {
+        toolBarBase.removeAll();
+        ToolBar toolBar = new ToolBar(toolBarBase, "Tool Bar");
+        //toolBar.setLayout(new GridBagLayout());
+        ToolBarWrapper eqtb = new ToolBarWrapper();
+        ToolBarConstraints tbc = new ToolBarConstraints();
+        tbc.setConstraints(0, 0);
+        eqtb.setConstraints(tbc);
+        toolBar.removeAllButtons();
+        toolBar.invalidate();
+        toolBars.put("Tool Bar", toolBar);
+        toolBarBase.addToolBar(toolBar, eqtb.getConstraints());
+    }
+
     protected void buildToolBar(String name, boolean rebuild) {
         ToolBarWrapper eqtb = ToolBarProperties.getToolBar(name);
-
         if (!eqtb.isVisible() || !eqtb.hasButtons()) {
             return;
         }
+        toolBarBase.removeAll();
 
-        ToolBar toolBar = null;
-        if (rebuild) {
-            toolBar = (ToolBar) toolBars.get(name);
 
-            if (toolBar != null) {
-                toolBar.removeAllButtons();
-                toolBar.invalidate();
-            } else {
-                toolBar = new ToolBar(toolBarBase, name);
-                toolBars.put(name, toolBar);
-            }
-
-        } else {
-            toolBar = new ToolBar(toolBarBase, name);
-            toolBars.put(name, toolBar);
-        }
+        ToolBar toolBar = (ToolBar) toolBars.get("Tool Bar");
 
         Vector buttons = eqtb.getButtonsVector();
         Collections.sort(buttons, buttonComparator);
@@ -158,9 +158,10 @@ public class DefaultToolBarManager {
             }
 
         }
+        toolBar.addSeparator();
 
         toolBar.buildToolBar();
-        toolBarBase.addToolBar(toolBar, eqtb.getConstraints());
+        toolBarBase.addToolBar(toolBar, new ToolBarConstraints(0, 0));//eqtb.getConstraints());
     }
 
 }

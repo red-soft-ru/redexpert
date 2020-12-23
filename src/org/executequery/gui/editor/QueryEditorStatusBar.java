@@ -20,6 +20,7 @@
 
 package org.executequery.gui.editor;
 
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractStatusBarPanel;
 import org.underworldlabs.swing.ProgressBar;
 import org.underworldlabs.swing.ProgressBarFactory;
@@ -106,7 +107,7 @@ public class QueryEditorStatusBar extends AbstractStatusBarPanel {
      */
     public void setCommitStatus(boolean autoCommit) {
 
-        setLabelText(5, " Auto-Commit: " + autoCommit);
+        setLabelText(5, Bundles.get(QueryEditor.class, "autocommit", autoCommit));
     }
 
     /**

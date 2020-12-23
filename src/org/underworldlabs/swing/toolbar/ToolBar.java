@@ -161,8 +161,8 @@ public class ToolBar extends AbstractToolBarPanel
         buttonPanel = new JPanel(new GridBagLayout());
         buttonPanel.setOpaque(false);
 
-        add(moveWidget, BorderLayout.WEST);
-        add(buttonPanel, BorderLayout.CENTER);
+        //add(moveWidget, BorderLayout.WEST);
+        add(buttonPanel, BorderLayout.WEST);
 
         if (toolBarBorder == null) {
             toolBarBorder = BorderFactory.createEtchedBorder();
@@ -174,7 +174,7 @@ public class ToolBar extends AbstractToolBarPanel
         gbc.insets.top = 1;
         gbc.insets.bottom = 1;
 
-        setBorder(toolBarBorder);
+        //setBorder(toolBarBorder);
     }
 
     public ToolBar(ToolBarBase parent, String name) {
@@ -218,7 +218,8 @@ public class ToolBar extends AbstractToolBarPanel
 
     public void buildToolBar() {
         Object obj = null;
-        int buttonCount = toolButtons.size();
+        buttonPanel.removeAll();
+        int buttonCount = toolButtons.size() - 1;
         gbc.weightx = 0;
 
         for (int i = 0; i < buttonCount; i++) {

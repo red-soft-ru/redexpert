@@ -72,13 +72,24 @@ public class QueryTokenizer {
         extractMultiLineCommentTokens(query);
 
         List<DerivedQuery> derivedQueries = deriveQueries(query);
+        for (DerivedQuery derivedQuery : derivedQueries) {
 
+            if (Thread.interrupted()) {
+
+                throw new InterruptedException();
+            }
+
+            String noCommentsQuery = removeAllCommentsFromQuery(derivedQuery.getOriginalQuery());
+            derivedQuery.setQueryWithoutComments(noCommentsQuery.trim());
+        }
         return derivedQueries;
     }
 
     public QueryTokenized tokenizeFirstQuery(String query,String lowQuery,int startQueryIndex, String delimiter) {
 
-        QueryTokenized fquery = firstQuery(query,delimiter,startQueryIndex,lowQuery);
+        QueryTokenized fquery = firstQuery(query, delimiter, startQueryIndex, lowQuery);
+        String noCommentsQuery = removeAllCommentsFromQuery(fquery.query.getOriginalQuery());
+        fquery.query.setQueryWithoutComments(noCommentsQuery.trim());
         return fquery;
     }
 

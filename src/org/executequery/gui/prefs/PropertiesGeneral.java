@@ -56,7 +56,14 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
                 bundledString("General"),
                 null));
 
-        String key = "startup.display.splash";
+        String key = "editor.christmas.melody";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledString("EditorChristmasMelody"),
+                Boolean.valueOf(stringUserProperty(key))));
+
+        key = "startup.display.splash";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,

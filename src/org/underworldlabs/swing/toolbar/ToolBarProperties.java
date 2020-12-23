@@ -207,6 +207,8 @@ public class ToolBarProperties {
             }
 
         }
+        if (currentMaxRow > 0)
+            currentMaxRow = 0;
 
         return currentMaxRow + 1;
     }

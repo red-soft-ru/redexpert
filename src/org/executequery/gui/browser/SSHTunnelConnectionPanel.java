@@ -25,8 +25,13 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.TextFieldPanel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.WidgetFactory;
-import org.underworldlabs.swing.*;
+import org.executequery.localization.Bundles;
+import org.underworldlabs.swing.ComponentTitledPanel;
+import org.underworldlabs.swing.DefaultFieldLabel;
+import org.underworldlabs.swing.LinkButton;
+import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.actions.ActionUtilities;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
@@ -38,7 +43,7 @@ import java.io.IOException;
 
 public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
 
-    private DisabledField hostField;
+    GridBagHelper gbh;
     private JTextField userNameField;
     private JPasswordField passwordField;
     private NumberTextField portField;
@@ -56,9 +61,12 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
         }
     }
 
+    private JTextField hostField;
+
     private void init() throws IOException {
 
-        hostField = new DisabledField();
+        gbh = new GridBagHelper();
+        hostField = new JTextField();
         userNameField = WidgetFactory.createTextField();
         passwordField = WidgetFactory.createPasswordField();
         portField = WidgetFactory.createNumberTextField();
@@ -75,32 +83,32 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
 
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         mainPanel.add(new DefaultFieldLabel(
-                FileUtils.loadResource("org/executequery/gui/browser/resource/ssh-tunnel.html")), gbc);
+                FileUtils.loadResource(bundleString("path_to_html"))), gbc);
+        gbh.setDefaults(gbc).defaults();
+        gbh.addLabelFieldPair(mainPanel, bundleString("hostField"), hostField,
+                bundleString("hostField.tool-tip"));
 
-        addLabelFieldPair(mainPanel, "SSH Host:", hostField,
-                "The SSH host server for the tunnel", gbc);
+        gbh.addLabelFieldPair(mainPanel, bundleString("portField"), portField,
+                bundleString("portField.tool-tip"));
 
-        addLabelFieldPair(mainPanel, "SSH Port:", portField,
-                "The SSH server port", gbc);
+        gbh.addLabelFieldPair(mainPanel, bundleString("userField"), userNameField,
+                bundleString("userField.tool-tip"));
 
-        addLabelFieldPair(mainPanel, "SSH User Name:", userNameField,
-                "The SSH user name for the tunnel", gbc);
+        gbh.addLabelFieldPair(mainPanel, bundleString("passwordField"), passwordField,
+                bundleString("passwordField"));
 
-        addLabelFieldPair(mainPanel, "SSH Password:", passwordField,
-                "The SSH user password for the tunnel", gbc);
+        savePwdCheck = ActionUtilities.createCheckBox(bundleString("StorePassword"), "setStorePassword");
 
-        savePwdCheck = ActionUtilities.createCheckBox("Store Password", "setStorePassword");
-
-        JButton showPassword = new LinkButton("Show Password");
+        JButton showPassword = new LinkButton(bundleString("ShowPassword"));
         showPassword.setActionCommand("showPassword");
         showPassword.addActionListener(this);
 
         JPanel passwordOptionsPanel = new JPanel(new GridBagLayout());
         addComponents(passwordOptionsPanel,
                 new ComponentToolTipPair[]{
-                        new ComponentToolTipPair(savePwdCheck, "Store the password with the connection information"),
-                        new ComponentToolTipPair(showPassword, "Show the password in plain text")});
-
+                        new ComponentToolTipPair(savePwdCheck, bundleString("StorePassword.tool-tip")),
+                        new ComponentToolTipPair(showPassword, bundleString("ShowPassword.tool-tip"))});
+        gbc = gbh.get();
         gbc.gridy++;
         gbc.gridx = 1;
         gbc.weightx = 1.0;
@@ -110,7 +118,7 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
         JScrollPane scrollPane = new JScrollPane(mainPanel);
         scrollPane.setBorder(null);
 
-        useSshCheckbox = ActionUtilities.createCheckBox(this, "Connect Using an SSH Tunnel", "useSshSelected");
+        useSshCheckbox = ActionUtilities.createCheckBox(this, bundleString("borderTitle"), "useSshSelected");
         ComponentTitledPanel titledPanel = new ComponentTitledPanel(useSshCheckbox);
 
         JPanel panel = titledPanel.getContentPane();
@@ -252,6 +260,10 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
     private boolean hasValue(JTextField textField) {
 
         return StringUtils.isNotBlank(textField.getText());
+    }
+
+    protected String bundleString(String key) {
+        return Bundles.get(ConnectionPanel.class, key);
     }
 
 }

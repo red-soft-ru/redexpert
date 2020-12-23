@@ -36,7 +36,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class TraceManagerPanel extends JPanel implements TabView {
 
-    public static final String TITLE = "Trace Manager";
+    public static final String TITLE = Bundles.get(TraceManagerPanel.class, "title");
     private IFBTraceManager traceManager;
     private TablePanel loggerPanel;
     private Timer timer;

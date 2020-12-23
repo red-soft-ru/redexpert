@@ -38,6 +38,8 @@ public final class DerivedQuery {
 
     private final String originalQuery;
 
+    private String queryWithoutComments;
+
     private List<QueryTable> queryTables;
 
     static {
@@ -56,6 +58,11 @@ public final class DerivedQuery {
         super();
         this.originalQuery = originalQuery;
         this.derivedQuery = originalQuery;
+    }
+
+    public DerivedQuery(String originalQuery, String queryWithoutComments) {
+        this(originalQuery);
+        this.queryWithoutComments = queryWithoutComments;
     }
 
     public String getOriginalQuery() {
@@ -158,7 +165,9 @@ public final class DerivedQuery {
 
         if (type != -1)
             return type;
-        String query = derivedQuery.replaceAll("\n", " ").toUpperCase().trim();
+        if (queryWithoutComments == null)
+            queryWithoutComments = derivedQuery;
+        String query = queryWithoutComments.replaceAll("\n", " ").toUpperCase().trim();
 
         if (query.indexOf("SELECT ") == 0 && query.contains(" INTO ")) {
 
@@ -301,6 +310,13 @@ public final class DerivedQuery {
         return type;
     }
 
+    public String getQueryWithoutComments() {
+        return queryWithoutComments;
+    }
+
+    public void setQueryWithoutComments(String queryWithoutComments) {
+        this.queryWithoutComments = queryWithoutComments;
+    }
 }
 
 

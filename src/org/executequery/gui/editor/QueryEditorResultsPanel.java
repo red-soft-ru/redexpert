@@ -28,6 +28,7 @@ import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
+import org.executequery.localization.Bundles;
 import org.executequery.sql.SqlMessages;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.SimpleCloseTabbedPane;
@@ -56,7 +57,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         ResultSetTableContainer,
         ChangeListener {
 
-    private static final String OUTPUT_TAB_TITLE = "Output";
+    private static final String OUTPUT_TAB_TITLE = Bundles.get(QueryEditorResultsPanel.class, "title");
 
     /**
      * the editor parent

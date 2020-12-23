@@ -80,9 +80,6 @@ public abstract class AbstractTabPane extends JPanel
         cardLayout = new CardLayout();
         componentPanel = new JPanel(cardLayout);
 
-        componentPanel.setBorder(BorderFactory.createMatteBorder(
-                0, 1, 1, 1, UIUtils.getDefaultBorderColour()));
-
         add(componentPanel, BorderLayout.CENTER);
     }
 

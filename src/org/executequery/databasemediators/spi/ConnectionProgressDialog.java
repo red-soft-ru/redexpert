@@ -57,7 +57,7 @@ public class ConnectionProgressDialog extends JDialog
 
     public ConnectionProgressDialog(ConnectionBuilder connectonBuilder) {
 
-        super(GUIUtilities.getParentFrame(), "Connecting...", true);
+        super(GUIUtilities.getParentFrame(), Bundles.getCommon("connecting"), true);
         this.connectonBuilder = connectonBuilder;
         init();
     }
@@ -78,7 +78,7 @@ public class ConnectionProgressDialog extends JDialog
         JButton cancelButton = new CancelButton();
         cancelButton.addActionListener(this);
 
-        connectionNameLabel = new JLabel("Establishing connection to " + connectonBuilder.getConnectionName());
+        connectionNameLabel = new JLabel(Bundles.get(this.getClass(), "connectionLabel", connectonBuilder.getConnectionName()));
 
         GridBagConstraints gbc = new GridBagConstraints();
         Insets ins = new Insets(10, 20, 10, 20);

@@ -101,7 +101,6 @@ public class UserManagerPanel extends JPanel {
     private JButton connectButton;
     private boolean useCustomServer;
     private JTextField portField;
-    private JCheckBox userRoleBox;
     private JCheckBox roleRoleBox;
 
     /**
@@ -174,10 +173,10 @@ public class UserManagerPanel extends JPanel {
         refreshUsersButton = new DefaultButton();
         rolesPanel = new JPanel();
         membershipPanel = new JPanel();
-        membershipTable = new JTable();
-        grantButton = new DefaultButton();
-        adminButton = new DefaultButton();
-        no_grantButton = new DefaultButton();
+        //membershipTable = new JTable();
+        grantButton = new JButton();
+        adminButton = new JButton();
+        no_grantButton = new JButton();
         grantLabel = new JLabel();
         adminLabel = new JLabel();
         no_grantLabel = new JLabel();
@@ -185,7 +184,6 @@ public class UserManagerPanel extends JPanel {
         cancelButton = new DefaultButton();
         connectButton = new DefaultButton();
         portField = new DefaultNumberTextField();
-        userRoleBox = new JCheckBox(bundleString("UserRole"));
         roleRoleBox = new JCheckBox(bundleString("RoleRole"));
         portField.setText("3050");
 
@@ -449,18 +447,6 @@ public class UserManagerPanel extends JPanel {
         no_grantButton.setToolTipText("REVOKE ROLE");
         no_grantLabel.setText("REVOKE ROLE");
 
-        userRoleBox.setSelected(true);
-        userRoleBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                try {
-                    act = Action.REFRESH;
-                    executeThread();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
         roleRoleBox.setSelected(false);
         roleRoleBox.addItemListener(new ItemListener() {
             @Override
@@ -493,7 +479,6 @@ public class UserManagerPanel extends JPanel {
                                                 .addComponent(no_grantButton)
                                                 .addGap(5)
                                                 .addComponent(no_grantLabel))
-                                        .addComponent(userRoleBox)
                                         .addComponent(roleRoleBox))
                                 .addGap(32, 32, 32)
                                 .addComponent(jScrollPane3, GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE)
@@ -516,8 +501,6 @@ public class UserManagerPanel extends JPanel {
                                                 .addGroup(membershipPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                                         .addComponent(no_grantButton)
                                                         .addComponent(no_grantLabel))
-                                                .addGap(18, 18, 18)
-                                                .addComponent(userRoleBox)
                                                 .addGap(18, 18, 18)
                                                 .addComponent(roleRoleBox))
                                         .addComponent(jScrollPane3, GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE))
@@ -910,7 +893,6 @@ public class UserManagerPanel extends JPanel {
             ));
             user_names.clear();
             for (IFBUser u : users.values()) {
-                if (userRoleBox.isSelected())
                     user_names.add(new UserRole(u.getUserName().trim(), true));
                 Object[] rowData = new Object[]{u.getUserName(), u.getFirstName(), u.getMiddleName(), u.getLastName()};
                 ((RoleTableModel) usersTable.getModel()).addRow(rowData);

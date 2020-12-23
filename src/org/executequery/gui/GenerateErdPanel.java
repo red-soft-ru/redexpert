@@ -24,6 +24,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.BottomButtonPanel;
 import org.executequery.gui.erd.ErdGenerateProgressDialog;
 import org.executequery.gui.erd.ErdSelectionPanel;
+import org.executequery.localization.Bundles;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,7 +37,7 @@ import java.awt.event.ActionListener;
 public class GenerateErdPanel extends JPanel
         implements ActionListener {
 
-    public static final String TITLE = "Generate ERD";
+    public static final String TITLE = Bundles.get(GenerateErdPanel.class, "title");
 
     /**
      * The table selection panel
@@ -65,7 +66,7 @@ public class GenerateErdPanel extends JPanel
         selectionPanel = new ErdSelectionPanel();
         JPanel basePanel = new JPanel(new BorderLayout());
         basePanel.add(selectionPanel, BorderLayout.NORTH);
-        basePanel.add(new BottomButtonPanel(this, "Generate", "erd", true),
+        basePanel.add(new BottomButtonPanel(this, bundleString("Generate"), "erd", true),
                 BorderLayout.SOUTH);
         add(basePanel, BorderLayout.CENTER);
     }
@@ -103,6 +104,11 @@ public class GenerateErdPanel extends JPanel
         }
 
     }
+
+    private String bundleString(String key) {
+        return Bundles.get(GenerateErdPanel.class, key);
+    }
+
 
 }
 

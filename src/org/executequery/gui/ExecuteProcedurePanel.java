@@ -44,6 +44,7 @@ import org.executequery.gui.editor.InputParametersDialog;
 import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.editor.QueryEditorResultsPanel;
 import org.executequery.gui.editor.autocomplete.Parameter;
+import org.executequery.localization.Bundles;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.sqlParser.SqlParser;
 import org.underworldlabs.swing.DynamicComboBoxModel;
@@ -163,13 +164,13 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
         });
 
         objectTypeCombo = WidgetFactory.createComboBox(createAvailableObjectTypes());
-        objectTypeCombo.setToolTipText("Select the database object type");
+        objectTypeCombo.setToolTipText(bundleString("ObjectType.tool-tip"));
         objectTypeCombo.addItemListener(this);
 
         proceduresModel = new DynamicComboBoxModel();
         procedureCombo = WidgetFactory.createComboBox(proceduresModel);
         procedureCombo.setActionCommand("procedureSelectionChanged");
-        procedureCombo.setToolTipText("Select the database object name");
+        procedureCombo.setToolTipText(bundleString("ObjectName.tool-tip"));
         procedureCombo.addActionListener(this);
 
         JPanel base = new JPanel(new GridBagLayout());
@@ -194,7 +195,7 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
         gbc.gridy++;
         gbc.insets.left = 7;
         gbc.insets.top = 0;
-        base.add(new JLabel("Object Type:"), gbc);
+        base.add(new JLabel(bundleString("ObjectType")), gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.insets.left = 0;
@@ -203,7 +204,7 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
         gbc.weightx = 0;
         gbc.gridy++;
         gbc.insets.left = 7;
-        base.add(new JLabel("Object Name:"), gbc);
+        base.add(new JLabel(bundleString("ObjectName")), gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.insets.left = 0;
@@ -225,7 +226,7 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         base.add(splitPane, gbc);
 
-        JButton executeButton = ActionUtilities.createButton(this, "Execute", "execute");
+        JButton executeButton = ActionUtilities.createButton(this, bundleString("Execute"), "execute");
 
         gbc.gridy++;
         gbc.weighty = 0;
@@ -692,6 +693,27 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
         return null;
     }
 
+    private String[] bundleStrings(String[] keys) {
+        return Bundles.get(this.getClass(), keys);
+    }
+
+
+    class ExecutableObjectType {
+
+        String name;
+
+        ExecutableObjectType(String name) {
+
+            this.name = name;
+        }
+
+        public String toString() {
+
+            return StringUtils.capitalize(name.toLowerCase());
+        }
+
+    } // ExecutableObjectType
+
     class ParameterTableModel extends AbstractTableModel {
 
         private String UNKNOWN = "UNKNOWN";
@@ -701,7 +723,7 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
         private String INOUT = "INOUT";
         private String OUT = "OUT";
 
-        private String[] columns = {"Parameter", "Data Type", "Mode"};
+        private String[] columns = bundleStrings(new String[]{"Parameter", "DataType", "Mode"});
         private org.executequery.databaseobjects.Parameter[] values;
 
         public ParameterTableModel() {
@@ -836,24 +858,6 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
         }
 
     } // class ParameterTableModel
-
-
-    class ExecutableObjectType {
-
-        String name;
-
-        ExecutableObjectType(String name) {
-
-            this.name = name;
-        }
-
-        public String toString() {
-
-            return StringUtils.capitalize(name.toLowerCase());
-        }
-
-    } // ExecutableObjectType
-
 
 }
 

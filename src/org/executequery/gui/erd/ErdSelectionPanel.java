@@ -25,6 +25,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.GUIUtils;
@@ -96,7 +97,7 @@ public class ErdSelectionPanel extends JPanel
 
     private void jbInit() throws Exception {
 
-        listPanel = new ListSelectionPanel("Available Tables:", "Selected Tables:");
+        listPanel = new ListSelectionPanel(bundleString("availableTables"), bundleString("selected Tables"));
         metaData = new MetaDataValues(true);
 
         // combo boxes
@@ -115,25 +116,13 @@ public class ErdSelectionPanel extends JPanel
         gbc.insets = new Insets(13, 10, 0, 10);
         gbc.gridy++;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        add(new JLabel("Connection:"), gbc);
+        add(new JLabel(Bundles.getCommon("connection")), gbc);
         gbc.insets.top = 10;
         gbc.insets.left = 0;
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(connectionsCombo, gbc);
-        gbc.insets.left = 10;
-        gbc.gridx = 0;
-        gbc.gridy++;
-        gbc.weightx = 0;
-        gbc.fill = GridBagConstraints.NONE;
-        add(new JLabel(useCatalogs ? "Catalog:" : "Schema:"), gbc);
-        gbc.insets.left = 0;
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.gridwidth = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(schemaCombo, gbc);
         gbc.gridx = 0;
         gbc.gridy++;
         gbc.gridwidth = 2;
@@ -332,6 +321,10 @@ public class ErdSelectionPanel extends JPanel
             return (DatabaseConnection) connectionsCombo.getSelectedItem();
         }
         return databaseConnection;
+    }
+
+    private String bundleString(String key) {
+        return Bundles.get(ErdSelectionPanel.class, key);
     }
 
 }

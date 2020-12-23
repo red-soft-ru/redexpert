@@ -355,18 +355,15 @@ public class CheckForUpdateNotifier implements Interruptible {
         if (MiscUtils.isNull(repo))
             if (releaseHub)
                 repo = "http://builds.red-soft.biz/release_hub/red_expert/";
-            else repo = "http://reddatabase.ru";
-        return "New version " + version.getVersion() +
-                " is available for download at " +
-                "<a style=\"color:#3F7ED3\" href=\"" + repo + "\">" + repo + "</a>." +
-                "\n\nDo you wish to download new version?";
+            else repo = "http://reddatabase.ru/downloads/redexpert/";
+        return bundledString("downloadVersionMessage", version.getVersion(), repo);
 
     }
 
     private int displayNewDownloadVersionMessage() {
         return GUIUtilities.displayYesNoDialog(
                 new SimpleHtmlContentPane(newDownloadVersionMessage(version)),
-                "Red Expert Update");
+                bundledString("title"));
     }
 
     private Object doWork() {
@@ -459,7 +456,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         return GUIUtilities.displayYesNoDialog(
                 new SimpleHtmlContentPane(newVersionMessage(version)),
-                "Red Expert Update");
+                bundledString("title"));
     }
 
     private void logNewVersonInfo() {
@@ -469,7 +466,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     private String newVersionAvailableText() {
 
-        return "New version " + version.getVersion() + " available.";
+        return bundledString("newVersionAvailableText", version.getVersion());
     }
 
     private boolean isNewVersion(ApplicationVersion version) {
@@ -510,7 +507,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             closeProgressDialog();
 
             final String finalReleaseNotes = releaseNotes;
-            GUIUtils.invokeAndWait(() -> new InformationDialog("Latest Version Info",
+            GUIUtils.invokeAndWait(() -> new InformationDialog(bundledString("latestVersionInfoTitle"),
                     finalReleaseNotes, InformationDialog.TEXT_CONTENT_VALUE, null));
 
             return Constants.WORKER_SUCCESS;
@@ -540,8 +537,8 @@ public class CheckForUpdateNotifier implements Interruptible {
 
             progressDialog = new InterruptibleProgressDialog(
                     GUIUtilities.getParentFrame(),
-                    "Check for update",
-                    "Retrieving new version release notes",
+                    bundledString("checkingUpdatesTitle"),
+                    bundledString("progressDialogForReleaseNotesLabel"),
                     CheckForUpdateNotifier.this);
 
             progressDialog.run();
@@ -562,12 +559,12 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     private String newVersionMessage(ApplicationVersion version) {
 
-        return "New version " + version.getVersion() +
-                " is available for download at " +
-                "<a style=\"color:#3F7ED3\" href=\"https://github.com/redsoftbiz/executequery/releases\">https://github.com/redsoftbiz/executequery/releases</a>." +
-                "\nClick <a  style=\"color:#3F7ED3\" href=\"https://github.com/redsoftbiz/executequery/releases/latest\">here</a>" +
-                " to go to the download page.\n\nDo you wish to view the " +
-                "version notes for this release?";
+        String repo = updateLoader.getRepo();
+        if (MiscUtils.isNull(repo))
+            if (releaseHub)
+                repo = "http://builds.red-soft.biz/release_hub/red_expert/";
+            else repo = "https://reddatabase.ru/downloads/redexpert/";
+        return bundledString("newVersionMessage", version.getVersion(), repo, repo);
     }
 
     private String noUpdateMessage() {
@@ -609,6 +606,10 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     protected String bundledString(String key) {
         return Bundles.get(this.getClass(), key);
+    }
+
+    protected String bundledString(String key, Object... args) {
+        return Bundles.get(this.getClass(), key, args);
     }
 }
 

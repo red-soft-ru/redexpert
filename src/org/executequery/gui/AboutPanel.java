@@ -68,7 +68,7 @@ public class AboutPanel extends BaseDialog
         tabPane.add("System", systemDetails());
         tabPane.add("Resources", systemResources());
         tabPane.add("License", license());
-        tabPane.add("Credits", credits());
+        //tabPane.add("Credits", credits());
         tabPane.add("Copyright", copyright());
 
         imagePanel = new AboutImagePanel();

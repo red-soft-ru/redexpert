@@ -156,18 +156,18 @@ public class QueryEditorTextPanel extends JPanel {
                 @Override
                 public void keyReleased(KeyEvent e) {
                     if (indexNote < melody.length) {
-                        int tone = melody[indexNote][0];
-                        int duration = melody[indexNote][1] * 180;
                         SwingWorker sw = new SwingWorker() {
                             @Override
                             public Object construct() {
-                                Sound.tone(tone, duration * 180, instrument);
+                                Sound.tone(melody[indexNote][0], melody[indexNote][1] * 180, instrument);
+                                indexNote++;
                                 return "done";
                             }
                         };
                         sw.start();
-                        indexNote++;
                     }
+
+
                     if (indexNote == melody.length) {
                         indexNote++;
                         SwingWorker sw = new SwingWorker() {

@@ -20,7 +20,6 @@
 
 package org.executequery.gui.editor.autocomplete;
 
-import org.apache.commons.lang.StringUtils;
 import org.executequery.sql.QueryTable;
 
 import java.util.List;
@@ -142,36 +141,28 @@ public class AutoCompleteListItem {
                 return false;
             }
 
-            if (!hasTables || !type.isTable()) { // keyword
+            if (!type.isTable()) { // keyword
 
                 return getUpperCaseValue().startsWith(prefix, 0);
             }
         }
 
-        if (!hasTables) { // ??? hhhmmmmmm
 
-            return getInsertionValue().regionMatches(true, 0, prefix, 0, prefix.length());
-        }
-
-        if (parentName != null) { // shouldn't here but does TODO:
-
+        if (hasTables && parentName != null) { // shouldn't here but does TODO
             for (QueryTable table : tables) {
 
                 String name = table.getCompareName();
                 if (parentName.regionMatches(true, 0, name, 0, name.length())) {
-
-                    if (StringUtils.isBlank(prefix)) {
-
-                        return true;
-                    }
-
                     return getInsertionValue().regionMatches(true, 0, prefix, 0, prefix.length());
                 }
 
             }
         }
+        //if (!hasTables) { // ??? hhhmmmmmm
+        return getInsertionValue().regionMatches(true, 0, prefix, 0, prefix.length());
+        // }
 
-        return false;
+        //return false;
     }
 
     public AutoCompleteListItemType getType() {

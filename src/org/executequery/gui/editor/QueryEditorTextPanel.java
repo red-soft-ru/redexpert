@@ -221,18 +221,12 @@ public class QueryEditorTextPanel extends JPanel {
         queryPane.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                try {
-                    int caret = queryPane.getCaretPosition();
-                    if (caret > 0) {
-                        String lastSymbol = queryPane.getDocument().getText(caret - 1, 1);
+                int caret = queryPane.getCaretPosition();
+                if (caret > 0) {
 
-                        if ((!lastSymbol.equals(" ")) && (!lastSymbol.equals("\n")) && e.getLength() < 2) {
-                            // (!autoCompletePopup.isVisible())
-                            autoCompletePopupAction.actionPerformed(null);
-                        }
+                    if (e.getLength() < 2) {
+                        autoCompletePopupAction.actionPerformed(null);
                     }
-                } catch (BadLocationException badLocationException) {
-                    badLocationException.printStackTrace();
                 }
             }
 

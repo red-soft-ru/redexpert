@@ -65,7 +65,7 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
 //        if (!UIUtils.isNativeMacLookAndFeel()) {
 //        	gradientLabel.setForeground(new ColorUIResource(0x333333));
 //        }
-        add(gradientLabel, BorderLayout.NORTH);
+        //add(gradientLabel, BorderLayout.NORTH);
     }
 
     protected void setContentPanel(JComponent panel) {

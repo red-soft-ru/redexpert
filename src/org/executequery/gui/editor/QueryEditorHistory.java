@@ -47,7 +47,9 @@ public class QueryEditorHistory {
     }
 
     public static void removeEditor(String connectionID, String editor) {
-        PathNumber pathNumber = getEditors(connectionID).get(indexOfEditor(editor, getEditors(connectionID)));
+        List<PathNumber> editors = getEditors(connectionID);
+        int ind = indexOfEditor(editor, editors);
+        PathNumber pathNumber = editors.get(ind);
         getEditors(connectionID).remove(pathNumber);
         if (pathNumber.number != -1) {
             numbers().remove((Integer) pathNumber.number);
@@ -57,9 +59,9 @@ public class QueryEditorHistory {
     }
 
     private static int indexOfEditor(String editor, List<PathNumber> list) {
-
+        editor = editor.replaceAll("\\\\", "/");
         for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).path.equals(editor))
+            if (list.get(i).path.replaceAll("\\\\", "/").equals(editor))
                 return i;
         }
         return -1;

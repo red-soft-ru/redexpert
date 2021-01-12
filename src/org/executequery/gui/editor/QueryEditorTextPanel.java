@@ -33,8 +33,8 @@ import org.underworldlabs.swing.GUIUtils;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.tree.TreePath;
@@ -174,28 +174,14 @@ public class QueryEditorTextPanel extends JPanel {
         queryPane.getInputMap().put((KeyStroke)
                         autoCompletePopupAction.getValue(Action.ACCELERATOR_KEY),
                 AUTO_COMPLETE_POPUP_ACTION_KEY);
-        queryPane.getDocument().addDocumentListener(new DocumentListener() {
+        queryPane.addCaretListener(new CaretListener() {
             @Override
-            public void insertUpdate(DocumentEvent e) {
-                int caret = queryPane.getCaretPosition();
-                if (caret > 0) {
-
-                    if (e.getLength() < 2) {
-                        autoCompletePopupAction.actionPerformed(null);
-                    }
-                }
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-
+            public void caretUpdate(CaretEvent e) {
+                if (e.getDot() > 0)
+                    autoCompletePopupAction.actionPerformed(null);
             }
         });
+
     }
 
     public void addEditorPaneMouseListener(MouseListener listener) {

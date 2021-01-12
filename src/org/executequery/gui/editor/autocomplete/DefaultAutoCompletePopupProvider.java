@@ -556,9 +556,9 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
     private void captureAndResetListValues() {
         noProposals = false;
-        String wordAtCursor = getWordEndingAt(sqlTextPane.getCaretPosition());
+        int dot = sqlTextPane.getCaretPosition();
+        String wordAtCursor = getWordEndingAt(dot);
         trace("Capturing and resetting list values for word [ " + wordAtCursor + " ]");
-
         DerivedQuery derivedQuery = new DerivedQuery(getQueryAt(sqlTextPane.getCaretPosition()).getQuery());
         List<QueryTable> tables = derivedQuery.tableForWord(wordAtCursor);
         List<AutoCompleteListItem> itemsStartingWith = itemsStartingWith(tables, wordAtCursor);
@@ -821,10 +821,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
     }
 
     public void caretUpdate(CaretEvent e) {
-        if (oldDot > e.getDot()) {
-            oldDot = e.getDot();
-            captureAndResetListValues();
-        } else oldDot = e.getDot();
+
     }
 
     public void connectionChanged(DatabaseConnection databaseConnection) {

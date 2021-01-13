@@ -194,7 +194,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         inputMap.put(KEY_STROKE_TAB, LIST_FOCUS_ACTION_KEY);
         inputMap.put(KEY_STROKE_ENTER, LIST_SELECTION_ACTION_KEY);
 
-        textComponent.addCaretListener(this);
+        //textComponent.addCaretListener(this);
     }
 
     private void saveExistingActions(InputMap inputMap) {
@@ -394,26 +394,23 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
     public void firePopupTrigger() {
 
-        try {
 
-            final JTextComponent textComponent = queryEditorTextComponent();
+        final JTextComponent textComponent = queryEditorTextComponent();
 
-            Caret caret = textComponent.getCaret();
-            final Rectangle caretCoords = textComponent.modelToView(caret.getDot());
+        Caret caret = textComponent.getCaret();
+        final Point caretCoords = caret.getMagicCaretPosition();
+        //Log.info(caretCoords);
+        int heightFont = textComponent.getFontMetrics(textComponent.getFont()).getHeight();
 
-            addFocusActions();
+        addFocusActions();
 
-            resetCount = 0;
-            captureAndResetListValues();
-            if (!noProposals) {
-                popupMenu().show(textComponent, caretCoords.x, caretCoords.y + caretCoords.height);
-                textComponent.requestFocus();
-            } else popupHidden();
+        resetCount = 0;
+        captureAndResetListValues();
+        if (!noProposals && caretCoords != null && caret.getDot() > 0) {
+            popupMenu().show(textComponent, caretCoords.x, caretCoords.y + heightFont);
+            textComponent.requestFocus();
+        } else popupHidden();
 
-        } catch (BadLocationException e) {
-
-            debug("Error on caret coordinates", e);
-        }
 
     }
 

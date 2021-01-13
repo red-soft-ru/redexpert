@@ -399,7 +399,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
         Caret caret = textComponent.getCaret();
         final Point caretCoords = caret.getMagicCaretPosition();
-        //Log.info(caretCoords);
+
         int heightFont = textComponent.getFontMetrics(textComponent.getFont()).getHeight();
 
         addFocusActions();
@@ -407,7 +407,12 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         resetCount = 0;
         captureAndResetListValues();
         if (!noProposals && caretCoords != null && caret.getDot() > 0) {
-            popupMenu().show(textComponent, caretCoords.x, caretCoords.y + heightFont);
+            QueryEditorAutoCompletePopupPanel popupPanel = popupMenu();
+            if (caretCoords.x + popupPanel.getWidth() > textComponent.getWidth())
+                caretCoords.x = textComponent.getWidth() - popupPanel.getWidth();
+            if (caretCoords.x < 0)
+                caretCoords.x = 0;
+            popupPanel.show(textComponent, caretCoords.x, caretCoords.y + heightFont);
             textComponent.requestFocus();
         } else popupHidden();
 

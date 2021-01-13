@@ -102,13 +102,6 @@
                   <outputDirectory>../../../lib</outputDirectory>
                   <destFileName>jaybird-cryptoapi.jar</destFileName>
                 </artifactItem>
-                <artifactItem>
-                  <groupId>ru.red-soft.jdbc</groupId>
-                  <artifactId>fbclient</artifactId>
-                  <type>jar</type>
-                  <outputDirectory>../../../lib</outputDirectory>
-                  <destFileName>fbclient.jar</destFileName>
-                </artifactItem>
               </artifactItems>
             </configuration>
           </execution>
@@ -132,13 +125,6 @@
                   <type>jar</type>
                   <outputDirectory>../../redexpert/target/lib</outputDirectory>
                   <destFileName>jaybird-cryptoapi.jar</destFileName>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>ru.red-soft.jdbc</groupId>
-                  <artifactId>fbclient</artifactId>
-                  <type>jar</type>
-                  <outputDirectory>../../../lib</outputDirectory>
-                  <destFileName>fbclient.jar</destFileName>
                 </artifactItem>
               </artifactItems>
             </configuration>

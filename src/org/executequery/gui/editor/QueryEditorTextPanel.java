@@ -177,7 +177,6 @@ public class QueryEditorTextPanel extends JPanel {
         queryPane.addCaretListener(new CaretListener() {
             @Override
             public void caretUpdate(CaretEvent e) {
-                if (e.getDot() > 0)
                     autoCompletePopupAction.actionPerformed(null);
             }
         });

@@ -85,6 +85,10 @@ public interface DatabaseConnection extends Serializable {
 
     void setVerifyServerCertCheck(boolean verifyServer);
 
+    boolean useNewAPI();
+
+    void setUseNewAPI(boolean useNewAPI);
+
     String getContainerPassword();
 
     void setContainerPassword(String password);

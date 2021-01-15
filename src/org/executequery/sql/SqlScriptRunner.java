@@ -308,7 +308,7 @@ public class SqlScriptRunner {
         Class clazzdb = null;
         Object odb = null;
         try {
-            urlDriver = MiscUtils.loadURLs("./lib/jaybird-full.jar;../lib/jaybird-full.jar");
+            urlDriver = MiscUtils.loadURLs("./lib/jaybird-3.jar"); // TODO Must use DriverLoader
             ClassLoader clD = new URLClassLoader(urlDriver);
             clazzDriver = clD.loadClass("org.firebirdsql.jdbc.FBDriver");
             Object o = clazzDriver.newInstance();
@@ -317,7 +317,7 @@ public class SqlScriptRunner {
             Log.info("Database creation via jaybird");
             Log.info("Driver version: " + driver.getMajorVersion() + "." + driver.getMinorVersion());
 
-            if (driver.getMajorVersion() < 3) {
+            if (driver.getMajorVersion() == 2) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("Cannot create database, Jaybird 2.x has no implementation for creation database.");
                 throw new SQLException(sb.toString());
@@ -380,7 +380,7 @@ public class SqlScriptRunner {
             properties.setProperty("lc_ctype", charSet);
         temp.setJdbcProperties(properties);
         DatabaseDriver driver = new DefaultDatabaseDriver();
-        driver.setPath("./lib/jaybird-full.jar;../lib/jaybird-full.jar");
+        driver.setPath("./lib/jaybird-3.jar"); // TODO Must use DriverLoader
         driver.setClassName("org.firebirdsql.jdbc.FBDriver");
         driver.setURL("jdbc:firebirdsql://[host]:[port]/[source]");
         temp.setJDBCDriver(driver);

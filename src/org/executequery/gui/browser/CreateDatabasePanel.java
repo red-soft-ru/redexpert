@@ -728,7 +728,7 @@ public class CreateDatabasePanel extends ActionPanel
             Log.info("Database creation via jaybird");
             Log.info("Driver version: " + driver.getMajorVersion() + "." + driver.getMinorVersion());
 
-            if (driver.getMajorVersion() < 3) {
+            if (driver.getMajorVersion() == 2) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("Cannot create database, Jaybird 2.x has no implementation for creation database.");
                 GUIUtilities.displayErrorMessage(sb.toString());

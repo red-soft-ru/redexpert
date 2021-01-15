@@ -14,4 +14,5 @@ public interface IFBDatabaseConnection {
 
     public int getMinorVersion() throws SQLException;
 
+    public IFBBatch createBatch(String query) throws SQLException;
 }

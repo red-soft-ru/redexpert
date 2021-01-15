@@ -28,6 +28,16 @@ lib/jaybird-full\.jar
 
 lib/jaybird-cryptoapi\.jar
 
+lib/fbclient-4\.jar
+
+lib/jaybird-3\.jar
+
+lib/jaybird-4\.jar
+
+lib/jaybird-cryptoapi-3\.jar
+
+lib/jaybird-cryptoapi-4\.jar
+
 sql.log
 
 src/org/underworldlabs/sqlParser/REDDATABASESql*

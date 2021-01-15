@@ -207,6 +207,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
     private static final String PASSWORD = "password";
     private static final String CONTAINER_PASSWORD = "container_password";
     private static final String VERIFY_SERVER = "verify_server";
+    private static final String USE_NEW_API = "use_new_api";
     private static final String FOLDER_ID = "folderid";
     private static final String ENCRYPTED = "encrypted";
     private static final String DRIVER_ID = "driverid";
@@ -274,6 +275,12 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                 if (!MiscUtils.isNull(value)) {
 
                     connection.setVerifyServerCertCheck(Boolean.parseBoolean(value));
+                }
+
+                value = attrs.getValue(USE_NEW_API);
+                if (!MiscUtils.isNull(value)) {
+
+                    connection.setUseNewAPI(Boolean.parseBoolean(value));
                 }
 
             } else if (localName.equals(PASSWORD)) {
@@ -593,6 +600,9 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
 
                 attributes().addAttribute(NSU, VERIFY_SERVER, VERIFY_SERVER,
                         CDDATA, valueToString(connection.isVerifyServerCertCheck()));
+
+                attributes().addAttribute(NSU, USE_NEW_API, USE_NEW_API,
+                        CDDATA, valueToString(connection.useNewAPI()));
 
                 handler().startElement(NSU, CONNECTION, CONNECTION, attributes());
 

@@ -16,6 +16,10 @@ public class FBDataSourceImpl implements IFBDataSource {
         fbDataSource = new FBSADataSource(GDSType.getType("PURE_JAVA"));
     }
 
+    public FBDataSourceImpl(String type) {
+        fbDataSource = new FBSADataSource(GDSType.getType(type));
+    }
+
     @Override
     public void setUserName(String userName) {
         fbDataSource.setUserName(userName);

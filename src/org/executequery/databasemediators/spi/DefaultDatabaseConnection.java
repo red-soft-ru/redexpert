@@ -156,6 +156,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
      */
     private boolean verifyServerCertificate;
 
+    private boolean useNewAPI;
+
     private String authMethod;
 
     private String connectionMethod;
@@ -348,6 +350,14 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     public void setVerifyServerCertCheck(boolean verifyServer) {
         this.verifyServerCertificate = verifyServer;
+    }
+
+    public boolean useNewAPI() {
+        return useNewAPI;
+    }
+
+    public void setUseNewAPI(boolean useNewAPI) {
+        this.useNewAPI = useNewAPI;
     }
 
     public String getConnectionMethod() {
@@ -571,6 +581,7 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         copy.setContainerPassword(getContainerPassword());
         copy.setContainerPasswordStored(isContainerPasswordStored());
         copy.setVerifyServerCertCheck(isVerifyServerCertCheck());
+        copy.setUseNewAPI(useNewAPI());
         copy.setServerVersion(getServerVersion());
 
         return copy;

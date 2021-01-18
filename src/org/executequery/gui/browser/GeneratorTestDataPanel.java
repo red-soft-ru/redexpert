@@ -73,6 +73,8 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
 
     private JLabel batchLabel;
 
+    private JLabel batchNotAvailable;
+
     private JCheckBox useBatchesBox;
 
     private JCheckBox printBatchStateBox;
@@ -421,11 +423,16 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
 
         batchLabel = new JLabel(bundles("BatchCount"));
 
+        batchNotAvailable = new JLabel();
+        batchNotAvailable.setVisible(false);
+
         topPanel.add(batchLabel, gbh.defaults().nextCol().setLabelDefault().anchorEast().anchorCenter().get());
 
         topPanel.add(batchCountField, gbh.defaults().nextCol().setIpad(40, 0).get());
 
         topPanel.add(printBatchStateBox, gbh.defaults().nextCol().spanX().get());
+
+        topPanel.add(batchNotAvailable, gbh.defaults().nextRowFirstCol().spanX().get());
 
         topPanel.add(progressBar, gbh.defaults().nextRowFirstCol().spanX().get());
 
@@ -458,6 +465,22 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
             batchLabel.setEnabled(false);
             batchCountField.setEnabled(false);
             printBatchStateBox.setEnabled(false);
+            StringBuilder sb = new StringBuilder();
+            if (driver.getMajorVersion() < 4)
+                sb.append(bundles("UnsupportedDriver"));
+            if (!executor.getDatabaseConnection().useNewAPI()) {
+                if (sb.length() > 0)
+                    sb.append(". ");
+                sb.append(bundles("OOAPINotUsed"));
+            }
+            if (executor.getDatabaseConnection().getServerVersion() < 4) {
+                if (sb.length() > 0)
+                    sb.append(". ");
+                sb.append(bundles("UnsupportedServer"));
+            }
+            batchNotAvailable.setVisible(true);
+            batchNotAvailable.setForeground(Color.RED);
+            batchNotAvailable.setText(sb.toString());
         }
     }
 

@@ -25,6 +25,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
     private static final String FIELD_PRECISION = "FIELD_PRECISION";
     private static final String SCALE = "FIELD_SCALE";
     private static final String FIELD_LENGTH = "FIELD_LENGTH";
+    private static final String CHAR_LENGTH = "CH_LENGTH";
     private static final String DESCRIPTION = "DESCRIPTION";
     private static final String NULL_FLAG = "NULL_FLAG";
     private static final String COMPUTED_BY = "COMPUTED_BY";
@@ -98,6 +99,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
                 .append("F.RDB$FIELD_PRECISION AS ").append(FIELD_PRECISION).append(",\n")
                 .append("F.RDB$FIELD_SCALE AS ").append(SCALE).append(",\n")
                 .append("F.RDB$FIELD_LENGTH AS ").append(FIELD_LENGTH).append(",\n")
+                .append("F.RDB$CHARACTER_LENGTH AS ").append(CHAR_LENGTH).append(",\n")
                 .append("F.RDB$DESCRIPTION AS ").append(DESCRIPTION).append(",\n")
                 .append("F.RDB$NULL_FLAG AS ").append(NULL_FLAG).append(",\n")
                 .append("F.RDB$COMPUTED_BLR AS ").append(COMPUTED_BY).append("\n")
@@ -119,6 +121,8 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
             column.setColumnSize(rs.getInt(FIELD_LENGTH));
             if (rs.getInt(FIELD_PRECISION) != 0)
                 column.setColumnSize(rs.getInt(FIELD_PRECISION));
+            if (rs.getInt(CHAR_LENGTH) != 0)
+                column.setColumnSize(rs.getInt(CHAR_LENGTH));
             column.setColumnScale(Math.abs(rs.getInt(SCALE)));
             column.setRequired(rs.getInt(NULL_FLAG) == DatabaseMetaData.columnNoNulls);
             column.setRemarks(rs.getString(DESCRIPTION));

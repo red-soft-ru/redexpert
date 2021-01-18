@@ -49,3 +49,11 @@ src/org/underworldlabs/traceparser/RedTraceLexer.tokens
 src/org/underworldlabs/traceparser/RedTraceListener.java
 src/org/underworldlabs/traceparser/RedTraceParser.java
 src/org/underworldlabs/traceparser/RedTraceVisitor.java
+src/org/underworldlabs/procedureParser/ProcedureParser.tokens
+src/org/underworldlabs/procedureParser/ProcedureParserBaseListener.java
+src/org/underworldlabs/procedureParser/ProcedureParserBaseVisitor.java
+src/org/underworldlabs/procedureParser/ProcedureParserLexer.java
+src/org/underworldlabs/procedureParser/ProcedureParserLexer.tokens
+src/org/underworldlabs/procedureParser/ProcedureParserListener.java
+src/org/underworldlabs/procedureParser/ProcedureParserParser.java
+src/org/underworldlabs/procedureParser/ProcedureParserVisitor.java

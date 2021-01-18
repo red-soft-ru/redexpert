@@ -452,7 +452,8 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
         splitPane.setResizeWeight(0.7);
 
         Driver driver = new DefaultDriverLoader().load(executor.getDatabaseConnection().getJDBCDriver());
-        if (driver.getMajorVersion() > 0 && driver.getMajorVersion() <= 3 && !executor.getDatabaseConnection().useNewAPI()) { // TODO Need fix version in jaybird 4
+        if (driver.getMajorVersion() < 4 || !executor.getDatabaseConnection().useNewAPI() ||
+                executor.getDatabaseConnection().getServerVersion() < 4) {
             useBatchesBox.setEnabled(false);
             batchLabel.setEnabled(false);
             batchCountField.setEnabled(false);

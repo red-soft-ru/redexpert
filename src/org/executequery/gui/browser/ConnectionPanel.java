@@ -1267,7 +1267,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         boolean useAPI = useNewAPI.isSelected();
         int majorVersion = new DefaultDriverLoader().load(jdbcDrivers.get(driverCombo.getSelectedIndex())).getMajorVersion();
-        if (majorVersion <= 3 && majorVersion > 0 && useAPI) {
+        if (majorVersion < 4 && useAPI) {
             GUIUtilities.displayWarningMessage(bundleString("warning.useNewAPI"));
             useNewAPI.setSelected(false);
             databaseConnection.setUseNewAPI(false);

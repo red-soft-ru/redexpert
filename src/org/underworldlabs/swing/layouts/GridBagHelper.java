@@ -355,8 +355,6 @@ public class GridBagHelper {
         if (newLine)
             nextRowFirstCol();
         else nextCol();
-
-        topGap(0);
         leftGap(leftGap);
         setLabelDefault();
         panel.add(label, get());

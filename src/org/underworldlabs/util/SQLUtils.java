@@ -22,8 +22,7 @@ import static org.executequery.gui.browser.ColumnConstraint.RULES;
 import static org.executequery.gui.table.CreateTableSQLSyntax.*;
 
 public final class SQLUtils {
-    public static String generateCreateTable(String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList,boolean existTable,boolean temporary,String typeTemporary)
-    {
+    public static String generateCreateTable(String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList, boolean existTable, boolean temporary, String typeTemporary, String externalFile, String adapter) {
         StringBuilder sqlText = new StringBuilder();
         StringBuilder sqlBuffer = new StringBuilder();
         List<String> descriptions = new ArrayList<>();
@@ -72,11 +71,14 @@ public final class SQLUtils {
 
             }
 
-        sqlBuffer.append(MiscUtils.getFormattedObject(name)).
-                append(SPACE).
-                append(B_OPEN);
-        sqlBuffer.append(sqlText.toString().replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME,MiscUtils.getFormattedObject(name)));
-        if (primary_flag&&!existTable)
+        sqlBuffer.append(MiscUtils.getFormattedObject(name));
+        if (externalFile != null)
+            sqlBuffer.append(NEW_LINE).append("EXTERNAL FILE '").append(externalFile.trim()).append("'");
+        if (adapter != null)
+            sqlBuffer.append(SPACE).append(" ADAPTER '").append(adapter.trim()).append("'");
+        sqlBuffer.append(SPACE).append(B_OPEN);
+        sqlBuffer.append(sqlText.toString().replaceAll(TableDefinitionPanel.SUBSTITUTE_NAME, MiscUtils.getFormattedObject(name)));
+        if (primary_flag && !existTable)
             sqlBuffer.append(primary);
         columnConstraintList = removeDuplicatesConstraints(columnConstraintList);
         for (int i = 0, n = columnConstraintList.size(); i < n; i++) {

@@ -75,23 +75,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
   private DatabaseObject dependObject;
 
-  public DefaultDatabaseTable(DatabaseObject object) {
-
-    this(object.getHost());
-
-    setCatalogName(object.getCatalogName());
-    setSchemaName(object.getSchemaName());
-    setName(object.getName());
-    setRemarks(object.getRemarks());
-    if (object instanceof DefaultDatabaseObject) {
-      DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
-      setTypeTree(ddo.getTypeTree());
-      setDependObject(ddo.getDependObject());
-    } else {
-      typeTree = TreePanel.DEFAULT;
-      setDependObject(null);
-    }
-  }
+  private String externalFile;
 
     public DefaultDatabaseTable(DatabaseObject object, String metaDataKey) {
 
@@ -738,6 +722,56 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     return StringUtils.isNotBlank(getModifiedSQLText());
   }
 
+  private String adapter;
+
+  public DefaultDatabaseTable(DatabaseObject object) {
+
+    this(object.getHost());
+
+    setCatalogName(object.getCatalogName());
+    setSchemaName(object.getSchemaName());
+    setName(object.getName());
+    setRemarks(object.getRemarks());
+    try {
+      //querySender.setDatabaseConnection(getHost().getDatabaseConnection());
+      ResultSet rs = querySender.getResultSet("select rdb$external_file, rdb$adapter from rdb$relations where rdb$relation_name = '" + getName() + "'").getResultSet();
+      if (rs.next()) {
+        setExternalFile(rs.getString(1));
+        setAdapter(rs.getString(2));
+      }
+    } catch (SQLException throwables) {
+      throwables.printStackTrace();
+    } finally {
+      querySender.releaseResources();
+    }
+    if (object instanceof DefaultDatabaseObject) {
+      DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
+      setTypeTree(ddo.getTypeTree());
+      setDependObject(ddo.getDependObject());
+    } else {
+      typeTree = TreePanel.DEFAULT;
+      setDependObject(null);
+    }
+  }
+
+  @Override
+  public String getExternalFile() {
+    return externalFile;
+  }
+
+  public void setExternalFile(String externalFile) {
+    this.externalFile = externalFile;
+  }
+
+  @Override
+  public String getAdapter() {
+    return adapter;
+  }
+
+  public void setAdapter(String adapter) {
+    this.adapter = adapter;
+  }
+
   /**
    * Indicates whether this table or any of its columns
    * or constraints have pending modifications to be applied.
@@ -972,7 +1006,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       listCC.add(new org.executequery.gui.browser.ColumnConstraint(false,getConstraints().get(i)));
     }
 
-    return SQLUtils.generateCreateTable(getName(),listCD,listCC,true,false,null);
+    return SQLUtils.generateCreateTable(getName(), listCD, listCC, true, false, null, getExternalFile(), getAdapter());
 
     }
 

@@ -38,7 +38,6 @@ import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.GUIUtils;
-import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
@@ -493,7 +492,7 @@ public abstract class CreateTableFunctionPanel extends JPanel
         if (getSelectedConnection().isNamesToUpperCase())
         nameField.setText(nameField.getText().toUpperCase());
 
-        setSQLText(SQLUtils.generateCreateTable(nameField.getText(),tablePanel.getTableColumnDataVector(),consPanel.getKeys(),false,temporary,(String) typeTemporaryBox.getSelectedItem()));
+        setSQLText(SQLUtils.generateCreateTable(nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(), false, temporary, (String) typeTemporaryBox.getSelectedItem(), null, null));
     }
 
     private void setSQLText(final String text) {

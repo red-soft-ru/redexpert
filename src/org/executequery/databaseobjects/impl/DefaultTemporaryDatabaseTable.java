@@ -1,7 +1,6 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
@@ -13,7 +12,6 @@ import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,7 +69,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
         {
             listCC.add(new org.executequery.gui.browser.ColumnConstraint(false,getConstraints().get(i)));
         }
-        return formatSqlText(SQLUtils.generateCreateTable(getName(),listCD,listCC,true,true,typeTemporary));
+        return formatSqlText(SQLUtils.generateCreateTable(getName(), listCD, listCC, true, true, typeTemporary, getExternalFile(), getAdapter()));
     }
 
     private String formatSqlText(String text) {

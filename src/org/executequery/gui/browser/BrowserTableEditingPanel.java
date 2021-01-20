@@ -52,6 +52,7 @@ import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
 import org.underworldlabs.swing.util.SwingWorker;
@@ -202,16 +203,25 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         }
     }
 
+    private List<JComponent> externalFileComponents;
+    private DisabledField externalFileField;
+    private DisabledField adapterField;
+
     private void init() {
         // the column index table
         //citm = new ColumnIndexTableModel();
-
+        externalFileComponents = new ArrayList<>();
+        externalFileField = new DisabledField();
+        adapterField = new DisabledField();
         columnIndexTable = new DefaultTable();
         citm = new TableColumnIndexTableModel();
         columnIndexTable.setModel(new TableSorter(citm, columnIndexTable.getTableHeader()));
 
         columnIndexTable.setColumnSelectionAllowed(false);
         columnIndexTable.getTableHeader().setReorderingAllowed(false);
+
+        //externalFilePanel
+        GridBagHelper gbh = new GridBagHelper();
 
         // column indexes panel
         JPanel indexesPanel = new JPanel(new GridBagLayout());
@@ -327,6 +337,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 GridBagConstraints.NORTH,
                 GridBagConstraints.HORIZONTAL,
                 new Insets(2, 2, 2, 2), 0, 0);
+        gbcDesc.gridy++;
         descTablePanel.add(buttonsEditingColumnPanel, gbcDesc);
         descTablePanel.add(
                 new JScrollPane(descriptionTable),
@@ -412,41 +423,25 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         // add to the base panel
         JPanel base = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        Insets ins = new Insets(10, 5, 5, 5);
+        Insets ins = new Insets(10, 5, 0, 5);
         gbc.insets = ins;
         gbc.anchor = GridBagConstraints.NORTHEAST;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridx = 0;
         gbc.gridy = 0;
-        base.add(new JLabel(bundleString("table-name")), gbc);
-        gbc.insets.left = 5;
-        gbc.insets.right = 5;
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        base.add(tableNameField, gbc);
-        gbc.insets.top = 0;
-        gbc.gridy++;
-        //base.add(schemaNameField, gbc);
-        gbc.insets.right = 5;
-        gbc.insets.left = 5;
-        gbc.gridx = 0;
-        gbc.weightx = 0;
-        gbc.gridwidth = 1;
-        //base.add(new JLabel("Schema:"), gbc);
-        // add the tab pane
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.anchor = GridBagConstraints.NORTHEAST;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.insets.bottom = 5;
-        gbc.insets.top = 5;
-        gbc.insets.right = 5;
-        gbc.insets.left = 5;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        base.add(tabPane, gbc);
+        gbh.setDefaults(gbc).defaults();
+        gbh.topGap(5);
+        gbh.addLabelFieldPair(base, bundleString("table-name"), tableNameField, null);
+        JLabel label = new JLabel(bundleString("external-file"));
+        externalFileComponents.add(label);
+        externalFileComponents.add(externalFileField);
+        gbh.addLabelFieldPair(base, label, externalFileField, null);
+        label = new JLabel(bundleString("adapter"));
+        externalFileComponents.add(label);
+        externalFileComponents.add(adapterField);
+        gbh.addLabelFieldPair(base, label, adapterField, null);
+        base.add(tabPane, gbh.nextRowFirstCol().spanY().get());
+        /*base.add()
         // add the bottom components
         gbc.gridy++;
         gbc.gridx = 0;
@@ -474,7 +469,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         gbc.gridx = 4;
         gbc.weightx = 0;
         gbc.insets.left = 0;
-        base.add(cancelButton, gbc);
+        base.add(cancelButton, gbc);*/
 
         // set up and add the focus listener for the tables
         FocusListener tableFocusListener = new FocusListener() {
@@ -499,6 +494,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         EventMediator.registerListener(this);
 
         lock = new Semaphore(1);
+        for (JComponent component : externalFileComponents)
+            component.setVisible(false);
     }
 
     /**
@@ -896,6 +893,14 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     public void setValues(DatabaseTable table) {
 
         this.table = table;
+        if (table.getExternalFile() != null) {
+            externalFileField.setText(table.getExternalFile());
+            if (table.getAdapter() != null)
+                adapterField.setText(table.getAdapter());
+            for (JComponent component : externalFileComponents)
+                component.setVisible(true);
+
+        }
 
         reloadView();
         if (SystemProperties.getBooleanProperty("user", "browser.query.row.count")) {

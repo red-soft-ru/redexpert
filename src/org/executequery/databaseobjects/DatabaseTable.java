@@ -199,6 +199,10 @@ public interface DatabaseTable extends DatabaseTableObject {
     boolean hasTableDefinitionChanges();
 
     void resetRowsCount();
+
+    String getExternalFile();
+
+    String getAdapter();
 }
 
 

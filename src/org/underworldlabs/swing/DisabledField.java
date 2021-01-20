@@ -53,7 +53,6 @@ public class DisabledField extends JTextField {
     public DisabledField(String text) {
 
         super(text);
-        setMargin(INSETS);
         setBackground(UIManager.getColor("Label.background"));
         setForeground(UIManager.getColor("Label.foreground"));
     }
@@ -70,11 +69,7 @@ public class DisabledField extends JTextField {
         return false;
     }
 
-    @Override
-    public int getHeight() {
 
-        return HEIGHT;
-    }
     
 /*
     class DisabledBorder extends LineBorder {

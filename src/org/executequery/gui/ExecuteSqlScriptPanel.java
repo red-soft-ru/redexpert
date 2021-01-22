@@ -551,7 +551,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
                 if (selectedHost != null)
                     connection = selectedHost.getDatabaseConnection();
             }
-            if(script.length()<MAX_LENGTH_TEXT_PANE)
+            if (script == null || script.length() < MAX_LENGTH_TEXT_PANE)
                 script = sqlText.getSQLText();
             sqlStatementResult = sqlScriptRunner.execute(
                     connection,

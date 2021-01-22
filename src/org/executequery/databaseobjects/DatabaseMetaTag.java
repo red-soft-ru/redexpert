@@ -77,6 +77,8 @@ public interface DatabaseMetaTag extends NamedObject {
      */
     boolean hasChildObjects() throws DataSourceException;
 
+    int getPrecedency();
+
 }
 
 

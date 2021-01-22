@@ -87,7 +87,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             String type;
             if (node.getType() == NamedObject.GLOBAL_TEMPORARY)
                 type = NamedObject.META_TYPES[NamedObject.TABLE];
-            else if (node.getType() == NamedObject.SYSTEM_DATABASE_TRIGGER)
+            else if (node.getType() == NamedObject.DATABASE_TRIGGER)
                 type = NamedObject.META_TYPES[NamedObject.TRIGGER];
             else
                 type = NamedObject.META_TYPES[node.getType()];
@@ -227,7 +227,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         }
                     }
                     break;
-                case NamedObject.SYSTEM_DATABASE_TRIGGER:
+                case NamedObject.DATABASE_TRIGGER:
                     if (GUIUtilities.isDialogOpen(CreateTriggerPanel.CREATE_TITLE)) {
 
                         GUIUtilities.setSelectedDialog(CreateTriggerPanel.CREATE_TITLE);
@@ -238,7 +238,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             BaseDialog dialog =
                                     new BaseDialog(CreateTriggerPanel.CREATE_TITLE, false);
                             CreateTriggerPanel panel = new CreateTriggerPanel(currentSelection, dialog,
-                                    NamedObject.SYSTEM_DATABASE_TRIGGER);
+                                    NamedObject.DATABASE_TRIGGER);
                             showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
@@ -460,7 +460,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         }
                     }
                     break;
-                case NamedObject.SYSTEM_DATABASE_TRIGGER:
+                case NamedObject.DATABASE_TRIGGER:
                     if (GUIUtilities.isDialogOpen(CreateTriggerPanel.EDIT_TITLE)) {
 
                         GUIUtilities.setSelectedDialog(CreateTriggerPanel.EDIT_TITLE);
@@ -471,7 +471,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
                             BaseDialog dialog = new BaseDialog(CreateTriggerPanel.EDIT_TITLE, false);
                             createObjectPanel = new CreateTriggerPanel(currentSelection, dialog,
-                                    (DefaultDatabaseTrigger) node.getDatabaseObject(), NamedObject.SYSTEM_DATABASE_TRIGGER);
+                                    (DefaultDatabaseTrigger) node.getDatabaseObject(), NamedObject.DATABASE_TRIGGER);
                             showDialogCreateObject(createObjectPanel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();

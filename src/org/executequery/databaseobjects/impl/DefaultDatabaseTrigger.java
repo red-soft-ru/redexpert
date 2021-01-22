@@ -167,7 +167,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
             return TRIGGER;
         else if (getParent().getMetaDataKey() == META_TYPES[NamedObject.SYSTEM_TRIGGER])
             return SYSTEM_TRIGGER;
-        return SYSTEM_DATABASE_TRIGGER;
+        return NamedObject.DATABASE_TRIGGER;
     }
 
     /**

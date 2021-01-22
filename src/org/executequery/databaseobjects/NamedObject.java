@@ -32,31 +32,31 @@ import java.util.List;
  */
 public interface NamedObject extends Named, java.io.Serializable {
 
-    int INDEX = 0;
-    int PROCEDURE = 1;
-    int SEQUENCE = 2;
-    int SYNONYM = 3;
-    int TABLE = 4;
-    int TRIGGER = 5;
-    int SYSTEM_DATABASE_TRIGGER = 6;
-    int VIEW = 7;
-    int DOMAIN = 8;
-    int EXCEPTION = 9;
-    int UDF = 10;
-    int FUNCTION = 11;
-    int GLOBAL_TEMPORARY = 12;
-    int PACKAGE = 13;
-    int ROLE = 14;
-    int SYSTEM_FUNCTION = 15;
-    int SYSTEM_STRING_FUNCTIONS = 16;
-    int SYSTEM_NUMERIC_FUNCTIONS = 17;
-    int SYSTEM_DATE_TIME_FUNCTIONS = 18;
-    int SYSTEM_VIEW = 19;
-    int SYSTEM_TABLE = 20;
-    int SYSTEM_DOMAIN = 21;
-    int SYSTEM_INDEX = 22;
-    int SYSTEM_TRIGGER = 23;
-    int SYSTEM_ROLE = 24;
+    int DOMAIN = 0;
+    int TABLE = 1;
+    int GLOBAL_TEMPORARY = 2;
+    int VIEW = 3;
+    int PROCEDURE = 4;
+    int FUNCTION = 5;
+    int PACKAGE = 6;
+    int TRIGGER = 7;
+    int DATABASE_TRIGGER = 8;
+    int SEQUENCE = 9;
+    int EXCEPTION = 10;
+    int UDF = 11;
+    int ROLE = 12;
+    int INDEX = 13;
+    int SYSTEM_DOMAIN = 14;
+    int SYSTEM_TABLE = 15;
+    int SYSTEM_VIEW = 16;
+    int SYSTEM_FUNCTION = 17;
+    int SYSTEM_STRING_FUNCTIONS = 18;
+    int SYSTEM_NUMERIC_FUNCTIONS = 19;
+    int SYSTEM_DATE_TIME_FUNCTIONS = 20;
+    int SYSTEM_TRIGGER = 21;
+    int SYSTEM_ROLE = 22;
+    int SYSTEM_INDEX = 23;
+    int SYNONYM = 24;
 
     int META_TAG = 93;
     int TABLE_COLUMN = 94;
@@ -79,58 +79,58 @@ public interface NamedObject extends Named, java.io.Serializable {
     int CHECK_KEY = 995;
 
     String[] META_TYPES = {
-            "INDEX",
-            "PROCEDURE",
-            "SEQUENCE",
-            "SYNONYM",
+            "DOMAIN",
             "TABLE",
+            "GLOBAL TEMPORARY",
+            "VIEW",
+            "PROCEDURE",
+            "FUNCTION",
+            "PACKAGE",
             "TRIGGER",
             "DATABASE TRIGGER",
-            "VIEW",
-            "DOMAIN",
+            "SEQUENCE",
             "EXCEPTION",
             "EXTERNAL FUNCTION",
-            "FUNCTION",
-            "GLOBAL TEMPORARY",
-            "PACKAGE",
             "ROLE",
+            "INDEX",
+            "SYSTEM DOMAIN",
+            "SYSTEM TABLE",
+            "SYSTEM VIEW",
             "SYSTEM FUNCTIONS",
             "SYSTEM_STRING_FUNCTIONS",
             "SYSTEM_NUMERIC_FUNCTIONS",
             "SYSTEM_DATE_TIME_FUNCTIONS",
-            "SYSTEM VIEW",
-            "SYSTEM TABLE",
-            "SYSTEM DOMAIN",
-            "SYSTEM INDEX",
             "SYSTEM TRIGGER",
-            "SYSTEM ROLE"
+            "SYSTEM ROLE",
+            "SYSTEM INDEX",
+            "SYNONYM",
     };
     String[] META_TYPES_FOR_BUNDLE = {
-            "INDEX",
-            "PROCEDURE",
-            "SEQUENCE",
-            "SYNONYM",
+            "DOMAIN",
             "TABLE",
+            "GLOBAL_TEMPORARY",
+            "VIEW",
+            "PROCEDURE",
+            "FUNCTION",
+            "PACKAGE",
             "TRIGGER",
             "DATABASE_TRIGGER",
-            "VIEW",
-            "DOMAIN",
+            "SEQUENCE",
             "EXCEPTION",
             "EXTERNAL_FUNCTION",
-            "FUNCTION",
-            "GLOBAL_TEMPORARY",
-            "PACKAGE",
             "ROLE",
+            "INDEX",
+            "SYSTEM_DOMAIN",
+            "SYSTEM_TABLE",
+            "SYSTEM_VIEW",
             "SYSTEM_FUNCTIONS",
             "SYSTEM_STRING_FUNCTIONS",
             "SYSTEM_NUMERIC_FUNCTIONS",
             "SYSTEM_DATE_TIME_FUNCTIONS",
-            "SYSTEM_VIEW",
-            "SYSTEM_TABLE",
-            "SYSTEM_DOMAIN",
-            "SYSTEM_INDEX",
             "SYSTEM_TRIGGER",
-            "SYSTEM_ROLE"
+            "SYSTEM_ROLE",
+            "SYSTEM_INDEX",
+            "SYNONYM",
     };
 
     /**

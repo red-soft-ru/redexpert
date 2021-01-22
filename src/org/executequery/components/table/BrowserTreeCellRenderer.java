@@ -328,7 +328,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 setIcon(icons.get(BrowserConstants.FOLDER_INDEXES_IMAGE));
                 break;
 
-            case NamedObject.SYSTEM_DATABASE_TRIGGER:
+            case NamedObject.DATABASE_TRIGGER:
                 trigger = (DefaultDatabaseTrigger) databaseObject;
                 if (trigger.isTriggerActive())
                     setIcon(icons.get(BrowserConstants.SYSTEM_DATABASE_TRIGGER_ACTIVE_IMAGE));
@@ -417,15 +417,17 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
         this.selected = isSelected;
         if (!selected) {
-
-            setForeground(textForeground);
+            if (node.getDatabaseObject() != null && node.isSystem())
+                setForeground(Color.RED);
+            else setForeground(textForeground);
 
         } else {
 
             setForeground(selectedTextForeground);
         }
-
-        setFont(treeFont);
+        if (type == NamedObject.META_TAG && node.getChildCount() > 0)
+            setFont(treeFont.deriveFont(Font.BOLD));
+        else setFont(treeFont);
         JTree.DropLocation dropLocation = tree.getDropLocation();
         if (dropLocation != null && type == NamedObject.BRANCH_NODE
                 && dropLocation.getChildIndex() == -1

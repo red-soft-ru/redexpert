@@ -1443,12 +1443,13 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             DatabaseConnection databaseConnection = metaTag.getHost().getDatabaseConnection();
             if (supportedObject(i))
                 metaObjects.add(metaTag);
-            metaObjects.sort(new Comparator<DatabaseMetaTag>() {
+            /*metaObjects.sort(new Comparator<DatabaseMetaTag>() {
                 @Override
                 public int compare(DatabaseMetaTag o1, DatabaseMetaTag o2) {
-                    return o1.getName().compareTo(o2.getName());
+                    if(o1.getPrecedency()>o2.getPrecedency())
+                        return
                 }
-            });
+            });*/
 
         }
     }

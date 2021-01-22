@@ -92,14 +92,14 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         if (getDatabaseVersion() > 2) {
             if (this.triggerType == NamedObject.TRIGGER)
                 typeTriggerCombo = new JComboBox(new String[]{bundleString("table-trigger")});
-            else if (this.triggerType == NamedObject.SYSTEM_DATABASE_TRIGGER)
+            else if (this.triggerType == NamedObject.DATABASE_TRIGGER)
                 typeTriggerCombo = new JComboBox(new String[]{bundleString("database-trigger"), bundleString("DDL-trigger")});
             else
                 typeTriggerCombo = new JComboBox(new String[]{bundleString("table-trigger"), bundleString("database-trigger"), bundleString("DDL-trigger")});
         } else {
             if (this.triggerType == NamedObject.TRIGGER)
                 typeTriggerCombo = new JComboBox(new String[]{bundleString("table-trigger")});
-            else if (this.triggerType == NamedObject.SYSTEM_DATABASE_TRIGGER)
+            else if (this.triggerType == NamedObject.DATABASE_TRIGGER)
                 typeTriggerCombo = new JComboBox(new String[]{bundleString("database-trigger")});
             else
                 typeTriggerCombo = new JComboBox(new String[]{bundleString("table-trigger"), bundleString("database-trigger")});
@@ -284,7 +284,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
     protected void initEdited() {
         int intTriggerType = trigger.getIntTriggerType();
-        if (this.triggerType == NamedObject.SYSTEM_DATABASE_TRIGGER)
+        if (this.triggerType == NamedObject.DATABASE_TRIGGER)
             intTriggerType--;
         typeTriggerCombo.setSelectedIndex(intTriggerType);
         typeTriggerCombo.setEnabled(false);
@@ -369,7 +369,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     private void changeTypeTrigger() {
         boolean dbtrigger = typeTriggerCombo.getSelectedIndex() == 1;
         boolean tabletrigger = typeTriggerCombo.getSelectedIndex() == 0;
-        if (this.triggerType == NamedObject.SYSTEM_DATABASE_TRIGGER) {
+        if (this.triggerType == NamedObject.DATABASE_TRIGGER) {
             tabletrigger = false;
             dbtrigger = typeTriggerCombo.getSelectedIndex() == 0;
         }
@@ -399,7 +399,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     private void generateScript() {
         StringBuilder query = new StringBuilder("CREATE OR ALTER TRIGGER " + getFormattedName());
         int selectedIndex = typeTriggerCombo.getSelectedIndex();
-        if (triggerType == NamedObject.SYSTEM_DATABASE_TRIGGER)
+        if (triggerType == NamedObject.DATABASE_TRIGGER)
             selectedIndex++;
         if (selectedIndex == 0)
             query.append(" FOR ").append(MiscUtils.getFormattedObject(((String) tablesCombo.getSelectedItem()).trim()));

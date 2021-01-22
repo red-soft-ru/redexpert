@@ -382,7 +382,7 @@ public class BrowserController {
 
                 case NamedObject.TRIGGER:
                 case NamedObject.SYSTEM_TRIGGER:
-                case NamedObject.SYSTEM_DATABASE_TRIGGER:
+                case NamedObject.DATABASE_TRIGGER:
                     BrowserTriggerPanel triggerPanel = null;
                     if (!viewPanel.containsPanel(BrowserTriggerPanel.NAME)) {
                         triggerPanel = new BrowserTriggerPanel(this);

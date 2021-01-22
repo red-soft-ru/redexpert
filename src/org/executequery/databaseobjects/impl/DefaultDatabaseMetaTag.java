@@ -79,6 +79,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
      * Creates a new instance of DefaultDatabaseMetaTag
      */
 
+    private int precedency;
+
     public DefaultDatabaseMetaTag(DatabaseHost host,
                                   DatabaseCatalog catalog,
                                   DatabaseSchema schema,
@@ -106,6 +108,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         this(host, catalog, schema, metaDataKey, typeTree);
         this.dependedObject = dependedObject;
     }
+
 
     /**
      * Returns the db object with the specified name or null if
@@ -149,7 +152,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
 
         int type = getSubType();
-        if (type == SYSTEM_DATABASE_TRIGGER
+        if (type >= SYSTEM_DOMAIN)
+            setSystemFlag(true);
+        if (type == DATABASE_TRIGGER
                 || type == SYSTEM_DOMAIN
                 || type == SYSTEM_FUNCTION
                 || type == SYSTEM_INDEX
@@ -481,7 +486,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         try {
 
             int type = getSubType();
-            if (type == SYSTEM_DATABASE_TRIGGER
+            if (type == DATABASE_TRIGGER
                     || type == SYSTEM_DOMAIN
                     || type == SYSTEM_FUNCTION
                     || type == SYSTEM_INDEX
@@ -580,7 +585,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
                 } else if (isSystemDatabaseTrigger()) {
 
-                    if (type == SYSTEM_DATABASE_TRIGGER) {
+                    if (type == DATABASE_TRIGGER) {
                         return hasSystemDatabaseTrigger();
                     }
 
@@ -680,7 +685,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     private boolean isSystemDatabaseTrigger() {
 
         int type = getSubType();
-        return type == SYSTEM_DATABASE_TRIGGER;
+        return type == DATABASE_TRIGGER;
     }
 
     private boolean isPackage() {
@@ -2304,6 +2309,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             query = query + tableQuery;
         }
         return query;
+    }
+
+    public int getPrecedency() {
+        return precedency;
     }
 }
 

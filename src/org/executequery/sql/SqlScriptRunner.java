@@ -267,6 +267,13 @@ public class SqlScriptRunner {
                 database = database.substring(separatorIdx + 1);
             }
         }
+        separatorIdx = database.indexOf(":");
+        if (separatorIdx != -1 && separatorIdx > 2) {
+            if (database.charAt(separatorIdx + 1) != '\\') {
+                port = database.substring(0, separatorIdx);
+                database = database.substring(separatorIdx + 1);
+            }
+        }
 
         derivedQuery = derivedQuery.substring(derivedQuery.lastIndexOf(database) + database.length()).trim();
         idx = StringUtils.indexOfIgnoreCase(derivedQuery, "USER");

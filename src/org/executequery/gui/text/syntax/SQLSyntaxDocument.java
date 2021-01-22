@@ -1114,6 +1114,9 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
         }
         sb.append("))\\b");
+        if (dbobjects.size() == 0) {
+            sb = new StringBuffer();
+        }
 
         Matcher matcher = Pattern.compile(
                 sb.toString(),

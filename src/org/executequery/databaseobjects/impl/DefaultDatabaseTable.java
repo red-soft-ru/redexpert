@@ -732,6 +732,19 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     setSchemaName(object.getSchemaName());
     setName(object.getName());
     setRemarks(object.getRemarks());
+    if (object instanceof DefaultDatabaseObject) {
+      DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
+      setTypeTree(ddo.getTypeTree());
+      setDependObject(ddo.getDependObject());
+    } else {
+      typeTree = TreePanel.DEFAULT;
+      setDependObject(null);
+    }
+  }
+
+  private boolean loadedInfoAboutExternalFile = false;
+
+  private void loadInfoAboutExternalFile() {
     try {
       //querySender.setDatabaseConnection(getHost().getDatabaseConnection());
       ResultSet rs = querySender.getResultSet("select rdb$external_file, rdb$adapter from rdb$relations where rdb$relation_name = '" + getName() + "'").getResultSet();
@@ -743,19 +756,14 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
       throwables.printStackTrace();
     } finally {
       querySender.releaseResources();
-    }
-    if (object instanceof DefaultDatabaseObject) {
-      DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
-      setTypeTree(ddo.getTypeTree());
-      setDependObject(ddo.getDependObject());
-    } else {
-      typeTree = TreePanel.DEFAULT;
-      setDependObject(null);
+      loadedInfoAboutExternalFile = true;
     }
   }
 
   @Override
   public String getExternalFile() {
+    if (!loadedInfoAboutExternalFile)
+      loadInfoAboutExternalFile();
     return externalFile;
   }
 
@@ -765,6 +773,8 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
   @Override
   public String getAdapter() {
+    if (!loadedInfoAboutExternalFile)
+      loadInfoAboutExternalFile();
     return adapter;
   }
 

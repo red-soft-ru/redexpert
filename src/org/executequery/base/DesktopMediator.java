@@ -1121,7 +1121,7 @@ public class DesktopMediator implements DockedTabDragListener {
      * @param the tab drag event
      */
     public void dockedTabDragged(DockedDragEvent e) {
-        baseWindowPane.dockedTabDragged(e);
+        //baseWindowPane.dockedTabDragged(e);
     }
 
     /**
@@ -1130,7 +1130,7 @@ public class DesktopMediator implements DockedTabDragListener {
      * @param the tab drag event
      */
     public void dockedTabReleased(DockedDragEvent e) {
-        baseWindowPane.dockedTabReleased(e);
+        //baseWindowPane.dockedTabReleased(e);
     }
 
     public void registerBaseWindowPane(BaseApplicationPane _baseWindowPane) {

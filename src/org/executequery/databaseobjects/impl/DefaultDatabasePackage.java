@@ -161,6 +161,9 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     protected String queryForInfo() {
+        String sql_security = "null";
+        if (getHost().getDatabaseProductName().toLowerCase().contains("reddatabase"))
+            sql_security = "p.rdb$sql_security\n";
         return "select 0,\n" +
                 "p.rdb$package_header_source,\n" +
                 "p.rdb$package_body_source,\n" +
@@ -169,7 +172,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
                 "p.rdb$owner_name,\n" +
                 "p.rdb$system_flag,\n" +
                 "p.rdb$description,\n" +
-                "p.rdb$sql_security\n" +
+                sql_security +
                 "\n" +
                 "from rdb$packages p\n" +
                 "where p.rdb$package_name='" + getName().trim() + "'";
@@ -192,7 +195,8 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     protected void getObjectInfo() {
         super.getObjectInfo();
         try {
-            ResultSet rs = querySender.getResultSet(queryForInfo()).getResultSet();
+            String query = queryForInfo();
+            ResultSet rs = querySender.getResultSet(query).getResultSet();
             setInfoFromResultSet(rs);
         } catch (SQLException e) {
             GUIUtilities.displayExceptionErrorDialog("Error get info about" + getName(), e);

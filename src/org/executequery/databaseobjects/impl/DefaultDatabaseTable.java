@@ -407,8 +407,10 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                   "(A.RDB$CONSTRAINT_NAME = B.RDB$CONSTRAINT_NAME) and\n" +
                   "(B.RDB$TRIGGER_NAME = C.RDB$TRIGGER_NAME) and\n" +
                   "(C.RDB$TRIGGER_TYPE = 1)\n" +
-                  "and (A.RDB$RELATION_NAME = '" + getName() + "')";
-          result = executor.execute(QueryTypes.SELECT, query);
+                  "and (A.RDB$RELATION_NAME = ?)";
+          PreparedStatement st = executor.getPreparedStatement(query);
+          st.setString(1, getName());
+          result = executor.execute(QueryTypes.SELECT, st);
           ResultSet rs = result.getResultSet();
           List<String> names = new ArrayList<>();
           if (rs != null) {
@@ -433,8 +435,10 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
           String query = "SELECT C.RDB$CONSTRAINT_NAME,I.RDB$FIELD_NAME\n" +
                   "FROM RDB$RELATION_CONSTRAINTS AS C LEFT JOIN RDB$INDEX_SEGMENTS AS I\n" +
                   "ON C.RDB$INDEX_NAME=I.RDB$INDEX_NAME\n" +
-                  "where C.RDB$RELATION_NAME='" + getName() + "' AND C.RDB$CONSTRAINT_TYPE = 'UNIQUE'";
-          ResultSet rs = executor.getResultSet(query).getResultSet();
+                  "where C.RDB$RELATION_NAME=? AND C.RDB$CONSTRAINT_TYPE = 'UNIQUE'";
+          PreparedStatement st = executor.getPreparedStatement(query);
+          st.setString(1, getName());
+          ResultSet rs = executor.getResultSet(-1, st).getResultSet();
           if (rs != null) {
             while (rs.next()) {
               String name = rs.getString(1).trim();
@@ -747,10 +751,16 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
   private void loadInfoAboutExternalFile() {
     try {
       //querySender.setDatabaseConnection(getHost().getDatabaseConnection());
-      ResultSet rs = querySender.getResultSet("select rdb$external_file, rdb$adapter from rdb$relations where rdb$relation_name = '" + getName() + "'").getResultSet();
+      String adapter = ", RDB$ADAPTER";
+      if (!getHost().getDatabaseProductName().toLowerCase().contains("reddatabase"))
+        adapter = "";
+      PreparedStatement statement = querySender.getPreparedStatement("select rdb$external_file" + adapter + " from rdb$relations where rdb$relation_name = ?");
+      statement.setString(1, getName());
+      ResultSet rs = querySender.getResultSet(-1, statement).getResultSet();
       if (rs.next()) {
         setExternalFile(rs.getString(1));
-        setAdapter(rs.getString(2));
+        if (!adapter.isEmpty())
+          setAdapter(rs.getString(2));
       }
     } catch (SQLException throwables) {
       throwables.printStackTrace();

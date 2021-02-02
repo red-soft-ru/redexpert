@@ -64,7 +64,7 @@ public final class SQLUtils {
         description.setLength(0);
         if (!descriptions.isEmpty())
             for (String d : descriptions) {
-                description.append("COMMENT ON COLUMN ");
+                description.append("\nCOMMENT ON COLUMN ");
                 description.append(MiscUtils.getFormattedObject(name));
                 description.append("." + d);
                 description.append("^");

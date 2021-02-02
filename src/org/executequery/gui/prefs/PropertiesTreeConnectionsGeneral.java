@@ -3,6 +3,7 @@ package org.executequery.gui.prefs;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.log.Log;
+import org.underworldlabs.util.SystemProperties;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,13 @@ public class PropertiesTreeConnectionsGeneral extends AbstractPropertiesBasePane
                 key,
                 bundledString("NodeHeight"),
                 stringUserProperty(key)));
+
+        key = "treeconnection.alphabet.sorting";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledString("AlphabetSorting"),
+                SystemProperties.getBooleanProperty("user", key)));
 
         UserPreference[] preferences = list.toArray(new UserPreference[list.size()]);
         preferencesPanel = new SimplePreferencesPanel(preferences);

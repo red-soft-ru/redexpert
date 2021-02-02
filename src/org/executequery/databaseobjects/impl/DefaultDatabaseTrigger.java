@@ -25,6 +25,10 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     private long longTriggerType;
     private boolean isMarkedReloadActive;
 
+    public final static long TRIGGER_TYPE_DDL = 16384;
+    public final static long TRIGGER_TYPE_DB = 8192;
+    public final static long RDB_TRIGGER_TYPE_MASK = 24576;
+
     private static String[][] DDL_TRIGGER_ACTION_NAMES =
             {
                     {null, null},
@@ -269,11 +273,11 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     }
 
     private int getIntTypeTrigger(long type) {
-        if (type < 8192)
-            return TABLE_TRIGGER;
-        else if (type <= 8196)
+        if ((type & RDB_TRIGGER_TYPE_MASK) == TRIGGER_TYPE_DDL)
+            return DDL_TRIGGER;
+        else if ((type & RDB_TRIGGER_TYPE_MASK) == TRIGGER_TYPE_DB)
             return DATABASE_TRIGGER;
-        else return DDL_TRIGGER;
+        else return TABLE_TRIGGER;
     }
 
     private String triggerTypeFromLong(long type) {

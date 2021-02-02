@@ -33,30 +33,31 @@ import java.util.List;
 public interface NamedObject extends Named, java.io.Serializable {
 
     int DOMAIN = 0;
-    int TABLE = 1;
-    int GLOBAL_TEMPORARY = 2;
-    int VIEW = 3;
-    int PROCEDURE = 4;
-    int FUNCTION = 5;
-    int PACKAGE = 6;
-    int TRIGGER = 7;
-    int DATABASE_TRIGGER = 8;
-    int SEQUENCE = 9;
-    int EXCEPTION = 10;
-    int UDF = 11;
-    int ROLE = 12;
-    int INDEX = 13;
-    int SYSTEM_DOMAIN = 14;
-    int SYSTEM_TABLE = 15;
-    int SYSTEM_VIEW = 16;
-    int SYSTEM_FUNCTION = 17;
-    int SYSTEM_STRING_FUNCTIONS = 18;
-    int SYSTEM_NUMERIC_FUNCTIONS = 19;
-    int SYSTEM_DATE_TIME_FUNCTIONS = 20;
-    int SYSTEM_TRIGGER = 21;
-    int SYSTEM_ROLE = 22;
-    int SYSTEM_INDEX = 23;
-    int SYNONYM = 24;
+    int TABLE = DOMAIN + 1;
+    int GLOBAL_TEMPORARY = TABLE + 1;
+    int VIEW = GLOBAL_TEMPORARY + 1;
+    int PROCEDURE = VIEW + 1;
+    int FUNCTION = PROCEDURE + 1;
+    int PACKAGE = FUNCTION + 1;
+    int TRIGGER = PACKAGE + 1;
+    int DATABASE_TRIGGER = TRIGGER + 1;
+    int DDL_TRIGGER = DATABASE_TRIGGER + 1;
+    int SEQUENCE = DDL_TRIGGER + 1;
+    int EXCEPTION = SEQUENCE + 1;
+    int UDF = EXCEPTION + 1;
+    int ROLE = UDF + 1;
+    int INDEX = ROLE + 1;
+    int SYSTEM_DOMAIN = INDEX + 1;
+    int SYSTEM_TABLE = SYSTEM_DOMAIN + 1;
+    int SYSTEM_VIEW = SYSTEM_TABLE + 1;
+    int SYSTEM_FUNCTION = SYSTEM_VIEW + 1;
+    int SYSTEM_STRING_FUNCTIONS = SYSTEM_FUNCTION + 1;
+    int SYSTEM_NUMERIC_FUNCTIONS = SYSTEM_STRING_FUNCTIONS + 1;
+    int SYSTEM_DATE_TIME_FUNCTIONS = SYSTEM_NUMERIC_FUNCTIONS + 1;
+    int SYSTEM_TRIGGER = SYSTEM_DATE_TIME_FUNCTIONS + 1;
+    int SYSTEM_ROLE = SYSTEM_TRIGGER + 1;
+    int SYSTEM_INDEX = SYSTEM_ROLE + 1;
+    int SYNONYM = SYSTEM_INDEX + 1;
 
     int META_TAG = 93;
     int TABLE_COLUMN = 94;
@@ -88,6 +89,7 @@ public interface NamedObject extends Named, java.io.Serializable {
             "PACKAGE",
             "TRIGGER",
             "DATABASE TRIGGER",
+            "DDL TRIGGER",
             "SEQUENCE",
             "EXCEPTION",
             "EXTERNAL FUNCTION",
@@ -115,6 +117,7 @@ public interface NamedObject extends Named, java.io.Serializable {
             "PACKAGE",
             "TRIGGER",
             "DATABASE_TRIGGER",
+            "DDL_TRIGGER",
             "SEQUENCE",
             "EXCEPTION",
             "EXTERNAL_FUNCTION",

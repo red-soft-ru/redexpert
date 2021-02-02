@@ -155,6 +155,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         if (type >= SYSTEM_DOMAIN)
             setSystemFlag(true);
         if (type == DATABASE_TRIGGER
+                || type == DDL_TRIGGER
                 || type == SYSTEM_DOMAIN
                 || type == SYSTEM_FUNCTION
                 || type == SYSTEM_INDEX
@@ -221,6 +222,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             } else if (isSystemDatabaseTrigger()) {
 
                 children = loadSystemDatabaseTriggers();
+
+            } else if (isDDLTrigger()) {
+
+                children = loadDDLTriggers();
 
             } else if (isPackage()) {
 
@@ -405,6 +410,13 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             throws DataSourceException {
 
         return getSystemTriggers();
+
+    }
+
+    private List<NamedObject> loadDDLTriggers()
+            throws DataSourceException {
+
+        return getDDLTriggers();
 
     }
 
@@ -680,6 +692,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         int type = getSubType();
         return type == SYSTEM_TRIGGER;
+    }
+
+    private boolean isDDLTrigger() {
+
+        int type = getSubType();
+        return type == DDL_TRIGGER;
     }
 
     private boolean isSystemDatabaseTrigger() {
@@ -1008,6 +1026,29 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         try {
 
             rs = getSystemDatabaseTriggerResultSet();
+            return rs != null && rs.next();
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return false;
+
+        } finally {
+
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
+        }
+    }
+
+    private boolean hasDDLTriggers() {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getDDLTriggerResultSet();
             return rs != null && rs.next();
 
         } catch (SQLException e) {
@@ -1576,6 +1617,38 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
     }
 
+    private List<NamedObject> getDDLTriggers() throws DataSourceException {
+
+        ResultSet rs = null;
+        try {
+
+            rs = getDDLTriggerResultSet();
+            List<NamedObject> list = new ArrayList<NamedObject>();
+            while (rs.next()) {
+
+                DefaultDatabaseTrigger trigger = new DefaultDatabaseTrigger(this,
+                        rs.getString(1).trim());
+                trigger.setTriggerActive(rs.getInt(2) != 1);
+                list.add(trigger);
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+
+            logThrowable(e);
+            return new ArrayList<NamedObject>(0);
+
+        } finally {
+
+            try {
+                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+            } catch (SQLException throwables) {
+                releaseResources(rs, null);
+            }
+        }
+    }
+
     private List<NamedObject> getPackages() throws DataSourceException {
 
         ResultSet rs = null;
@@ -1863,17 +1936,32 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return resultSet;
     }
 
+    private ResultSet getDDLTriggerResultSet() throws SQLException {
+
+        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
+        Statement statement = dmd.getConnection().createStatement();
+        String query = "select t.rdb$trigger_name,\n" +
+                "t.rdb$trigger_inactive\n" +
+                "from rdb$triggers t\n" +
+                "where t.rdb$system_flag = 0" +
+                "and bin_and(t.rdb$trigger_type," + DefaultDatabaseTrigger.RDB_TRIGGER_TYPE_MASK + ")=" + DefaultDatabaseTrigger.TRIGGER_TYPE_DDL + " \n" +
+                "order by t.rdb$trigger_name";
+        ResultSet resultSet = statement.executeQuery(query);
+
+        return resultSet;
+    }
+
     private ResultSet getSystemDatabaseTriggerResultSet() throws SQLException {
 
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Statement statement = dmd.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name,\n" +
+        String query = "select t.rdb$trigger_name,\n" +
                 "t.rdb$trigger_inactive\n" +
                 "from rdb$triggers t\n" +
                 "where t.rdb$system_flag = 0" +
-                "and t.rdb$trigger_type > 114 \n" +
-                "order by t.rdb$trigger_name");
+                "and bin_and(t.rdb$trigger_type," + DefaultDatabaseTrigger.RDB_TRIGGER_TYPE_MASK + ")=" + DefaultDatabaseTrigger.TRIGGER_TYPE_DB + " \n" +
+                "order by t.rdb$trigger_name";
+        ResultSet resultSet = statement.executeQuery(query);
 
         return resultSet;
     }

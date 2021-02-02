@@ -164,7 +164,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                     setIcon(icons.get(BrowserConstants.VIEWS_IMAGE));
                     break;
                 }
-                if (databaseObject.getMetaDataKey().compareToIgnoreCase("trigger") == 0) {
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("trigger") == 0 || databaseObject.getMetaDataKey().compareToIgnoreCase("ddl trigger") == 0) {
                     setIcon(icons.get(BrowserConstants.TABLE_TRIGGER_IMAGE));
                     break;
                 }
@@ -274,6 +274,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 break;
 
             case NamedObject.TRIGGER:
+            case NamedObject.DDL_TRIGGER:
                 DefaultDatabaseTrigger trigger = (DefaultDatabaseTrigger) databaseObject;
                 if (trigger.isTriggerActive())
                     setIcon(icons.get(BrowserConstants.TABLE_TRIGGER_ACTIVE_IMAGE));

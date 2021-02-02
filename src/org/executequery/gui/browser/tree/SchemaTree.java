@@ -22,6 +22,7 @@ package org.executequery.gui.browser.tree;
 
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTreeCellRenderer;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
@@ -175,7 +176,8 @@ public class SchemaTree extends DynamicTree
                 return;
             DatabaseObjectNode node = (DatabaseObjectNode) selectionPath.getLastPathComponent();
             if (!node.isCatalog())
-                panel.valueChanged(node);
+                if (node.getDatabaseObject() == null || node.getDatabaseObject().getType() != NamedObject.META_TAG)
+                    panel.valueChanged(node);
         }
     }
 

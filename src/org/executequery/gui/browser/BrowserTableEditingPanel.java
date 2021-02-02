@@ -440,7 +440,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         externalFileComponents.add(label);
         externalFileComponents.add(adapterField);
         gbh.addLabelFieldPair(base, label, adapterField, null);
-        base.add(tabPane, gbh.nextRowFirstCol().spanY().get());
+        base.add(tabPane, gbh.nextRowFirstCol().fillBoth().spanY().get());
         /*base.add()
         // add the bottom components
         gbc.gridy++;

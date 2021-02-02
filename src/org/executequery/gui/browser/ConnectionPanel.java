@@ -1205,8 +1205,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
             int count = ConnectionManager.getOpenConnectionCount(databaseConnection);
 
-            statusLabel.setText(bundleString("status.Connected") + count +
-                    (count > 1 ? bundleString("status.Connected.connections") : bundleString("status.Connected.connection")));
+            statusLabel.setText(bundleString("status.Connected"));
 
         } else {
 

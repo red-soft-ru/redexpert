@@ -22,6 +22,7 @@ package org.executequery.databaseobjects.impl;
 
 import biz.redsoft.IFBDatabaseConnection;
 import org.apache.commons.lang.StringUtils;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledResultSet;
@@ -79,7 +80,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
      * Creates a new instance of DefaultDatabaseMetaTag
      */
 
-    private int precedency;
 
     public DefaultDatabaseMetaTag(DatabaseHost host,
                                   DatabaseCatalog catalog,
@@ -1680,6 +1680,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         }
     }
 
+    private ResultSet getResultSetFromQuery(String query) throws SQLException {
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        return querySender.getResultSet(query).getResultSet();
+    }
+
     private ResultSet getProceduresResultSet() throws SQLException {
 
         String catalogName = catalogNameForQuery();
@@ -1703,12 +1708,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     "from rdb$procedures \n" +
                     condition +
                     "order by procedure_name";
-            Statement statement = dmd.getConnection().createStatement();
             if (typeTree == TreePanel.DEPENDED_ON)
                 sql = getDependOnQuery(5);
             else if (typeTree == TreePanel.DEPENDENT)
                 sql = getDependentQuery(5);
-            ResultSet rs = statement.executeQuery(sql);
+            ResultSet rs = getResultSetFromQuery(sql);
             return rs;
         } else { // Another database
             return dmd.getProcedures(catalogName, schemaName, null);
@@ -1716,9 +1720,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     private ResultSet getIndicesResultSet() throws SQLException {
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
         String query = "select " +
                 "I.RDB$INDEX_NAME,\n" +
                 "I.RDB$INDEX_INACTIVE\n" +
@@ -1729,17 +1730,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             query = getDependOnQuery(10);
         else if (typeTree == TreePanel.DEPENDENT)
             query = getDependentQuery(10);
-        ResultSet resultSet = statement.executeQuery(query);
-
-        return resultSet;
+        return getResultSetFromQuery(query);
     }
 
     private ResultSet getIndexFromNameResultSet(String name) throws SQLException {
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("select " +
+        String query = "select " +
                 "I.RDB$INDEX_NAME, " +
                 "I.RDB$RELATION_NAME, " +
                 "I.RDB$SYSTEM_FLAG," +
@@ -1750,16 +1745,15 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "C.RDB$CONSTRAINT_TYPE\n" +
                 "FROM RDB$INDICES AS I LEFT JOIN rdb$relation_constraints as c on i.rdb$index_name=c.rdb$index_name\n" +
                 "where I.RDB$SYSTEM_FLAG = 0 \n" +
-                "AND I.RDB$INDEX_NAME='"+name+"'");
-
+                "AND I.RDB$INDEX_NAME=?";
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        PreparedStatement st = querySender.getPreparedStatement(query);
+        st.setString(1, name);
+        ResultSet resultSet = querySender.getResultSet(-1, st).getResultSet();
         return resultSet;
     }
 
     private ResultSet getTriggersResultSet() throws SQLException {
-
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
         String query = "select t.rdb$trigger_name,\n" +
                 "t.rdb$trigger_inactive\n" +
                 "from rdb$triggers t\n" +
@@ -1770,34 +1764,21 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             query = getDependOnQuery(2);
         else if (typeTree == TreePanel.DEPENDENT)
             query = getDependentQuery(2);
-        ResultSet resultSet = statement.executeQuery(query);
-
-        return resultSet;
+        return getResultSetFromQuery(query);
     }
 
 
     private ResultSet getSequencesResultSet() throws SQLException {
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
         String query = "select rdb$generator_name from rdb$generators where ((RDB$SYSTEM_FLAG is NULL) or (RDB$SYSTEM_FLAG = 0))\n" +
                 "     order by  rdb$generator_name";
         if (typeTree == TreePanel.DEPENDED_ON)
             query = getDependOnQuery(14);
         else if (typeTree == TreePanel.DEPENDENT)
             query = getDependentQuery(14);
-
-        ResultSet resultSet = statement.executeQuery(query);
-
-        return resultSet;
+        return getResultSetFromQuery(query);
     }
 
     private ResultSet getDomainsResultSet() throws SQLException {
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-
-
         String query = "select " +
                 "RDB$FIELD_NAME " +
                 "from RDB$FIELDS\n" +
@@ -1807,49 +1788,29 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             query = getDependOnQuery(9);
         else if (typeTree == TreePanel.DEPENDENT)
             query = getDependentQuery(9);
-        ResultSet resultSet = statement.executeQuery(query);
-
-        return resultSet;
+        return getResultSetFromQuery(query);
     }
 
     private ResultSet getSystemDomainResultSet() throws SQLException {
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("select " +
+        String query = "select " +
                 "RDB$FIELD_NAME " +
                 "from RDB$FIELDS\n" +
                 "where (RDB$FIELD_NAME starting with 'RDB$') or (RDB$SYSTEM_FLAG<>0 and RDB$SYSTEM_FLAG IS not NULL)\n" +
-                "order by RDB$FIELD_NAME");
-
-        return resultSet;
+                "order by RDB$FIELD_NAME";
+        return getResultSetFromQuery(query);
     }
 
     private ResultSet getSystemRolesResultSet() throws SQLException {
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("SELECT RDB$ROLE_NAME FROM RDB$ROLES WHERE RDB$SYSTEM_FLAG!=0 AND RDB$SYSTEM_FLAG IS NOT NULL ORDER BY 1");
-
-        return resultSet;
+        String query = "SELECT RDB$ROLE_NAME FROM RDB$ROLES WHERE RDB$SYSTEM_FLAG!=0 AND RDB$SYSTEM_FLAG IS NOT NULL ORDER BY 1";
+        return getResultSetFromQuery(query);
     }
 
     private ResultSet getRolesResultSet() throws SQLException {
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("SELECT RDB$ROLE_NAME FROM RDB$ROLES WHERE RDB$SYSTEM_FLAG=0 OR RDB$SYSTEM_FLAG IS NULL ORDER BY 1");
-
-        return resultSet;
+        String query = "SELECT RDB$ROLE_NAME FROM RDB$ROLES WHERE RDB$SYSTEM_FLAG=0 OR RDB$SYSTEM_FLAG IS NULL ORDER BY 1";
+        return getResultSetFromQuery(query);
     }
 
     private ResultSet getExceptionResultSet() throws SQLException {
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
         String query = "select RDB$EXCEPTION_NAME, " +
                 "RDB$DESCRIPTION\n" +
                 "from RDB$EXCEPTIONS\n" +
@@ -1858,27 +1819,13 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             query = getDependOnQuery(7);
         else if (typeTree == TreePanel.DEPENDENT)
             query = getDependentQuery(7);
-        ResultSet resultSet = statement.executeQuery(query);
-
-        return resultSet;
+        return getResultSetFromQuery(query);
     }
 
     private ResultSet getUDFResultSet() throws Exception {
 
         ResultSet resultSet = null;
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-        PooledConnection connection = (PooledConnection) dmd.getConnection();
-        Connection fbConn = connection.unwrap(Connection.class);
-        IFBDatabaseConnection db = null;
-        try {
-            db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(fbConn, "FBDatabaseConnectionImpl");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        db.setConnection(fbConn);
-        switch (db.getMajorVersion()) {
+        switch (getHost().getDatabaseMetaData().getDatabaseMajorVersion()) {
             case 2:
                 String query = "select RDB$FUNCTION_NAME,\n" +
                         "RDB$DESCRIPTION,\n" +
@@ -1889,11 +1836,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         "from RDB$FUNCTIONS\n" +
                         "where RDB$SYSTEM_FLAG =0 or RDB$SYSTEM_FLAG is null\n" +
                         "order by RDB$FUNCTION_NAME";
-                resultSet = statement.executeQuery(query);
+                resultSet = getResultSetFromQuery(query);
                 break;
             case 3:
             case 4:
-                resultSet = statement.executeQuery("select RDB$FUNCTION_NAME,\n" +
+                query = "select RDB$FUNCTION_NAME,\n" +
                         "RDB$DESCRIPTION,\n" +
                         "RDB$MODULE_NAME,\n" +
                         "RDB$ENTRYPOINT,\n" +
@@ -1901,7 +1848,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         "RDB$DESCRIPTION as description\n" +
                         "from RDB$FUNCTIONS\n" +
                         "where RDB$LEGACY_FLAG = 1 and (RDB$MODULE_NAME is not NULL) and (RDB$SYSTEM_FLAG =0 or RDB$SYSTEM_FLAG is null)\n" +
-                        "order by RDB$FUNCTION_NAME");
+                        "order by RDB$FUNCTION_NAME";
+                resultSet = getResultSetFromQuery(query);
                 break;
         }
 
@@ -1909,67 +1857,44 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     private ResultSet getSystemIndexResultSet() throws SQLException {
-
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("select " +
+        String query = "select " +
                 "RDB$INDEX_NAME\n " +
                 "FROM RDB$INDICES \n" +
                 "where RDB$SYSTEM_FLAG = 1 \n" +
-                "ORDER BY RDB$INDEX_NAME");
+                "ORDER BY RDB$INDEX_NAME";
 
-        return resultSet;
+        return getResultSetFromQuery(query);
     }
 
     private ResultSet getSystemTriggerResultSet() throws SQLException {
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-
-        ResultSet resultSet = statement.executeQuery("select t.rdb$trigger_name\n" +
+        String query = "select t.rdb$trigger_name\n" +
                 "from rdb$triggers t\n" +
                 "where t.rdb$system_flag <> 0" +
-                "order by t.rdb$trigger_name");
-
-        return resultSet;
+                "order by t.rdb$trigger_name";
+        return getResultSetFromQuery(query);
     }
 
     private ResultSet getDDLTriggerResultSet() throws SQLException {
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
         String query = "select t.rdb$trigger_name,\n" +
                 "t.rdb$trigger_inactive\n" +
                 "from rdb$triggers t\n" +
                 "where t.rdb$system_flag = 0" +
                 "and bin_and(t.rdb$trigger_type," + DefaultDatabaseTrigger.RDB_TRIGGER_TYPE_MASK + ")=" + DefaultDatabaseTrigger.TRIGGER_TYPE_DDL + " \n" +
                 "order by t.rdb$trigger_name";
-        ResultSet resultSet = statement.executeQuery(query);
-
-        return resultSet;
+        return getResultSetFromQuery(query);
     }
 
     private ResultSet getSystemDatabaseTriggerResultSet() throws SQLException {
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
         String query = "select t.rdb$trigger_name,\n" +
                 "t.rdb$trigger_inactive\n" +
                 "from rdb$triggers t\n" +
                 "where t.rdb$system_flag = 0" +
                 "and bin_and(t.rdb$trigger_type," + DefaultDatabaseTrigger.RDB_TRIGGER_TYPE_MASK + ")=" + DefaultDatabaseTrigger.TRIGGER_TYPE_DB + " \n" +
                 "order by t.rdb$trigger_name";
-        ResultSet resultSet = statement.executeQuery(query);
-
-        return resultSet;
+        return getResultSetFromQuery(query);
     }
 
     private ResultSet getPackagesResultSet() throws SQLException {
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
         String query = "select p.rdb$package_name \n" +
                 "from rdb$packages p\n" +
                 "order by p.rdb$package_name";
@@ -1977,17 +1902,10 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             query = getDependOnQuery(19);
         else if (typeTree == TreePanel.DEPENDENT)
             query = getDependentQuery(19);
-
-        ResultSet resultSet = statement.executeQuery(query);
-
-        return resultSet;
+        return getResultSetFromQuery(query);
     }
 
     private ResultSet getTablesResultSet(String metaDataKey) throws SQLException {
-
-        DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        Statement statement = dmd.getConnection().createStatement();
-
         ResultSet resultSet = null;
         if (metaDataKey.equals("TABLE")) {
             String query = "select rdb$relation_name, \n" +
@@ -2001,15 +1919,16 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 query = getDependOnQuery(0);
             else if (typeTree == TreePanel.DEPENDENT)
                 query = getDependentQuery(0);
-            resultSet = statement.executeQuery(query);
+            resultSet = getResultSetFromQuery(query);
         } else if (metaDataKey.equals("SYSTEM TABLE")) {
-            resultSet = statement.executeQuery("select rdb$relation_name, \n" +
+            String query = "select rdb$relation_name, \n" +
                     "rdb$description,\n" +
                     "rdb$view_source\n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is null \n" +
                     "and (rdb$system_flag is not null and rdb$system_flag = 1) \n" +
-                    "order by rdb$relation_name");
+                    "order by rdb$relation_name";
+            resultSet = getResultSetFromQuery(query);
         } else if (metaDataKey.equals("VIEW")) {
             String query = "select rdb$relation_name, \n" +
                     "rdb$description,\n" +
@@ -2022,17 +1941,18 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 query = getDependOnQuery(1);
             else if (typeTree == TreePanel.DEPENDENT)
                 query = getDependentQuery(1);
-            resultSet = statement.executeQuery(query);
+            resultSet = getResultSetFromQuery(query);
         } else if (metaDataKey.equals("SYSTEM VIEW")) {
-            resultSet = statement.executeQuery("select rdb$relation_name, \n" +
+            String query = "select rdb$relation_name, \n" +
                     "rdb$description,\n" +
                     "rdb$view_source\n" +
                     "from rdb$relations\n" +
                     "where rdb$view_blr is not null \n" +
                     "and (rdb$system_flag is not null and rdb$system_flag = 1) \n" +
-                    "order by rdb$relation_name");
+                    "order by rdb$relation_name";
+            resultSet = getResultSetFromQuery(query);
         } else if (metaDataKey.equals("GLOBAL TEMPORARY")) {
-            resultSet = statement.executeQuery("select r.rdb$relation_name, \n" +
+            String query = "select r.rdb$relation_name, \n" +
                     "r.rdb$description,\n" +
                     "rdb$view_source\n" +
                     "from rdb$relations r\n" +
@@ -2040,7 +1960,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     "where\n" +
                     "(t.rdb$field_name = 'RDB$RELATION_TYPE') \n" +
                     "and (t.rdb$type = 4 or t.rdb$type = 5) \n" +
-                    "order by r.rdb$relation_name");
+                    "order by r.rdb$relation_name";
+            resultSet = getResultSetFromQuery(query);
         }
 
         return resultSet;
@@ -2073,12 +1994,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
             Connection realConnection = ((PooledConnection) dmd.getConnection()).getRealConnection();
             if (realConnection.unwrap(Connection.class).getClass().getName().contains("FBConnection")) {
-                Statement statement = dmd.getConnection().createStatement();
                 if (typeTree == TreePanel.DEPENDED_ON)
                     query = getDependOnQuery(15);
                 else if (typeTree == TreePanel.DEPENDENT)
                     query = getDependentQuery(15);
-                ResultSet rs = statement.executeQuery(query);
+                ResultSet rs = getResultSetFromQuery(query);
                 return rs;
             } else {
                 return dmd.getFunctions(catalogName, schemaName, null);
@@ -2397,10 +2317,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             query = query + tableQuery;
         }
         return query;
-    }
-
-    public int getPrecedency() {
-        return precedency;
     }
 }
 

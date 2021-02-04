@@ -30,6 +30,7 @@ import org.executequery.log.Log;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.resource.ResourceException;
@@ -101,8 +102,15 @@ public final class ConnectionManager {
         Enumeration<TreeNode> nodes = root.children();
         while (nodes.hasMoreElements()) {
             DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
-            if (node.isHostNode() || node.getType() == NamedObject.META_TAG)
-                loadTree(node);
+            if (node.isHostNode() || node.getType() == NamedObject.META_TAG) {
+                SwingWorker sw = new SwingWorker() {
+                    @Override
+                    public Object construct() {
+                        loadTree(node);
+                        return null;
+                    }
+                };
+            }
         }
 
     }

@@ -34,6 +34,7 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.repository.ConnectionFoldersRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
+import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.tree.TreeNode;
@@ -701,8 +702,16 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
             DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
             if (!node.isHostNode() && node.getType() != NamedObject.META_TAG)
                 list.add(node.getName().replace("$", "\\$"));
-            if (node.isHostNode() || node.getType() == NamedObject.META_TAG)
-                addingChild(list, node);
+            if (node.isHostNode() || node.getType() == NamedObject.META_TAG) {
+                SwingWorker sw = new SwingWorker() {
+                    @Override
+                    public Object construct() {
+                        addingChild(list, node);
+                        return null;
+                    }
+                };
+                sw.start();
+            }
         }
     }
 

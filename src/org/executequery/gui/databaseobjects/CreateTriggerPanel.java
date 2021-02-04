@@ -8,6 +8,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.util.MiscUtils;
 
@@ -25,6 +26,11 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
     //common components for table and database trigger
     public static final String EDIT_TITLE = "Edit Trigger";
+
+    private static final String TRIGGER = Bundles.get(CreateTriggerPanel.class, "table-trigger");
+    private static final String DB_TRIGGER = Bundles.get(CreateTriggerPanel.class, "database-trigger");
+    private static final String DDL_TRIGGER = Bundles.get(CreateTriggerPanel.class, "DDL-trigger");
+
     static String[] meta_types = {"FUNCTION",
             "INDEX",
             "PROCEDURE",
@@ -35,12 +41,13 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
             "DOMAIN",
             "EXCEPTION",
             "PACKAGE",
-            "PACKAGE BODY",
             "USER",
             "COLLATION",
             "CHARACTER SET",
             "MAPPING",
-            "ROLE"};
+            "ROLE",
+            "PACKAGE BODY",
+    };
     private int triggerType;
     private DefaultDatabaseTrigger trigger;
     private JComboBox typeTriggerCombo;
@@ -91,18 +98,20 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     protected void init() {
         if (getDatabaseVersion() > 2) {
             if (this.triggerType == NamedObject.TRIGGER)
-                typeTriggerCombo = new JComboBox(new String[]{bundleString("table-trigger")});
+                typeTriggerCombo = new JComboBox(new String[]{TRIGGER});
             else if (this.triggerType == NamedObject.DATABASE_TRIGGER)
-                typeTriggerCombo = new JComboBox(new String[]{bundleString("database-trigger"), bundleString("DDL-trigger")});
+                typeTriggerCombo = new JComboBox(new String[]{DB_TRIGGER});
+            else if (this.triggerType == NamedObject.DDL_TRIGGER)
+                typeTriggerCombo = new JComboBox(new String[]{DDL_TRIGGER});
             else
-                typeTriggerCombo = new JComboBox(new String[]{bundleString("table-trigger"), bundleString("database-trigger"), bundleString("DDL-trigger")});
+                typeTriggerCombo = new JComboBox(new String[]{TRIGGER, DB_TRIGGER, DDL_TRIGGER});
         } else {
             if (this.triggerType == NamedObject.TRIGGER)
-                typeTriggerCombo = new JComboBox(new String[]{bundleString("table-trigger")});
+                typeTriggerCombo = new JComboBox(new String[]{TRIGGER});
             else if (this.triggerType == NamedObject.DATABASE_TRIGGER)
-                typeTriggerCombo = new JComboBox(new String[]{bundleString("database-trigger")});
+                typeTriggerCombo = new JComboBox(new String[]{DB_TRIGGER});
             else
-                typeTriggerCombo = new JComboBox(new String[]{bundleString("table-trigger"), bundleString("database-trigger")});
+                typeTriggerCombo = new JComboBox(new String[]{TRIGGER, DB_TRIGGER});
         }
         positionLabel = new JLabel(bundleString("position"));
         descriptionText = new SimpleTextArea();
@@ -241,7 +250,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
         gbc.gridy++;
         ddlTriggerPanel.add(separator, gbc);
         gbc.gridwidth = 1;
-
+        int[] addingY = {2, 2, 2};
         for (int i = 0; i < meta_types.length; i++) {
             for (int g = 0; g < 3; g++) {
                 String operator = "";
@@ -258,14 +267,16 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
                 }
                 JCheckBox checkBox = new JCheckBox(operator + " " + meta_types[i]);
                 gbc.gridx = g;
-                gbc.gridy = i + 2;
+                gbc.gridy = i + addingY[g];
                 if (!checkBox.getText().toUpperCase().contains("ALTER COLLATION")
                         && !checkBox.getText().contains("CREATE CHARACTER SET")
                         && !checkBox.getText().contains("DROP CHARACTER SET")
                         && !checkBox.getText().contains("ALTER PACKAGE BODY")
-                        ) {
+                ) {
                     ddlTriggerPanel.add(checkBox, gbc);
                     ddlCheckBoxes.add(checkBox);
+                } else {
+                    addingY[g]--;
                 }
             }
         }
@@ -283,10 +294,6 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     }
 
     protected void initEdited() {
-        int intTriggerType = trigger.getIntTriggerType();
-        if (this.triggerType == NamedObject.DATABASE_TRIGGER)
-            intTriggerType--;
-        typeTriggerCombo.setSelectedIndex(intTriggerType);
         typeTriggerCombo.setEnabled(false);
         nameField.setText(trigger.getName());
         nameField.setEnabled(false);
@@ -367,16 +374,10 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
     }
 
     private void changeTypeTrigger() {
-        boolean dbtrigger = typeTriggerCombo.getSelectedIndex() == 1;
-        boolean tabletrigger = typeTriggerCombo.getSelectedIndex() == 0;
-        if (this.triggerType == NamedObject.DATABASE_TRIGGER) {
-            tabletrigger = false;
-            dbtrigger = typeTriggerCombo.getSelectedIndex() == 0;
-        }
-        databaseTriggerPanel.setVisible(dbtrigger);
-        ddlTableTriggerPanel.setVisible(!dbtrigger);
-        tableTriggerPanel.setVisible(tabletrigger);
-        scrolDDL.setVisible(!tabletrigger && !dbtrigger);
+        databaseTriggerPanel.setVisible(typeTriggerCombo.getSelectedItem() == DB_TRIGGER);
+        ddlTableTriggerPanel.setVisible(typeTriggerCombo.getSelectedItem() == DDL_TRIGGER);
+        tableTriggerPanel.setVisible(typeTriggerCombo.getSelectedItem() == TRIGGER);
+        scrolDDL.setVisible(typeTriggerCombo.getSelectedItem() == DDL_TRIGGER);
     }
 
     Object[] getTables() {
@@ -398,16 +399,14 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
 
     private void generateScript() {
         StringBuilder query = new StringBuilder("CREATE OR ALTER TRIGGER " + getFormattedName());
-        int selectedIndex = typeTriggerCombo.getSelectedIndex();
-        if (triggerType == NamedObject.DATABASE_TRIGGER)
-            selectedIndex++;
-        if (selectedIndex == 0)
+        String selectedItem = (String) typeTriggerCombo.getSelectedItem();
+        if (selectedItem == TRIGGER)
             query.append(" FOR ").append(MiscUtils.getFormattedObject(((String) tablesCombo.getSelectedItem()).trim()));
         query.append("\n");
         if (activeBox.isSelected())
             query.append("ACTIVE ");
         else query.append("INACTIVE ");
-        if (selectedIndex == 0) {
+        if (selectedItem == TRIGGER) {
             query.append(typeTableTriggerCombo.getSelectedItem()).append(" ");
             boolean first = true;
             if (insertBox.isSelected()) {
@@ -427,7 +426,7 @@ public class CreateTriggerPanel extends AbstractCreateObjectPanel {
             }
 
         } else {
-            if (selectedIndex == 1)
+            if (selectedItem == DB_TRIGGER)
                 query.append("ON ").append(actionCombo.getSelectedItem()).append(" ");
             else {
                 query.append(typeTableTriggerCombo.getSelectedItem()).append(" ");

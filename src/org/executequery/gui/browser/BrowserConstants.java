@@ -247,6 +247,10 @@ public class BrowserConstants {
 
     public static final String TABLE_TRIGGER_IMAGE = "Trigger.png";
 
+    public static final String DB_TRIGGER_IMAGE = "TriggerDB.png";
+
+    public static final String DDL_TRIGGER_IMAGE = "TriggerDDL.png";
+
     public static final String FOLDER_FOREIGN_KEYS_IMAGE = "FolderForeignKeys16.png";
 
     public static final String FOLDER_PRIMARY_KEYS_IMAGE = "FolderPrimaryKeys16.png";
@@ -267,19 +271,11 @@ public class BrowserConstants {
 
     public static final String SYSTEM_TRIGGER_IMAGE = "SystemTrigger.png";
 
-    public static final String SYSTEM_DATABASE_TRIGGER_IMAGE = "SystemDatabaseTrigger.png";
-
     public static final String PACKAGE_IMAGE = "package16.png";
 
     public static final String ROLE_IMAGE = "user_manager_16.png";
 
     public static final String SYSTEM_ROLE_IMAGE = "system_role_16.png";
-
-    public static final String SYSTEM_DATABASE_TRIGGER_ACTIVE_IMAGE = "SystemDatabaseTrigger_active.png";
-
-    public static final String INDEXES_ACTIVE_IMAGE = "TableIndex16_active.png";
-
-    public static final String TABLE_TRIGGER_ACTIVE_IMAGE = "Trigger_active.png";
 
 
     public static final String GRANT_IMAGE = "grant.png";
@@ -319,13 +315,11 @@ public class BrowserConstants {
             SYSTEM_DOMAIN_IMAGE,
             SYSTEM_INDEX_IMAGE,
             SYSTEM_TRIGGER_IMAGE,
-            SYSTEM_DATABASE_TRIGGER_IMAGE,
             PACKAGE_IMAGE,
             ROLE_IMAGE,
-            SYSTEM_DATABASE_TRIGGER_ACTIVE_IMAGE,
-            INDEXES_ACTIVE_IMAGE,
-            TABLE_TRIGGER_ACTIVE_IMAGE,
-            SYSTEM_ROLE_IMAGE
+            SYSTEM_ROLE_IMAGE,
+            DB_TRIGGER_IMAGE,
+            DDL_TRIGGER_IMAGE
     };
 
     private static String bundleString(String key) {

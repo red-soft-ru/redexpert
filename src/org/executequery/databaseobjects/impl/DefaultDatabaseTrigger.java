@@ -166,12 +166,19 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
      *
      * @return the object type
      */
+
+    private int type = -1;
     public int getType() {
-        if (getParent().getMetaDataKey() == META_TYPES[NamedObject.TRIGGER])
-            return TRIGGER;
-        else if (getParent().getMetaDataKey() == META_TYPES[NamedObject.SYSTEM_TRIGGER])
-            return SYSTEM_TRIGGER;
-        return NamedObject.DATABASE_TRIGGER;
+        if (type == -1) {
+            if (getParent().getMetaDataKey() == META_TYPES[NamedObject.DATABASE_TRIGGER])
+                type = DATABASE_TRIGGER;
+            else if (getParent().getMetaDataKey() == META_TYPES[NamedObject.SYSTEM_TRIGGER])
+                type = SYSTEM_TRIGGER;
+            else if (getParent().getMetaDataKey() == META_TYPES[NamedObject.DDL_TRIGGER])
+                type = NamedObject.DDL_TRIGGER;
+            else type = NamedObject.TRIGGER;
+        }
+        return type;
     }
 
     /**

@@ -210,24 +210,8 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     }
                     break;
                 case NamedObject.TRIGGER:
-                    if (GUIUtilities.isDialogOpen(CreateTriggerPanel.CREATE_TITLE)) {
-
-                        GUIUtilities.setSelectedDialog(CreateTriggerPanel.CREATE_TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateTriggerPanel.CREATE_TITLE, false);
-                            CreateTriggerPanel panel = new CreateTriggerPanel(currentSelection, dialog,
-                                    NamedObject.TRIGGER);
-                            showDialogCreateObject(panel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
                 case NamedObject.DATABASE_TRIGGER:
+                case NamedObject.DDL_TRIGGER:
                     if (GUIUtilities.isDialogOpen(CreateTriggerPanel.CREATE_TITLE)) {
 
                         GUIUtilities.setSelectedDialog(CreateTriggerPanel.CREATE_TITLE);
@@ -238,7 +222,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                             BaseDialog dialog =
                                     new BaseDialog(CreateTriggerPanel.CREATE_TITLE, false);
                             CreateTriggerPanel panel = new CreateTriggerPanel(currentSelection, dialog,
-                                    NamedObject.DATABASE_TRIGGER);
+                                    type);
                             showDialogCreateObject(panel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();
@@ -443,24 +427,8 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     }
                     break;
                 case NamedObject.TRIGGER:
-                    if (GUIUtilities.isDialogOpen(CreateTriggerPanel.EDIT_TITLE)) {
-
-                        GUIUtilities.setSelectedDialog(CreateTriggerPanel.EDIT_TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-
-                            BaseDialog dialog = new BaseDialog(CreateTriggerPanel.EDIT_TITLE, false);
-                            createObjectPanel = new CreateTriggerPanel(currentSelection, dialog,
-                                    (DefaultDatabaseTrigger) node.getDatabaseObject(), NamedObject.TRIGGER);
-                            showDialogCreateObject(createObjectPanel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
                 case NamedObject.DATABASE_TRIGGER:
+                case NamedObject.DDL_TRIGGER:
                     if (GUIUtilities.isDialogOpen(CreateTriggerPanel.EDIT_TITLE)) {
 
                         GUIUtilities.setSelectedDialog(CreateTriggerPanel.EDIT_TITLE);
@@ -471,7 +439,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
                             BaseDialog dialog = new BaseDialog(CreateTriggerPanel.EDIT_TITLE, false);
                             createObjectPanel = new CreateTriggerPanel(currentSelection, dialog,
-                                    (DefaultDatabaseTrigger) node.getDatabaseObject(), NamedObject.DATABASE_TRIGGER);
+                                    (DefaultDatabaseTrigger) node.getDatabaseObject(), type);
                             showDialogCreateObject(createObjectPanel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();

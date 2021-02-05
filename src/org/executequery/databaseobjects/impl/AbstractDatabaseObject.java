@@ -23,7 +23,6 @@ package org.executequery.databaseobjects.impl;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.datasource.PooledConnection;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -75,15 +74,12 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
      */
     private Statement statement;
 
-    protected StatementExecutor querySender;
-
     protected DatabaseMetaTag metaTagParent;
 
     protected String source;
 
     public AbstractDatabaseObject(DatabaseHost host) {
         setHost(host);
-        querySender = new DefaultStatementExecutor(host.getDatabaseConnection(), true);
     }
 
     public AbstractDatabaseObject(DatabaseMetaTag metaTagParent) {
@@ -588,6 +584,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     protected abstract void setInfoFromResultSet(ResultSet rs) throws SQLException;
 
     protected void getObjectInfo() {
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
         try {
             ResultSet rs = querySender.getResultSet(queryForInfo()).getResultSet();
             setInfoFromResultSet(rs);

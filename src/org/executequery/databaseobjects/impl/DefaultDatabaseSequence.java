@@ -1,6 +1,7 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.datasource.ConnectionManager;
@@ -178,6 +179,7 @@ public class DefaultDatabaseSequence extends DefaultDatabaseExecutable
     @Override
     protected void getObjectInfo() {
         super.getObjectInfo();
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
         try {
             String query = queryForInfo();
             ResultSet rs = querySender.getResultSet(query).getResultSet();

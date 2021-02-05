@@ -585,6 +585,7 @@ public class TableDataTab extends JPanel
 
         StringBuilder sb = new StringBuilder();
         sb.append("<html><body><p><center>Error retrieving object data");
+        e.printStackTrace();
         String message = e.getMessage();
         if (StringUtils.isNotBlank(message)) {
 

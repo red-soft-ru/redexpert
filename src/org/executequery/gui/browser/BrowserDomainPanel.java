@@ -217,7 +217,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
 
         try {
             domainNameField.setText(domain.getName());
-            tableDescriptionTable.setColumnData(domain.getDomainData());
+            tableDescriptionTable.setColumnData(domain.getDomainCols());
             descriptionPane.setText(domain.getRemarks());
             sqlPane.setText(domain.getCreateSQLText());
         } catch (DataSourceException e) {
@@ -239,7 +239,7 @@ public class BrowserDomainPanel extends AbstractFormObjectViewPanel {
 
         if (domain != null) {
             domainNameField.setText(domain.getName());
-            tableDescriptionTable.setColumnData(domain.getDomainData());
+            tableDescriptionTable.setColumnData(domain.getDomainCols());
             descriptionPane.setText(domain.getRemarks());
             sqlPane.setText(domain.getCreateSQLText());
 

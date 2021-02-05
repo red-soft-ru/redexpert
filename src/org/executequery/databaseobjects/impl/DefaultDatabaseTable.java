@@ -281,7 +281,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
               for (DatabaseColumn i : columns) {
 
                 if (i.getName().equalsIgnoreCase(fkColumn)) {
-
+                  DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
                   DatabaseTableColumn column = (DatabaseTableColumn) i;
                   List<String> row = new ArrayList<>();
                   for (int g = 1; g <= rs.getMetaData().getColumnCount(); g++)
@@ -749,6 +749,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
   private boolean loadedInfoAboutExternalFile = false;
 
   private void loadInfoAboutExternalFile() {
+    DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
     try {
       //querySender.setDatabaseConnection(getHost().getDatabaseConnection());
       String adapter = ", RDB$ADAPTER";

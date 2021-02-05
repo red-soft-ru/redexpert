@@ -933,16 +933,25 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             dependenciesPanel.setDatabaseObject(table);
 
             alterSqlText.setSQLText(EMPTY);
-            try {
+            createSqlText.setSQLText("Loading data");
+            SwingWorker sw = new SwingWorker() {
+                @Override
+                public Object construct() {
+                    try {
 
-                createSqlText.setSQLText(createTableStatementFormatted());
+                        createSqlText.setSQLText(createTableStatementFormatted());
 
-            } catch (Exception e) { // some liquibase generated issues... ??
+                    } catch (Exception e) { // some liquibase generated issues... ??
 
-                String message = "Error generating SQL for table - " + e.getMessage();
-                createSqlText.setSQLText(message);
-                Log.error("Error generating SQL for table - " + e.getMessage(), e);
-            }
+                        String message = "Error generating SQL for table - " + e.getMessage();
+                        createSqlText.setSQLText(message);
+                        Log.error("Error generating SQL for table - " + e.getMessage(), e);
+                    }
+                    return null;
+                }
+            };
+            sw.start();
+
 
         } catch (DataSourceException e) {
 

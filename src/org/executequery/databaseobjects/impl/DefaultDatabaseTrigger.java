@@ -171,11 +171,11 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable
     private int type = -1;
     public int getType() {
         if (type == -1) {
-            if (getParent().getMetaDataKey() == META_TYPES[NamedObject.DATABASE_TRIGGER])
-                type = DATABASE_TRIGGER;
-            else if (getParent().getMetaDataKey() == META_TYPES[NamedObject.SYSTEM_TRIGGER])
-                type = SYSTEM_TRIGGER;
-            else if (getParent().getMetaDataKey() == META_TYPES[NamedObject.DDL_TRIGGER])
+            if (getParent().getMetaDataKey().equalsIgnoreCase(META_TYPES[NamedObject.DATABASE_TRIGGER]))
+                type = NamedObject.DATABASE_TRIGGER;
+            else if (getParent().getMetaDataKey().equalsIgnoreCase(META_TYPES[NamedObject.SYSTEM_TRIGGER]))
+                type = NamedObject.SYSTEM_TRIGGER;
+            else if (getParent().getMetaDataKey().equalsIgnoreCase(META_TYPES[NamedObject.DDL_TRIGGER]))
                 type = NamedObject.DDL_TRIGGER;
             else type = NamedObject.TRIGGER;
         }

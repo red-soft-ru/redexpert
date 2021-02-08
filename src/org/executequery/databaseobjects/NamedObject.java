@@ -40,9 +40,9 @@ public interface NamedObject extends Named, java.io.Serializable {
     int FUNCTION = PROCEDURE + 1;
     int PACKAGE = FUNCTION + 1;
     int TRIGGER = PACKAGE + 1;
-    int DATABASE_TRIGGER = TRIGGER + 1;
-    int DDL_TRIGGER = DATABASE_TRIGGER + 1;
-    int SEQUENCE = DDL_TRIGGER + 1;
+    int DDL_TRIGGER = TRIGGER + 1;
+    int DATABASE_TRIGGER = DDL_TRIGGER + 1;
+    int SEQUENCE = DATABASE_TRIGGER + 1;
     int EXCEPTION = SEQUENCE + 1;
     int UDF = EXCEPTION + 1;
     int ROLE = UDF + 1;
@@ -88,8 +88,8 @@ public interface NamedObject extends Named, java.io.Serializable {
             "FUNCTION",
             "PACKAGE",
             "TRIGGER",
-            "DATABASE TRIGGER",
             "DDL TRIGGER",
+            "DATABASE TRIGGER",
             "SEQUENCE",
             "EXCEPTION",
             "EXTERNAL FUNCTION",

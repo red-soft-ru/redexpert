@@ -49,6 +49,8 @@ import java.util.*;
 public class DefaultDatabaseHost extends AbstractNamedObject
         implements DatabaseHost {
 
+    private int countFinishedMetaTags;
+
     private int typeTree;
 
     /**
@@ -90,6 +92,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     public DefaultDatabaseHost(DatabaseConnection databaseConnection, int typeTree) {
         this.databaseConnection = databaseConnection;
+        countFinishedMetaTags = 0;
         this.typeTree = typeTree;
     }
 
@@ -105,6 +108,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     public boolean connect() throws DataSourceException {
 
         if (!isConnected()) {
+            countFinishedMetaTags = 0;
 
             boolean connected = connectionMediator().connect(getDatabaseConnection());
             try {
@@ -193,6 +197,16 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     public Connection getTemporaryConnection() {
 
         return ConnectionManager.getTemporaryConnection(getDatabaseConnection());
+    }
+
+    @Override
+    public int countFinishedMetaTags() {
+        return countFinishedMetaTags;
+    }
+
+    @Override
+    public void incCountFinishedMetaTags() {
+        countFinishedMetaTags++;
     }
 
     /**

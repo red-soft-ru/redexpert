@@ -174,19 +174,13 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
      * Adds this object's children as expanded nodes.
      */
     public void populateChildren() throws DataSourceException {
-
         if (!childrenRetrieved) {
-
             List<DatabaseObjectNode> children = getChildObjects();
             if (children != null) {
-
                 for (int i = 0, n = children.size(); i < n; i++) {
-
                     add(children.get(i));
                 }
-
             }
-
             childrenRetrieved = true;
         }
     }

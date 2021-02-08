@@ -277,5 +277,9 @@ public interface DatabaseHost extends NamedObject {
 
     Connection getTemporaryConnection();
 
+    int countFinishedMetaTags();
+
+    void incCountFinishedMetaTags();
+
 }
 

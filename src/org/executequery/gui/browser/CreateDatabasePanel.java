@@ -1,6 +1,7 @@
 package org.executequery.gui.browser;
 
 import biz.redsoft.IFBCreateDatabase;
+import biz.redsoft.IFBCryptoPluginInit;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.*;
 import org.executequery.components.FileChooserDialog;
@@ -25,6 +26,7 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
@@ -844,10 +846,34 @@ public class CreateDatabasePanel extends ActionPanel
                 return;
             }
 
-            urls = MiscUtils.loadURLs("./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-            ClassLoader cl = new URLClassLoader(urls, o.getClass().getClassLoader());
-            clazzdb = cl.loadClass("biz.redsoft.FBCreateDatabaseImpl");
-            odb = clazzdb.newInstance();
+            try {
+                Object odb1 = DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
+                        "biz.redsoft.FBCryptoPluginInitImpl",
+                        "./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
+                IFBCryptoPluginInit cryptoPlugin = (IFBCryptoPluginInit) odb;
+                // try to initialize crypto plugin
+                cryptoPlugin.init();
+
+            } catch (NoSuchMethodError e) {
+                Log.warning("Unable to initialize cryptographic plugin. " +
+                        "Authentication using cryptographic mechanisms will not be available. " +
+                        "Please install the crypto pro library to enable cryptographic modules.");
+                //advancedProperties.put("excludeCryptoPlugins", "Multifactor,GostPassword,Certificate");
+            } catch (Exception e) {
+                Log.warning("Unable to initialize cryptographic plugin. " +
+                        "Authentication using cryptographic mechanisms will not be available. " +
+                        "Please install the crypto pro library to enable cryptographic modules.");
+                //advancedProperties.put("excludeCryptoPlugins", "Multifactor,GostPassword,Certificate");
+            } catch (UnsatisfiedLinkError e) {
+                Log.warning("Unable to initialize cryptographic plugin. " +
+                        "Authentication using cryptographic mechanisms will not be available. " +
+                        "Please install the crypto pro library to enable cryptographic modules.");
+                //advancedProperties.put("excludeCryptoPlugins", "Multifactor,GostPassword,Certificate");
+            }
+            odb = DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
+                    "biz.redsoft.FBCreateDatabaseImpl",
+                    "./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
+            ;
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {

@@ -1,9 +1,8 @@
 package org.executequery.gui.browser;
 
 import biz.redsoft.IFBCreateDatabase;
-import org.executequery.Constants;
-import org.executequery.EventMediator;
-import org.executequery.GUIUtilities;
+import org.apache.commons.lang.StringUtils;
+import org.executequery.*;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.components.TextFieldPanel;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -21,6 +20,7 @@ import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
+import org.executequery.util.Base64;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.actions.ActionUtilities;
@@ -39,7 +39,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.io.File;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.Connection;
@@ -92,9 +95,6 @@ public class CreateDatabasePanel extends ActionPanel
 
     private JComboBox txCombo;
     private JButton txApplyButton;
-
-    JPanel basicPanel;
-    JPanel standardPanel;
 
     // -------------------------------
 
@@ -162,6 +162,7 @@ public class CreateDatabasePanel extends ActionPanel
     GridBagHelper gbh;
 
     private void init() {
+
 
         multifactorComponents = new ArrayList<>();
         basicComponents = new ArrayList<>();
@@ -459,6 +460,15 @@ public class CreateDatabasePanel extends ActionPanel
         }
     }
 
+    public void setVerifyServerCertCheck() {
+
+        /*boolean store = verifyServerCertCheck.isSelected();
+        databaseConnection.setVerifyServerCertCheck(store);*/
+    }
+
+    public void setStoreContainerPassword() {
+    }
+
     private void loadCharsets() {
         Properties props;
         try {
@@ -702,6 +712,105 @@ public class CreateDatabasePanel extends ActionPanel
             GUIUtilities.displayErrorMessage("Creating database for selected driver is not implemented");
     }
 
+    private void storeJdbcProperties(IFBCreateDatabase db) {
+
+        Properties properties = new Properties();
+
+        for (int i = 0; i < advancedProperties.length; i++) {
+
+            String key = advancedProperties[i][0];
+            String value = advancedProperties[i][1];
+
+            if (!MiscUtils.isNull(key) && !MiscUtils.isNull(value)) {
+
+                if (key.equalsIgnoreCase("lc_ctype")
+                        || key.equalsIgnoreCase("useGSSAuth")
+                        || key.equalsIgnoreCase("roleName")
+                        || key.equalsIgnoreCase("isc_dpb_trusted_auth")
+                        || key.equalsIgnoreCase("isc_dpb_multi_factor_auth")
+                        || key.equalsIgnoreCase("isc_dpb_certificate_base64"))
+                    continue;
+                properties.setProperty(key, value);
+            }
+
+        }
+
+        if (!properties.containsKey("lc_ctype"))
+            properties.setProperty("lc_ctype", charsetsCombo.getSelectedItem().toString());
+
+        if (!properties.containsKey("useGSSAuth") && authCombo.getSelectedItem().toString().equalsIgnoreCase("gss"))
+            properties.setProperty("useGSSAuth", "true");
+
+        if (!properties.containsKey("isc_dpb_trusted_auth")
+                && !properties.containsKey("isc_dpb_multi_factor_auth")
+                && authCombo.getSelectedItem().toString().equalsIgnoreCase("multifactor")) {
+            properties.setProperty("isc_dpb_trusted_auth", "1");
+            properties.setProperty("isc_dpb_multi_factor_auth", "1");
+        }
+        if (!certificateFileField.getText().isEmpty()
+                && authCombo.getSelectedItem().toString().equalsIgnoreCase("multifactor"))
+            loadCertificate(properties, certificateFileField.getText());
+
+        if (containerPasswordField.getPassword() != null && containerPasswordField.getPassword().length != 0
+                && authCombo.getSelectedItem().toString().equalsIgnoreCase("multifactor"))
+            properties.setProperty("isc_dpb_repository_pin", MiscUtils.charsToString(containerPasswordField.getPassword()));
+
+        if (verifyServerCertCheck.isSelected()
+                && authCombo.getSelectedItem().toString().equalsIgnoreCase("multifactor"))
+            properties.setProperty("isc_dpb_verify_server", "1");
+
+        String name = ManagementFactory.getRuntimeMXBean().getName();
+        String pid = name.split("@")[0];
+        String path = null;
+        if (ApplicationContext.getInstance().getExternalProcessName() != null &&
+                !ApplicationContext.getInstance().getExternalProcessName().isEmpty()) {
+            path = ApplicationContext.getInstance().getExternalProcessName();
+        }
+        if (ApplicationContext.getInstance().getExternalPID() != null &&
+                !ApplicationContext.getInstance().getExternalPID().isEmpty()) {
+            pid = ApplicationContext.getInstance().getExternalPID();
+        }
+        properties.setProperty("process_id", pid);
+        try {
+            if (path == null)
+                path = ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            properties.setProperty("process_name", path);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        db.setJdbcProperties(properties);
+    }
+
+    private boolean checkBase64Format(String certificate) {
+        return StringUtils.contains(certificate, "-----BEGIN CERTIFICATE-----") ? true : false;
+    }
+
+    private void loadCertificate(Properties properties, String certificatePath) {
+        try {
+            byte[] bytes = FileUtils.readBytes(new File(certificatePath));
+            String base64cert = new String(bytes);
+
+            if (checkBase64Format(base64cert)) {
+                // If the certificate is in the BASE64 format, then add to properties
+                properties.setProperty("isc_dpb_certificate_base64", base64cert);
+            } else {
+                // Convert from the DER to BASE64
+                base64cert = Base64.encodeBytes(bytes);
+                StringBuilder sb = new StringBuilder();
+                sb.append("-----BEGIN CERTIFICATE-----");
+                sb.append("\n");
+                sb.append(base64cert);
+                sb.append("\n");
+                sb.append("-----END CERTIFICATE-----");
+                base64cert = sb.toString();
+                properties.setProperty("isc_dpb_certificate_base64", base64cert);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private void createFirebirdDatabase(DatabaseDriver databaseDriver) {
 
@@ -757,6 +866,7 @@ public class CreateDatabasePanel extends ActionPanel
         db.setDatabaseName(path);
         db.setEncoding(charsetsCombo.getSelectedItem().toString());
         db.setPageSize(Integer.valueOf(pageSizeCombo.getSelectedItem().toString()));
+        storeJdbcProperties(db);
 
         try {
             db.exec();

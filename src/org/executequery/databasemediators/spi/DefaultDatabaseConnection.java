@@ -38,7 +38,11 @@ import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.tree.TreeNode;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * <p>This class maintains the necessary information for each
@@ -689,7 +693,7 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     }
 
     public List<String> getListObjectsDB() {
-        List<String> list = new ArrayList<>();
+        List<String> list = new CopyOnWriteArrayList<>();
         DatabaseObjectNode host = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(this);
         addingChild(list, host);
         return list;

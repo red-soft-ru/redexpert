@@ -6,6 +6,7 @@ import org.firebirdsql.gds.ng.FbDatabase;
 import org.firebirdsql.gds.ng.FbDatabaseFactory;
 
 import java.sql.SQLException;
+import java.util.Properties;
 
 /*** Created by Vasiliy on 05.04.2017.
  */
@@ -16,6 +17,7 @@ public class FBCreateDatabaseImpl implements IFBCreateDatabase {
     private String password;
     private String databaseName;
     private String encoding;
+    private Properties jdbcProperties;
     private int pageSize;
 
     @Override
@@ -48,6 +50,11 @@ public class FBCreateDatabaseImpl implements IFBCreateDatabase {
     }
 
     @Override
+    public void setJdbcProperties(Properties jdbcProperties) {
+        this.jdbcProperties = jdbcProperties;
+    }
+
+    @Override
     public void exec() throws SQLException {
         if (port == 0) {
             port = 3050;
@@ -62,6 +69,12 @@ public class FBCreateDatabaseImpl implements IFBCreateDatabase {
             connectionInfo.setDatabaseName(databaseName);
             connectionInfo.setEncoding(encoding);
             connectionInfo.getExtraDatabaseParameters().addArgument(4, pageSize);
+            if (jdbcProperties != null) {
+                for (String key : jdbcProperties.stringPropertyNames()) {
+                    connectionInfo.setNonStandardProperty(key, jdbcProperties.getProperty(key));
+                }
+            }
+
         }
 
         FbDatabaseFactory factory = null;

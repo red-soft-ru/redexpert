@@ -19,8 +19,12 @@
       <url>http://repo1.maven.org/maven2</url>
     </repository>
     <repository>
-      <id>red-soft-nexus-jaybird-releases</id>
-      <url>http://nexus.red-soft.biz/repository/jaybird-releases</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>bintray-red-soft-ru-releases</id>
+      <name>bintray</name>
+      <url>https://dl.bintray.com/red-soft-ru/releases</url>
     </repository>
   </repositories>
 
@@ -34,17 +38,17 @@
     <dependency>
       <groupId>ru.red-soft.jdbc</groupId>
       <artifactId>jaybird-jdk18</artifactId>
-      <version>4.0.6</version>
+      <version>4.0.4</version>
     </dependency>
     <dependency>
       <groupId>ru.red-soft.jdbc</groupId>
       <artifactId>jaybird-cryptoapi-jdk18</artifactId>
-      <version>4.0.6</version>
+      <version>4.0.4</version>
     </dependency>
     <dependency>
       <groupId>ru.red-soft.jdbc</groupId>
       <artifactId>fbclient</artifactId>
-      <version>4.0.6</version>
+      <version>4.0.4</version>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
@@ -92,7 +96,7 @@
                 <artifactItem>
                   <groupId>ru.red-soft.jdbc</groupId>
                   <artifactId>jaybird-jdk18</artifactId>
-                  <version>3.0.20</version>
+                  <version>3.0.17</version>
                   <type>jar</type>
                   <outputDirectory>../../../lib</outputDirectory>
                   <destFileName>jaybird-3.jar</destFileName>
@@ -107,7 +111,7 @@
                 <artifactItem>
                   <groupId>ru.red-soft.jdbc</groupId>
                   <artifactId>jaybird-cryptoapi-jdk18</artifactId>
-                  <version>3.0.20</version>
+                  <version>3.0.17</version>
                   <type>jar</type>
                   <outputDirectory>../../../lib</outputDirectory>
                   <destFileName>jaybird-cryptoapi-3.jar</destFileName>
@@ -139,7 +143,7 @@
                 <artifactItem>
                   <groupId>ru.red-soft.jdbc</groupId>
                   <artifactId>jaybird-jdk18</artifactId>
-                  <version>3.0.20</version>
+                  <version>3.0.17</version>
                   <type>jar</type>
                   <outputDirectory>../../redexpert/target/lib</outputDirectory>
                   <destFileName>jaybird-3.jar</destFileName>
@@ -154,7 +158,7 @@
                 <artifactItem>
                   <groupId>ru.red-soft.jdbc</groupId>
                   <artifactId>jaybird-cryptoapi-jdk18</artifactId>
-                  <version>3.0.20</version>
+                  <version>3.0.17</version>
                   <type>jar</type>
                   <outputDirectory>../../redexpert/target/lib</outputDirectory>
                   <destFileName>jaybird-cryptoapi-3.jar</destFileName>

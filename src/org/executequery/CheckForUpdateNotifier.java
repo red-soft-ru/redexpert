@@ -508,7 +508,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
             final String finalReleaseNotes = releaseNotes;
             GUIUtils.invokeAndWait(() -> new InformationDialog(bundledString("latestVersionInfoTitle"),
-                    finalReleaseNotes, InformationDialog.TEXT_CONTENT_VALUE, null));
+                    finalReleaseNotes, InformationDialog.TEXT_CONTENT_VALUE, "utf8"));
 
             return Constants.WORKER_SUCCESS;
 

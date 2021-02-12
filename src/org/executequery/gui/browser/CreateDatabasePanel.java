@@ -850,21 +850,11 @@ public class CreateDatabasePanel extends ActionPanel
                 Object odb1 = DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
                         "biz.redsoft.FBCryptoPluginInitImpl",
                         "./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
-                IFBCryptoPluginInit cryptoPlugin = (IFBCryptoPluginInit) odb;
+                IFBCryptoPluginInit cryptoPlugin = (IFBCryptoPluginInit) odb1;
                 // try to initialize crypto plugin
                 cryptoPlugin.init();
 
-            } catch (NoSuchMethodError e) {
-                Log.warning("Unable to initialize cryptographic plugin. " +
-                        "Authentication using cryptographic mechanisms will not be available. " +
-                        "Please install the crypto pro library to enable cryptographic modules.");
-                //advancedProperties.put("excludeCryptoPlugins", "Multifactor,GostPassword,Certificate");
-            } catch (Exception e) {
-                Log.warning("Unable to initialize cryptographic plugin. " +
-                        "Authentication using cryptographic mechanisms will not be available. " +
-                        "Please install the crypto pro library to enable cryptographic modules.");
-                //advancedProperties.put("excludeCryptoPlugins", "Multifactor,GostPassword,Certificate");
-            } catch (UnsatisfiedLinkError e) {
+            } catch (NoSuchMethodError | Exception | UnsatisfiedLinkError e) {
                 Log.warning("Unable to initialize cryptographic plugin. " +
                         "Authentication using cryptographic mechanisms will not be available. " +
                         "Please install the crypto pro library to enable cryptographic modules.");
@@ -874,13 +864,7 @@ public class CreateDatabasePanel extends ActionPanel
                     "biz.redsoft.FBCreateDatabaseImpl",
                     "./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar");
             ;
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
+        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | MalformedURLException e) {
             e.printStackTrace();
         }
 

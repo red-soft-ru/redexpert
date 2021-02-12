@@ -253,7 +253,7 @@ public final class GUIUtilities {
             statusBar.getLabel(4).addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseReleased(MouseEvent e) {
-                    if (GUIUtilities.displayConfirmDialog("Do you want exit from this account?") == JOptionPane.YES_OPTION) {
+                    if (GUIUtilities.displayConfirmDialog(bundledString("want-exit")) == JOptionPane.YES_OPTION) {
                         SystemProperties.setStringProperty("user", "reddatabase.token", "");
                         statusBar.getLabel(4).removeMouseListener(this);
                         loadAuthorisationInfo();

@@ -920,6 +920,11 @@ public class CreateDatabasePanel extends ActionPanel
             databaseConnection.setPort(this.portField.getStringValue());
             databaseConnection.setSourceName(this.sourceField.getText());
             databaseConnection.setCharset(this.charsetsCombo.getSelectedItem().toString());
+            databaseConnection.setCertificate(certificateFileField.getText());
+            databaseConnection.setContainerPassword(MiscUtils.charsToString(containerPasswordField.getPassword()));
+            databaseConnection.setContainerPasswordStored(saveContPwdCheck.isSelected());
+            databaseConnection.setVerifyServerCertCheck(verifyServerCertCheck.isSelected());
+            databaseConnection.setAuthMethod(authCombo.getSelectedItem().toString());
 
             connectionsTreePanel.newConnection(databaseConnection);
 

@@ -50,7 +50,7 @@ public class InformationDialog extends ActionDialog {
                 if (charSet == null)
                 text = FileUtils.loadResource(value);
                 else
-                    text = FileUtils.loadResource(value, "UTF8");
+                    text = FileUtils.loadResource(value, charSet);
 
             } else {
 

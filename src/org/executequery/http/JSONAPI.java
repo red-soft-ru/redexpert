@@ -25,7 +25,7 @@ public class JSONAPI {
         client.executeMethod(get);
 
         BufferedReader br = new BufferedReader(
-                new InputStreamReader(get.getResponseBodyAsStream()));
+                new InputStreamReader(get.getResponseBodyAsStream(), "utf8"));
 
         String inputLine;
 

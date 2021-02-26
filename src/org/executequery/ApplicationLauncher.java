@@ -190,7 +190,7 @@ public class ApplicationLauncher {
             try {
                 printSystemProperties();
 
-                frame.setTitle("Red Expert - " + System.getProperty("executequery.minor.version"));
+                frame.setTitle("RedXpert - " + System.getProperty("executequery.minor.version"));
 
                 // auto-login if selected
                 if (openConnection) {
@@ -359,7 +359,7 @@ public class ApplicationLauncher {
 
         Log.info("Using Java version " +
                 System.getProperty("java.version"));
-        Log.info("Red Expert version: " +
+        Log.info("RedXpert version: " +
                 System.getProperty("executequery.minor.version") +
                 "-" + System.getProperty("executequery.build"));
         Log.info("Operating System: " +

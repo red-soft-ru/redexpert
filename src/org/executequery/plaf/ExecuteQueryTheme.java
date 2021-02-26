@@ -130,7 +130,7 @@ public class ExecuteQueryTheme extends DefaultMetalTheme {
     }
 
     public String getName() {
-        return "Red Expert";
+        return "RedXpert";
     }
 
     private static final int DEFAULT_FONT_SIZE = 11;

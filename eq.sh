@@ -20,8 +20,8 @@ fi
 
 if [ `getconf LONG_BIT` = "64" ]
 then
-    exec "$SCRIPTPATH"/bin/RedExpert64 -Xmx${JAVA_HEAP_SIZE}m &
+    exec "$SCRIPTPATH"/bin/RedXpert64 -Xmx${JAVA_HEAP_SIZE}m &
 else
-    exec "$SCRIPTPATH"/bin/RedExpert -Xmx${JAVA_HEAP_SIZE}m &
+    exec "$SCRIPTPATH"/bin/RedXpert -Xmx${JAVA_HEAP_SIZE}m &
 fi
 

@@ -26,19 +26,19 @@ chmod +x installbuilder.run
 ./installbuilder.run --mode unattended  --prefix /opt/installbuilder
 DIST=${DIST:=dist}
 INSTALLBUILDER_BINARY=${INSTALLBUILDER_BINARY:=/opt/installbuilder/bin/builder}
-echo $LICENSE_INSTALLBUILDER > /opt/installbuilder/license.xml
+echo $LICENSE_INSTALLBUILDER_REDXPERT > /opt/installbuilder/license.xml
 SRC_DIR=$(readlink -f `dirname $0`/..)
 INSTALLER_SRC_DIR=$SRC_DIR/installer
 INSTALLER_COMPONENTS=$DIST
 INSTALLER_OUTPUT_DIR=$DIST/bin
 VERSION=${VERSION=version}
-INSTALLER_NAME="RedExpert-$VERSION-installer-linux-$ARCH.bin"
-exec_file="RedExpert"
+INSTALLER_NAME="RedXpert-$VERSION-installer-linux-$ARCH.bin"
+exec_file="RedXpert"
 if [ "$ARCH" == "x86_64" ]; then
-    exec_file="RedExpert64"
+    exec_file="RedXpert64"
 fi
-echo "Building RedExpert installer"
-$INSTALLBUILDER_BINARY build $INSTALLER_SRC_DIR/RedExpert.xml --verbose --setvars \
+echo "Building RedXpert installer"
+$INSTALLBUILDER_BINARY build $INSTALLER_SRC_DIR/RedXpert.xml --verbose --setvars \
         redexpert_dir=$INSTALLER_COMPONENTS \
         output_dir=$INSTALLER_OUTPUT_DIR \
         installer_name=$INSTALLER_NAME \

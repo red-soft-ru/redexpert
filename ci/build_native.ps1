@@ -23,7 +23,7 @@ echo "JAVA_HOME=$Env:JAVA_HOME"
 echo "SRC_DIR=$SRC_DIR"
 echo "QMAKE=$QMAKE"
 
-cd "$SRC_DIR\native\RedExpertNativeLauncher\"
+cd "$SRC_DIR\native\RedXpertNativeLauncher\"
 
 Import-VisualStudioVars -VisualStudioVersion 2013 -Architecture $env:ARCH
 

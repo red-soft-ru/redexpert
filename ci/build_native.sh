@@ -21,6 +21,6 @@ SRC_DIR=$(readlink -f `dirname $0`/..)
 RESULT_DIR="${SRC_DIR}/dist"
 rm -rf "${RESULT_DIR}"
 
-cd "${SRC_DIR}/native/RedExpertNativeLauncher"
+cd "${SRC_DIR}/native/RedXpertNativeLauncher"
 $QMAKE
 make

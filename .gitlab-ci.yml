@@ -102,23 +102,23 @@ sources:
     - export JAVA_HOME=`java -XshowSettings:properties -version 2>&1|grep "java.home"|cut -d "=" -f 2|tr -d " "|rev | cut -c 4- | rev`
   script:
     - cd "${CI_PROJECT_DIR}"
-    - tar xf dist-src/RedExpert-$VERSION-src.tar.gz
-    - cd RedExpert-$VERSION
+    - tar xf dist-src/RedXpert-$VERSION-src.tar.gz
+    - cd RedXpert-$VERSION
     - ./ci/build_native.sh
     - ./ci/build_jar.sh
     - mkdir -p "${DIST}"
-    - mv native/RedExpertNativeLauncher/resources "${DIST}"
+    - mv native/RedXpertNativeLauncher/resources "${DIST}"
     - mkdir "${DIST}"/guide/
     - chmod +x modules/redexpert/target/bin/*
     - mv modules/redexpert/target/bin "${DIST}"
     - mv modules/redexpert/target/config "${DIST}"
     - mv modules/redexpert/target/lib "${DIST}"
     - cp -r license/ "${DIST}"
-    - cp guide/RedExpert_Guide-ru.pdf "${DIST}"/guide/
+    - cp guide/RedXpert_Guide-ru.pdf "${DIST}"/guide/
     - mv modules/redexpert/target/LICENSE.txt "${DIST}"
     - mv modules/redexpert/target/red_expert.ico "${DIST}"
     - mv modules/redexpert/target/red_expert.png "${DIST}"
-    - mv modules/redexpert/target/RedExpert.jar "${DIST}"
+    - mv modules/redexpert/target/RedXpert.jar "${DIST}"
     - ./ci/build_installer.sh
 
 build:linux:x86_64:
@@ -147,23 +147,35 @@ build:linux:x86:
   before_script:
     - $VERSION = (get-content .ci\version -Raw).trim()
     - $env:RE_VERSION = $VERSION
-    - $env:Path="c:\Program Files (x86)\BitRock InstallBuilder Enterprise 17.10.0\bin;" + $env:Path
-    - unzip -q dist-src\RedExpert-$VERSION-src.zip
+    - unzip -q dist-src\RedXpert-$VERSION-src.zip
     - mkdir ${DIST}
     - mkdir ${DIST}/guide/
+    - cd ${CI_PROJECT_DIR}\RedXpert-$VERSION
+    - echo "downloading installbuilder from ${URL_INSTALLBUILDER}"
+    - $client=new-object System.Net.WebClient
+    - $client.DownloadFile(${URL_INSTALLBUILDER}, "${CI_PROJECT_DIR}\RedXpert-$VERSION\ib.exe")
+    - echo "installing installbuilder"
+    - $pwd=pwd
+    - $pwd=$pwd.path
+    - $prefix_installbuilder="$pwd\ib"
+    - echo $prefix_installbuilder
+    - .\ib.exe --mode unattended  --prefix $prefix_installbuilder
+    - $env:PATH="$prefix_installbuilder\bin\;"+$env:PATH
+    - echo $env:PATH
   script:
-    - cd ${CI_PROJECT_DIR}\RedExpert-$VERSION
+    - cd ${CI_PROJECT_DIR}\RedXpert-$VERSION
+    - ls
     - powershell -ExecutionPolicy ByPass -file ci\build_native.ps1
     - powershell -ExecutionPolicy ByPass -file ci\build_jar.ps1
     - mv modules/redexpert/target/bin "${DIST}"
     - mv modules/redexpert/target/config "${DIST}"
     - mv modules/redexpert/target/lib "${DIST}"
     - cp -r license/ "${DIST}"
-    - cp guide/RedExpert_Guide-ru.pdf ${DIST}/guide/
+    - cp guide/RedXpert_Guide-ru.pdf ${DIST}/guide/
     - mv modules/redexpert/target/LICENSE.txt "${DIST}"
     - mv modules/redexpert/target/red_expert.ico "${DIST}"
     - mv modules/redexpert/target/red_expert.png "${DIST}"
-    - mv modules/redexpert/target/RedExpert.jar "${DIST}"
+    - mv modules/redexpert/target/RedXpert.jar "${DIST}"
     - powershell -ExecutionPolicy ByPass -file ci\build_installer.ps1
 
 build:windows:x86_64:
@@ -173,6 +185,7 @@ build:windows:x86_64:
     DIST: ${CI_PROJECT_DIR}\dist\windows-x86_64
     QMAKE: c:\Qt\Qt5.6.3\5.6.3\msvc2013_64\bin\qmake.exe
     ARCH: amd64
+    URL_INSTALLBUILDER: http://builds.red-soft.biz/release_hub/installbuilder/20.12.0/download/installbuilder:windows-x86_64:20.12.0:exe
     <<: *build_windows_template_vars
 
 build:windows:x86:
@@ -182,6 +195,7 @@ build:windows:x86:
     DIST: ${CI_PROJECT_DIR}\dist\windows-x86
     QMAKE: c:\Qt\Qt5.6.3_x86\5.6.3\msvc2013\bin\qmake.exe
     ARCH: x86
+    URL_INSTALLBUILDER: http://builds.red-soft.biz/release_hub/installbuilder/20.12.0/download/installbuilder:windows-x86:20.12.0:exe
     <<: *build_windows_template_vars
 
 repackage:

@@ -212,7 +212,7 @@ public class UpdateLoader extends JFrame {
     private void launch() {
         ProcessBuilder pb = null;
         try {
-            StringBuilder sb = new StringBuilder("./RedExpert");
+            StringBuilder sb = new StringBuilder("./RedXpert");
             if (System.getProperty("os.arch").toLowerCase().contains("amd64"))
                 sb.append("64");
             if (System.getProperty("os.name").toLowerCase().contains("win"))
@@ -533,7 +533,7 @@ public class UpdateLoader extends JFrame {
                         cancelButton.setText("Restart later");
                     } catch (FileNotFoundException ex) {
                         ex.printStackTrace();
-                        JOptionPane.showMessageDialog(null, "Access denied. Please restart RedExpert as an admin!");
+                        JOptionPane.showMessageDialog(null, "Access denied. Please restart RedXpert as an admin!");
 
                     } catch (Exception ex) {
                         ex.printStackTrace();

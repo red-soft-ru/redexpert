@@ -4,8 +4,8 @@
 <project>
     <height>500</height>
     <width>700</width>
-    <shortName>RedExpert</shortName>
-    <fullName>Red Expert</fullName>
+    <shortName>RedXpert</shortName>
+    <fullName>RedXpert</fullName>
     <version>${VERSION}</version>
     <licenseFile>${redexpert_dir}/LICENSE.txt</licenseFile>
     <logoImage>logos/red_expert.png</logoImage>
@@ -162,7 +162,7 @@
         </deleteFile>
         <deleteFile path="${installdir}/bin"/>
         <deleteFile path="${installdir}/lib"/>
-        <deleteFile path="${installdir}/RedExpertInstallation.log"/>
+        <deleteFile path="${installdir}/RedXpertInstallation.log"/>
     </preUninstallationActionList>
     <postInstallationActionList>
         <createShortcuts>
@@ -200,7 +200,7 @@
     <disableSplashScreen>1</disableSplashScreen>
     <vendor>Red Soft Corporation</vendor>
     <windows64bitMode>1</windows64bitMode>
-    <installationLogFile>${installdir}/RedExpertInstallation.log</installationLogFile>
+    <installationLogFile>${installdir}/RedXpertInstallation.log</installationLogFile>
     <parameterList>
         <directoryParameter>
             <name>installdir</name>

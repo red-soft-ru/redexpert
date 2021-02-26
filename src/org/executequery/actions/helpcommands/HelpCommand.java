@@ -34,7 +34,7 @@ import java.net.URL;
  */
 public class HelpCommand extends AbstractUrlLauncherCommand {
 
-    private static final String URL = "guide/RedExpert_Guide-ru.pdf";
+    private static final String URL = "guide/RedXpert_Guide-ru.pdf";
 
     @Override
     public String url() {
@@ -46,7 +46,7 @@ public class HelpCommand extends AbstractUrlLauncherCommand {
                 e.printStackTrace();
             }
         String url = urls[0].toString();
-        url = url.replace("bin/guide/RedExpert_Guide-ru.pdf", "guide/RedExpert_Guide-ru.pdf");
+        url = url.replace("bin/guide/RedXpert_Guide-ru.pdf", "guide/RedXpert_Guide-ru.pdf");
         return url;
     }
 

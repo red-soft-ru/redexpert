@@ -13,7 +13,7 @@ CONFIG -= qt
 win32: {
     contains(QT_ARCH, i386) {
         message("select 32-bit arch")
-        TARGET = bin/RedExpert
+        TARGET = bin/RedXpert
         LIBS += -L"$$(JAVA_HOME)/lib/" -ljvm
         INCLUDEPATH += "$$(JAVA_HOME)/include/"
         INCLUDEPATH += "$$(JAVA_HOME)/include/win32/"
@@ -21,7 +21,7 @@ win32: {
         DEPENDPATH += "$$(JAVA_HOME)/include/win32/"
     } else {
         message("select 64-bit arch")
-        TARGET = bin/RedExpert64
+        TARGET = bin/RedXpert64
         LIBS += -L"$$(JAVA_HOME)/lib/" -ljvm
         INCLUDEPATH += "$$(JAVA_HOME)/include/"
         INCLUDEPATH += "$$(JAVA_HOME)/include/win32/"
@@ -51,10 +51,10 @@ win32: {
 else:unix: {
     contains(QT_ARCH, i386) {
         message("select 32-bit arch")
-        TARGET = bin/RedExpert
+        TARGET = bin/RedXpert
     } else {
         message("select 64-bit arch")
-        TARGET = bin/RedExpert64
+        TARGET = bin/RedXpert64
     }
     CONFIG += link_pkgconfig
     PKGCONFIG += gtk+-3.0

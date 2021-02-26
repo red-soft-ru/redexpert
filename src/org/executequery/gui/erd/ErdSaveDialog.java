@@ -245,7 +245,7 @@ public class ErdSaveDialog extends AbstractBaseDialog
         svgPanel.setBorder(BorderFactory.createTitledBorder("SVG Options"));
 
         imageTypeCombo = WidgetFactory.createComboBox(new String[]{
-                "Red Expert ERD", "JPEG", "GIF", "PNG", "SVG"});
+                "RedXpert ERD", "JPEG", "GIF", "PNG", "SVG"});
         imageTypeCombo.setPreferredSize(comboDim);
 
         pathField = WidgetFactory.createTextField();
@@ -353,7 +353,7 @@ public class ErdSaveDialog extends AbstractBaseDialog
         int imageType = imageTypeCombo.getSelectedIndex();
 
         if (imageType == EQ_FORMAT) {
-            fileDescription = "Red Expert ERD Files";
+            fileDescription = "RedXpert ERD Files";
             fileExtension = "eqd";
         } else if (imageType == JPEG_FORMAT) {
             fileDescription = "JPEG Files";

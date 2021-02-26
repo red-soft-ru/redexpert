@@ -23,12 +23,12 @@ package org.executequery.plaf;
 
 public enum LookAndFeelType {
 
-    EXECUTE_QUERY("Red Expert Default"),
-    EXECUTE_QUERY_DARK("Red Expert Dark Theme"),
-    EXECUTE_QUERY_GRADIENT("Red Expert Default 3D"),
+    EXECUTE_QUERY("RedXpert Default"),
+    EXECUTE_QUERY_DARK("RedXpert Dark Theme"),
+    EXECUTE_QUERY_GRADIENT("RedXpert Default 3D"),
     SMOOTH_GRADIENT("Smooth Gradient"),
     BUMPY_GRADIENT("Bumpy Gradient"),
-    EXECUTE_QUERY_THEME("Red Expert Theme"),
+    EXECUTE_QUERY_THEME("RedXpert Theme"),
     METAL("Metal - Classic"),
     OCEAN("Metal - Ocean (JDK1.5+)"),
     WINDOWS("Windows"),

@@ -1441,7 +1441,7 @@ public class QueryEditor extends DefaultTabView
     }
 
     public String getPrintJobName() {
-        return "Red Expert - editor";
+        return "RedXpert - editor";
     }
 
     // ---------------------------------------------

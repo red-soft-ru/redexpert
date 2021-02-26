@@ -1769,7 +1769,7 @@ private:
                << ", JNI_CreateJavaVM) failed with " << GetLastError() << ".\n";
 #endif
             if (sl_handle == 0)
-                os << "A Java Runtime Environment (JRE) or Java Development Kit (JDK) must be available in order to run Red Expert. "
+                os << "A Java Runtime Environment (JRE) or Java Development Kit (JDK) must be available in order to run RedXpert. "
                    << "No Java virtual machine was found.\n"
                    << "If the required Java Runtime Environment is not installed, you can download it from from the website:\n"
                    << "http://java.com/\n"
@@ -2002,7 +2002,7 @@ void ErrorReporter::generateReport(const std::exception& ex,
     os << utils::join(" ", launcher_args);
     os << std::endl;
 
-    reportFatalErrorViaGui("Red Expert", os.str(), support_address, typeError);
+    reportFatalErrorViaGui("RedXpert", os.str(), support_address, typeError);
 }
 
 #ifdef _WIN32
@@ -2338,7 +2338,7 @@ int main(int argc, char* argv[])
 #endif
 
     app_dir = bin_dir + file_separator() + "..";
-    paths.append(app_dir + file_separator() + "RedExpert.jar");
+    paths.append(app_dir + file_separator() + "RedXpert.jar");
     paths.append(separator);
 
 #ifdef __linux__
@@ -2398,7 +2398,7 @@ int main(int argc, char* argv[])
     int sep_idx = paths.find_last_of(separator);
     paths = paths.substr(0, sep_idx);
 
-    // add to java class path Red Expert jar
+    // add to java class path RedXpert jar
     std::string stdString = paths;
     char* class_path = (char*)stdString.c_str();
 
@@ -2418,8 +2418,8 @@ int main(int argc, char* argv[])
     launcher_args.push_back("-exe_pid=" + str_pid);
     std::string path_config;
 
-    path_config = replaceFirstOccurrence(app_exe_path, "bin" + file_separator() + "RedExpert64" + extension_exe_file(), "config" + file_separator() + "redexpert_config.ini");
-    path_config = replaceFirstOccurrence(path_config, "bin" + file_separator() + "RedExpert" + extension_exe_file(), "config" + file_separator() + "redexpert_config.ini");
+    path_config = replaceFirstOccurrence(app_exe_path, "bin" + file_separator() + "RedXpert64" + extension_exe_file(), "config" + file_separator() + "redexpert_config.ini");
+    path_config = replaceFirstOccurrence(path_config, "bin" + file_separator() + "RedXpert" + extension_exe_file(), "config" + file_separator() + "redexpert_config.ini");
     std::ifstream in(path_config); // окрываем файл для чтения
     bool f_open = in.is_open();
     std::string line;

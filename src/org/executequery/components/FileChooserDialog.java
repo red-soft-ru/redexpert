@@ -212,7 +212,7 @@ class DefaultFileView extends FileView {
             return "SQL Script File";
 
         else if (name.endsWith(".eqd"))
-            return "Red Expert ERD File";
+            return "RedXpert ERD File";
 
         else if (name.endsWith(".zip"))
             return "ZIP Archive File";

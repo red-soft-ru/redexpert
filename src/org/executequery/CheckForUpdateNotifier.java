@@ -139,7 +139,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
             } else {
 
-                Log.info("Red Expert is up to date.");
+                Log.info("RedXpert is up to date.");
             }
 
         } catch (ApplicationException e) {
@@ -176,7 +176,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         } else {
 
-            Log.info("Red Expert is up to date.");
+            Log.info("RedXpert is up to date.");
         }
     }
 
@@ -190,7 +190,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             setDownloadNotifierInStatusBar();
         } else {
             if (updateLoader.getVersion() != null)
-                Log.info("Red Expert is up to date.");
+                Log.info("RedXpert is up to date.");
         }
     }
 
@@ -238,9 +238,9 @@ public class CheckForUpdateNotifier implements Interruptible {
 
                     String[] args = argsList.toArray(new String[0]);
                     String[] run;
-                    File file = new File("RedExpert.jar");
+                    File file = new File("RedXpert.jar");
                     if (!file.exists())
-                        file = new File("../RedExpert.jar");
+                        file = new File("../RedXpert.jar");
                     run = new String[]{"java", "-cp", file.getPath(), "org.executequery.UpdateLoader"};
                     run = (String[]) ArrayUtils.addAll(run, args);
                     try {
@@ -382,7 +382,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
             } else {
 
-                Log.info("Red Expert is up to date.");
+                Log.info("RedXpert is up to date.");
 
                 if (monitorProgress) {
 

@@ -238,7 +238,7 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
     }
 
     public String getPrintJobName() {
-        return "Red Expert - SQL Editor";
+        return "RedXpert - SQL Editor";
     }
 
     public SQLTextPane getTextPane() {

@@ -32,8 +32,7 @@ while [ "$1" != "" ]; do
 	echo "    $1..."
 	pushd dist/$1
 		rm -rf tmp
-		ls 
-		# tar xf ../RedExpert-$VERSION.tar.gz
+		ls
 		if [ "$full" = "1" ]; then
 			mv * $TMP_DIR
 		else
@@ -46,8 +45,8 @@ done
 
 echo Archiving...
 pushd $TMP_DIR
-mv bin/RedExpert-$VERSION-installer-* $RESULT_DIR
-tar czf "$RESULT_DIR/RedExpert-$VERSION.tar.gz" *
-zip -qr "$RESULT_DIR/RedExpert-$VERSION.zip" .
+mv bin/RedXpert-$VERSION-installer-* $RESULT_DIR
+tar czf "$RESULT_DIR/RedXpert-$VERSION.tar.gz" *
+zip -qr "$RESULT_DIR/RedXpert-$VERSION.zip" .
 popd
 rm -rf $TMP_DIR

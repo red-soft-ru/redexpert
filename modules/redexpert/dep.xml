@@ -15,7 +15,7 @@
           <include>red_expert.png</include>
           <include>red_expert.ico</include>
           <include>redexpert.desktop</include>
-          <include>RedExpert.*</include>
+          <include>RedXpert.*</include>
           <include>createDesktopEntry.sh</include>
           <include>LICENSE.txt</include>
         </includes>
@@ -24,7 +24,7 @@
         <directory>${project.build.directory}</directory>
         <outputDirectory></outputDirectory>
         <includes>
-          <include>RedExpert.*</include>
+          <include>RedXpert.*</include>
           <include>createDesktopEntry.sh</include>
         </includes>
         <fileMode>0755</fileMode>

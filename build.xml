@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 
-<project name="RedExpert" default="make" basedir=".">
+<project name="RedXpert" default="make" basedir=".">
 
-	<property name="compile.outdir" value="classes" />
-	<property name="src.path" value="src" />
-	<property name="dist.outdir" value="." />
-	<property name="lib.dir" value="${dist.outdir}/lib" />
-	<property name="docs.dir" value="${dist.outdir}/docs" />
-	<property name="main.class" value="org.executequery.ExecuteQuery" />
-	<property name="launch4j.dir" value="../launch4j" />
+	<property name="compile.outdir" value="classes"/>
+	<property name="src.path" value="src"/>
+	<property name="dist.outdir" value="."/>
+	<property name="lib.dir" value="${dist.outdir}/lib"/>
+	<property name="docs.dir" value="${dist.outdir}/docs"/>
+	<property name="main.class" value="org.executequery.ExecuteQuery"/>
+	<property name="launch4j.dir" value="../launch4j"/>
 
 	<path id="classpath">
 		<pathelement location="${lib.dir}" />
@@ -54,22 +54,22 @@
 	</target>
 
 	<target name="jar" depends="compile" description="generate the jar file">
-		
-        <manifestclasspath property="manifest.classpath"
-                           jarfile="${dist.outdir}/RedExpert.jar">
-            <classpath refid="classpath" />
-        </manifestclasspath>
 
-        <jar jarfile="${dist.outdir}/RedExpert.jar" 
-            basedir="${compile.outdir}"
-            compress="false" includes="org/**">
+		<manifestclasspath property="manifest.classpath"
+						   jarfile="${dist.outdir}/RedXpert.jar">
+			<classpath refid="classpath"/>
+		</manifestclasspath>
 
-            <manifest>
-                <attribute name="Main-Class" value="${main.class}" />
-            	<attribute name="Class-Path" value="${manifest.classpath} docs/eqhelp.jar" />
-            </manifest>
+		<jar jarfile="${dist.outdir}/RedXpert.jar"
+			 basedir="${compile.outdir}"
+			 compress="false" includes="org/**">
 
-        </jar>
+			<manifest>
+				<attribute name="Main-Class" value="${main.class}"/>
+				<attribute name="Class-Path" value="${manifest.classpath} docs/eqhelp.jar"/>
+			</manifest>
+
+		</jar>
 
 		<delete dir="${compile.outdir}" quiet="true"/>
 
@@ -79,8 +79,8 @@
 		<taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar
 		    :${launch4j.dir}/xstream.jar" />
 		<launch4j>
-			<config headerType="gui" jar="RedExpert.jar" outfile="RedExpert.exe" icon="red_expert.ico">
-				<jre minVersion="1.7.0" />
+			<config headerType="gui" jar="RedXpert.jar" outfile="RedXpert.exe" icon="red_expert.ico">
+				<jre minVersion="1.7.0"/>
 			</config>
 		</launch4j>
 	</target>

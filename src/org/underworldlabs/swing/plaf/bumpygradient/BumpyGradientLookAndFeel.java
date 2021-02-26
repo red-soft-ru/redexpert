@@ -59,7 +59,7 @@ public class BumpyGradientLookAndFeel extends SmoothGradientLookAndFeel {
     }
 
     public String getDescription() {
-        return "The Red Expert Bumpy Gradient Look and Feel - modified from " +
+        return "The RedXpert Bumpy Gradient Look and Feel - modified from " +
                 "The JGoodies Plastic Look and Feel";
     }
 

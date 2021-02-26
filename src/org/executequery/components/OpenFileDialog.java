@@ -90,7 +90,7 @@ public class OpenFileDialog extends FileChooserDialog
 
         textFiles = new FileSelector(new String[]{"txt"}, "Text files");
         sqlFiles = new FileSelector(new String[]{"sql"}, "SQL files");
-        eqFiles = new FileSelector(new String[]{"eqd"}, "Red Expert ERD");
+        eqFiles = new FileSelector(new String[]{"eqd"}, "RedXpert ERD");
 
         setFileSelectionMode(JFileChooser.FILES_ONLY);
         addChoosableFileFilter(textFiles);

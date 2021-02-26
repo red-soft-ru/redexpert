@@ -140,7 +140,7 @@ public class SystemResources {
     public static void setUserActionShortcuts(Properties properties) {
         try {
             FileUtils.storeProperties(userActionShortcutsPath(), properties,
-                    "Red Expert - User Defined System Shortcuts");
+                    "RedXpert - User Defined System Shortcuts");
         } catch (IOException e) {
             e.printStackTrace();
             GUIUtilities.displayErrorMessage("Error saving shortcuts");
@@ -154,7 +154,7 @@ public class SystemResources {
             String path = userSettingsDirectoryForCurrentBuild() + "eq.user.properties";
 
             FileUtils.storeProperties(path, properties,
-                    "Red Expert - User Defined System Properties");
+                    "RedXpert - User Defined System Properties");
 
         } catch (IOException e) {
 
@@ -303,7 +303,7 @@ public class SystemResources {
             // files to the new build number dir
 
             if (copyOldFiles && oldConfDir.exists()) {
-                int option = GUIUtilities.displayConfirmCancelDialog("The settings of the previous version of RedExpert were found.\n" +
+                int option = GUIUtilities.displayConfirmCancelDialog("The settings of the previous version of RedXpert were found.\n" +
                         "Apply these settings in this version?");
                 switch (option) {
                     case JOptionPane.YES_OPTION:

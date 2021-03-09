@@ -337,7 +337,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 GridBagConstraints.NORTH,
                 GridBagConstraints.HORIZONTAL,
                 new Insets(2, 2, 2, 2), 0, 0);
-        gbcDesc.gridy++;
+        //gbcDesc.gridy++;
         descTablePanel.add(buttonsEditingColumnPanel, gbcDesc);
         descTablePanel.add(
                 new JScrollPane(descriptionTable),

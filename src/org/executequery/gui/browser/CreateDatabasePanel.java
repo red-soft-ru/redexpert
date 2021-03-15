@@ -854,7 +854,7 @@ public class CreateDatabasePanel extends ActionPanel
                 // try to initialize crypto plugin
                 cryptoPlugin.init();
 
-            } catch (NoSuchMethodError | Exception | UnsatisfiedLinkError e) {
+            } catch (NoSuchMethodError | Exception | UnsatisfiedLinkError | NoClassDefFoundError e) {
                 Log.warning("Unable to initialize cryptographic plugin. " +
                         "Authentication using cryptographic mechanisms will not be available. " +
                         "Please install the crypto pro library to enable cryptographic modules.");

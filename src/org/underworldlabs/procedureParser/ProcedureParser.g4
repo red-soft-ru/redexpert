@@ -69,7 +69,7 @@ body:
   ;
 
  local_variable
- :K_DECLARE spases_or_comment (K_VARIABLE SPACES_OR_COMMENT)? variable_name
+ :K_DECLARE spases_or_comment (K_VARIABLE spases_or_comment)? variable_name
   spases_or_comment datatype
   (spases_or_comment notnull)?
   (spases_or_comment K_COLLATE spases_or_comment order_collate)?

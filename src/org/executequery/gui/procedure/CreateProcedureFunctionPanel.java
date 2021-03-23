@@ -181,7 +181,8 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                                     variable.setDomain(type.domain_name().getText());
                                 }
                                 if (type.datatypeSQL() != null && !type.datatypeSQL().isEmpty()) {
-                                    variable.setSqlType(type.datatypeSQL().getText());
+                                    List<ParseTree> children = type.datatypeSQL().children;
+                                    variable.setSqlType(children.get(0).getText());
                                     if (type.datatypeSQL().type_size() != null && type.datatypeSQL().type_size().isEmpty()) {
                                         variable.setSize(Integer.parseInt(type.datatypeSQL().type_size().getText()));
                                     }

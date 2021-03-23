@@ -1806,12 +1806,8 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             stmnt = null;
             if (conn != null) {
 
-                if (useDatabaseConnection) {
-
-                    if (closeConnectionAfterQuery)
-
-                        conn.close();
-
+                if (useDatabaseConnection && closeConnectionAfterQuery) {
+                    conn.close();
                     conn = null;
                 }
 

@@ -114,8 +114,8 @@ body:
  ;
 
  type_of
- :K_TYPE_OF domain_name
-  | K_TYPE_OF K_COLUMN table_name'.'column_name
+ :K_TYPE_OF spases_or_comment domain_name
+  | K_TYPE_OF spases_or_comment K_COLUMN spases_or_comment table_name'.'column_name
 ;
  datatypeSQL
  : (SMALLINT | INTEGER | BIGINT) array_size?

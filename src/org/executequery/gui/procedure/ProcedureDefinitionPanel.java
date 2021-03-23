@@ -546,13 +546,11 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         }
 
         int selection = table.getSelectedRow();
-        if (selection == -1 && table.getRowCount() > 0) {
-            return;
-        } else {
+
             if (selection == -1)
                 selection = 0;
             insertRow(new ColumnData(dc), selection);
-        }
+
 
         _model.fireTableRowsInserted(
                 selection == 0 ? 0 : selection - 1,
@@ -676,12 +674,8 @@ public abstract class ProcedureDefinitionPanel extends JPanel
         fireEditingStopped();
         int selection = table.getSelectedRow();
         int newRow = selection + 1;
-
-        if (selection == -1 && table.getRowCount() > 0) {
-            return;
-        } else {
-            if (selection == -1)
-                selection = 0;
+        if (selection == -1)
+                selection = tableVector.size();
             ColumnData cd = new ColumnData(dc);
             cd.setTypeParameter(parameterType);
             if (selection == tableVector.size()) {
@@ -689,7 +683,6 @@ public abstract class ProcedureDefinitionPanel extends JPanel
             } else {
                 insertRow(cd, newRow);
             }
-        }
 
         _model.fireTableRowsInserted(selection, newRow);
         table.setRowSelectionInterval(newRow, newRow);

@@ -21,7 +21,6 @@
 package org.executequery.gui.resultset;
 
 import biz.redsoft.IFBClob;
-import org.apache.commons.lang.CharUtils;
 import org.executequery.Constants;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.log.Log;
@@ -55,20 +54,21 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
 
     @Override
     public Object getDisplayValue() {
-        String dataAsText = null;
-        byte[] data = readLob(displayLength);
-        boolean isValidText = true;
+        if (displayValue == null) {
+            String dataAsText = null;
+            byte[] data = readLob(displayLength);
+            boolean isValidText = true;
 
-        if (data != null) {
-            if (charset == null || Objects.equals(charset, CreateTableSQLSyntax.NONE))
-                dataAsText = new String(data);
-            else try {
-                dataAsText = new String(data, charset);
-            } catch (UnsupportedEncodingException e) {
-                Log.error("Error method loadTextData in class LobDataItemViewerPanel:", e);
-                dataAsText = new String(data);
-            }
-            char[] charArray = dataAsText.toCharArray();
+            if (data != null) {
+                if (charset == null || Objects.equals(charset, CreateTableSQLSyntax.NONE))
+                    dataAsText = new String(data);
+                else try {
+                    dataAsText = new String(data, charset);
+                } catch (UnsupportedEncodingException e) {
+                    Log.error("Error method loadTextData in class LobDataItemViewerPanel:", e);
+                    dataAsText = new String(data);
+                }
+            /*char[] charArray = dataAsText.toCharArray();
 
             int defaultEndPoint = 256;
             int endPoint = Math.min(charArray.length, defaultEndPoint);
@@ -81,23 +81,24 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
                         break;
                     }
 
-                }
+                }*/
 
-        } else {
+            } else {
 
-            isValidText = false;
+                isValidText = false;
+            }
+
+            if (isValidText) {
+
+                displayValue = dataAsText;
+
+            } else {
+
+                displayValue = CLOB_DATA;
+            }
         }
 
-        if (isValidText) {
-
-            return dataAsText;
-
-        } else {
-
-            return CLOB_DATA;
-        }
-
-
+        return displayValue;
     }
 
     public String getCharset() {

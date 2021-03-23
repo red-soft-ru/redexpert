@@ -282,7 +282,7 @@ public class QueryDispatcher {
                     delegate.setStatusMessage(" Statement cancelled");
                 }
 
-                querySender.releaseResources();
+                //querySender.releaseResources();
                 executing = false;
             }
 

@@ -181,6 +181,7 @@ public class Parameter {
     }
 
     public void setTypeOfFrom(int typeOfFrom) {
+        setTypeOf(true);
         this.typeOfFrom = typeOfFrom;
     }
 

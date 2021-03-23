@@ -614,6 +614,12 @@
             accel-editable="true"
             execute-class="org.executequery.actions.helpcommands.CheckVersionCommand"/>
 
+    <action id="drivers-command"
+            name="Drivers"
+            accel-editable="true"
+            execute-class="org.executequery.actions.toolscommands.DriversCommand"
+    />
+
     <action id="editor-command"
             name="Query Editor"
             mnemonic="Q"

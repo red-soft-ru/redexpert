@@ -25,7 +25,7 @@ import org.executequery.localization.Bundles;
 
 public interface DriverPanel {
 
-    String TITLE = Bundles.getCommon("drivers");
+    String TITLE = Bundles.getCommon("driver");
 
     String FRAME_ICON = "DatabaseDrivers16.png";
 

@@ -408,6 +408,9 @@
           class="org.underworldlabs.swing.menu.MainMenu"
           mnemonic="T">
 
+        <menu-item id="drivers-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         <menu-item id="editor-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 

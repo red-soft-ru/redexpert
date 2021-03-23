@@ -406,6 +406,7 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
 
     }
 
+
     private void checkDriversPanel() {
 
         // check we have a drivers panel
@@ -415,6 +416,10 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
         }
 
         // check the panel is in the pane
+
+    }
+
+    private void getDriverPanelFromBrowser() {
         JPanel _viewPanel = GUIUtilities.getCentralPane(DriverPanel.TITLE);
 
         if (_viewPanel == null) {
@@ -711,8 +716,10 @@ public class DriversTreePanel extends AbstractDockedTabActionPanel
             }
             TreePath path = tree.getPathForLocation(e.getX(), e.getY());
             if (path == tree.getSelectionPath()) {
-                valueChanged(new TreeSelectionEvent(
-                        tree, path, true, path, path));
+                checkDriversPanel();
+                getDriverPanelFromBrowser();
+                //valueChanged(new TreeSelectionEvent(
+                //tree, path, true, path, path));
             }
         }
 

@@ -281,8 +281,8 @@ public class QueryDispatcher {
                             "Statement cancelled");
                     delegate.setStatusMessage(" Statement cancelled");
                 }
-
-                //querySender.releaseResources();
+                querySender.setCloseConnectionAfterQuery(false);
+                querySender.releaseResources();
                 executing = false;
             }
 

@@ -80,6 +80,8 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
      */
     private Connection conn;
 
+    private boolean closeConnectionAfterQuery = true;
+
     /**
      * The database <code>Statement</code> object
      */
@@ -1806,7 +1808,9 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
                 if (useDatabaseConnection) {
 
-                    conn.close();
+                    if (closeConnectionAfterQuery)
+
+                        conn.close();
 
                     conn = null;
                 }
@@ -1901,6 +1905,14 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
     public void setConn(Connection conn) {
         this.conn = conn;
+    }
+
+    public boolean isCloseConnectionAfterQuery() {
+        return closeConnectionAfterQuery;
+    }
+
+    public void setCloseConnectionAfterQuery(boolean closeConnectionAfterQuery) {
+        this.closeConnectionAfterQuery = closeConnectionAfterQuery;
     }
 }
 

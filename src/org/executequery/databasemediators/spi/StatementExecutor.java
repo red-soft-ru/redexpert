@@ -131,6 +131,10 @@ public interface StatementExecutor {
      */
     void releaseResources();
 
+    public boolean isCloseConnectionAfterQuery();
+
+    public void setCloseConnectionAfterQuery(boolean closeConnectionAfterQuery);
+
     void setDatabaseConnection(DatabaseConnection _databaseConnection);
 
     DatabaseConnection getDatabaseConnection();

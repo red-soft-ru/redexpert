@@ -21,6 +21,7 @@
 package org.executequery.gui.resultset;
 
 import biz.redsoft.IFBClob;
+import org.apache.commons.lang.CharUtils;
 import org.executequery.Constants;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.log.Log;
@@ -68,20 +69,19 @@ public class ClobRecordDataItem extends AbstractLobRecordDataItem {
                     Log.error("Error method loadTextData in class LobDataItemViewerPanel:", e);
                     dataAsText = new String(data);
                 }
-            /*char[] charArray = dataAsText.toCharArray();
+                char[] charArray = dataAsText.toCharArray();
 
             int defaultEndPoint = 256;
             int endPoint = Math.min(charArray.length, defaultEndPoint);
             if (charset == null || charset.equals(CreateTableSQLSyntax.NONE))
                 for (int i = 0; i < endPoint; i++) {
-
                     if (!CharUtils.isAscii(charArray[i])) {
 
                         isValidText = false;
                         break;
                     }
 
-                }*/
+                }
 
             } else {
 

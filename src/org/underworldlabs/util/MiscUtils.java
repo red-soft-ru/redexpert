@@ -733,11 +733,8 @@ public final class MiscUtils {
     public static boolean checkKeyword(String str) {
         KeywordRepository keywordRepository =
                 (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
-        List<String> keywords = keywordRepository.getSQLKeywords();
-        for (int i = 0; i < keywords.size(); i++)
-            if (keywords.get(i).toUpperCase().equals(str.toUpperCase()))
-                return true;
-        return false;
+        TreeSet<String> keywords = keywordRepository.getSQLKeywords();
+        return keywords.contains(str.toUpperCase());
     }
 
     public final static String LATIN_OR_DIGIT_OR_SPEC_SYMBOL_RDB = "([A-Za-z]+[$_0-9A-Za-z]*)";

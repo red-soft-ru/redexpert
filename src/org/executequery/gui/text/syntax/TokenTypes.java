@@ -63,25 +63,7 @@ public interface TokenTypes {
             "\\+|\\-|\\&|\\||\\\\|\\!" +
             "|\\=|\\*|\\^|%|/|\\<|\\>)+";
 
-    String[] MATCHERS = {
-            "keyword",
-            "operator",
-            "number",
-            "literals",
-            "dbobjects",
-            "braces",
-            "string",
-            "single-line-comment"
-    };
 
-    int KEYWORD_MATCH = 0,
-            OPERATOR_MATCH = 1,
-            NUMBER_MATCH = 2,
-            LITERALS_MATCH = 3,
-            DBOBJECTS_MATCH = 4,
-            BRACES_MATCH = 5,
-            SINGLE_LINE_COMMENT_MATCH = 7,
-            STRING_MATCH = 6;
 
     int UNRECOGNIZED = 0,
             WORD = 1,

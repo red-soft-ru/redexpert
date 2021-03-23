@@ -30,6 +30,7 @@ import org.executequery.gui.DefaultTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextPane;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
@@ -240,12 +241,17 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         try {
             procNameField.setText(executeable.getName());
             model.setValues(executeable.getParametersArray());
-            sourceTextPane.setText(executeable.getProcedureSourceCode());
+            String sourceCode = executeable.getProcedureSourceCode();
+            sourceTextPane.setText(sourceCode);
 
             if (executeable instanceof DefaultDatabaseProcedure) {
                 DefaultDatabaseProcedure p = (DefaultDatabaseProcedure) executeable;
                 p.setHost(((DefaultDatabaseProcedure) executeable).getMetaTagParent().getHost());
+                Long start = System.currentTimeMillis();
                 createSqlPane.setText(p.getCreateSQLText());
+                Long finish = System.currentTimeMillis();
+                Long time = finish - start;
+                Log.info(time);
             }
 
         } catch (DataSourceException e) {

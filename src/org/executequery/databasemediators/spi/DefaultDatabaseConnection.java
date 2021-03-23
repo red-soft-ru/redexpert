@@ -39,10 +39,9 @@ import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.tree.TreeNode;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Properties;
+import java.util.TreeSet;
 import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * <p>This class maintains the necessary information for each
@@ -692,8 +691,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         return this;
     }
 
-    public List<String> getListObjectsDB() {
-        List<String> list = new CopyOnWriteArrayList<>();
+    public TreeSet<String> getListObjectsDB() {
+        TreeSet<String> list = new TreeSet<>();
         DatabaseObjectNode host = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(this);
         addingChild(list, host);
         return list;
@@ -710,7 +709,7 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         this.serverVersion = serverVersion;
     }
 
-    private void addingChild(List<String> list, DatabaseObjectNode root) {
+    private void addingChild(TreeSet<String> list, DatabaseObjectNode root) {
         root.populateChildren();
         Enumeration<TreeNode> nodes = root.children();
         while (nodes.hasMoreElements()) {

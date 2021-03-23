@@ -20,17 +20,18 @@
 
 package org.executequery.gui.text.syntax;
 
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.executequery.Constants;
 import org.executequery.gui.editor.QueryEditorSettings;
-import org.executequery.sql.SqlMessages;
+import org.underworldlabs.sqlLexer.SqlLexer;
 
 import javax.swing.text.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Takis Diakoumis
@@ -75,83 +76,14 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         this(null, null);
     }
 
-    public SQLSyntaxDocument(List<String> keys) {
-        this(keys, null);
-    }
-
-    public SQLSyntaxDocument(List<String> keys, JTextComponent textComponent) {
-
-        rootElement = getDefaultRootElement();
-        putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n");
-        initStyles(false);
-
-        braceTokens = new Vector<Token>();
-        stringTokens = new ArrayList<Token>();
-
-        this.textComponent = textComponent;
-
-        initMatchers();
-        if (keys != null) {
-            setSQLKeywords(keys);
-        }
-
-    }
-
-    protected void initMatchers() {
-        matchers = new TokenMatcher[MATCHERS.length];
-
-        matchers[NUMBER_MATCH] =
-                new TokenMatcher(NUMBER,
-                        styles[NUMBER],
-                        Pattern.compile(NUMBER_REGEX).
-                                matcher(Constants.EMPTY));
-
-        matchers[BRACES_MATCH] =
-                new TokenMatcher(BRACKET,
-                        styles[BRACKET],
-                        Pattern.compile(BRACES_REGEX).
-                                matcher(Constants.EMPTY));
-
-        matchers[OPERATOR_MATCH] =
-                new TokenMatcher(OPERATOR,
-                        styles[OPERATOR],
-                        Pattern.compile(OPERATOR_REGEX).
-                                matcher(Constants.EMPTY));
-
-        matchers[STRING_MATCH] =
-                new TokenMatcher(STRING,
-                        styles[STRING],
-                        Pattern.compile(QUOTE_REGEX).
-                                matcher(Constants.EMPTY));
-
-        matchers[SINGLE_LINE_COMMENT_MATCH] =
-                new TokenMatcher(SINGLE_LINE_COMMENT,
-                        styles[SINGLE_LINE_COMMENT],
-                        Pattern.compile(SINGLE_LINE_COMMENT_REGEX).
-                                matcher(Constants.EMPTY));
-
-        char PIPE = '|';
-        StringBuilder sb = new StringBuilder("\\b(");
-        String[] literals = {Constants.TRUE_LITERAL,
-                Constants.FALSE_LITERAL,
-                Constants.NULL_LITERAL};
-
-        for (int i = 0, n = literals.length - 1; i < literals.length; i++) {
-            sb.append(literals[i]);
-            if (i < n) {
-                sb.append(PIPE);
-            }
-        }
-
-        sb.append(")\\b");
-        matchers[LITERALS_MATCH] =
-                new TokenMatcher(LITERAL,
-                        styles[LITERAL],
-                        Pattern.compile(
-                                sb.toString(), Pattern.CASE_INSENSITIVE).
-                                matcher(Constants.EMPTY));
-
-    }
+    /**
+     * Sets the SQL keywords to be applied to this document.
+     *
+     * @param keywords - the keywords list
+     * @param reset
+     */
+    private TreeSet keywords;
+    private TreeSet dbobjects;
 
     public void setTextComponent(JTextComponent textComponent) {
         this.textComponent = textComponent;
@@ -160,13 +92,6 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
     public void resetAttributeSets() {
         initStyles(true);
         // update the stored tokens
-        for (int i = 0; i < matchers.length; i++) {
-            TokenMatcher matcher = matchers[i];
-            if (matcher != null) {
-                int type = matcher.getType();
-                matcher.setStyle(styles[type]);
-            }
-        }
     }
 
     public void setTabsToSpaces(boolean tabsToSpaces) {
@@ -366,6 +291,44 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
      */
     private StringBuffer buffer = new StringBuffer();
 
+    public SQLSyntaxDocument(TreeSet<String> keys) {
+        this(keys, null);
+    }
+
+    /* NOTE:
+     * method process for text entry into the document:
+     *
+     *    1. replace(...)
+     *    2. insertString(...)
+     *
+     * remove called once only on text/character removal
+     */
+
+    public SQLSyntaxDocument(TreeSet<String> keys, JTextComponent textComponent) {
+
+        rootElement = getDefaultRootElement();
+        putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n");
+        initStyles(false);
+
+        braceTokens = new Vector<Token>();
+        stringTokens = new ArrayList<Token>();
+
+        this.textComponent = textComponent;
+        dbobjects=new TreeSet();
+        keywords = new TreeSet();
+
+        //initMatchers();
+        if (keys != null) {
+            setSQLKeywords(keys);
+        }
+
+    }
+
+    /**
+     * Mulit-line comment tokens from the last scan
+     */
+    private List<Token> multiLineComments = new ArrayList<Token>();
+
     /*
      *  Override to apply syntax highlighting after
      *  the document has been updated
@@ -375,7 +338,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
         //Log.debug("insert");
 
-        int length = text.length();
+       /* int length = text.length();
 
         // check overwrite mode
         if (insertMode == SqlMessages.OVERWRITE_MODE &&
@@ -387,14 +350,14 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
             char firstChar = text.charAt(0);
 
-            /* check if we convert tabs to spaces */
+            /* check if we convert tabs to spaces
             if ((firstChar == Constants.TAB_CHAR) && tabsToSpaces) {
 
                 text = QueryEditorSettings.getTabs();
                 length = text.length();
             }
 
-            /* auto-indent the next line */
+            /* auto-indent the next line
             else if (firstChar == Constants.NEW_LINE_CHAR) {
 
                 int index = rootElement.getElementIndex(offset);
@@ -430,19 +393,10 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         /* call super method and default to normal style */
         super.insertString(offset, text, styles[WORD]);
 
-        processChangedLines(offset, length);
+        processChangedLines();
         updateBraces(offset + 1);
         buffer.setLength(0);
     }
-
-    /* NOTE:
-     * method process for text entry into the document:
-     *
-     *    1. replace(...)
-     *    2. insertString(...)
-     *
-     * remove called once only on text/character removal
-     */
 
     /*
      *  Override to apply syntax highlighting after
@@ -454,7 +408,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
         resetBracePosition();
         super.remove(offset, length);
-        processChangedLines(offset, 0);
+        processChangedLines();
 
         if (offset > 0) {
 
@@ -463,12 +417,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
     }
 
-    /**
-     * Mulit-line comment tokens from the last scan
-     */
-    private List<Token> multiLineComments = new ArrayList<Token>();
-
-    private void processChangedLines(int offset, int length)
+    private void processChangedLines()
             throws BadLocationException {
 
         int documentLength = getLength();
@@ -476,341 +425,53 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
             return;
         }
 
-        int tokenStart = -1;
-        int tokenEnd = 0;
-        int endOffset = offset + length;
         String content = getText(0, documentLength);
-
-        // scan for multi-line comments
-        List<Token> tokens = new ArrayList<Token>();
-        while ((tokenStart = content.indexOf(OPEN_COMMENT, tokenEnd)) != -1) {
-
-            tokenEnd = content.indexOf(CLOSE_COMMENT, tokenStart);
-
-            if (tokenEnd != -1) {
-
-                tokenEnd += 2;
-            }
-
-            tokens.add(new Token(tokenStart, tokenEnd));
-
-            if (tokenEnd == -1) {
-
+        CommonTokenStream cts = new CommonTokenStream(new SqlLexer(CharStreams.fromString(content)));
+        try {
+            cts.fill();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        List<org.antlr.v4.runtime.Token> toks = cts.getTokens();
+        for(org.antlr.v4.runtime.Token token:toks) {
+            Style style = styles[WORD];
+            switch (token.getType())
+            {
+                case SqlLexer.KEYWORD:style = styles[KEYWORD];
                 break;
-            }
-
-        }
-
-        // scan the lines for highlighting
-        scanLines(offset, length, content, documentLength, tokens);
-
-        // scan multi comment tokens for apply/reapply
-        boolean applyStyle = true;
-        int tokenCount = tokens.size();
-        int lastTokenCount = multiLineComments.size();
-
-        // check for multi-line comments that do not exist anymore
-        for (int j = 0; j < lastTokenCount; j++) {
-            Token lastToken = multiLineComments.get(j);
-            tokenStart = lastToken.getStartIndex();
-            tokenEnd = lastToken.getEndIndex();
-
-            applyStyle = true;
-
-            for (int i = 0; i < tokenCount; i++) {
-                Token token = tokens.get(i);
-                if (token.equals(lastToken)) {
-                    applyStyle = false;
-                    break;
-                }
-            }
-
-            // reapply the styles to the portion from the last
-            // scan that no longer exists
-            if (applyStyle) {
-
-                // if end was -1 set to the end of the document
-                if (tokenEnd == -1) {
-                    tokenEnd = documentLength - 1;
-                }
-
-                scanLines(tokenStart, tokenEnd - tokenStart,
-                        content, documentLength, tokens);
-            }
-        }
-
-        // apply multi-line comment style where it did not exist before
-        for (int i = 0; i < tokenCount; i++) {
-            Token token = tokens.get(i);
-            tokenStart = token.getStartIndex();
-            tokenEnd = token.getEndIndex();
-
-            // if we have a dangling open comment
-            // apply to the rest of the document
-            if (token.getEndIndex() == -1) {
-                setCharacterAttributes(tokenStart,
-                        content.length() - tokenStart,
-                        styles[COMMENT],
-                        false);
+                case SqlLexer.DATATYPE_SQL:style = styles[NUMBER];
                 break;
-            }
-
-            applyStyle = true;
-
-            // check the last multiline comments
-            for (int j = 0; j < lastTokenCount; j++) {
-                Token lastToken = multiLineComments.get(j);
-
-                // check if the current token existed in the last scan
-                if (lastToken.equals(token)) {
-                    // style not applied if it did
-                    applyStyle = false;
+                case SqlLexer.STRING_LITERAL:style = styles[STRING];
                     break;
-                }
-                // where previously there was no close comment tag
-                // reapply to the rest of the text from the current end
-                else if (lastToken.getEndIndex() == -1) {
-                    applyStyle = false;
-                    // rescan that section that was previously still open
-                    scanLines(tokenEnd, documentLength - tokenEnd,
-                            content, documentLength, tokens);
+                case SqlLexer.IDENTIFIER:
+                    String tokenText = token.getText();
+                    if(!tokenText.startsWith("\""))
+                        tokenText = tokenText.toUpperCase();
+                    if (dbobjects.contains(tokenText))
+                    style = styles[DBOBJECT];
                     break;
-                }
-
+                case SqlLexer.MULTILINE_COMMENT:
+                    case SqlLexer.SINGLE_LINE_COMMENT:
+                        style = styles[COMMENT];
+                        break;
+                default:break;
             }
-
-            // check for the tokens intersecting the current offset
-            // and reapply to cover the comment correctly regardless 
-            // of the current state of the apply flag
-            if (token.intersects(offset, endOffset)) {
-                setCharacterAttributes(tokenStart,
-                        token.getLength(),
-                        styles[COMMENT],
-                        false);
-            } else {
-                if (applyStyle) {
-
-                    // if we have a close tag
-                    if (tokenEnd > 0) {
-                        setCharacterAttributes(tokenStart,
-                                token.getLength(),
-                                styles[COMMENT],
-                                false);
-                    }
-                    // otherwise set style to the 
-                    // remainder of the document
-                    else {
-                        setCharacterAttributes(tokenStart,
-                                content.length() - tokenStart,
-                                styles[COMMENT],
-                                false);
-                    }
-
-                }
-            }
-
+            if(style!=styles[WORD])
+            setCharacterAttributes(token.getStartIndex(),
+                    token.getStopIndex()-token.getStartIndex()+1,
+                    style,
+                    false);
         }
+                    /*}
+
+                }
+            }*/
+
 
         // reassign the multi-line comments list
-        multiLineComments = tokens;
-    }
-
-    private void scanLines(int offset, int length,
-                           String content, int documentLength, List<Token> tokens) {
-
-        // The lines affected by the latest document update
-        int startLine = rootElement.getElementIndex(offset);
-        int endLine = rootElement.getElementIndex(offset + length);
-
-        boolean applyStyle = true;
-        int tokenCount = tokens.size();
-
-        for (int i = startLine; i <= endLine; i++) {
-            Element element = rootElement.getElement(i);
-            int startOffset = element.getStartOffset();
-            int endOffset = element.getEndOffset() - 1;
-
-            if (endOffset < 0) {
-                endOffset = 0;
-            }
-
-            applyStyle = true;
-            for (int j = 0; j < tokenCount; j++) {
-                Token token = tokens.get(j);
-                if (token.contains(startOffset, endOffset)) {
-                    applyStyle = false;
-                    break;
-                }
-            }
-
-            if (applyStyle) {
-                String textSnippet = content.substring(startOffset, endOffset);
-                applySyntaxColours(textSnippet,
-                        startOffset,
-                        endOffset,
-                        documentLength);
-            }
-        }
-    }
-
-    private void applySyntaxColours(String text,
-                                    int startOffset,
-                                    int endOffset,
-                                    int contentLength) {
-
-        int lineLength = endOffset - startOffset;
-//        if (endOffset >= contentLength) {
-//            endOffset = contentLength - 1;
-//        }
-
-        // set the plain style
-        setCharacterAttributes(startOffset, lineLength, styles[WORD], false);
-
-        for (int i = 0; i < matchers.length; i++) {
-            if (matchers[i] != null) { // check case keywords not initialised
-                applyHighlights(i,
-                        text,
-                        startOffset,
-                        matchers[i].getMatcher(),
-                        matchers[i].getStyle(),
-                        (i == SINGLE_LINE_COMMENT_MATCH));
-            }
-        }
-
-    }
-
-    private void applyHighlights(int matcherType,
-                                 String text,
-                                 int startOffset,
-                                 Matcher matcher,
-                                 Style style,
-                                 boolean replace) {
-
-        if (matcherType == STRING_MATCH) {
-            stringTokens.clear();
-        }
-
-        int start = 0;
-        int end = 0;
-        int realStart = 0;
-        int realEnd = 0;
-
-        boolean applyStyle = true;
-        matcher.reset(text);
-
-        // the string token count for when we are not
-        // processing string tokens
-        int stringTokenCount = stringTokens.size();
-
-        int length = text.length();
-        int matcherStart = 0;
-        while (matcher.find(matcherStart)) {
-            start = matcher.start();
-            end = matcher.end();
-
-            realStart = start + startOffset;
-            realEnd = end + startOffset;
-
-            applyStyle = true;
-
-            // if this is a string mather add to the cache
-            if (matcherType == STRING_MATCH) {
-                stringTokens.add(new Token(realStart, realEnd));
-            }
-            // compare against string cache to apply
-            else if (matcherType == SINGLE_LINE_COMMENT_MATCH) {
-                if (stringTokenCount > 0) {
-                    /*
-                    Log.debug("text: " +text);
-                    Log.debug("length: " +text.length());
-                    Log.debug("string tokens: "+stringTokenCount);
-                    Log.debug("start: " +startOffset);
-                    Log.debug("realStart: " + realStart + 
-                            " realEnd: "+realEnd);
-                    */
-
-                    // check we are not within a string literal
-                    for (int i = 0; i < stringTokenCount; i++) {
-                        Token token = stringTokens.get(i);
-                        int tokenStart = token.getStartIndex();
-                        int tokenEnd = token.getEndIndex();
-
-                        if (realStart > tokenEnd) {
-                            continue;
-                        }
-
-                        //Log.debug(token);
-
-                        if (realStart < tokenStart) {
-                            applyStyle = true;
-                            break;
-                        }
-
-                        if (realStart > tokenStart && realStart < tokenEnd) {
-                            // set the end to the end of the string
-                            // token for the matcher reset
-                            end = token.getEndIndex() - startOffset;
-                            applyStyle = false;
-                            break;
-                        }
-
-                    }
-                }
-            }
-
-            if (applyStyle) {
-                setCharacterAttributes(realStart,
-                        end - start,
-                        style,
-                        replace);
-            }
-
-            matcherStart = end + 1;
-            if (matcherStart > length) {
-                break;
-            }
-
-        }
-        matcher.reset(Constants.EMPTY);
-    }
-
-    public String getNameDBObjectFromPosition(int position, String text) {
-
-        TokenMatcher tokenMatcher = matchers[TokenTypes.DBOBJECTS_MATCH];
-        Matcher matcher = tokenMatcher.getMatcher();
-
-        int start = 0;
-        int end = 0;
-
-        boolean applyStyle = true;
-        matcher.reset(text);
-
-        // the string token count for when we are not
-        // processing string tokens
-        int stringTokenCount = stringTokens.size();
-
-        int length = text.length();
-        int matcherStart = 0;
-        while (matcher.find(matcherStart)) {
-            start = matcher.start();
-            end = matcher.end();
-
-            if (position >= start && position <= end) {
-                return text.substring(start, end);
-            }
-
-            // if this is a string mather add to the cache
-            // compare against string cache to apply
-
-
-            matcherStart = end + 1;
-            if (matcherStart > length) {
-                break;
-            }
-
-        }
-        matcher.reset(Constants.EMPTY);
-        return null;
+        //multiLineComments = tokens;
     }
 
     public void replace(int offset, int length,
@@ -1045,83 +706,89 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
     }
 
-    /**
-     * Sets the SQL keywords to be applied to this document.
-     *
-     * @param keywords - the keywords list
-     * @param reset
-     */
-    public void setSQLKeywords(List<String> keywords) {
-        StringBuffer sb = new StringBuffer("\\b(?:");
-        // the last start char
-        char lastFirstChar = 0;
+    private void scanLines(int offset, int length,
+                           String content, int documentLength, List<Token> tokens) {
 
-        // we are trying to achieve the following regex
-        // where the first char of each group is the same char 
-        // as in: t(?:his|hat) as opposed to (?:this|that)
+        // The lines affected by the latest document update
+        int startLine = rootElement.getElementIndex(offset);
+        int endLine = rootElement.getElementIndex(offset + length);
 
-        for (int i = 0, k = keywords.size(); i < k; i++) {
-            String _keyword = keywords.get(i).trim();
+        boolean applyStyle = true;
+        int tokenCount = tokens.size();
 
-            char firstChar = _keyword.charAt(0);
-            if (firstChar == lastFirstChar) {
-                sb.append("|");
-                sb.append(_keyword.substring(1));
-            } else {
-                if (i > 0) {
-                    sb.append(")|");
-                }
-                sb.append(firstChar);
-                sb.append("(?:");
-                sb.append(_keyword.substring(1));
-                lastFirstChar = firstChar;
+        for (int i = startLine; i <= endLine; i++) {
+            Element element = rootElement.getElement(i);
+            int startOffset = element.getStartOffset();
+            int endOffset = element.getEndOffset() - 1;
+
+            if (endOffset < 0) {
+                endOffset = 0;
             }
 
-        }
-        sb.append("))\\b");
+            applyStyle = true;
+            for (int j = 0; j < tokenCount; j++) {
+                Token token = tokens.get(j);
+                if (token.contains(startOffset, endOffset)) {
+                    applyStyle = false;
+                    break;
+                }
+            }
 
-        Matcher matcher = Pattern.compile(
-                sb.toString(),
-                Pattern.CASE_INSENSITIVE).matcher(Constants.EMPTY);
-        matchers[KEYWORD_MATCH] = new TokenMatcher(KEYWORD, styles[KEYWORD], matcher);
+            if (applyStyle) {
+                String textSnippet = content.substring(startOffset, endOffset);
+                /*applySyntaxColours(textSnippet,
+                        startOffset,
+                        endOffset,
+                        documentLength);*/
+            }
+        }
     }
 
-    public void setDBObjects(List<String> dbobjects) {
-        StringBuffer sb = new StringBuffer("\\b(?:");
-        // the last start char
-        char lastFirstChar = 0;
+    public String getNameDBObjectFromPosition(int position, String text) {
 
-        // we are trying to achieve the following regex
-        // where the first char of each group is the same char
-        // as in: t(?:his|hat) as opposed to (?:this|that)
+        /*TokenMatcher tokenMatcher = matchers[TokenTypes.DBOBJECTS_MATCH];
+        Matcher matcher = tokenMatcher.getMatcher();
 
-        for (int i = 0, k = dbobjects.size(); i < k; i++) {
-            String _dbobject = dbobjects.get(i).trim();
+        int start = 0;
+        int end = 0;
 
-            char firstChar = _dbobject.charAt(0);
-            if (firstChar == lastFirstChar) {
-                sb.append("|");
-                sb.append(_dbobject.substring(1));
-            } else {
-                if (i > 0) {
-                    sb.append(")|");
-                }
-                sb.append(firstChar);
-                sb.append("(?:");
-                sb.append(_dbobject.substring(1));
-                lastFirstChar = firstChar;
+        boolean applyStyle = true;
+        matcher.reset(text);
+
+        // the string token count for when we are not
+        // processing string tokens
+        int stringTokenCount = stringTokens.size();
+
+        int length = text.length();
+        int matcherStart = 0;
+        while (matcher.find(matcherStart)) {
+            start = matcher.start();
+            end = matcher.end();
+
+            if (position >= start && position <= end) {
+                return text.substring(start, end);
+            }
+
+            // if this is a string mather add to the cache
+            // compare against string cache to apply
+
+
+            matcherStart = end + 1;
+            if (matcherStart > length) {
+                break;
             }
 
         }
-        sb.append("))\\b");
-        if (dbobjects.size() == 0) {
-            sb = new StringBuffer();
-        }
+        matcher.reset(Constants.EMPTY);*/
+        return null;
+    }
 
-        Matcher matcher = Pattern.compile(
-                sb.toString(),
-                Pattern.CASE_INSENSITIVE).matcher(Constants.EMPTY);
-        matchers[DBOBJECTS_MATCH] = new TokenMatcher(DBOBJECT, styles[DBOBJECT], matcher);
+    public void setSQLKeywords(TreeSet<String> keywords) {
+        this.keywords=keywords;
+    }
+
+    public void setDBObjects(TreeSet<String> dbobjects) {
+        this.dbobjects = dbobjects;
     }
 
     public int getInsertMode() {

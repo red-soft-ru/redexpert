@@ -65,11 +65,12 @@ public class AboutPanel extends BaseDialog
     private void init() {
 
         tabPane = new JTabbedPane();
+        tabPane.add("Copyright", copyright());
         tabPane.add("System", systemDetails());
         tabPane.add("Resources", systemResources());
         tabPane.add("License", license());
         //tabPane.add("Credits", credits());
-        tabPane.add("Copyright", copyright());
+
 
         imagePanel = new AboutImagePanel();
 

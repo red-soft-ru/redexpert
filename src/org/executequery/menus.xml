@@ -279,14 +279,14 @@
                        mnemonic="B"
                        action-command="viewBrowserTools"
                        cache-name="viewBrowserTools"
-                       tool-tip="Displays the browser tool bar"/>-->
+                       tool-tip="Displays the browser tool bar"/>
 
             <menu-item name="Import/Export Tool Bar"
                        key="menu.view.tool-bars.import-export-tool-bar"
                        class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
                        mnemonic="X"
                        action-command="viewImportExportTools"
-                       tool-tip="Displays the import/export tool bar"/>
+                       tool-tip="Displays the import/export tool bar"/>-->
 
             <menu-item name="System Tool Bar"
                        key="menu.view.system-tool-bar"
@@ -339,9 +339,9 @@
                        index="0"
                        class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-            <menu-item id="export-connections-command"
+            <!--<menu-item id="export-connections-command"
                        index="1"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
+                       class="org.underworldlabs.swing.menu.MainMenuItem"/>-->
 
             <menu name="Import Connections"
                   key="menu.database.connections.import"
@@ -352,13 +352,13 @@
                            index="0"
                            class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-                <menu-item id="import-connections-from-file-command"
+                <!--<menu-item id="import-connections-from-file-command"
                            index="1"
-                           class="org.underworldlabs.swing.menu.MainMenuItem"/>
+                           class="org.underworldlabs.swing.menu.MainMenuItem"/>-->
             </menu>
 
             <menu-item id="separator"
-                       index="2"/>
+                       index="1"/>
 
         </menu>
 
@@ -382,9 +382,6 @@
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="execute-sql-script-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="generate-scripts-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu name="Generate ERD"
@@ -427,7 +424,7 @@
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
         <menu-item id="generator-test-data-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
-        <menu-item id="comparerDB-command"
+        <!--<menu-item id="comparerDB-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="separator"/>
@@ -467,7 +464,7 @@
 
         </menu>
 
-        <menu-item id="separator"/>
+        <menu-item id="separator"/>-->
 
         <menu name="System Logs"
               key="menu.tools.system-logs"
@@ -481,22 +478,6 @@
                        mnemonic="S"
                        action-command="viewSystemLog"
                        tool-tip="View the system output log"/>
-
-            <menu-item id="application-logs-command"
-                       key="menu.tools.system-logs.data-export"
-                       name="Data Export Log"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"
-                       mnemonic="X"
-                       action-command="viewExportLog"
-                       tool-tip="View the data export log"/>
-
-            <menu-item id="application-logs-command"
-                       key="menu.tools.system-logs.data-import"
-                       name="Data Import Log"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"
-                       mnemonic="I"
-                       action-command="viewImportLog"
-                       tool-tip="View the data import log"/>
 
             <menu-item id="separator"/>
 

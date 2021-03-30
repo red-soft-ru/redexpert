@@ -10,15 +10,15 @@
 	<property name="main.class" value="org.executequery.ExecuteQuery"/>
 	<property name="launch4j.dir" value="../launch4j"/>
 
-	<path id="classpath">
-		<pathelement location="${lib.dir}" />
-		<fileset dir="${lib.dir}">
-			<include name="*.jar" />
-		</fileset>
-	</path>
+    <path id="classpath">
+        <pathelement location="${lib.dir}"/>
+        <fileset dir="${lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
 
-	<path id="srcpath">
-		<pathelement location="${src.path}" />
+    <path id="srcpath">
+        <pathelement location="${src.path}"/>
 	</path>
 
 	<target name="init" description="Create required directories">
@@ -71,7 +71,7 @@
 
 		</jar>
 
-		<delete dir="${compile.outdir}" quiet="true"/>
+        <delete dir="${compile.outdir}" quiet="true"/>
 
     </target>
 

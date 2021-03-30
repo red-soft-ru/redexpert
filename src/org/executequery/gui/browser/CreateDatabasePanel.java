@@ -165,7 +165,6 @@ public class CreateDatabasePanel extends ActionPanel
 
     private void init() {
 
-
         multifactorComponents = new ArrayList<>();
         basicComponents = new ArrayList<>();
         gbh = new GridBagHelper();
@@ -839,7 +838,7 @@ public class CreateDatabasePanel extends ActionPanel
             Log.info("Database creation via jaybird");
             Log.info("Driver version: " + driver.getMajorVersion() + "." + driver.getMinorVersion());
 
-            if (driver.getMajorVersion() == 2) {
+            if (driver.getMajorVersion() < 3) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("Cannot create database, Jaybird 2.x has no implementation for creation database.");
                 GUIUtilities.displayErrorMessage(sb.toString());
@@ -854,7 +853,7 @@ public class CreateDatabasePanel extends ActionPanel
                 // try to initialize crypto plugin
                 cryptoPlugin.init();
 
-            } catch (NoSuchMethodError | Exception | UnsatisfiedLinkError e) {
+            } catch (NoSuchMethodError | Exception | UnsatisfiedLinkError | NoClassDefFoundError e) {
                 Log.warning("Unable to initialize cryptographic plugin. " +
                         "Authentication using cryptographic mechanisms will not be available. " +
                         "Please install the crypto pro library to enable cryptographic modules.");

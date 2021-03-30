@@ -255,7 +255,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         importData = MenuItemFactory.createMenu(bundleString("ImportData"));
         importData.add(createMenuItem(bundleString("importXml"), "importXml", listener));
         importData.add(createMenuItem(bundleString("importDelimited"), "importDelimited", listener));
-        add(importData);
+        //add(importData);
     }
 
     private void createExportMenu(ActionListener listener) {
@@ -265,7 +265,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         exportData.add(createMenuItem(bundleString("exportDbunit"), "exportDbunit", listener));
         exportData.add(createMenuItem(bundleString("exportDelimited"), "exportDelimited", listener));
         exportData.add(createMenuItem(bundleString("exportExcel"), "exportExcel", listener));
-        add(exportData);
+        //add(exportData);
     }
 
     private void createSqlMenu(ActionListener listener) {

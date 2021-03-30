@@ -220,10 +220,10 @@
                 <order>9</order>
             </button>
 
-            <button id="47" action-id="comparerDB-command">
+            <!--<button id="47" action-id="comparerDB-command">
                 <visible>true</visible>
-                <order>10</order>
-            </button>
+                <order>9</order>
+            </button>-->
 
             <button id="48" action-id="execute-sql-script-command">
                 <visible>true</visible>
@@ -273,7 +273,7 @@
 
         </constraints>
 
-        <buttons>
+        <!--<buttons>
 
             <button id="45" action-id="export-sql-command">
                 >
@@ -321,7 +321,7 @@
                 <order>1000</order>
             </button>
 
-        </buttons>
+        </buttons>-->
 
     </toolbar>
 

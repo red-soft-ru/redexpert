@@ -22,10 +22,7 @@ package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseObject;
-import org.executequery.databaseobjects.DatabaseTable;
-import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -33,6 +30,7 @@ import org.executequery.gui.browser.managment.WindowAddRole;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.*;
+import org.executequery.gui.forms.FormObjectView;
 import org.executequery.gui.importexport.ImportExportDataProcess;
 import org.executequery.gui.importexport.ImportExportDelimitedPanel;
 import org.executequery.gui.importexport.ImportExportExcelPanel;
@@ -47,6 +45,8 @@ import javax.swing.*;
 import javax.swing.tree.TreePath;
 import java.awt.event.ActionEvent;
 import java.util.Objects;
+
+
 
 /**
  * @author Takis Diakoumis
@@ -69,6 +69,8 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         currentSelection = null;
         currentPath = null;
     }
+
+
 
     public void deleteObject(ActionEvent e) {
         if (currentPath != null && currentSelection != null) {
@@ -592,6 +594,407 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     public void disconnect(ActionEvent e) {
         treePanel.disconnect(currentSelection);
     }
+
+
+
+    //dz code...................................
+    /*
+    private ConnectionPanel connectionPanel;
+    private BrowserController controller;*/
+    private BrowserController controller;
+    public BrowserViewPanel browserViewPanel;
+    public void openMenu (ActionEvent e) {
+        controller = new BrowserController(treePanel);
+        /*
+        JOptionPane.showMessageDialog(null, "It's working");
+
+       try {
+            JOptionPane.showMessageDialog(null, "Зашел");
+
+           browserViewPanel = new BrowserViewPanel (controller);
+           browserViewPanel.setVisible(true);
+           /* treePanel.selectTreePath(currentPath);
+            controller = new BrowserController(treePanel);
+            connectionPanel = new ConnectionPanel(controller);
+            connectionPanel.setVisible(true);
+          //  setContentPanel(connectionPanel);
+            /
+            JOptionPane.showMessageDialog(null, "Вышел");
+        }
+        catch (Exception ex)
+        {
+            JOptionPane.showMessageDialog(null, "Нифига не работает");
+        }
+        */
+        DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
+        DatabaseConnection connection = currentSelection;
+        treePanel.setInProcess(true);
+
+        try {
+
+            FormObjectView panel = buildPanelView(node);
+            panel.setDatabaseObjectNode(node);
+            String type = "";
+            if (node.getType() < NamedObject.META_TYPES.length)
+                type = NamedObject.META_TYPES[node.getType()];
+            if (connection == null)
+                connection = getDatabaseConnection();
+            if (node.isHostNode() || node.getType() == NamedObject.CATALOG)
+                panel.setObjectName(null);
+            else panel.setObjectName(node.getShortName().trim() + ":" + type + ":" + connection.getName());
+            panel.setDatabaseConnection(connection);
+            if (panel != null) {
+                viewPanel.setView(panel);
+                checkBrowserPanel();
+            }
+
+        } finally {
+
+            treePanel.setInProcess(false);
+        }
+
+    }
+
+
+    public void valueChanged (DatabaseObjectNode node, DatabaseConnection connection) {
+
+        treePanel.setInProcess(true);
+
+        try {
+
+            FormObjectView panel = buildPanelView(node);
+            panel.setDatabaseObjectNode(node);
+            String type = "";
+            if (node.getType() < NamedObject.META_TYPES.length)
+                type = NamedObject.META_TYPES[node.getType()];
+            if (connection == null)
+                connection = getDatabaseConnection();
+            if (node.isHostNode() || node.getType() == NamedObject.CATALOG)
+                panel.setObjectName(null);
+            else panel.setObjectName(node.getShortName().trim() + ":" + type + ":" + connection.getName());
+            panel.setDatabaseConnection(connection);
+            if (panel != null) {
+                viewPanel.setView(panel);
+                checkBrowserPanel();
+            }
+
+        } finally {
+
+            treePanel.setInProcess(false);
+        }
+    }
+
+    protected DatabaseConnection getDatabaseConnection() {
+
+        return treePanel.getSelectedDatabaseConnection();
+    }
+
+
+    private BrowserViewPanel viewPanel;
+
+
+    private FormObjectView buildPanelView(DatabaseObjectNode node) {
+        try {
+
+            NamedObject databaseObject = node.getDatabaseObject();
+            if (databaseObject == null) {
+
+                return null;
+            }
+
+//            System.out.println("selected object type: " + databaseObject.getClass().getName());
+            viewPanel = new BrowserViewPanel(controller);
+            int type = node.getType();
+            switch (type) {
+                case NamedObject.HOST:
+                    viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
+                    if (viewPanel == null)
+                        viewPanel = new BrowserViewPanel(controller);
+                    HostPanel hostPanel = hostPanel();
+                    hostPanel.setValues((DatabaseHost) databaseObject);
+
+                    return hostPanel;
+
+                // catalog node:
+                // this will display the schema table list
+                case NamedObject.CATALOG:
+                    viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
+                    CatalogPanel catalogPanel = null;
+                    if (!viewPanel.containsPanel(CatalogPanel.NAME)) {
+                        catalogPanel = new CatalogPanel(controller);
+                        viewPanel.addToLayout(catalogPanel);
+                    } else {
+                        catalogPanel = (CatalogPanel) viewPanel.
+                                getFormObjectView(CatalogPanel.NAME);
+                    }
+
+                    catalogPanel.setValues((DatabaseCatalog) databaseObject);
+                    return catalogPanel;
+
+                case NamedObject.SCHEMA:
+                    viewPanel = (BrowserViewPanel) GUIUtilities.getCentralPane(BrowserViewPanel.TITLE);
+                    SchemaPanel schemaPanel = null;
+                    if (!viewPanel.containsPanel(SchemaPanel.NAME)) {
+                        schemaPanel = new SchemaPanel(controller);
+                        viewPanel.addToLayout(schemaPanel);
+                    } else {
+                        schemaPanel = (SchemaPanel) viewPanel.
+                                getFormObjectView(SchemaPanel.NAME);
+                    }
+
+                    schemaPanel.setValues((DatabaseSchema) databaseObject);
+                    return schemaPanel;
+
+                case NamedObject.META_TAG:
+                case NamedObject.SYSTEM_STRING_FUNCTIONS:
+                case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
+                case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
+                    MetaKeyPanel metaKeyPanel = null;
+                    if (!viewPanel.containsPanel(MetaKeyPanel.NAME)) {
+                        metaKeyPanel = new MetaKeyPanel(controller);
+                        viewPanel.addToLayout(metaKeyPanel);
+                    } else {
+                        metaKeyPanel = (MetaKeyPanel) viewPanel.
+                                getFormObjectView(MetaKeyPanel.NAME);
+                    }
+
+                    metaKeyPanel.setValues(databaseObject);
+                    return metaKeyPanel;
+
+                case NamedObject.FUNCTION: // Internal function of Red Database 3+
+                    BrowserFunctionPanel functionPanel = null;
+                    if (!viewPanel.containsPanel(BrowserFunctionPanel.NAME)) {
+                        functionPanel = new BrowserFunctionPanel(controller);
+                        viewPanel.addToLayout(functionPanel);
+                    } else {
+                        functionPanel = (BrowserFunctionPanel) viewPanel.
+                                getFormObjectView(BrowserFunctionPanel.NAME);
+                    }
+
+                    functionPanel.setValues((DefaultDatabaseFunction) databaseObject);
+                    return functionPanel;
+                case NamedObject.PROCEDURE:
+                case NamedObject.SYSTEM_FUNCTION:
+                    BrowserProcedurePanel procsPanel = null;
+                    if (!viewPanel.containsPanel(BrowserProcedurePanel.NAME)) {
+                        procsPanel = new BrowserProcedurePanel(controller);
+                        viewPanel.addToLayout(procsPanel);
+                    } else {
+                        procsPanel = (BrowserProcedurePanel) viewPanel.
+                                getFormObjectView(BrowserProcedurePanel.NAME);
+                    }
+
+                    procsPanel.setValues((DatabaseExecutable) databaseObject);
+                    return procsPanel;
+
+                case NamedObject.TRIGGER:
+                case NamedObject.SYSTEM_TRIGGER:
+                case NamedObject.DATABASE_TRIGGER:
+                    BrowserTriggerPanel triggerPanel = null;
+                    if (!viewPanel.containsPanel(BrowserTriggerPanel.NAME)) {
+                        triggerPanel = new BrowserTriggerPanel(controller);
+                        viewPanel.addToLayout(triggerPanel);
+                    } else {
+                        triggerPanel = (BrowserTriggerPanel) viewPanel.
+                                getFormObjectView(BrowserTriggerPanel.NAME);
+                    }
+
+                    triggerPanel.setValues((DefaultDatabaseTrigger) databaseObject);
+                    return triggerPanel;
+
+                case NamedObject.PACKAGE:
+                    BrowserPackagePanel packagePanel = null;
+                    if (!viewPanel.containsPanel(BrowserPackagePanel.NAME)) {
+                        packagePanel = new BrowserPackagePanel(controller);
+                        viewPanel.addToLayout(packagePanel);
+                    } else {
+                        packagePanel = (BrowserPackagePanel) viewPanel.
+                                getFormObjectView(BrowserPackagePanel.NAME);
+                    }
+
+                    packagePanel.setValues((DefaultDatabasePackage) databaseObject);
+                    return packagePanel;
+
+                case NamedObject.SEQUENCE:
+                    BrowserSequencePanel sequencePanel = null;
+                    if (!viewPanel.containsPanel(BrowserSequencePanel.NAME)) {
+                        sequencePanel = new BrowserSequencePanel(controller);
+                        viewPanel.addToLayout(sequencePanel);
+                    } else {
+                        sequencePanel = (BrowserSequencePanel) viewPanel.
+                                getFormObjectView(BrowserSequencePanel.NAME);
+                    }
+
+                    sequencePanel.setValues((DefaultDatabaseSequence) databaseObject);
+                    return sequencePanel;
+
+                case NamedObject.DOMAIN:
+                case NamedObject.SYSTEM_DOMAIN:
+                    BrowserDomainPanel domainPanel = null;
+                    if (!viewPanel.containsPanel(BrowserDomainPanel.NAME)) {
+                        domainPanel = new BrowserDomainPanel(controller);
+                        viewPanel.addToLayout(domainPanel);
+                    } else {
+                        domainPanel = (BrowserDomainPanel) viewPanel.
+                                getFormObjectView(BrowserDomainPanel.NAME);
+                    }
+
+                    domainPanel.setValues((DefaultDatabaseDomain) databaseObject);
+                    return domainPanel;
+                case NamedObject.ROLE:
+                case NamedObject.SYSTEM_ROLE:
+                    BrowserRolePanel rolePanel = null;
+                    if (!viewPanel.containsPanel(BrowserRolePanel.NAME)) {
+                        rolePanel = new BrowserRolePanel(controller);
+                        viewPanel.addToLayout(rolePanel);
+                    } else {
+                        rolePanel = (BrowserRolePanel) viewPanel.
+                                getFormObjectView(BrowserRolePanel.NAME);
+                    }
+                    rolePanel.setValues((DefaultDatabaseRole) databaseObject, controller);
+                    return rolePanel;
+                case NamedObject.EXCEPTION:
+                    BrowserExceptionPanel exceptionPanel = null;
+                    if (!viewPanel.containsPanel(BrowserExceptionPanel.NAME)) {
+                        exceptionPanel = new BrowserExceptionPanel(controller);
+                        viewPanel.addToLayout(exceptionPanel);
+                    } else {
+                        exceptionPanel = (BrowserExceptionPanel) viewPanel.
+                                getFormObjectView(BrowserExceptionPanel.NAME);
+                    }
+
+                    exceptionPanel.setValues((DefaultDatabaseException) databaseObject);
+                    return exceptionPanel;
+
+                case NamedObject.UDF:
+                    BrowserUDFPanel browserUDFPanel = null;
+                    if (!viewPanel.containsPanel(BrowserUDFPanel.NAME)) {
+                        browserUDFPanel = new BrowserUDFPanel(controller);
+                        viewPanel.addToLayout(browserUDFPanel);
+                    } else {
+                        browserUDFPanel = (BrowserUDFPanel) viewPanel.
+                                getFormObjectView(BrowserUDFPanel.NAME);
+                    }
+
+                    browserUDFPanel.setValues((DefaultDatabaseUDF) databaseObject);
+                    return browserUDFPanel;
+
+                case NamedObject.INDEX:
+                case NamedObject.SYSTEM_INDEX:
+                    BrowserIndexPanel browserIndexPanel = null;
+                    if (!viewPanel.containsPanel(BrowserIndexPanel.NAME)) {
+                        browserIndexPanel = new BrowserIndexPanel(controller);
+                        viewPanel.addToLayout(browserIndexPanel);
+                    } else {
+                        browserIndexPanel = (BrowserIndexPanel) viewPanel.
+                                getFormObjectView(BrowserIndexPanel.NAME);
+                    }
+
+                    browserIndexPanel.setValues((DefaultDatabaseIndex) databaseObject);
+                    return browserIndexPanel;
+
+                case NamedObject.TABLE:
+                case NamedObject.GLOBAL_TEMPORARY:
+                    BrowserTableEditingPanel editingPanel = viewPanel.getEditingPanel();
+                    editingPanel.setValues((DatabaseTable) databaseObject);
+                    return editingPanel;
+                case NamedObject.TABLE_COLUMN:
+                    TableColumnPanel columnPanel = null;
+                    if (!viewPanel.containsPanel(TableColumnPanel.NAME)) {
+                        columnPanel = new TableColumnPanel(controller);
+                        viewPanel.addToLayout(columnPanel);
+                    } else {
+                        columnPanel =
+                                (TableColumnPanel) viewPanel.getFormObjectView(TableColumnPanel.NAME);
+                    }
+                    columnPanel.setValues((DatabaseColumn) databaseObject);
+                    return columnPanel;
+
+                case NamedObject.TABLE_INDEX:
+                case NamedObject.PRIMARY_KEY:
+                case NamedObject.FOREIGN_KEY:
+                case NamedObject.UNIQUE_KEY:
+                    SimpleMetaDataPanel panel = null;
+                    if (!viewPanel.containsPanel(SimpleMetaDataPanel.NAME)) {
+                        panel = new SimpleMetaDataPanel(controller);
+                        viewPanel.addToLayout(panel);
+                    } else {
+                        panel = (SimpleMetaDataPanel) viewPanel.getFormObjectView(SimpleMetaDataPanel.NAME);
+                    }
+                    panel.setValues(databaseObject);
+                    return panel;
+
+                default:
+                    ObjectDefinitionPanel objectDefnPanel = null;
+                    if (!viewPanel.containsPanel(ObjectDefinitionPanel.NAME)) {
+                        objectDefnPanel = new ObjectDefinitionPanel(controller);
+                        viewPanel.addToLayout(objectDefnPanel);
+                    } else {
+                        objectDefnPanel = (ObjectDefinitionPanel) viewPanel.
+                                getFormObjectView(ObjectDefinitionPanel.NAME);
+                    }
+                    objectDefnPanel.setValues(
+                            (org.executequery.databaseobjects.DatabaseObject) databaseObject);
+                    return objectDefnPanel;
+
+            }
+
+        } catch (Exception e) {
+            handleException(e);
+            return null;
+        }
+
+    }
+
+    private HostPanel hostPanel() {
+        HostPanel hostPanel = null;
+        if (!viewPanel.containsPanel(HostPanel.NAME)) {
+
+            hostPanel = new HostPanel(controller);
+            viewPanel.addToLayout(hostPanel);
+
+        } else {
+
+            hostPanel = (HostPanel) viewPanel.getFormObjectView(HostPanel.NAME);
+        }
+        return hostPanel;
+    }
+    protected void checkBrowserPanel() {
+
+        // check we have the browser view panel
+//        if (viewPanel == null) {
+//
+//            viewPanel = new BrowserViewPanel(this);
+//        }
+
+        // check the panel is in the pane
+        if (viewPanel == null)
+            viewPanel = new BrowserViewPanel(controller);
+        String title = viewPanel.getNameObject();
+        if (title == null)
+            title = BrowserViewPanel.TITLE;
+        JPanel _viewPanel = GUIUtilities.getCentralPane(title);
+
+        if (_viewPanel == null) {
+
+            GUIUtilities.addCentralPane(title,
+                    BrowserViewPanel.FRAME_ICON,
+                    viewPanel,
+                    title,
+                    true);
+            ConnectionHistory.add(viewPanel.getCurrentView());
+
+        } else {
+
+            GUIUtilities.setSelectedCentralPane(title);
+        }
+    }
+
+        //..................................///////////////////////////////////////////////
+
+    //end of code
+
+
 
     public void duplicate(ActionEvent e) {
 

@@ -55,6 +55,10 @@ public class BrowserTreePopupMenu extends JPopupMenu {
     private final JMenuItem copyName;
     private final JMenuItem moveToFolder;
 
+    //@ Dzugaev
+    //овно годить тут
+    private final JMenuItem DzugMenuBar;
+
     private JCheckBoxMenuItem showDefaultCatalogsAndSchemas;
 
     private JMenu sql;
@@ -71,6 +75,12 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         add(connect);
         disconnect = createMenuItem(bundleString("disconnect"), "disconnect", listener);
         add(disconnect);
+
+        //dz
+        DzugMenuBar = createMenuItem ("DzMenuBarText","openMenu", listener);
+        add(DzugMenuBar);
+        //
+
         reload = createMenuItem(bundleString("reload"), "reload", listener);
         add(reload);
         recycleConnection = createMenuItem(bundleString("recycle"), "recycle", listener);
@@ -140,6 +150,9 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
         connect.setVisible(canConnect);
         disconnect.setVisible(!canConnect);
+        //dz
+       // DzugMenuBar.setVisible(!canConnect);
+        //dz
         delete.setVisible(canConnect);
         reload.setVisible(!canConnect);
 
@@ -170,6 +183,9 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
                     label = node.toString();
                     disconnect.setVisible(false);
+                    //dz
+                    DzugMenuBar.setVisible(false);
+                    //
                     reload.setVisible(true);
                     recycleConnection.setVisible(false);
                     moveToFolder.setVisible(false);
@@ -210,7 +226,13 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
             String name = listener.getCurrentSelection().getName();
             connect.setText(bundleString("connectText", name));
+            //!здесь возможно
             disconnect.setText(bundleString("disconnectText", name));
+
+            //dz
+            DzugMenuBar.setText("(DZ) Информация о базе данных");
+            //
+
             delete.setText(bundleString("deleteText", name));
             duplicate.setText(bundleString("duplicateText", name));
 

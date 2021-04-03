@@ -32,6 +32,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.event.*;
 import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
+
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
@@ -47,6 +48,9 @@ import org.underworldlabs.swing.toolbar.PanelToolBar;
 import org.underworldlabs.swing.tree.DynamicTree;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.SystemProperties;
+
+//dz
+//import  org.executequery.gui.browser.BrowserTreePopupMenuActionListener;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -461,7 +465,8 @@ public class ConnectionsTreePanel extends TreePanel
       Object object = tree.getLastPathComponent();
       if (isADatabaseHostNode(object)) {
 
-        controller.valueChanged_(asDatabaseHostNode(object), null);
+       //dz controller.valueChanged_(asDatabaseHostNode(object), null);
+       //dz valueChanged (asDatabaseHostNode(object), null);
       }
 
     }
@@ -1110,7 +1115,8 @@ public class ConnectionsTreePanel extends TreePanel
         if (tree.getSelectionPath().getLastPathComponent() == host) {
 
           enableButtons(true, true, false, true, true);
-          controller.valueChanged_(host, null);
+         //dz controller.valueChanged_(host, null);
+           //dz valueChanged (host, null);
         } else
           enableButtons(false, false, false, false, false);
       } else {
@@ -1309,11 +1315,14 @@ public class ConnectionsTreePanel extends TreePanel
   }
 
   public synchronized void valueChanged(DatabaseObjectNode node) {
-    controller.valueChanged_(node, null);
+    controller.valueChanged_ (node, null);
+   // valueChanged (node, null);
+
   }
 
   public synchronized void valueChanged(DatabaseObjectNode node, DatabaseConnection connection) {
-    controller.valueChanged_(node, connection);
+  // controller.valueChanged_ (node, connection);
+   // valueChanged (node, connection);
   }
 
   /**
@@ -1476,7 +1485,7 @@ public class ConnectionsTreePanel extends TreePanel
 
             tree.startLoadingNode();
             treeExpanding = true;
-            valueChanged(node);
+          //dz  valueChanged(node);
 
           } finally {
 

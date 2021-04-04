@@ -175,7 +175,8 @@ public class SchemaTree extends DynamicTree
             if (selectionPath == null)
                 return;
             DatabaseObjectNode node = (DatabaseObjectNode) selectionPath.getLastPathComponent();
-            if (!node.isCatalog())
+            if (!node.isCatalog() && !node.isHostNode()) /**previous note: "if (!node.isCatalog())"*/ //Dzugaev
+
                 if (node.getDatabaseObject() == null || node.getDatabaseObject().getType() != NamedObject.META_TAG)
                     panel.valueChanged(node);
         }

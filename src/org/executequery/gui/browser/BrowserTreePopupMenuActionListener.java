@@ -597,67 +597,21 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
 
 
-    //dz code...................................
-    /*
-    private ConnectionPanel connectionPanel;
-    private BrowserController controller;*/
+    /* dz .................................. */
+
     private BrowserController controller;
     public BrowserViewPanel browserViewPanel;
-    public void openMenu (ActionEvent e) {
+
+    public void dataBaseInfo(ActionEvent e) {
         controller = new BrowserController(treePanel);
-        /*
-        JOptionPane.showMessageDialog(null, "It's working");
 
-       try {
-            JOptionPane.showMessageDialog(null, "Зашел");
-
-           browserViewPanel = new BrowserViewPanel (controller);
-           browserViewPanel.setVisible(true);
-           /* treePanel.selectTreePath(currentPath);
-            controller = new BrowserController(treePanel);
-            connectionPanel = new ConnectionPanel(controller);
-            connectionPanel.setVisible(true);
-          //  setContentPanel(connectionPanel);
-            /
-            JOptionPane.showMessageDialog(null, "Вышел");
-        }
-        catch (Exception ex)
-        {
-            JOptionPane.showMessageDialog(null, "Нифига не работает");
-        }
-        */
         DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
         DatabaseConnection connection = currentSelection;
-        treePanel.setInProcess(true);
-
-        try {
-
-            FormObjectView panel = buildPanelView(node);
-            panel.setDatabaseObjectNode(node);
-            String type = "";
-            if (node.getType() < NamedObject.META_TYPES.length)
-                type = NamedObject.META_TYPES[node.getType()];
-            if (connection == null)
-                connection = getDatabaseConnection();
-            if (node.isHostNode() || node.getType() == NamedObject.CATALOG)
-                panel.setObjectName(null);
-            else panel.setObjectName(node.getShortName().trim() + ":" + type + ":" + connection.getName());
-            panel.setDatabaseConnection(connection);
-            if (panel != null) {
-                viewPanel.setView(panel);
-                checkBrowserPanel();
-            }
-
-        } finally {
-
-            treePanel.setInProcess(false);
-        }
-
+        valueChanged_(node, connection);
     }
 
-
-    public void valueChanged (DatabaseObjectNode node, DatabaseConnection connection) {
-
+    public void valueChanged_ (DatabaseObjectNode node, DatabaseConnection connection)
+    {
         treePanel.setInProcess(true);
 
         try {
@@ -682,6 +636,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
             treePanel.setInProcess(false);
         }
+
     }
 
     protected DatabaseConnection getDatabaseConnection() {

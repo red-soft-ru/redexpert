@@ -48,10 +48,8 @@ import org.underworldlabs.swing.toolbar.PanelToolBar;
 import org.underworldlabs.swing.tree.DynamicTree;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.SystemProperties;
-
 //dz
-//import  org.executequery.gui.browser.BrowserTreePopupMenuActionListener;
-
+import  org.executequery.gui.browser.BrowserTreePopupMenuActionListener;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
@@ -107,6 +105,9 @@ public class ConnectionsTreePanel extends TreePanel
   private TreeFindAction treeFindAction;
 
   private JScrollPane scrollPane;
+
+  //dz
+  private BrowserTreePopupMenuActionListener listener;
 
   public ConnectionsTreePanel() {
 
@@ -465,8 +466,11 @@ public class ConnectionsTreePanel extends TreePanel
       Object object = tree.getLastPathComponent();
       if (isADatabaseHostNode(object)) {
 
-       //dz controller.valueChanged_(asDatabaseHostNode(object), null);
-       //dz valueChanged (asDatabaseHostNode(object), null);
+       // controller.valueChanged_(asDatabaseHostNode(object), null);
+       //dzlist
+       // valueChanged(asDatabaseHostNode(object), null);
+
+
       }
 
     }
@@ -1115,8 +1119,14 @@ public class ConnectionsTreePanel extends TreePanel
         if (tree.getSelectionPath().getLastPathComponent() == host) {
 
           enableButtons(true, true, false, true, true);
-         //dz controller.valueChanged_(host, null);
-           //dz valueChanged (host, null);
+         //dzlist
+         // controller.valueChanged_(host, null);
+          //valueChanged (host, null);
+
+
+
+
+
         } else
           enableButtons(false, false, false, false, false);
       } else {
@@ -1311,18 +1321,25 @@ public class ConnectionsTreePanel extends TreePanel
         }
     } catch (DataSourceException e) {
       controller.handleException(e);
+
     }
   }
 
+
   public synchronized void valueChanged(DatabaseObjectNode node) {
-    controller.valueChanged_ (node, null);
-   // valueChanged (node, null);
+   // controller.valueChanged_ (node, null);
+    //dzlist
+    listener = new BrowserTreePopupMenuActionListener(this);
+    listener.valueChanged_ (node, null);
+
 
   }
 
   public synchronized void valueChanged(DatabaseObjectNode node, DatabaseConnection connection) {
-  // controller.valueChanged_ (node, connection);
-   // valueChanged (node, connection);
+   //controller.valueChanged_ (node, connection);
+
+    listener = new BrowserTreePopupMenuActionListener(this);
+    listener.valueChanged_ (node, connection);
   }
 
   /**
@@ -1414,6 +1431,7 @@ public class ConnectionsTreePanel extends TreePanel
 
   public void pathChanged(TreePath oldPath, TreePath newPath) {
 
+
     // store the last position
     oldSelectionPath = oldPath;
 
@@ -1479,15 +1497,20 @@ public class ConnectionsTreePanel extends TreePanel
 
       c.setInProcess(true);
 
+
       worker = new SwingWorker() {
         public Object construct() {
+
           try {
 
             tree.startLoadingNode();
             treeExpanding = true;
-          //dz  valueChanged(node);
+          //dzlist
 
-          } finally {
+          // valueChanged (node);
+
+           }
+          finally {
 
             treeExpanding = false;
           }

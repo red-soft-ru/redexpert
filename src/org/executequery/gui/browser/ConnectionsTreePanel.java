@@ -106,7 +106,7 @@ public class ConnectionsTreePanel extends TreePanel
 
   private JScrollPane scrollPane;
 
-  //dz
+
   private BrowserTreePopupMenuActionListener listener;
 
   public ConnectionsTreePanel() {
@@ -467,7 +467,6 @@ public class ConnectionsTreePanel extends TreePanel
       if (isADatabaseHostNode(object)) {
 
        // controller.valueChanged_(asDatabaseHostNode(object), null);
-       //dzlist
        // valueChanged(asDatabaseHostNode(object), null);
 
 
@@ -1119,13 +1118,8 @@ public class ConnectionsTreePanel extends TreePanel
         if (tree.getSelectionPath().getLastPathComponent() == host) {
 
           enableButtons(true, true, false, true, true);
-         //dzlist
          // controller.valueChanged_(host, null);
           //valueChanged (host, null);
-
-
-
-
 
         } else
           enableButtons(false, false, false, false, false);
@@ -1328,7 +1322,6 @@ public class ConnectionsTreePanel extends TreePanel
 
   public synchronized void valueChanged(DatabaseObjectNode node) {
    // controller.valueChanged_ (node, null);
-    //dzlist
     listener = new BrowserTreePopupMenuActionListener(this);
     listener.valueChanged_ (node, null);
 
@@ -1505,9 +1498,7 @@ public class ConnectionsTreePanel extends TreePanel
 
             tree.startLoadingNode();
             treeExpanding = true;
-          //dzlist
-
-          // valueChanged (node);
+            // valueChanged (node);
 
            }
           finally {

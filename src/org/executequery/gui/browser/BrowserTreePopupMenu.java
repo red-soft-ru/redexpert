@@ -56,7 +56,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
     private final JMenuItem moveToFolder;
 
 
-    private final JMenuItem dataBaseInfo;
+    private final JMenuItem dataBaseInformation;
 
     private JCheckBoxMenuItem showDefaultCatalogsAndSchemas;
 
@@ -74,8 +74,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         add(connect);
         disconnect = createMenuItem(bundleString("disconnect"), "disconnect", listener);
         add(disconnect);
-        dataBaseInfo = createMenuItem ("dataBaseInfo","dataBaseInfo", listener);
-        add(dataBaseInfo);
+        dataBaseInformation = createMenuItem ("dataBaseInformation","dataBaseInformation", listener);
+        add(dataBaseInformation);
         reload = createMenuItem(bundleString("reload"), "reload", listener);
         add(reload);
         recycleConnection = createMenuItem(bundleString("recycle"), "recycle", listener);
@@ -176,7 +176,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
                     label = node.toString();
                     disconnect.setVisible(false);
-                    dataBaseInfo.setVisible(false);
+                    dataBaseInformation.setVisible(false);
                     reload.setVisible(true);
                     recycleConnection.setVisible(false);
                     moveToFolder.setVisible(false);
@@ -219,7 +219,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
             connect.setText(bundleString("connectText", name));
             //!здесь возможно
             disconnect.setText(bundleString("disconnectText", name));
-            dataBaseInfo.setText(bundleString("dataBaseInfo"));
+            dataBaseInformation.setText(bundleString("dataBaseInfo"));
             delete.setText(bundleString("deleteText", name));
             duplicate.setText(bundleString("duplicateText", name));
 

@@ -219,7 +219,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
             connect.setText(bundleString("connectText", name));
             //!здесь возможно
             disconnect.setText(bundleString("disconnectText", name));
-            dataBaseInformation.setText(bundleString("dataBaseInfo"));
+            dataBaseInformation.setText(bundleString("dataBaseInformation"));
             delete.setText(bundleString("deleteText", name));
             duplicate.setText(bundleString("duplicateText", name));
 

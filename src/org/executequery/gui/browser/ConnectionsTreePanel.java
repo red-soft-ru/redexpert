@@ -840,12 +840,13 @@ public class ConnectionsTreePanel extends TreePanel
 
     DatabaseHost host = databaseObjectFactory().createDatabaseHost(dc);
     connections.add(dc);
-
     ConnectionsFolderNode folderNode = getSelectedFolderNode();
+
     if (folderNode != null) {
 
       final DatabaseHostNode hostNode = new DatabaseHostNode(host, folderNode);
       folderNode.addNewHostNode(hostNode);
+
 
       tree.nodesWereInserted(folderNode, new int[]{folderNode.getChildCount() - 1});
 //            tree.insertNode(folderNode, hostNode);
@@ -856,11 +857,13 @@ public class ConnectionsTreePanel extends TreePanel
       folderModified(folderNode.getConnectionsFolder());
 
     } else {
-
       tree.addToRoot(new DatabaseHostNode(host, null));
+      valueChanged(new DatabaseHostNode(host, null), null);
+
     }
 
     connectionAdded(dc);
+
   }
 
     /*

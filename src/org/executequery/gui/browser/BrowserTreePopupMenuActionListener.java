@@ -337,7 +337,6 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
                     break;
 
-
             }
         }
 
@@ -600,11 +599,15 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     /* dz .................................. */
 
     private BrowserController controller;
-    public BrowserViewPanel browserViewPanel;
+   // private BrowserViewPanel browserViewPanel;
+    private BrowserViewPanel viewPanel;
 
     public void dataBaseInformation (ActionEvent e) {
+       valueChanged_();
+    }
+    public void valueChanged_ ()
+    {
         controller = new BrowserController(treePanel);
-
         DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
         DatabaseConnection connection = currentSelection;
         valueChanged_(node, connection);
@@ -643,10 +646,6 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
         return treePanel.getSelectedDatabaseConnection();
     }
-
-
-    private BrowserViewPanel viewPanel;
-
 
     private FormObjectView buildPanelView(DatabaseObjectNode node) {
         try {

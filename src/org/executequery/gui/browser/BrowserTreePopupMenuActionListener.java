@@ -603,7 +603,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
    // private BrowserViewPanel viewPanel;
 
     public void dataBaseInformation (ActionEvent e) {
-        controller = new BrowserController(treePanel);
+        controller = treePanel.getController();
         DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
         DatabaseConnection connection = currentSelection;
         controller.valueChanged_(node, connection);

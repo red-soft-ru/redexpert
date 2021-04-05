@@ -227,7 +227,7 @@ public class ConnectionsTreePanel extends TreePanel
   @SuppressWarnings("unchecked")
   public void collapseAll() {
 
-    for (Enumeration<TreeNode> i = tree.getRootNode().children(); i.hasMoreElements();) {
+    for (Enumeration<TreeNode> i = tree.getRootNode().children(); i.hasMoreElements(); ) {
 
       DefaultMutableTreeNode node = (DefaultMutableTreeNode) i.nextElement();
       tree.collapsePath(new TreePath(node.getPath()));
@@ -304,7 +304,7 @@ public class ConnectionsTreePanel extends TreePanel
     tree.nodeStructureChanged(selectedNode);
 
     int count = 0;
-    for (Enumeration i = selectedNode.children(); i.hasMoreElements();) {
+    for (Enumeration i = selectedNode.children(); i.hasMoreElements(); ) {
 
       Object object = i.nextElement();
       if (object instanceof DatabaseHostNode) {
@@ -328,7 +328,7 @@ public class ConnectionsTreePanel extends TreePanel
       ConnectionsFolder folder = folderNode.getConnectionsFolder();
       folder.empty();
 
-      for (Enumeration<?> j = selectedNode.children(); j.hasMoreElements();) {
+      for (Enumeration<?> j = selectedNode.children(); j.hasMoreElements(); ) {
 
         Object object = j.nextElement();
         if (isADatabaseHostNode(object)) {
@@ -344,6 +344,11 @@ public class ConnectionsTreePanel extends TreePanel
       folderModified(folder);
 
     }
+  }
+
+  public BrowserController getController()
+  {
+    return controller;
   }
 
   public void rebuildConnectionsFromTree() {

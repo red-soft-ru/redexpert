@@ -28,11 +28,14 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseProcedure;
 import org.executequery.databaseobjects.impl.SystemDatabaseFunction;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
-import org.executequery.gui.text.SQLTextPane;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
+import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.sqlLexer.SqlLexerTokenMaker;
 import org.underworldlabs.swing.DisabledField;
 
 import javax.swing.*;
@@ -62,8 +65,8 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
 
     private Map cache;
 
-    JTextPane sourceTextPane;
-    JTextPane createSqlPane;
+    RSyntaxTextArea sourceTextPane;
+    RSyntaxTextArea createSqlPane;
 
     /**
      * the browser's control object
@@ -105,8 +108,12 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
 
         JPanel sourcePanel = new JPanel(new BorderLayout());
         sourcePanel.setBorder(BorderFactory.createTitledBorder(bundleString("source")));
-        sourceTextPane = new SQLTextPane();
+        ((AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance())
+                .putMapping("antlr/sql", SqlLexerTokenMaker.class.getName(), SqlLexerTokenMaker.class.getClassLoader());
+        sourceTextPane = new RSyntaxTextArea();
         sourceTextPane.setEditable(false);
+        sourceTextPane.setSyntaxEditingStyle("antlr/sql");
+        //sourceTextPane.getSyntaxScheme().getStyle(Token.LITERAL_STRING_DOUBLE_QUOTE).foreground = Color.GREEN;
         sourcePanel.add(new JScrollPane(sourceTextPane), BorderLayout.CENTER);
 //        sourcePanel.add(new JScrollPane(sourceTextPane), BorderLayout.CENTER);
         splitPane.setTopComponent(paramPanel);
@@ -118,7 +125,8 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         JPanel sqlPanel = new JPanel(new BorderLayout());
         sqlPanel.setBorder(BorderFactory.createEtchedBorder());
 
-        createSqlPane = new SQLTextPane();
+        createSqlPane = new RSyntaxTextArea();
+        createSqlPane.setSyntaxEditingStyle("antlr/sql");
 
         sqlPanel.add(new JScrollPane(createSqlPane), BorderLayout.CENTER);
 

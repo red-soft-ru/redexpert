@@ -253,7 +253,7 @@ public class BrowserController {
 
    /** This void has been moved in BrowserTreePopupMenuActionListener */
 
-   /* public void valueChanged_(DatabaseObjectNode node, DatabaseConnection connection) {
+   public void valueChanged_(DatabaseObjectNode node, DatabaseConnection connection) {
         treePanel.setInProcess(true);
 
 
@@ -281,7 +281,7 @@ public class BrowserController {
             treePanel.setInProcess(false);
         }
     }
-    */
+
 
     /**
      * Determines and builds the object view panel to be
@@ -294,7 +294,7 @@ public class BrowserController {
 
     //=========================
 
-  /* private FormObjectView buildPanelView(DatabaseObjectNode node) {
+   private FormObjectView buildPanelView(DatabaseObjectNode node) {
         try {
 
             NamedObject databaseObject = node.getDatabaseObject();
@@ -545,7 +545,7 @@ public class BrowserController {
             return null;
         }
     }
-       */
+
 
     private HostPanel hostPanel() {
         HostPanel hostPanel = null;

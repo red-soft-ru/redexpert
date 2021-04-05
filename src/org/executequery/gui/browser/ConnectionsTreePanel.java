@@ -857,8 +857,9 @@ public class ConnectionsTreePanel extends TreePanel
       folderModified(folderNode.getConnectionsFolder());
 
     } else {
-      tree.addToRoot(new DatabaseHostNode(host, null));
-      valueChanged(new DatabaseHostNode(host, null), null);
+      DatabaseHostNode databaseHostNode = new DatabaseHostNode(host, null);
+      tree.addToRoot(databaseHostNode);
+      valueChanged(databaseHostNode, null);
 
     }
 
@@ -1324,18 +1325,11 @@ public class ConnectionsTreePanel extends TreePanel
 
 
   public synchronized void valueChanged(DatabaseObjectNode node) {
-   // controller.valueChanged_ (node, null);
-    listener = new BrowserTreePopupMenuActionListener(this);
-    listener.valueChanged_ (node, null);
-
-
+   controller.valueChanged_ (node, null);
   }
 
   public synchronized void valueChanged(DatabaseObjectNode node, DatabaseConnection connection) {
-   //controller.valueChanged_ (node, connection);
-
-    listener = new BrowserTreePopupMenuActionListener(this);
-    listener.valueChanged_ (node, connection);
+   controller.valueChanged_ (node, connection);
   }
 
   /**

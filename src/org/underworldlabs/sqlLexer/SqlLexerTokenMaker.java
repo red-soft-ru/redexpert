@@ -7,12 +7,16 @@ import org.fife.ui.rsyntaxtextarea.Token;
 import org.underworldlabs.antrlExtentionRsyntxtextarea.AntlrTokenMaker;
 import org.underworldlabs.antrlExtentionRsyntxtextarea.MultiLineTokenInfo;
 
+import java.util.TreeSet;
+
 
 public class SqlLexerTokenMaker extends AntlrTokenMaker {
     public SqlLexerTokenMaker() {
         super(new MultiLineTokenInfo(0, Token.COMMENT_MULTILINE, "/*", "*/"),
                 new MultiLineTokenInfo(0, Token.LITERAL_STRING_DOUBLE_QUOTE, "'", "'"));
     }
+
+    TreeSet<String> dbobjects;
 
     @Override
     protected int convertType(int i) {
@@ -32,9 +36,24 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
                 return Token.LITERAL_STRING_DOUBLE_QUOTE;
             case SqlLexer.PART_OBJECT:
                 return Token.VARIABLE;
+            case SqlLexer.LINTERAL_VALUE:
+                return Token.LITERAL_BOOLEAN;
             default:
+                if (dbobjects != null) {
+                    String x = currentToken.toString();
+                    if (dbobjects.contains(x)) ;
+                    return Token.FUNCTION;
+                }
                 return Token.IDENTIFIER;
         }
+    }
+
+    public TreeSet<String> getDbobjects() {
+        return dbobjects;
+    }
+
+    public void setDbobjects(TreeSet<String> dbobjects) {
+        this.dbobjects = dbobjects;
     }
 
     @Override

@@ -29,10 +29,10 @@ import org.executequery.databaseobjects.impl.SystemDatabaseFunction;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
 import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.sqlLexer.SqlLexerTokenMaker;
@@ -113,6 +113,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         sourceTextPane = new RSyntaxTextArea();
         sourceTextPane.setEditable(false);
         sourceTextPane.setSyntaxEditingStyle("antlr/sql");
+
         //sourceTextPane.getSyntaxScheme().getStyle(Token.LITERAL_STRING_DOUBLE_QUOTE).foreground = Color.GREEN;
         sourcePanel.add(new JScrollPane(sourceTextPane), BorderLayout.CENTER);
 //        sourcePanel.add(new JScrollPane(sourceTextPane), BorderLayout.CENTER);
@@ -127,6 +128,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
 
         createSqlPane = new RSyntaxTextArea();
         createSqlPane.setSyntaxEditingStyle("antlr/sql");
+        createSqlPane.getSyntaxScheme().getStyle(Token.OPERATOR).foreground = Color.ORANGE;
 
         sqlPanel.add(new JScrollPane(createSqlPane), BorderLayout.CENTER);
 
@@ -247,6 +249,8 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         }
 
         try {
+            SqlLexerTokenMaker maker = (SqlLexerTokenMaker) TokenMakerFactory.getDefaultInstance().getTokenMaker("antlr/sql");
+            maker.setDbobjects(executeable.getHost().getDatabaseConnection().getListObjectsDB());
             procNameField.setText(executeable.getName());
             model.setValues(executeable.getParametersArray());
             String sourceCode = executeable.getProcedureSourceCode();
@@ -255,11 +259,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
             if (executeable instanceof DefaultDatabaseProcedure) {
                 DefaultDatabaseProcedure p = (DefaultDatabaseProcedure) executeable;
                 p.setHost(((DefaultDatabaseProcedure) executeable).getMetaTagParent().getHost());
-                Long start = System.currentTimeMillis();
                 createSqlPane.setText(p.getCreateSQLText());
-                Long finish = System.currentTimeMillis();
-                Long time = finish - start;
-                Log.info(time);
             }
 
         } catch (DataSourceException e) {

@@ -1587,11 +1587,10 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             int result = statement.executeUpdate();
             statementResult.setUpdateCount(result);
             useCount++;
-        } catch (SQLException e) {
-            statementResult.setSqlException(e);
-        } finally {
             if (isAutoDDL())
                 commitLast(true);
+        } catch (SQLException e) {
+            statementResult.setSqlException(e);
         }
 
         return statementResult;

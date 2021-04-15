@@ -4,11 +4,11 @@ import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.Lexer;
 import org.fife.ui.rsyntaxtextarea.Token;
 import org.fife.ui.rsyntaxtextarea.TokenMakerBase;
+import org.underworldlabs.sqlLexer.CustomSqlLexer;
+import org.underworldlabs.sqlLexer.SqlLexer;
 
 import javax.swing.text.Segment;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public abstract class AntlrTokenMaker extends TokenMakerBase {
 
@@ -70,6 +70,7 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
         try {
             while (true) {
                 org.antlr.v4.runtime.Token at = lexer.nextToken();
+                at = convertToken(at);
                 setLanguageIndex(lexer._mode);
                 if (at.getType() == CommonToken.EOF) {
                     if (multilineTokenEnd == null) {
@@ -129,6 +130,9 @@ public abstract class AntlrTokenMaker extends TokenMakerBase {
 
         return firstToken;
     }
+
+    protected abstract org.antlr.v4.runtime.Token convertToken(org.antlr.v4.runtime.Token token);
+
 
     private void addToken(
             Segment text,

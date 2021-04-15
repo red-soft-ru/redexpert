@@ -28,13 +28,12 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseProcedure;
 import org.executequery.databaseobjects.impl.SystemDatabaseFunction;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
 import org.executequery.print.TablePrinter;
-import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rsyntaxtextarea.Token;
-import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
+import org.fife.ui.rsyntaxtextarea.*;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.sqlLexer.CustomTokenMakerFactory;
 import org.underworldlabs.sqlLexer.SqlLexerTokenMaker;
 import org.underworldlabs.swing.DisabledField;
 
@@ -65,8 +64,8 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
 
     private Map cache;
 
-    RSyntaxTextArea sourceTextPane;
-    RSyntaxTextArea createSqlPane;
+    SQLTextArea sourceTextPane;
+    SQLTextArea createSqlPane;
 
     /**
      * the browser's control object
@@ -84,6 +83,8 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         }
 
     }
+
+
 
     private void init() {
         dependenciesPanel = new DependenciesPanel();
@@ -108,11 +109,9 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
 
         JPanel sourcePanel = new JPanel(new BorderLayout());
         sourcePanel.setBorder(BorderFactory.createTitledBorder(bundleString("source")));
-        ((AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance())
-                .putMapping("antlr/sql", SqlLexerTokenMaker.class.getName(), SqlLexerTokenMaker.class.getClassLoader());
-        sourceTextPane = new RSyntaxTextArea();
+        sourceTextPane = new SQLTextArea();
         sourceTextPane.setEditable(false);
-        sourceTextPane.setSyntaxEditingStyle("antlr/sql");
+
 
         //sourceTextPane.getSyntaxScheme().getStyle(Token.LITERAL_STRING_DOUBLE_QUOTE).foreground = Color.GREEN;
         sourcePanel.add(new JScrollPane(sourceTextPane), BorderLayout.CENTER);
@@ -126,9 +125,7 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         JPanel sqlPanel = new JPanel(new BorderLayout());
         sqlPanel.setBorder(BorderFactory.createEtchedBorder());
 
-        createSqlPane = new RSyntaxTextArea();
-        createSqlPane.setSyntaxEditingStyle("antlr/sql");
-        createSqlPane.getSyntaxScheme().getStyle(Token.OPERATOR).foreground = Color.ORANGE;
+        createSqlPane = new SQLTextArea();
 
         sqlPanel.add(new JScrollPane(createSqlPane), BorderLayout.CENTER);
 
@@ -249,16 +246,16 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
         }
 
         try {
-            SqlLexerTokenMaker maker = (SqlLexerTokenMaker) TokenMakerFactory.getDefaultInstance().getTokenMaker("antlr/sql");
-            maker.setDbobjects(executeable.getHost().getDatabaseConnection().getListObjectsDB());
             procNameField.setText(executeable.getName());
             model.setValues(executeable.getParametersArray());
             String sourceCode = executeable.getProcedureSourceCode();
+            sourceTextPane.setDbobjects(executeable.getHost().getDatabaseConnection().getListObjectsDB());
             sourceTextPane.setText(sourceCode);
 
             if (executeable instanceof DefaultDatabaseProcedure) {
                 DefaultDatabaseProcedure p = (DefaultDatabaseProcedure) executeable;
                 p.setHost(((DefaultDatabaseProcedure) executeable).getMetaTagParent().getHost());
+                createSqlPane.setDbobjects(executeable.getHost().getDatabaseConnection().getListObjectsDB());
                 createSqlPane.setText(p.getCreateSQLText());
             }
 

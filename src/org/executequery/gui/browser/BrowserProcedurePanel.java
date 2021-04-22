@@ -249,13 +249,13 @@ public class BrowserProcedurePanel extends AbstractFormObjectViewPanel {
             procNameField.setText(executeable.getName());
             model.setValues(executeable.getParametersArray());
             String sourceCode = executeable.getProcedureSourceCode();
-            sourceTextPane.setDbobjects(executeable.getHost().getDatabaseConnection().getListObjectsDB());
+            sourceTextPane.setDatabaseConnection(executeable.getHost().getDatabaseConnection());
             sourceTextPane.setText(sourceCode);
 
             if (executeable instanceof DefaultDatabaseProcedure) {
                 DefaultDatabaseProcedure p = (DefaultDatabaseProcedure) executeable;
                 p.setHost(((DefaultDatabaseProcedure) executeable).getMetaTagParent().getHost());
-                createSqlPane.setDbobjects(executeable.getHost().getDatabaseConnection().getListObjectsDB());
+                createSqlPane.setDatabaseConnection(executeable.getHost().getDatabaseConnection());
                 createSqlPane.setText(p.getCreateSQLText());
             }
 

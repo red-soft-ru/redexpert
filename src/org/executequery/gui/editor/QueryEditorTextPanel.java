@@ -27,6 +27,7 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.TreeFindAction;
 import org.executequery.gui.browser.tree.SchemaTree;
 import org.executequery.gui.editor.autocomplete.AutoCompletePopupProvider;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.TextUtilities;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.GUIUtils;
@@ -106,7 +107,9 @@ public class QueryEditorTextPanel extends JPanel {
 
         // setup the query text panel and associated scroller
         queryPane = new QueryEditorTextPane(this);
-        queryPane.addMouseListener(new MouseAdapter() {
+        queryPane.setSize(new Dimension(400,300));
+        queryPane.setDatabaseConnection(queryEditor.getSelectedConnection());
+        /*queryPane.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() > 1 || e.isControlDown()) {
@@ -140,7 +143,8 @@ public class QueryEditorTextPanel extends JPanel {
                     }
                 }
             }
-        });
+        });*/
+
 
         JScrollPane queryScroller = new JScrollPane();
         queryScroller.getViewport().add(queryPane, BorderLayout.CENTER);
@@ -292,7 +296,7 @@ public class QueryEditorTextPanel extends JPanel {
         setTextFocus();
     }
 
-    public JTextPane getQueryArea() {
+    public SQLTextArea getQueryArea() {
 
         return queryPane;
     }

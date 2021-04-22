@@ -1,20 +1,25 @@
 package org.executequery.gui.text;
 
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.TreeFindAction;
 import org.executequery.gui.browser.tree.SchemaTree;
+import org.executequery.gui.editor.QueryEditorSettings;
+import org.executequery.gui.text.syntax.SQLSyntaxDocument;
 import org.executequery.gui.text.syntax.SyntaxStyle;
 import org.executequery.gui.text.syntax.TokenTypes;
-import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rsyntaxtextarea.Token;
+import org.executequery.log.Log;
+import org.executequery.repository.KeywordRepository;
+import org.executequery.repository.RepositoryCache;
+import org.fife.ui.rsyntaxtextarea.*;
 import org.underworldlabs.sqlLexer.CustomTokenMakerFactory;
 import org.underworldlabs.sqlLexer.SqlLexerTokenMaker;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
+import javax.swing.text.*;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -25,10 +30,26 @@ import java.util.TreeSet;
 
 public class SQLTextArea extends RSyntaxTextArea {
     private CustomTokenMakerFactory tokenMakerFactory = new CustomTokenMakerFactory();
+    protected DatabaseConnection databaseConnection;
+    protected SQLSyntaxDocument document;
+
+    private boolean doCaretUpdate;
+
+    /**
+     * The current font width for painting
+     */
+    protected int fontWidth;
+
+    /**
+     * The current font height for painting
+     */
+    protected int fontHeight;
+
     public SQLTextArea()
     {
         super();
-        setDocument(new RSyntaxDocument(tokenMakerFactory,"antlr/sql"));
+        document = new SQLSyntaxDocument(null,tokenMakerFactory,"antlr/sql");
+        setDocument(document);
         setSyntaxEditingStyle("antlr/sql");
         initialiseStyles();
         addMouseListener(new MouseAdapter() {
@@ -36,15 +57,15 @@ public class SQLTextArea extends RSyntaxTextArea {
             public void mouseClicked(MouseEvent e) {
                 if(e.isControlDown()||e.getClickCount()>1) {
                     int cursor = getCaretPosition();
-                    Token token = getTokenListFor(cursor,cursor);
+                    Token token = getTokenForPosition(cursor);
                     if(token.getType()==Token.PREPROCESSOR) {
                         String s = token.getLexeme();
                         if (s != null) {
-                           /* s = s.replace("$", "\\$");
+                            s = s.replace("$", "\\$");
                             TreeFindAction action = new TreeFindAction();
                             SchemaTree tree = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getTree();
                             action.install(tree);
-                            action.findString(tree, s, ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode());
+                            action.findString(tree, s, ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(databaseConnection));
                             BaseDialog dialog = new BaseDialog("find", false);
                             JPanel panel = new JPanel();
                             JList jList = action.getResultsList();
@@ -63,7 +84,7 @@ public class SQLTextArea extends RSyntaxTextArea {
                                 panel.add(scrollPane);
                                 dialog.addDisplayComponent(panel);
                                 dialog.display();
-                            }*/
+                            }
                         }
                     }
                 }
@@ -72,12 +93,118 @@ public class SQLTextArea extends RSyntaxTextArea {
 
     }
 
+    protected void setEditorPreferences() {
+
+        setSelectionColor(QueryEditorSettings.getSelectionColour());
+        setSelectedTextColor(QueryEditorSettings.getSelectedTextColour());
+        setBackground(QueryEditorSettings.getEditorBackground());
+
+        Font font = QueryEditorSettings.getEditorFont();
+        setFont(font);
+
+        FontMetrics fm = getFontMetrics(font);
+        fontWidth = fm.charWidth('w');
+        fontHeight = fm.getHeight();
+
+        boolean tabsToSpaces = QueryEditorSettings.isTabsToSpaces();
+        int tabSize = QueryEditorSettings.getTabSize();
+
+        if (!tabsToSpaces) {
+
+            setTabs(tabSize);
+        }
+
+        document.setTabsToSpaces(tabsToSpaces);
+        setCaretColor(QueryEditorSettings.getCaretColour());
+    }
+
+    private void setTabs(int charactersPerTab) {
+
+        int tabWidth = fontWidth * charactersPerTab;
+
+        TabStop[] tabs = new TabStop[10];
+
+        for (int j = 0; j < tabs.length; j++) {
+
+            int tab = j + 1;
+            tabs[j] = new TabStop(tab * tabWidth);
+        }
+
+        TabSet tabSet = new TabSet(tabs);
+
+        SimpleAttributeSet attributes = new SimpleAttributeSet();
+        StyleConstants.setTabSet(attributes, tabSet);
+
+        //document.setParagraphAttributes(0, document.getLength(), attributes, true);
+    }
+
+    private TokenImpl cloneTokenList(Token t) {
+
+        if (t==null) {
+            return null;
+        }
+
+        TokenImpl clone = new TokenImpl(t);
+        TokenImpl cloneEnd = clone;
+
+        while ((t=t.getNextToken())!=null) {
+            TokenImpl temp = new TokenImpl(t);
+            cloneEnd.setNextToken(temp);
+            cloneEnd = temp;
+        }
+
+        return clone;
+
+    }
+
+    Token getTokenForPosition(int cursor)
+    {
+        TokenImpl tokenList = null;
+        TokenImpl lastToken = null;
+        Element map = getDocument().getDefaultRootElement();
+        int line = map.getElementIndex(cursor);
+        Token token = getTokenListForLine(line);
+        TokenImpl t = (TokenImpl)getTokenListForLine(line);
+        t = cloneTokenList(t);
+        if (tokenList==null) {
+            tokenList = t;
+            lastToken = tokenList;
+        }
+        else {
+            lastToken.setNextToken(t);
+        }
+        while (lastToken.getNextToken()!=null &&
+                lastToken.getNextToken().isPaintable()) {
+            lastToken = (TokenImpl)lastToken.getNextToken();
+        }
+
+            // Document offset MUST be correct to prevent exceptions
+            // in getTokenListFor()
+            int docOffs = map.getElement(line).getEndOffset()-1;
+            t = new TokenImpl(new char[] { '\n' }, 0,0, docOffs,
+                    Token.WHITESPACE, 0);
+            lastToken.setNextToken(t);
+            lastToken = t;
+        if (cursor>=tokenList.getOffset()) {
+            while (!tokenList.containsPosition(cursor)) {
+                tokenList = (TokenImpl)tokenList.getNextToken();
+            }
+        }
+        // Be careful to check temp for null here.  It is possible that no
+        // token contains endOffs, if endOffs is at the end of a line
+
+        return tokenList;
+    }
+
     private void createStyle(int type, Color fcolor,
                              Color bcolor,String fontname,int style,int fontSize,boolean underline) {
-        getSyntaxScheme().getStyle(type).foreground=fcolor;
-        getSyntaxScheme().getStyle(type).background=bcolor;
-        getSyntaxScheme().getStyle(type).underline = underline;
-        getSyntaxScheme().getStyle(type).font=new Font(fontname,style,fontSize);
+        SyntaxScheme syntaxScheme = getSyntaxScheme();
+        if(syntaxScheme!=null) {
+            syntaxScheme.getStyle(type).foreground = fcolor;
+            syntaxScheme.getStyle(type).background = bcolor;
+            syntaxScheme.getStyle(type).underline = underline;
+            syntaxScheme.getStyle(type).font = new Font(fontname, style, fontSize);
+        }
     }
 
     private void initialiseStyles() {
@@ -127,8 +254,58 @@ public class SQLTextArea extends RSyntaxTextArea {
         setCurrentLineHighlightColor(SystemProperties.getColourProperty("user", "editor.display.linehighlight.colour"));
     }
 
-    public void setDbobjects(TreeSet<String> dbobjects) {
+    public DatabaseConnection getDatabaseConnection() {
+        return databaseConnection;
+    }
+
+    public void setDatabaseConnection(DatabaseConnection databaseConnection) {
+        this.databaseConnection = databaseConnection;
+        setDbobjects(databaseConnection.getListObjectsDB());
+    }
+
+    protected void setDbobjects(TreeSet<String> dbobjects) {
         SqlLexerTokenMaker maker = (SqlLexerTokenMaker) tokenMakerFactory.getTokenMaker("antlr/sql");
         maker.setDbobjects(dbobjects);
+    }
+    private KeywordRepository keywords() {
+
+        return (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
+    }
+
+    public void deleteAll() {
+
+        try {
+
+            RSyntaxDocument document = (RSyntaxDocument) getDocument();
+            document.replace(0, document.getLength(), "", null);
+
+        } catch (BadLocationException badLoc) {
+        }
+
+    }
+
+    public void disableUpdates(boolean disable) {
+
+        /*if (disable) {
+
+            String text = getText();
+            setDocument(new DefaultStyledDocument());
+            setText(text);
+
+        } else {
+
+            String text = getText();
+            setDocument(document);
+            setText(text);
+        }*/
+    }
+
+    public void setSQLKeywords(boolean reset) {
+        document.setSQLKeywords(keywords().getSQLKeywords());
+    }
+
+    public SQLSyntaxDocument getSQLSyntaxDocument() {
+
+        return document;
     }
 }

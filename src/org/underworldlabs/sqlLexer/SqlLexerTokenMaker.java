@@ -58,6 +58,8 @@ public class SqlLexerTokenMaker extends AntlrTokenMaker {
         {
             if (dbobjects != null&&currentToken!=null) {
                 String x = token.getText();
+                if(x.length()>0&&x.charAt(0)>'A'&&x.charAt(0)<'z')
+                    x = x.toUpperCase();
                 if (dbobjects.contains(x))
                     return new org.antlr.v4.runtime.Token() {
                         @Override

@@ -21,13 +21,14 @@
 package org.executequery.gui.editor.autocomplete;
 
 import org.executequery.gui.editor.QueryEditor;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SQLTextPane;
 
 public class QueryEditorAutoCompletePopupProvider extends DefaultAutoCompletePopupProvider {
 
     public QueryEditorAutoCompletePopupProvider(QueryEditor queryEditor) {
 
-        super(queryEditor.getSelectedConnection(), (SQLTextPane) queryEditor.getEditorTextComponent());
+        super(queryEditor.getSelectedConnection(), (SQLTextArea) queryEditor.getEditorTextComponent());
     }
 
 

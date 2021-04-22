@@ -25,6 +25,7 @@ import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.components.LineNumber;
 import org.executequery.gui.UndoableComponent;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SQLTextPane;
 import org.executequery.gui.text.SimpleTextUndoManager;
 import org.executequery.repository.EditorSQLShortcut;
@@ -46,16 +47,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * The SQL text area for the Query Editor.
  *
  * @author Takis Diakoumis
  */
-public class QueryEditorTextPane extends SQLTextPane
+public class QueryEditorTextPane extends SQLTextArea
         implements UndoableComponent,
         CaretListener,
         FocusListener,
@@ -84,7 +84,7 @@ public class QueryEditorTextPane extends SQLTextPane
     private Map<String, EditorSQLShortcut> editorShortcuts;
 
     public QueryEditorTextPane(QueryEditorTextPanel editorPanel) {
-
+        super();
         this.editorPanel = editorPanel;
 
         try {
@@ -126,7 +126,7 @@ public class QueryEditorTextPane extends SQLTextPane
                             actionMap.get(DefaultEditorKit.previousWordAction)));
             */
 
-            init();
+            initializeComponents();
 
         } catch (Exception e) {
 
@@ -418,7 +418,7 @@ public class QueryEditorTextPane extends SQLTextPane
 
     }
 
-    private void init() {
+    protected void initializeComponents() {
 
         setMargin(INSETS);
 
@@ -435,6 +435,7 @@ public class QueryEditorTextPane extends SQLTextPane
         undoManager = new SimpleTextUndoManager(this);        
         undoManager.setLimit(userProperties().getIntProperty("editor.undo.count"));
 
+        if (document!=null)
         document.addDocumentListener(this);
         addFocusListener(this);
 
@@ -676,7 +677,7 @@ public class QueryEditorTextPane extends SQLTextPane
         g.fillRect(0, 0, width, height);
 
         // paint the current line highlight
-        if (QueryEditorSettings.isDisplayLineHighlight()) {
+        /*if (QueryEditorSettings.isDisplayLineHighlight()) {
             int currentRow = getCurrentCursorRow();
             g.setColor(QueryEditorSettings.getLineHighlightColour());
             g.fillRect(1, (currentRow * fontHeight) + 2, width - 1, fontHeight);
@@ -687,7 +688,7 @@ public class QueryEditorTextPane extends SQLTextPane
             int xPosn = fontWidth * QueryEditorSettings.getRightMarginSize();
             g.setColor(QueryEditorSettings.getRightMarginColour());
             g.drawLine(xPosn, 0, xPosn, height);
-        }
+        }*/
 
         try {
             super.paintComponent(g);
@@ -730,7 +731,7 @@ public class QueryEditorTextPane extends SQLTextPane
         insertTextAtOffset(after, text);
     }
 
-    public JTextPane getQueryArea() {
+    public SQLTextArea getQueryArea() {
         return this;
     }
 
@@ -768,7 +769,7 @@ public class QueryEditorTextPane extends SQLTextPane
     public void resetAttributeSets() {
         String text = getText();
         setEditorPreferences();
-        document.resetAttributeSets();
+        //document.resetAttributeSets();
         lineBorder.updatePreferences(QueryEditorSettings.getEditorFont());
         lineBorder.repaint();
         setText(text);
@@ -1205,7 +1206,7 @@ public class QueryEditorTextPane extends SQLTextPane
      * Returns true if an undo operation would be
      * successful now, false otherwise.
      */
-    protected boolean canUndo() {
+    public boolean canUndo() {
         return undoManager.canUndo();
     }
 
@@ -1269,7 +1270,7 @@ public class QueryEditorTextPane extends SQLTextPane
      */
     public void caretUpdate(CaretEvent ce) {
 
-        super.caretUpdate(ce);
+       // super.caretUpdate(ce);
         currentPosition = getCaretPosition();
 
         Element map = getElementMap();

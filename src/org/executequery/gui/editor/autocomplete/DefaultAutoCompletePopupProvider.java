@@ -8,6 +8,7 @@ import org.executequery.databaseobjects.DatabaseObjectFactory;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.gui.editor.ConnectionChangeListener;
 import org.executequery.gui.editor.QueryWithPosition;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SQLTextPane;
 import org.executequery.log.Log;
 import org.executequery.repository.spi.KeywordRepositoryImpl;
@@ -82,11 +83,11 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
     private boolean autoCompleteSchema;
 
-    SQLTextPane sqlTextPane;
+    SQLTextArea sqlTextPane;
 
     DatabaseConnection connection;
 
-    public DefaultAutoCompletePopupProvider(DatabaseConnection dc, SQLTextPane textPane) {
+    public DefaultAutoCompletePopupProvider(DatabaseConnection dc, SQLTextArea textPane) {
 
         super();
         connection = dc;

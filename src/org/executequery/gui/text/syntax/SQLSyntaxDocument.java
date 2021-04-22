@@ -24,6 +24,8 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.executequery.Constants;
 import org.executequery.gui.editor.QueryEditorSettings;
+import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
+import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
 import org.underworldlabs.sqlLexer.SqlLexer;
 
 import javax.swing.text.*;
@@ -36,8 +38,8 @@ import java.util.Vector;
 /**
  * @author Takis Diakoumis
  */
-public class SQLSyntaxDocument extends DefaultStyledDocument
-        implements TokenTypes {
+public class SQLSyntaxDocument extends RSyntaxDocument
+         {
 
     /**
      * The document root element
@@ -72,9 +74,9 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
     /* syntax matchers */
     private TokenMatcher[] matchers;
 
-    public SQLSyntaxDocument() {
-        this(null, null);
-    }
+    //public SQLSyntaxDocument() {
+       // this(null, null);
+    //}
 
     /**
      * Sets the SQL keywords to be applied to this document.
@@ -89,10 +91,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         this.textComponent = textComponent;
     }
 
-    public void resetAttributeSets() {
-        initStyles(true);
-        // update the stored tokens
-    }
+
 
     public void setTabsToSpaces(boolean tabsToSpaces) {
         this.tabsToSpaces = tabsToSpaces;
@@ -125,89 +124,12 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         return false;
     }
 
-    public void resetBracePosition() {
-        if (!hasValidBraceTokens()) {
-            return;
-        }
 
-        for (int i = 0, k = braceTokens.size(); i < k; i++) {
-            Token token = braceTokens.get(i);
-            applyBraceHiglight(false, token);
-            token.reset();
-        }
-    }
 
-    public void applyBraceHiglight(boolean apply, Token token) {
-        Style style = apply ? styles[token.getStyle()] : styles[BRACKET];
-        if (token.getStartIndex() != -1) {
-            setCharacterAttributes(token.getStartIndex(), 1, style, !apply);
-        }
-        if (token.getEndIndex() != -1) {
-            setCharacterAttributes(token.getEndIndex(), 1, style, !apply);
-        }
-    }
 
-    private void applyErrorBrace(int offset, char brace) {
-        if (!isOpenBrace(brace)) {
-            Token token = getAvailableBraceToken();
-            token.reset(BRACKET_HIGHLIGHT_ERR, offset, -1);
-            applyBraceHiglight(true, token);
-        }
-    }
 
-    public void updateBraces(int offset) {
-        try {
-            int length = getLength();
-            if (length == 0) {
-                return;
-            }
 
-            String text = getText(0, length);
-            char charAtOffset = 0;
-            char charBeforeOffset = 0;
 
-            if (offset > 0) {
-                charBeforeOffset = text.charAt(offset - 1);
-            }
-
-            if (offset < length) {
-                charAtOffset = text.charAt(offset);
-            }
-
-            int matchOffset = -1;
-            if (isBrace(charAtOffset)) {
-                matchOffset = getMatchingBraceOffset(offset,
-                        charAtOffset,
-                        text);
-                if (matchOffset == -1) {
-                    applyErrorBrace(offset, charAtOffset);
-                    return;
-                }
-            } else if (isBrace(charBeforeOffset)) {
-                offset--;
-                matchOffset = getMatchingBraceOffset(offset,
-                        charBeforeOffset,
-                        text);
-                if (matchOffset == -1) {
-                    applyErrorBrace(offset, charBeforeOffset);
-                    return;
-                }
-            }
-
-            if (matchOffset == -1) {
-                return;
-            }
-
-            Token token = getAvailableBraceToken();
-            token.reset(BRACKET_HIGHLIGHT, offset, matchOffset);
-            applyBraceHiglight(true, token);
-
-        } catch (BadLocationException e) {
-
-            throw new Error(e);
-        }
-
-    }
 
     private int getMatchingBraceOffset(int offset, char brace, String text) {
         int thisBraceCount = 0;
@@ -291,9 +213,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
      */
     private StringBuffer buffer = new StringBuffer();
 
-    public SQLSyntaxDocument(TreeSet<String> keys) {
-        this(keys, null);
-    }
+
 
     /* NOTE:
      * method process for text entry into the document:
@@ -304,11 +224,11 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
      * remove called once only on text/character removal
      */
 
-    public SQLSyntaxDocument(TreeSet<String> keys, JTextComponent textComponent) {
+    public SQLSyntaxDocument(TreeSet<String> keys, TokenMakerFactory tokenMakerFactory,String syntaxStyle) {
+        super(tokenMakerFactory,syntaxStyle);
 
         rootElement = getDefaultRootElement();
         putProperty(DefaultEditorKit.EndOfLineStringProperty, "\n");
-        initStyles(false);
 
         braceTokens = new Vector<Token>();
         stringTokens = new ArrayList<Token>();
@@ -391,11 +311,12 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
         resetBracePosition();
 
         /* call super method and default to normal style */
-        super.insertString(offset, text, styles[WORD]);
+        //super.insertString(offset, text, styles[WORD]);
 
-        processChangedLines();
-        updateBraces(offset + 1);
-        buffer.setLength(0);
+        //processChangedLines();
+        //updateBraces(offset + 1);
+        //buffer.setLength(0);
+        super.insertString(offset,text,attrs);
     }
 
     /*
@@ -403,68 +324,14 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
      *  the document has been updated
      */
     public void remove(int offset, int length) throws BadLocationException {
-
+        super.remove(offset,length);
         //Log.debug("remove");
 
-        resetBracePosition();
-        super.remove(offset, length);
-        processChangedLines();
 
-        if (offset > 0) {
-
-            updateBraces(offset);
-        }
 
     }
 
-    private void processChangedLines()
-            throws BadLocationException {
-
-        int documentLength = getLength();
-        if (documentLength == 0) {
-            return;
-        }
-
-        String content = getText(0, documentLength);
-        CommonTokenStream cts = new CommonTokenStream(new SqlLexer(CharStreams.fromString(content)));
-        try {
-            cts.fill();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        List<org.antlr.v4.runtime.Token> toks = cts.getTokens();
-        for(org.antlr.v4.runtime.Token token:toks) {
-            Style style = styles[WORD];
-            switch (token.getType())
-            {
-                case SqlLexer.KEYWORD:style = styles[KEYWORD];
-                break;
-                case SqlLexer.DATATYPE_SQL:style = styles[NUMBER];
-                break;
-                case SqlLexer.STRING_LITERAL:style = styles[STRING];
-                    break;
-                case SqlLexer.IDENTIFIER:
-                    String tokenText = token.getText();
-                    if(!tokenText.startsWith("\""))
-                        tokenText = tokenText.toUpperCase();
-                    if (dbobjects.contains(tokenText))
-                    style = styles[DBOBJECT];
-                    break;
-                case SqlLexer.MULTILINE_COMMENT:
-                    case SqlLexer.SINGLE_LINE_COMMENT:
-                        style = styles[COMMENT];
-                        break;
-                default:break;
-            }
-            if(style!=styles[WORD])
-            setCharacterAttributes(token.getStartIndex(),
-                    token.getStopIndex()-token.getStartIndex()+1,
-                    style,
-                    false);
-        }
-                    /*}
+           /*}
 
                 }
             }*/
@@ -472,63 +339,9 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
         // reassign the multi-line comments list
         //multiLineComments = tokens;
-    }
 
-    public void replace(int offset, int length,
-                        String text, AttributeSet attrs)
-            throws BadLocationException {
 
-        if (text == null) {
-            return;
-        }
 
-//        Log.debug("replace");
-
-        int textLength = text.length();
-        if ((length == 0) && (textLength == 0)) {
-            return;
-        }
-
-        // if text is selected - ie. length > 0
-        // and it is a TAB and we have a text component 
-        if ((length > 0) && (textLength > 0) &&
-//                (text.charAt(0) == Constants.TAB_CHAR) && 
-                ("\t".equals(text)) &&
-                (textComponent != null)) {
-
-            int selectionStart = textComponent.getSelectionStart();
-            int selectionEnd = textComponent.getSelectionEnd();
-
-            int start = rootElement.getElementIndex(selectionStart);
-            int end = rootElement.getElementIndex(selectionEnd - 1);
-
-            for (int i = start; i <= end; i++) {
-                Element line = rootElement.getElement(i);
-                int startOffset = line.getStartOffset();
-
-                try {
-                    insertString(startOffset, text, attrs);
-                } catch (BadLocationException badLocExc) {
-                    badLocExc.printStackTrace();
-                }
-
-            }
-
-            textComponent.setSelectionStart(
-                    rootElement.getElement(start).getStartOffset());
-            textComponent.setSelectionEnd(
-                    rootElement.getElement(end).getEndOffset());
-            return;
-
-        }
-
-        if (attrs == null) {
-            attrs = styles[WORD];
-        }
-
-        super.replace(offset, length, text, attrs);
-
-    }
 
     /**
      * Shifts the text at start to end left one TAB character. The
@@ -602,73 +415,13 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
 
     private Style[] styles;
 
-    private void initStyles(boolean reset) {
-        styles = new Style[typeNames.length];
 
-        Font font = QueryEditorSettings.getEditorFont();
-        int fontSize = font.getSize();
-        String fontFamily = font.getName();
 
-        SyntaxStyle[] syntaxStyles = QueryEditorSettings.getSyntaxStyles();
-
-        for (int i = 0; i < syntaxStyles.length; i++) {
-            changeStyle(syntaxStyles[i].getType(),
-                    syntaxStyles[i].getForeground(),
-                    syntaxStyles[i].getFontStyle(),
-                    syntaxStyles[i].getBackground(),
-                    fontFamily,
-                    fontSize);
-        }
-
-    }
-
-    public void changeStyle(int type, Color fcolor,
-                            int fontStyle, Color bcolor,
-                            String fontFamily, int fontSize) {
-
-        Style style = addStyle(typeNames[type], null);
-
-        if (fcolor != null) {
-            StyleConstants.setForeground(style, fcolor);
-        }
-
-        if (bcolor != null) {
-            StyleConstants.setBackground(style, bcolor);
-        }
-
-        StyleConstants.setFontSize(style, fontSize);
-        StyleConstants.setFontFamily(style, fontFamily);
-
-        switch (fontStyle) {
-            case 0:
-                StyleConstants.setItalic(style, false);
-                StyleConstants.setBold(style, false);
-                break;
-            case 1:
-                StyleConstants.setBold(style, true);
-                break;
-            case 2:
-                StyleConstants.setItalic(style, true);
-                break;
-            default:
-                StyleConstants.setItalic(style, false);
-                StyleConstants.setBold(style, false);
-        }
-
-        styles[type] = style;
-
-    }
 
     /**
      * Change the style of a particular type of token.
      */
-    public void changeStyle(int type, Color color) {
-        Style style = addStyle(typeNames[type], null);
-        if (color != null) {
-            StyleConstants.setForeground(style, color);
-        }
-        styles[type] = style;
-    }
+
 
     /**
      * Change the style of a particular type of token, including adding bold or
@@ -676,35 +429,7 @@ public class SQLSyntaxDocument extends DefaultStyledDocument
      * <code>Font.ITALIC</code> or the bitwise union
      * <code>Font.BOLD|Font.ITALIC</code>.
      */
-    public void changeStyle(int type, Color color,
-                            int fontStyle, Color bcolor) {
 
-        Style style = addStyle(typeNames[type], null);
-        StyleConstants.setForeground(style, color);
-
-        if (bcolor != null) {
-            StyleConstants.setBackground(style, bcolor);
-        }
-
-        switch (fontStyle) {
-            case 0:
-                StyleConstants.setItalic(style, false);
-                StyleConstants.setBold(style, false);
-                break;
-            case 1:
-                StyleConstants.setBold(style, true);
-                break;
-            case 2:
-                StyleConstants.setItalic(style, true);
-                break;
-            default:
-                StyleConstants.setItalic(style, false);
-                StyleConstants.setBold(style, false);
-        }
-
-        styles[type] = style;
-
-    }
 
     private void scanLines(int offset, int length,
                            String content, int documentLength, List<Token> tokens) {

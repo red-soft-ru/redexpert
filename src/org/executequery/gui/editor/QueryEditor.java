@@ -223,7 +223,7 @@ public class QueryEditor extends DefaultTabView
 
         formatter = new TokenizingFormatter();
         if (getSelectedConnection() != null)
-            ((QueryEditorTextPane) editorPanel.getQueryArea()).setDBObjects(getSelectedConnection().getListObjectsDB());
+             editorPanel.getQueryArea().setDatabaseConnection(getSelectedConnection());
         if (text != null) {
             loadText(text);
         }
@@ -241,41 +241,12 @@ public class QueryEditor extends DefaultTabView
         statusBar = new QueryEditorStatusBar();
         statusBar.setBorder(BorderFactory.createEmptyBorder(0, -1, -2, -2));
 
-        editorPanel = new QueryEditorTextPanel(this);
+
         resultsPanel = new QueryEditorResultsPanel(this);
 
         delegate = new QueryEditorDelegate(this);
 
         popup = new QueryEditorPopupMenu(delegate);
-        editorPanel.addEditorPaneMouseListener(popup);
-
-        baseEditorPanel = new JPanel(new BorderLayout());
-        baseEditorPanel.add(editorPanel, BorderLayout.CENTER);
-        baseEditorPanel.add(statusBar, BorderLayout.SOUTH);
-        baseEditorPanel.setBorder(BorderFactory.createMatteBorder(
-                1, 1, 1, 1, GUIUtilities.getDefaultBorderColour()));
-
-        // add to a base panel - when last tab closed visible set
-        // to false on the tab pane and split collapses - want to avoid this
-        resultsBase = new JPanel(new BorderLayout());
-        resultsBase.add(resultsPanel, BorderLayout.CENTER);
-
-        if (new SplitPaneFactory().usesCustomSplitPane()) {
-
-            splitPane = new EditorSplitPane(JSplitPane.VERTICAL_SPLIT,
-                    baseEditorPanel, resultsBase);
-        } else {
-            splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                    baseEditorPanel, resultsBase);
-        }
-
-        splitPane.setDividerSize(4);
-        splitPane.setResizeWeight(0.5);
-
-        // ---------------------------------------
-        // the tool bar and conn combo
-        toolBar = new QueryEditorToolBar(
-                editorPanel.getTextPaneActionMap(), editorPanel.getTextPaneInputMap());
 
         Vector<DatabaseConnection> connections =
                 ConnectionManager.getActiveConnections();
@@ -302,6 +273,41 @@ public class QueryEditor extends DefaultTabView
             }
         });*/
         oldConnection = (DatabaseConnection) connectionsCombo.getSelectedItem();
+        editorPanel = new QueryEditorTextPanel(this);
+        editorPanel.addEditorPaneMouseListener(popup);
+
+        baseEditorPanel = new JPanel(new BorderLayout());
+        baseEditorPanel.add(editorPanel, BorderLayout.CENTER);
+        baseEditorPanel.add(statusBar, BorderLayout.SOUTH);
+        baseEditorPanel.setBorder(BorderFactory.createMatteBorder(
+                1, 1, 1, 1, GUIUtilities.getDefaultBorderColour()));
+
+        toolBar = new QueryEditorToolBar(
+                editorPanel.getTextPaneActionMap(), editorPanel.getTextPaneInputMap());
+
+
+        // add to a base panel - when last tab closed visible set
+        // to false on the tab pane and split collapses - want to avoid this
+        resultsBase = new JPanel(new BorderLayout());
+        resultsBase.add(resultsPanel, BorderLayout.CENTER);
+
+        if (new SplitPaneFactory().usesCustomSplitPane()) {
+
+            splitPane = new EditorSplitPane(JSplitPane.VERTICAL_SPLIT,
+                    baseEditorPanel, resultsBase);
+        } else {
+            splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                    baseEditorPanel, resultsBase);
+        }
+
+        splitPane.setDividerSize(4);
+        splitPane.setResizeWeight(0.5);
+
+        // ---------------------------------------
+        // the tool bar and conn combo
+
+
+
 
         txBox = new TransactionIsolationCombobox();
         txBox.addActionListener(new ActionListener() {

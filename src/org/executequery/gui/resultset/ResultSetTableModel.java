@@ -49,6 +49,7 @@ import java.sql.*;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 /**
  * The sql result set table model.
@@ -189,16 +190,26 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
             int zeroBaseIndex = 0;
             int count = rsmd.getColumnCount();
+            TreeSet<String> columnNames= new TreeSet<>();
             for (int i = 1; i <= count; i++) {
 
                 zeroBaseIndex = i - 1;
+                ResultSetColumnHeader rsch = new ResultSetColumnHeader(zeroBaseIndex,
+                        rsmd.getColumnLabel(i),
+                        rsmd.getColumnName(i),
+                        rsmd.getColumnType(i),
+                        rsmd.getColumnTypeName(i));
+                int repetitionNumber=1;
+                String label = rsch.getLabel();
+                while (columnNames.contains(rsch.getLabel()))
+                {
+                    rsch.setLabel(label+repetitionNumber);
+                    repetitionNumber++;
+                }
 
                 columnHeaders.add(
-                        new ResultSetColumnHeader(zeroBaseIndex,
-                                rsmd.getColumnLabel(i),
-                                rsmd.getColumnName(i),
-                                rsmd.getColumnType(i),
-                                rsmd.getColumnTypeName(i)));
+                       rsch);
+                columnNames.add(rsch.getLabel());
             }
             interrupted = false;
 

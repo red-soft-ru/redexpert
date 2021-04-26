@@ -103,9 +103,6 @@ public class ResultSetColumnHeader {
         return label + " [ " + name + " ]";
     }
 
-    public void setLabel(String label) {
-        this.label = label;
-    }
 }
 
 

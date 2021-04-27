@@ -27,6 +27,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
+import org.executequery.datasource.PooledStatement;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.table.Autoincrement;
 import org.executequery.gui.table.CreateTableSQLSyntax;
@@ -35,6 +36,7 @@ import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.util.MiscUtils;
 
 import java.io.Serializable;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -915,10 +917,12 @@ public class ColumnData implements Serializable {
     public void setTable(String table) {
         this.table = table;
         columns.clear();
-        String query = "SELECT RDB$FIELD_NAME FROM RDB$RELATION_FIELDS WHERE RDB$RELATION_NAME ='" + table + "'";
+        String query = "SELECT RDB$FIELD_NAME FROM RDB$RELATION_FIELDS WHERE RDB$RELATION_NAME = ?";
         SqlStatementResult result = null;
         try {
-            result = executor.getResultSet(query);
+            PreparedStatement st = executor.getPreparedStatement(query);
+            st.setString(1,table);
+            result = executor.getResultSet(-1,st);
             ResultSet rs = result.getResultSet();
             while (rs.next()) {
                 columns.add(rs.getString(1).trim());

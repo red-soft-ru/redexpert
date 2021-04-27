@@ -90,6 +90,7 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
         Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
         connectionsModel = new DynamicComboBoxModel(connections);
         connectionsCombo = WidgetFactory.createComboBox(connectionsModel);
+        sender = new DefaultStatementExecutor(connection, true);
         connectionsCombo.addItemListener(event -> {
             if (event.getStateChange() == ItemEvent.DESELECTED) {
                 return;
@@ -102,7 +103,6 @@ public abstract class AbstractCreateObjectPanel extends JPanel {
             connectionsCombo.setSelectedItem(connection);
         } else connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
         this.setLayout(new BorderLayout());
-        sender = new DefaultStatementExecutor(connection, true);
         metaData = new MetaDataValues(connection, true);
         topPanel = new JPanel(new GridBagLayout());
         JLabel connLabel = new JLabel(Bundles.getCommon("connection"));

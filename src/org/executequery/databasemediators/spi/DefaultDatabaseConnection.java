@@ -181,6 +181,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     private boolean sshPasswordStored;
 
+    private String sshHost;
+
     /**
      * the commit mode
      */
@@ -576,6 +578,7 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
             copy.setPassword(getPassword());
         }
 
+        copy.setSshHost(getSshHost());
         copy.setSshTunnel(isSshTunnel());
         copy.setSshUserName(getSshUserName());
         copy.setSshPort(getSshPort());
@@ -690,6 +693,17 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
         setSourceName(source);
         return this;
+    }
+
+
+    @Override
+    public void setSshHost(String sshHost) {
+        this.sshHost = sshHost;
+    }
+
+    @Override
+    public String getSshHost() {
+        return sshHost;
     }
 
     public List<String> getListObjectsDB() {

@@ -61,13 +61,13 @@ public class JschSshTunnel implements SshTunnel {
 
         if (session != null) {
 
-            Log.info("Disconnecting SSH tunnel to host [ " + databaseConnection.getHost() +
+            Log.info("Disconnecting SSH tunnel to host [ " + databaseConnection.getSshHost() +
                     " ] through port [ " + databaseConnection.getSshPort() + " ] ... ");
 
             session.disconnect();
             session = null;
 
-            Log.info("SSH tunnel to host [ " + databaseConnection.getHost() +
+            Log.info("SSH tunnel to host [ " + databaseConnection.getSshHost() +
                     " ] through port [ " + databaseConnection.getSshPort() + " ] closed");
         }
 
@@ -80,7 +80,7 @@ public class JschSshTunnel implements SshTunnel {
 
     private Session createSession(DatabaseConnection databaseConnection) {
 
-        Log.info("Creating SSH tunnel to host [ " + databaseConnection.getHost() +
+        Log.info("Creating SSH tunnel to host [ " + databaseConnection.getSshHost() +
                 " ] through port [ " + databaseConnection.getSshPort() + " ]");
 
         try {
@@ -88,7 +88,7 @@ public class JschSshTunnel implements SshTunnel {
             tunnelPort = findUnusedPort();
 
             JSch jsch = new JSch();
-            session = jsch.getSession(databaseConnection.getSshUserName(), databaseConnection.getHost(), databaseConnection.getSshPort());
+            session = jsch.getSession(databaseConnection.getSshUserName(), databaseConnection.getSshHost(), databaseConnection.getSshPort());
             Properties config = new Properties();
             config.put("StrictHostKeyChecking", "no");
 

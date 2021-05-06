@@ -173,6 +173,10 @@ public interface DatabaseConnection extends Serializable {
 
     DatabaseConnection withSource(String source);
 
+    void setSshHost(String sshHost);
+
+    String getSshHost();
+
     void setSshPasswordStored(boolean sshPasswordStored);
 
     void setSshTunnel(boolean sshTunnel);

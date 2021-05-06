@@ -162,7 +162,7 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
 
     public void setValues(DatabaseConnection databaseConnection) {
 
-        hostField.setText(databaseConnection.getHost());
+        hostField.setText(databaseConnection.getSshHost());
         userNameField.setText(databaseConnection.getSshUserName());
         passwordField.setText(databaseConnection.getUnencryptedSshPassword());
 
@@ -193,6 +193,7 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
         databaseConnection.setSshPassword(MiscUtils.charsToString(passwordField.getPassword()));
         databaseConnection.setSshPort(portField.getValue());
         databaseConnection.setSshPasswordStored(savePwdCheck.isSelected());
+        databaseConnection.setSshHost(hostField.getText());
     }
 
     public boolean canConnect() {

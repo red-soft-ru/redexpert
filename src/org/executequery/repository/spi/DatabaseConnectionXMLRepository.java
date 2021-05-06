@@ -234,6 +234,7 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
     private static final String SSH_USER_NAME = "sshusername";
     private static final String SSH_PASSWORD = "sshpassword";
     private static final String SSH_PORT = "sshport";
+    private static final String SSH_HOST = "sshhost";
     private static final String SSH_STORE_PASSWORD = "sshstorepassword";
     private static final String NAMES_TO_UPPER_CASE = "namestouppercase";
 
@@ -448,7 +449,16 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
                     databaseConnection.setSshPort(contentsAsInt());
                 }
 
-            } else if (localNameIsKey(localName, AUTO_COMMIT)) {
+            }
+            else if (localNameIsKey(localName, SSH_HOST)) {
+
+                if (hasContents()) {
+
+                    databaseConnection.setSshHost(contentsAsString());
+                }
+
+            }
+                else if (localNameIsKey(localName, AUTO_COMMIT)) {
 
                 if (hasContents()) {
 
@@ -665,7 +675,8 @@ public class DatabaseConnectionXMLRepository extends AbstractXMLResourceReaderWr
 
                 writeXML(SSH_STORE_PASSWORD,
                         valueToString(connection.isSshPasswordStored()), INDENT_TWO);
-
+                writeXML(SSH_HOST,
+                        connection.getSshHost(), INDENT_TWO);
                 writeXML(SSH_PORT,
                         valueToString(connection.getSshPort()), INDENT_TWO);
                 writeXML(NAMES_TO_UPPER_CASE,

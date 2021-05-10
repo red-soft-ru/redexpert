@@ -144,7 +144,8 @@ public class TreeFindAction extends FindAction<TreePath> {
                 matchedPaths.add(path.pathByAddingChild(node));
             }
             if (!searchInCols) {
-                if (node.getType() != NamedObject.SYSTEM_TABLE && node.getType() != NamedObject.TABLE && node.getType() != NamedObject.VIEW)
+                if (node.getType() != NamedObject.SYSTEM_TABLE && node.getType() != NamedObject.TABLE
+                        && node.getType() != NamedObject.VIEW && node.getType() != NamedObject.GLOBAL_TEMPORARY)
                     findOnTree(path.pathByAddingChild(node), matchedPaths, matcher);
             } else findOnTree(path.pathByAddingChild(node), matchedPaths, matcher);
 

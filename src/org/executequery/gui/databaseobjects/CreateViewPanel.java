@@ -7,7 +7,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.editor.autocomplete.DefaultAutoCompletePopupProvider;
-import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
@@ -169,7 +169,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
 
     @Override
     public void keyPressed(KeyEvent e) {
-        SQLTextPane textPane = (SQLTextPane) e.getSource();
+        SQLTextArea textPane = (SQLTextArea) e.getSource();
         if (released) {
             notChangedText = textPane.getText();
             released = false;
@@ -179,7 +179,7 @@ public class CreateViewPanel extends AbstractCreateObjectPanel implements FocusL
 
     @Override
     public void keyReleased(KeyEvent e) {
-        SQLTextPane textPane = (SQLTextPane) e.getSource();
+        SQLTextArea textPane = (SQLTextArea) e.getSource();
         if (!textPane.getText().contains(" " + replacing_name + "\n") && !editing)
             textPane.setText(notChangedText);
         released = true;

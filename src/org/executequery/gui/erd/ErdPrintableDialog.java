@@ -34,7 +34,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
 /**
- * A non-modal dialog containing an <code>SQLTextPanel</code>
+ * A non-modal dialog containing an <code>SQLTextAreal</code>
  * object. This base class provides the functionality as
  * indicated within the <code>TextEditor</code> interface
  * including cut/copy/paste, save and print functions.

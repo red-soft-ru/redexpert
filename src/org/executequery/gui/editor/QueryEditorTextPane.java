@@ -26,7 +26,6 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.LineNumber;
 import org.executequery.gui.UndoableComponent;
 import org.executequery.gui.text.SQLTextArea;
-import org.executequery.gui.text.SQLTextPane;
 import org.executequery.gui.text.SimpleTextUndoManager;
 import org.executequery.repository.EditorSQLShortcut;
 import org.executequery.repository.EditorSQLShortcuts;
@@ -47,8 +46,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
-import java.util.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The SQL text area for the Query Editor.

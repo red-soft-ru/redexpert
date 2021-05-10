@@ -3,7 +3,7 @@ package org.executequery.gui.browser;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.impl.DefaultDatabasePackage;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
-import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.DisabledField;
@@ -28,12 +28,12 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
     private JLabel objectNameLabel;
 
     JTextPane descriptionPane;
-    JTextPane sqlPane;
+    SQLTextArea sqlPane;
 
     private Map cache;
 
-    JTextPane headerTextPane;
-    JTextPane bodyTextPane;
+    SQLTextArea headerTextPane;
+    SQLTextArea bodyTextPane;
 
     /**
      * the browser's control object
@@ -61,7 +61,7 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
         panel.setLayout(new BorderLayout());
 
         JPanel headerPanel = new JPanel(new BorderLayout());
-        headerTextPane = new SQLTextPane();
+        headerTextPane = new SQLTextArea();
         headerTextPane.setEditable(false);
         headerPanel.add(new JScrollPane(headerTextPane), BorderLayout.CENTER);
 
@@ -71,7 +71,7 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
         tabs.add("Package Header", panel);
 
         JPanel bodyPanel = new JPanel(new BorderLayout());
-        bodyTextPane = new SQLTextPane();
+        bodyTextPane = new SQLTextArea();
         bodyTextPane.setEditable(false);
         bodyPanel.add(new JScrollPane(bodyTextPane), BorderLayout.CENTER);
 
@@ -91,7 +91,7 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
         JPanel sqlPanel = new JPanel(new BorderLayout());
         sqlPanel.setBorder(BorderFactory.createEtchedBorder());
 
-        sqlPane = new SQLTextPane();
+        sqlPane = new SQLTextArea();
 
         sqlPanel.add(sqlPane, BorderLayout.CENTER);
 

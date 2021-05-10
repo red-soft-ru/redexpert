@@ -4,7 +4,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabasePackage;
 import org.executequery.gui.ActionContainer;
-import org.executequery.gui.text.SQLTextPane;
+import org.executequery.gui.text.SQLTextArea;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
 
@@ -119,7 +119,7 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
 
     @Override
     public void keyPressed(KeyEvent keyEvent) {
-        SQLTextPane textPane = (SQLTextPane) keyEvent.getSource();
+        SQLTextArea textPane = (SQLTextArea) keyEvent.getSource();
         if (released) {
             notChangedText = textPane.getText();
             released = false;
@@ -130,7 +130,7 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel implements Key
 
     @Override
     public void keyReleased(KeyEvent keyEvent) {
-        SQLTextPane textPane = (SQLTextPane) keyEvent.getSource();
+        SQLTextArea textPane = (SQLTextArea) keyEvent.getSource();
         if (!textPane.getText().contains(" " + replacing_name + "\n"))
             textPane.setText(notChangedText);
         released = true;

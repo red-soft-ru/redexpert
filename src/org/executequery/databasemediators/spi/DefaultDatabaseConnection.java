@@ -31,6 +31,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.ConnectionsFolder;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
+import org.executequery.log.Log;
 import org.executequery.repository.ConnectionFoldersRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
@@ -714,17 +715,16 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         Enumeration<TreeNode> nodes = root.children();
         while (nodes.hasMoreElements()) {
             DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
-            if (!node.isHostNode() && node.getType() != NamedObject.META_TAG)
-                list.add(node.getName().replace("$", "\\$"));
+            if (!node.isHostNode() && node.getType() != NamedObject.META_TAG) {
+                try {
+                    list.add(node.getName());
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                }
+            }
             if (node.isHostNode() || node.getType() == NamedObject.META_TAG) {
-                SwingWorker sw = new SwingWorker() {
-                    @Override
-                    public Object construct() {
-                        addingChild(list, node);
-                        return null;
-                    }
-                };
-                sw.start();
+                addingChild(list, node);
+
             }
         }
     }

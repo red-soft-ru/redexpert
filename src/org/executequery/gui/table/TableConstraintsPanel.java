@@ -27,7 +27,6 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
 import org.underworldlabs.swing.table.StringCellEditor;
-import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -73,7 +72,7 @@ public abstract class TableConstraintsPanel extends JPanel
      */
     protected ComboBoxCellEditor keysCombo;
 
-    private boolean generatedName = false;
+
 
     public TableConstraintsPanel() {
         super(new BorderLayout());
@@ -337,6 +336,8 @@ public abstract class TableConstraintsPanel extends JPanel
                 case 1:
                     return cc.getTypeName();
                 case 2:
+                    if (cc.isGeneratedName())
+                        return "";
                     return cc.getName();
                 case 3:
                     return cc.getColumn();
@@ -395,9 +396,6 @@ public abstract class TableConstraintsPanel extends JPanel
                     cc.setRefSchema(Constants.EMPTY);
                     cc.setRefTable(Constants.EMPTY);
                     cc.setRefColumn(Constants.EMPTY);
-                    if (MiscUtils.isNull(cc.getName()) || generatedName) {
-                        setValueAt(generateName(colType), row, 2);
-                    }
                     break;
                 case 2:
                     cc.setName((String) value);
@@ -528,40 +526,7 @@ public abstract class TableConstraintsPanel extends JPanel
             return keys;
         }
 
-        private String generateName(String type) {
-            String name = "_<TABLE_NAME>";
-            switch (type) {
-                case org.executequery.databaseobjects.impl.ColumnConstraint.PRIMARY:
-                    name = "PK" + name;
-                    break;
-                case org.executequery.databaseobjects.impl.ColumnConstraint.FOREIGN:
-                    name = "FK" + name;
-                    break;
-                case org.executequery.databaseobjects.impl.ColumnConstraint.CHECK:
-                    name = "CHECK" + name;
-                    break;
-                case org.executequery.databaseobjects.impl.ColumnConstraint.UNIQUE:
-                    name = "UQ" + name;
-                    break;
-            }
-            name = name + "_";
-            int int_number = 0;
-            String number = "0";
-            if (keys != null)
-                for (int i = 0; i < keys.size(); i++) {
-                    if (!MiscUtils.isNull(getConstraintAt(i).getName()))
-                        if (getConstraintAt(i).getName().contains(name)) {
-                            number = getConstraintAt(i).getName().replace(name, "");
-                            if (Integer.parseInt(number) > int_number)
-                                int_number = Integer.parseInt(number);
-                        }
 
-                }
-            number = "" + (int_number + 1);
-
-            generatedName = true;
-            return name + number;
-        }
 
 
     } // class ColumnConstraintModel

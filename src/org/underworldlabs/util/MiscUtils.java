@@ -748,10 +748,13 @@ public final class MiscUtils {
     }
 
     public static String getFormattedObject(String obj) {
-        obj = obj.trim();
-        if (isLatinOrDigitOrSpecSymbolRDB(obj) && checkAllUpperCase(obj) && !checkKeyword(obj))
-            return obj;
-        else return MiscUtils.wordInQuotes(obj);
+        if (obj != null) {
+            obj = obj.trim();
+            if (isLatinOrDigitOrSpecSymbolRDB(obj) && checkAllUpperCase(obj) && !checkKeyword(obj))
+                return obj;
+            else return MiscUtils.wordInQuotes(obj);
+        }
+        return "";
     }
 
 }

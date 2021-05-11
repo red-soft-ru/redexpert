@@ -422,10 +422,52 @@ public final class SQLUtils {
         return cd;
     }
 
+    private static String generateName(String type, List<ColumnConstraint> keys) {
+        String name = "_<TABLE_NAME>";
+        switch (type) {
+            case org.executequery.databaseobjects.impl.ColumnConstraint.PRIMARY:
+                name = "PK" + name;
+                break;
+            case org.executequery.databaseobjects.impl.ColumnConstraint.FOREIGN:
+                name = "FK" + name;
+                break;
+            case org.executequery.databaseobjects.impl.ColumnConstraint.CHECK:
+                name = "CHECK" + name;
+                break;
+            case org.executequery.databaseobjects.impl.ColumnConstraint.UNIQUE:
+                name = "UQ" + name;
+                break;
+        }
+        name = name + "_";
+        int int_number = 0;
+        String number = "0";
+        if (keys != null)
+            for (int i = 0; i < keys.size(); i++) {
+                if (!MiscUtils.isNull(keys.get(i).getName()))
+                    if (keys.get(i).getName().contains(name)) {
+                        number = keys.get(i).getName().replace(name, "");
+                        try {
+                            if (Integer.parseInt(number) > int_number)
+                                int_number = Integer.parseInt(number);
+                        } catch (NumberFormatException e) {
+                            Log.debug(e.getMessage());
+                        }
+                    }
+
+            }
+        number = "" + (int_number + 1);
+        return name + number;
+    }
+
     public static List<ColumnConstraint> removeDuplicatesConstraints(List<ColumnConstraint> columnConstraintList) {
         List<String> cc_names = new ArrayList<>();
         List<ColumnConstraint> columnConstraints = new ArrayList<>();
         for (int i = 0, n = columnConstraintList.size(); i < n; i++) {
+            if (MiscUtils.isNull(columnConstraintList.get(i).getName()) && !MiscUtils.isNull(columnConstraintList.get(i).getTypeName())) {
+                String colType = columnConstraintList.get(i).getTypeName();
+                columnConstraintList.get(i).setName(generateName(colType, columnConstraintList));
+                columnConstraintList.get(i).setGeneratedName(true);
+            }
             int ind = cc_names.indexOf(columnConstraintList.get(i).getName());
             if (ind >= 0) {
                 ColumnConstraint cc_rep = columnConstraintList.get(i);

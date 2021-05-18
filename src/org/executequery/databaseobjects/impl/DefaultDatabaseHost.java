@@ -1455,8 +1455,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             metaTag.setCatalog(catalog);
             metaTag.setSchema(schema);
             DatabaseConnection databaseConnection = metaTag.getHost().getDatabaseConnection();
-            if (supportedObject(i))
+            if (supportedObject(i)) {
                 metaObjects.add(metaTag);
+                //!NamedObject.META_TYPES[type].contains("SYSTEM") || SystemProperties.getBooleanProperty("user", "browser.show.system.objects");
+            }
             if (SystemProperties.getBooleanProperty("user", "treeconnection.alphabet.sorting"))
                 metaObjects.sort(new Comparator<DatabaseMetaTag>() {
                     @Override
@@ -1511,7 +1513,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                     }
             }
         }
-        return !NamedObject.META_TYPES[type].contains("SYSTEM") || SystemProperties.getBooleanProperty("user", "browser.show.system.objects");
+        return true;
     }
 
     private DefaultDatabaseMetaTag createDatabaseMetaTag(

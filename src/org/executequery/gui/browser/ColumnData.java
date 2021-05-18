@@ -27,7 +27,8 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseDomain;
-import org.executequery.datasource.PooledStatement;
+import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
+import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.table.Autoincrement;
 import org.executequery.gui.table.CreateTableSQLSyntax;
@@ -636,12 +637,13 @@ public class ColumnData implements Serializable {
     private void getDomainInfo() {
         domain = domain.trim();
         ConnectionsTreePanel treePanel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
-        DatabaseObjectNode hostNode = treePanel.getHostNode(dc);
-        List<DatabaseObjectNode> metatags = hostNode.getChildObjects();
+        DatabaseHostNode hostNode = (DatabaseHostNode) treePanel.getHostNode(dc);
+        List<DatabaseObjectNode> metatags = hostNode.getAllChildren();
         boolean find = false;
         for (int i = 0; i < metatags.size(); i++) {
-            if (metatags.get(i).getDatabaseObject().getMetaDataKey().equalsIgnoreCase(NamedObject.META_TYPES[NamedObject.DOMAIN])
-                    || metatags.get(i).getDatabaseObject().getMetaDataKey().equalsIgnoreCase(NamedObject.META_TYPES[NamedObject.SYSTEM_DOMAIN])) {
+            DefaultDatabaseMetaTag metatag = (DefaultDatabaseMetaTag) metatags.get(i).getDatabaseObject();
+            if (metatag.getMetaDataKey().equalsIgnoreCase(NamedObject.META_TYPES[NamedObject.DOMAIN])
+                    || metatag.getMetaDataKey().equalsIgnoreCase(NamedObject.META_TYPES[NamedObject.SYSTEM_DOMAIN])) {
                 List<DatabaseObjectNode> domains = metatags.get(i).getChildObjects();
                 for (DatabaseObjectNode domainNode : domains) {
                     if (domainNode.getName().equals(domain)) {

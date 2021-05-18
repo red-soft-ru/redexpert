@@ -754,10 +754,13 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         "    F.RDB$NULL_FLAG AS SOURCE_NULL_FLAG,\n" +
                         "    F.RDB$COMPUTED_BLR AS COMPUTED_BLR,\n" +
                         "    F.RDB$CHARACTER_SET_ID,\n" +
+                        "    CH.RDB$CHARACTER_SET_NAME,\n" +
+                        "    CO.RDB$COLLATION_NAME,\n" +
                         identity +
                         "FROM\n" +
                         "    RDB$RELATION_FIELDS RF,\n" +
-                        "    RDB$FIELDS F\n" +
+                        "    RDB$FIELDS F LEFT JOIN RDB$CHARACTER_SETS CH ON F.RDB$CHARACTER_SET_ID=CH.RDB$CHARACTER_SET_ID\n" +
+                        "    LEFT JOIN RDB$COLLATIONS CO ON F.RDB$CHARACTER_SET_ID = CO.RDB$CHARACTER_SET_ID AND F.RDB$COLLATION_ID = CO.RDB$COLLATION_ID\n" +
                         "WHERE\n" +
                         "    RF.RDB$RELATION_NAME = " +
                         "'" +
@@ -958,6 +961,9 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             }
 
             column.setIdentity(rs.getInt("IDENTITY") == 1);
+
+            column.setCharset(rs.getString("RDB$CHARACTER_SET_NAME"));
+            column.setCollate(rs.getString("RDB$COLLATION_NAME"));
 
             columns.add(column);
         }

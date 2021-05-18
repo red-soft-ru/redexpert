@@ -47,6 +47,7 @@ public class SelectTypePanel extends JPanel {
     private TypeOfPanel typeOfPanel;
     private DynamicComboBoxModel collateModel;
     private boolean refreshingCollate = false;
+    private boolean disabledCollate = false;
 
     public SelectTypePanel(String[] types, int[] intTypes, ColumnData cd, boolean displayTypeOf) {
         this.dataTypes = types;
@@ -254,7 +255,7 @@ public class SelectTypePanel extends JPanel {
 
     private void setEncodingVisible(boolean flag) {
         encodingBox.setEnabled(flag);
-        collateBox.setEnabled(flag);
+        collateBox.setEnabled(flag && !disabledCollate);
         if (refreshing) {
             encodingBox.setSelectedItem(cd.getCharset());
             collateBox.setSelectedItem(cd.getCollate());
@@ -363,5 +364,14 @@ public class SelectTypePanel extends JPanel {
             sender.releaseResources();
         }
         return collates.toArray(new String[collates.size()]);
+    }
+
+    public boolean isDisabledCollate() {
+        return disabledCollate;
+    }
+
+    public void setDisabledCollate(boolean disabledCollate) {
+        this.disabledCollate = disabledCollate;
+        collateBox.setEnabled(!disabledCollate);
     }
 }

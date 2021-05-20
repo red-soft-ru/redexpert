@@ -248,6 +248,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 break;
 
             case NamedObject.SYSTEM_FUNCTION:
+
+            case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
+            case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
+            case NamedObject.SYSTEM_STRING_FUNCTIONS:
                 setIcon(icons.get(BrowserConstants.SYSTEM_FUNCTIONS_IMAGE));
                 break;
 
@@ -376,12 +380,6 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
                 break;
 
-            case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
-            case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
-            case NamedObject.SYSTEM_STRING_FUNCTIONS:
-                setIcon(icons.get(BrowserConstants.SYSTEM_FUNCTIONS_IMAGE));
-                break;
-
             case NamedObject.PRIMARY_KEY:
                 setIcon(icons.get(BrowserConstants.PRIMARY_COLUMNS_IMAGE));
                 break;
@@ -445,7 +443,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
             setForeground(selectedTextForeground);
         }
-        if (type == NamedObject.META_TAG && node.getChildCount() > 0)
+        if (type == NamedObject.META_TAG && node.getDatabaseObject().getObjects().size() > 0)
             setFont(treeFont.deriveFont(Font.BOLD));
         else setFont(treeFont);
         JTree.DropLocation dropLocation = tree.getDropLocation();

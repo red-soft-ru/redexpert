@@ -496,5 +496,23 @@ public final class SQLUtils {
         return columnConstraints;
     }
 
+    public static String generateCreateDomain(ColumnData columnData, String name) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE DOMAIN ").append(name).append(" as ").append(columnData.getFormattedDomainDataType()).append("\n");
+        if (!MiscUtils.isNull(columnData.getDefaultValue())) {
+            sb.append(" DEFAULT ").append(MiscUtils.formattedSQLValue(columnData.getDefaultValue(), columnData.getSQLType()));
+        }
+        sb.append(columnData.isRequired() ? " NOT NULL" : "");
+        if (!MiscUtils.isNull(columnData.getCheck())) {
+            sb.append(" CHECK ( ").append(columnData.getCheck()).append(")");
+        }
+        sb.append(";");
+        if (!MiscUtils.isNull(columnData.getDescription())) {
+            sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getFormattedColumnName()).append(" IS '")
+                    .append(columnData.getDescription()).append("';");
+        }
+        return sb.toString();
+    }
+
 }
 

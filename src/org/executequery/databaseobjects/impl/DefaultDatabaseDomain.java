@@ -6,6 +6,7 @@ import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -85,14 +86,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Create domain \n\t");
-        sb.append(getName());
-        sb.append("\n");
-        sb.append("\t as \n\t");
-        sb.append(DatabaseTypeConverter.getTypeWithSize(sqlType, sqlSubtype, sqlSize, sqlScale));
-        sb.append(";");
-        return sb.toString();
+        return SQLUtils.generateCreateDomain(getDomainData(), getName());
     }
 
     @Override
@@ -154,7 +148,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
                 }
             }
             domainData.setDomainCheck(domainCheck);
-            domainData.setDomainDefault(domainData.processedDefaultValue(domainData.getDefaultValue()));
+            domainData.setDomainDefault(domainData.processedDefaultValue(domainData.getDomainDefault()));
             if (MiscUtils.isNull(domainCharset)) {
                 domainCharset = CreateTableSQLSyntax.NONE;
             } else domainCharset = domainCharset.trim();
@@ -163,6 +157,7 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
                 domainCollate = CreateTableSQLSyntax.NONE;
             } else domainCollate = domainCollate.trim();
             domainData.setDomainCollate(domainCollate);
+            domainData.setDomainTypeName(DatabaseTypeConverter.getDataTypeName(rs.getInt(TYPE), rs.getInt(SUB_TYPE), rs.getInt(SCALE)));
 
             DefaultDatabaseColumn column = new DefaultDatabaseColumn();
             column.setName(getName());

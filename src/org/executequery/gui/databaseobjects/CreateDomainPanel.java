@@ -7,6 +7,7 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.datatype.SelectTypePanel;
 import org.executequery.gui.text.SQLTextPane;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -231,20 +232,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements KeyL
                 sqlTextPane.setText(sb.toString());
             }
         } else {
-            sb.append("CREATE DOMAIN ").append(columnData.getFormattedColumnName()).append(" as ").append(columnData.getFormattedDataType()).append("\n");
-            if (!MiscUtils.isNull(columnData.getDefaultValue())) {
-                sb.append(" DEFAULT ").append(MiscUtils.formattedSQLValue(columnData.getDefaultValue(), columnData.getSQLType()));
-            }
-            sb.append(columnData.isRequired() ? " NOT NULL" : "");
-            if (!MiscUtils.isNull(columnData.getCheck())) {
-                sb.append(" CHECK ( ").append(columnData.getCheck()).append(")");
-            }
-            sb.append(";");
-            if (!MiscUtils.isNull(columnData.getDescription())) {
-                sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getFormattedColumnName()).append(" IS '")
-                        .append(columnData.getDescription()).append("';");
-            }
-            sqlTextPane.setText(sb.toString());
+            sqlTextPane.setText(SQLUtils.generateCreateDomain(columnData, columnData.getFormattedColumnName()));
         }
     }
 }

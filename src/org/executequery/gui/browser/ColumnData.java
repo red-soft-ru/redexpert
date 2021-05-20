@@ -170,6 +170,11 @@ public class ColumnData implements Serializable {
     private int domainType;
 
     /**
+     * Domain type name
+     */
+    private String domainTypeName;
+
+    /**
      * Domain size
      */
     private int domainSize = -1;
@@ -755,6 +760,19 @@ public class ColumnData implements Serializable {
         return sb.toString();
     }
 
+    public String getFormattedDomainDataType() {
+        sqlType = domainType;
+        columnSize = domainSize;
+        columnScale = domainScale;
+        columnSubtype = domainSubType;
+        setCharset(domainCharset);
+        setCollate(domainCollate);
+        setCheck(domainCheck);
+        setDefaultValue(domainDefault);
+        setColumnType(domainTypeName);
+        return getFormattedDataType();
+    }
+
     public boolean isEditSize() {
         return getColumnType() != null && (getSQLType() == Types.NUMERIC || getSQLType() == Types.CHAR || getSQLType() == Types.VARCHAR
                 || getSQLType() == Types.DECIMAL || getSQLType() == Types.BLOB || getSQLType() == Types.LONGVARCHAR
@@ -1060,6 +1078,13 @@ public class ColumnData implements Serializable {
         this.collate = collate;
     }
 
+    public String getDomainTypeName() {
+        return domainTypeName;
+    }
+
+    public void setDomainTypeName(String domainTypeName) {
+        this.domainTypeName = domainTypeName;
+    }
 }
 
 

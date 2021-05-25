@@ -152,6 +152,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
 
         String fullProcedureBody = getFullSourceBody();
         if (fullProcedureBody != null && !fullProcedureBody.isEmpty()) {
+            fullProcedureBody = fullProcedureBody.trim();
             ProcedureParserLexer lexer = new ProcedureParserLexer(CharStreams.fromString(fullProcedureBody));
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             ProcedureParserParser sqlparser = new ProcedureParserParser(tokens);
@@ -183,13 +184,13 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                                 if (type.datatypeSQL() != null && !type.datatypeSQL().isEmpty()) {
                                     List<ParseTree> children = type.datatypeSQL().children;
                                     variable.setSqlType(children.get(0).getText());
-                                    if (type.datatypeSQL().type_size() != null && type.datatypeSQL().type_size().isEmpty()) {
+                                    if (type.datatypeSQL().type_size() != null && !type.datatypeSQL().type_size().isEmpty()) {
                                         variable.setSize(Integer.parseInt(type.datatypeSQL().type_size().getText()));
                                     }
-                                    if (type.datatypeSQL().scale() != null && type.datatypeSQL().scale().isEmpty()) {
+                                    if (type.datatypeSQL().scale() != null && !type.datatypeSQL().scale().isEmpty()) {
                                         variable.setScale(Integer.parseInt(type.datatypeSQL().scale().getText()));
                                     }
-                                    if (type.datatypeSQL().subtype() != null && type.datatypeSQL().subtype().isEmpty()) {
+                                    if (type.datatypeSQL().subtype() != null && !type.datatypeSQL().subtype().isEmpty()) {
                                         if (type.datatypeSQL().subtype().any_name() != null && !type.datatypeSQL().subtype().any_name().isEmpty()) {
                                             variable.setSubType(1);
                                         }
@@ -197,7 +198,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateObjectP
                                             variable.setSubType(Integer.parseInt(type.datatypeSQL().subtype().int_number().getText()));
                                         }
                                     }
-                                    if (type.datatypeSQL().charset_name() != null && type.datatypeSQL().charset_name().isEmpty()) {
+                                    if (type.datatypeSQL().charset_name() != null && !type.datatypeSQL().charset_name().isEmpty()) {
                                         variable.setEncoding(type.datatypeSQL().charset_name().getText());
                                     }
                                 }

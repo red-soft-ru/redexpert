@@ -277,7 +277,7 @@ public class BrowserConstants {
 
     public static final String SYSTEM_ROLE_IMAGE = "system_role_16.png";
 
-    public static final String USER_IMAGE = "user16.png";
+    public static final String USER_IMAGE = "User16.png";
 
 
     public static final String GRANT_IMAGE = "grant.png";

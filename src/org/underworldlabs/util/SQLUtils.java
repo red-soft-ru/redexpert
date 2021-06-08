@@ -4,6 +4,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.Parameter;
 import org.executequery.databaseobjects.ProcedureParameter;
+import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
@@ -11,10 +12,7 @@ import org.executequery.gui.table.TableDefinitionPanel;
 
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Vector;
+import java.util.*;
 
 import static org.executequery.databaseobjects.NamedObject.*;
 import static org.executequery.gui.browser.ColumnConstraint.RESTRICT;
@@ -511,6 +509,47 @@ public final class SQLUtils {
             sb.append("\nCOMMENT ON DOMAIN ").append(columnData.getFormattedColumnName()).append(" IS '")
                     .append(columnData.getDescription()).append("';");
         }
+        return sb.toString();
+    }
+
+    public static String generateCreateUser(DefaultDatabaseUser user) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE");
+        sb.append(" USER ").append(MiscUtils.getFormattedObject(user.getName()));
+        if (!MiscUtils.isNull(user.getFirstName()))
+            sb.append("\nFIRSTNAME '").append(user.getFirstName()).append("'");
+        if (!MiscUtils.isNull(user.getMiddleName()))
+            sb.append("\nMIDDLENAME '").append(user.getMiddleName()).append("'");
+        if (!MiscUtils.isNull(user.getLastName()))
+            sb.append("\nLASTNAME '").append(user.getLastName()).append("'");
+        if (!MiscUtils.isNull(user.getPassword())) {
+            sb.append("\nPASSWORD '").append(user.getPassword()).append("'");
+        }
+        if (user.getActive()) {
+            sb.append("\nACTIVE");
+        } else {
+            sb.append("\nINACTIVE");
+        }
+        if (user.getAdministrator()) {
+            sb.append("\nGRANT ADMIN ROLE");
+        }
+        if (!user.getPlugin().equals(""))
+            sb.append("\nUSING PLUGIN ").append(user.getPlugin());
+        Map<String, String> tags = user.getTags();
+        if (tags.size() > 0) {
+            sb.append("\nTAGS (");
+            boolean first = true;
+            for (String tag : tags.keySet()) {
+                if (!first)
+                    sb.append(", ");
+                first = false;
+                sb.append(tag).append(" = '").append(tags.get(tag)).append("'");
+            }
+            sb.append(" )");
+        }
+        sb.append(";\n");
+        if (!MiscUtils.isNull(user.getComment()))
+            sb.append("COMMENT ON USER ").append(MiscUtils.getFormattedObject(user.getName())).append(" is '").append(user.getComment()).append("'");
         return sb.toString();
     }
 

@@ -1504,6 +1504,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                         case NamedObject.SYSTEM_STRING_FUNCTIONS:
                         case NamedObject.SYSTEM_FUNCTION:
                         case NamedObject.DDL_TRIGGER:
+                        case NamedObject.USER:
                             return false;
                     }
                 case 3:

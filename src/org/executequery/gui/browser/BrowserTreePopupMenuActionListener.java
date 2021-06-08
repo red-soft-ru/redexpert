@@ -331,6 +331,23 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                         }
                     }
                     break;
+                case NamedObject.USER:
+                    if (GUIUtilities.isDialogOpen(CreateUserPanel.CREATE_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateUserPanel.CREATE_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+                            BaseDialog dialog =
+                                    new BaseDialog(CreateUserPanel.CREATE_TITLE, false);
+                            CreateUserPanel panel = new CreateUserPanel(currentSelection, dialog);
+                            showDialogCreateObject(panel, dialog);
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
                 default:
                     GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
                     break;
@@ -525,6 +542,23 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
                             BaseDialog dialog = new BaseDialog(CreatePackagePanel.ALTER_TITLE, false);
                             createObjectPanel = new CreatePackagePanel(currentSelection, dialog, (DefaultDatabasePackage) node.getDatabaseObject());
+                            showDialogCreateObject(createObjectPanel, dialog);
+                        } finally {
+                            GUIUtilities.showNormalCursor();
+                        }
+                    }
+                    break;
+                case NamedObject.USER:
+                    if (GUIUtilities.isDialogOpen(CreateUserPanel.EDIT_TITLE)) {
+
+                        GUIUtilities.setSelectedDialog(CreateUserPanel.EDIT_TITLE);
+
+                    } else {
+                        try {
+                            GUIUtilities.showWaitCursor();
+
+                            BaseDialog dialog = new BaseDialog(CreateUserPanel.EDIT_TITLE, false);
+                            createObjectPanel = new CreateUserPanel(currentSelection, dialog, (DefaultDatabaseUser) node.getDatabaseObject());
                             showDialogCreateObject(createObjectPanel, dialog);
                         } finally {
                             GUIUtilities.showNormalCursor();

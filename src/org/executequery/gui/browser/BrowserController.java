@@ -446,6 +446,18 @@ public class BrowserController {
                     }
                     rolePanel.setValues((DefaultDatabaseRole) databaseObject, this);
                     return rolePanel;
+                case NamedObject.USER:
+                    BrowserUserPanel userPanel = null;
+                    if (!viewPanel.containsPanel(BrowserUserPanel.NAME)) {
+                        userPanel = new BrowserUserPanel(this);
+                        viewPanel.addToLayout(userPanel);
+                    } else {
+                        userPanel = (BrowserUserPanel) viewPanel.
+                                getFormObjectView(BrowserUserPanel.NAME);
+                    }
+
+                    userPanel.setValues((DefaultDatabaseUser) databaseObject);
+                    return userPanel;
                 case NamedObject.EXCEPTION:
                     BrowserExceptionPanel exceptionPanel = null;
                     if (!viewPanel.containsPanel(BrowserExceptionPanel.NAME)) {

@@ -45,7 +45,8 @@ public interface NamedObject extends Named, java.io.Serializable {
     int SEQUENCE = DATABASE_TRIGGER + 1;
     int EXCEPTION = SEQUENCE + 1;
     int UDF = EXCEPTION + 1;
-    int ROLE = UDF + 1;
+    int USER = UDF + 1;
+    int ROLE = USER + 1;
     int INDEX = ROLE + 1;
     int SYSTEM_DOMAIN = INDEX + 1;
     int SYSTEM_TABLE = SYSTEM_DOMAIN + 1;
@@ -93,6 +94,7 @@ public interface NamedObject extends Named, java.io.Serializable {
             "SEQUENCE",
             "EXCEPTION",
             "EXTERNAL FUNCTION",
+            "USER",
             "ROLE",
             "INDEX",
             "SYSTEM DOMAIN",
@@ -121,6 +123,7 @@ public interface NamedObject extends Named, java.io.Serializable {
             "SEQUENCE",
             "EXCEPTION",
             "EXTERNAL_FUNCTION",
+            "USER",
             "ROLE",
             "INDEX",
             "SYSTEM_DOMAIN",

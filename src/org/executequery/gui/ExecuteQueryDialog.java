@@ -471,6 +471,13 @@ public class ExecuteQueryDialog extends BaseDialog {
             case QueryTypes.COMMENT:
                 rText = "Description added";
                 break;
+            case QueryTypes.CREATE_OBJECT:
+            case QueryTypes.CREATE_OR_ALTER:
+                rText = "Object created";
+                break;
+            case QueryTypes.ALTER_OBJECT:
+                rText = "Object altered";
+                break;
             case QueryTypes.UNKNOWN:
             case QueryTypes.EXECUTE:
                 if (result > -1) {

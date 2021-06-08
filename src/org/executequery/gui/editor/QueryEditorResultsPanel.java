@@ -588,6 +588,13 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
             case QueryTypes.COMMENT:
                 rText = "Description created.";
                 break;
+            case QueryTypes.CREATE_OBJECT:
+            case QueryTypes.CREATE_OR_ALTER:
+                rText = "Object Created";
+                break;
+            case QueryTypes.ALTER_OBJECT:
+                rText = "Object altered";
+                break;
             case QueryTypes.UNKNOWN:
             case QueryTypes.EXECUTE:
                 if (result > -1) {
@@ -854,7 +861,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
     /**
      * Reacts to a tab rollover.
      *
-     * @param the associated event
+     * @param e associated event
      */
     public void tabRollOver(TabRolloverEvent e) {
 
@@ -892,7 +899,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
     /**
      * Reacts to a tab rollover finishing.
      *
-     * @param the associated event
+     * @param e associated event
      */
     public void tabRollOverFinished(TabRolloverEvent e) {
         int index = e.getIndex();
@@ -907,7 +914,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
     /**
      * Reacts to a tab rollover finishing.
      *
-     * @param the associated event
+     * @param e associated event
      */
     public void tabRollOverCancelled(TabRolloverEvent e) {
         if (queryPopup != null) {

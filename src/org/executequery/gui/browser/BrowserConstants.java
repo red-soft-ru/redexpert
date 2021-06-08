@@ -277,6 +277,8 @@ public class BrowserConstants {
 
     public static final String SYSTEM_ROLE_IMAGE = "system_role_16.png";
 
+    public static final String USER_IMAGE = "user16.png";
+
 
     public static final String GRANT_IMAGE = "grant.png";
     public static final String NO_GRANT_IMAGE = "no_grant.png";
@@ -318,6 +320,7 @@ public class BrowserConstants {
             PACKAGE_IMAGE,
             ROLE_IMAGE,
             SYSTEM_ROLE_IMAGE,
+            USER_IMAGE,
             DB_TRIGGER_IMAGE,
             DDL_TRIGGER_IMAGE
     };

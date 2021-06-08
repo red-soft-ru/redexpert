@@ -69,16 +69,17 @@ public class ConnectionsTreePanel extends TreePanel
         UserPreferenceListener {
 
   public static final String TITLE = Bundles.get(ConnectionsTreePanel.class, "Connections");
+  private SchemaTree tree;
+  private List<DatabaseConnection> connections;
+  private SwingWorker worker;
+
+  public static ConnectionsTreePanel getPanelFromBrowser() {
+    return (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(PROPERTY_KEY);
+  }
 
   public SchemaTree getTree() {
     return tree;
   }
-
-  private SchemaTree tree;
-
-  private List<DatabaseConnection> connections;
-
-  private SwingWorker worker;
 
   private BrowserController controller;
 

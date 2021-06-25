@@ -551,7 +551,7 @@ public class QueryEditorTextPane extends SQLTextArea
     }
 
     private void loadDummyDocument() {
-        setDocument(new DefaultStyledDocument());
+        //setDocument(new DefaultStyledDocument());
     }
 
     /**
@@ -605,7 +605,7 @@ public class QueryEditorTextPane extends SQLTextArea
             clearEdits();
 
             // create a dummy document to load the text into
-            loadDummyDocument();
+            // loadDummyDocument();
 
             try {
                 // clear the contents of we have any

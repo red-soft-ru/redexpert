@@ -19,7 +19,6 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     private boolean validBodyFlag;
     private String securityClass;
     private String ownerName;
-    private boolean systemFlag;
     private boolean sqlSecurity;
     private String description;
 
@@ -36,6 +35,8 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     public int getType() {
+        if (isSystem())
+            return SYSTEM_PACKAGE;
         return PACKAGE;
     }
 
@@ -102,14 +103,6 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
 
     public void setOwnerName(String ownerName) {
         this.ownerName = ownerName;
-    }
-
-    public boolean isSystemFlag() {
-        return systemFlag;
-    }
-
-    public void setSystemFlag(boolean systemFlag) {
-        this.systemFlag = systemFlag;
     }
 
     public boolean isSqlSecurity() {

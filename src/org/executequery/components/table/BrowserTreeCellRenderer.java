@@ -239,6 +239,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                     setIcon(icons.get(BrowserConstants.PACKAGE_IMAGE));
                     break;
                 }
+                if (databaseObject.getMetaDataKey().compareToIgnoreCase("system package") == 0) {
+                    setIcon(icons.get(BrowserConstants.SYSTEM_PACKAGE_IMAGE));
+                    break;
+                }
                 if (databaseObject.getMetaDataKey().compareToIgnoreCase("function") == 0) {
                     setIcon(icons.get(BrowserConstants.FUNCTIONS_IMAGE));
                     break;
@@ -302,6 +306,10 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
             case NamedObject.PACKAGE:
                 setIcon(icons.get(BrowserConstants.PACKAGE_IMAGE));
+                break;
+
+            case NamedObject.SYSTEM_PACKAGE:
+                setIcon(icons.get(BrowserConstants.SYSTEM_PACKAGE_IMAGE));
                 break;
 
             case NamedObject.DOMAIN:

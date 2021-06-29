@@ -207,18 +207,11 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         return (DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
     }
 
-   /* private BrowserTreePopupMenuActionListener browserTreePopupMenuActionListener;
-    private TreePath currentPath;
-    private DatabaseConnection currentSelection;
-
-    */
-
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == connButton) {
             GUIUtilities.ensureDockedTabVisible(ConnectionsTreePanel.PROPERTY_KEY);
             controller.addNewConnection();
         }
-
         if (e.getSource() == newDBButton) {
             GUIUtilities.addCentralPane(CreateDatabasePanel.TITLE,
                     CreateDatabasePanel.FRAME_ICON,

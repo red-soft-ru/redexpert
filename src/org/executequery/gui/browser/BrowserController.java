@@ -254,34 +254,32 @@ public class BrowserController {
    /** This void has been moved in BrowserTreePopupMenuActionListener */
 
    public void valueChanged_(DatabaseObjectNode node, DatabaseConnection connection) {
-        treePanel.setInProcess(true);
+       treePanel.setInProcess(true);
 
+       try {
 
+           FormObjectView panel = buildPanelView(node);
+           panel.setDatabaseObjectNode(node);
+           String type = "";
+           if (node.getType() < NamedObject.META_TYPES.length)
+               type = NamedObject.META_TYPES[node.getType()];
+           if (connection == null)
+               connection = getDatabaseConnection();
+           if (node.isHostNode() || node.getType() == NamedObject.CATALOG)
+               panel.setObjectName(null);
+           else panel.setObjectName(node.getShortName().trim() + ":" + type + ":" + connection.getName());
+           panel.setDatabaseConnection(connection);
+           if (panel != null) {
+               viewPanel.setView(panel);
+               checkBrowserPanel();
+           }
 
-        try {
+       } finally {
 
-            FormObjectView panel = buildPanelView(node);
-            panel.setDatabaseObjectNode(node);
-            String type = "";
-            if (node.getType() < NamedObject.META_TYPES.length)
-                type = NamedObject.META_TYPES[node.getType()];
-            if (connection == null)
-                connection = getDatabaseConnection();
-            if (node.isHostNode() || node.getType() == NamedObject.CATALOG)
-                panel.setObjectName(null);
-            else panel.setObjectName(node.getShortName().trim() + ":" + type + ":" + connection.getName());
-            panel.setDatabaseConnection(connection);
-            if (panel != null) {
-                viewPanel.setView(panel);
-                checkBrowserPanel();
-            }
+           treePanel.setInProcess(false);
+       }
 
-        } finally {
-
-            treePanel.setInProcess(false);
-        }
-    }
-
+   }
 
     /**
      * Determines and builds the object view panel to be
@@ -291,10 +289,7 @@ public class BrowserController {
      * @param //the selected node
      * @param// the connection host parent object
      */
-
-    //=========================
-
-   private FormObjectView buildPanelView(DatabaseObjectNode node) {
+    private FormObjectView buildPanelView(DatabaseObjectNode node) {
         try {
 
             NamedObject databaseObject = node.getDatabaseObject();
@@ -556,8 +551,8 @@ public class BrowserController {
             handleException(e);
             return null;
         }
-    }
 
+    }
 
     private HostPanel hostPanel() {
         HostPanel hostPanel = null;

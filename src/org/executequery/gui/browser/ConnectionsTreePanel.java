@@ -32,7 +32,6 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.event.*;
 import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
-
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
@@ -48,8 +47,7 @@ import org.underworldlabs.swing.toolbar.PanelToolBar;
 import org.underworldlabs.swing.tree.DynamicTree;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.SystemProperties;
-//dz
-import  org.executequery.gui.browser.BrowserTreePopupMenuActionListener;
+
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
@@ -1331,11 +1329,11 @@ public class ConnectionsTreePanel extends TreePanel
 
 
   public synchronized void valueChanged(DatabaseObjectNode node) {
-   controller.valueChanged_ (node, null);
+    controller.valueChanged_(node, null);
   }
 
   public synchronized void valueChanged(DatabaseObjectNode node, DatabaseConnection connection) {
-   controller.valueChanged_ (node, connection);
+    controller.valueChanged_(node, connection);
   }
 
   /**

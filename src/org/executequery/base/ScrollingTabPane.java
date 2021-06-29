@@ -432,7 +432,6 @@ public class ScrollingTabPane extends AbstractTabPane
      *
      * @param the index to be removed
      */
-    //
     public void removeIndex(int index) {
         if (index < 0) {
             return;
@@ -1359,7 +1358,6 @@ public class ScrollingTabPane extends AbstractTabPane
         }
 
         public void mouseReleased(MouseEvent e) {
-
             if (maybeShowPopup(e) ||
                     (tabPopupMenu != null && tabPopupMenu.isVisible())) {
                 return;

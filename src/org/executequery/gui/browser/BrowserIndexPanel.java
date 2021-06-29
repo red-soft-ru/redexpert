@@ -95,7 +95,6 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
                 new JScrollPane(table), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
         tabPane = new JTabbedPane(JTabbedPane.TOP);
         tabPane.add(bundleString("IncludedFields"), fieldsPanel);
-
         JPanel descriptionPanel = new JPanel(new BorderLayout());
 
         descriptionPanel.setBorder(BorderFactory.createEtchedBorder());

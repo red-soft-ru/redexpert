@@ -145,7 +145,6 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
         connect.setVisible(canConnect);
         disconnect.setVisible(!canConnect);
-
         delete.setVisible(canConnect);
         reload.setVisible(!canConnect);
 
@@ -217,7 +216,6 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
             String name = listener.getCurrentSelection().getName();
             connect.setText(bundleString("connectText", name));
-            //!здесь возможно
             disconnect.setText(bundleString("disconnectText", name));
             dataBaseInformation.setText(bundleString("dataBaseInformation"));
             delete.setText(bundleString("deleteText", name));

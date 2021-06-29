@@ -22,7 +22,10 @@ package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.DatabaseObject;
+import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -30,7 +33,6 @@ import org.executequery.gui.browser.managment.WindowAddRole;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.*;
-import org.executequery.gui.forms.FormObjectView;
 import org.executequery.gui.importexport.ImportExportDataProcess;
 import org.executequery.gui.importexport.ImportExportDelimitedPanel;
 import org.executequery.gui.importexport.ImportExportExcelPanel;
@@ -45,8 +47,6 @@ import javax.swing.*;
 import javax.swing.tree.TreePath;
 import java.awt.event.ActionEvent;
 import java.util.Objects;
-
-
 
 /**
  * @author Takis Diakoumis
@@ -69,8 +69,6 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         currentSelection = null;
         currentPath = null;
     }
-
-
 
     public void deleteObject(ActionEvent e) {
         if (currentPath != null && currentSelection != null) {
@@ -354,6 +352,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
                     break;
 
+
             }
         }
 
@@ -628,13 +627,8 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         treePanel.disconnect(currentSelection);
     }
 
-
-
-    /* dz .................................. */
-
     private BrowserController controller;
-   // private BrowserViewPanel browserViewPanel;
-   // private BrowserViewPanel viewPanel;
+
 
     public void dataBaseInformation (ActionEvent e) {
         controller = treePanel.getController();
@@ -643,14 +637,6 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         controller.valueChanged_(node, connection);
 
     }
-
-
-
-        //..................................///////////////////////////////////////////////
-
-    //end of code
-
-
 
     public void duplicate(ActionEvent e) {
 

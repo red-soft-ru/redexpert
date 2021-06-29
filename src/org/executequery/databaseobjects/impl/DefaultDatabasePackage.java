@@ -41,6 +41,8 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     public String getMetaDataKey() {
+        if (isSystem())
+            return META_TYPES[SYSTEM_PACKAGE];
         return META_TYPES[PACKAGE];
     }
 

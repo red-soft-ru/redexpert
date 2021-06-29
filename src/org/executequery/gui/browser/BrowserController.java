@@ -249,9 +249,14 @@ public class BrowserController {
      * //@param the connection host parent object
      * //@param the selected node
      */
-    public void valueChanged_(DatabaseObjectNode node, DatabaseConnection connection) {
 
+
+   /** This void has been moved in BrowserTreePopupMenuActionListener */
+
+   public void valueChanged_(DatabaseObjectNode node, DatabaseConnection connection) {
         treePanel.setInProcess(true);
+
+
 
         try {
 
@@ -275,8 +280,8 @@ public class BrowserController {
 
             treePanel.setInProcess(false);
         }
-
     }
+
 
     /**
      * Determines and builds the object view panel to be
@@ -286,7 +291,10 @@ public class BrowserController {
      * @param //the selected node
      * @param// the connection host parent object
      */
-    private FormObjectView buildPanelView(DatabaseObjectNode node) {
+
+    //=========================
+
+   private FormObjectView buildPanelView(DatabaseObjectNode node) {
         try {
 
             NamedObject databaseObject = node.getDatabaseObject();
@@ -548,8 +556,8 @@ public class BrowserController {
             handleException(e);
             return null;
         }
-
     }
+
 
     private HostPanel hostPanel() {
         HostPanel hostPanel = null;

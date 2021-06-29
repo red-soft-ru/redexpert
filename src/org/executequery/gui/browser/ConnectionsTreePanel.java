@@ -32,6 +32,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.event.*;
 import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
+
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
@@ -47,7 +48,8 @@ import org.underworldlabs.swing.toolbar.PanelToolBar;
 import org.underworldlabs.swing.tree.DynamicTree;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.SystemProperties;
-
+//dz
+import  org.executequery.gui.browser.BrowserTreePopupMenuActionListener;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
@@ -104,6 +106,9 @@ public class ConnectionsTreePanel extends TreePanel
   private TreeFindAction treeFindAction;
 
   private JScrollPane scrollPane;
+
+
+  private BrowserTreePopupMenuActionListener listener;
 
   public ConnectionsTreePanel() {
 
@@ -223,7 +228,7 @@ public class ConnectionsTreePanel extends TreePanel
   @SuppressWarnings("unchecked")
   public void collapseAll() {
 
-    for (Enumeration<TreeNode> i = tree.getRootNode().children(); i.hasMoreElements();) {
+    for (Enumeration<TreeNode> i = tree.getRootNode().children(); i.hasMoreElements(); ) {
 
       DefaultMutableTreeNode node = (DefaultMutableTreeNode) i.nextElement();
       tree.collapsePath(new TreePath(node.getPath()));
@@ -300,7 +305,7 @@ public class ConnectionsTreePanel extends TreePanel
     tree.nodeStructureChanged(selectedNode);
 
     int count = 0;
-    for (Enumeration i = selectedNode.children(); i.hasMoreElements();) {
+    for (Enumeration i = selectedNode.children(); i.hasMoreElements(); ) {
 
       Object object = i.nextElement();
       if (object instanceof DatabaseHostNode) {
@@ -324,7 +329,7 @@ public class ConnectionsTreePanel extends TreePanel
       ConnectionsFolder folder = folderNode.getConnectionsFolder();
       folder.empty();
 
-      for (Enumeration<?> j = selectedNode.children(); j.hasMoreElements();) {
+      for (Enumeration<?> j = selectedNode.children(); j.hasMoreElements(); ) {
 
         Object object = j.nextElement();
         if (isADatabaseHostNode(object)) {
@@ -340,6 +345,11 @@ public class ConnectionsTreePanel extends TreePanel
       folderModified(folder);
 
     }
+  }
+
+  public BrowserController getController()
+  {
+    return controller;
   }
 
   public void rebuildConnectionsFromTree() {
@@ -462,7 +472,10 @@ public class ConnectionsTreePanel extends TreePanel
       Object object = tree.getLastPathComponent();
       if (isADatabaseHostNode(object)) {
 
-        controller.valueChanged_(asDatabaseHostNode(object), null);
+       // controller.valueChanged_(asDatabaseHostNode(object), null);
+       // valueChanged(asDatabaseHostNode(object), null);
+
+
       }
 
     }
@@ -833,12 +846,13 @@ public class ConnectionsTreePanel extends TreePanel
 
     DatabaseHost host = databaseObjectFactory().createDatabaseHost(dc);
     connections.add(dc);
-
     ConnectionsFolderNode folderNode = getSelectedFolderNode();
+
     if (folderNode != null) {
 
       final DatabaseHostNode hostNode = new DatabaseHostNode(host, folderNode);
       folderNode.addNewHostNode(hostNode);
+
 
       tree.nodesWereInserted(folderNode, new int[]{folderNode.getChildCount() - 1});
 //            tree.insertNode(folderNode, hostNode);
@@ -849,11 +863,14 @@ public class ConnectionsTreePanel extends TreePanel
       folderModified(folderNode.getConnectionsFolder());
 
     } else {
+      DatabaseHostNode databaseHostNode = new DatabaseHostNode(host, null);
+      tree.addToRoot(databaseHostNode);
+      valueChanged(databaseHostNode, null);
 
-      tree.addToRoot(new DatabaseHostNode(host, null));
     }
 
     connectionAdded(dc);
+
   }
 
     /*
@@ -1111,7 +1128,9 @@ public class ConnectionsTreePanel extends TreePanel
         if (tree.getSelectionPath().getLastPathComponent() == host) {
 
           enableButtons(true, true, false, true, true);
-          controller.valueChanged_(host, null);
+         // controller.valueChanged_(host, null);
+          //valueChanged (host, null);
+
         } else
           enableButtons(false, false, false, false, false);
       } else {
@@ -1306,15 +1325,17 @@ public class ConnectionsTreePanel extends TreePanel
         }
     } catch (DataSourceException e) {
       controller.handleException(e);
+
     }
   }
 
+
   public synchronized void valueChanged(DatabaseObjectNode node) {
-    controller.valueChanged_(node, null);
+   controller.valueChanged_ (node, null);
   }
 
   public synchronized void valueChanged(DatabaseObjectNode node, DatabaseConnection connection) {
-    controller.valueChanged_(node, connection);
+   controller.valueChanged_ (node, connection);
   }
 
   /**
@@ -1406,6 +1427,7 @@ public class ConnectionsTreePanel extends TreePanel
 
   public void pathChanged(TreePath oldPath, TreePath newPath) {
 
+
     // store the last position
     oldSelectionPath = oldPath;
 
@@ -1471,15 +1493,18 @@ public class ConnectionsTreePanel extends TreePanel
 
       c.setInProcess(true);
 
+
       worker = new SwingWorker() {
         public Object construct() {
+
           try {
 
             tree.startLoadingNode();
             treeExpanding = true;
-            valueChanged(node);
+            // valueChanged (node);
 
-          } finally {
+           }
+          finally {
 
             treeExpanding = false;
           }

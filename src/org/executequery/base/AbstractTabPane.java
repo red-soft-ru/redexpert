@@ -413,6 +413,7 @@ public abstract class AbstractTabPane extends JPanel
      *
      * @param the name
      */
+    //dz
     public void closeTabComponent(String name) {
         int index = indexOfTab(name);
         if (index != -1) {

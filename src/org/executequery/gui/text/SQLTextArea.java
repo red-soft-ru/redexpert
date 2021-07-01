@@ -7,6 +7,7 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.TreeFindAction;
 import org.executequery.gui.browser.tree.SchemaTree;
 import org.executequery.gui.editor.QueryEditorSettings;
+import org.executequery.gui.editor.autocomplete.DefaultAutoCompletePopupProvider;
 import org.executequery.gui.text.syntax.SQLSyntaxDocument;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
@@ -16,6 +17,10 @@ import org.underworldlabs.sqlLexer.SqlLexerTokenMaker;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import javax.swing.tree.TreePath;
 import java.awt.*;
@@ -26,9 +31,13 @@ import java.beans.PropertyChangeListener;
 import java.util.TreeSet;
 
 public class SQLTextArea extends RSyntaxTextArea {
+
+    private static final String AUTO_COMPLETE_POPUP_ACTION_KEY = "autoCompletePopupActionKey";
+
     private CustomTokenMakerFactory tokenMakerFactory = new CustomTokenMakerFactory();
     protected DatabaseConnection databaseConnection;
     protected SQLSyntaxDocument document;
+    boolean changed = false;
 
     private boolean doCaretUpdate;
 
@@ -41,56 +50,7 @@ public class SQLTextArea extends RSyntaxTextArea {
      * The current font height for painting
      */
     protected int fontHeight;
-
-    public SQLTextArea()
-    {
-        super();
-        document = new SQLSyntaxDocument(null,tokenMakerFactory,"antlr/sql");
-        setDocument(document);
-        setSyntaxEditingStyle("antlr/sql");
-        initialiseStyles();
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if(e.isControlDown()||e.getClickCount()>1) {
-                    int cursor = getCaretPosition();
-                    Token token = getTokenForPosition(cursor);
-                    if(token.getType()==Token.PREPROCESSOR) {
-                        String s = token.getLexeme();
-                        if (s != null) {
-                            s = s.replace("$", "\\$");
-                            if (s.startsWith("\"") && s.endsWith("\""))
-                                s = s.substring(1, s.length() - 1);
-                            TreeFindAction action = new TreeFindAction();
-                            SchemaTree tree = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getTree();
-                            action.install(tree);
-                            action.findString(tree, s, ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(databaseConnection));
-                            BaseDialog dialog = new BaseDialog("find", false);
-                            JPanel panel = new JPanel();
-                            JList jList = action.getResultsList();
-                            if (jList.getModel().getSize() == 1) {
-                                jList.setSelectedIndex(0);
-                                action.listValueSelected((TreePath) jList.getSelectedValue());
-                            } else {
-                                jList.addPropertyChangeListener(new PropertyChangeListener() {
-                                    @Override
-                                    public void propertyChange(PropertyChangeEvent evt) {
-                                        if (jList.getModel().getSize() == 0)
-                                            dialog.finished();
-                                    }
-                                });
-                                JScrollPane scrollPane = new JScrollPane(jList);
-                                panel.add(scrollPane);
-                                dialog.addDisplayComponent(panel);
-                                dialog.display();
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-    }
+    private DefaultAutoCompletePopupProvider autoCompletePopup;
 
     protected void setEditorPreferences() {
 
@@ -268,6 +228,111 @@ public class SQLTextArea extends RSyntaxTextArea {
 
     }
 
+    public SQLTextArea() {
+        super();
+        document = new SQLSyntaxDocument(null, tokenMakerFactory, "antlr/sql");
+        setDocument(document);
+        setSyntaxEditingStyle("antlr/sql");
+        initialiseStyles();
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.isControlDown() || e.getClickCount() > 1) {
+                    int cursor = getCaretPosition();
+                    Token token = getTokenForPosition(cursor);
+                    if (token.getType() == Token.PREPROCESSOR) {
+                        String s = token.getLexeme();
+                        if (s != null) {
+                            s = s.replace("$", "\\$");
+                            if (s.startsWith("\"") && s.endsWith("\""))
+                                s = s.substring(1, s.length() - 1);
+                            TreeFindAction action = new TreeFindAction();
+                            SchemaTree tree = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getTree();
+                            action.install(tree);
+                            action.findString(tree, s, ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(databaseConnection));
+                            BaseDialog dialog = new BaseDialog("find", false);
+                            JPanel panel = new JPanel();
+                            JList jList = action.getResultsList();
+                            if (jList.getModel().getSize() == 1) {
+                                jList.setSelectedIndex(0);
+                                action.listValueSelected((TreePath) jList.getSelectedValue());
+                            } else {
+                                jList.addPropertyChangeListener(new PropertyChangeListener() {
+                                    @Override
+                                    public void propertyChange(PropertyChangeEvent evt) {
+                                        if (jList.getModel().getSize() == 0)
+                                            dialog.finished();
+                                    }
+                                });
+                                JScrollPane scrollPane = new JScrollPane(jList);
+                                panel.add(scrollPane);
+                                dialog.addDisplayComponent(panel);
+                                dialog.display();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        this.autoCompletePopup = new DefaultAutoCompletePopupProvider(databaseConnection, this);
+        registerAutoCompletePopup();
+    }
+
+    private void registerAutoCompletePopup() {
+
+
+        Action autoCompletePopupAction = autoCompletePopup.getPopupAction();
+
+        getActionMap().put(AUTO_COMPLETE_POPUP_ACTION_KEY, autoCompletePopupAction);
+        getInputMap().put((KeyStroke)
+                        autoCompletePopupAction.getValue(Action.ACCELERATOR_KEY),
+                AUTO_COMPLETE_POPUP_ACTION_KEY);
+        getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                changed = true;
+            }
+        });
+        addCaretListener(new CaretListener() {
+            @Override
+            public void caretUpdate(CaretEvent e) {
+                if (changed)
+                    autoCompletePopupAction.actionPerformed(null);
+                changed = false;
+            }
+        });
+
+    }
+
+    public void deregisterAutoCompletePopup() {
+
+        if (autoCompletePopup != null) {
+
+            Action autoCompletePopupAction = autoCompletePopup.getPopupAction();
+
+            getActionMap().remove(AUTO_COMPLETE_POPUP_ACTION_KEY);
+            getInputMap().remove((KeyStroke)
+                    autoCompletePopupAction.getValue(Action.ACCELERATOR_KEY));
+
+            autoCompletePopup = null;
+        }
+
+    }
+
+    public void resetAutocomplete() {
+        autoCompletePopup.reset();
+    }
+
     public DatabaseConnection getDatabaseConnection() {
         return databaseConnection;
     }
@@ -277,6 +342,7 @@ public class SQLTextArea extends RSyntaxTextArea {
         if (databaseConnection != null)
             setDbobjects(databaseConnection.getListObjectsDB());
         else setDbobjects(new TreeSet<>());
+        autoCompletePopup.connectionChanged(databaseConnection);
     }
 
     protected void setDbobjects(TreeSet<String> dbobjects) {
